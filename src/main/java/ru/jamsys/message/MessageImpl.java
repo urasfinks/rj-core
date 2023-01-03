@@ -15,6 +15,7 @@ public class MessageImpl implements Message {
 
     Map<String, Object> userProperty = new ConcurrentHashMap<>();
 
+    @SuppressWarnings("unused")
     public void setHeader(String name, Object value){
         userProperty.put(name, value);
     }

@@ -161,6 +161,7 @@ public abstract class AbstractPool<T> implements Pool<T> {
         }
     }
 
+    @SuppressWarnings("unused")
     public void initial() {
         for (int i = 0; i < min; i++) {
             add();

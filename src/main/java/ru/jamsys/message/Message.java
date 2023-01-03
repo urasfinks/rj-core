@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 
 public interface Message {
 
+    @SuppressWarnings("unused")
     void onHandle(MessageHandle handleState, Object service);
 
     @SuppressWarnings("unused")
@@ -19,7 +20,9 @@ public interface Message {
         return date.toString();
     }
 
+    @SuppressWarnings("unused")
     void setError(Exception e);
 
+    @SuppressWarnings("unused")
     <T> T getHeader(String name);
 }

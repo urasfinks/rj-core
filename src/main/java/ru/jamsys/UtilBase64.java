@@ -3,6 +3,7 @@ package ru.jamsys;
 import java.nio.charset.Charset;
 import java.util.Base64;
 
+@SuppressWarnings("unused")
 public class UtilBase64 {
 
     public static byte[] base64EncodeResultBytes(byte[] data) {

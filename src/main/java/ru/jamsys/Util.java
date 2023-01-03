@@ -32,6 +32,7 @@ public class Util {
         System.out.println(Arrays.toString(arr));
     }
 
+    @SuppressWarnings("unused")
     public static <T, R> List<R> forEach(T[] array, Function<T, R> fn) {
         List<R> list = new ArrayList<>();
         for (T item : array) {
@@ -43,6 +44,7 @@ public class Util {
         return list;
     }
 
+    @SuppressWarnings("unused")
     public static void logConsole(Thread t, String data) {
         System.out.println(LocalDateTime.now().toString() + " " + t.getName() + " " + data);
     }
@@ -54,6 +56,7 @@ public class Util {
 
     static ObjectMapper objectMapper = new ObjectMapper();
 
+    @SuppressWarnings("unused")
     @Nullable
     public static String jsonObjectToString(Object o) {
 
@@ -65,6 +68,7 @@ public class Util {
         return null;
     }
 
+    @SuppressWarnings("unused")
     @Nullable
     public static String jsonObjectToStringPretty(Object o) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -79,6 +83,7 @@ public class Util {
 
     static ObjectMapper objectMapper2 = new ObjectMapper();
 
+    @SuppressWarnings("unused")
     public static <T> WrapJsonToObject<T> jsonToObjectOverflowProperties(String json, Class<T> t) {
         WrapJsonToObject<T> ret = new WrapJsonToObject<>();
         try {
@@ -91,6 +96,7 @@ public class Util {
         return ret;
     }
 
+    @SuppressWarnings("unused")
     public static <T> WrapJsonToObject<T> jsonToObject(String json, Class<T> t) {
         WrapJsonToObject<T> ret = new WrapJsonToObject<>();
         try {
@@ -102,6 +108,7 @@ public class Util {
         return ret;
     }
 
+    @SuppressWarnings("unused")
     public static String getApplicationProperties(String key) throws Exception {
         throw new Exception("Deprecated");
     }
@@ -114,10 +121,12 @@ public class Util {
         }
     }
 
+    @SuppressWarnings("unused")
     public static String genUser() {
         return "u" + ThreadLocalRandom.current().nextInt(10000, 99999);
     }
 
+    @SuppressWarnings("unused")
     public static String genPassword() {
 
         /*
@@ -148,6 +157,7 @@ public class Util {
         return "p" + password.toString();
     }
 
+    @SuppressWarnings("unused")
     public static String stackTraceToString(Throwable e) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -155,6 +165,7 @@ public class Util {
         return sw.toString();
     }
 
+    @SuppressWarnings("unused")
     public static String padRight(String data, int n) {
         if (data == null) {
             return "";
@@ -162,6 +173,7 @@ public class Util {
         return String.format("%-" + n + "s", data);
     }
 
+    @SuppressWarnings("unused")
     public static String padRight(String data, int n, String ch) {
         if (data == null) {
             return "";
@@ -171,7 +183,7 @@ public class Util {
         if (lenStr >= n) {
             return data;
         } else {
-            StringBuffer sb = new StringBuffer(data);
+            StringBuilder sb = new StringBuilder(data);
             int addLen = n - lenStr;
             for (int i = 0; i < addLen; i++) {
                 sb.append(ch);
@@ -180,10 +192,12 @@ public class Util {
         }
     }
 
+    @SuppressWarnings("unused")
     public static String padLeft(String data, int n) {
         return String.format("%" + n + "s", data);
     }
 
+    @SuppressWarnings("unused")
     public static String padLeft(String data, int n, String ch) {
         if (data == null) {
             return "";
@@ -193,7 +207,7 @@ public class Util {
         if (lenStr >= n) {
             return data;
         } else {
-            StringBuffer sb = new StringBuffer(data);
+            StringBuilder sb = new StringBuilder(data);
             int addLen = n - lenStr;
             for (int i = 0; i < addLen; i++) {
                 sb.insert(0, ch);
@@ -202,28 +216,32 @@ public class Util {
         }
     }
 
+    @SuppressWarnings("unused")
     public static String trimLeft(String data, String ch) {
-        StringBuffer sb = new StringBuffer(data);
+        StringBuilder sb = new StringBuilder(data);
         while (sb.length() > 0 && ch.equals(sb.charAt(0) + "")) {
             sb.delete(0, 1);
         }
         return sb.toString();
     }
 
+    @SuppressWarnings("unused")
     public static String trimRight(String data, String ch) {
-        StringBuffer sb = new StringBuffer(data);
+        StringBuilder sb = new StringBuilder(data);
         while (sb.length() > 0 && ch.equals(sb.charAt(sb.length() - 1) + "")) {
             sb.delete(sb.length() - 1, sb.length());
         }
         return sb.toString();
     }
 
+    @SuppressWarnings("unused")
     public static String getDate(String format) {
         Date now = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat(format);
         return formatter.format(now);
     }
 
+    @SuppressWarnings("unused")
     public static String getTimestamp(String date, String format) throws Exception {
         DateFormat dateFormat = new SimpleDateFormat(format);
         Date d1 = dateFormat.parse(date);
@@ -231,6 +249,7 @@ public class Util {
         return Long.toString(unixTime);
     }
 
+    @SuppressWarnings("unused")
     public static boolean dateValidate(String date, String format) {
         DateFormat DATE_FORMAT = new SimpleDateFormat(format);
         DATE_FORMAT.setLenient(true);
@@ -246,14 +265,17 @@ public class Util {
         return URLEncoder.encode(data, charset);
     }
 
+    @SuppressWarnings("unused")
     public static String urlEncode(String data) throws Exception {
         return urlEncode(data, defaultCharset);
     }
 
+    @SuppressWarnings("unused")
     public static String urlDecode(String data, String charset) throws Exception {
         return URLDecoder.decode(data, charset);
     }
 
+    @SuppressWarnings("unused")
     public static String urlDecode(String data) throws Exception {
         return urlDecode(data, defaultCharset);
     }
@@ -267,15 +289,18 @@ public class Util {
         return crypt2.digest();
     }
 
+    @SuppressWarnings("unused")
     public static String getHash(String data, String hashType) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         return new String(getHash(data, hashType, defaultCharset), defaultCharset);
     }
 
+    @SuppressWarnings("unused")
     public static Integer random(Integer minimum, Integer maximum) {
         Random rand = new Random();
         return minimum + rand.nextInt((maximum - minimum) + 1);
     }
 
+    @SuppressWarnings("unused")
     public static void reverseBytes(byte[] array) {
         int i = 0;
         int j = array.length - 1;
@@ -289,6 +314,7 @@ public class Util {
         }
     }
 
+    @SuppressWarnings("unused")
     public static String regexpReplace(String data, String pattern, String replace) {
         Pattern p = Pattern.compile(pattern);
         Matcher m = p.matcher(data);
@@ -300,16 +326,19 @@ public class Util {
         return sb.toString();
     }
 
+    @SuppressWarnings("unused")
     public static String regexpFind(String str, String pattern) {
         Pattern p = Pattern.compile(pattern);
         Matcher m = p.matcher(str);
         return m.find() ? m.group(0) : null;
     }
 
+    @SuppressWarnings("unused")
     public static String capitalize(String str) {
         return StringUtils.capitalize(str);
     }
 
+    @SuppressWarnings("unused")
     public static boolean isNumeric(String num) {
         try {
             Double.parseDouble(num);
@@ -319,6 +348,7 @@ public class Util {
         return false;
     }
 
+    @SuppressWarnings("unused")
     public static boolean isInt(String num) {
         try {
             Integer.parseInt(num);
