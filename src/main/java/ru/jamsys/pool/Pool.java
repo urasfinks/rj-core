@@ -2,6 +2,8 @@ package ru.jamsys.pool;
 
 public interface Pool<T> {
 
+    void complete(T ret, Exception e);
+
     T getResource() throws Exception;
 
     T createResource();
