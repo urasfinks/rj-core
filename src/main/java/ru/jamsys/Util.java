@@ -242,11 +242,10 @@ public class Util {
     }
 
     @SuppressWarnings("unused")
-    public static String getTimestamp(String date, String format) throws Exception {
+    public static long getTimestamp(String date, String format) throws Exception {
         DateFormat dateFormat = new SimpleDateFormat(format);
         Date d1 = dateFormat.parse(date);
-        long unixTime = d1.getTime() / 1000;
-        return Long.toString(unixTime);
+        return d1.getTime() / 1000;
     }
 
     @SuppressWarnings("unused")
