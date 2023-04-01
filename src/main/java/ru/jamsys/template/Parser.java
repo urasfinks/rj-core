@@ -23,7 +23,12 @@ public class Parser {
     public void read(String ch) {
         boolean append = true;
         Dictionary curState = Dictionary.parse(ch);
-        if (curState == Dictionary.DOLLAR && !isParse) {
+        if (curState == Dictionary.DOLLAR && !isParse && lastState == Dictionary.ESCAPE) {
+            String curSb = sb.toString();
+            sb = new StringBuilder();
+            sb.append(curSb, 0, curSb.length() - 1);
+        }
+        if (curState == Dictionary.DOLLAR && !isParse && lastState != Dictionary.ESCAPE) {
             isParse = true;
             isTerminal = true;
             setFuture(curState);

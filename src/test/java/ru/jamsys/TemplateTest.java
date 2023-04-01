@@ -14,6 +14,7 @@ class TemplateTest {
         Map<String, String> args = new HashMap<>();
         args.put("name", "Ura");
         Assertions.assertEquals("Hello Ura", Template.template("Hello ${name}", args));
+        Assertions.assertEquals("Hello ${name}", Template.template("Hello \\${name}", args));
     }
 
     @Test
