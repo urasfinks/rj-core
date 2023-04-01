@@ -2,10 +2,11 @@ package ru.jamsys.template;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Template {
 
-    public static List<TemplateItem> parse(String template) {
+    public static List<TemplateItem> getParsedTemplate(String template) {
         Parser parser = new Parser();
         List<TemplateItem> result = new ArrayList<>();
         for (int i = 0; i < template.length(); i++) {
@@ -32,7 +33,23 @@ public class Template {
         return merge(result);
     }
 
-    public static List<TemplateItem> merge(List<TemplateItem> input) {
+    public static String template(List<TemplateItem> parsedTemplate, Map<String, String> args) {
+        StringBuilder sb = new StringBuilder();
+        for (TemplateItem templateItem : parsedTemplate) {
+            if (templateItem.isStatic()) {
+                sb.append(templateItem.getValue());
+            } else {
+                sb.append(args.get(templateItem.getValue()));
+            }
+        }
+        return sb.toString();
+    }
+
+    public static String template(String template, Map<String, String> args) {
+        return template(getParsedTemplate(template), args);
+    }
+
+    private static List<TemplateItem> merge(List<TemplateItem> input) {
         List<TemplateItem> result = new ArrayList<>();
         int index = 0;
         List<TemplateItem> tmp = new ArrayList<>();
