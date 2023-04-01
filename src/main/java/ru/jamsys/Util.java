@@ -3,16 +3,17 @@ package ru.jamsys;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.springframework.core.io.Resource;
 import org.springframework.lang.Nullable;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -249,6 +250,11 @@ public class Util {
     }
 
     @SuppressWarnings("unused")
+    public static long getTimestampFromPostgreSql(String date) throws Exception {
+        return getTimestamp(date, "yyyy-MM-dd HH:mm:ss.SSSX");
+    }
+
+    @SuppressWarnings("unused")
     public static boolean dateValidate(String date, String format) {
         DateFormat DATE_FORMAT = new SimpleDateFormat(format);
         DATE_FORMAT.setLenient(true);
@@ -258,6 +264,11 @@ public class Util {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public static String timestampToDateFormat(long timestamp, String format) {
+        Timestamp stamp = new Timestamp(timestamp * 1000);
+        return new SimpleDateFormat(format).format(new Date(stamp.getTime()));
     }
 
     public static String urlEncode(String data, String charset) throws Exception {
@@ -355,6 +366,15 @@ public class Util {
         } catch (Exception e) {
         }
         return false;
+    }
+
+    @SuppressWarnings("unused")
+    public static String getResourceContent(Resource resource, String charset) {
+        try (Reader reader = new InputStreamReader(resource.getInputStream(), charset)) {
+            return FileCopyUtils.copyToString(reader);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
 }
