@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "login": {
+      "type": "string",
+      "description": "user name"
+    },
+    "code": {
+      "type": "integer"
+    },
+    "uuid": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "login",
+    "code",
+    "uuid"
+  ]
+}
