@@ -74,7 +74,7 @@ public abstract class AbstractPool<T> implements Pool<T> {
                     parkQueue.add(poolResource);
                 }
             } else {
-                new Exception("Не найдена обёртка в пуле " + ret.toString()).printStackTrace();
+                new Exception("Не найдена обёртка в пуле " + ret).printStackTrace();
             }
         }
     }
