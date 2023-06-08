@@ -47,66 +47,12 @@ public class Util {
 
     @SuppressWarnings("unused")
     public static void logConsole(Thread t, String data) {
-        System.out.println(LocalDateTime.now().toString() + " " + t.getName() + " " + data);
+        System.out.println(LocalDateTime.now() + " " + t.getName() + " " + data);
     }
 
     @SuppressWarnings("unused")
     public static long getTimestamp() {
         return System.currentTimeMillis() / 1000;
-    }
-
-    static ObjectMapper objectMapper = new ObjectMapper();
-
-    @SuppressWarnings("unused")
-    @Nullable
-    public static String jsonObjectToString(Object o) {
-
-        try {
-            return objectMapper.writeValueAsString(o);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @SuppressWarnings("unused")
-    @Nullable
-    public static String jsonObjectToStringPretty(Object o) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        try {
-            return objectMapper.writeValueAsString(o);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    static ObjectMapper objectMapper2 = new ObjectMapper();
-
-    @SuppressWarnings("unused")
-    public static <T> WrapJsonToObject<T> jsonToObjectOverflowProperties(String json, Class<T> t) {
-        WrapJsonToObject<T> ret = new WrapJsonToObject<>();
-        try {
-            objectMapper2.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            ret.setObject(objectMapper2.readValue(json, t));
-        } catch (Exception e) {
-            ret.setException(e);
-            e.printStackTrace();
-        }
-        return ret;
-    }
-
-    @SuppressWarnings("unused")
-    public static <T> WrapJsonToObject<T> jsonToObject(String json, Class<T> t) {
-        WrapJsonToObject<T> ret = new WrapJsonToObject<>();
-        try {
-            ret.setObject(objectMapper.readValue(json, t));
-        } catch (Exception e) {
-            ret.setException(e);
-            e.printStackTrace();
-        }
-        return ret;
     }
 
     @SuppressWarnings("unused")
@@ -155,7 +101,7 @@ public class Util {
         password.insert(random.nextInt(password.length()), uppercase[random.nextInt(uppercase.length)]);
         password.insert(random.nextInt(password.length()), numbers[random.nextInt(numbers.length)]);
         password.insert(random.nextInt(password.length()), symbols[random.nextInt(symbols.length)]);
-        return "p" + password.toString();
+        return "p" + password;
     }
 
     @SuppressWarnings("unused")
@@ -353,7 +299,7 @@ public class Util {
         try {
             Double.parseDouble(num);
             return true;
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return false;
     }
@@ -363,7 +309,7 @@ public class Util {
         try {
             Integer.parseInt(num);
             return true;
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return false;
     }

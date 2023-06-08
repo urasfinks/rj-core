@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
 import ru.jamsys.Util;
+import ru.jamsys.UtilJson;
 import ru.jamsys.scheduler.SchedulerGlobal;
 import ru.jamsys.statistic.StatisticAggregatorData;
 
@@ -25,7 +26,7 @@ public class StatisticReaderDefault extends AbstractCoreComponent {
         while (true) {
             StatisticAggregatorData first = broker.pollFirst(StatisticAggregatorData.class);
             if (first != null) {
-                Util.logConsole(Thread.currentThread(), Util.jsonObjectToString(first));
+                Util.logConsole(Thread.currentThread(), UtilJson.toString(first, null));
             } else {
                 break;
             }

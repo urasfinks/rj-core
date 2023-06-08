@@ -30,6 +30,6 @@ public class JsonHttpResponse {
 
     @Override
     public String toString() {
-        return Optional.ofNullable(Util.jsonObjectToStringPretty(this)).orElse("{}");
+        return UtilJson.toStringPretty(this, "{}");
     }
 }
