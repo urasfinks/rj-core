@@ -35,7 +35,7 @@ public class MessageImpl implements Message {
 
     @Override
     public void onHandle(MessageHandle handle, Object service) {
-        routeMap.add(convertTimestamp(System.currentTimeMillis()) + " " + service.toString() + " " + handle.toString());
+        routeMap.add(convertTimestamp(System.currentTimeMillis()) + " " + service.toString() + " -> " + handle.toString());
     }
 
     @Override

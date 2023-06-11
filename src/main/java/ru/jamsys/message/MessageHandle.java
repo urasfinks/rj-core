@@ -2,11 +2,13 @@ package ru.jamsys.message;
 
 public enum MessageHandle {
     @SuppressWarnings("unused")
-    CREATE,
+    CREATE, //Создано кем-то
     @SuppressWarnings("unused")
-    PUT,
+    PUT, //Куда-то вставлено
     @SuppressWarnings("unused")
-    EXECUTE,
+    EXECUTE, //Выполняется кем-то
     @SuppressWarnings("unused")
-    COMPLETE
+    COMPLETE, //Исполнено кем-то
+    @SuppressWarnings("unused")
+    ON_RECEIVE //Получено кем-то
 }

@@ -10,6 +10,7 @@ public interface Message {
 
     @SuppressWarnings("unused")
     String getBody();
+    void setBody(String body);
 
     @SuppressWarnings("unused")
     String getCorrelation();
@@ -22,6 +23,9 @@ public interface Message {
 
     @SuppressWarnings("unused")
     void setError(Exception e);
+
+    @SuppressWarnings("unused")
+    void setHeader(String name, Object value);
 
     @SuppressWarnings("unused")
     <T> T getHeader(String name);
