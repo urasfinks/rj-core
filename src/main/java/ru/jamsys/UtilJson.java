@@ -1,10 +1,12 @@
 package ru.jamsys;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.lang.Nullable;
 
+import java.util.List;
 import java.util.Map;
 
 public class UtilJson {
@@ -77,4 +79,35 @@ public class UtilJson {
         }
         return ret;
     }
+
+    /* Example:
+    *   WrapJsonToObject<Map<String, Map<String, Object>>> mapWrapJsonToObject = UtilJson.toMap(message.getBody());
+        Map<String, Object> parsedJson = mapWrapJsonToObject.getObject().get("request");
+    * */
+    @SuppressWarnings("unused")
+    public static <K, V> WrapJsonToObject<Map<K, V>> toMap(String json) {
+        WrapJsonToObject<Map<K, V>> ret = new WrapJsonToObject<>();
+        try {
+            ret.setObject(objectMapper.readValue(json, new TypeReference<Map<K, V>>() {
+            }));
+        } catch (Exception e) {
+            ret.setException(e);
+            e.printStackTrace();
+        }
+        return ret;
+    }
+
+    @SuppressWarnings("unused")
+    public static <V> WrapJsonToObject<List<V>> toList(String json) {
+        WrapJsonToObject<List<V>> ret = new WrapJsonToObject<>();
+        try {
+            ret.setObject(objectMapper.readValue(json, new TypeReference<List<V>>() {
+            }));
+        } catch (Exception e) {
+            ret.setException(e);
+            e.printStackTrace();
+        }
+        return ret;
+    }
+
 }
