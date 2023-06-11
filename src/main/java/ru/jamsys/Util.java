@@ -46,6 +46,10 @@ public class Util {
     }
 
     @SuppressWarnings("unused")
+    public static void logConsole(String data) {
+        logConsole(Thread.currentThread(), data);
+    }
+
     public static void logConsole(Thread t, String data) {
         System.out.println(LocalDateTime.now() + " " + t.getName() + " " + data);
     }
