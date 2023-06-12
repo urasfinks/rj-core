@@ -1,35 +1,87 @@
 package ru.jamsys;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Data
 public class JsonHttpResponse {
+
+    @Getter
+    @Setter
     public String description;
+
+    @Getter //Только получение, если хотите изменить статус - вызывайте addException и указывайте причину
     public boolean status = true;
+
+    @Getter
+    @Setter
     public Map<String, Object> data = new HashMap<>();
     public List<String> exception = new ArrayList<>();
 
-    public JsonHttpResponse() {
+    @Getter
+    @Setter
+    public HttpStatus httpStatus = HttpStatus.OK;
 
+    @Getter
+    public Map<String, String> headers = new LinkedHashMap<>();
+
+    public boolean rawBody = false;
+    public String body = "";
+
+    public void setRawBody(String body) {
+        rawBody = true;
+        this.body = body;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
+    @SuppressWarnings("unused")
     public void addData(String key, Object value) {
         data.put(key, value);
     }
 
-    public void setException(String e) {
+    @SuppressWarnings("unused")
+    public void addHeader(String key, String value) {
+        headers.put(key, value);
+    }
+
+    @SuppressWarnings("unused")
+    public void addException(String e) {
         status = false;
-        exception.add(e);
+        httpStatus = HttpStatus.EXPECTATION_FAILED;
+        exception.add(LocalDateTime.now() + " " + e);
     }
 
     @Override
     public String toString() {
         return UtilJson.toStringPretty(this, "{}");
     }
+
+    @SuppressWarnings("unused")
+    public void setUnauthorized() {
+        addException("Unauthorized");
+        httpStatus = HttpStatus.UNAUTHORIZED;
+        headers.clear();
+        headers.put("WWW-Authenticate", "Basic realm=\"JamSys\"");
+        setRawBody("<html><body><h1>401. Unauthorized</h1></body>");
+    }
+
+    @SuppressWarnings("unused")
+    @JsonIgnore
+    public ResponseEntity<?> getResponseEntity() {
+        ResponseEntity.BodyBuilder builder = ResponseEntity.status(httpStatus);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        for (String key : headers.keySet()) {
+            httpHeaders.add(key, headers.get(key));
+        }
+        builder.headers(httpHeaders);
+        return builder.body(rawBody ? body : toString());
+    }
+
 }
