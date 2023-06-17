@@ -8,6 +8,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -53,9 +55,22 @@ public class JsonHttpResponse {
 
     @SuppressWarnings("unused")
     public void addException(String e) {
+        addException(new RuntimeException(e));
+    }
+
+    @SuppressWarnings("unused")
+    public void addException(Exception e) {
         status = false;
         httpStatus = HttpStatus.EXPECTATION_FAILED;
-        exception.add(LocalDateTime.now() + " " + e);
+        exception.add(LocalDateTime.now() + " " + getStringError(e));
+    }
+
+    public String getStringError(Exception e) {
+        e.printStackTrace();
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return sw.toString(); // stack trace as a string
     }
 
     @Override
@@ -65,7 +80,7 @@ public class JsonHttpResponse {
 
     @SuppressWarnings("unused")
     public void setUnauthorized() {
-        addException("Unauthorized");
+        addException(new RuntimeException("Unauthorized"));
         httpStatus = HttpStatus.UNAUTHORIZED;
         headers.clear();
         headers.put("WWW-Authenticate", "Basic realm=\"JamSys\"");

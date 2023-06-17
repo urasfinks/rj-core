@@ -12,6 +12,8 @@ import java.util.Map;
 public class UtilJson {
 
     static ObjectMapper objectMapper = new ObjectMapper();
+    static ObjectMapper objectMapperPretty;
+    static ObjectMapper objectMapper2 = new ObjectMapper();
 
     public static Object selector(Map<String, Object> obj, String selector) {
         String[] split = selector.split("\\.");
@@ -43,17 +45,17 @@ public class UtilJson {
     @SuppressWarnings("unused")
     @Nullable
     public static String toStringPretty(Object object, String def) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        if (objectMapperPretty == null) {
+            objectMapperPretty = new ObjectMapper();
+            objectMapperPretty.enable(SerializationFeature.INDENT_OUTPUT);
+        }
         try {
-            return objectMapper.writeValueAsString(object);
+            return objectMapperPretty.writeValueAsString(object);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return def;
     }
-
-    static ObjectMapper objectMapper2 = new ObjectMapper();
 
     @SuppressWarnings("unused")
     public static <T> WrapJsonToObject<T> toObjectOverflow(String json, Class<T> t) {
