@@ -55,11 +55,13 @@ public class JsonHttpResponse {
 
     @SuppressWarnings("unused")
     public void addException(String e) {
+        description = e;
         addException(new RuntimeException(e));
     }
 
     @SuppressWarnings("unused")
     public void addException(Exception e) {
+        description = e.getMessage();
         status = false;
         httpStatus = HttpStatus.EXPECTATION_FAILED;
         exception.add(LocalDateTime.now() + " " + getStringError(e));
