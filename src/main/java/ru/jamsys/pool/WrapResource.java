@@ -5,14 +5,14 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class PoolResource<T> {
+public class WrapResource<T> {
 
     private T resource;
     private long lastRun = System.currentTimeMillis();
 
     @SuppressWarnings("all")
-    public static PoolResource[] toArrayWrapObject(List<PoolResource> l) throws Exception {
-        return l.toArray(new PoolResource[0]);
+    public static WrapResource[] toArrayWrapObject(List<WrapResource> l) throws Exception {
+        return l.toArray(new WrapResource[0]);
     }
 
 }

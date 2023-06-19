@@ -37,13 +37,13 @@ public abstract class AbstractPool<T> implements Pool<T> {
     @Setter
     private Function<Integer, Integer> formulaRemoveCount = (need) -> need;
 
-    private ConcurrentLinkedDeque<PoolResource<T>> parkQueue = new ConcurrentLinkedDeque<>();
-    protected final Map<T, PoolResource<T>> map = new ConcurrentHashMap<>();
+    private ConcurrentLinkedDeque<WrapResource<T>> parkQueue = new ConcurrentLinkedDeque<>();
+    protected final Map<T, WrapResource<T>> map = new ConcurrentHashMap<>();
 
     protected final AtomicInteger tpsAdd = new AtomicInteger(0);
     protected final AtomicInteger tpsGet = new AtomicInteger(0);
     protected final AtomicInteger tpsParkIn = new AtomicInteger(0);
-    protected final ConcurrentLinkedQueue<PoolResource<T>> tpsRemove = new ConcurrentLinkedQueue<>();
+    protected final ConcurrentLinkedQueue<WrapResource<T>> tpsRemove = new ConcurrentLinkedQueue<>();
     protected final AtomicBoolean active = new AtomicBoolean(true);
 
     protected final PoolStatisticData statLastSec = new PoolStatisticData(); //Агрегированная статистика за прошлый период (сейчас 1 секунда)
@@ -65,13 +65,13 @@ public abstract class AbstractPool<T> implements Pool<T> {
             return;
         }
         if (active.get()) {
-            PoolResource<T> poolResource = map.get(ret);
-            if (poolResource != null) {
+            WrapResource<T> wrapResource = map.get(ret);
+            if (wrapResource != null) {
                 if (checkExceptionOnRemove(e)) {
-                    remove(poolResource);
+                    remove(wrapResource);
                 } else {
                     tpsParkIn.incrementAndGet();
-                    parkQueue.add(poolResource);
+                    parkQueue.add(wrapResource);
                 }
             } else {
                 new Exception("Не найдена обёртка в пуле " + ret).printStackTrace();
@@ -81,16 +81,22 @@ public abstract class AbstractPool<T> implements Pool<T> {
 
     @SuppressWarnings({"unused"})
     public T getResource() throws Exception {
+        int countMax = 10;
+        int count = 0;
+        int timeOut = 100;
         while (active.get()) {
-            PoolResource<T> poolResource = parkQueue.pollLast();
-            if (poolResource != null) {
+            WrapResource<T> wrapResource = parkQueue.pollLast();
+            if (wrapResource != null) {
                 tpsGet.incrementAndGet();
-                poolResource.setLastRun(System.currentTimeMillis());
-                return poolResource.getResource();
+                wrapResource.setLastRun(System.currentTimeMillis());
+                return wrapResource.getResource();
             }
-            Util.sleepMillis(100);
+            Util.sleepMillis(timeOut);
+            if (count++ > countMax) {
+                break;
+            }
         }
-        throw new Exception("Pool " + getName() + " not active");
+        throw new Exception("Pool " + getName() + " not active resource. Timeout: " + (timeOut * count) + "ms");
     }
 
     private void checkKeepAliveAndRemove() { //Проверка ждунов, что они давно не вызывались и у них кол-во итераций равно 0 -> нож
@@ -100,11 +106,11 @@ public abstract class AbstractPool<T> implements Pool<T> {
                 final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
                 Object[] objects = map.keySet().toArray();
                 for (Object object : objects) {
-                    PoolResource<T> poolResource = map.get(object);
-                    long future = poolResource.getLastRun() + keepAlive;
-                    //Время последнего оживления превысило keepAlive + поток реально не работал
+                    WrapResource<T> wrapResource = map.get(object);
+                    long future = wrapResource.getLastRun() + keepAlive;
+                    //Время последнего оживления превысило keepAlive + мы не привысили кол-во удалений за 1 проверку
                     if (curTimeMillis > future && maxCounterRemove.getAndDecrement() > 0) {
-                        safeRemove(poolResource);
+                        safeRemove(wrapResource);
                     }
                 }
             } catch (Exception e) {
@@ -113,13 +119,13 @@ public abstract class AbstractPool<T> implements Pool<T> {
         }
     }
 
-    private void safeRemove(PoolResource<T> wrapConnect) {
+    private void safeRemove(WrapResource<T> wrapConnect) {
         if (map.size() > min) {
             remove(wrapConnect);
         }
     }
 
-    synchronized private void remove(@NonNull PoolResource<T> wrapObject) {
+    synchronized private void remove(@NonNull WrapResource<T> wrapObject) {
         map.remove(wrapObject.getResource());
         parkQueue.remove(wrapObject); // На всякий случай
         if (!tpsRemove.contains(wrapObject)) {
@@ -129,13 +135,13 @@ public abstract class AbstractPool<T> implements Pool<T> {
 
     private boolean add() {
         if (active.get() && map.size() < max) {
-            final PoolResource<T> poolResource = new PoolResource<>();
+            final WrapResource<T> wrapResource = new WrapResource<>();
             T resource = createResource();
             if (resource != null) {
-                poolResource.setResource(resource);
+                wrapResource.setResource(resource);
 
-                parkQueue.add(poolResource);
-                map.put(poolResource.getResource(), poolResource);
+                parkQueue.add(wrapResource);
+                map.put(wrapResource.getResource(), wrapResource);
 
                 tpsAdd.incrementAndGet();
                 tpsParkIn.incrementAndGet();
@@ -171,8 +177,8 @@ public abstract class AbstractPool<T> implements Pool<T> {
     public void stabilizer() {
         if (active.get()) {
             try {
-                if (parkQueue.isEmpty()) {
-                    overclocking(formulaAddCount.apply(map.size()));
+                if (parkQueue.isEmpty()) { //Если в очереди пустота, попробуем добавить один
+                    overclocking(formulaAddCount.apply(1));
                 } else if (map.size() > min) { //Кол-во потоков больше минимума
                     checkKeepAliveAndRemove();
                 }
@@ -187,8 +193,8 @@ public abstract class AbstractPool<T> implements Pool<T> {
         active.set(false);
         Object[] objects = map.keySet().toArray();
         for (Object object : objects) {
-            PoolResource<T> tPoolResource = map.get(object);
-            closeResource(tPoolResource.getResource());
+            WrapResource<T> tWrapResource = map.get(object);
+            closeResource(tWrapResource.getResource());
         }
     }
 
