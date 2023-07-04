@@ -90,7 +90,7 @@ public class UtilJson {
     public static <K, V> WrapJsonToObject<Map<K, V>> toMap(String json) {
         WrapJsonToObject<Map<K, V>> ret = new WrapJsonToObject<>();
         try {
-            ret.setObject(objectMapper.readValue(json, new TypeReference<Map<K, V>>() {
+            ret.setObject(objectMapper.readValue(json, new TypeReference<>() {
             }));
         } catch (Exception e) {
             ret.setException(e);
@@ -103,7 +103,7 @@ public class UtilJson {
     public static <V> WrapJsonToObject<List<V>> toList(String json) {
         WrapJsonToObject<List<V>> ret = new WrapJsonToObject<>();
         try {
-            ret.setObject(objectMapper.readValue(json, new TypeReference<List<V>>() {
+            ret.setObject(objectMapper.readValue(json, new TypeReference<>() {
             }));
         } catch (Exception e) {
             ret.setException(e);
