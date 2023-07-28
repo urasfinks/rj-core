@@ -1,9 +1,8 @@
 package ru.jamsys;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import org.springframework.util.ResourceUtils;
+
+import java.io.*;
 import java.util.stream.Collectors;
 
 public class UtilFileResource {
@@ -14,9 +13,10 @@ public class UtilFileResource {
     }
 
     public static String getAsString(String fileName) throws IOException {
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        try (InputStream is = classLoader.getResourceAsStream(fileName)) {
-            if (is == null) return null;
+        //ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+        File file = ResourceUtils.getFile("classpath:" + fileName);
+        try (InputStream is = new FileInputStream(file)) {
+            //try (InputStream is = classLoader.getResourceAsStream(fileName)) {
             try (InputStreamReader isr = new InputStreamReader(is);
                  BufferedReader reader = new BufferedReader(isr)) {
                 return reader.lines().collect(Collectors.joining(System.lineSeparator()));
