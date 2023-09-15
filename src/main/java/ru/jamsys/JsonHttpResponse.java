@@ -25,7 +25,7 @@ public class JsonHttpResponse {
 
     @Getter
     @Setter
-    public Map<String, Object> data = new HashMap<>();
+    public Map<String, Object> data = new LinkedHashMap<>();
     public List<String> exception = new ArrayList<>();
 
     @Getter
