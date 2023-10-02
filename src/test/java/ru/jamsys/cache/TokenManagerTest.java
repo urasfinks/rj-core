@@ -17,14 +17,14 @@ class TokenManagerTest {
 
         Assertions.assertFalse(tokenManager.add(12345, "Hello world", 100), "#3");
 
-        tokenManager.add(123456, "Hello world", 100);
+        tokenManager.add(123456, "Hello world", 1000);
         Assertions.assertEquals(3, tokenManager.get().size(), "#4");
         try {
             Thread.sleep(200);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        tokenManager.add(123456, "Hello world", 100);
-        Assertions.assertEquals(1, tokenManager.get().size(), "#5");
+        tokenManager.add(1234567, "Hello world", 100);
+        Assertions.assertEquals(2, tokenManager.get().size(), "#5");
     }
 }
