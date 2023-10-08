@@ -16,7 +16,11 @@ public class TokenManager<K, V> {
     }
 
     public V get(K key) {
-        return map.get(key).getValue();
+        if (map.containsKey(key)) {
+            return map.get(key).getValue();
+        }
+        return null;
+
     }
 
     public Map<K, Token<V>> get() {
