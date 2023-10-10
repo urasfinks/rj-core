@@ -1,10 +1,6 @@
 package ru.jamsys;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.core.io.Resource;
-import org.springframework.lang.Nullable;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 
@@ -134,12 +130,7 @@ public class Util {
         if (lenStr >= n) {
             return data;
         } else {
-            StringBuilder sb = new StringBuilder(data);
-            int addLen = n - lenStr;
-            for (int i = 0; i < addLen; i++) {
-                sb.append(ch);
-            }
-            return sb.toString();
+            return data + ch.repeat(n - lenStr);
         }
     }
 
@@ -278,7 +269,7 @@ public class Util {
     public static String regexpReplace(String data, String pattern, String replace) {
         Pattern p = Pattern.compile(pattern);
         Matcher m = p.matcher(data);
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while (m.find()) {
             m.appendReplacement(sb, replace);
         }
@@ -325,6 +316,11 @@ public class Util {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    public static void printStackTrace(String label) {
+        Exception exception = new Exception(label);
+        exception.printStackTrace();
     }
 
 }
