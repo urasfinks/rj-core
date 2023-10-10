@@ -7,6 +7,7 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.AbstractCoreComponent;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -17,10 +18,7 @@ import java.util.Set;
 //https://bjdash.github.io/JSON-Schema-Builder/
 @Component
 @Lazy
-public class JsonSchema {
-
-    public JsonSchema() {
-    }
+public class JsonSchema extends AbstractCoreComponent {
 
     ObjectMapper objectMapper = new ObjectMapper();
     JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
@@ -62,12 +60,18 @@ public class JsonSchema {
             }
             StringBuilder sb = new StringBuilder();
             if (validationResult != null) {
-                validationResult.forEach(vm -> sb.append(vm.getMessage() + "\n"));
+                validationResult.forEach(vm -> sb.append(vm.getMessage()).append("\n"));
             }
             if (exception != null) {
-                sb.append(exception.toString());
+                sb.append(exception);
             }
             return sb.toString().trim();
         }
     }
+
+    @Override
+    public void flushStatistic() {
+
+    }
+
 }

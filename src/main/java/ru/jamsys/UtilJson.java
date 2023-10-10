@@ -71,6 +71,7 @@ public class UtilJson {
     }
 
     @SuppressWarnings("unused")
+    @Deprecated
     public static <T> WrapJsonToObject<T> toObject(String json, Class<T> t) {
         WrapJsonToObject<T> ret = new WrapJsonToObject<>();
         try {
