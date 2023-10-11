@@ -72,7 +72,7 @@ public class Telegram extends AbstractCoreComponent {
                     jRet.addException(mapWrapJsonToObject.getException());
                 }
                 if (jRet.isStatus()) {
-                    jRet.addData("data", mapWrapJsonToObject.getObject());
+                    jRet.addData("telegramResponse", mapWrapJsonToObject.getObject());
                 }
 
             } catch (Exception e) {
