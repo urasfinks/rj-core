@@ -75,7 +75,7 @@ public class ReCaptcha extends AbstractCoreComponent {
                 if (mapWrapJsonToObject.getException() != null) {
                     jRet.addException(mapWrapJsonToObject.getException());
                 }
-                jRet.addData("gResponse", mapWrapJsonToObject.getObject());
+                jRet.addData("reCaptchaResponse", mapWrapJsonToObject.getObject());
                 Boolean success = (Boolean) mapWrapJsonToObject.getObject().get("success");
                 if (success == null || !success) {
                     jRet.addException("reCaptcha не пройдена");
