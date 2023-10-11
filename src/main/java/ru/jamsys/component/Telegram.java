@@ -2,6 +2,7 @@ package ru.jamsys.component;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
 import ru.jamsys.JsonHttpResponse;
@@ -31,18 +32,18 @@ public class Telegram extends AbstractCoreComponent {
     @Value("${rj.core.telegram.securityKey:telegramApiToken}")
     private String securityKey;
 
-    public JsonHttpResponse syncSend(String idChat, String data) {
+    public JsonHttpResponse syncSend(String idChat, String data, @Nullable JsonHttpResponse refJRet) {
+        JsonHttpResponse jRet = refJRet != null ? refJRet : new JsonHttpResponse();
         try {
-            return syncSend(idChat, data, new String(security.get(securityKey)));
+            return syncSend(idChat, data, new String(security.get(securityKey)), jRet);
         } catch (Exception e) {
-            JsonHttpResponse jRet = new JsonHttpResponse();
             jRet.addException(e);
-            return jRet;
         }
+        return jRet;
     }
 
-    public JsonHttpResponse syncSend(String idChat, String data, String apiToken) {
-        JsonHttpResponse jRet = new JsonHttpResponse();
+    public JsonHttpResponse syncSend(String idChat, String data, String apiToken, @Nullable JsonHttpResponse refJRet) {
+        JsonHttpResponse jRet = refJRet != null ? refJRet : new JsonHttpResponse();
         if (jRet.isStatus() && apiToken == null) {
             jRet.addException("Telegram bot token is null");
         }
@@ -56,6 +57,8 @@ public class Telegram extends AbstractCoreComponent {
 
                 URL url = new URL(urlString);
                 URLConnection conn = url.openConnection();
+                conn.setConnectTimeout(3000);
+                conn.setReadTimeout(3000);
 
                 StringBuilder sb = new StringBuilder();
                 InputStream is = new BufferedInputStream(conn.getInputStream());
