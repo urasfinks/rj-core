@@ -2,9 +2,10 @@ package ru.jamsys.component;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
-import ru.jamsys.Util;
+import ru.jamsys.JsonHttpResponse;
 import ru.jamsys.UtilJson;
 import ru.jamsys.WrapJsonToObject;
 
@@ -33,55 +34,57 @@ public class ReCaptcha extends AbstractCoreComponent {
         this.security = security;
     }
 
-    public boolean isValid(String captchaValue) {
+    public JsonHttpResponse isValid(String captchaValue, @Nullable JsonHttpResponse refJRet) {
+        JsonHttpResponse jRet = refJRet != null ? refJRet : new JsonHttpResponse();
         try {
-            if (secretKey.isEmpty()) {
-                Util.printStackTrace("secretKey.isEmpty()");
-                return false;
+            if (jRet.isStatus() && secretKey.isEmpty()) {
+                jRet.addException("Ключ reCaptchaSecretKey не определён");
             }
-            char[] chars = security.get(secretKey);
-            if (chars == null) {
-                return false;
+            if (jRet.isStatus()) {
+                char[] chars = security.get(secretKey);
+                if (chars == null) {
+                    jRet.addException("Приватное значение ключа reCaptchaSecretKey пустое");
+                }
             }
-            String url = "https://www.google.com/recaptcha/api/siteverify",
-                    params = "secret=" + new String(security.get(secretKey)) + "&response=" + captchaValue;
+            if (jRet.isStatus()) {
+                String url = "https://www.google.com/recaptcha/api/siteverify",
+                        params = "secret=" + new String(security.get(secretKey)) + "&response=" + captchaValue;
 
-            HttpURLConnection http = (HttpURLConnection) new URL(url).openConnection();
-            http.setDoOutput(true);
-            http.setRequestMethod("POST");
-            http.setConnectTimeout(3000);
-            http.setReadTimeout(3000);
-            http.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-            OutputStream out = http.getOutputStream();
-            out.write(params.getBytes(StandardCharsets.UTF_8));
-            out.flush();
-            out.close();
+                HttpURLConnection http = (HttpURLConnection) new URL(url).openConnection();
+                http.setDoOutput(true);
+                http.setRequestMethod("POST");
+                http.setConnectTimeout(3000);
+                http.setReadTimeout(3000);
+                http.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+                OutputStream out = http.getOutputStream();
+                out.write(params.getBytes(StandardCharsets.UTF_8));
+                out.flush();
+                out.close();
 
+                InputStream res = http.getInputStream();
+                BufferedReader rd = new BufferedReader(new InputStreamReader(res, StandardCharsets.UTF_8));
 
-            InputStream res = http.getInputStream();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(res, StandardCharsets.UTF_8));
-
-            StringBuilder sb = new StringBuilder();
-            int cp;
-            while ((cp = rd.read()) != -1) {
-                sb.append((char) cp);
+                StringBuilder sb = new StringBuilder();
+                int cp;
+                while ((cp = rd.read()) != -1) {
+                    sb.append((char) cp);
+                }
+                res.close();
+                String response = sb.toString();
+                WrapJsonToObject<Map<Object, Object>> mapWrapJsonToObject = UtilJson.toMap(response);
+                if (mapWrapJsonToObject.getException() != null) {
+                    jRet.addException(mapWrapJsonToObject.getException());
+                }
+                jRet.addData("gResponse", mapWrapJsonToObject.getObject());
+                Boolean success = (Boolean) mapWrapJsonToObject.getObject().get("success");
+                if (success == null || !success) {
+                    jRet.addException("reCaptcha не пройдена");
+                }
             }
-            res.close();
-            String response = sb.toString();
-            //System.out.println(response);
-            WrapJsonToObject<Map<Object, Object>> mapWrapJsonToObject = UtilJson.toMap(response);
-            if (mapWrapJsonToObject.getException() != null) {
-                return false;
-            }
-            Boolean success = (Boolean) mapWrapJsonToObject.getObject().get("success");
-            if (success == null) {
-                return false;
-            }
-            return success;
         } catch (Exception e) {
-            e.printStackTrace();
+            jRet.addException(e);
         }
-        return false;
+        return jRet;
     }
 
     @Override
