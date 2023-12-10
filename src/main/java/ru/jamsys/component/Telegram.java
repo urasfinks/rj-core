@@ -32,10 +32,19 @@ public class Telegram extends AbstractCoreComponent {
     @Value("${rj.core.telegram.securityKey:telegramApiToken}")
     private String securityKey;
 
+    public JsonHttpResponse syncSend(String idChat, String data) {
+        return syncSend(idChat, data, null);
+    }
+
     public JsonHttpResponse syncSend(String idChat, String data, @Nullable JsonHttpResponse refJRet) {
         JsonHttpResponse jRet = refJRet != null ? refJRet : new JsonHttpResponse();
         try {
-            return syncSend(idChat, data, new String(security.get(securityKey)), jRet);
+            char[] telegramToken = security.get(securityKey);
+            if (telegramToken != null) {
+                return syncSend(idChat, data, new String(telegramToken), jRet);
+            } else {
+                jRet.addException("Нет токена в хранилище");
+            }
         } catch (Exception e) {
             jRet.addException(e);
         }
