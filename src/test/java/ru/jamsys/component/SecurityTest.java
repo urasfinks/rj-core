@@ -6,11 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import ru.jamsys.App;
 
-import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class SecurityTest {
