@@ -34,6 +34,10 @@ public class ReCaptcha extends AbstractCoreComponent {
         this.security = security;
     }
 
+    public JsonHttpResponse isValid(String captchaValue) {
+        return isValid(captchaValue, null);
+    }
+
     public JsonHttpResponse isValid(String captchaValue, @Nullable JsonHttpResponse refJRet) {
         JsonHttpResponse jRet = refJRet != null ? refJRet : new JsonHttpResponse();
         try {

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import ru.jamsys.App;
+import ru.jamsys.JsonHttpResponse;
 
 import java.io.IOException;
 import java.security.KeyStoreException;
@@ -25,6 +26,7 @@ class ReCaptchaTest {
     @Test
     void isCaptchaValid() {
         ReCaptcha reCaptcha = App.context.getBean(ReCaptcha.class);
-        boolean captchaValid = reCaptcha.isValid("1234");
+        JsonHttpResponse captchaValid = reCaptcha.isValid("1234");
+        System.out.println(captchaValid.isStatus());
     }
 }
