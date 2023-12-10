@@ -9,24 +9,42 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class BrokerQueue<T> {
 
     private final ConcurrentLinkedDeque<ElementWrap<T>> queue = new ConcurrentLinkedDeque<>();
+    //Последнии сообщения проходящие через очередь
+    private final ConcurrentLinkedDeque<T> tail = new ConcurrentLinkedDeque<>();
     private final AtomicInteger tpsInput = new AtomicInteger(0);
     private final AtomicInteger tpsOutput = new AtomicInteger(0);
-    private final ConcurrentLinkedQueue<Long> timeAvg = new ConcurrentLinkedQueue<>();
-    private int limit = -1;
+    private final ConcurrentLinkedQueue<Long> timeInQueue = new ConcurrentLinkedQueue<>();
+    private int sizeQueue = 3000;
+    private int sizeTail = 5;
+    private boolean cyclical = true;
 
-    public void add(T o) {
+    public int getSize() {
+        return queue.size();
+    }
+
+    public void add(T o) throws Exception {
         tpsInput.incrementAndGet();
-        queue.add(new ElementWrap<>(o));
-        if (limit > 0 && queue.size() > limit) {
-            ElementWrap<T> tElementWrap = queue.pollFirst();
-            new Exception("Limit BrokerQueue: " + tElementWrap.getElement().getClass().getSimpleName() + "; Remove first element: " + tElementWrap.getElement().toString() + "; created: " + tElementWrap.getTimestamp()).printStackTrace();
+        if (cyclical) {
+            queue.add(new ElementWrap<>(o));
+            if (queue.size() > sizeQueue) {
+                queue.removeFirst();
+            }
+        } else {
+            if (queue.size() > sizeQueue) {
+                throw new Exception("Limit BrokerQueue: " + o.getClass().getSimpleName() + "; limit: " + sizeQueue + "; object: " + o);
+            }
+            queue.add(new ElementWrap<>(o));
+        }
+        tail.add(o);
+        if (tail.size() > sizeTail) {
+            tail.pollFirst();
         }
     }
 
     private T stat(ElementWrap<T> tElementWrap) {
         if (tElementWrap != null) {
             tpsOutput.incrementAndGet();
-            timeAvg.add(System.currentTimeMillis() - tElementWrap.getTimestamp());
+            timeInQueue.add(System.currentTimeMillis() - tElementWrap.getTimestamp());
             return tElementWrap.getElement();
         }
         return null;
@@ -37,33 +55,54 @@ public class BrokerQueue<T> {
     }
 
     public T pollLast() {
-        return stat(queue.pollFirst());
+        return stat(queue.pollLast());
     }
 
-
     public BrokerQueueStatistic flushStatistic() {
-        int avgRes = 0;
+        int avgTimeInQueue = 0;
         try { //Ловим модификатор, пока ни разу не ловил, на всякий случай
-            double avg = timeAvg.stream().mapToLong(Long::intValue).summaryStatistics().getAverage();
-            avgRes = (int) avg;
+            double avg = timeInQueue.stream().mapToLong(Long::intValue).summaryStatistics().getAverage();
+            avgTimeInQueue = (int) avg;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new BrokerQueueStatistic(getClass().getSimpleName(), tpsInput.getAndSet(0), tpsOutput.getAndSet(0), queue.size(), avgRes);
+        return new BrokerQueueStatistic(getClass().getSimpleName(), tpsInput.getAndSet(0), tpsOutput.getAndSet(0), queue.size(), avgTimeInQueue);
     }
 
-    @SuppressWarnings({"unused", "unchecked"})
-    public List<ElementWrap<T>> getCloneQueue() {
+    @SuppressWarnings("unused")
+    public List<T> getCloneQueue() {
         Object[] objects = queue.toArray();
-        List<ElementWrap<T>> ret = new ArrayList<>();
+        List<T> ret = new ArrayList<>();
         for (Object o : objects) {
-            ret.add((ElementWrap<T>) o);
+            ret.add(((ElementWrap<T>) o).getElement());
         }
         return ret;
     }
 
-    public void setLimit(int limit) {
-        this.limit = limit;
+    public List<T> getTail() {
+        Object[] objects = tail.toArray();
+        List<T> ret = new ArrayList<>();
+        for (Object o : objects) {
+            ret.add((T) o);
+        }
+        return ret;
+    }
+
+    public void setSizeQueue(int sizeQueue) {
+        this.sizeQueue = sizeQueue;
+    }
+
+    public void setSizeTail(int sizeTail) {
+        this.sizeTail = sizeTail;
+    }
+
+    public void setCyclical(boolean cyclical) {
+        this.cyclical = cyclical;
+    }
+
+    public void shutdown() {
+        queue.clear();
+        tail.clear();
     }
 
 }

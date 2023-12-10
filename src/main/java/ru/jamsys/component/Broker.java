@@ -26,37 +26,39 @@ public class Broker extends AbstractCoreComponent {
         scheduler.add(SchedulerGlobal.SCHEDULER_GLOBAL_STATISTIC_WRITE, this::flushStatistic);
     }
 
-    @SuppressWarnings({"unchecked"})
-    private <T> BrokerQueue<T> getBrokerQueue(Class<T> c) {
+    @SuppressWarnings("unused")
+    public <T> void add(Class<T> c, T o) throws Exception {
+        BrokerQueue<T> brokerQueue = get(c);
+        brokerQueue.add(o);
+    }
+
+    @SuppressWarnings("unused")
+    public <T> BrokerQueue<T> get(Class<T> c) {
         mapQueue.putIfAbsent(c, new BrokerQueue<T>());
         return (BrokerQueue<T>) mapQueue.get(c);
     }
 
     @SuppressWarnings("unused")
-    public <T> void setLimit(Class<T> c, int limit) {
-        getBrokerQueue(c).setLimit(limit);
-    }
-
-    @SuppressWarnings("unused")
-    public <T> void add(Class<T> c, T o) {
-        BrokerQueue<T> brokerQueue = getBrokerQueue(c);
-        brokerQueue.add(o);
-    }
-
-    @SuppressWarnings("unused")
     public <T> T pollLast(Class<T> c) {
-        return getBrokerQueue(c).pollLast();
+        return get(c).pollLast();
     }
 
     @SuppressWarnings("unused")
     public <T> T pollFirst(Class<T> c) {
-        return getBrokerQueue(c).pollFirst();
+        return get(c).pollFirst();
     }
 
     @Override
     public void shutdown() {
         super.shutdown();
         scheduler.remove(SchedulerGlobal.SCHEDULER_GLOBAL_STATISTIC_WRITE, this::flushStatistic);
+        Object[] list = mapQueue.keySet().toArray();
+        for (Object key : list) {
+            BrokerQueue<?> brokerQueue = mapQueue.get(key);
+            if (brokerQueue != null) {
+                brokerQueue.shutdown();
+            }
+        }
         mapQueue.clear();
     }
 
