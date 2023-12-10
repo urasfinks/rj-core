@@ -71,6 +71,7 @@ public class Security extends AbstractCoreComponent {
         }
     }
 
+    @SuppressWarnings("unused")
     public boolean isInit() {
         return keyStore != null;
     }
