@@ -1,11 +1,9 @@
 package ru.jamsys.broker;
 
-import lombok.NonNull;
-
 public class ElementWrap<T> {
 
-    long timestamp = System.currentTimeMillis();
-    T element;
+    private final long timestamp = System.currentTimeMillis();
+    private final T element;
 
     public ElementWrap(T element) {
         this.element = element;
@@ -15,7 +13,6 @@ public class ElementWrap<T> {
         return element;
     }
 
-    @NonNull
     public long getTimestamp() {
         return timestamp;
     }
