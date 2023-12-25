@@ -207,6 +207,7 @@ public class Util {
         return false;
     }
 
+    @SuppressWarnings("unused")
     public static String timestampToDateFormat(long timestamp, String format) {
         Timestamp stamp = new Timestamp(timestamp * 1000);
         return new SimpleDateFormat(format).format(new Date(stamp.getTime()));
@@ -318,6 +319,7 @@ public class Util {
         }
     }
 
+    @SuppressWarnings("unused")
     public static void printStackTrace(String label) {
         Exception exception = new Exception(label);
         exception.printStackTrace();
