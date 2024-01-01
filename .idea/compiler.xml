@@ -10,8 +10,5 @@
         <module name="rj-core" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="rj-core" target="15" />
-    </bytecodeTargetLevel>
   </component>
 </project>

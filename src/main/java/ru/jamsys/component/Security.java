@@ -78,21 +78,17 @@ public class Security extends AbstractCoreComponent {
 
     public char[] get(String key) throws Exception {
         if (keyStore != null) {
-            try {
-                KeyStore.PasswordProtection keyStorePP = new KeyStore.PasswordProtection(password);
-                KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) keyStore.getEntry(key, keyStorePP);
-                if (ske != null) {
-                    SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
-                    PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(ske.getSecretKey(), PBEKeySpec.class);
-                    return keySpec.getPassword();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            KeyStore.PasswordProtection keyStorePP = new KeyStore.PasswordProtection(password);
+            KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) keyStore.getEntry(key, keyStorePP);
+            if (ske != null) {
+                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
+                PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(ske.getSecretKey(), PBEKeySpec.class);
+                return keySpec.getPassword();
             }
         } else {
             throw new Exception("Security компонент не инициализирован, исполните init(${pass})");
         }
-        return null;
+        throw new Exception("Пароль не найден по ключу: " + key);
     }
 
     public void remove(String key) {
