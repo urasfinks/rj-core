@@ -325,4 +325,11 @@ public class Util {
         exception.printStackTrace();
     }
 
+    @SuppressWarnings("unused")
+    public static void overflow(Map<String, Object> def, Map<String, Object> newObj) {
+        for (String key : newObj.keySet()) {
+            def.put(key, newObj.get(key));
+        }
+    }
+
 }
