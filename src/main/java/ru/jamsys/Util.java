@@ -332,4 +332,14 @@ public class Util {
         }
     }
 
+    public static String snakeToCamel(String phrase) {
+//        while (phrase.contains("_")) {
+//            phrase = phrase.replaceFirst("_[a-z]", String.valueOf(Character.toUpperCase(phrase.charAt(phrase.indexOf("_") + 1))));
+//        }
+//        return phrase;
+        return Pattern.compile("_([a-z])")
+                .matcher(phrase)
+                .replaceAll(m -> m.group(1).toUpperCase());
+    }
+
 }

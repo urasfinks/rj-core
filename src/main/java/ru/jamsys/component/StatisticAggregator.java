@@ -2,8 +2,8 @@ package ru.jamsys.component;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
-import ru.jamsys.scheduler.SchedulerCustom;
-import ru.jamsys.scheduler.SchedulerGlobal;
+import ru.jamsys.scheduler.SchedulerType;
+import ru.jamsys.scheduler.SchedulerThreadFinal;
 import ru.jamsys.statistic.StatisticAggregatorData;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -18,8 +18,8 @@ public class StatisticAggregator extends AbstractCoreComponent {
     public StatisticAggregator(Scheduler scheduler, Broker broker) {
         this.scheduler = scheduler;
         this.broker = broker;
-        SchedulerCustom statWrite = scheduler.add(SchedulerGlobal.SCHEDULER_GLOBAL_STATISTIC_WRITE, null);
-        statWrite.setLastProcedure(this::flushStatistic);
+        SchedulerThreadFinal schedulerThread = (SchedulerThreadFinal) scheduler.get(SchedulerType.SCHEDULER_STATISTIC_WRITE);
+        schedulerThread.setFinalProcedure(this::flushStatistic);
     }
 
     public void add(Object o) {
@@ -49,6 +49,6 @@ public class StatisticAggregator extends AbstractCoreComponent {
     @Override
     public void shutdown() {
         super.shutdown();
-        scheduler.remove(SchedulerGlobal.SCHEDULER_GLOBAL_STATISTIC_WRITE, this::flushStatistic);
+        scheduler.get(SchedulerType.SCHEDULER_STATISTIC_WRITE).remove(this::flushStatistic);
     }
 }

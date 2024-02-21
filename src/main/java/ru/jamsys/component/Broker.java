@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
 import ru.jamsys.broker.BrokerQueue;
 import ru.jamsys.broker.BrokerStatistic;
-import ru.jamsys.scheduler.SchedulerGlobal;
+import ru.jamsys.scheduler.SchedulerType;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +23,7 @@ public class Broker extends AbstractCoreComponent {
     public Broker(Scheduler scheduler, ConfigurableApplicationContext applicationContext) {
         this.scheduler = scheduler;
         this.applicationContext = applicationContext;
-        scheduler.add(SchedulerGlobal.SCHEDULER_GLOBAL_STATISTIC_WRITE, this::flushStatistic);
+        scheduler.get(SchedulerType.SCHEDULER_STATISTIC_WRITE).add(this::flushStatistic);
     }
 
     @SuppressWarnings("unused")
@@ -51,7 +51,7 @@ public class Broker extends AbstractCoreComponent {
     @Override
     public void shutdown() {
         super.shutdown();
-        scheduler.remove(SchedulerGlobal.SCHEDULER_GLOBAL_STATISTIC_WRITE, this::flushStatistic);
+        scheduler.get(SchedulerType.SCHEDULER_STATISTIC_WRITE).remove(this::flushStatistic);
         Object[] list = mapQueue.keySet().toArray();
         for (Object key : list) {
             BrokerQueue<?> brokerQueue = mapQueue.get(key);

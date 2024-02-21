@@ -2,15 +2,17 @@ package ru.jamsys.scheduler;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.jamsys.Procedure;
 import ru.jamsys.thread.CustomThreadFactory;
 
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-public abstract class AbstractScheduler implements Scheduler {
+public abstract class AbstractSchedulerThread implements SchedulerThread {
 
     @Setter
     protected boolean debug = false;
@@ -23,7 +25,7 @@ public abstract class AbstractScheduler implements Scheduler {
     @Getter
     private final long periodMillis;
 
-    public AbstractScheduler(String name, long periodMillis) {
+    public AbstractSchedulerThread(String name, long periodMillis) {
         this.name = name;
         this.periodMillis = periodMillis;
         executor = Executors.newScheduledThreadPool(1, new CustomThreadFactory(getName()));
@@ -65,7 +67,7 @@ public abstract class AbstractScheduler implements Scheduler {
 
     @Override
     public boolean isActive() {
-        return isRun.get();
+        return  isRun.get();
     }
 
 }

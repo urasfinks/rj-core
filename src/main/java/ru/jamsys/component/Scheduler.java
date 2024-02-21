@@ -4,75 +4,75 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
-import ru.jamsys.Procedure;
-import ru.jamsys.scheduler.SchedulerCustom;
-import ru.jamsys.scheduler.SchedulerGlobal;
+import ru.jamsys.scheduler.SchedulerThread;
+import ru.jamsys.scheduler.SchedulerType;
 import ru.jamsys.scheduler.SchedulerStatistic;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Lazy
 public class Scheduler extends AbstractCoreComponent {
 
-    private final Map<String, SchedulerCustom> mapScheduler = new ConcurrentHashMap<>();
+    private final Map<SchedulerType, SchedulerThread> mapScheduler = new ConcurrentHashMap<>();
     private StatisticAggregator statisticAggregator;
     private final ConfigurableApplicationContext applicationContext;
 
     public Scheduler(ConfigurableApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        add(SchedulerGlobal.SCHEDULER_GLOBAL_STATISTIC_WRITE, this::flushStatistic);
+        get(SchedulerType.SCHEDULER_STATISTIC_WRITE).add(this::flushStatistic);
+    }
+
+    public SchedulerThread get(SchedulerType schedulerType) {
+        if (!mapScheduler.containsKey(schedulerType)) {
+            mapScheduler.put(schedulerType, schedulerType.getThread());
+        }
+        return mapScheduler.get(schedulerType);
     }
 
     @SuppressWarnings("unused")
-    public SchedulerCustom add(SchedulerGlobal schedulerGlobal, Procedure procedure) {
-        return add(schedulerGlobal.getNameScheduler(), procedure, schedulerGlobal.getPeriodMillis());
-    }
-
-    public SchedulerCustom add(String name, Procedure procedure, long periodMillis) {
-        if(!mapScheduler.containsKey(name)){
-            mapScheduler.put(name, new SchedulerCustom(name, periodMillis));
-        }
-        SchedulerCustom schedulerCustom = mapScheduler.get(name);
-        if (procedure != null) {
-            schedulerCustom.add(procedure);
-        }
-        return schedulerCustom;
-    }
-
-    @SuppressWarnings("unused")
-    public void remove(SchedulerGlobal schedulerGlobal, Procedure procedure) {
-        remove(schedulerGlobal.getNameScheduler(), procedure);
-    }
-
-    public void remove(String name, Procedure procedure) {
-        SchedulerCustom schedulerCustom = mapScheduler.get(name);
-        schedulerCustom.remove(procedure);
-        if (!schedulerCustom.isActive()) {
-            mapScheduler.remove(name);
-        }
+    public void remove(SchedulerType schedulerType) {
+        SchedulerThread remove = mapScheduler.remove(schedulerType);
+        remove.shutdown();
     }
 
     @Override
     public void shutdown() {
         super.shutdown();
-        String[] objects = mapScheduler.keySet().toArray(new String[0]);
-        for (String object : objects) {
-            SchedulerCustom schedulerCustom = mapScheduler.get(object);
+        SchedulerType[] objects = mapScheduler.keySet().toArray(new SchedulerType[0]);
+        for (SchedulerType object : objects) {
+            SchedulerThread schedulerCustom = mapScheduler.get(object);
             if (schedulerCustom != null) {
                 schedulerCustom.shutdown();
             }
-
         }
+        mapScheduler.clear();
     }
 
     @Override
     public void flushStatistic() {
-        SchedulerStatistic schedulerStatistic = new SchedulerStatistic(mapScheduler.keySet());
+        Set<String> set = new HashSet<>();
+        for (SchedulerType schedulerType : mapScheduler.keySet()) {
+            set.add(schedulerType.getName());
+        }
+        SchedulerStatistic schedulerStatistic = new SchedulerStatistic(set);
         if (statisticAggregator == null) {
             statisticAggregator = applicationContext.getBean(StatisticAggregator.class);
         }
         statisticAggregator.add(schedulerStatistic);
+        clearExpired();
+    }
+
+    private void clearExpired() {
+        SchedulerType[] objects = mapScheduler.keySet().toArray(new SchedulerType[0]);
+        for (SchedulerType object : objects) {
+            SchedulerThread schedulerCustom = mapScheduler.get(object);
+            if (!schedulerCustom.isActive()) {
+                mapScheduler.remove(object);
+            }
+        }
     }
 }

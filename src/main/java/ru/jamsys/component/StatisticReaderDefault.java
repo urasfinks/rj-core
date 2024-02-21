@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
 import ru.jamsys.Util;
 import ru.jamsys.UtilJson;
-import ru.jamsys.scheduler.SchedulerGlobal;
+import ru.jamsys.scheduler.SchedulerType;
 import ru.jamsys.statistic.StatisticAggregatorData;
 
 @Component
@@ -18,7 +18,7 @@ public class StatisticReaderDefault extends AbstractCoreComponent {
     public StatisticReaderDefault(Scheduler scheduler, Broker broker) {
         this.scheduler = scheduler;
         this.broker = broker;
-        scheduler.add(SchedulerGlobal.SCHEDULER_GLOBAL_STATISTIC_READ, this::flushStatistic);
+        scheduler.get(SchedulerType.SCHEDULER_STATISTIC_READ).add(this::flushStatistic);
     }
 
     @Override
@@ -36,6 +36,6 @@ public class StatisticReaderDefault extends AbstractCoreComponent {
     @Override
     public void shutdown() {
         super.shutdown();
-        scheduler.remove(SchedulerGlobal.SCHEDULER_GLOBAL_STATISTIC_READ, this::flushStatistic);
+        scheduler.get(SchedulerType.SCHEDULER_STATISTIC_READ).remove(this::flushStatistic);
     }
 }
