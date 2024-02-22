@@ -4,7 +4,8 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
 import ru.jamsys.scheduler.SchedulerType;
 import ru.jamsys.scheduler.SchedulerThreadFinal;
-import ru.jamsys.statistic.StatisticAggregatorData;
+import ru.jamsys.statistic.AggregatorDataStatistic;
+import ru.jamsys.statistic.Statistic;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -12,7 +13,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class StatisticAggregator extends AbstractCoreComponent {
 
     private final Broker broker;
-    private final ConcurrentLinkedQueue<Object> queue = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Statistic> queue = new ConcurrentLinkedQueue<>();
     private final Scheduler scheduler;
 
     public StatisticAggregator(Scheduler scheduler, Broker broker) {
@@ -22,7 +23,7 @@ public class StatisticAggregator extends AbstractCoreComponent {
         schedulerThread.setFinalProcedure(this::flushStatistic);
     }
 
-    public void add(Object o) {
+    public void add(Statistic o) {
         if (o != null) {
             queue.add(o);
         }
@@ -30,17 +31,17 @@ public class StatisticAggregator extends AbstractCoreComponent {
 
     @Override
     public void flushStatistic() {
-        StatisticAggregatorData statisticAggregatorData = new StatisticAggregatorData();
+        AggregatorDataStatistic<Statistic> aggregatorDataStatistic = new AggregatorDataStatistic<>();
         while (true) {
-            Object poll = queue.poll();
+            Statistic poll = queue.poll();
             if (poll != null) {
-                statisticAggregatorData.getList().add(poll);
+                aggregatorDataStatistic.getList().add(poll);
             } else {
                 break;
             }
         }
         try {
-            broker.add(StatisticAggregatorData.class, statisticAggregatorData);
+            broker.add(AggregatorDataStatistic.class, aggregatorDataStatistic);
         } catch (Exception e) {
             e.printStackTrace();
         }

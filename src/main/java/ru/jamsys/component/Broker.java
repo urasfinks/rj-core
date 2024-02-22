@@ -4,8 +4,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
+import ru.jamsys.Util;
 import ru.jamsys.broker.BrokerQueue;
-import ru.jamsys.broker.BrokerStatistic;
+import ru.jamsys.broker.BrokerQueueStatistic;
+import ru.jamsys.statistic.BrokerStatistic;
 import ru.jamsys.scheduler.SchedulerType;
 
 import java.util.Map;
@@ -18,7 +20,7 @@ public class Broker extends AbstractCoreComponent {
     private final Map<Class<?>, BrokerQueue<?>> mapQueue = new ConcurrentHashMap<>();
     private final Scheduler scheduler;
     private final ConfigurableApplicationContext applicationContext;
-    private StatisticAggregator statisticAggregator;
+    private StatisticAggregator statisticAggregator; //Не можем сразу инициализировать из-за циклической зависимости
 
     public Broker(Scheduler scheduler, ConfigurableApplicationContext applicationContext) {
         this.scheduler = scheduler;
@@ -34,7 +36,10 @@ public class Broker extends AbstractCoreComponent {
 
     @SuppressWarnings("unused")
     public <T> BrokerQueue<T> get(Class<T> c) {
-        mapQueue.putIfAbsent(c, new BrokerQueue<T>());
+        //If the key was not present in the map, it maps the passed value to the key and returns null.
+        if (!mapQueue.containsKey(c)) {
+            mapQueue.putIfAbsent(c, new BrokerQueue<T>());
+        }
         return (BrokerQueue<T>) mapQueue.get(c);
     }
 
@@ -62,20 +67,18 @@ public class Broker extends AbstractCoreComponent {
         mapQueue.clear();
     }
 
+    void init() {
+        if (statisticAggregator == null) {
+            statisticAggregator = applicationContext.getBean(StatisticAggregator.class);
+        }
+    }
+
     @Override
     public void flushStatistic() {
-        Class<?>[] objects = mapQueue.keySet().toArray(new Class[0]);
-        if (objects.length > 0) {
-            BrokerStatistic brokerStatistic = new BrokerStatistic();
-            for (Class<?> key : objects) {
-                BrokerQueue<?> brokerQueue = mapQueue.get(key);
-                brokerStatistic.getList().add(brokerQueue.flushStatistic());
-            }
-            if (statisticAggregator == null) {
-                statisticAggregator = applicationContext.getBean(StatisticAggregator.class);
-            }
-            statisticAggregator.add(brokerStatistic);
-        }
+        init();
+        BrokerStatistic<BrokerQueueStatistic> brokerStatistic = new BrokerStatistic<>();
+        Util.riskModifier(mapQueue, new Class[0], (Class<?> cls, BrokerQueue<?> brokerQueue) -> brokerStatistic.getList().add(brokerQueue.flushStatistic()));
+        statisticAggregator.add(brokerStatistic);
     }
 
 }

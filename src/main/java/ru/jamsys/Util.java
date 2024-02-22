@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -340,5 +341,28 @@ public class Util {
         }
         return sb.toString();
     }
+
+    @SuppressWarnings("unused")
+    public static <K, V> void riskModifier(Map<K, V> map, K[] toArray, BiConsumer<K, V> consumer) {
+        if (map != null && !map.isEmpty()) {
+            try {
+                K[] objects = map.keySet().toArray(toArray);
+                for (K key : objects) {
+                    try {
+                        V value = map.get(key);
+                        if (value != null) {
+                            consumer.accept(key, value);
+                        }
+                    } catch (Exception e2) {
+                        e2.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
 
 }

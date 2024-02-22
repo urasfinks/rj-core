@@ -4,9 +4,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
+import ru.jamsys.Util;
 import ru.jamsys.scheduler.SchedulerThread;
 import ru.jamsys.scheduler.SchedulerType;
-import ru.jamsys.scheduler.SchedulerStatistic;
+import ru.jamsys.statistic.SchedulerStatistic;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -27,52 +28,42 @@ public class Scheduler extends AbstractCoreComponent {
     }
 
     public SchedulerThread get(SchedulerType schedulerType) {
-        if (!mapScheduler.containsKey(schedulerType)) {
-            mapScheduler.put(schedulerType, schedulerType.getThread());
-        }
+        //If the key was not present in the map, it maps the passed value to the key and returns null.
+        mapScheduler.putIfAbsent(schedulerType, schedulerType.getThread());
         return mapScheduler.get(schedulerType);
     }
 
     @SuppressWarnings("unused")
     public void remove(SchedulerType schedulerType) {
-        SchedulerThread remove = mapScheduler.remove(schedulerType);
-        remove.shutdown();
+        SchedulerThread schedulerThread = mapScheduler.remove(schedulerType);
+        if (schedulerThread != null) {
+            schedulerThread.shutdown();
+        }
     }
 
     @Override
     public void shutdown() {
         super.shutdown();
-        SchedulerType[] objects = mapScheduler.keySet().toArray(new SchedulerType[0]);
-        for (SchedulerType object : objects) {
-            SchedulerThread schedulerCustom = mapScheduler.get(object);
-            if (schedulerCustom != null) {
-                schedulerCustom.shutdown();
-            }
-        }
+        Util.riskModifier(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> schedulerThread.shutdown());
         mapScheduler.clear();
     }
 
     @Override
     public void flushStatistic() {
         Set<String> set = new HashSet<>();
-        for (SchedulerType schedulerType : mapScheduler.keySet()) {
-            set.add(schedulerType.getName());
-        }
-        SchedulerStatistic schedulerStatistic = new SchedulerStatistic(set);
+        Util.riskModifier(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> set.add(schedulerThread.getName()));
         if (statisticAggregator == null) {
             statisticAggregator = applicationContext.getBean(StatisticAggregator.class);
         }
-        statisticAggregator.add(schedulerStatistic);
-        clearExpired();
+        statisticAggregator.add(new SchedulerStatistic(set));
+        clearNotActive();
     }
 
-    private void clearExpired() {
-        SchedulerType[] objects = mapScheduler.keySet().toArray(new SchedulerType[0]);
-        for (SchedulerType object : objects) {
-            SchedulerThread schedulerCustom = mapScheduler.get(object);
-            if (!schedulerCustom.isActive()) {
-                mapScheduler.remove(object);
+    private void clearNotActive() {
+        Util.riskModifier(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> {
+            if (!schedulerThread.isActive()) {
+                mapScheduler.remove(schedulerType);
             }
-        }
+        });
     }
 }

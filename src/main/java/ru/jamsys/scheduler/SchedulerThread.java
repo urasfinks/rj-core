@@ -18,4 +18,6 @@ public interface SchedulerThread {
 
     <T> Consumer<T> getConsumer();
 
+    String getName();
+
 }

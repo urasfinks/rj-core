@@ -6,7 +6,7 @@ import ru.jamsys.AbstractCoreComponent;
 import ru.jamsys.Util;
 import ru.jamsys.UtilJson;
 import ru.jamsys.scheduler.SchedulerType;
-import ru.jamsys.statistic.StatisticAggregatorData;
+import ru.jamsys.statistic.AggregatorDataStatistic;
 
 @Component
 @Lazy
@@ -24,7 +24,7 @@ public class StatisticReaderDefault extends AbstractCoreComponent {
     @Override
     public void flushStatistic() {
         while (true) {
-            StatisticAggregatorData first = broker.pollFirst(StatisticAggregatorData.class);
+            AggregatorDataStatistic first = broker.pollFirst(AggregatorDataStatistic.class);
             if (first != null) {
                 Util.logConsole(Thread.currentThread(), UtilJson.toString(first, null));
             } else {

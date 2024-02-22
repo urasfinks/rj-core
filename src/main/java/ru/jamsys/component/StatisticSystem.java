@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
 import ru.jamsys.scheduler.SchedulerType;
-import ru.jamsys.statistic.SystemStatisticData;
+import ru.jamsys.statistic.SystemStatistic;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -48,7 +48,7 @@ public class StatisticSystem extends AbstractCoreComponent {
         long elapsedCpu = processCpuTime - prevProcessCpuTime;
         long elapsedTime = upTime - prevUpTime;
         cpuUsage = Math.min(99F, elapsedCpu / (elapsedTime * 10000F * availableProcessors));
-        statisticAggregator.add(new SystemStatisticData(cpuUsage));
+        statisticAggregator.add(new SystemStatistic(cpuUsage));
     }
 
     @Override
