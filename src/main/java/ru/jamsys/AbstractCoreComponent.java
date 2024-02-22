@@ -17,4 +17,9 @@ public abstract class AbstractCoreComponent implements CoreComponent {
     public void shutdown() {
         list.remove(this);
     }
+
+    @Override
+    public void run() {
+
+    }
 }

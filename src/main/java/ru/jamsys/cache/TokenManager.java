@@ -1,5 +1,8 @@
 package ru.jamsys.cache;
 
+import ru.jamsys.Util;
+
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,21 +23,23 @@ public class TokenManager<K, V> {
             return map.get(key).getValue();
         }
         return null;
-
     }
 
     public Map<K, Token<V>> get() {
         return map;
     }
 
+    @SafeVarargs
+    static <K> K[] getEmptyType(K... array) {
+        return Arrays.copyOf(array, 0);
+    }
+
     private void flush() {
-        Object[] keys = map.keySet().toArray();
         long curTimestamp = System.currentTimeMillis();
-        for (Object key : keys) {
-            Token<V> codeObject = map.get(key);
-            if (codeObject != null && curTimestamp > codeObject.getExpired()) {
+        Util.riskModifierMap(map, getEmptyType(), (K key, Token<V> value) -> {
+            if (curTimestamp > value.getExpired()) {
                 map.remove(key);
             }
-        }
+        });
     }
 }

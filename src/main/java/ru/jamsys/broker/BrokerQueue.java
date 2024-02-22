@@ -1,6 +1,9 @@
 package ru.jamsys.broker;
 
+import ru.jamsys.Util;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -9,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class BrokerQueue<T> {
 
     private final ConcurrentLinkedDeque<ElementWrap<T>> queue = new ConcurrentLinkedDeque<>();
-    //Последнии сообщения проходящие через очередь
+    //Последний сообщения проходящие через очередь
     private final ConcurrentLinkedDeque<T> tail = new ConcurrentLinkedDeque<>();
     private final AtomicInteger tpsInput = new AtomicInteger(0);
     private final AtomicInteger tpsOutput = new AtomicInteger(0);
@@ -69,22 +72,21 @@ public class BrokerQueue<T> {
         return new BrokerQueueStatistic(getClass().getSimpleName(), tpsInput.getAndSet(0), tpsOutput.getAndSet(0), queue.size(), avgTimeInQueue);
     }
 
+    @SafeVarargs
+    static <T> T[] getEmptyType(T... array) {
+        return Arrays.copyOf(array, 0);
+    }
+
     @SuppressWarnings("unused")
     public List<T> getCloneQueue() {
-        Object[] objects = queue.toArray();
         List<T> ret = new ArrayList<>();
-        for (Object o : objects) {
-            ret.add(((ElementWrap<T>) o).getElement());
-        }
+        Util.riskModifierCollection(queue, getEmptyType(), (ElementWrap<T> elementWrap) -> ret.add(elementWrap.getElement()));
         return ret;
     }
 
     public List<T> getTail() {
-        Object[] objects = tail.toArray();
         List<T> ret = new ArrayList<>();
-        for (Object o : objects) {
-            ret.add((T) o);
-        }
+        Util.riskModifierCollection(tail, getEmptyType(), ret::add);
         return ret;
     }
 

@@ -7,6 +7,7 @@ import ru.jamsys.Util;
 import ru.jamsys.UtilJson;
 import ru.jamsys.scheduler.SchedulerType;
 import ru.jamsys.statistic.AggregatorDataStatistic;
+import ru.jamsys.statistic.Statistic;
 
 @Component
 @Lazy
@@ -18,6 +19,9 @@ public class StatisticReaderDefault extends AbstractCoreComponent {
     public StatisticReaderDefault(Scheduler scheduler, Broker broker) {
         this.scheduler = scheduler;
         this.broker = broker;
+    }
+
+    public void run(){
         scheduler.get(SchedulerType.SCHEDULER_STATISTIC_READ).add(this::flushStatistic);
     }
 

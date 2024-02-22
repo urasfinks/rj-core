@@ -19,6 +19,9 @@ public class StatisticAggregator extends AbstractCoreComponent {
     public StatisticAggregator(Scheduler scheduler, Broker broker) {
         this.scheduler = scheduler;
         this.broker = broker;
+    }
+
+    public void run(){
         SchedulerThreadFinal schedulerThread = (SchedulerThreadFinal) scheduler.get(SchedulerType.SCHEDULER_STATISTIC_WRITE);
         schedulerThread.setFinalProcedure(this::flushStatistic);
     }
@@ -52,4 +55,5 @@ public class StatisticAggregator extends AbstractCoreComponent {
         super.shutdown();
         scheduler.get(SchedulerType.SCHEDULER_STATISTIC_WRITE).remove(this::flushStatistic);
     }
+
 }

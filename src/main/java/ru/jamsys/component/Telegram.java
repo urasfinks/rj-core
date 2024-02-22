@@ -95,4 +95,5 @@ public class Telegram extends AbstractCoreComponent {
     public void flushStatistic() {
 
     }
+
 }

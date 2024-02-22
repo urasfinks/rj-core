@@ -27,7 +27,7 @@ public class ExpiredManager<T> {
     public List<T> getExpired() {
         List<T> resultList = new ArrayList<>();
         long curTimestamp = System.currentTimeMillis();
-        Util.riskModifier(map, new Long[0], (Long time, ConcurrentLinkedQueue<T> queue) -> {
+        Util.riskModifierMap(map, new Long[0], (Long time, ConcurrentLinkedQueue<T> queue) -> {
             if (curTimestamp >= time) {
                 while (!queue.isEmpty()) {
                     resultList.add(queue.poll());

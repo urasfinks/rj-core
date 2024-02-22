@@ -2,10 +2,8 @@ package ru.jamsys.scheduler;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.Procedure;
 import ru.jamsys.thread.CustomThreadFactory;
 
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;

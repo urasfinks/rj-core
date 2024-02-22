@@ -24,13 +24,20 @@ public class Scheduler extends AbstractCoreComponent {
 
     public Scheduler(ConfigurableApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+    }
+
+    public void run() {
         get(SchedulerType.SCHEDULER_STATISTIC_WRITE).add(this::flushStatistic);
     }
 
     public SchedulerThread get(SchedulerType schedulerType) {
         //If the key was not present in the map, it maps the passed value to the key and returns null.
-        mapScheduler.putIfAbsent(schedulerType, schedulerType.getThread());
-        return mapScheduler.get(schedulerType);
+        SchedulerThread schedulerThread = mapScheduler.putIfAbsent(schedulerType, schedulerType.getThread());
+        if (schedulerThread == null) {
+            schedulerThread = mapScheduler.get(schedulerType);
+            schedulerThread.run();
+        }
+        return schedulerThread;
     }
 
     @SuppressWarnings("unused")
@@ -44,14 +51,14 @@ public class Scheduler extends AbstractCoreComponent {
     @Override
     public void shutdown() {
         super.shutdown();
-        Util.riskModifier(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> schedulerThread.shutdown());
+        Util.riskModifierMap(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> schedulerThread.shutdown());
         mapScheduler.clear();
     }
 
     @Override
     public void flushStatistic() {
         Set<String> set = new HashSet<>();
-        Util.riskModifier(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> set.add(schedulerThread.getName()));
+        Util.riskModifierMap(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> set.add(schedulerThread.getName()));
         if (statisticAggregator == null) {
             statisticAggregator = applicationContext.getBean(StatisticAggregator.class);
         }
@@ -60,7 +67,7 @@ public class Scheduler extends AbstractCoreComponent {
     }
 
     private void clearNotActive() {
-        Util.riskModifier(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> {
+        Util.riskModifierMap(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> {
             if (!schedulerThread.isActive()) {
                 mapScheduler.remove(schedulerType);
             }

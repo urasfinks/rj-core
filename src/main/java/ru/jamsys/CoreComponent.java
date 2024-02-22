@@ -8,4 +8,6 @@ public interface CoreComponent {
     @SuppressWarnings("unused")
     void flushStatistic(); //Сгрузить статистику
 
+    void run();
+
 }

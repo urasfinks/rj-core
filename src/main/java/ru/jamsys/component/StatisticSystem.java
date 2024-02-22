@@ -15,11 +15,15 @@ import java.lang.management.RuntimeMXBean;
 public class StatisticSystem extends AbstractCoreComponent {
 
     private final StatisticAggregator statisticAggregator;
-    Scheduler scheduler;
+    private final Scheduler scheduler;
 
     public StatisticSystem(Scheduler scheduler, StatisticAggregator statisticAggregator) {
         this.statisticAggregator = statisticAggregator;
         this.scheduler = scheduler;
+    }
+
+    @Override
+    public void run() {
         scheduler.get(SchedulerType.STATISTIC_SYSTEM).add(this::flushStatistic);
     }
 

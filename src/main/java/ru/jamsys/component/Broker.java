@@ -7,8 +7,8 @@ import ru.jamsys.AbstractCoreComponent;
 import ru.jamsys.Util;
 import ru.jamsys.broker.BrokerQueue;
 import ru.jamsys.broker.BrokerQueueStatistic;
-import ru.jamsys.statistic.BrokerStatistic;
 import ru.jamsys.scheduler.SchedulerType;
+import ru.jamsys.statistic.BrokerStatistic;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,6 +25,10 @@ public class Broker extends AbstractCoreComponent {
     public Broker(Scheduler scheduler, ConfigurableApplicationContext applicationContext) {
         this.scheduler = scheduler;
         this.applicationContext = applicationContext;
+    }
+
+    public void run() {
+        statisticAggregator = applicationContext.getBean(StatisticAggregator.class);
         scheduler.get(SchedulerType.SCHEDULER_STATISTIC_WRITE).add(this::flushStatistic);
     }
 
@@ -57,27 +61,14 @@ public class Broker extends AbstractCoreComponent {
     public void shutdown() {
         super.shutdown();
         scheduler.get(SchedulerType.SCHEDULER_STATISTIC_WRITE).remove(this::flushStatistic);
-        Object[] list = mapQueue.keySet().toArray();
-        for (Object key : list) {
-            BrokerQueue<?> brokerQueue = mapQueue.get(key);
-            if (brokerQueue != null) {
-                brokerQueue.shutdown();
-            }
-        }
+        Util.riskModifierMap(mapQueue, new Class<?>[0], (Class<?> cls, BrokerQueue<?> brokerQueue) -> brokerQueue.shutdown());
         mapQueue.clear();
-    }
-
-    void init() {
-        if (statisticAggregator == null) {
-            statisticAggregator = applicationContext.getBean(StatisticAggregator.class);
-        }
     }
 
     @Override
     public void flushStatistic() {
-        init();
         BrokerStatistic<BrokerQueueStatistic> brokerStatistic = new BrokerStatistic<>();
-        Util.riskModifier(mapQueue, new Class[0], (Class<?> cls, BrokerQueue<?> brokerQueue) -> brokerStatistic.getList().add(brokerQueue.flushStatistic()));
+        Util.riskModifierMap(mapQueue, new Class[0], (Class<?> cls, BrokerQueue<?> brokerQueue) -> brokerStatistic.getList().add(brokerQueue.flushStatistic()));
         statisticAggregator.add(brokerStatistic);
     }
 

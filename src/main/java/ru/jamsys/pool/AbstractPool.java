@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import ru.jamsys.Util;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -99,23 +100,22 @@ public abstract class AbstractPool<T> implements Pool<T> {
         throw new Exception("Pool " + getName() + " not active resource. Timeout: " + (timeOut * count) + "ms");
     }
 
+    @SafeVarargs
+    static <T> T[] getEmptyType(T... array) {
+        return Arrays.copyOf(array, 0);
+    }
+
     private void checkKeepAliveAndRemove() { //Проверка ждунов, что они давно не вызывались и у них кол-во итераций равно 0 -> нож
         if (active.get()) {
-            try {
-                final long curTimeMillis = System.currentTimeMillis();
-                final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
-                Object[] objects = map.keySet().toArray();
-                for (Object object : objects) {
-                    WrapResource<T> wrapResource = map.get(object);
-                    long future = wrapResource.getLastRun() + keepAlive;
-                    //Время последнего оживления превысило keepAlive + мы не привысили кол-во удалений за 1 проверку
-                    if (curTimeMillis > future && maxCounterRemove.getAndDecrement() > 0) {
-                        safeRemove(wrapResource);
-                    }
+            final long curTimeMillis = System.currentTimeMillis();
+            final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
+            Util.riskModifierMap(map, getEmptyType(), (T key, WrapResource<T> value) -> {
+                long future = value.getLastRun() + keepAlive;
+                //Время последнего оживления превысило keepAlive + мы не привысили кол-во удалений за 1 проверку
+                if (curTimeMillis > future && maxCounterRemove.getAndDecrement() > 0) {
+                    safeRemove(value);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            });
         }
     }
 
@@ -191,11 +191,7 @@ public abstract class AbstractPool<T> implements Pool<T> {
     @Override
     public void shutdown() {
         active.set(false);
-        Object[] objects = map.keySet().toArray();
-        for (Object object : objects) {
-            WrapResource<T> tWrapResource = map.get(object);
-            closeResource(tWrapResource.getResource());
-        }
+        Util.riskModifierMap(map, getEmptyType(), (T key, WrapResource<T> value) -> closeResource(value.getResource()));
     }
 
 }

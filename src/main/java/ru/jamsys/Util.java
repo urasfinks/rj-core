@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -342,8 +343,26 @@ public class Util {
         return sb.toString();
     }
 
-    @SuppressWarnings("unused")
-    public static <K, V> void riskModifier(Map<K, V> map, K[] toArray, BiConsumer<K, V> consumer) {
+    public static <T> void riskModifierCollection(Collection<T> collection, T[] toArray, Consumer<T> consumer) {
+        if (collection != null && !collection.isEmpty()) {
+            try {
+                T[] objects = collection.toArray(toArray);
+                for (T value : objects) {
+                    try {
+                        if (value != null) {
+                            consumer.accept(value);
+                        }
+                    } catch (Exception e2) {
+                        e2.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static <K, V> void riskModifierMap(Map<K, V> map, K[] toArray, BiConsumer<K, V> consumer) {
         if (map != null && !map.isEmpty()) {
             try {
                 K[] objects = map.keySet().toArray(toArray);
@@ -362,7 +381,6 @@ public class Util {
             }
         }
     }
-
 
 
 }

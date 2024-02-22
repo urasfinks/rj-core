@@ -12,7 +12,6 @@ public class SchedulerThreadImpl extends AbstractSchedulerThread {
 
     public SchedulerThreadImpl(String name, long periodMillis) {
         super(name, periodMillis);
-        run();
     }
 
     @Override
