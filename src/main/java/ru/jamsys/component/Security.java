@@ -85,10 +85,10 @@ public class Security extends AbstractCoreComponent {
                 PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(ske.getSecretKey(), PBEKeySpec.class);
                 return keySpec.getPassword();
             }
+            return null;
         } else {
             throw new Exception("Security компонент не инициализирован, исполните init(${pass})");
         }
-        throw new Exception("Пароль не найден по ключу: " + key);
     }
 
     public void remove(String key) {
