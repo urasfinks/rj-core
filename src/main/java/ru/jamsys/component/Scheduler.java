@@ -7,8 +7,8 @@ import ru.jamsys.AbstractCoreComponent;
 import ru.jamsys.Util;
 import ru.jamsys.scheduler.SchedulerThread;
 import ru.jamsys.scheduler.SchedulerType;
-import ru.jamsys.statistic.MapStatistic;
-import ru.jamsys.statistic.Statistic;
+import ru.jamsys.statistic.SchedulerStatistic;
+import ru.jamsys.statistic.SchedulerThreadStatistic;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,9 +63,9 @@ public class Scheduler extends AbstractCoreComponent {
 
     @Override
     public void flushStatistic() {
-        MapStatistic<SchedulerType, Statistic> statistic = new MapStatistic<>();
+        SchedulerStatistic statistic = new SchedulerStatistic();
         Util.riskModifierMap(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> {
-            statistic.getMap().put(schedulerType, schedulerThread.flushAndGetStatistic());
+            statistic.getMap().put(schedulerType, (SchedulerThreadStatistic) schedulerThread.flushAndGetStatistic());
             if (!schedulerThread.isActive()) {
                 mapScheduler.remove(schedulerType);
             }

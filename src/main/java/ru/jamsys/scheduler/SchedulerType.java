@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 public enum SchedulerType {
     SCHEDULER_STATISTIC_WRITE((name) -> new SchedulerThreadFinal(name, 1000)),
-    SCHEDULER_STATISTIC_READ((name) -> new SchedulerThreadFinal(name, 1000)),
+    SCHEDULER_STATISTIC_READ((name) -> new SchedulerThreadFinal(name, 5000)),
     STATISTIC_SYSTEM((name) -> new SchedulerThreadImpl(name, 1000));
 
     private final SchedulerThread schedulerThread;
