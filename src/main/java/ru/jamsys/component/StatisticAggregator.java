@@ -2,10 +2,11 @@ package ru.jamsys.component;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
-import ru.jamsys.scheduler.SchedulerType;
 import ru.jamsys.scheduler.SchedulerThreadFinal;
+import ru.jamsys.scheduler.SchedulerType;
 import ru.jamsys.statistic.AggregatorDataStatistic;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.statistic.WrapStatistic;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class StatisticAggregator extends AbstractCoreComponent {
 
     private final Broker broker;
-    private final ConcurrentLinkedQueue<Statistic> queue = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<WrapStatistic> queue = new ConcurrentLinkedQueue<>();
     private final Scheduler scheduler;
 
     public StatisticAggregator(Scheduler scheduler, Broker broker) {
@@ -21,24 +22,24 @@ public class StatisticAggregator extends AbstractCoreComponent {
         this.broker = broker;
     }
 
-    public void run(){
+    public void run() {
         SchedulerThreadFinal schedulerThread = (SchedulerThreadFinal) scheduler.get(SchedulerType.SCHEDULER_STATISTIC_WRITE);
         schedulerThread.setFinalProcedure(this::flushStatistic);
     }
 
-    public void add(Statistic o) {
-        if (o != null) {
-            queue.add(o);
+    public void add(Class<?> classOwner, Statistic statistic) {
+        if (statistic != null) {
+            queue.add(new WrapStatistic(classOwner, statistic));
         }
     }
 
     @Override
     public void flushStatistic() {
-        AggregatorDataStatistic<Statistic> aggregatorDataStatistic = new AggregatorDataStatistic<>();
+        AggregatorDataStatistic<Class<?>, Statistic> aggregatorDataStatistic = new AggregatorDataStatistic<>();
         while (true) {
-            Statistic poll = queue.poll();
-            if (poll != null) {
-                aggregatorDataStatistic.getList().add(poll);
+            WrapStatistic wrapStatistic = queue.poll();
+            if (wrapStatistic != null) {
+                aggregatorDataStatistic.getMap().put(wrapStatistic.getClassOwner(), wrapStatistic.getStatistic());
             } else {
                 break;
             }

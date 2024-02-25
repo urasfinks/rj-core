@@ -5,12 +5,12 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import ru.jamsys.Util;
+import ru.jamsys.statistic.PoolStatistic;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -41,22 +41,15 @@ public abstract class AbstractPool<T> implements Pool<T> {
     private ConcurrentLinkedDeque<WrapResource<T>> parkQueue = new ConcurrentLinkedDeque<>();
     protected final Map<T, WrapResource<T>> map = new ConcurrentHashMap<>();
 
-    protected final AtomicInteger tpsAdd = new AtomicInteger(0);
-    protected final AtomicInteger tpsGet = new AtomicInteger(0);
-    protected final AtomicInteger tpsParkIn = new AtomicInteger(0);
-    protected final ConcurrentLinkedQueue<WrapResource<T>> tpsRemove = new ConcurrentLinkedQueue<>();
     protected final AtomicBoolean active = new AtomicBoolean(true);
 
-    protected final PoolStatisticData statLastSec = new PoolStatisticData(); //Агрегированная статистика за прошлый период (сейчас 1 секунда)
+    protected final PoolStatistic statLastSec = new PoolStatistic(); //Агрегированная статистика за прошлый период (сейчас 1 секунда)
 
-    public PoolStatisticData flushStatistic() {
+    @SuppressWarnings("unused")
+    public PoolStatistic flushAndGetStatistic() {
         statLastSec.setName(getName());
-        statLastSec.setList(map.size());
+        statLastSec.setSize(map.size());
         statLastSec.setPark(parkQueue.size());
-        statLastSec.setTpsParkIn(tpsParkIn.getAndSet(0));
-        statLastSec.setTpsAdd(tpsAdd.getAndSet(0));
-        statLastSec.setTpsRemove(tpsRemove.size());
-        tpsRemove.clear();
         return statLastSec;
     }
 
@@ -71,7 +64,6 @@ public abstract class AbstractPool<T> implements Pool<T> {
                 if (checkExceptionOnRemove(e)) {
                     remove(wrapResource);
                 } else {
-                    tpsParkIn.incrementAndGet();
                     parkQueue.add(wrapResource);
                 }
             } else {
@@ -88,7 +80,6 @@ public abstract class AbstractPool<T> implements Pool<T> {
         while (active.get()) {
             WrapResource<T> wrapResource = parkQueue.pollLast();
             if (wrapResource != null) {
-                tpsGet.incrementAndGet();
                 wrapResource.setLastRun(System.currentTimeMillis());
                 return wrapResource.getResource();
             }
@@ -128,9 +119,6 @@ public abstract class AbstractPool<T> implements Pool<T> {
     synchronized private void remove(@NonNull WrapResource<T> wrapObject) {
         map.remove(wrapObject.getResource());
         parkQueue.remove(wrapObject); // На всякий случай
-        if (!tpsRemove.contains(wrapObject)) {
-            tpsRemove.add(wrapObject);
-        }
     }
 
     private boolean add() {
@@ -139,13 +127,8 @@ public abstract class AbstractPool<T> implements Pool<T> {
             T resource = createResource();
             if (resource != null) {
                 wrapResource.setResource(resource);
-
                 parkQueue.add(wrapResource);
                 map.put(wrapResource.getResource(), wrapResource);
-
-                tpsAdd.incrementAndGet();
-                tpsParkIn.incrementAndGet();
-
                 return true;
             }
         }

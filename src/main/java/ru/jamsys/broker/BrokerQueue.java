@@ -1,12 +1,14 @@
 package ru.jamsys.broker;
 
 import ru.jamsys.Util;
+import ru.jamsys.statistic.AvgMetric;
+import ru.jamsys.statistic.BrokerQueueStatistic;
+import ru.jamsys.statistic.Statistic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BrokerQueue<T> {
@@ -16,7 +18,10 @@ public class BrokerQueue<T> {
     private final ConcurrentLinkedDeque<T> tail = new ConcurrentLinkedDeque<>();
     private final AtomicInteger tpsInput = new AtomicInteger(0);
     private final AtomicInteger tpsOutput = new AtomicInteger(0);
-    private final ConcurrentLinkedQueue<Long> timeInQueue = new ConcurrentLinkedQueue<>();
+
+    //private final ConcurrentLinkedQueue<Long> timeInQueue = new ConcurrentLinkedQueue<>();
+    private final AvgMetric timeInQueue = new AvgMetric();
+
     private int sizeQueue = 3000;
     private int sizeTail = 5;
     private boolean cyclical = true;
@@ -44,11 +49,11 @@ public class BrokerQueue<T> {
         }
     }
 
-    private T stat(ElementWrap<T> tElementWrap) {
-        if (tElementWrap != null) {
+    private T stat(ElementWrap<T> elementWrap) {
+        if (elementWrap != null) {
             tpsOutput.incrementAndGet();
-            timeInQueue.add(System.currentTimeMillis() - tElementWrap.getTimestamp());
-            return tElementWrap.getElement();
+            timeInQueue.add(System.currentTimeMillis() - elementWrap.getTimestamp());
+            return elementWrap.getElement();
         }
         return null;
     }
@@ -61,15 +66,13 @@ public class BrokerQueue<T> {
         return stat(queue.pollLast());
     }
 
-    public BrokerQueueStatistic flushStatistic() {
-        int avgTimeInQueue = 0;
-        try { //Ловим модификатор, пока ни разу не ловил, на всякий случай
-            double avg = timeInQueue.stream().mapToLong(Long::intValue).summaryStatistics().getAverage();
-            avgTimeInQueue = (int) avg;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new BrokerQueueStatistic(getClass().getSimpleName(), tpsInput.getAndSet(0), tpsOutput.getAndSet(0), queue.size(), avgTimeInQueue);
+    public Statistic flushAndGetStatistic() {
+        return new BrokerQueueStatistic(
+                tpsInput.getAndSet(0),
+                tpsOutput.getAndSet(0),
+                queue.size(),
+                timeInQueue.flush()
+        );
     }
 
     @SafeVarargs
@@ -103,8 +106,8 @@ public class BrokerQueue<T> {
     }
 
     public void shutdown() {
-        queue.clear();
-        tail.clear();
+        // Не считаю, что данные в очереди должны быть очищены
+        // Может быть их кто-то успеет ещё обработать?
     }
 
 }

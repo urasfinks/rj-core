@@ -5,8 +5,10 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class AggregatorDataStatistic<K, V> extends MapStatistic<K, V> {
+public class PoolStatistic extends AbstractStatistic {
 
-    long timestamp = System.currentTimeMillis();
+    String name;
+    int size;
+    int park;
 
 }

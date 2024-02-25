@@ -52,7 +52,7 @@ public class StatisticSystem extends AbstractCoreComponent {
         long elapsedCpu = processCpuTime - prevProcessCpuTime;
         long elapsedTime = upTime - prevUpTime;
         cpuUsage = Math.min(99F, elapsedCpu / (elapsedTime * 10000F * availableProcessors));
-        statisticAggregator.add(new SystemStatistic(cpuUsage));
+        statisticAggregator.add(getClass(), new SystemStatistic(cpuUsage));
     }
 
     @Override

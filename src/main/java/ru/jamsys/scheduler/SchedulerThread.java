@@ -1,6 +1,7 @@
 package ru.jamsys.scheduler;
 
 import ru.jamsys.Procedure;
+import ru.jamsys.statistic.Statistic;
 
 import java.util.function.Consumer;
 
@@ -19,5 +20,7 @@ public interface SchedulerThread {
     <T> Consumer<T> getConsumer();
 
     String getName();
+
+    Statistic flushAndGetStatistic();
 
 }

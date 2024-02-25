@@ -28,9 +28,10 @@ public class StatisticReaderDefault extends AbstractCoreComponent {
     @Override
     public void flushStatistic() {
         while (true) {
-            AggregatorDataStatistic first = broker.pollFirst(AggregatorDataStatistic.class);
+            @SuppressWarnings("unchecked")
+            AggregatorDataStatistic<Class<?>, Statistic> first = broker.pollFirst(AggregatorDataStatistic.class);
             if (first != null) {
-                Util.logConsole(Thread.currentThread(), UtilJson.toString(first, null));
+                Util.logConsole(Thread.currentThread(), UtilJson.toStringPretty(first, null));
             } else {
                 break;
             }

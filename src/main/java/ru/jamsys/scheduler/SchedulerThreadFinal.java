@@ -18,9 +18,15 @@ public class SchedulerThreadFinal extends SchedulerThreadImpl {
     @Override
     public <T> Consumer<T> getConsumer() {
         return (t) -> {
-            listProcedure.forEach(Procedure::run);
+            listProcedure.forEach((Procedure action) -> {
+                long startTime = System.currentTimeMillis();
+                action.run();
+                execTime.add(System.currentTimeMillis() - startTime);
+            });
             if (finalProcedure != null) {
+                long startTime = System.currentTimeMillis();
                 finalProcedure.run();
+                execTime.add(System.currentTimeMillis() - startTime);
             }
         };
     }

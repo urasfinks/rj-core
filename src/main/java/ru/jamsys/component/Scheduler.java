@@ -7,11 +7,10 @@ import ru.jamsys.AbstractCoreComponent;
 import ru.jamsys.Util;
 import ru.jamsys.scheduler.SchedulerThread;
 import ru.jamsys.scheduler.SchedulerType;
-import ru.jamsys.statistic.SchedulerStatistic;
+import ru.jamsys.statistic.MapStatistic;
+import ru.jamsys.statistic.Statistic;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -28,6 +27,7 @@ public class Scheduler extends AbstractCoreComponent {
 
     public void run() {
         get(SchedulerType.SCHEDULER_STATISTIC_WRITE).add(this::flushStatistic);
+        statisticAggregator = applicationContext.getBean(StatisticAggregator.class);
     }
 
     public SchedulerThread get(SchedulerType schedulerType) {
@@ -51,26 +51,26 @@ public class Scheduler extends AbstractCoreComponent {
     @Override
     public void shutdown() {
         super.shutdown();
-        Util.riskModifierMap(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> schedulerThread.shutdown());
-        mapScheduler.clear();
+        Util.riskModifierMap(
+                mapScheduler,
+                new SchedulerType[0],
+                (SchedulerType schedulerType, SchedulerThread schedulerThread) -> {
+                    schedulerThread.shutdown();
+                    mapScheduler.remove(schedulerType);
+                }
+        );
     }
 
     @Override
     public void flushStatistic() {
-        Set<String> set = new HashSet<>();
-        Util.riskModifierMap(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> set.add(schedulerThread.getName()));
-        if (statisticAggregator == null) {
-            statisticAggregator = applicationContext.getBean(StatisticAggregator.class);
-        }
-        statisticAggregator.add(new SchedulerStatistic(set));
-        clearNotActive();
-    }
-
-    private void clearNotActive() {
+        MapStatistic<SchedulerType, Statistic> statistic = new MapStatistic<>();
         Util.riskModifierMap(mapScheduler, new SchedulerType[0], (SchedulerType schedulerType, SchedulerThread schedulerThread) -> {
+            statistic.getMap().put(schedulerType, schedulerThread.flushAndGetStatistic());
             if (!schedulerThread.isActive()) {
                 mapScheduler.remove(schedulerType);
             }
         });
+        statisticAggregator.add(getClass(), statistic);
     }
+
 }

@@ -1,5 +1,6 @@
 package ru.jamsys.component;
 
+import lombok.Getter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
@@ -12,12 +13,14 @@ import java.util.List;
 @Lazy
 public class Core extends AbstractCoreComponent {
 
-    List<Class<? extends AbstractCoreComponent>> init = new ArrayList<>();
+    @Getter
+    List<Class<? extends AbstractCoreComponent>> list = new ArrayList<>();
 
     public Core() {
-        init.add(Scheduler.class);
-        init.add(Broker.class);
-        init.add(StatisticAggregator.class);
+        list.add(Scheduler.class);
+        list.add(Broker.class);
+        list.add(StatisticAggregator.class);
+        list.add(StatisticSystem.class);
     }
 
     @Override
@@ -25,8 +28,9 @@ public class Core extends AbstractCoreComponent {
 
     }
 
-    public void run() {
-        for (Class<? extends AbstractCoreComponent> cls : init) {
+    public void run(Class<? extends AbstractCoreComponent> statisticReader) {
+        list.add(statisticReader);
+        for (Class<? extends AbstractCoreComponent> cls : list) {
             App.context.getBean(cls).run();
         }
     }
@@ -35,8 +39,8 @@ public class Core extends AbstractCoreComponent {
     public void shutdown() {
         super.shutdown();
         //Опускаем в обратной последовательности
-        for (int i = init.size() - 1; i >= 0; i--) {
-            App.context.getBean(init.get(i)).shutdown();
+        for (int i = list.size() - 1; i >= 0; i--) {
+            App.context.getBean(list.get(i)).shutdown();
         }
     }
 }

@@ -4,6 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.jamsys.component.Core;
+import ru.jamsys.component.StatisticReaderDefault;
+
 
 @SpringBootApplication
 public class App {
@@ -12,7 +14,7 @@ public class App {
 
     public static void main(String[] args) {
         context = SpringApplication.run(App.class, args);
-        context.getBean(Core.class).run();
+        context.getBean(Core.class).run(StatisticReaderDefault.class);
         System.out.println("Hello World!");
         context.getBean(Core.class).shutdown();
     }

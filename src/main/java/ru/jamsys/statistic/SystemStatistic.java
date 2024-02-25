@@ -1,6 +1,11 @@
 package ru.jamsys.statistic;
 
-public class SystemStatistic extends AbstractStatistic{
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class SystemStatistic extends AbstractStatistic {
 
     double cpu;
 

@@ -1,7 +1,9 @@
 package ru.jamsys.scheduler;
 
-import lombok.Setter;
 import ru.jamsys.Procedure;
+import ru.jamsys.statistic.AvgMetric;
+import ru.jamsys.statistic.SchedulerThreadStatistic;
+import ru.jamsys.statistic.Statistic;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
@@ -9,6 +11,7 @@ import java.util.function.Consumer;
 public class SchedulerThreadImpl extends AbstractSchedulerThread {
 
     final CopyOnWriteArrayList<Procedure> listProcedure = new CopyOnWriteArrayList<>();
+    AvgMetric execTime = new AvgMetric();
 
     public SchedulerThreadImpl(String name, long periodMillis) {
         super(name, periodMillis);
@@ -31,7 +34,16 @@ public class SchedulerThreadImpl extends AbstractSchedulerThread {
 
     @Override
     public <T> Consumer<T> getConsumer() {
-        return (t) -> listProcedure.forEach(Procedure::run);
+        return (t) -> listProcedure.forEach((Procedure action) -> {
+            long startTime = System.currentTimeMillis();
+            action.run();
+            execTime.add(System.currentTimeMillis() - startTime);
+        });
+    }
+
+    @Override
+    public Statistic flushAndGetStatistic() {
+        return new SchedulerThreadStatistic(execTime.flush());
     }
 
 }
