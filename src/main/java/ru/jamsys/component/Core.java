@@ -17,6 +17,8 @@ public class Core extends AbstractCoreComponent {
     List<Class<? extends AbstractCoreComponent>> list = new ArrayList<>();
 
     public Core() {
+        list.add(Secret.class);
+        list.add(Security.class);
         list.add(Scheduler.class);
         list.add(Broker.class);
         list.add(StatisticAggregator.class);

@@ -30,6 +30,11 @@ public class Security extends AbstractCoreComponent {
     private char[] password;
     AtomicBoolean isInit = new AtomicBoolean(false);
 
+    @Override
+    public void run() {
+        super.run();
+    }
+
     public void init(char[] password) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         if (isInit.compareAndSet(false, true)) {
             this.password = password;
