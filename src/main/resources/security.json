@@ -1,0 +1,8 @@
+{
+  "password": "",
+  "addAlias": {
+    "telegram.api-token": "",
+    "server.ssl.key-store-password": "",
+    "jdbc.postgresql.password": ""
+  }
+}

@@ -7,6 +7,9 @@ import org.springframework.util.StringUtils;
 import java.io.*;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Timestamp;
@@ -234,13 +237,15 @@ public class Util {
         return urlDecode(data, defaultCharset);
     }
 
-    public static byte[] getHash(String data, String hashType, String charset) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    public static byte[] getHash(byte[] bytes, String hashType) throws NoSuchAlgorithmException {
         // MD2, MD5, SHA1, SHA-256, SHA-384, SHA-512
-        byte[] bytes = data.getBytes(charset);
         java.security.MessageDigest crypt2 = java.security.MessageDigest.getInstance(hashType);
         crypt2.reset();
         crypt2.update(bytes);
         return crypt2.digest();
+    }
+    public static byte[] getHash(String data, String hashType, String charset) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        return getHash(data.getBytes(charset), hashType);
     }
 
     @SuppressWarnings("unused")
@@ -380,6 +385,17 @@ public class Util {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static byte[] charsToBytes(char[] chars) {
+        ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap(chars));
+        return Arrays.copyOf(byteBuffer.array(), byteBuffer.limit());
+    }
+
+    @SuppressWarnings("unused")
+    public static char[] bytesToChars(byte[] bytes) {
+        CharBuffer charBuffer = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(bytes));
+        return Arrays.copyOf(charBuffer.array(), charBuffer.limit());
     }
 
 

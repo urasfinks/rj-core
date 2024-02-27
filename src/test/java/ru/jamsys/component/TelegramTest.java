@@ -20,9 +20,9 @@ class TelegramTest {
     }
 
     @Test
-    void syncSend() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    void syncSend() {
         Security security = App.context.getBean(Security.class);
-        security.init("12345".toCharArray());
+        //security.init("12345".toCharArray());
         Telegram telegram = App.context.getBean(Telegram.class);
         JsonHttpResponse jsonHttpResponse = telegram.syncSend("-983316261", "Hello world");
         System.out.println(jsonHttpResponse.toString());

@@ -4,19 +4,20 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.AbstractCoreComponent;
-import ru.jamsys.FileWriteOptions;
-import ru.jamsys.UtilFile;
+import ru.jamsys.*;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.NoSuchFileException;
+import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Map;
 
 @Component
 @Lazy
@@ -24,55 +25,190 @@ public class Security extends AbstractCoreComponent {
 
     @Setter
     @Value("${rj.core.security.path:security/security.jks}")
-    private String path;
+    private String pathStorage;
+
+    @Setter
+    @Value("${rj.core.secret.path:security/security.token}")
+    private String pathToken;
+
+    @Setter
+    @Value("${rj.core.secret.path:security/security.json}")
+    private String pathInit;
+
 
     private volatile KeyStore keyStore = null;
-    private char[] password;
-    AtomicBoolean isInit = new AtomicBoolean(false);
+
+    private char[] privateKey = {};
+
+    private String hashPassword = null;
+    private final String hashPasswordType = "SHA1";
+
+    @SuppressWarnings("unused")
+    public void setPrivateKey(char[] newPrivateKey) {
+        privateKey = newPrivateKey;
+    }
+
+    public String typeStorage = "JCEKS";
+
+    private KeyStore.PasswordProtection keyStorePP;
 
     @Override
     public void run() {
         super.run();
-    }
+        byte[] token = UtilFile.readBytes(pathToken, null);
 
-    public void init(char[] password) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-        if (isInit.compareAndSet(false, true)) {
-            this.password = password;
+        Util.logConsole("Security Check privateKey: " + (privateKey != null && privateKey.length > 0));
+        Util.logConsole("Security Check token: " + (token != null && token.length > 0));
 
-            File f = new File(path);
-            if (!f.exists()) {
-                createKeyStore();
-            } else {
-                try (InputStream stream = new ByteArrayInputStream(UtilFile.readBytes(path))) {
-                    keyStore = KeyStore.getInstance("JCEKS");
-                    keyStore.load(stream, this.password);
-                } catch (Exception e) {
-                    keyStore = null;
-                    e.printStackTrace();
-                }
+        if (token != null && token.length > 0 && privateKey != null && privateKey.length > 0) {
+            // У нас всё установлено можем просто работать
+            byte[] passwordKeyStore = decryptStoragePassword(token);
+            if (passwordKeyStore.length == 0) {
+                throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + pathToken + "]");
             }
+            try {
+                init(Util.bytesToChars(passwordKeyStore));
+            } catch (Exception e) {
+                throw new RuntimeException("Security.run() init exception", e);
+            }
+            UtilFile.removeIfExist(pathInit);
+            setPrivateKey(new char[]{});
+        } else {
+            UtilFile.removeIfExist(pathStorage);
+            //У нас чего то не хватает выводим предупреждения
+            byte[] initJson = createInitTemplateFile();
+            String passwordFromInfoJson = getPasswordFromInfoJson(initJson);
+            printNotice(passwordFromInfoJson);
         }
     }
 
-    private void createKeyStore() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
-        keyStore = KeyStore.getInstance("JCEKS");
-        keyStore.load(null, password);
-        save();
+    private String getPasswordFromInfoJson(byte[] initJson) {
+        if (initJson == null || initJson.length == 0) {
+            throw new RuntimeException("File: [" + pathInit + "] is empty");
+        }
+        String result = null;
+        String initString = new String(initJson, StandardCharsets.UTF_8);
+        WrapJsonToObject<Map<String, Object>> mapWrapJsonToObject = UtilJson.toMap(initString);
+        if (mapWrapJsonToObject.getException() == null && !mapWrapJsonToObject.getObject().isEmpty()) {
+            result = (String) mapWrapJsonToObject.getObject().get("password");
+        }
+        if (result == null || "".equals(result.trim())) {
+            throw new RuntimeException("Password json field from [" + pathInit + "] is empty");
+        }
+        return result;
     }
 
-    public void add(String key, char[] value) {
-        if (keyStore != null) {
+    private void printNotice(String password) {
+        try {
+            if (password != null && !"".equals(password.trim())) {
+                KeyPair keyPair = UtilRsa.genPair();
+                byte[] token = UtilRsa.encrypt(keyPair, password.getBytes(StandardCharsets.UTF_8));
+                UtilFile.writeBytes(pathToken, token, FileWriteOptions.CREATE_OR_REPLACE);
+                String privateKey = UtilBase64.base64Encode(keyPair.getPrivate().getEncoded(), true);
+                System.err.println("== NEED INIT SECURITY ===========================");
+                System.err.println("App.context.getBean(Security.class).setPrivateKey(\"\"\"\n" + privateKey + "\n\"\"\".toCharArray());");
+            } else {
+                System.err.println("== NEED INIT SECURITY ===========================");
+                System.err.println("** Update file [" + pathInit + "]; password field must not be empty");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Other problem", e);
+        }
+        System.err.println("== NEED INIT SECURITY ===========================");
+        throw new RuntimeException("Security.run() failed");
+    }
+
+    private byte[] decryptStoragePassword(byte[] token) {
+        byte[] bytesPrivateKey = UtilBase64.base64DecodeResultBytes(Util.charsToBytes(privateKey));
+        if (bytesPrivateKey == null || bytesPrivateKey.length == 0) {
+            throw new RuntimeException("Private key is empty");
+        }
+        byte[] bytesPasswordKeyStore;
+        try {
+            bytesPasswordKeyStore = UtilRsa.decrypt(UtilRsa.getPrivateKey(bytesPrivateKey), token);
+        } catch (Exception e) {
+            UtilFile.removeIfExist(pathToken);
+            throw new RuntimeException("Decrypt token exception. File: [" + pathToken + "] removed, please restart application", e);
+        }
+        if (bytesPasswordKeyStore == null || bytesPasswordKeyStore.length == 0) {
+            throw new RuntimeException("Decrypt Token empty. Change/remove token file: [" + pathToken + "]");
+        }
+        return bytesPasswordKeyStore;
+    }
+
+    private byte[] createInitTemplateFile() {
+        byte[] init;
+        try {
+            init = UtilFile.readBytes(pathInit);
+        } catch (FileNotFoundException | NoSuchFileException exception) {
+            //Если нет - создадим
+            System.err.println("== NEED INIT SECURITY ===========================");
+            System.err.println("** Update file [" + pathInit + "]");
+            System.err.println("== NEED INIT SECURITY ===========================");
             try {
-                KeyStore.PasswordProtection keyStorePP = new KeyStore.PasswordProtection(password);
+                init = UtilFileResource.get("security.json").readAllBytes();
+                UtilFile.writeBytes(pathInit, init, FileWriteOptions.CREATE_OR_REPLACE);
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+            //Нет смысла продолжать работу, когда файл инициализации в данный момент пустой
+            throw new RuntimeException("Update file [" + pathInit + "]");
+        } catch (IOException e) {
+            //Если возникли другие проблемы при чтение файла инициализации прекратим работу
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        return init;
+    }
+
+    private boolean checkPassword(char[] password) {
+        try {
+            return hashPassword != null
+                    && hashPassword.equals(
+                    new String(
+                            Util.getHash(Util.charsToBytes(password), hashPasswordType),
+                            StandardCharsets.UTF_8
+                    ));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private void init(char[] password) throws Exception {
+        if (password == null || password.length == 0) {
+            throw new RuntimeException("Password is empty; Change/remove token file: [" + pathToken + "]");
+        }
+        hashPassword = new String(Util.getHash(Util.charsToBytes(password), hashPasswordType), StandardCharsets.UTF_8);
+        keyStorePP = new KeyStore.PasswordProtection(password);
+        File f = new File(pathStorage);
+        if (!f.exists()) {
+            keyStore = KeyStore.getInstance(typeStorage);
+            keyStore.load(null, password);
+            save(password);
+        } else {
+            try (InputStream stream = new ByteArrayInputStream(UtilFile.readBytes(pathStorage))) {
+                keyStore = KeyStore.getInstance(typeStorage);
+                keyStore.load(stream, password);
+            } catch (Exception e) {
+                keyStore = null;
+                throw e;
+            }
+        }
+
+    }
+
+    public void add(String key, char[] value, char[] password) throws Exception {
+        if (keyStore != null) {
+            if (checkPassword(password)) {
                 SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
                 SecretKey generatedSecret = factory.generateSecret(new PBEKeySpec(value, "any".getBytes(), 13));
                 keyStore.setEntry(key, new KeyStore.SecretKeyEntry(generatedSecret), keyStorePP);
-                save();
-            } catch (Exception e) {
-                e.printStackTrace();
+                save(password);
+            } else {
+                throw new Exception("Не верный пароль");
             }
         } else {
-            new Exception("Security компонент не инициализирован, исполните init(${pass})").printStackTrace();
+            throw new Exception("Security компонент не инициализирован");
         }
     }
 
@@ -83,7 +219,6 @@ public class Security extends AbstractCoreComponent {
 
     public char[] get(String key) throws Exception {
         if (keyStore != null) {
-            KeyStore.PasswordProtection keyStorePP = new KeyStore.PasswordProtection(password);
             KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) keyStore.getEntry(key, keyStorePP);
             if (ske != null) {
                 SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
@@ -92,25 +227,24 @@ public class Security extends AbstractCoreComponent {
             }
             return null;
         } else {
-            throw new Exception("Security компонент не инициализирован, исполните init(${pass})");
+            throw new Exception("Security компонент не инициализирован");
         }
     }
 
-    public void remove(String key) {
-        try {
+    public void remove(String key, char[] password) throws Exception {
+        if (checkPassword(password)) {
             keyStore.deleteEntry(key);
-            save();
-        } catch (Exception e) {
-            e.printStackTrace();
+            save(password);
+        } else {
+            throw new Exception("Не верный пароль");
         }
     }
 
-    private void save() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    private void save(char[] password) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         keyStore.store(byteArrayOutputStream, password);
-        UtilFile.writeBytes(path, byteArrayOutputStream.toByteArray(), FileWriteOptions.CREATE_OR_REPLACE);
+        UtilFile.writeBytes(pathStorage, byteArrayOutputStream.toByteArray(), FileWriteOptions.CREATE_OR_REPLACE);
     }
-
 
     @Override
     public void flushStatistic() {

@@ -14,6 +14,14 @@ import java.util.Objects;
 public class UtilFile {
 
     @SuppressWarnings("unused")
+    public static byte[] readBytes(String path, byte[] def) {
+        try {
+            return readBytes(path);
+        } catch (Exception ignored) {
+        }
+        return def;
+    }
+
     public static byte[] readBytes(String path) throws IOException {
         return Files.readAllBytes(Paths.get(path));
     }
@@ -26,15 +34,23 @@ public class UtilFile {
             Files.createDirectories(parent);
         }
         switch (fileWriteOptions) {
-            case CREATE_OR_REPLACE ->
-                    Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
-            case CREATE_OR_APPEND ->
-                    Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE);
+            case CREATE_OR_REPLACE -> Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            case CREATE_OR_APPEND -> Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE);
             default -> Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         }
     }
 
     @SuppressWarnings("unused")
+    public static void removeIfExist(String path) {
+        try {
+            if (Files.exists(Paths.get(path))) {
+                remove(path);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void remove(String path) throws IOException {
         Files.delete(Paths.get(path));
     }

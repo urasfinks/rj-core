@@ -17,7 +17,6 @@ public class Core extends AbstractCoreComponent {
     List<Class<? extends AbstractCoreComponent>> list = new ArrayList<>();
 
     public Core() {
-        list.add(Secret.class);
         list.add(Security.class);
         list.add(Scheduler.class);
         list.add(Broker.class);
@@ -31,7 +30,9 @@ public class Core extends AbstractCoreComponent {
     }
 
     public void run(Class<? extends AbstractCoreComponent> statisticReader) {
-        list.add(statisticReader);
+        if (statisticReader != null) {
+            list.add(statisticReader);
+        }
         for (Class<? extends AbstractCoreComponent> cls : list) {
             App.context.getBean(cls).run();
         }
