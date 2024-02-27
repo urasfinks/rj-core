@@ -17,7 +17,10 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 @Lazy
@@ -71,7 +74,18 @@ public class Security extends AbstractCoreComponent {
             } catch (Exception e) {
                 throw new RuntimeException("Security.run() init exception", e);
             }
+            if (UtilFile.ifExist(pathInit)) {
+                insertAliases(Util.bytesToChars(passwordKeyStore));
+            }
             UtilFile.removeIfExist(pathInit);
+            try {
+                Util.logConsole(
+                        "KeyStore available aliases: "
+                                + UtilJson.toStringPretty(getAvailableAliases(), "[]")
+                );
+            } catch (Exception ignore) {
+
+            }
             setPrivateKey(new char[]{});
         } else {
             UtilFile.removeIfExist(pathStorage);
@@ -80,6 +94,37 @@ public class Security extends AbstractCoreComponent {
             String passwordFromInfoJson = getPasswordFromInfoJson(initJson);
             printNotice(passwordFromInfoJson);
         }
+    }
+
+    private void insertAliases(char[] password) {
+        try {
+            byte[] initJson = UtilFile.readBytes(pathInit);
+            if (initJson.length > 0) {
+                String initString = new String(initJson, StandardCharsets.UTF_8);
+                WrapJsonToObject<Map<String, Object>> mapWrapJsonToObject = UtilJson.toMap(initString);
+                if (mapWrapJsonToObject.getException() == null && !mapWrapJsonToObject.getObject().isEmpty()) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> addAlias = (Map<String, Object>) mapWrapJsonToObject.getObject().get("addAlias");
+                    if (addAlias != null) {
+                        for (String key : addAlias.keySet()) {
+                            add(key, addAlias.get(key).toString().toCharArray(), password);
+                        }
+                        save(password);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Set<String> getAvailableAliases() {
+        try {
+            return new HashSet<>(Collections.list(keyStore.aliases()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new HashSet<>();
     }
 
     private String getPasswordFromInfoJson(byte[] initJson) {
@@ -174,7 +219,7 @@ public class Security extends AbstractCoreComponent {
         return false;
     }
 
-    private void init(char[] password) throws Exception {
+    public void init(char[] password) throws Exception {
         if (password == null || password.length == 0) {
             throw new RuntimeException("Password is empty; Change/remove token file: [" + pathToken + "]");
         }

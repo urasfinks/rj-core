@@ -34,16 +34,22 @@ public class UtilFile {
             Files.createDirectories(parent);
         }
         switch (fileWriteOptions) {
-            case CREATE_OR_REPLACE -> Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
-            case CREATE_OR_APPEND -> Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE);
+            case CREATE_OR_REPLACE ->
+                    Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            case CREATE_OR_APPEND ->
+                    Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE);
             default -> Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         }
     }
 
-    @SuppressWarnings("unused")
+
+    public static boolean ifExist(String path) {
+        return Files.exists(Paths.get(path));
+    }
+
     public static void removeIfExist(String path) {
         try {
-            if (Files.exists(Paths.get(path))) {
+            if (ifExist(path)) {
                 remove(path);
             }
         } catch (Exception e) {
