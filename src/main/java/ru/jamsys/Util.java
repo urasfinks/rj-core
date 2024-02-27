@@ -65,7 +65,7 @@ public class Util {
         throw new Exception("Deprecated");
     }
 
-    public static void sleepMillis(int millis) {
+    public static void sleepMillis(long millis) {
         try {
             TimeUnit.MILLISECONDS.sleep(millis);
         } catch (InterruptedException e) {
