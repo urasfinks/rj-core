@@ -21,12 +21,12 @@ public class SchedulerThreadFinal extends SchedulerThreadImpl {
             listProcedure.forEach((Procedure action) -> {
                 long startTime = System.currentTimeMillis();
                 action.run();
-                execTime.add(System.currentTimeMillis() - startTime);
+                timeExecute.add(System.currentTimeMillis() - startTime);
             });
             if (finalProcedure != null) {
                 long startTime = System.currentTimeMillis();
                 finalProcedure.run();
-                execTime.add(System.currentTimeMillis() - startTime);
+                timeExecute.add(System.currentTimeMillis() - startTime);
             }
         };
     }

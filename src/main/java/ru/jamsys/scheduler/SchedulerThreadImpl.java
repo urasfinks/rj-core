@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 public class SchedulerThreadImpl extends AbstractSchedulerThread {
 
     final CopyOnWriteArrayList<Procedure> listProcedure = new CopyOnWriteArrayList<>();
-    AvgMetric execTime = new AvgMetric();
+    AvgMetric timeExecute = new AvgMetric();
 
     public SchedulerThreadImpl(String name, long periodMillis) {
         super(name, periodMillis);
@@ -37,13 +37,13 @@ public class SchedulerThreadImpl extends AbstractSchedulerThread {
         return (t) -> listProcedure.forEach((Procedure action) -> {
             long startTime = System.currentTimeMillis();
             action.run();
-            execTime.add(System.currentTimeMillis() - startTime);
+            timeExecute.add(System.currentTimeMillis() - startTime);
         });
     }
 
     @Override
     public Statistic flushAndGetStatistic() {
-        return new SchedulerThreadStatistic(execTime.flush());
+        return new SchedulerThreadStatistic(timeExecute.flush());
     }
 
 }

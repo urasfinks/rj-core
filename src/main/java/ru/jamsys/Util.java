@@ -348,6 +348,10 @@ public class Util {
         return sb.toString();
     }
 
+    public static String ucword(String someString){
+        return someString.substring(0,1).toUpperCase() + someString.substring(1);
+    }
+
     public static <T> void riskModifierCollection(Collection<T> collection, T[] toArray, Consumer<T> consumer) {
         if (collection != null && !collection.isEmpty()) {
             try {
@@ -396,6 +400,11 @@ public class Util {
     public static char[] bytesToChars(byte[] bytes) {
         CharBuffer charBuffer = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(bytes));
         return Arrays.copyOf(charBuffer.array(), charBuffer.limit());
+    }
+
+    public static long zeroLastNDigits(long x, long n) {
+        long tenToTheN = (long) Math.pow(10, n);
+        return (x / tenToTheN) * tenToTheN;
     }
 
 
