@@ -29,6 +29,10 @@ public class Task {
         this.timeOutExecuteMillis = timeOutExecuteMillis; //TimeManager будет кидать interrupt если что
     }
 
+    public void onKill(){
+
+    }
+
     public String getIndex() {
         if (index == null) {
             index = compileIndex();

@@ -74,7 +74,7 @@ public class ExecutorServiceScheduler implements ExecutorService {
         run();
     }
 
-    public void shutdown() { //maxTimeExecute 1000+1000
+    public void shutdown() { //timeMaxExecute 1500+1500 = 3000ms
         if (isRun.get()) { //ЧТо бы что-то тушит, надо что бы это что-то было поднято)
             isWhile.set(false); //Говорим всем потокам и их внутренним циклам, что пора заканчивать
             long timeOutMillis = 1500;
@@ -104,6 +104,7 @@ public class ExecutorServiceScheduler implements ExecutorService {
                     Util.logConsole("Thread " + poll.getName() + " > stop()");
                     Util.riskModifierCollection(timeManager.getQueue(), new TaskStatisticExecute[0], (TaskStatisticExecute taskStatisticExecute) -> {
                         if (taskStatisticExecute.getThread().equals(poll)) {
+                            //TODO: закинуть на обработку onKill для Task
                             timeManager.getQueue().remove(taskStatisticExecute);
                         }
                     });
