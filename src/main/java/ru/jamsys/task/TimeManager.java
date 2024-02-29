@@ -19,7 +19,7 @@ public class TimeManager {
         Map<String, LongSummaryStatistics> result = new HashMap<>();
         TaskStatisticExecute[] taskStatisticExecutes = queue.toArray(new TaskStatisticExecute[0]);
         for (TaskStatisticExecute taskStatisticExecute : taskStatisticExecutes) {
-            String taskIndex = taskStatisticExecute.getTask().getIndex();
+            String taskIndex = taskStatisticExecute.getIndex();
             if (!mapByTask.containsKey(taskIndex)) {
                 mapByTask.put(taskIndex, new AvgMetric());
             }
