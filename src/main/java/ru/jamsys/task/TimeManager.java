@@ -28,8 +28,9 @@ public class TimeManager {
                 mapByTask.get(taskIndex).add(taskStatisticExecute.getTimeExecute());
             } else {
                 long currentTime = System.currentTimeMillis() - taskStatisticExecute.getTimeStart();
-                if(currentTime > taskStatisticExecute.getTask().getTimeOutExecuteMillis()){
-                    taskStatisticExecute.getThreadWrap().getNewThread().reload();
+                if (currentTime > taskStatisticExecute.getTask().getTimeOutExecuteMillis()) {
+                    Util.logConsole("Alarm!! Task: " + taskIndex + " timeOut: " + currentTime + " > " + taskStatisticExecute.getTask().getTimeOutExecuteMillis());
+                    taskStatisticExecute.getExecutorService().reload();
                 }
                 mapByTask.get(taskIndex).add(currentTime);
             }

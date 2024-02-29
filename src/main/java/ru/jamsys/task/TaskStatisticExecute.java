@@ -1,17 +1,20 @@
 package ru.jamsys.task;
 
 import lombok.Data;
-import ru.jamsys.scheduler.NewThreadWrap;
+import ru.jamsys.thread.ExecutorService;
 
 @Data
 public class TaskStatisticExecute {
-    NewThreadWrap threadWrap;
+
+    final Thread thread;
+    final ExecutorService executorService;
     long timeStart = System.currentTimeMillis();
     Long timeExecute = null;
     Task task;
 
-    public TaskStatisticExecute(NewThreadWrap threadWrap, Task task) {
-        this.threadWrap = threadWrap;
+    public TaskStatisticExecute(ExecutorService executorService, Thread thread, Task task) {
+        this.executorService = executorService;
+        this.thread = thread;
         this.task = task;
     }
 

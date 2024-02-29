@@ -3,28 +3,37 @@ package ru.jamsys.scheduler;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.Util;
 import ru.jamsys.task.Task;
+import ru.jamsys.thread.ExecutorServiceScheduler;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class AbstractSchedulerThreadTest {
 
     @Test
-    public void test() throws InterruptedException {
-        NewThread newThread = new NewThread(1000);
-        Task task = new Task((AtomicBoolean isRun) -> {
-            Util.sleepMillis(10000);
-            Util.logConsole("world");
+    public void test() {
+        ExecutorServiceScheduler service = new ExecutorServiceScheduler(1000);
+        Task task = new Task((AtomicBoolean isWhile) -> {
+            long time = System.currentTimeMillis();
+            int count = 0;
+            for (long i = 0; i < Long.MAX_VALUE; i++) {
+                count++;
+            }
+            if (isWhile.get()) {
+                Util.logConsole("count: " + count + "; time: " + (System.currentTimeMillis() - time));
+            }
         }, 2000);
         task.getTags().put("name", "word");
-        newThread.getListTask().add(task);
-        newThread.run();
 
+        service.getListTask().add(task);
+        service.run();
 
         Util.sleepMillis(3000);
-        newThread.getTimeManager().flush();
-        Util.sleepMillis(5000);
-        newThread.getTimeManager().flush();
-        newThread.shutdown();
+        service.getTimeManager().flush();
+
+        Util.sleepMillis(7000);
+        service.getTimeManager().flush();
+        Util.sleepMillis(7000);
+        service.shutdown();
     }
 
 }
