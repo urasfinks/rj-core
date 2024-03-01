@@ -2,8 +2,6 @@ package ru.jamsys.scheduler;
 
 import ru.jamsys.Procedure;
 import ru.jamsys.statistic.AvgMetric;
-import ru.jamsys.statistic.SchedulerThreadStatistic;
-import ru.jamsys.statistic.Statistic;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
@@ -39,11 +37,6 @@ public class SchedulerThreadImpl extends AbstractSchedulerThread {
             action.run();
             timeExecute.add(System.currentTimeMillis() - startTime);
         });
-    }
-
-    @Override
-    public Statistic flushAndGetStatistic() {
-        return new SchedulerThreadStatistic(timeExecute.flush());
     }
 
 }

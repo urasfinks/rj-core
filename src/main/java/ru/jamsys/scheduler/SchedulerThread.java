@@ -21,6 +21,4 @@ public interface SchedulerThread {
 
     String getName();
 
-    Statistic flushAndGetStatistic();
-
 }

@@ -6,9 +6,11 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.AbstractCoreComponent;
 import ru.jamsys.Util;
 import ru.jamsys.broker.BrokerQueue;
+import ru.jamsys.broker.Queue;
 import ru.jamsys.scheduler.SchedulerType;
 import ru.jamsys.statistic.MapStatistic;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.statistic.StatisticFlush;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,36 +19,29 @@ import java.util.concurrent.ConcurrentHashMap;
 @Lazy
 public class Broker extends AbstractCoreComponent {
 
-    private final Map<Class<?>, BrokerQueue<?>> mapBrokerQueue = new ConcurrentHashMap<>();
+    private final Map<Class<?>, Queue<?>> mapQueue = new ConcurrentHashMap<>();
     private final Scheduler scheduler;
-    private final ConfigurableApplicationContext applicationContext;
-    private StatisticAggregator statisticAggregator; //Не можем сразу инициализировать из-за циклической зависимости
 
     public Broker(Scheduler scheduler, ConfigurableApplicationContext applicationContext) {
         this.scheduler = scheduler;
-        this.applicationContext = applicationContext;
-    }
-
-    public void run() {
-        statisticAggregator = applicationContext.getBean(StatisticAggregator.class);
-        scheduler.get(SchedulerType.SCHEDULER_STATISTIC_WRITE).add(this::flushStatistic);
     }
 
     @SuppressWarnings("unused")
     public <T> void add(Class<T> cls, T o) throws Exception {
-        BrokerQueue<T> brokerQueue = get(cls);
-        brokerQueue.add(o);
+        Queue<T> queue = get(cls);
+        queue.add(o);
     }
 
     @SuppressWarnings("unused")
-    public <T> BrokerQueue<T> get(Class<T> cls) {
+    public <T> Queue<T> get(Class<T> cls) {
+        //TODO: добавить маршрутизатор для класса
         //If the key was not present in the map, it maps the passed value to the key and returns null.
-        if (!mapBrokerQueue.containsKey(cls)) {
-            mapBrokerQueue.putIfAbsent(cls, new BrokerQueue<T>());
+        if (!mapQueue.containsKey(cls)) {
+            mapQueue.putIfAbsent(cls, new BrokerQueue<T>());
         }
         @SuppressWarnings("unchecked")
-        BrokerQueue<T> brokerQueue = (BrokerQueue<T>) mapBrokerQueue.get(cls);
-        return brokerQueue;
+        Queue<T> queue = (Queue<T>) mapQueue.get(cls);
+        return queue;
     }
 
     @SuppressWarnings("unused")
@@ -64,11 +59,10 @@ public class Broker extends AbstractCoreComponent {
         super.shutdown();
         scheduler.get(SchedulerType.SCHEDULER_STATISTIC_WRITE).remove(this::flushStatistic);
         Util.riskModifierMap(
-                mapBrokerQueue,
+                mapQueue,
                 new Class<?>[0],
-                (Class<?> cls, BrokerQueue<?> brokerQueue) -> {
-                    brokerQueue.shutdown();
-                    mapBrokerQueue.remove(cls);
+                (Class<?> cls, Queue<?> queue) -> {
+                    mapQueue.remove(cls);
                 }
         );
     }
@@ -77,12 +71,13 @@ public class Broker extends AbstractCoreComponent {
     public void flushStatistic() {
         MapStatistic<Class<?>, Statistic> statistic = new MapStatistic<>();
         Util.riskModifierMap(
-                mapBrokerQueue,
+                mapQueue,
                 new Class[0],
-                (Class<?> cls, BrokerQueue<?> brokerQueue)
-                        -> statistic.getMap().put(cls, brokerQueue.flushAndGetStatistic())
+                (Class<?> cls, Queue<?> queue)
+                        -> statistic.getMap().put(cls, ((StatisticFlush) queue).flushAndGetStatistic())
         );
-        statisticAggregator.add(getClass(), statistic);
+        //TODO: что-то надо сделать) пока просто закоментил
+        //statisticAggregator.add(getClass(), statistic);
     }
 
 }

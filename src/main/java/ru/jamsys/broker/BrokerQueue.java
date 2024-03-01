@@ -1,9 +1,11 @@
 package ru.jamsys.broker;
 
+import lombok.Data;
 import ru.jamsys.Util;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.BrokerQueueStatistic;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.statistic.StatisticFlush;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +13,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class BrokerQueue<T> {
+@Data
+public class BrokerQueue<T> implements Queue<T>, StatisticFlush {
 
     private final ConcurrentLinkedDeque<ElementWrap<T>> queue = new ConcurrentLinkedDeque<>();
     //Последний сообщения проходящие через очередь
@@ -30,6 +33,7 @@ public class BrokerQueue<T> {
         return queue.size();
     }
 
+    @Override
     public void add(T o) throws Exception {
         tpsInput.incrementAndGet();
         if (cyclical) {
@@ -49,30 +53,23 @@ public class BrokerQueue<T> {
         }
     }
 
-    private T stat(ElementWrap<T> elementWrap) {
+    private void statistic(ElementWrap<T> elementWrap) {
         if (elementWrap != null) {
             tpsOutput.incrementAndGet();
             timeInQueue.add(System.currentTimeMillis() - elementWrap.getTimestamp());
-            return elementWrap.getElement();
         }
-        return null;
     }
 
     public T pollFirst() {
-        return stat(queue.pollFirst());
+        ElementWrap<T> elementWrap = queue.pollFirst();
+        statistic(elementWrap);
+        return elementWrap.getElement();
     }
 
     public T pollLast() {
-        return stat(queue.pollLast());
-    }
-
-    public Statistic flushAndGetStatistic() {
-        return new BrokerQueueStatistic(
-                tpsInput.getAndSet(0),
-                tpsOutput.getAndSet(0),
-                queue.size(),
-                timeInQueue.flush()
-        );
+        ElementWrap<T> elementWrap = queue.pollLast();
+        statistic(elementWrap);
+        return elementWrap.getElement();
     }
 
     @SafeVarargs
@@ -93,21 +90,14 @@ public class BrokerQueue<T> {
         return ret;
     }
 
-    public void setSizeQueue(int sizeQueue) {
-        this.sizeQueue = sizeQueue;
-    }
-
-    public void setSizeTail(int sizeTail) {
-        this.sizeTail = sizeTail;
-    }
-
-    public void setCyclical(boolean cyclical) {
-        this.cyclical = cyclical;
-    }
-
-    public void shutdown() {
-        // Не считаю, что данные в очереди должны быть очищены
-        // Может быть их кто-то успеет ещё обработать?
+    @Override
+    public Statistic flushAndGetStatistic() {
+        return new BrokerQueueStatistic(
+                tpsInput.getAndSet(0),
+                tpsOutput.getAndSet(0),
+                queue.size(),
+                timeInQueue.flush()
+        );
     }
 
 }
