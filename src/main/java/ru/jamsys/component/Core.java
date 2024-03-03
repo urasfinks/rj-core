@@ -2,38 +2,34 @@ package ru.jamsys.component;
 
 import lombok.Getter;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-import ru.jamsys.AbstractCoreComponent;
+
 import ru.jamsys.App;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@org.springframework.stereotype.Component
 @Lazy
-public class Core extends AbstractCoreComponent {
+public class Core extends AbstractComponent {
 
     @Getter
-    List<Class<? extends AbstractCoreComponent>> list = new ArrayList<>();
+    List<Class<? extends Component>> list = new ArrayList<>();
 
     public Core() {
-        list.add(Security.class);
-        list.add(Scheduler.class);
-        list.add(Broker.class);
-        list.add(StatisticAggregator.class);
-        list.add(StatisticSystem.class);
+        //list.add(Security.class);
+        //list.add(Scheduler.class);
+        //list.add(Broker.class);
+        //list.add(StatisticAggregator.class);
+        //list.add(StatisticSystem.class);
+        list.add(ExecutorService.class);
+        list.add(SystemStatistic.class);
     }
 
-    @Override
-    public void flushStatistic() {
-
-    }
-
-    public void run(Class<? extends AbstractCoreComponent> statisticReader) {
+    public void run(Class<? extends Component> statisticReader) {
         if (statisticReader != null) {
             list.add(statisticReader);
         }
-        for (Class<? extends AbstractCoreComponent> cls : list) {
+        for (Class<? extends Component> cls : list) {
             App.context.getBean(cls).run();
         }
     }

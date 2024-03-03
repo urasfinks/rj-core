@@ -1,7 +1,5 @@
 package ru.jamsys.pool;
 
-import ru.jamsys.statistic.PoolStatistic;
-
 public interface Pool<T> {
 
     @SuppressWarnings("unused")
@@ -13,9 +11,6 @@ public interface Pool<T> {
     T createResource();
 
     void closeResource(T resource);
-
-    @SuppressWarnings("unused")
-    PoolStatistic flushStatistic();
 
     @SuppressWarnings("unused")
     void stabilizer();

@@ -1,28 +1,35 @@
 package ru.jamsys.broker;
 
-import lombok.Data;
-import ru.jamsys.Util;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.lang.Nullable;
+import ru.jamsys.App;
+import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.statistic.AvgMetric;
-import ru.jamsys.statistic.BrokerQueueStatistic;
 import ru.jamsys.statistic.Statistic;
-import ru.jamsys.statistic.StatisticFlush;
+import ru.jamsys.statistic.StatisticsCollector;
+import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Data
-public class BrokerQueue<T> implements Queue<T>, StatisticFlush {
+@Getter
+@Setter
+public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
 
-    private final ConcurrentLinkedDeque<ElementWrap<T>> queue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<T> queue = new ConcurrentLinkedDeque<>();
+    private final Map<T, Long> timing = new ConcurrentHashMap<>();
     //Последний сообщения проходящие через очередь
     private final ConcurrentLinkedDeque<T> tail = new ConcurrentLinkedDeque<>();
     private final AtomicInteger tpsInput = new AtomicInteger(0);
     private final AtomicInteger tpsOutput = new AtomicInteger(0);
 
-    //private final ConcurrentLinkedQueue<Long> timeInQueue = new ConcurrentLinkedQueue<>();
     private final AvgMetric timeInQueue = new AvgMetric();
 
     private int sizeQueue = 3000;
@@ -35,41 +42,52 @@ public class BrokerQueue<T> implements Queue<T>, StatisticFlush {
 
     @Override
     public void add(T o) throws Exception {
-        tpsInput.incrementAndGet();
         if (cyclical) {
-            queue.add(new ElementWrap<>(o));
-            if (queue.size() > sizeQueue) {
+            if (queue.size() >= sizeQueue) {
                 queue.removeFirst();
             }
         } else {
             if (queue.size() > sizeQueue) {
                 throw new Exception("Limit BrokerQueue: " + o.getClass().getSimpleName() + "; limit: " + sizeQueue + "; object: " + o);
             }
-            queue.add(new ElementWrap<>(o));
         }
+        tpsInput.incrementAndGet();
+        timing.put(o, System.currentTimeMillis());
+        queue.add(o);
         tail.add(o);
         if (tail.size() > sizeTail) {
             tail.pollFirst();
         }
     }
 
-    private void statistic(ElementWrap<T> elementWrap) {
-        if (elementWrap != null) {
+    private void statistic(T o) {
+        if (o != null) {
             tpsOutput.incrementAndGet();
-            timeInQueue.add(System.currentTimeMillis() - elementWrap.getTimestamp());
+            Long remove = timing.remove(o);
+            if (remove != null) {
+                timeInQueue.add(System.currentTimeMillis() - remove);
+            } else {
+                App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Object not found in the timing map. This is a serious problem with your implementation"));
+            }
         }
     }
 
     public T pollFirst() {
-        ElementWrap<T> elementWrap = queue.pollFirst();
-        statistic(elementWrap);
-        return elementWrap.getElement();
+        T result = queue.pollFirst();
+        statistic(result);
+        return result;
     }
 
     public T pollLast() {
-        ElementWrap<T> elementWrap = queue.pollLast();
-        statistic(elementWrap);
-        return elementWrap.getElement();
+        T result = queue.pollLast();
+        statistic(result);
+        return result;
+    }
+
+    @Override
+    public void remove(T object) {
+        statistic(object);
+        queue.remove(object);
     }
 
     @SafeVarargs
@@ -78,26 +96,42 @@ public class BrokerQueue<T> implements Queue<T>, StatisticFlush {
     }
 
     @SuppressWarnings("unused")
-    public List<T> getCloneQueue() {
+    @Override
+    public List<T> getCloneQueue(@Nullable AtomicBoolean isRun) {
         List<T> ret = new ArrayList<>();
-        Util.riskModifierCollection(queue, getEmptyType(), (ElementWrap<T> elementWrap) -> ret.add(elementWrap.getElement()));
-        return ret;
-    }
-
-    public List<T> getTail() {
-        List<T> ret = new ArrayList<>();
-        Util.riskModifierCollection(tail, getEmptyType(), ret::add);
+        Util.riskModifierCollection(isRun, queue, getEmptyType(), ret::add);
         return ret;
     }
 
     @Override
-    public Statistic flushAndGetStatistic() {
-        return new BrokerQueueStatistic(
-                tpsInput.getAndSet(0),
-                tpsOutput.getAndSet(0),
-                queue.size(),
-                timeInQueue.flush()
+    public void reset() {
+        queue.clear();
+        timing.clear();
+        tail.clear();
+        tpsInput.set(0);
+        tpsOutput.set(0);
+        sizeQueue = 3000;
+        sizeTail = 5;
+        cyclical = true;
+    }
+
+    @Override
+    public List<T> getTail(@Nullable AtomicBoolean isRun) {
+        List<T> ret = new ArrayList<>();
+        Util.riskModifierCollection(isRun, tail, getEmptyType(), ret::add);
+        return ret;
+    }
+
+    @Override
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+        List<Statistic> result = new ArrayList<>();
+        result.add(new Statistic(parentTags, parentFields)
+                .addField("tpsInput", tpsInput.getAndSet(0))
+                .addField("tpsOutput", tpsOutput.getAndSet(0))
+                .addField("size", queue.size())
+                .addFields(timeInQueue.flush("timeInQueue"))
         );
+        return result;
     }
 
 }

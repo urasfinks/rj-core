@@ -1,13 +1,14 @@
 package ru.jamsys.component;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import ru.jamsys.AbstractCoreComponent;
-import ru.jamsys.JsonHttpResponse;
-import ru.jamsys.UtilJson;
-import ru.jamsys.WrapJsonToObject;
+import ru.jamsys.http.JsonHttpResponse;
+import ru.jamsys.util.JsonEnvelope;
+import ru.jamsys.util.UtilJson;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -20,15 +21,17 @@ import java.util.Map;
 
 @Component
 @Lazy
-public class ReCaptcha extends AbstractCoreComponent {
+@Getter
+@Setter
+public class ReCaptcha extends AbstractComponent {
     /**
      * Validates Google reCAPTCHA V2 or Invisible reCAPTCHA.
      */
 
     private final Security security;
 
-    @Value("${rj.core.reCaptcha.secretKey:reCaptchaSecretKey}")
-    private String secretKey;
+    @Value("${rj.core.reCaptcha.security.alias:google.recaptcha.secret}")
+    private String securityAlias;
 
     public ReCaptcha(Security security) {
         this.security = security;
@@ -41,18 +44,18 @@ public class ReCaptcha extends AbstractCoreComponent {
     public JsonHttpResponse isValid(String captchaValue, @Nullable JsonHttpResponse refJRet) {
         JsonHttpResponse jRet = refJRet != null ? refJRet : new JsonHttpResponse();
         try {
-            if (jRet.isStatus() && secretKey.isEmpty()) {
+            if (jRet.isStatus() && securityAlias.isEmpty()) {
                 jRet.addException("Ключ reCaptchaSecretKey не определён");
             }
             if (jRet.isStatus()) {
-                char[] chars = security.get(secretKey);
+                char[] chars = security.get(securityAlias);
                 if (chars == null) {
                     jRet.addException("Приватное значение ключа reCaptchaSecretKey пустое");
                 }
             }
             if (jRet.isStatus()) {
                 String url = "https://www.google.com/recaptcha/api/siteverify",
-                        params = "secret=" + new String(security.get(secretKey)) + "&response=" + captchaValue;
+                        params = "secret=" + new String(security.get(securityAlias)) + "&response=" + captchaValue;
 
                 HttpURLConnection http = (HttpURLConnection) new URL(url).openConnection();
                 http.setDoOutput(true);
@@ -75,7 +78,7 @@ public class ReCaptcha extends AbstractCoreComponent {
                 }
                 res.close();
                 String response = sb.toString();
-                WrapJsonToObject<Map<Object, Object>> mapWrapJsonToObject = UtilJson.toMap(response);
+                JsonEnvelope<Map<Object, Object>> mapWrapJsonToObject = UtilJson.toMap(response);
                 if (mapWrapJsonToObject.getException() != null) {
                     jRet.addException(mapWrapJsonToObject.getException());
                 }
@@ -91,8 +94,4 @@ public class ReCaptcha extends AbstractCoreComponent {
         return jRet;
     }
 
-    @Override
-    public void flushStatistic() {
-
-    }
 }

@@ -4,7 +4,7 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.*;
+import ru.jamsys.util.*;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -24,7 +24,7 @@ import java.util.Set;
 
 @Component
 @Lazy
-public class Security extends AbstractCoreComponent {
+public class Security extends AbstractComponent {
 
     @Setter
     @Value("${rj.core.security.path:security/security.jks}")
@@ -101,10 +101,10 @@ public class Security extends AbstractCoreComponent {
             byte[] initJson = UtilFile.readBytes(pathInit);
             if (initJson.length > 0) {
                 String initString = new String(initJson, StandardCharsets.UTF_8);
-                WrapJsonToObject<Map<String, Object>> mapWrapJsonToObject = UtilJson.toMap(initString);
-                if (mapWrapJsonToObject.getException() == null && !mapWrapJsonToObject.getObject().isEmpty()) {
+                JsonEnvelope<Map<String, Object>> mapJsonEnvelope = UtilJson.toMap(initString);
+                if (mapJsonEnvelope.getException() == null && !mapJsonEnvelope.getObject().isEmpty()) {
                     @SuppressWarnings("unchecked")
-                    Map<String, Object> addAlias = (Map<String, Object>) mapWrapJsonToObject.getObject().get("addAlias");
+                    Map<String, Object> addAlias = (Map<String, Object>) mapJsonEnvelope.getObject().get("addAlias");
                     if (addAlias != null) {
                         for (String key : addAlias.keySet()) {
                             add(key, addAlias.get(key).toString().toCharArray(), password);
@@ -133,9 +133,9 @@ public class Security extends AbstractCoreComponent {
         }
         String result = null;
         String initString = new String(initJson, StandardCharsets.UTF_8);
-        WrapJsonToObject<Map<String, Object>> mapWrapJsonToObject = UtilJson.toMap(initString);
-        if (mapWrapJsonToObject.getException() == null && !mapWrapJsonToObject.getObject().isEmpty()) {
-            result = (String) mapWrapJsonToObject.getObject().get("password");
+        JsonEnvelope<Map<String, Object>> mapJsonEnvelope = UtilJson.toMap(initString);
+        if (mapJsonEnvelope.getException() == null && !mapJsonEnvelope.getObject().isEmpty()) {
+            result = (String) mapJsonEnvelope.getObject().get("password");
         }
         if (result == null || "".equals(result.trim())) {
             throw new RuntimeException("Password json field from [" + pathInit + "] is empty");
@@ -291,8 +291,4 @@ public class Security extends AbstractCoreComponent {
         UtilFile.writeBytes(pathStorage, byteArrayOutputStream.toByteArray(), FileWriteOptions.CREATE_OR_REPLACE);
     }
 
-    @Override
-    public void flushStatistic() {
-
-    }
 }

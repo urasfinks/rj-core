@@ -1,6 +1,8 @@
 package ru.jamsys.task;
 
-import ru.jamsys.Util;
+
+
+import ru.jamsys.util.Util;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +30,9 @@ public class TagIndex {
         sb.append(Util.capitalize(getClass().getSimpleName()));
         SortedSet<String> keys = new TreeSet<>(tags.keySet());
         for (String key : keys) {
+            sb.append("-");
             sb.append(Util.capitalize(key));
+            sb.append("=");
             sb.append(Util.capitalize(tags.get(key)));
         }
         return sb.toString();

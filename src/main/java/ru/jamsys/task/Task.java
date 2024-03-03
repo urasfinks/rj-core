@@ -1,24 +1,12 @@
 package ru.jamsys.task;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-
-@Data
-@EqualsAndHashCode(callSuper = false)
 public class Task extends TagIndex {
-    private final Consumer<AtomicBoolean> consumer;
-    private final long timeOutExecuteMillis;
-
-    public Task(Consumer<AtomicBoolean> consumer, long timeOutExecuteMillis) {
-        this.consumer = consumer;
-        this.timeOutExecuteMillis = timeOutExecuteMillis; //TimeManager будет кидать interrupt если что
-    }
-
-    public void onKill(){
-
-    }
-
+    TaskHandler taskHandler;
+    List<Trace> listTrace = new ArrayList<>();
+    Map<String, Object> property = new HashMap<>();
 }

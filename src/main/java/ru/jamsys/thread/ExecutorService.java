@@ -2,9 +2,9 @@ package ru.jamsys.thread;
 
 public interface ExecutorService {
 
-    void run();
+    boolean run();
 
-    void shutdown();
+    boolean shutdown();
 
     void reload();
 

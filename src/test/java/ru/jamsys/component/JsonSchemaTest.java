@@ -2,7 +2,9 @@ package ru.jamsys.component;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.UtilFileResource;
+import ru.jamsys.util.JsonSchema;
+import ru.jamsys.util.UtilFileResource;
+
 
 import java.io.IOException;
 

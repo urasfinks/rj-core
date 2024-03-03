@@ -4,10 +4,14 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import ru.jamsys.Util;
-import ru.jamsys.statistic.PoolStatistic;
 
+import ru.jamsys.statistic.Statistic;
+import ru.jamsys.statistic.StatisticsCollector;
+import ru.jamsys.util.Util;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -16,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @Data
-public abstract class AbstractPool<T> implements Pool<T> {
+public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
 
     private final int max; //Максимальное кол-во коннектов
     private final int min; //Минимальное кол-во коннектов
@@ -43,14 +47,15 @@ public abstract class AbstractPool<T> implements Pool<T> {
 
     protected final AtomicBoolean active = new AtomicBoolean(true);
 
-    protected final PoolStatistic statLastSec = new PoolStatistic(); //Агрегированная статистика за прошлый период (сейчас 1 секунда)
-
-    @SuppressWarnings("unused")
-    public PoolStatistic flushAndGetStatistic() {
-        statLastSec.setName(getName());
-        statLastSec.setSize(map.size());
-        statLastSec.setPark(parkQueue.size());
-        return statLastSec;
+    @Override
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+        List<Statistic> result = new ArrayList<>();
+        result.add(new Statistic(parentTags, parentFields)
+                .addTag("index", getName())
+                .addField("size", map.size())
+                .addField("park", parkQueue.size())
+        );
+        return result;
     }
 
     @SuppressWarnings("unused")
@@ -100,7 +105,7 @@ public abstract class AbstractPool<T> implements Pool<T> {
         if (active.get()) {
             final long curTimeMillis = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
-            Util.riskModifierMap(map, getEmptyType(), (T key, WrapResource<T> value) -> {
+            Util.riskModifierMap(null, map, getEmptyType(), (T key, WrapResource<T> value) -> {
                 long future = value.getLastRun() + keepAlive;
                 //Время последнего оживления превысило keepAlive + мы не привысили кол-во удалений за 1 проверку
                 if (curTimeMillis > future && maxCounterRemove.getAndDecrement() > 0) {
@@ -174,7 +179,7 @@ public abstract class AbstractPool<T> implements Pool<T> {
     @Override
     public void shutdown() {
         active.set(false);
-        Util.riskModifierMap(map, getEmptyType(), (T key, WrapResource<T> value) -> closeResource(value.getResource()));
+        Util.riskModifierMap(null, map, getEmptyType(), (T key, WrapResource<T> value) -> closeResource(value.getResource()));
     }
 
 }

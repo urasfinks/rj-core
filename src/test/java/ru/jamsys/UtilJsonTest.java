@@ -2,6 +2,8 @@ package ru.jamsys;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.util.UtilJson;
+import ru.jamsys.util.JsonEnvelope;
 
 import java.util.Map;
 
@@ -9,7 +11,7 @@ class UtilJsonTest {
 
     @Test
     void toMap() {
-        WrapJsonToObject<Map<Object, Object>> mapWrapJsonToObject = UtilJson.toMap("""
+        JsonEnvelope<Map<Object, Object>> mapJsonEnvelope = UtilJson.toMap("""
                 {
                     "x1":"y1",
                     "x2":"y2",
@@ -18,7 +20,7 @@ class UtilJsonTest {
                     "x0":"y0"
                 }
                 """);
-        Assertions.assertEquals("{x1=y1, x2=y2, x4=y4, x3=y3, x0=y0}", mapWrapJsonToObject.getObject().toString());
-        Assertions.assertEquals("{\"x1\":\"y1\",\"x2\":\"y2\",\"x4\":\"y4\",\"x3\":\"y3\",\"x0\":\"y0\"}", UtilJson.toString(mapWrapJsonToObject.getObject(), "{}"));
+        Assertions.assertEquals("{x1=y1, x2=y2, x4=y4, x3=y3, x0=y0}", mapJsonEnvelope.getObject().toString());
+        Assertions.assertEquals("{\"x1\":\"y1\",\"x2\":\"y2\",\"x4\":\"y4\",\"x3\":\"y3\",\"x0\":\"y0\"}", UtilJson.toString(mapJsonEnvelope.getObject(), "{}"));
     }
 }

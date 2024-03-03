@@ -1,8 +1,9 @@
 {
   "password": "",
   "addAlias": {
-    "telegram.api-token": "",
+    "telegram.api.token": "",
     "server.ssl.key-store-password": "",
-    "jdbc.postgresql.password": ""
+    "jdbc.postgresql.password": "",
+    "google.recaptcha.secret": ""
   }
 }

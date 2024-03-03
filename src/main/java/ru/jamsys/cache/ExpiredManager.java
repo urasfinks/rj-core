@@ -1,6 +1,6 @@
 package ru.jamsys.cache;
 
-import ru.jamsys.Util;
+import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class ExpiredManager<T> {
     public List<T> getExpired() {
         List<T> resultList = new ArrayList<>();
         long curTimestamp = System.currentTimeMillis();
-        Util.riskModifierMap(map, new Long[0], (Long time, ConcurrentLinkedQueue<T> queue) -> {
+        Util.riskModifierMap(null, map, new Long[0], (Long time, ConcurrentLinkedQueue<T> queue) -> {
             if (curTimestamp >= time) {
                 while (!queue.isEmpty()) {
                     resultList.add(queue.poll());

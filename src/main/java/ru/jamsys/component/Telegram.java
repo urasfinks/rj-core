@@ -4,10 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import ru.jamsys.AbstractCoreComponent;
-import ru.jamsys.JsonHttpResponse;
-import ru.jamsys.UtilJson;
-import ru.jamsys.WrapJsonToObject;
+import ru.jamsys.http.JsonHttpResponse;
+import ru.jamsys.util.JsonEnvelope;
+import ru.jamsys.util.UtilJson;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -21,7 +20,7 @@ import java.util.Map;
 
 @Component
 @Lazy
-public class Telegram extends AbstractCoreComponent {
+public class Telegram extends AbstractComponent {
 
     private final Security security;
 
@@ -29,8 +28,8 @@ public class Telegram extends AbstractCoreComponent {
         this.security = security;
     }
 
-    @Value("${rj.core.telegram.securityKey:telegramApiToken}")
-    private String securityKey;
+    @Value("${rj.core.telegram.security.alias:telegram.api.token}")
+    private String securityAlias;
 
     public JsonHttpResponse syncSend(String idChat, String data) {
         return syncSend(idChat, data, null);
@@ -39,7 +38,7 @@ public class Telegram extends AbstractCoreComponent {
     public JsonHttpResponse syncSend(String idChat, String data, @Nullable JsonHttpResponse refJRet) {
         JsonHttpResponse jRet = refJRet != null ? refJRet : new JsonHttpResponse();
         try {
-            char[] telegramToken = security.get(securityKey);
+            char[] telegramToken = security.get(securityAlias);
             if (telegramToken != null) {
                 return syncSend(idChat, data, new String(telegramToken), jRet);
             } else {
@@ -76,7 +75,7 @@ public class Telegram extends AbstractCoreComponent {
                 while ((inputLine = br.readLine()) != null) {
                     sb.append(inputLine);
                 }
-                WrapJsonToObject<Map<Object, Object>> mapWrapJsonToObject = UtilJson.toMap(sb.toString());
+                JsonEnvelope<Map<Object, Object>> mapWrapJsonToObject = UtilJson.toMap(sb.toString());
                 if (mapWrapJsonToObject.getException() != null) {
                     jRet.addException(mapWrapJsonToObject.getException());
                 }
@@ -89,11 +88,6 @@ public class Telegram extends AbstractCoreComponent {
             }
         }
         return jRet;
-    }
-
-    @Override
-    public void flushStatistic() {
-
     }
 
 }

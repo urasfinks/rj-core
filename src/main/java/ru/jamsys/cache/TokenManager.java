@@ -1,6 +1,7 @@
 package ru.jamsys.cache;
 
-import ru.jamsys.Util;
+import ru.jamsys.cache.token.Token;
+import ru.jamsys.util.Util;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class TokenManager<K, V> {
 
     private void flush() {
         long curTimestamp = System.currentTimeMillis();
-        Util.riskModifierMap(map, getEmptyType(), (K key, Token<V> value) -> {
+        Util.riskModifierMap(null, map, getEmptyType(), (K key, Token<V> value) -> {
             if (curTimestamp > value.getExpired()) {
                 map.remove(key);
             }

@@ -1,11 +1,26 @@
 package ru.jamsys.broker;
 
+import org.springframework.lang.Nullable;
+
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface Queue<T> {
+
     int getSize();
+
     void add(T o) throws Exception;
+
     T pollFirst();
+
     T pollLast();
-    List<T> getTail();
+
+    void remove(T object);
+
+    List<T> getTail(@Nullable AtomicBoolean isRun);
+
+    List<T> getCloneQueue(@Nullable AtomicBoolean isRun);
+
+    void reset();
+
 }
