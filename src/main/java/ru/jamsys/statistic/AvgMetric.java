@@ -43,7 +43,7 @@ public class AvgMetric {
         result.put(prefix + "Min", 0);
         result.put(prefix + "Max", 0);
         result.put(prefix + "Sum", 0);
-        result.put(prefix + "Avg", 0);
+        result.put(prefix + "Avg", (double) 0);
         return result;
     }
 
