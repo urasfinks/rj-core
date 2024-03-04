@@ -10,10 +10,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TokenManager<K, V> {
     final Map<K, Token<V>> map = new ConcurrentHashMap<>();
 
-    public boolean add(K key, V value, long timeoutMillis) {
+    public boolean add(K key, V value, long timeoutMs) {
         flush();
         if (!map.containsKey(key)) {
-            map.put(key, new Token<>(value, timeoutMillis));
+            map.put(key, new Token<>(value, timeoutMs));
             return true;
         }
         return false;
@@ -36,9 +36,9 @@ public class TokenManager<K, V> {
     }
 
     private void flush() {
-        long curTimestamp = System.currentTimeMillis();
+        long curMs = System.currentTimeMillis();
         Util.riskModifierMap(null, map, getEmptyType(), (K key, Token<V> value) -> {
-            if (curTimestamp > value.getExpired()) {
+            if (curMs > value.getExpired()) {
                 map.remove(key);
             }
         });

@@ -8,6 +8,6 @@ public interface TaskHandler {
 
     String getIndex();
 
-    long getTimeout();
+    long getTimeoutMs();
 
 }

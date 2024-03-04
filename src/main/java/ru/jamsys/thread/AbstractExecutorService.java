@@ -28,12 +28,12 @@ public abstract class AbstractExecutorService implements ExecutorService{
     public boolean shutdown() { //timeMaxExecute 1500+1500 = 3000ms
         if (isRun.get()) { //ЧТо бы что-то тушит, надо что бы это что-то было поднято)
             isWhile.set(false); //Говорим всем потокам и их внутренним циклам, что пора заканчивать
-            long timeOutMillis = 1500;
-            long startTime = System.currentTimeMillis();
+            long timeOutMs = 1500;
+            long startTimeMs = System.currentTimeMillis();
             while (!listThread.isEmpty()) { //Пытаемся подождать пока потоки самостоятельно закончат свою работу
-                Util.sleepMillis(timeOutMillis / 3);
-                if (System.currentTimeMillis() - startTime > timeOutMillis) { //Не смогли за отведённое время
-                    Util.logConsole(getClass().getSimpleName() + " Self-stop timeOut shutdown " + timeOutMillis + " ms");
+                Util.sleepMs(timeOutMs / 3);
+                if (System.currentTimeMillis() - startTimeMs > timeOutMs) { //Не смогли за отведённое время
+                    Util.logConsole(getClass().getSimpleName() + " Self-stop timeOut shutdown " + timeOutMs + " ms");
                     break;
                 }
             }
@@ -41,11 +41,11 @@ public abstract class AbstractExecutorService implements ExecutorService{
                 Util.logConsole("Thread " + thread.getName() + " > interrupt()");
                 thread.interrupt();
             });
-            startTime = System.currentTimeMillis();
+            startTimeMs = System.currentTimeMillis();
             while (!listThread.isEmpty()) { //Пытаемся подождать пока потоки выйдут от interrupt
-                Util.sleepMillis(timeOutMillis / 3);
-                if (System.currentTimeMillis() - startTime > timeOutMillis) { //Не смогли за отведённое время
-                    Util.logConsole(getClass().getSimpleName() + " interrupt timeOut shutdown " + timeOutMillis + " ms");
+                Util.sleepMs(timeOutMs / 3);
+                if (System.currentTimeMillis() - startTimeMs > timeOutMs) { //Не смогли за отведённое время
+                    Util.logConsole(getClass().getSimpleName() + " interrupt timeOut shutdown " + timeOutMs + " ms");
                     break;
                 }
             }

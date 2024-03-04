@@ -38,9 +38,9 @@ public class ExecutorServiceScheduler extends AbstractExecutorService {
                 isWhile.set(true);
                 Thread currentThread = Thread.currentThread();
                 listThread.add(currentThread);
-                long nextStart = System.currentTimeMillis();
+                long nextStartMs = System.currentTimeMillis();
                 while (isWhile.get() && !currentThread.isInterrupted()) {
-                    nextStart = Util.zeroLastNDigits(nextStart + delay, 3);
+                    nextStartMs = Util.zeroLastNDigits(nextStartMs + delay, 3);
                     listTaskHandler.forEach(taskHandler -> {
                         if (isWhile.get()) {
                             TaskHandlerStatistic taskHandlerStatistic = new TaskHandlerStatistic(currentThread, null, taskHandler);
@@ -58,12 +58,12 @@ public class ExecutorServiceScheduler extends AbstractExecutorService {
                         }
                     });
                     if (isWhile.get()) {
-                        long calcSleep = nextStart - System.currentTimeMillis();
-                        if (calcSleep > 0) {
-                            Util.sleepMillis(calcSleep);
+                        long calcSleepMs = nextStartMs - System.currentTimeMillis();
+                        if (calcSleepMs > 0) {
+                            Util.sleepMs(calcSleepMs);
                         } else {
-                            Util.sleepMillis(1);//Что бы поймать Interrupt
-                            nextStart = System.currentTimeMillis();
+                            Util.sleepMs(1);//Что бы поймать Interrupt
+                            nextStartMs = System.currentTimeMillis();
                         }
                     } else {
                         break;

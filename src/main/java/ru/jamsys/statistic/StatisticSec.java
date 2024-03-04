@@ -11,5 +11,5 @@ import java.util.List;
 @Setter
 public class StatisticSec implements BrokerCollectible {
     private List<Statistic> list = new ArrayList<>();
-    private long timestamp = System.currentTimeMillis();
+    private long timeMs = System.currentTimeMillis();
 }

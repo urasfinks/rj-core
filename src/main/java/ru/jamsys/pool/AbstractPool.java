@@ -29,11 +29,11 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
     @Getter
     private final String name;
 
-    public AbstractPool(String name, int min, int max, long keepAliveMillis) {
+    public AbstractPool(String name, int min, int max, long keepAliveMs) {
         this.name = name;
         this.max = max;
         this.min = min;
-        this.keepAlive = keepAliveMillis;
+        this.keepAlive = keepAliveMs;
     }
 
     @Setter
@@ -78,22 +78,17 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
     }
 
     @SuppressWarnings({"unused"})
-    public T getResource() throws Exception {
-        int countMax = 10;
-        int count = 0;
-        int timeOut = 100;
-        while (active.get()) {
+    public T getResource(long timeOutMs) throws Exception {
+        long finishTimeMs = System.currentTimeMillis() + timeOutMs;
+        while (active.get() && finishTimeMs > System.currentTimeMillis()) {
             WrapResource<T> wrapResource = parkQueue.pollLast();
             if (wrapResource != null) {
-                wrapResource.setLastRun(System.currentTimeMillis());
+                wrapResource.setLastRunMs(System.currentTimeMillis());
                 return wrapResource.getResource();
             }
-            Util.sleepMillis(timeOut);
-            if (count++ > countMax) {
-                break;
-            }
+            Util.sleepMs(100);
         }
-        throw new Exception("Pool " + getName() + " not active resource. Timeout: " + (timeOut * count) + "ms");
+        throw new Exception("Pool " + getName() + " not active resource. Timeout: " + timeOutMs + "ms");
     }
 
     @SafeVarargs
@@ -103,12 +98,12 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
 
     private void checkKeepAliveAndRemove() { //Проверка ждунов, что они давно не вызывались и у них кол-во итераций равно 0 -> нож
         if (active.get()) {
-            final long curTimeMillis = System.currentTimeMillis();
+            final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
             Util.riskModifierMap(null, map, getEmptyType(), (T key, WrapResource<T> value) -> {
-                long future = value.getLastRun() + keepAlive;
+                long future = value.getLastRunMs() + keepAlive;
                 //Время последнего оживления превысило keepAlive + мы не привысили кол-во удалений за 1 проверку
-                if (curTimeMillis > future && maxCounterRemove.getAndDecrement() > 0) {
+                if (curTimeMs > future && maxCounterRemove.getAndDecrement() > 0) {
                     safeRemove(value);
                 }
             });

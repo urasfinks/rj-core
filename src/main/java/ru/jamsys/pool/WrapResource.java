@@ -6,6 +6,6 @@ import lombok.Data;
 public class WrapResource<T> {
 
     private T resource;
-    private long lastRun = System.currentTimeMillis();
+    private long lastRunMs = System.currentTimeMillis();
 
 }

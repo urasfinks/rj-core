@@ -8,12 +8,12 @@ import lombok.ToString;
 @Setter
 @ToString
 public class Trace {
-    long timestamp;
+    long timeMs;
     TraceEvent traceEvent;
     TaskHandler taskHandler;
 
-    public Trace(long timestamp, TraceEvent traceEvent, TaskHandler taskHandler) {
-        this.timestamp = timestamp;
+    public Trace(long timeMs, TraceEvent traceEvent, TaskHandler taskHandler) {
+        this.timeMs = timeMs;
         this.traceEvent = traceEvent;
         this.taskHandler = taskHandler;
     }

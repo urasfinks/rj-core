@@ -12,8 +12,8 @@ public class TaskHandlerStatistic implements BrokerCollectible {
     Task task;
     TaskHandler taskHandler;
 
-    long timeStart = System.currentTimeMillis();
-    Long timeExecute = null;
+    long timeStartMs = System.currentTimeMillis();
+    Long timeExecuteMs = null;
 
     boolean wasProcessedStatistic = false; //Было обработано статистикой
 
@@ -28,7 +28,7 @@ public class TaskHandlerStatistic implements BrokerCollectible {
     }
 
     public void finish() {
-        timeExecute = System.currentTimeMillis() - timeStart;
+        timeExecuteMs = System.currentTimeMillis() - timeStartMs;
     }
 
 }

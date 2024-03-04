@@ -12,12 +12,12 @@ public class ExpiredManager<T> {
 
     final Map<Long, ConcurrentLinkedQueue<T>> map = new ConcurrentHashMap<>();
 
-    public void add(T obj, long timestampExpired) {
+    public void add(T obj, long timeMsExpired) {
         //If the key was not present in the map, it maps the passed value to the key and returns null.
-        if (!map.containsKey(timestampExpired)) { //Что бы лишний раз не создавать ConcurrentLinkedQueue при пробе putIfAbsent
-            map.putIfAbsent(timestampExpired, new ConcurrentLinkedQueue<>());
+        if (!map.containsKey(timeMsExpired)) { //Что бы лишний раз не создавать ConcurrentLinkedQueue при пробе putIfAbsent
+            map.putIfAbsent(timeMsExpired, new ConcurrentLinkedQueue<>());
         }
-        map.get(timestampExpired).add(obj);
+        map.get(timeMsExpired).add(obj);
     }
 
     public int getCountBucket() {
@@ -26,13 +26,13 @@ public class ExpiredManager<T> {
 
     public List<T> getExpired() {
         List<T> resultList = new ArrayList<>();
-        long curTimestamp = System.currentTimeMillis();
-        Util.riskModifierMap(null, map, new Long[0], (Long time, ConcurrentLinkedQueue<T> queue) -> {
-            if (curTimestamp >= time) {
+        long curMs = System.currentTimeMillis();
+        Util.riskModifierMap(null, map, new Long[0], (Long timeMs, ConcurrentLinkedQueue<T> queue) -> {
+            if (curMs >= timeMs) {
                 while (!queue.isEmpty()) {
                     resultList.add(queue.poll());
                 }
-                map.remove(time);
+                map.remove(timeMs);
             }
         });
         return resultList;

@@ -45,14 +45,14 @@ public class ReadTaskHandlerStatistic extends AbstractHandler {
                     taskHandlerStatistic.setWasProcessedStatistic(true);
                 }
                 AvgMetric timeAvgMetric = mapTime.get(taskIndex);
-                if (taskHandlerStatistic.getTimeExecute() != null) {
-                    timeAvgMetric.add(taskHandlerStatistic.getTimeExecute());
+                if (taskHandlerStatistic.getTimeExecuteMs() != null) {
+                    timeAvgMetric.add(taskHandlerStatistic.getTimeExecuteMs());
                     queue.remove(taskHandlerStatistic);
                 } else {
-                    long currentTime = System.currentTimeMillis() - taskHandlerStatistic.getTimeStart();
-                    timeAvgMetric.add(currentTime);
-                    if (currentTime > taskHandlerStatistic.getTaskHandler().getTimeout()) {
-                        Util.logConsole("Alarm!! Task: " + taskIndex + " timeOut: " + currentTime + " > " + taskHandlerStatistic.getTaskHandler().getTimeout());
+                    long curTimeMs = System.currentTimeMillis() - taskHandlerStatistic.getTimeStartMs();
+                    timeAvgMetric.add(curTimeMs);
+                    if (curTimeMs > taskHandlerStatistic.getTaskHandler().getTimeoutMs()) {
+                        Util.logConsole("Alarm!! Task: " + taskIndex + " timeOut: " + curTimeMs + " > " + taskHandlerStatistic.getTaskHandler().getTimeoutMs());
                         //TODO: проверить timeOut и если что прибить поток
                     }
                 }
@@ -66,7 +66,7 @@ public class ReadTaskHandlerStatistic extends AbstractHandler {
     }
 
     @Override
-    public long getTimeout() {
+    public long getTimeoutMs() {
         return 1000;
     }
 }

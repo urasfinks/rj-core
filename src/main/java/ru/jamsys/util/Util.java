@@ -70,9 +70,9 @@ public class Util {
         throw new Exception("Deprecated");
     }
 
-    public static void sleepMillis(long millis) {
+    public static void sleepMs(long ms) {
         try {
-            TimeUnit.MILLISECONDS.sleep(millis);
+            TimeUnit.MILLISECONDS.sleep(ms);
         } catch (InterruptedException e) {
             App.context.getBean(ExceptionHandler.class).handler(e);
         }

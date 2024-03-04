@@ -22,22 +22,20 @@ public class TaskTiming extends AbstractComponent implements StatisticsCollector
     Deque<Statistic> deferred = new ConcurrentLinkedDeque<>();
     Map<String, Long> mapIndex = new HashMap<>();
 
-    public void insert(long timestamp, Map<String, AvgMetric> mapTime, Map<String, AtomicLong> mapOperation) {
+    public void insert(long timeMs, Map<String, AvgMetric> mapTime, Map<String, AtomicLong> mapOperation) {
         mapTime.forEach((String key, AvgMetric metric) -> {
             if (!mapIndex.containsKey(key)) {
                 mapIndex.put(key, System.currentTimeMillis());
             }
             deferred.add(new Statistic()
-                    //.setTimestamp(timestamp)
                     .addTag("index", key)
-                    .addTag("metric", "time")
-                    .addFields(metric.flush("Time"))
+                    .addTag("metric", "Time")
+                    .addFields(metric.flush("TimeMs"))
             );
         });
         mapOperation.forEach((String key, AtomicLong metric) -> deferred.add(new Statistic()
-                //.setTimestamp(timestamp)
                 .addTag("index", key)
-                .addTag("metric", "count")
+                .addTag("metric", "Count")
                 .addField("count", metric.get())
         ));
     }
@@ -61,12 +59,12 @@ public class TaskTiming extends AbstractComponent implements StatisticsCollector
         cloneIndex.forEach((String key, Long value) -> {
 //            result.add(new Statistic(parentTags, parentFields)
 //                    .addTag("index", key)
-//                    .addTag("metric", "time")
+//                    .addTag("metric", "TimeMs")
 //                    .addField("count", 0)
 //            );
             result.add(new Statistic(parentTags, parentFields)
                     .addTag("index", key)
-                    .addTag("metric", "count")
+                    .addTag("metric", "Count")
                     .addField("count", 0)
             );
         });

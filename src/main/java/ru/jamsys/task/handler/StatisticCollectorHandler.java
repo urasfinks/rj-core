@@ -47,7 +47,7 @@ public class StatisticCollectorHandler extends AbstractHandler {
     }
 
     @Override
-    public long getTimeout() {
+    public long getTimeoutMs() {
         return 1000;
     }
 

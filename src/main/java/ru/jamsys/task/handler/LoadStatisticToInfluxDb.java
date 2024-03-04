@@ -40,7 +40,7 @@ public class LoadStatisticToInfluxDb extends AbstractHandler {
                             Point.measurement(measurement)
                                     .addTags(newTags)
                                     .addFields(statistic.getFields())
-                                    .time(statisticSec.getTimestamp(), WritePrecision.MS)
+                                    .time(statisticSec.getTimeMs(), WritePrecision.MS)
                     );
                 }
             } else {
@@ -58,7 +58,7 @@ public class LoadStatisticToInfluxDb extends AbstractHandler {
     }
 
     @Override
-    public long getTimeout() {
+    public long getTimeoutMs() {
         return 5000;
     }
 }

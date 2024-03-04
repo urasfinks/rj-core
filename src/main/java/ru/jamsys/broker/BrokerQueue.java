@@ -63,9 +63,9 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
     private void statistic(T o) {
         if (o != null) {
             tpsOutput.incrementAndGet();
-            Long remove = timing.remove(o);
-            if (remove != null) {
-                timeInQueue.add(System.currentTimeMillis() - remove);
+            Long removeMs = timing.remove(o);
+            if (removeMs != null) {
+                timeInQueue.add(System.currentTimeMillis() - removeMs);
             } else {
                 App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Object not found in the timing map. This is a serious problem with your implementation"));
             }
@@ -129,7 +129,7 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
                 .addField("tpsInput", tpsInput.getAndSet(0))
                 .addField("tpsOutput", tpsOutput.getAndSet(0))
                 .addField("size", queue.size())
-                .addFields(timeInQueue.flush("timeInQueue"))
+                .addFields(timeInQueue.flush("timeMsInQueue"))
         );
         return result;
     }
