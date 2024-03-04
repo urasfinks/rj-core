@@ -1,6 +1,7 @@
 package ru.jamsys.component;
 
 import lombok.Setter;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.App;
@@ -35,7 +36,8 @@ public class Security extends AbstractComponent {
     @Setter
     private String pathInitAlias;
 
-    public Security(PropertiesManager propertiesManager) {
+    public Security(ApplicationContext applicationContext, PropertiesManager propertiesManager) {
+        super(applicationContext);
         this.pathStorage = propertiesManager.getProperties("rj.security.path.storage", String.class);
         this.pathSignature = propertiesManager.getProperties("rj.security.path.signature", String.class);
         this.pathInitAlias = propertiesManager.getProperties("rj.security.path.init", String.class);
@@ -294,10 +296,7 @@ public class Security extends AbstractComponent {
         UtilFile.writeBytes(pathStorage, byteArrayOutputStream.toByteArray(), FileWriteOptions.CREATE_OR_REPLACE);
     }
 
-    public static void init() {
-        App.context.getBean(Security.class).run();
-    }
-
+    @SuppressWarnings("unused")
     public static void init(char[] privateKey) {
         App.context.getBean(Security.class).setPrivateKey(privateKey);
     }

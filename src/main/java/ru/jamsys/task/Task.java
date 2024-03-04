@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Task extends TagIndex {
-    TaskHandler taskHandler;
+    AbstractTaskHandler abstractTaskHandler;
     List<Trace> listTrace = new ArrayList<>();
     Map<String, Object> property = new HashMap<>();
 }

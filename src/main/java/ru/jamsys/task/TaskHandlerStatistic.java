@@ -10,25 +10,29 @@ import ru.jamsys.broker.BrokerCollectible;
 public class TaskHandlerStatistic implements BrokerCollectible {
     Thread thread;
     Task task;
-    TaskHandler taskHandler;
+    AbstractTaskHandler taskHandler;
 
     long timeStartMs = System.currentTimeMillis();
     Long timeExecuteMs = null;
 
     boolean wasProcessedStatistic = false; //Было обработано статистикой
 
-    public TaskHandlerStatistic(Thread thread, @Nullable Task task, TaskHandler taskHandler) {
+    public TaskHandlerStatistic(Thread thread, @Nullable Task task, AbstractTaskHandler abstractTaskHandler) {
         this.thread = thread;
         this.task = task;
-        this.taskHandler = taskHandler;
+        this.taskHandler = abstractTaskHandler;
     }
 
-    public String geComplexIndex() {
-        return taskHandler.getIndex() + (task != null ? "-" + task.getIndex() : "");
+    public Long getTimeExecuteMs() {
+        return timeExecuteMs != null ? timeExecuteMs : System.currentTimeMillis() - timeStartMs;
     }
 
     public void finish() {
         timeExecuteMs = System.currentTimeMillis() - timeStartMs;
+    }
+
+    public boolean isTimeout() {
+        return timeExecuteMs == null && (System.currentTimeMillis() - timeStartMs) > taskHandler.getTimeoutMs();
     }
 
 }

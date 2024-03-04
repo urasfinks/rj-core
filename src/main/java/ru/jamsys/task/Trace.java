@@ -10,11 +10,11 @@ import lombok.ToString;
 public class Trace {
     long timeMs;
     TraceEvent traceEvent;
-    TaskHandler taskHandler;
+    AbstractTaskHandler abstractTaskHandler;
 
-    public Trace(long timeMs, TraceEvent traceEvent, TaskHandler taskHandler) {
+    public Trace(long timeMs, TraceEvent traceEvent, AbstractTaskHandler abstractTaskHandler) {
         this.timeMs = timeMs;
         this.traceEvent = traceEvent;
-        this.taskHandler = taskHandler;
+        this.abstractTaskHandler = abstractTaskHandler;
     }
 }

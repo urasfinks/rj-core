@@ -1,5 +1,6 @@
 package ru.jamsys.component;
 
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.broker.BrokerCollectible;
@@ -21,6 +22,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Broker extends AbstractComponent implements StatisticsCollector {
 
     private final Map<Class<? extends BrokerCollectible>, Queue<? extends BrokerCollectible>> mapQueue = new ConcurrentHashMap<>();
+
+    public Broker(ApplicationContext applicationContext) {
+        super(applicationContext);
+    }
 
     @SuppressWarnings("unused")
     public <T extends BrokerCollectible> void add(Class<T> cls, T object) throws Exception {

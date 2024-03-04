@@ -4,7 +4,7 @@ import lombok.Getter;
 import ru.jamsys.App;
 import ru.jamsys.component.Broker;
 import ru.jamsys.component.ExceptionHandler;
-import ru.jamsys.task.TaskHandler;
+import ru.jamsys.task.AbstractTaskHandler;
 import ru.jamsys.task.TaskHandlerStatistic;
 import ru.jamsys.util.Util;
 
@@ -18,7 +18,7 @@ public class ExecutorServiceScheduler extends AbstractExecutorService {
     private java.util.concurrent.ExecutorService executorService;
     private final long delayMs;
 
-    private final List<TaskHandler> listTaskHandler = new ArrayList<>();
+    private final List<AbstractTaskHandler> listAbstractTaskHandler = new ArrayList<>();
     private final Broker broker = App.context.getBean(Broker.class);
 
     public ExecutorServiceScheduler(long delayMs) {
@@ -38,7 +38,7 @@ public class ExecutorServiceScheduler extends AbstractExecutorService {
                 long nextStartMs = System.currentTimeMillis();
                 while (isWhile.get() && !currentThread.isInterrupted()) {
                     nextStartMs = Util.zeroLastNDigits(nextStartMs + delayMs, 3);
-                    listTaskHandler.forEach(taskHandler -> {
+                    listAbstractTaskHandler.forEach(taskHandler -> {
                         if (isWhile.get()) {
                             TaskHandlerStatistic taskHandlerStatistic = new TaskHandlerStatistic(currentThread, null, taskHandler);
                             try {

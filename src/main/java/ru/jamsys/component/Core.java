@@ -2,6 +2,7 @@ package ru.jamsys.component;
 
 import lombok.Getter;
 import lombok.NonNull;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 
 import ru.jamsys.App;
@@ -17,7 +18,8 @@ public class Core extends AbstractComponent {
     @Getter
     List<Class<? extends Component>> list = new ArrayList<>();
 
-    public Core() {
+    public Core(ApplicationContext applicationContext) {
+        super(applicationContext);
         list.add(ExecutorService.class);
         list.add(SystemStatistic.class);
     }

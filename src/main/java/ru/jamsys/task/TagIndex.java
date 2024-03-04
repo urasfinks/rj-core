@@ -1,7 +1,5 @@
 package ru.jamsys.task;
 
-
-
 import ru.jamsys.util.Util;
 
 import java.util.HashMap;
@@ -13,6 +11,7 @@ public class TagIndex {
     private final Map<String, String> tags = new HashMap<>();
     private String index = null;
 
+    @SuppressWarnings("unused")
     public Map<String, String> getTags() {
         index = null;
         return tags;

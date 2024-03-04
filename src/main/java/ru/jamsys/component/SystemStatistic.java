@@ -1,6 +1,7 @@
 package ru.jamsys.component;
 
 import com.sun.management.OperatingSystemMXBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.statistic.Statistic;
@@ -26,6 +27,10 @@ public class SystemStatistic extends AbstractComponent implements StatisticsColl
     int availableProcessors;
     long prevUpTime;
     long prevProcessCpuTime;
+
+    public SystemStatistic(ApplicationContext applicationContext) {
+        super(applicationContext);
+    }
 
     public void runFirst() {
         operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();

@@ -37,4 +37,14 @@ public class AvgMetric {
         return result;
     }
 
+    public static Map<String, Object> getEmpty(String prefix) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("Count", 0);
+        result.put(prefix + "Min", 0);
+        result.put(prefix + "Max", 0);
+        result.put(prefix + "Sum", 0);
+        result.put(prefix + "Avg", 0);
+        return result;
+    }
+
 }

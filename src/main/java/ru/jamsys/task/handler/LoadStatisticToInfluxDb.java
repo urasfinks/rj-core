@@ -17,6 +17,7 @@ import ru.jamsys.component.Security;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
 import ru.jamsys.task.Task;
+import ru.jamsys.task.AbstractTaskHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,11 +25,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
-public class LoadStatisticToInfluxDb extends AbstractHandler implements ApplicationInit {
+public class LoadStatisticToInfluxDb extends AbstractTaskHandler implements ApplicationInit {
 
     //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token 'LmbVFdM8Abe6T6atTD6Ai3LJOKrEVrKB61mrFqJzqx5HzANJ13HItZrbWuhDdJXsdLL9mJLn7UB6MtAbLG4AxQ=='
 
-    private final InfluxDBClient client;
+    private InfluxDBClient client;
 
     @Setter
     private String bucket;
@@ -36,13 +37,20 @@ public class LoadStatisticToInfluxDb extends AbstractHandler implements Applicat
     @Setter
     private String org;
 
-    public LoadStatisticToInfluxDb(Security security, PropertiesManager propertiesManager) throws Exception {
-        this.client = InfluxDBClientFactory.create(
-                propertiesManager.getProperties("rj.task.handler.LoadStatisticToInfluxDb.host", String.class),
-                security.get(propertiesManager.getProperties("rj.task.handler.LoadStatisticToInfluxDb.security.alias", String.class))
-        );
+    @Setter
+    private String host;
+
+    @Setter
+    private String alias;
+
+    private final Security security;
+
+    public LoadStatisticToInfluxDb(Security security, PropertiesManager propertiesManager) {
+        this.security = security;
+        this.host = propertiesManager.getProperties("rj.task.handler.LoadStatisticToInfluxDb.host", String.class);
         this.bucket = propertiesManager.getProperties("rj.task.handler.LoadStatisticToInfluxDb.bucket", String.class);
         this.org = propertiesManager.getProperties("rj.task.handler.LoadStatisticToInfluxDb.org", String.class);
+        this.alias = propertiesManager.getProperties("rj.task.handler.LoadStatisticToInfluxDb.security.alias", String.class);
     }
 
     @Override
@@ -69,6 +77,9 @@ public class LoadStatisticToInfluxDb extends AbstractHandler implements Applicat
         }
         if (isRun.get()) {
             if (!listPoints.isEmpty()) {
+                if (client == null) {
+                    client = InfluxDBClientFactory.create(host, security.get(alias));
+                }
                 WriteApiBlocking writeApi = client.getWriteApiBlocking();
                 writeApi.writePoints(bucket, org, listPoints);
             }
@@ -84,7 +95,7 @@ public class LoadStatisticToInfluxDb extends AbstractHandler implements Applicat
         App.context
                 .getBean(ExecutorService.class)
                 .getT5()
-                .getListTaskHandler()
+                .getListAbstractTaskHandler()
                 .add(App.context.getBean(LoadStatisticToInfluxDb.class));
     }
 }

@@ -1,11 +1,11 @@
 package ru.jamsys.component;
 
-import ru.jamsys.App;
+import org.springframework.context.ApplicationContext;
 
 public abstract class AbstractComponent implements Component {
 
-    public AbstractComponent() {
-        App.context.getBean(Dictionary.class).getMap().put(getClass(), this);
+    public AbstractComponent(ApplicationContext applicationContext) {
+        applicationContext.getBean(Dictionary.class).getMap().put(getClass(), this);
     }
 
     @Override

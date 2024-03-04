@@ -8,6 +8,7 @@ import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
 import ru.jamsys.statistic.StatisticsCollector;
 import ru.jamsys.task.Task;
+import ru.jamsys.task.AbstractTaskHandler;
 import ru.jamsys.util.Util;
 
 import java.util.HashMap;
@@ -16,7 +17,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @org.springframework.stereotype.Component
-public class StatisticCollectorHandler extends AbstractHandler {
+public class StatisticCollectorHandlerAbstract extends AbstractTaskHandler {
 
     String ip = Util.getIp();
 

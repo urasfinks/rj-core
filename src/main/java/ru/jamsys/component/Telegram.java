@@ -1,5 +1,7 @@
 package ru.jamsys.component;
 
+import lombok.Setter;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -22,13 +24,17 @@ import java.util.Map;
 public class Telegram extends AbstractComponent {
 
     private final Security security;
+
+    @Setter
     private String securityAlias;
 
-    public Telegram(Security security, PropertiesManager propertiesManager) {
+    public Telegram(ApplicationContext applicationContext, Security security, PropertiesManager propertiesManager) {
+        super(applicationContext);
         this.security = security;
         this.securityAlias = propertiesManager.getProperties("rj.telegram.security.alias", String.class);
     }
 
+    @SuppressWarnings("unused")
     public JsonHttpResponse syncSend(String idChat, String data) {
         return syncSend(idChat, data, null);
     }
