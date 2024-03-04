@@ -1,6 +1,5 @@
 package ru.jamsys.component;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -23,13 +22,12 @@ import java.util.Map;
 public class Telegram extends AbstractComponent {
 
     private final Security security;
-
-    public Telegram(Security security) {
-        this.security = security;
-    }
-
-    @Value("${rj.core.telegram.security.alias:telegram.api.token}")
     private String securityAlias;
+
+    public Telegram(Security security, PropertiesManager propertiesManager) {
+        this.security = security;
+        this.securityAlias = propertiesManager.getProperties("rj.telegram.security.alias", String.class);
+    }
 
     public JsonHttpResponse syncSend(String idChat, String data) {
         return syncSend(idChat, data, null);

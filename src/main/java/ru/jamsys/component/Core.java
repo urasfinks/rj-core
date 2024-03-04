@@ -1,9 +1,11 @@
 package ru.jamsys.component;
 
 import lombok.Getter;
+import lombok.NonNull;
 import org.springframework.context.annotation.Lazy;
 
 import ru.jamsys.App;
+import ru.jamsys.ApplicationInit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,22 +18,19 @@ public class Core extends AbstractComponent {
     List<Class<? extends Component>> list = new ArrayList<>();
 
     public Core() {
-        //list.add(Security.class);
-        //list.add(Scheduler.class);
-        //list.add(Broker.class);
-        //list.add(StatisticAggregator.class);
-        //list.add(StatisticSystem.class);
         list.add(ExecutorService.class);
         list.add(SystemStatistic.class);
     }
 
-    public void run(Class<? extends Component> statisticReader) {
-        if (statisticReader != null) {
-            list.add(statisticReader);
-        }
+    public void run() {
         for (Class<? extends Component> cls : list) {
             App.context.getBean(cls).run();
         }
+    }
+
+    public <T extends ApplicationInit> void applicationInit(@NonNull Class<T> flushStatisticClass) {
+        App.context.getBean(Security.class).run();
+        App.context.getBean(flushStatisticClass).applicationInit();
     }
 
     @Override

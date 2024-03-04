@@ -5,10 +5,15 @@ import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
+import lombok.Setter;
 import org.springframework.stereotype.Component;
 import ru.jamsys.App;
+import ru.jamsys.ApplicationInit;
 import ru.jamsys.broker.Queue;
 import ru.jamsys.component.Broker;
+import ru.jamsys.component.ExecutorService;
+import ru.jamsys.component.PropertiesManager;
+import ru.jamsys.component.Security;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
 import ru.jamsys.task.Task;
@@ -19,11 +24,26 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
-public class LoadStatisticToInfluxDb extends AbstractHandler {
+public class LoadStatisticToInfluxDb extends AbstractHandler implements ApplicationInit {
 
     //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token 'LmbVFdM8Abe6T6atTD6Ai3LJOKrEVrKB61mrFqJzqx5HzANJ13HItZrbWuhDdJXsdLL9mJLn7UB6MtAbLG4AxQ=='
-    String token = "LmbVFdM8Abe6T6atTD6Ai3LJOKrEVrKB61mrFqJzqx5HzANJ13HItZrbWuhDdJXsdLL9mJLn7UB6MtAbLG4AxQ==";
-    private final InfluxDBClient client = InfluxDBClientFactory.create("http://localhost:8086", token.toCharArray());
+
+    private final InfluxDBClient client;
+
+    @Setter
+    private String bucket;
+
+    @Setter
+    private String org;
+
+    public LoadStatisticToInfluxDb(Security security, PropertiesManager propertiesManager) throws Exception {
+        this.client = InfluxDBClientFactory.create(
+                propertiesManager.getProperties("rj.task.handler.LoadStatisticToInfluxDb.host", String.class),
+                security.get(propertiesManager.getProperties("rj.task.handler.LoadStatisticToInfluxDb.security.alias", String.class))
+        );
+        this.bucket = propertiesManager.getProperties("rj.task.handler.LoadStatisticToInfluxDb.bucket", String.class);
+        this.org = propertiesManager.getProperties("rj.task.handler.LoadStatisticToInfluxDb.org", String.class);
+    }
 
     @Override
     public void run(Task task, AtomicBoolean isRun) throws Exception {
@@ -50,8 +70,6 @@ public class LoadStatisticToInfluxDb extends AbstractHandler {
         if (isRun.get()) {
             if (!listPoints.isEmpty()) {
                 WriteApiBlocking writeApi = client.getWriteApiBlocking();
-                String bucket = "5gm";
-                String org = "ru";
                 writeApi.writePoints(bucket, org, listPoints);
             }
         }
@@ -60,5 +78,13 @@ public class LoadStatisticToInfluxDb extends AbstractHandler {
     @Override
     public long getTimeoutMs() {
         return 5000;
+    }
+
+    public void applicationInit() {
+        App.context
+                .getBean(ExecutorService.class)
+                .getT5()
+                .getListTaskHandler()
+                .add(App.context.getBean(LoadStatisticToInfluxDb.class));
     }
 }

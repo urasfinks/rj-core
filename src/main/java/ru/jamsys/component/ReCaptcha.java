@@ -2,10 +2,10 @@ package ru.jamsys.component;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import ru.jamsys.App;
 import ru.jamsys.http.JsonHttpResponse;
 import ru.jamsys.util.JsonEnvelope;
 import ru.jamsys.util.UtilJson;
@@ -29,12 +29,11 @@ public class ReCaptcha extends AbstractComponent {
      */
 
     private final Security security;
-
-    @Value("${rj.core.reCaptcha.security.alias:google.recaptcha.secret}")
     private String securityAlias;
 
-    public ReCaptcha(Security security) {
+    public ReCaptcha(Security security, PropertiesManager propertiesManager) {
         this.security = security;
+        this.securityAlias = propertiesManager.getProperties("rj.reCaptcha.security.alias", String.class);
     }
 
     public JsonHttpResponse isValid(String captchaValue) {

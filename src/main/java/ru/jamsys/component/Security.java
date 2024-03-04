@@ -1,7 +1,6 @@
 package ru.jamsys.component;
 
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.App;
@@ -28,17 +27,19 @@ import java.util.Set;
 public class Security extends AbstractComponent {
 
     @Setter
-    @Value("${rj.core.security.path:security/security.jks}")
     private String pathStorage;
 
     @Setter
-    @Value("${rj.core.secret.path:security/security.token}")
-    private String pathToken;
+    private String pathSignature;
 
     @Setter
-    @Value("${rj.core.secret.path:security/security.json}")
-    private String pathInit;
+    private String pathInitAlias;
 
+    public Security(PropertiesManager propertiesManager) {
+        this.pathStorage = propertiesManager.getProperties("rj.security.path.storage", String.class);
+        this.pathSignature = propertiesManager.getProperties("rj.security.path.signature", String.class);
+        this.pathInitAlias = propertiesManager.getProperties("rj.security.path.init", String.class);
+    }
 
     private volatile KeyStore keyStore = null;
 
@@ -59,26 +60,26 @@ public class Security extends AbstractComponent {
     @Override
     public void run() {
         super.run();
-        byte[] token = UtilFile.readBytes(pathToken, null);
+        byte[] signature = UtilFile.readBytes(pathSignature, null);
 
         Util.logConsole("Security Check privateKey: " + (privateKey != null && privateKey.length > 0));
-        Util.logConsole("Security Check token: " + (token != null && token.length > 0));
+        Util.logConsole("Security Check signature: " + (signature != null && signature.length > 0));
 
-        if (token != null && token.length > 0 && privateKey != null && privateKey.length > 0) {
+        if (signature != null && signature.length > 0 && privateKey != null && privateKey.length > 0) {
             // У нас всё установлено можем просто работать
-            byte[] passwordKeyStore = decryptStoragePassword(token);
+            byte[] passwordKeyStore = decryptStoragePassword(signature);
             if (passwordKeyStore.length == 0) {
-                throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + pathToken + "]");
+                throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + pathSignature + "]");
             }
             try {
                 loadKeyStorage(Util.bytesToChars(passwordKeyStore));
             } catch (Exception e) {
                 throw new RuntimeException("Security.run() init exception", e);
             }
-            if (UtilFile.ifExist(pathInit)) {
+            if (UtilFile.ifExist(pathInitAlias)) {
+                System.out.println("Please remove file [" + pathInitAlias + "] with credentials information");
                 insertAliases(Util.bytesToChars(passwordKeyStore));
             }
-            UtilFile.removeIfExist(pathInit);
             try {
                 Util.logConsole(
                         "KeyStore available aliases: "
@@ -99,7 +100,7 @@ public class Security extends AbstractComponent {
 
     private void insertAliases(char[] password) {
         try {
-            byte[] initJson = UtilFile.readBytes(pathInit);
+            byte[] initJson = UtilFile.readBytes(pathInitAlias);
             if (initJson.length > 0) {
                 String initString = new String(initJson, StandardCharsets.UTF_8);
                 JsonEnvelope<Map<String, Object>> mapJsonEnvelope = UtilJson.toMap(initString);
@@ -132,7 +133,7 @@ public class Security extends AbstractComponent {
 
     private String getPasswordFromInfoJson(byte[] initJson) {
         if (initJson == null || initJson.length == 0) {
-            throw new RuntimeException("File: [" + pathInit + "] is empty");
+            throw new RuntimeException("File: [" + pathInitAlias + "] is empty");
         }
         String result = null;
         String initString = new String(initJson, StandardCharsets.UTF_8);
@@ -141,7 +142,7 @@ public class Security extends AbstractComponent {
             result = (String) mapJsonEnvelope.getObject().get("password");
         }
         if (result == null || "".equals(result.trim())) {
-            throw new RuntimeException("Password json field from [" + pathInit + "] is empty");
+            throw new RuntimeException("Password json field from [" + pathInitAlias + "] is empty");
         }
         return result;
     }
@@ -151,13 +152,13 @@ public class Security extends AbstractComponent {
             if (password != null && !"".equals(password.trim())) {
                 KeyPair keyPair = UtilRsa.genPair();
                 byte[] token = UtilRsa.encrypt(keyPair, password.getBytes(StandardCharsets.UTF_8));
-                UtilFile.writeBytes(pathToken, token, FileWriteOptions.CREATE_OR_REPLACE);
+                UtilFile.writeBytes(pathSignature, token, FileWriteOptions.CREATE_OR_REPLACE);
                 String privateKey = UtilBase64.base64Encode(keyPair.getPrivate().getEncoded(), true);
                 System.err.println("== NEED INIT SECURITY ===========================");
                 System.err.println("Security.init(\"\"\"\n" + privateKey + "\n\"\"\".toCharArray());");
             } else {
                 System.err.println("== NEED INIT SECURITY ===========================");
-                System.err.println("** Update file [" + pathInit + "]; password field must not be empty");
+                System.err.println("** Update file [" + pathInitAlias + "]; password field must not be empty");
             }
         } catch (Exception e) {
             throw new RuntimeException("Other problem", e);
@@ -175,11 +176,11 @@ public class Security extends AbstractComponent {
         try {
             bytesPasswordKeyStore = UtilRsa.decrypt(UtilRsa.getPrivateKey(bytesPrivateKey), token);
         } catch (Exception e) {
-            UtilFile.removeIfExist(pathToken);
-            throw new RuntimeException("Decrypt token exception. File: [" + pathToken + "] removed, please restart application", e);
+            UtilFile.removeIfExist(pathSignature);
+            throw new RuntimeException("Decrypt token exception. File: [" + pathSignature + "] removed, please restart application", e);
         }
         if (bytesPasswordKeyStore == null || bytesPasswordKeyStore.length == 0) {
-            throw new RuntimeException("Decrypt Token empty. Change/remove token file: [" + pathToken + "]");
+            throw new RuntimeException("Decrypt Token empty. Change/remove token file: [" + pathSignature + "]");
         }
         return bytesPasswordKeyStore;
     }
@@ -187,20 +188,20 @@ public class Security extends AbstractComponent {
     private byte[] createInitTemplateFile() {
         byte[] init;
         try {
-            init = UtilFile.readBytes(pathInit);
+            init = UtilFile.readBytes(pathInitAlias);
         } catch (FileNotFoundException | NoSuchFileException exception) {
             //Если нет - создадим
             System.err.println("== NEED INIT SECURITY ===========================");
-            System.err.println("** Update file [" + pathInit + "]");
+            System.err.println("** Update file [" + pathInitAlias + "]");
             System.err.println("== NEED INIT SECURITY ===========================");
             try {
                 init = UtilFileResource.get("security.json").readAllBytes();
-                UtilFile.writeBytes(pathInit, init, FileWriteOptions.CREATE_OR_REPLACE);
+                UtilFile.writeBytes(pathInitAlias, init, FileWriteOptions.CREATE_OR_REPLACE);
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
             //Нет смысла продолжать работу, когда файл инициализации в данный момент пустой
-            throw new RuntimeException("Update file [" + pathInit + "]");
+            throw new RuntimeException("Update file [" + pathInitAlias + "]");
         } catch (IOException e) {
             //Если возникли другие проблемы при чтение файла инициализации прекратим работу
             throw new RuntimeException(e.getMessage(), e);
@@ -224,7 +225,7 @@ public class Security extends AbstractComponent {
 
     public void loadKeyStorage(char[] password) throws Exception {
         if (password == null || password.length == 0) {
-            throw new RuntimeException("Password is empty; Change/remove token file: [" + pathToken + "]");
+            throw new RuntimeException("Password is empty; Change/remove token file: [" + pathSignature + "]");
         }
         hashPassword = new String(Util.getHash(Util.charsToBytes(password), hashPasswordType), StandardCharsets.UTF_8);
         keyStorePP = new KeyStore.PasswordProtection(password);
@@ -242,7 +243,6 @@ public class Security extends AbstractComponent {
                 throw e;
             }
         }
-
     }
 
     public void add(String key, char[] value, char[] password) throws Exception {
