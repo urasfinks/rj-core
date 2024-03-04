@@ -3,7 +3,7 @@ package ru.jamsys.pool;
 import lombok.Data;
 
 @Data
-public class WrapResource<T> {
+public class ResourceEnvelope<T> {
 
     private T resource;
     private long lastRunMs = System.currentTimeMillis();

@@ -42,34 +42,24 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
     @Setter
     private Function<Integer, Integer> formulaRemoveCount = (need) -> need;
 
-    private ConcurrentLinkedDeque<WrapResource<T>> parkQueue = new ConcurrentLinkedDeque<>();
-    protected final Map<T, WrapResource<T>> map = new ConcurrentHashMap<>();
+    private ConcurrentLinkedDeque<ResourceEnvelope<T>> parkQueue = new ConcurrentLinkedDeque<>();
+    protected final Map<T, ResourceEnvelope<T>> map = new ConcurrentHashMap<>();
 
     protected final AtomicBoolean active = new AtomicBoolean(true);
 
-    @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
-        List<Statistic> result = new ArrayList<>();
-        result.add(new Statistic(parentTags, parentFields)
-                .addTag("index", getName())
-                .addField("size", map.size())
-                .addField("park", parkQueue.size())
-        );
-        return result;
-    }
-
     @SuppressWarnings("unused")
+    @Override
     public void complete(T ret, Exception e) {
         if (ret == null) {
             return;
         }
         if (active.get()) {
-            WrapResource<T> wrapResource = map.get(ret);
-            if (wrapResource != null) {
-                if (checkExceptionOnRemove(e)) {
-                    remove(wrapResource);
+            ResourceEnvelope<T> resourceEnvelope = map.get(ret);
+            if (resourceEnvelope != null) {
+                if (checkExceptionOnComplete(e)) {
+                    remove(resourceEnvelope);
                 } else {
-                    parkQueue.add(wrapResource);
+                    parkQueue.add(resourceEnvelope);
                 }
             } else {
                 new Exception("Не найдена обёртка в пуле " + ret).printStackTrace();
@@ -78,13 +68,14 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
     }
 
     @SuppressWarnings({"unused"})
+    @Override
     public T getResource(long timeOutMs) throws Exception {
         long finishTimeMs = System.currentTimeMillis() + timeOutMs;
         while (active.get() && finishTimeMs > System.currentTimeMillis()) {
-            WrapResource<T> wrapResource = parkQueue.pollLast();
-            if (wrapResource != null) {
-                wrapResource.setLastRunMs(System.currentTimeMillis());
-                return wrapResource.getResource();
+            ResourceEnvelope<T> resourceEnvelope = parkQueue.pollLast();
+            if (resourceEnvelope != null) {
+                resourceEnvelope.setLastRunMs(System.currentTimeMillis());
+                return resourceEnvelope.getResource();
             }
             Util.sleepMs(100);
         }
@@ -96,43 +87,39 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
         return Arrays.copyOf(array, 0);
     }
 
-    private void checkKeepAliveAndRemove() { //Проверка ждунов, что они давно не вызывались и у них кол-во итераций равно 0 -> нож
+    private boolean add() {
+        if (active.get() && map.size() < max) {
+            final ResourceEnvelope<T> resourceEnvelope = new ResourceEnvelope<>();
+            T resource = createResource();
+            if (resource != null) {
+                resourceEnvelope.setResource(resource);
+                parkQueue.add(resourceEnvelope);
+                map.put(resourceEnvelope.getResource(), resourceEnvelope);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void removeLazy() { //Проверка ждунов, что они давно не вызывались и у них кол-во итераций равно 0 -> нож
         if (active.get()) {
             final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
-            Util.riskModifierMap(null, map, getEmptyType(), (T key, WrapResource<T> value) -> {
-                long future = value.getLastRunMs() + keepAlive;
+            Util.riskModifierMap(null, map, getEmptyType(), (T key, ResourceEnvelope<T> resourceEnvelope) -> {
+                long future = resourceEnvelope.getLastRunMs() + keepAlive;
                 //Время последнего оживления превысило keepAlive + мы не привысили кол-во удалений за 1 проверку
                 if (curTimeMs > future && maxCounterRemove.getAndDecrement() > 0) {
-                    safeRemove(value);
+                    remove(resourceEnvelope);
                 }
             });
         }
     }
 
-    private void safeRemove(WrapResource<T> wrapConnect) {
+    synchronized private void remove(@NonNull ResourceEnvelope<T> resourceEnvelope) {
         if (map.size() > min) {
-            remove(wrapConnect);
+            map.remove(resourceEnvelope.getResource());
+            parkQueue.remove(resourceEnvelope); // На всякий случай
         }
-    }
-
-    synchronized private void remove(@NonNull WrapResource<T> wrapObject) {
-        map.remove(wrapObject.getResource());
-        parkQueue.remove(wrapObject); // На всякий случай
-    }
-
-    private boolean add() {
-        if (active.get() && map.size() < max) {
-            final WrapResource<T> wrapResource = new WrapResource<>();
-            T resource = createResource();
-            if (resource != null) {
-                wrapResource.setResource(resource);
-                parkQueue.add(wrapResource);
-                map.put(wrapResource.getResource(), wrapResource);
-                return true;
-            }
-        }
-        return false;
     }
 
     private void overclocking(int count) {
@@ -150,20 +137,14 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
         }
     }
 
-    @SuppressWarnings("unused")
-    public void initial() {
-        for (int i = 0; i < min; i++) {
-            add();
-        }
-    }
-
+    @Override
     public void stabilizer() {
         if (active.get()) {
             try {
                 if (parkQueue.isEmpty()) { //Если в очереди пустота, попробуем добавить один
                     overclocking(formulaAddCount.apply(1));
                 } else if (map.size() > min) { //Кол-во потоков больше минимума
-                    checkKeepAliveAndRemove();
+                    removeLazy();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -171,10 +152,31 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
         }
     }
 
+    @SuppressWarnings("unused")
+    @Override
+    public void run() {
+        for (int i = 0; i < min; i++) {
+            add();
+        }
+    }
+
     @Override
     public void shutdown() {
         active.set(false);
-        Util.riskModifierMap(null, map, getEmptyType(), (T key, WrapResource<T> value) -> closeResource(value.getResource()));
+        Util.riskModifierMap(null, map, getEmptyType(), (T key, ResourceEnvelope<T> value) -> closeResource(value.getResource()));
+    }
+
+    @Override
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+        List<Statistic> result = new ArrayList<>();
+        result.add(new Statistic(parentTags, parentFields)
+                .addTag("index", getName())
+                .addField("min", min)
+                .addField("max", max)
+                .addField("size", map.size())
+                .addField("park", parkQueue.size())
+        );
+        return result;
     }
 
 }
