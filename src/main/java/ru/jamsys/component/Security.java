@@ -301,4 +301,36 @@ public class Security extends AbstractComponent {
         App.context.getBean(Security.class).setPrivateKey(privateKey);
     }
 
+    @Deprecated
+    public static void printStorage(char[] password, String pathStorage) {
+        KeyStore.PasswordProtection keyStorePP = new KeyStore.PasswordProtection(password);
+        File f = new File(pathStorage);
+        KeyStore keyStore;
+        String typeStorage = "JCEKS";
+        if (f.exists()) {
+            try (InputStream stream = new ByteArrayInputStream(UtilFile.readBytes(pathStorage))) {
+                keyStore = KeyStore.getInstance(typeStorage);
+                keyStore.load(stream, password);
+                HashSet<String> strings = new HashSet<>(Collections.list(keyStore.aliases()));
+                KeyStore finalKeyStore1 = keyStore;
+                strings.forEach((String key) -> {
+                    System.out.println(key);
+                    try {
+                        KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) finalKeyStore1.getEntry(key, keyStorePP);
+                        if (ske != null) {
+                            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
+                            PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(ske.getSecretKey(), PBEKeySpec.class);
+                            System.out.println(keySpec.getPassword());
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }
