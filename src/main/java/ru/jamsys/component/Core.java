@@ -20,7 +20,7 @@ public class Core extends AbstractComponent {
 
     public Core(ApplicationContext applicationContext) {
         super(applicationContext);
-        list.add(ExecutorService.class);
+        list.add(Scheduler.class);
         list.add(SystemStatistic.class);
     }
 

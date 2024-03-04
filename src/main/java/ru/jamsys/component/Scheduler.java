@@ -12,13 +12,13 @@ import ru.jamsys.thread.ExecutorServiceScheduler;
 @Component
 @Lazy
 @Getter
-public class ExecutorService extends AbstractComponent {
+public class Scheduler extends AbstractComponent {
 
     private final ExecutorServiceScheduler t1 = new ExecutorServiceScheduler(1000);
     private final ExecutorServiceScheduler t3 = new ExecutorServiceScheduler(3000);
     private final ExecutorServiceScheduler t5 = new ExecutorServiceScheduler(5000);
 
-    public ExecutorService(ApplicationContext applicationContext) {
+    public Scheduler(ApplicationContext applicationContext) {
         super(applicationContext);
     }
 

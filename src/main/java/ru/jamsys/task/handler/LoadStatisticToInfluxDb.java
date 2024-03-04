@@ -11,13 +11,13 @@ import ru.jamsys.App;
 import ru.jamsys.ApplicationInit;
 import ru.jamsys.broker.Queue;
 import ru.jamsys.component.Broker;
-import ru.jamsys.component.ExecutorService;
 import ru.jamsys.component.PropertiesManager;
+import ru.jamsys.component.Scheduler;
 import ru.jamsys.component.Security;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
-import ru.jamsys.task.Task;
 import ru.jamsys.task.AbstractTaskHandler;
+import ru.jamsys.task.Task;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -93,7 +93,7 @@ public class LoadStatisticToInfluxDb extends AbstractTaskHandler implements Appl
 
     public void applicationInit() {
         App.context
-                .getBean(ExecutorService.class)
+                .getBean(Scheduler.class)
                 .getT5()
                 .getListAbstractTaskHandler()
                 .add(App.context.getBean(LoadStatisticToInfluxDb.class));
