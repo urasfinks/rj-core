@@ -7,11 +7,11 @@ import ru.jamsys.component.Dictionary;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
 import ru.jamsys.statistic.StatisticsCollector;
-import ru.jamsys.task.Task;
 import ru.jamsys.task.AbstractTaskHandler;
+import ru.jamsys.task.Task;
 import ru.jamsys.util.Util;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,7 +31,7 @@ public class FlushStatistic extends AbstractTaskHandler {
                 Dictionary.getEmptyType(),
                 (Class<? extends Component> k, Component v) -> {
                     if (v instanceof StatisticsCollector) {
-                        Map<String, String> parentTags = new HashMap<>();
+                        Map<String, String> parentTags = new LinkedHashMap<>();
                         parentTags.put("measurement", k.getSimpleName());
                         parentTags.put("host", ip);
                         List<Statistic> statistics = ((StatisticsCollector) v).flushAndGetStatistic(
@@ -39,7 +39,7 @@ public class FlushStatistic extends AbstractTaskHandler {
                                 null,
                                 isRun
                         );
-                        if (statistics != null) {
+                        if (statistics != null && !statistics.isEmpty()) {
                             statisticSec.getList().addAll(statistics);
                         }
                     }
