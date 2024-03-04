@@ -5,6 +5,8 @@ import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.broker.BrokerCollectible;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 @Getter
 @Setter
 public class TaskHandlerStatistic implements BrokerCollectible {
@@ -15,7 +17,11 @@ public class TaskHandlerStatistic implements BrokerCollectible {
     long timeStartMs = System.currentTimeMillis();
     Long timeExecuteMs = null;
 
-    boolean wasProcessedStatistic = false; //Было обработано статистикой
+    AtomicBoolean firstPrepare = new AtomicBoolean(true); //Было обработано статистикой
+
+    public boolean isFirstPrepare() {
+        return firstPrepare.compareAndSet(true, false);
+    }
 
     public TaskHandlerStatistic(Thread thread, @Nullable Task task, AbstractTaskHandler abstractTaskHandler) {
         this.thread = thread;
@@ -33,6 +39,10 @@ public class TaskHandlerStatistic implements BrokerCollectible {
 
     public boolean isTimeout() {
         return timeExecuteMs == null && (System.currentTimeMillis() - timeStartMs) > taskHandler.getTimeoutMs();
+    }
+
+    public boolean isFinished() {
+        return timeExecuteMs != null;
     }
 
 }
