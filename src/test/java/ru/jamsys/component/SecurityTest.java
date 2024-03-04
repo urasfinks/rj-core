@@ -22,7 +22,7 @@ class SecurityTest {
         Security security = App.context.getBean(Security.class);
         security.setPathStorage("unit-test.jks");
         char[] password = "12345".toCharArray();
-        security.init(password);
+        security.loadKeyStorage(password);
         security.add("test", "12345".toCharArray(), password);
         Assertions.assertEquals("12345", new String(security.get("test")), "#1");
         security.add("test", "123456".toCharArray(), password);

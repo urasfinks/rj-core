@@ -4,6 +4,7 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.App;
 import ru.jamsys.util.*;
 
 import javax.crypto.SecretKey;
@@ -70,7 +71,7 @@ public class Security extends AbstractComponent {
                 throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + pathToken + "]");
             }
             try {
-                init(Util.bytesToChars(passwordKeyStore));
+                loadKeyStorage(Util.bytesToChars(passwordKeyStore));
             } catch (Exception e) {
                 throw new RuntimeException("Security.run() init exception", e);
             }
@@ -107,7 +108,9 @@ public class Security extends AbstractComponent {
                     Map<String, Object> addAlias = (Map<String, Object>) mapJsonEnvelope.getObject().get("addAlias");
                     if (addAlias != null) {
                         for (String key : addAlias.keySet()) {
-                            add(key, addAlias.get(key).toString().toCharArray(), password);
+                            if (!"".equals(addAlias.get(key).toString())) {
+                                add(key, addAlias.get(key).toString().toCharArray(), password);
+                            }
                         }
                         save(password);
                     }
@@ -151,7 +154,7 @@ public class Security extends AbstractComponent {
                 UtilFile.writeBytes(pathToken, token, FileWriteOptions.CREATE_OR_REPLACE);
                 String privateKey = UtilBase64.base64Encode(keyPair.getPrivate().getEncoded(), true);
                 System.err.println("== NEED INIT SECURITY ===========================");
-                System.err.println("App.context.getBean(Security.class).setPrivateKey(\"\"\"\n" + privateKey + "\n\"\"\".toCharArray());");
+                System.err.println("Security.init(\"\"\"\n" + privateKey + "\n\"\"\".toCharArray());");
             } else {
                 System.err.println("== NEED INIT SECURITY ===========================");
                 System.err.println("** Update file [" + pathInit + "]; password field must not be empty");
@@ -219,7 +222,7 @@ public class Security extends AbstractComponent {
         return false;
     }
 
-    public void init(char[] password) throws Exception {
+    public void loadKeyStorage(char[] password) throws Exception {
         if (password == null || password.length == 0) {
             throw new RuntimeException("Password is empty; Change/remove token file: [" + pathToken + "]");
         }
@@ -289,6 +292,14 @@ public class Security extends AbstractComponent {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         keyStore.store(byteArrayOutputStream, password);
         UtilFile.writeBytes(pathStorage, byteArrayOutputStream.toByteArray(), FileWriteOptions.CREATE_OR_REPLACE);
+    }
+
+    public static void init() {
+        App.context.getBean(Security.class).run();
+    }
+
+    public static void init(char[] privateKey) {
+        App.context.getBean(Security.class).setPrivateKey(privateKey);
     }
 
 }

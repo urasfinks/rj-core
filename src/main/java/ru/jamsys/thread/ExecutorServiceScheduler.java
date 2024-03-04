@@ -1,7 +1,6 @@
 package ru.jamsys.thread;
 
 import lombok.Getter;
-import lombok.Setter;
 import ru.jamsys.App;
 import ru.jamsys.component.Broker;
 import ru.jamsys.component.ExceptionHandler;
@@ -14,18 +13,16 @@ import java.util.List;
 import java.util.concurrent.Executors;
 
 @Getter
-@Setter
 public class ExecutorServiceScheduler extends AbstractExecutorService {
 
     private java.util.concurrent.ExecutorService executorService;
     private final long delayMs;
 
-    private List<TaskHandler> listTaskHandler = new ArrayList<>();
-    private Broker broker;
+    private final List<TaskHandler> listTaskHandler = new ArrayList<>();
+    private final Broker broker = App.context.getBean(Broker.class);
 
     public ExecutorServiceScheduler(long delayMs) {
         this.delayMs = delayMs;
-        broker = App.context.getBean(Broker.class);
     }
 
     @Override
