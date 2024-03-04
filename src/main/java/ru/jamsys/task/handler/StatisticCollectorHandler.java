@@ -25,7 +25,7 @@ public class StatisticCollectorHandler extends AbstractHandler {
         Util.riskModifierMap(
                 isRun,
                 dictionary.getMap(),
-                new Class[0],
+                Dictionary.getEmptyType(),
                 (Class<? extends Component> k, Component v) -> {
                     if (v instanceof StatisticsCollector) {
                         Map<String, String> parentTags = new HashMap<>();

@@ -10,6 +10,7 @@ import ru.jamsys.statistic.StatisticsCollector;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,13 +49,18 @@ public class Broker extends AbstractComponent implements StatisticsCollector {
         return get(c).pollFirst();
     }
 
+    @SafeVarargs
+    static <T> Class<T>[] getEmptyType(Class<T>... array) {
+        return Arrays.copyOf(array, 0);
+    }
+
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
         List<Statistic> result = new ArrayList<>();
         Util.riskModifierMap(
                 isRun,
                 mapQueue,
-                new Class[0],
+                getEmptyType(),
                 (Class<? extends BrokerCollectible> cls, Queue<? extends BrokerCollectible> queue) -> {
                     parentTags.put("index", cls.getSimpleName());
                     List<Statistic> statistics = ((StatisticsCollector) queue).flushAndGetStatistic(parentTags, parentFields, isRun);
