@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @org.springframework.stereotype.Component
-public class StatisticCollectorHandlerAbstract extends AbstractTaskHandler {
+public class FlushStatistic extends AbstractTaskHandler {
 
     String ip = Util.getIp();
 

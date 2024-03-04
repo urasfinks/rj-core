@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
-public class ReadAbstractTaskHandlerStatistic extends AbstractTaskHandler {
+public class ReadTaskHandlerStatistic extends AbstractTaskHandler {
 
     @Override
     public void run(Task task, AtomicBoolean isRun) throws Exception {

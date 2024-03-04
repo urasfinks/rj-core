@@ -5,8 +5,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.App;
-import ru.jamsys.task.handler.StatisticCollectorHandlerAbstract;
-import ru.jamsys.task.handler.ReadAbstractTaskHandlerStatistic;
+import ru.jamsys.task.handler.FlushStatistic;
+import ru.jamsys.task.handler.ReadTaskHandlerStatistic;
 import ru.jamsys.thread.ExecutorServiceScheduler;
 
 @Component
@@ -26,8 +26,8 @@ public class ExecutorService extends AbstractComponent {
     public void run() {
         super.run();
 
-        t1.getListAbstractTaskHandler().add(App.context.getBean(StatisticCollectorHandlerAbstract.class));
-        t1.getListAbstractTaskHandler().add(App.context.getBean(ReadAbstractTaskHandlerStatistic.class));
+        t1.getListAbstractTaskHandler().add(App.context.getBean(FlushStatistic.class));
+        t1.getListAbstractTaskHandler().add(App.context.getBean(ReadTaskHandlerStatistic.class));
 
         t1.run();
         t3.run();
