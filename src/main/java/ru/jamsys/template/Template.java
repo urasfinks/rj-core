@@ -37,9 +37,9 @@ public class Template {
         StringBuilder sb = new StringBuilder();
         for (TemplateItem templateItem : parsedTemplate) {
             if (templateItem.isStatic()) {
-                sb.append(templateItem.value());
+                sb.append(templateItem.getValue());
             } else {
-                sb.append(args.get(templateItem.value()));
+                sb.append(args.get(templateItem.getValue()));
             }
         }
         return sb.toString();
@@ -74,7 +74,7 @@ public class Template {
         if (tmp.size() > 0) {
             StringBuilder sb = new StringBuilder();
             for (TemplateItem item : tmp) {
-                sb.append(item.value());
+                sb.append(item.getValue());
             }
             result.add(new TemplateItem(true, sb.toString()));
         }
