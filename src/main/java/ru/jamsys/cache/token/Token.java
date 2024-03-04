@@ -10,11 +10,11 @@ import lombok.ToString;
 public class Token<V> {
 
     final long timeAddMs = System.currentTimeMillis();
-    final long expired;
+    final long expiredMs;
     final V value;
 
     public Token(V value, long timeoutMs) {
-        this.expired = timeAddMs + timeoutMs;
+        this.expiredMs = timeAddMs + timeoutMs;
         this.value = value;
     }
 }

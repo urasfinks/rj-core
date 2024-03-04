@@ -22,9 +22,9 @@ import java.util.function.Function;
 @Data
 public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
 
-    private final int max; //Максимальное кол-во коннектов
-    private final int min; //Минимальное кол-во коннектов
-    private final long keepAlive; //Время жизни коннекта без работы
+    private final int max; //Максимальное кол-во ресурсов
+    private final int min; //Минимальное кол-во ресурсов
+    private final long keepAliveMs; //Время жизни коннекта без работы
 
     @Getter
     private final String name;
@@ -33,7 +33,7 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
         this.name = name;
         this.max = max;
         this.min = min;
-        this.keepAlive = keepAliveMs;
+        this.keepAliveMs = keepAliveMs;
     }
 
     @Setter
@@ -49,12 +49,12 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
 
     @SuppressWarnings("unused")
     @Override
-    public void complete(T ret, Exception e) {
-        if (ret == null) {
+    public void complete(T resource, Exception e) {
+        if (resource == null) {
             return;
         }
         if (active.get()) {
-            ResourceEnvelope<T> resourceEnvelope = map.get(ret);
+            ResourceEnvelope<T> resourceEnvelope = map.get(resource);
             if (resourceEnvelope != null) {
                 if (checkExceptionOnComplete(e)) {
                     remove(resourceEnvelope);
@@ -62,7 +62,7 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
                     parkQueue.add(resourceEnvelope);
                 }
             } else {
-                new Exception("Не найдена обёртка в пуле " + ret).printStackTrace();
+                new Exception("Не найдена обёртка в пуле " + resource).printStackTrace();
             }
         }
     }
@@ -106,7 +106,7 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
             final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
             Util.riskModifierMap(null, map, getEmptyType(), (T key, ResourceEnvelope<T> resourceEnvelope) -> {
-                long future = resourceEnvelope.getLastRunMs() + keepAlive;
+                long future = resourceEnvelope.getLastRunMs() + keepAliveMs;
                 //Время последнего оживления превысило keepAlive + мы не привысили кол-во удалений за 1 проверку
                 if (curTimeMs > future && maxCounterRemove.getAndDecrement() > 0) {
                     remove(resourceEnvelope);

@@ -38,7 +38,7 @@ public class TokenManager<K, V> {
     private void flush() {
         long curMs = System.currentTimeMillis();
         Util.riskModifierMap(null, map, getEmptyType(), (K key, Token<V> value) -> {
-            if (curMs > value.getExpired()) {
+            if (curMs > value.getExpiredMs()) {
                 map.remove(key);
             }
         });

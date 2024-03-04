@@ -18,13 +18,13 @@ import java.util.concurrent.Executors;
 public class ExecutorServiceScheduler extends AbstractExecutorService {
 
     private java.util.concurrent.ExecutorService executorService;
-    private final long delay;
+    private final long delayMs;
 
     private List<TaskHandler> listTaskHandler = new ArrayList<>();
     private Broker broker;
 
-    public ExecutorServiceScheduler(long delay) {
-        this.delay = delay;
+    public ExecutorServiceScheduler(long delayMs) {
+        this.delayMs = delayMs;
         broker = App.context.getBean(Broker.class);
     }
 
@@ -32,7 +32,7 @@ public class ExecutorServiceScheduler extends AbstractExecutorService {
     public boolean run() {
         if (super.run()) {
             executorService = Executors.newSingleThreadExecutor(
-                    new CustomThreadFactory(getClass().getSimpleName() + "-" + delay)
+                    new CustomThreadFactory(getClass().getSimpleName() + "-" + delayMs)
             );
             executorService.submit(() -> {
                 isWhile.set(true);
@@ -40,7 +40,7 @@ public class ExecutorServiceScheduler extends AbstractExecutorService {
                 listThread.add(currentThread);
                 long nextStartMs = System.currentTimeMillis();
                 while (isWhile.get() && !currentThread.isInterrupted()) {
-                    nextStartMs = Util.zeroLastNDigits(nextStartMs + delay, 3);
+                    nextStartMs = Util.zeroLastNDigits(nextStartMs + delayMs, 3);
                     listTaskHandler.forEach(taskHandler -> {
                         if (isWhile.get()) {
                             TaskHandlerStatistic taskHandlerStatistic = new TaskHandlerStatistic(currentThread, null, taskHandler);

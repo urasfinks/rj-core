@@ -10,9 +10,9 @@ public class AvgMetric {
 
     private final ConcurrentLinkedQueue<Long> queue = new ConcurrentLinkedQueue<>();
 
-    public void add(Long x) {
-        if (x != null) {
-            queue.add(x);
+    public void add(Long count) {
+        if (count != null) {
+            queue.add(count);
         }
     }
 
