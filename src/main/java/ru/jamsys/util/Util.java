@@ -7,6 +7,8 @@ import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 
 import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
@@ -425,6 +427,19 @@ public class Util {
     public static long zeroLastNDigits(long x, long n) {
         long tenToTheN = (long) Math.pow(10, n);
         return (x / tenToTheN) * tenToTheN;
+    }
+
+    public static String getIp() {
+        String result = null;
+        try {
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress("google.com", 80));
+            result = socket.getLocalAddress().toString();
+            socket.close();
+        } catch (Exception e) {
+            App.context.getBean(ExceptionHandler.class).handler(e);
+        }
+        return result;
     }
 
 

@@ -18,6 +18,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @org.springframework.stereotype.Component
 public class StatisticCollectorHandler extends AbstractHandler {
 
+    String ip = Util.getIp();
+
     @Override
     public void run(Task task, AtomicBoolean isRun) throws Exception {
         Dictionary dictionary = App.context.getBean(Dictionary.class);
@@ -30,7 +32,7 @@ public class StatisticCollectorHandler extends AbstractHandler {
                     if (v instanceof StatisticsCollector) {
                         Map<String, String> parentTags = new HashMap<>();
                         parentTags.put("measurement", k.getSimpleName());
-                        parentTags.put("host", App.ip);
+                        parentTags.put("host", ip);
                         List<Statistic> statistics = ((StatisticsCollector) v).flushAndGetStatistic(
                                 parentTags,
                                 null,
