@@ -4,6 +4,7 @@
     "telegram.api.token": "",
     "server.ssl.key-store-password": "",
     "jdbc.postgresql.password": "",
-    "google.recaptcha.secret": ""
+    "google.recaptcha.secret": "",
+    "influx.token": ""
   }
 }
