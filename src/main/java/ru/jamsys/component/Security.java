@@ -120,7 +120,7 @@ public class Security extends AbstractComponent {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            App.context.getBean(ExceptionHandler.class).handler(e);
         }
     }
 
@@ -128,7 +128,7 @@ public class Security extends AbstractComponent {
         try {
             return new HashSet<>(Collections.list(keyStore.aliases()));
         } catch (Exception e) {
-            e.printStackTrace();
+            App.context.getBean(ExceptionHandler.class).handler(e);
         }
         return new HashSet<>();
     }
@@ -220,7 +220,7 @@ public class Security extends AbstractComponent {
                             StandardCharsets.UTF_8
                     ));
         } catch (Exception e) {
-            e.printStackTrace();
+            App.context.getBean(ExceptionHandler.class).handler(e);
         }
         return false;
     }
@@ -328,7 +328,7 @@ public class Security extends AbstractComponent {
                 });
 
             } catch (Exception e) {
-                e.printStackTrace();
+                App.context.getBean(ExceptionHandler.class).handler(e);
             }
         }
     }
