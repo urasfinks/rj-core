@@ -22,8 +22,6 @@ public class AvgMetric {
             Long poll = queue.poll();
             if (poll != null) {
                 list.add(poll);
-            } else {
-                break;
             }
         }
         LongSummaryStatistics avg = list.stream().mapToLong(Long::intValue).summaryStatistics();
