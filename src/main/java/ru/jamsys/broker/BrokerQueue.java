@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
+import ru.jamsys.extension.Procedure;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticsCollector;
@@ -31,6 +32,7 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
     private final AtomicInteger tpsOutput = new AtomicInteger(0);
 
     private final AvgMetric timeInQueue = new AvgMetric();
+    private final List<Procedure> listProcedure = new ArrayList<>();
 
     private int sizeQueue = 3000;
     private int sizeTail = 5;
@@ -38,6 +40,11 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
 
     public int getSize() {
         return queue.size();
+    }
+
+    @SuppressWarnings("unused")
+    public void onAdd(Procedure procedure) {
+        listProcedure.add(procedure);
     }
 
     @Override
@@ -57,6 +64,11 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
         tail.add(o);
         if (tail.size() > sizeTail) {
             tail.pollFirst();
+        }
+        try {
+            listProcedure.forEach(Procedure::run);
+        } catch (Exception e) {
+            App.context.getBean(ExceptionHandler.class).handler(e);
         }
     }
 
