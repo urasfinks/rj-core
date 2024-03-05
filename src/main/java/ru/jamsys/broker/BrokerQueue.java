@@ -42,6 +42,10 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
         return queue.size();
     }
 
+    public boolean isEmpty() {
+        return queue.isEmpty();
+    }
+
     @SuppressWarnings("unused")
     public void onAdd(Procedure procedure) {
         listProcedure.add(procedure);

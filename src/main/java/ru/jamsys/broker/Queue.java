@@ -9,6 +9,8 @@ public interface Queue<T> {
 
     int getSize();
 
+    boolean isEmpty();
+
     void add(T o) throws Exception;
 
     T pollFirst();

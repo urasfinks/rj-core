@@ -26,7 +26,7 @@ public class DefaultReadStatistic extends AbstractTaskHandler implements Applica
     @Override
     public void run(Task task, AtomicBoolean isRun) throws Exception {
         Queue<StatisticSec> queue = App.context.getBean(Broker.class).get(StatisticSec.class);
-        while (queue.getSize() > 0 && isRun.get()) {
+        while (!queue.isEmpty() && isRun.get()) {
             queue.pollFirst();
         }
     }
