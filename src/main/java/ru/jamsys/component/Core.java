@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Lazy;
 
 import ru.jamsys.App;
 import ru.jamsys.ApplicationInit;
+import ru.jamsys.task.handler.DefaultReadStatistic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +31,13 @@ public class Core extends AbstractComponent {
         }
     }
 
-    public <T extends ApplicationInit> void applicationInit(@NonNull Class<T> flushStatisticClass) {
+    public <T extends ApplicationInit> void applicationInit(Class<T> flushStatisticClass) {
         App.context.getBean(Security.class).run();
-        App.context.getBean(flushStatisticClass).applicationInit();
+        if (flushStatisticClass != null) {
+            App.context.getBean(flushStatisticClass).applicationInit();
+        } else {
+            App.context.getBean(DefaultReadStatistic.class).applicationInit();
+        }
     }
 
     @Override

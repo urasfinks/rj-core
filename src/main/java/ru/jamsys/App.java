@@ -6,7 +6,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import ru.jamsys.component.Core;
 import ru.jamsys.component.Security;
-import ru.jamsys.task.handler.LoadStatisticToInfluxDb;
 
 
 @PropertySource("global.properties")
@@ -18,15 +17,16 @@ public class App {
     public static void main(String[] args) {
         context = SpringApplication.run(App.class, args);
         Security.init("""
-MIIBVAIBADANBgkqhkiG9w0BAQEFAASCAT4wggE6AgEAAkEAi0b4fAQEzM9iVXZ93E81xYTr6t2n
-0yEmHUVJpTe4RYT6OIO8I+5hZDYDhlInG4gh2jFlsSQXwFXKUsWEyxotIQIDAQABAkAW/KUpTr5+
-ESJRKafXMymUSn5neqLmyTtRrGxdvOcIbgu5mrUqmYLpw47fBOH2kK2hMd/u8Zum+R53843vKrYZ
-AiEA+2f6oQeE0dsRwtVQ8+5PHpsxNAm7T/VzPULX4o2RAP0CIQCN0npXwHWwo9zqX8KET2tBF6dC
-l6VO02Ybw5aKNmuX9QIhAI4hk80UDiACZQEsTi8KDIr2HBQaaF5lGriIoLqBZHgVAiBkPRztwwEr
-/VWabl58x+ll04MLxUU4xqAIBaD0RWyctQIgMt6GFvwEx0V06A+W1LUeVfWDsJPm9pd+UBE0ft+q
-r+A=
-""".toCharArray());
-        context.getBean(Core.class).applicationInit(LoadStatisticToInfluxDb.class);
+                MIIBVAIBADANBgkqhkiG9w0BAQEFAASCAT4wggE6AgEAAkEAhs81ubcqaFlryKkFG6wFXS+wN71s
+                p8KtcR/xSXQL4JfQnGx+L5GGE9rvYWpu6/mgZIjObi7JxosPB+c1mBdIAQIDAQABAkAZHpm8eAqt
+                JIJuwr3arOhX95een0uUi/Q9GM5hWUAQUnmUl3drRszL1hfzVBQ6cHhreRk5bh11QOODdc/qT3y1
+                AiEA9iwrf0PRy5mEwspyGBRF/EuGGLsN+91MG/aVfhrSOa0CIQCMMO7S/1hbNkalDsEhgYsMXZzs
+                SbDV+WwhamrZaSr6JQIhAPT4dXyav65tIgk5rpo5qn9rpJD9q+fEi5WUJ6WrCSKtAiAFcsVlV90k
+                NljKg2dIGRPBWEYH/Nkth7MHHW6nomm0LQIgAi8EFCJ54oT1PHL9/M/uTdFVDMVOrYK4CIg/UmTn
+                XAo=
+                """.toCharArray());
+        //context.getBean(Core.class).applicationInit(LoadStatisticToInfluxDb.class);
+        context.getBean(Core.class).applicationInit(null);
         context.getBean(Core.class).run();
     }
 

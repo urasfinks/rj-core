@@ -57,7 +57,7 @@ public class LoadStatisticToInfluxDb extends AbstractTaskHandler implements Appl
     public void run(Task task, AtomicBoolean isRun) throws Exception {
         Queue<StatisticSec> queue = App.context.getBean(Broker.class).get(StatisticSec.class);
         List<Point> listPoints = new ArrayList<>();
-        while (isRun.get()) {
+        while (queue.getSize() > 0 && isRun.get()) {
             StatisticSec statisticSec = queue.pollFirst();
             if (statisticSec != null) {
                 List<Statistic> list = statisticSec.getList();
@@ -71,8 +71,6 @@ public class LoadStatisticToInfluxDb extends AbstractTaskHandler implements Appl
                                     .time(statisticSec.getTimeMs(), WritePrecision.MS)
                     );
                 }
-            } else {
-                break;
             }
         }
         if (isRun.get()) {
