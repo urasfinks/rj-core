@@ -9,4 +9,5 @@ public class Task extends TagIndex {
     AbstractTaskHandler taskHandler;
     List<Trace> listTrace = new ArrayList<>();
     Map<String, Object> property = new HashMap<>();
+    long timeMsExpired = 0;
 }
