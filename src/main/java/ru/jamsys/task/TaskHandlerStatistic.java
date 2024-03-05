@@ -3,7 +3,10 @@ package ru.jamsys.task;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.lang.Nullable;
+import ru.jamsys.App;
 import ru.jamsys.broker.BrokerCollectible;
+import ru.jamsys.component.Broker;
+import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -43,6 +46,20 @@ public class TaskHandlerStatistic implements BrokerCollectible {
 
     public boolean isFinished() {
         return timeExecuteMs != null;
+    }
+
+    public static void clearOnStopThread(Thread thread) {
+        Broker broker = App.context.getBean(Broker.class);
+        ru.jamsys.broker.Queue<TaskHandlerStatistic> taskHandlerStatisticQueue = broker.get(TaskHandlerStatistic.class);
+        Util.riskModifierCollection(
+                null,
+                taskHandlerStatisticQueue.getCloneQueue(null),
+                new TaskHandlerStatistic[0],
+                (TaskHandlerStatistic taskStatisticExecute) -> {
+                    if (taskStatisticExecute.getThread().equals(thread)) {
+                        taskHandlerStatisticQueue.remove(taskStatisticExecute);
+                    }
+                });
     }
 
 }

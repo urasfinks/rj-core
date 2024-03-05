@@ -1,10 +1,11 @@
 package ru.jamsys.pool;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
+import ru.jamsys.App;
+import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticsCollector;
 import ru.jamsys.util.Util;
@@ -19,12 +20,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-@Data
+
 public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
 
     private final int max; //Максимальное кол-во ресурсов
     private final int min; //Минимальное кол-во ресурсов
-    private final long keepAliveMs; //Время жизни коннекта без работы
+    private final long keepAliveMs; //Время жизни ресурса без работы
 
     @Getter
     private final String name;
@@ -42,10 +43,10 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
     @Setter
     private Function<Integer, Integer> formulaRemoveCount = (need) -> need;
 
-    private ConcurrentLinkedDeque<ResourceEnvelope<T>> parkQueue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<ResourceEnvelope<T>> parkQueue = new ConcurrentLinkedDeque<>();
     protected final Map<T, ResourceEnvelope<T>> map = new ConcurrentHashMap<>();
 
-    protected final AtomicBoolean active = new AtomicBoolean(true);
+    protected final AtomicBoolean isRun = new AtomicBoolean(false);
 
     @SuppressWarnings("unused")
     @Override
@@ -53,7 +54,7 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
         if (resource == null) {
             return;
         }
-        if (active.get()) {
+        if (isRun.get()) {
             ResourceEnvelope<T> resourceEnvelope = map.get(resource);
             if (resourceEnvelope != null) {
                 if (checkExceptionOnComplete(e)) {
@@ -62,7 +63,7 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
                     parkQueue.add(resourceEnvelope);
                 }
             } else {
-                new Exception("Не найдена обёртка в пуле " + resource).printStackTrace();
+                App.context.getBean(ExceptionHandler.class).handler(new Exception("Не найдена обёртка в пуле " + resource));
             }
         }
     }
@@ -71,7 +72,7 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
     @Override
     public T getResource(long timeOutMs) throws Exception {
         long finishTimeMs = System.currentTimeMillis() + timeOutMs;
-        while (active.get() && finishTimeMs > System.currentTimeMillis()) {
+        while (isRun.get() && finishTimeMs > System.currentTimeMillis()) {
             ResourceEnvelope<T> resourceEnvelope = parkQueue.pollLast();
             if (resourceEnvelope != null) {
                 resourceEnvelope.setLastRunMs(System.currentTimeMillis());
@@ -88,31 +89,15 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
     }
 
     private boolean add() {
-        if (active.get() && map.size() < max) {
-            final ResourceEnvelope<T> resourceEnvelope = new ResourceEnvelope<>();
-            T resource = createResource();
-            if (resource != null) {
-                resourceEnvelope.setResource(resource);
+        if (isRun.get() && map.size() < max) {
+            final ResourceEnvelope<T> resourceEnvelope = new ResourceEnvelope<>(createResource());
+            if (resourceEnvelope.getResource() != null) {
                 parkQueue.add(resourceEnvelope);
                 map.put(resourceEnvelope.getResource(), resourceEnvelope);
                 return true;
             }
         }
         return false;
-    }
-
-    private void removeLazy() { //Проверка ждунов, что они давно не вызывались и у них кол-во итераций равно 0 -> нож
-        if (active.get()) {
-            final long curTimeMs = System.currentTimeMillis();
-            final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
-            Util.riskModifierMap(null, map, getEmptyType(), (T key, ResourceEnvelope<T> resourceEnvelope) -> {
-                long future = resourceEnvelope.getLastRunMs() + keepAliveMs;
-                //Время последнего оживления превысило keepAlive + мы не привысили кол-во удалений за 1 проверку
-                if (curTimeMs > future && maxCounterRemove.getAndDecrement() > 0) {
-                    remove(resourceEnvelope);
-                }
-            });
-        }
     }
 
     synchronized private void remove(@NonNull ResourceEnvelope<T> resourceEnvelope) {
@@ -123,23 +108,18 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
     }
 
     private void overclocking(int count) {
-        if (active.get()) {
-            if (map.size() >= max) {
-                return;
-            }
-            if (count > 0) {
-                for (int i = 0; i < count; i++) {
-                    if (!add()) {
-                        break;
-                    }
+        if (isRun.get() && map.size() < max && count > 0) {
+            for (int i = 0; i < count; i++) {
+                if (!add()) {
+                    break;
                 }
             }
         }
     }
 
     @Override
-    public void stabilizer() {
-        if (active.get()) {
+    public void keepAlive() {
+        if (isRun.get()) {
             try {
                 if (parkQueue.isEmpty()) { //Если в очереди пустота, попробуем добавить один
                     overclocking(formulaAddCount.apply(1));
@@ -147,23 +127,43 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
                     removeLazy();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                App.context.getBean(ExceptionHandler.class).handler(e);
             }
+        }
+    }
+
+    private void removeLazy() { //Проверка ждунов, что они давно не вызывались и у них кол-во итераций равно 0 -> нож
+        if (isRun.get()) {
+            final long curTimeMs = System.currentTimeMillis();
+            final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
+            Util.riskModifierMap(null, map, getEmptyType(), (T key, ResourceEnvelope<T> resourceEnvelope) -> {
+                if (maxCounterRemove.getAndDecrement() > 0) {
+                    long future = resourceEnvelope.getLastRunMs() + keepAliveMs;
+                    //Время последнего оживления превысило keepAlive + мы не привысили кол-во удалений за 1 проверку
+                    if (curTimeMs > future) {
+                        remove(resourceEnvelope);
+                    }
+                }
+            });
         }
     }
 
     @SuppressWarnings("unused")
     @Override
     public void run() {
-        for (int i = 0; i < min; i++) {
-            add();
+        if (isRun.compareAndSet(false, true)) {
+            for (int i = 0; i < min; i++) {
+                add();
+            }
         }
     }
 
     @Override
     public void shutdown() {
-        active.set(false);
-        Util.riskModifierMap(null, map, getEmptyType(), (T key, ResourceEnvelope<T> value) -> closeResource(value.getResource()));
+        if (isRun.compareAndSet(true, false)) {
+            isRun.set(false);
+            Util.riskModifierMap(null, map, getEmptyType(), (T key, ResourceEnvelope<T> value) -> closeResource(value.getResource()));
+        }
     }
 
     @Override

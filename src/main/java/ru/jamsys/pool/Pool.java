@@ -13,7 +13,7 @@ public interface Pool<T> {
     void closeResource(T resource);
 
     @SuppressWarnings("unused")
-    void stabilizer();
+    void keepAlive();
 
     String getName();
 

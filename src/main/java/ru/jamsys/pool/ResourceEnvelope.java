@@ -10,4 +10,7 @@ public class ResourceEnvelope<T> {
     private T resource;
     private long lastRunMs = System.currentTimeMillis();
 
+    public ResourceEnvelope(T resource) {
+        this.resource = resource;
+    }
 }
