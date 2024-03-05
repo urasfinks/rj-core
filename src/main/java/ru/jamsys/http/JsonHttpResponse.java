@@ -1,7 +1,6 @@
 package ru.jamsys.http;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpHeaders;
@@ -17,7 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@Data
+@Getter
+@Setter
 public class JsonHttpResponse {
 
     @Getter

@@ -1,8 +1,10 @@
 package ru.jamsys.pool;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class ResourceEnvelope<T> {
 
     private T resource;
