@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -228,7 +229,8 @@ public class Util {
     public static String msToDataFormat(long ms) {
         LocalDateTime date =
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneId.systemDefault());
-        return date.toString();
+        return date.format( DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        //return date.toString();
     }
 
     public static String urlEncode(String data, String charset) throws Exception {

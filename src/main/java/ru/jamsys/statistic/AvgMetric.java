@@ -1,6 +1,7 @@
 package ru.jamsys.statistic;
 
 import lombok.ToString;
+import ru.jamsys.util.Util;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -17,14 +18,13 @@ public class AvgMetric {
     }
 
     public Map<String, Object> flush(String prefix) {
-        List<Long> list = new ArrayList<>();
+        LongSummaryStatistics avg = new LongSummaryStatistics();
         while (!queue.isEmpty()) {
             Long poll = queue.poll();
             if (poll != null) {
-                list.add(poll);
+                avg.accept(poll);
             }
         }
-        LongSummaryStatistics avg = list.stream().mapToLong(Long::intValue).summaryStatistics();
         Map<String, Object> result = new LinkedHashMap<>();
         long count = avg.getCount();
         result.put("Count", avg.getCount());
