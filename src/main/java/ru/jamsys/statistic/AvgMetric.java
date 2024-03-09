@@ -1,9 +1,11 @@
 package ru.jamsys.statistic;
 
 import lombok.ToString;
-import ru.jamsys.util.Util;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.LongSummaryStatistics;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @ToString
@@ -15,6 +17,10 @@ public class AvgMetric {
         if (count != null) {
             queue.add(count);
         }
+    }
+
+    public List<Long> get() {
+        return List.of(queue.toArray(new Long[0]));
     }
 
     public Map<String, Object> flush(String prefix) {

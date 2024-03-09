@@ -226,11 +226,13 @@ public class Util {
         return new SimpleDateFormat(format).format(new Date(stamp.getTime()));
     }
 
-    public static String msToDataFormat(long ms) {
+    public static String msToDataFormat(Long ms) {
+        if (ms == null) {
+            return "null";
+        }
         LocalDateTime date =
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneId.systemDefault());
-        return date.format( DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-        //return date.toString();
+        return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
     }
 
     public static String urlEncode(String data, String charset) throws Exception {
@@ -364,6 +366,7 @@ public class Util {
         return sb.toString();
     }
 
+    @SuppressWarnings("unused")
     public static String ucword(String someString) {
         return someString.substring(0, 1).toUpperCase() + someString.substring(1);
     }

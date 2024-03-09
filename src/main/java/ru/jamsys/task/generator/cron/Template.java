@@ -1,77 +1,57 @@
 package ru.jamsys.task.generator.cron;
 
-import lombok.Getter;
-import lombok.ToString;
 import ru.jamsys.statistic.AvgMetric;
+import ru.jamsys.util.Util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-@ToString
 public class Template {
 
-    @Getter
-    Unit second = new Unit(0, 59, MapUnit.SECOND); // Секунды [0-59]
+    private final Map<Integer, TemplateItem> templateMap = new LinkedHashMap<>();
 
-    @Getter
-    Unit minute = new Unit(0, 59, MapUnit.MINUTE); // Минуты [0-59]
+    private final List<TimeVariant> listTimeVariant = new ArrayList<>();
 
-    @Getter
-    Unit hour = new Unit(0, 23, MapUnit.HOUR); // Часы [0-23]
+    private Long next = 0L;
 
-    @Getter
-    Unit dayOfMonth = new Unit(1, 31, MapUnit.DAY_OF_MONTH); // Дни месяца [1-31]
-
-    @Getter
-    Unit monthOfYear = new Unit(1, 12, MapUnit.MONTH); // Месяц года
-
-    @Getter
-    Unit dayOfWeek = new Unit(1, 7, MapUnit.DAY_OF_WEEK); // Дни недели
-
-    @ToString.Exclude
-    private final Map<Integer, Unit> map = new LinkedHashMap<>();
-
-    @ToString.Exclude
-    List<UnitOne> cartesian = new ArrayList<>();
-
-    @ToString.Exclude
-    List<Unit> nulls = new ArrayList<>();
-
-    @ToString.Exclude
-    long next = 0;
-
+    private final String template;
 
     public Template(String template) {
-        map.put(0, second);
-        map.put(1, minute);
-        map.put(2, hour);
-        map.put(3, dayOfMonth);
-        map.put(4, monthOfYear);
-        map.put(5, dayOfWeek);
-        parse(template);
+        this.template = template;
+        templateMap.put(0, new TemplateItem(Unit.SECOND));
+        templateMap.put(1, new TemplateItem(Unit.MINUTE));
+        templateMap.put(2, new TemplateItem(Unit.HOUR_OF_DAY));
+        templateMap.put(3, new TemplateItem(Unit.DAY_OF_MONTH));
+        templateMap.put(4, new TemplateItem(Unit.MONTH));
+        templateMap.put(5, new TemplateItem(Unit.DAY_OF_WEEK));
+        parseTemplate();
+        init();
     }
 
-    private void parse(String template) {
-        String[] s = template.split(" ");
+    private void parseTemplate() {
+        String[] s = this.template.split(" ");
         for (int i = 0; i < s.length; i++) {
-            parseItem(s[i], map.get(i));
+            parseItem(s[i], templateMap.get(i));
         }
     }
 
-    private void parseItem(String template, Unit unit) {
+    private void parseItem(String template, TemplateItem templateItem) {
         if (template.indexOf(",") > 0) {
             String[] split = template.split(",");
             for (String s : split) {
-                parseItem(s, unit);
+                parseItem(s, templateItem);
             }
         } else {
             if (template.startsWith("*/")) {
                 int inc = Integer.parseInt(template.substring(2));
-                int start = unit.getMin();
+                int start = templateItem.getUnit().getMin();
                 int count = 0;
                 while (true) {
-                    unit.add(start);
+                    templateItem.add(start);
                     start += inc;
-                    if (start > unit.getMax()) {
+                    if (start > templateItem.getUnit().getMax()) {
                         break;
                     }
                     count++;
@@ -84,68 +64,104 @@ public class Template {
                 int start = Integer.parseInt(split[0]);
                 int end = Integer.parseInt(split[1]);
                 for (int i = start; i <= end; i++) {
-                    unit.add(i);
+                    templateItem.add(i);
                 }
             } else if (!"*".equals(template)) {
-                unit.add(Integer.parseInt(template));
+                templateItem.add(Integer.parseInt(template));
             }
         }
     }
 
-    public long getNext(long curTime) {
-        compile(curTime);
+    public Long getNext(long curTime, boolean debug) {
+        compile(curTime, debug);
         return next;
     }
 
-    public List<UnitOne> getCartesian() {
-        return cartesian;
+    public Long getNext(long curTime) {
+        return getNext(curTime, false);
     }
 
-    public Template compile(long curTime) {
-        if (next < curTime) {
-            if (cartesian.isEmpty()) {
-                for (Integer idx : map.keySet()) {
-                    Unit unit = map.get(idx);
-                    if (unit.getList().isEmpty()) {
-                        nulls.add(unit);
-                        unit.getList().add(null);
+    public List<String> getSeriesFormatted(long curTime, int count) {
+        List<String> result = new ArrayList<>();
+        List<Long> series = getSeries(curTime, count);
+        for (Long ms : series) {
+            result.add(Util.msToDataFormat(ms));
+        }
+        return result;
+    }
+
+    public List<Long> getSeries(long curTime, int count) {
+        List<Long> result = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            long x = getNext(curTime, false);
+            result.add(x);
+            curTime = x;
+        }
+        return result;
+    }
+
+    public List<TimeVariant> getListTimeVariant() {
+        return listTimeVariant;
+    }
+
+    private void init() {
+        listTimeVariant.clear();
+        List<Unit> listEmptyUnit = new ArrayList<>();
+        List<List<Integer>> tmpList = new ArrayList<>();
+        for (Integer index : templateMap.keySet()) {
+            TemplateItem templateItem = templateMap.get(index);
+            List<Integer> list = new ArrayList<>(templateItem.getList());
+            if (list.isEmpty()) {
+                listEmptyUnit.add(templateItem.getUnit());
+                list.add(null);
+            }
+            tmpList.add(list);
+        }
+
+        tmpList.get(0).forEach((Integer second)
+                -> tmpList.get(1).forEach((Integer minute)
+                -> tmpList.get(2).forEach((Integer hour)
+                -> tmpList.get(3).forEach((Integer dayOfMonth)
+                -> tmpList.get(4).forEach((Integer monthOfYear)
+                -> tmpList.get(5).forEach((Integer dayOfWeek) -> {
+                    TimeVariant timeVariant = new TimeVariant(listEmptyUnit);
+                    timeVariant.set(templateMap.get(0).getUnit(), second);
+                    timeVariant.set(templateMap.get(1).getUnit(), minute);
+                    timeVariant.set(templateMap.get(2).getUnit(), hour);
+                    timeVariant.set(templateMap.get(3).getUnit(), dayOfMonth);
+                    timeVariant.set(templateMap.get(4).getUnit(), monthOfYear);
+                    timeVariant.set(templateMap.get(5).getUnit(), dayOfWeek);
+
+                    if (!listTimeVariant.contains(timeVariant)) {
+                        listTimeVariant.add(timeVariant);
                     }
                 }
+        ))))));
 
-                List<Integer> secondList = map.get(0).getList();
-                List<Integer> minuteList = map.get(1).getList();
-                List<Integer> hourList = map.get(2).getList();
-                List<Integer> dayOfMonthList = map.get(3).getList();
-                List<Integer> monthOfYearList = map.get(4).getList();
-                List<Integer> dayOfWeekList = map.get(5).getList();
-
-                secondList.forEach((Integer second)
-                        -> minuteList.forEach((Integer minute)
-                        -> hourList.forEach((Integer hour)
-                        -> dayOfMonthList.forEach((Integer dayOfMonth)
-                        -> monthOfYearList.forEach((Integer monthOfYear)
-                        -> dayOfWeekList.forEach((Integer dayOfWeek) -> {
-                            UnitOne unitOne = new UnitOne();
-                            unitOne.set(map.get(0).getMapUnit().getCalendarUnit(), second);
-                            unitOne.set(map.get(1).getMapUnit().getCalendarUnit(), minute);
-                            unitOne.set(map.get(2).getMapUnit().getCalendarUnit(), hour);
-                            unitOne.set(map.get(3).getMapUnit().getCalendarUnit(), dayOfMonth);
-                            unitOne.set(map.get(4).getMapUnit().getCalendarUnit(), monthOfYear);
-                            unitOne.set(map.get(5).getMapUnit().getCalendarUnit(), dayOfWeek);
-
-                            if (!cartesian.contains(unitOne)) {
-                                cartesian.add(unitOne);
-                            }
-                        }
-                ))))));
-            }
-            AvgMetric avgMetric = new AvgMetric();
-            for (UnitOne unitOne : cartesian) {
-                unitOne.getNext(nulls, curTime, avgMetric);
-            }
-            next = (long) avgMetric.flush("").get("Min");
-        }
-        return this;
     }
 
+    public void compile(long curTime, boolean debug) {
+        if (next != null && next <= curTime) {
+            AvgMetric avgMetric = new AvgMetric();
+            for (TimeVariant timeVariant : listTimeVariant) {
+                timeVariant.getNext(curTime, avgMetric, debug);
+            }
+            Map<String, Object> flush = avgMetric.flush("");
+            if ((long) flush.get("Count") > 0) {
+                next = (long) flush.get("Min");
+            } else {
+                next = null;
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+        Map<String, TemplateItem> result = new LinkedHashMap<>();
+        for (Integer key : templateMap.keySet()) {
+            TemplateItem templateItem = templateMap.get(key);
+            result.put(templateItem.getName(), templateItem);
+        }
+        return "Template(" + result + ")";
+    }
 }

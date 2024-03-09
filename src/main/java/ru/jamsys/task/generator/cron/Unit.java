@@ -1,38 +1,72 @@
 package ru.jamsys.task.generator.cron;
 
 import lombok.Getter;
+import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
-public class Unit {
+public enum Unit {
+
+    MILLISECOND(0, 999, Calendar.MILLISECOND),
+    SECOND(0, 59, Calendar.SECOND),
+    MINUTE(0, 59, Calendar.MINUTE),
+    HOUR_OF_DAY(0, 23, Calendar.HOUR_OF_DAY),
+    DAY_OF_MONTH(1, 31, Calendar.DAY_OF_MONTH),
+    MONTH(1, 12, Calendar.MONTH),
+    DAY_OF_WEEK(1, 7, Calendar.DAY_OF_WEEK);
 
     @Getter
-    List<Integer> list = new ArrayList<>();
-
-    @Getter
+    final
     int min;
 
     @Getter
+    final
     int max;
 
-    @Getter
-    MapUnit mapUnit;
+    private final int calendarUnit;
 
-    public Unit(int min, int max, MapUnit mapUnit) {
+    Unit(int min, int max, int calendarUnit) {
         this.min = min;
         this.max = max;
-        this.mapUnit = mapUnit;
+        this.calendarUnit = calendarUnit;
     }
 
-    public void add(int x) {
-        if (x >= min && x <= max && !list.contains(x)) {
-            list.add(x);
+    String getName() {
+        return Util.snakeToCamel(name());
+    }
+
+    static List<Unit> getVector() {
+        List<Unit> result = new ArrayList<>();
+        result.add(Unit.SECOND);
+        result.add(Unit.MINUTE);
+        result.add(Unit.HOUR_OF_DAY);
+        result.add(Unit.DAY_OF_MONTH);
+        result.add(Unit.MONTH);
+        result.add(Unit.DAY_OF_WEEK);
+        return result;
+    }
+
+    @SuppressWarnings("unused")
+    public int getValue(Calendar calendar) {
+        return switch (this) {
+            case MONTH -> calendar.get(calendarUnit) + 1;
+            case DAY_OF_WEEK -> calendar.get(calendarUnit) - 1;
+            default -> calendar.get(calendarUnit);
+        };
+    }
+
+    public void addValue(Calendar calendar, int value) {
+        calendar.add(calendarUnit, value);
+    }
+
+    public void setValue(Calendar calendar, int value) {
+        switch (this) {
+            case MONTH -> calendar.set(calendarUnit, value - 1);
+            case DAY_OF_WEEK -> calendar.set(calendarUnit, value + 1);
+            default -> calendar.set(calendarUnit, value);
         }
-    }
-
-    @Override
-    public String toString() {
-        return list.toString();
+        calendar.getTimeInMillis(); //Магическая штука, прогоните unit test без неё если захотите убедится в этом
     }
 }
