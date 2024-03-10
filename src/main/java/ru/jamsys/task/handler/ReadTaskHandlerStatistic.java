@@ -1,11 +1,8 @@
 package ru.jamsys.task.handler;
 
-import org.springframework.stereotype.Component;
 import ru.jamsys.App;
 import ru.jamsys.broker.Queue;
 import ru.jamsys.component.Broker;
-import ru.jamsys.component.SchedulerStatistic;
-import ru.jamsys.component.TaskStatistic;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.task.AbstractTaskHandler;
 import ru.jamsys.task.TagIndex;
@@ -19,7 +16,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-@Component
 public class ReadTaskHandlerStatistic extends AbstractTaskHandler {
 
     @Override
@@ -53,8 +49,6 @@ public class ReadTaskHandlerStatistic extends AbstractTaskHandler {
                 queue.remove(stat);
             }
         });
-        App.context.getBean(SchedulerStatistic.class).insert(taskHandler);
-        App.context.getBean(TaskStatistic.class).insert(task);
     }
 
     public static class HStat {

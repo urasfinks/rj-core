@@ -3,12 +3,13 @@ package ru.jamsys.thread;
 import lombok.Getter;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
+import ru.jamsys.pool.Pool;
 import ru.jamsys.task.TaskHandlerStatistic;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class ThreadEnvelope {
 
@@ -16,26 +17,29 @@ public class ThreadEnvelope {
     private final AtomicBoolean isWhile = new AtomicBoolean(true);
     private final AtomicBoolean isRun = new AtomicBoolean(false);
     private final AtomicBoolean inPark = new AtomicBoolean(false);
+    private final Pool<ThreadEnvelope> pool;
 
     @Getter
     long lastExecute = 0;
 
-    public ThreadEnvelope(BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer) {
+    public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, Function<AtomicBoolean, Boolean> consumer) {
+        this.pool = pool;
         thread = new Thread(() -> {
             Thread curThread = Thread.currentThread();
             while (isWhile.get() && !curThread.isInterrupted()) {
                 lastExecute = System.currentTimeMillis();
-                if (!consumer.apply(isWhile, this)) {
+                if (!consumer.apply(isWhile)) {
                     pause();
                 }
             }
             isRun.set(false);
         });
-        thread.setName("AnyKey");
+        thread.setName(name);
     }
 
     private void pause() {
         if (isRun.get() && inPark.compareAndSet(false, true)) {
+            pool.complete(this, null);
             LockSupport.park(thread);
         }
     }
@@ -46,18 +50,16 @@ public class ThreadEnvelope {
         }
     }
 
-    public boolean run() {
+    public void run() {
         //Что бы второй раз не получилось запустить поток после остановки проверим на isWhile
         if (isWhile.get() && isRun.compareAndSet(false, true)) {
-            thread.start();
-            return true;
+            thread.start(); //start() - create new thread / run() - Runnable run in main thread
         }
-        return false;
     }
 
-    public boolean shutdown() {
+    synchronized public void shutdown() {
         //ЧТо бы что-то тушит, надо что бы это что-то было поднято)
-        if (isRun.get()) {
+        if (isRun.get() && isWhile.get()) {
             isWhile.set(false); //Говорим закончить
             resume(); //Выводим из возможного паркинга
             long timeOutMs = 1000;
@@ -71,7 +73,7 @@ public class ThreadEnvelope {
                 }
             }
             if (!isRun.get()) {
-                return true;
+                return;
             } else {
                 Util.logConsole("Thread " + thread.getName() + " > interrupt()");
                 try {
@@ -89,7 +91,7 @@ public class ThreadEnvelope {
                 }
             }
             if (!isRun.get()) {
-                return true;
+                return;
             } else {
                 Util.logConsole("Thread " + thread.getName() + " > stop()");
                 try {
@@ -100,8 +102,7 @@ public class ThreadEnvelope {
                 TaskHandlerStatistic.clearOnStopThread(thread);
             }
             isRun.set(false);
-            return true;
         }
-        return false;
     }
+
 }

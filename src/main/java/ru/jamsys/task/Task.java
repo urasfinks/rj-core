@@ -5,9 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Task extends TagIndex {
-    AbstractTaskHandler taskHandler;
+public abstract class Task extends TagIndex {
+
     List<Trace> listTrace = new ArrayList<>();
     Map<String, Object> property = new HashMap<>();
     long timeMsExpired = 0;
+
 }

@@ -6,7 +6,7 @@ public interface Pool<T> {
     void complete(T ret, Exception e);
 
     @SuppressWarnings("unused")
-    T getResource(long timeOutMs) throws Exception;
+    T getResource(Long timeOutMs) throws Exception;
 
     T createResource();
 
@@ -16,12 +16,6 @@ public interface Pool<T> {
     void keepAlive();
 
     String getName();
-
-    @SuppressWarnings("unused")
-    void run();
-
-    @SuppressWarnings("unused")
-    void shutdown();
 
     boolean checkExceptionOnComplete(Exception e);
 

@@ -6,13 +6,11 @@ import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import lombok.Setter;
-import org.springframework.stereotype.Component;
 import ru.jamsys.App;
 import ru.jamsys.ApplicationInit;
 import ru.jamsys.broker.Queue;
 import ru.jamsys.component.Broker;
 import ru.jamsys.component.PropertiesManager;
-import ru.jamsys.component.Scheduler;
 import ru.jamsys.component.Security;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
@@ -24,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Component
 public class LoadStatisticToInfluxDb extends AbstractTaskHandler implements ApplicationInit {
 
     //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token 'LmbVFdM8Abe6T6atTD6Ai3LJOKrEVrKB61mrFqJzqx5HzANJ13HItZrbWuhDdJXsdLL9mJLn7UB6MtAbLG4AxQ=='
@@ -90,10 +87,6 @@ public class LoadStatisticToInfluxDb extends AbstractTaskHandler implements Appl
     }
 
     public void applicationInit() {
-        App.context
-                .getBean(Scheduler.class)
-                .getT5()
-                .getListAbstractTaskHandler()
-                .add(App.context.getBean(LoadStatisticToInfluxDb.class));
+
     }
 }

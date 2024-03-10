@@ -3,11 +3,11 @@ package ru.jamsys.pool;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticsCollector;
+import ru.jamsys.thread.Starter;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 
-public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
+public abstract class AbstractPool<T> implements Pool<T>, Starter, StatisticsCollector {
 
     private final int max; //Максимальное кол-во ресурсов
     private final int min; //Минимальное кол-во ресурсов
@@ -43,10 +43,14 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
     @Setter
     private Function<Integer, Integer> formulaRemoveCount = (need) -> need;
 
-    private final ConcurrentLinkedDeque<ResourceEnvelope<T>> parkQueue = new ConcurrentLinkedDeque<>();
+    protected final ConcurrentLinkedDeque<ResourceEnvelope<T>> parkQueue = new ConcurrentLinkedDeque<>();
     protected final Map<T, ResourceEnvelope<T>> map = new ConcurrentHashMap<>();
 
     protected final AtomicBoolean isRun = new AtomicBoolean(false);
+
+    public boolean isAllInPark() {
+        return map.size() == parkQueue.size();
+    }
 
     @SuppressWarnings("unused")
     @Override
@@ -70,15 +74,26 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
 
     @SuppressWarnings({"unused"})
     @Override
-    public T getResource(long timeOutMs) throws Exception {
-        long finishTimeMs = System.currentTimeMillis() + timeOutMs;
-        while (isRun.get() && finishTimeMs > System.currentTimeMillis()) {
+    public T getResource(Long timeOutMs) throws Exception {
+        if (!isRun.get()) {
+            throw new Exception("Pool " + getName() + " stop.");
+        }
+        if (timeOutMs == null) {
             ResourceEnvelope<T> resourceEnvelope = parkQueue.pollLast();
             if (resourceEnvelope != null) {
                 resourceEnvelope.setLastRunMs(System.currentTimeMillis());
                 return resourceEnvelope.getResource();
             }
-            Util.sleepMs(100);
+        } else {
+            long finishTimeMs = System.currentTimeMillis() + timeOutMs;
+            while (isRun.get() && finishTimeMs > System.currentTimeMillis()) {
+                ResourceEnvelope<T> resourceEnvelope = parkQueue.pollLast();
+                if (resourceEnvelope != null) {
+                    resourceEnvelope.setLastRunMs(System.currentTimeMillis());
+                    return resourceEnvelope.getResource();
+                }
+                Util.sleepMs(100);
+            }
         }
         throw new Exception("Pool " + getName() + " not active resource. Timeout: " + timeOutMs + "ms");
     }
@@ -104,6 +119,7 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
         if (map.size() > min) {
             map.remove(resourceEnvelope.getResource());
             parkQueue.remove(resourceEnvelope); // На всякий случай
+            closeResource(resourceEnvelope.getResource()); //Если выкидываем из пула, то наверное надо закрыть сам ресурс
         }
     }
 
@@ -121,9 +137,9 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
     public void keepAlive() {
         if (isRun.get()) {
             try {
-                if (parkQueue.isEmpty()) { //Если в очереди пустота, попробуем добавить один
+                if (parkQueue.isEmpty()) { //Если в очереди пустота, попробуем добавить
                     overclocking(formulaAddCount.apply(1));
-                } else if (map.size() > min) { //Кол-во потоков больше минимума
+                } else if (map.size() > min) { //Кол-во больше минимума
                     removeLazy();
                 }
             } catch (Exception e) {
@@ -139,7 +155,7 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
             Util.riskModifierMap(null, map, getEmptyType(), (T key, ResourceEnvelope<T> resourceEnvelope) -> {
                 if (maxCounterRemove.getAndDecrement() > 0) {
                     long future = resourceEnvelope.getLastRunMs() + keepAliveMs;
-                    //Время последнего оживления превысило keepAlive + мы не привысили кол-во удалений за 1 проверку
+                    //Время последнего оживления превысило keepAlive + мы не превысили кол-во удалений за 1 проверку
                     if (curTimeMs > future) {
                         remove(resourceEnvelope);
                     }
@@ -152,22 +168,45 @@ public abstract class AbstractPool<T> implements Pool<T>, StatisticsCollector {
     @Override
     public void run() {
         if (isRun.compareAndSet(false, true)) {
+            isRun.set(false);
             for (int i = 0; i < min; i++) {
                 add();
             }
+            isRun.set(true);
         }
     }
 
     @Override
     public void shutdown() {
         if (isRun.compareAndSet(true, false)) {
-            isRun.set(false);
-            Util.riskModifierMap(null, map, getEmptyType(), (T key, ResourceEnvelope<T> value) -> closeResource(value.getResource()));
+            isRun.set(true); //Что бы кто-нибудь не смог вызвать run
+            Util.riskModifierMap(
+                    null,
+                    map,
+                    getEmptyType(),
+                    (T key, ResourceEnvelope<T> resourceEnvelope) -> {
+                        closeResource(resourceEnvelope.getResource());
+                        map.remove(key);
+                        parkQueue.remove(resourceEnvelope);
+                    }
+            );
+            //После того как всё потушится, переведём статус
+            isRun.set(true);
         }
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+    synchronized public void reload() {
+        shutdown();
+        run();
+    }
+
+    @Override
+    public List<Statistic> flushAndGetStatistic(
+            Map<String, String> parentTags,
+            Map<String, Object> parentFields,
+            AtomicBoolean isRun
+    ) {
         List<Statistic> result = new ArrayList<>();
         result.add(new Statistic(parentTags, parentFields)
                 .addTag("index", getName())

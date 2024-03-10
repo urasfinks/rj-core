@@ -1,9 +1,8 @@
-package ru.jamsys.component;
+package ru.jamsys.task.handler;
 
 import com.sun.management.OperatingSystemMXBean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
+import ru.jamsys.component.AbstractComponent;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticsCollector;
 
@@ -14,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Component
-@Lazy
 public class SystemStatistic extends AbstractComponent implements StatisticsCollector {
 
     public volatile double cpuUsage;

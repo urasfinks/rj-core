@@ -2,12 +2,12 @@ package ru.jamsys;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.template.Template;
+import ru.jamsys.template.twix.Template;
 
 import java.util.HashMap;
 import java.util.Map;
 
-class TemplateTest {
+class CronTest {
 
     @Test
     void template(){

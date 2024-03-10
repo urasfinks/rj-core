@@ -1,4 +1,4 @@
-package ru.jamsys.task.generator.cron;
+package ru.jamsys.template.cron;
 
 import lombok.Data;
 import ru.jamsys.statistic.AvgMetric;
@@ -105,7 +105,7 @@ public class TimeVariant {
 
     public void resetDynamicUnitBefore(Calendar calendar, Unit curUnit, boolean debug) {
         Unit.MILLISECOND.setValue(calendar, 0);
-        for (Unit vectorUnit : Template.getVector()) {
+        for (Unit vectorUnit : Cron.getVector()) {
             if (vectorUnit.equals(curUnit)) {
                 break;
             }

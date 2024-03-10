@@ -1,4 +1,4 @@
-package ru.jamsys.task.generator.cron;
+package ru.jamsys.template.cron;
 
 import lombok.Getter;
 

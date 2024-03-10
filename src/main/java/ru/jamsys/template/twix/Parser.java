@@ -1,4 +1,4 @@
-package ru.jamsys.template;
+package ru.jamsys.template.twix;
 
 import java.util.Arrays;
 import java.util.HashMap;

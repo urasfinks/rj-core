@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.context.annotation.Lazy;
+import ru.jamsys.task.Task;
+import ru.jamsys.task.handler.TaskHandler;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -21,5 +23,7 @@ public class Dictionary {
         return Arrays.copyOf(array, 0);
     }
 
-    Map<Class<? extends Component>, Component> map = new ConcurrentHashMap<>();
+    Map<Class<? extends Component>, Component> component = new ConcurrentHashMap<>();
+
+    Map<Class<? extends Task>, Class<? extends TaskHandler<? extends Task>>> taskHandler = new ConcurrentHashMap<>();
 }

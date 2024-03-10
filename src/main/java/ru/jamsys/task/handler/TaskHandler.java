@@ -4,9 +4,9 @@ import ru.jamsys.task.Task;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public interface TaskHandler {
+public interface TaskHandler <T extends Task> {
 
-    void run(Task task, AtomicBoolean isRun) throws Exception;
+    void run(T task, AtomicBoolean isRun) throws Exception;
 
     long getTimeoutMs();
 

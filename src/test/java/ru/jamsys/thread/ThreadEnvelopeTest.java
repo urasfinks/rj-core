@@ -1,6 +1,9 @@
 package ru.jamsys.thread;
 
 import org.junit.jupiter.api.Test;
+import ru.jamsys.App;
+import ru.jamsys.component.ExceptionHandler;
+import ru.jamsys.task.TaskHandlerStatistic;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -8,16 +11,38 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class ThreadEnvelopeTest {
     @Test
     public void test() {
-        ThreadEnvelope threadEnvelope = new ThreadEnvelope((AtomicBoolean isWhile, ThreadEnvelope te) -> {
-            Util.logConsole("YHOO");
+
+        ThreadPool threadPool = new ThreadPool("Generator", 1, 1, 60000, (AtomicBoolean isWhile) -> {
+            Thread currentThread = Thread.currentThread();
+            long nextStartMs = System.currentTimeMillis();
+            while (isWhile.get() && !currentThread.isInterrupted()) {
+                nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
+
+                if (isWhile.get()) {
+                    long calcSleepMs = nextStartMs - System.currentTimeMillis();
+                    if (calcSleepMs > 0) {
+                        Util.sleepMs(calcSleepMs);
+                    } else {
+                        Util.sleepMs(1);//Что бы поймать Interrupt
+                        nextStartMs = System.currentTimeMillis();
+                    }
+                } else {
+                    break;
+                }
+            }
+            Util.logConsole(currentThread.getName() + ": STOP");
             return false;
         });
-        threadEnvelope.run();
-        Util.sleepMs(1000);
-        threadEnvelope.resume();
-        Util.sleepMs(1000);
-        threadEnvelope.resume();
-        Util.sleepMs(1000);
-        threadEnvelope.shutdown();
+        threadPool.run();
+        Util.sleepMs(10000);
+
+//        ThreadEnvelope threadEnvelope = new ThreadEnvelope();
+//        threadEnvelope.run();
+//        Util.sleepMs(1000);
+//        threadEnvelope.resume();
+//        Util.sleepMs(1000);
+//        threadEnvelope.resume();
+//        Util.sleepMs(1000);
+//        threadEnvelope.shutdown();
     }
 }

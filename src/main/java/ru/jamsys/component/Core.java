@@ -1,32 +1,30 @@
 package ru.jamsys.component;
 
 import lombok.Getter;
-import lombok.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
-
 import ru.jamsys.App;
 import ru.jamsys.ApplicationInit;
 import ru.jamsys.task.handler.DefaultReadStatistic;
+import ru.jamsys.thread.Starter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @org.springframework.stereotype.Component
 @Lazy
-public class Core extends AbstractComponent {
+public class Core extends AbstractComponent implements Starter {
 
     @Getter
-    List<Class<? extends Component>> list = new ArrayList<>();
+    List<Class<? extends Starter>> list = new ArrayList<>();
 
     public Core(ApplicationContext applicationContext) {
         super(applicationContext);
-        list.add(Scheduler.class);
-        list.add(SystemStatistic.class);
+        list.add(Generator.class);
     }
 
     public void run() {
-        for (Class<? extends Component> cls : list) {
+        for (Class<? extends Starter> cls : list) {
             App.context.getBean(cls).run();
         }
     }
@@ -42,10 +40,15 @@ public class Core extends AbstractComponent {
 
     @Override
     public void shutdown() {
-        super.shutdown();
         //Опускаем в обратной последовательности
         for (int i = list.size() - 1; i >= 0; i--) {
             App.context.getBean(list.get(i)).shutdown();
         }
+    }
+
+    @Override
+    synchronized public void reload() {
+        shutdown();
+        run();
     }
 }

@@ -5,22 +5,18 @@ import ru.jamsys.App;
 import ru.jamsys.ApplicationInit;
 import ru.jamsys.broker.Queue;
 import ru.jamsys.component.Broker;
-import ru.jamsys.component.Scheduler;
+import ru.jamsys.component.Generator;
 import ru.jamsys.statistic.StatisticSec;
 import ru.jamsys.task.AbstractTaskHandler;
 import ru.jamsys.task.Task;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Component
+
 public class DefaultReadStatistic extends AbstractTaskHandler implements ApplicationInit {
     @Override
     public void applicationInit() {
-        App.context
-                .getBean(Scheduler.class)
-                .getT5()
-                .getListAbstractTaskHandler()
-                .add(App.context.getBean(DefaultReadStatistic.class));
+
     }
 
     @Override

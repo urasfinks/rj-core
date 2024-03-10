@@ -1,4 +1,4 @@
-package ru.jamsys.task.generator.cron;
+package ru.jamsys.template.cron;
 
 import lombok.Getter;
 import ru.jamsys.statistic.AvgMetric;
@@ -6,7 +6,7 @@ import ru.jamsys.util.Util;
 
 import java.util.*;
 
-public class Template {
+public class Cron {
 
     @Getter
     public static List<Unit> vector = Arrays.asList(
@@ -26,7 +26,7 @@ public class Template {
 
     private final String template;
 
-    public Template(String template) {
+    public Cron(String template) {
         this.template = template;
         for (int i = 0; i < vector.size(); i++) {
             templateMap.put(i, new TemplateItem(vector.get(i)));
@@ -81,8 +81,9 @@ public class Template {
     }
 
     public Long getNext(long curTime, boolean debug) {
+        long result = next;
         compile(curTime, debug);
-        return next;
+        return result;
     }
 
     public Long getNext(long curTime) {

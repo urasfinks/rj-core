@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@org.springframework.stereotype.Component
 public class FlushStatistic extends AbstractTaskHandler {
 
     String ip = Util.getIp();
@@ -27,7 +26,7 @@ public class FlushStatistic extends AbstractTaskHandler {
         StatisticSec statisticSec = new StatisticSec();
         Util.riskModifierMap(
                 isRun,
-                dictionary.getMap(),
+                dictionary.getComponent(),
                 Dictionary.getEmptyType(),
                 (Class<? extends Component> k, Component v) -> {
                     if (v instanceof StatisticsCollector) {
