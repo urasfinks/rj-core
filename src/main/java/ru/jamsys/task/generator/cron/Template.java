@@ -1,14 +1,22 @@
 package ru.jamsys.task.generator.cron;
 
+import lombok.Getter;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.util.Util;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Template {
+
+    @Getter
+    public static List<Unit> vector = Arrays.asList(
+            Unit.SECOND,
+            Unit.MINUTE,
+            Unit.HOUR_OF_DAY,
+            Unit.DAY_OF_MONTH,
+            Unit.MONTH,
+            Unit.DAY_OF_WEEK
+    );
 
     private final Map<Integer, TemplateItem> templateMap = new LinkedHashMap<>();
 
@@ -20,12 +28,9 @@ public class Template {
 
     public Template(String template) {
         this.template = template;
-        templateMap.put(0, new TemplateItem(Unit.SECOND));
-        templateMap.put(1, new TemplateItem(Unit.MINUTE));
-        templateMap.put(2, new TemplateItem(Unit.HOUR_OF_DAY));
-        templateMap.put(3, new TemplateItem(Unit.DAY_OF_MONTH));
-        templateMap.put(4, new TemplateItem(Unit.MONTH));
-        templateMap.put(5, new TemplateItem(Unit.DAY_OF_WEEK));
+        for (int i = 0; i < vector.size(); i++) {
+            templateMap.put(i, new TemplateItem(vector.get(i)));
+        }
         parseTemplate();
         init();
     }
@@ -46,6 +51,9 @@ public class Template {
         } else {
             if (template.startsWith("*/")) {
                 int inc = Integer.parseInt(template.substring(2));
+                if (inc == 1) {
+                    return;
+                }
                 int start = templateItem.getUnit().getMin();
                 int count = 0;
                 while (true) {
@@ -131,6 +139,7 @@ public class Template {
                     timeVariant.set(templateMap.get(3).getUnit(), dayOfMonth);
                     timeVariant.set(templateMap.get(4).getUnit(), monthOfYear);
                     timeVariant.set(templateMap.get(5).getUnit(), dayOfWeek);
+                    timeVariant.init();
 
                     if (!listTimeVariant.contains(timeVariant)) {
                         listTimeVariant.add(timeVariant);
@@ -144,7 +153,9 @@ public class Template {
         if (next != null && next <= curTime) {
             AvgMetric avgMetric = new AvgMetric();
             for (TimeVariant timeVariant : listTimeVariant) {
-                timeVariant.getNext(curTime, avgMetric, debug);
+                if (timeVariant.getNext(curTime, avgMetric, debug) == 0) {
+                    break;
+                }
             }
             Map<String, Object> flush = avgMetric.flush("");
             if ((long) flush.get("Count") > 0) {

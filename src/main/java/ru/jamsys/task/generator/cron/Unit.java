@@ -3,9 +3,7 @@ package ru.jamsys.task.generator.cron;
 import lombok.Getter;
 import ru.jamsys.util.Util;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 public enum Unit {
 
@@ -35,17 +33,6 @@ public enum Unit {
 
     String getName() {
         return Util.snakeToCamel(name());
-    }
-
-    static List<Unit> getVector() {
-        List<Unit> result = new ArrayList<>();
-        result.add(Unit.SECOND);
-        result.add(Unit.MINUTE);
-        result.add(Unit.HOUR_OF_DAY);
-        result.add(Unit.DAY_OF_MONTH);
-        result.add(Unit.MONTH);
-        result.add(Unit.DAY_OF_WEEK);
-        return result;
     }
 
     @SuppressWarnings("unused")
