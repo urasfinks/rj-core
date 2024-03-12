@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.task.instance.StatisticTask;
 import ru.jamsys.template.cron.Cron;
 import ru.jamsys.template.cron.CronTask;
-import ru.jamsys.thread.Starter;
+import ru.jamsys.thread.RunnableComponent;
 import ru.jamsys.thread.ThreadPool;
 import ru.jamsys.util.Util;
 
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
-public class Generator extends AbstractComponent implements Starter {
+public class Generator extends AbstractComponent implements RunnableComponent {
 
     final private ThreadPool threadPool;
 

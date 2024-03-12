@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Starter {
+public class ThreadPool extends AbstractPool<ThreadEnvelope> implements RunnableComponent {
 
     AtomicInteger index = new AtomicInteger(1);
 

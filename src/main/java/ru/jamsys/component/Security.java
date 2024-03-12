@@ -4,7 +4,7 @@ import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.App;
-import ru.jamsys.thread.Starter;
+import ru.jamsys.ApplicationInit;
 import ru.jamsys.util.*;
 
 import javax.crypto.SecretKey;
@@ -25,7 +25,7 @@ import java.util.Set;
 
 @Component
 @Lazy
-public class Security extends AbstractComponent implements Starter {
+public class Security extends AbstractComponent implements ApplicationInit {
 
     @Setter
     private String pathStorage;
@@ -57,56 +57,6 @@ public class Security extends AbstractComponent implements Starter {
     public String typeStorage = "JCEKS";
 
     private KeyStore.PasswordProtection keyStorePP;
-
-    @Override
-    public void run() {
-        byte[] signature = UtilFile.readBytes(pathSignature, null);
-
-        Util.logConsole("Security Check privateKey: " + (privateKey != null && privateKey.length > 0));
-        Util.logConsole("Security Check signature: " + (signature != null && signature.length > 0));
-
-        if (signature != null && signature.length > 0 && privateKey != null && privateKey.length > 0) {
-            // У нас всё установлено можем просто работать
-            byte[] passwordKeyStore = decryptStoragePassword(signature);
-            if (passwordKeyStore.length == 0) {
-                throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + pathSignature + "]");
-            }
-            try {
-                loadKeyStorage(Util.bytesToChars(passwordKeyStore));
-            } catch (Exception e) {
-                throw new RuntimeException("Security.run() init exception", e);
-            }
-            if (UtilFile.ifExist(pathInitAlias)) {
-                System.out.println("Please remove file [" + pathInitAlias + "] with credentials information");
-                insertAliases(Util.bytesToChars(passwordKeyStore));
-            }
-            try {
-                Util.logConsole(
-                        "KeyStore available aliases: "
-                                + UtilJson.toStringPretty(getAvailableAliases(), "[]")
-                );
-            } catch (Exception ignore) {
-
-            }
-            setPrivateKey(new char[]{});
-        } else {
-            UtilFile.removeIfExist(pathStorage);
-            //У нас чего то не хватает выводим предупреждения
-            byte[] initJson = createInitTemplateFile();
-            String passwordFromInfoJson = getPasswordFromInfoJson(initJson);
-            printNotice(passwordFromInfoJson);
-        }
-    }
-
-    @Override
-    public void shutdown() {
-
-    }
-
-    @Override
-    public void reload() {
-
-    }
 
     private void insertAliases(char[] password) {
         try {
@@ -341,4 +291,43 @@ public class Security extends AbstractComponent implements Starter {
         }
     }
 
+    @Override
+    public void applicationInit() {
+        byte[] signature = UtilFile.readBytes(pathSignature, null);
+
+        Util.logConsole("Security Check privateKey: " + (privateKey != null && privateKey.length > 0));
+        Util.logConsole("Security Check signature: " + (signature != null && signature.length > 0));
+
+        if (signature != null && signature.length > 0 && privateKey != null && privateKey.length > 0) {
+            // У нас всё установлено можем просто работать
+            byte[] passwordKeyStore = decryptStoragePassword(signature);
+            if (passwordKeyStore.length == 0) {
+                throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + pathSignature + "]");
+            }
+            try {
+                loadKeyStorage(Util.bytesToChars(passwordKeyStore));
+            } catch (Exception e) {
+                throw new RuntimeException("Security.run() init exception", e);
+            }
+            if (UtilFile.ifExist(pathInitAlias)) {
+                System.out.println("Please remove file [" + pathInitAlias + "] with credentials information");
+                insertAliases(Util.bytesToChars(passwordKeyStore));
+            }
+            try {
+                Util.logConsole(
+                        "KeyStore available aliases: "
+                                + UtilJson.toStringPretty(getAvailableAliases(), "[]")
+                );
+            } catch (Exception ignore) {
+
+            }
+            setPrivateKey(new char[]{});
+        } else {
+            UtilFile.removeIfExist(pathStorage);
+            //У нас чего то не хватает выводим предупреждения
+            byte[] initJson = createInitTemplateFile();
+            String passwordFromInfoJson = getPasswordFromInfoJson(initJson);
+            printNotice(passwordFromInfoJson);
+        }
+    }
 }

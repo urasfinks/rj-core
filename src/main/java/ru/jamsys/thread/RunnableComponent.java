@@ -1,6 +1,6 @@
 package ru.jamsys.thread;
 
-public interface Starter {
+public interface RunnableComponent {
 
     void run();
 

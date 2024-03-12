@@ -1,40 +1,27 @@
 package ru.jamsys.component;
 
-import lombok.Getter;
 import org.springframework.context.annotation.Lazy;
 import ru.jamsys.App;
 import ru.jamsys.ApplicationInit;
 import ru.jamsys.statistic.StatisticsCollector;
 import ru.jamsys.task.Task;
 import ru.jamsys.task.handler.TaskHandler;
-import ru.jamsys.thread.Starter;
 
 import java.util.*;
 
 
 @org.springframework.stereotype.Component
 @Lazy
-public class Core extends AbstractComponent implements Starter {
+public class Core extends AbstractComponent implements ApplicationInit {
 
-    @Getter
-    List<Class<? extends Starter>> list = new ArrayList<>();
+    private final Dictionary dictionary;
 
-    public Core() {
-        list.add(Generator.class);
-    }
-
-    public void run() {
-        applicationInit();
-        for (Class<? extends Starter> cls : list) {
-            App.context.getBean(cls).run();
-        }
+    public Core(Dictionary dictionary) {
+        this.dictionary = dictionary;
     }
 
     public void applicationInit() {
-        App.context.getBean(Security.class).run();
-
         ClassFinder classFinder = App.context.getBean(ClassFinder.class);
-        Dictionary dictionary = App.context.getBean(Dictionary.class);
         @SuppressWarnings("rawtypes")
         List<Class<TaskHandler>> list = classFinder.findByInstance(TaskHandler.class);
         for (Class<?> taskHandler : list) {
@@ -46,21 +33,13 @@ public class Core extends AbstractComponent implements Starter {
         classFinder.findByInstance(StatisticsCollector.class).forEach((Class<StatisticsCollector> statisticsCollector)
                 -> dictionary.getListStatisticsCollector().add(App.context.getBean(statisticsCollector)));
         classFinder.findByInstance(ApplicationInit.class).forEach((Class<ApplicationInit> applicationInitClass)
-                -> App.context.getBean(applicationInitClass).applicationInit());
-    }
+                -> dictionary.getListApplicationInit().add(App.context.getBean(applicationInitClass)));
 
-    @Override
-    public void shutdown() {
-        //Опускаем в обратной последовательности
-        for (int i = list.size() - 1; i >= 0; i--) {
-            App.context.getBean(list.get(i)).shutdown();
-        }
-    }
-
-    @Override
-    synchronized public void reload() {
-        shutdown();
-        run();
+        dictionary.getListApplicationInit().forEach((ApplicationInit applicationInit) -> {
+            if (!applicationInit.equals(this)) {
+                applicationInit.applicationInit();
+            }
+        });
     }
 
 }
