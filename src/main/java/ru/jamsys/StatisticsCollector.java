@@ -1,4 +1,6 @@
-package ru.jamsys.statistic;
+package ru.jamsys;
+
+import ru.jamsys.statistic.Statistic;
 
 import java.util.List;
 import java.util.Map;

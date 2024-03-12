@@ -7,7 +7,7 @@ import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class AbstractSchedulerThreadTest {
+class AbstractGeneratorManagerThreadTest {
 
     @Test
     public void test() {

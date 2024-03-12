@@ -1,15 +1,15 @@
 package ru.jamsys.template.cron;
 
-import lombok.Data;
+import lombok.Getter;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.util.Util;
 
 import java.util.*;
 
-@Data
+@Getter
 public class TimeVariant {
 
-    private Map<Unit, Integer> timeValue = new LinkedHashMap<>();
+    private final Map<Unit, Integer> timeValue = new LinkedHashMap<>();
     private final List<Unit> listEmptyUnit;
 
     public TimeVariant(List<Unit> listEmptyUnit) {

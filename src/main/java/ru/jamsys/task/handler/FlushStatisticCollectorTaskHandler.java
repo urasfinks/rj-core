@@ -1,13 +1,13 @@
 package ru.jamsys.task.handler;
 
-import ru.jamsys.App;
+import org.springframework.stereotype.Component;
+import ru.jamsys.StatisticsCollector;
 import ru.jamsys.component.Broker;
 import ru.jamsys.component.Dictionary;
+import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
-import ru.jamsys.statistic.StatisticsCollector;
-import ru.jamsys.task.AbstractTaskHandler;
-import ru.jamsys.task.Task;
+import ru.jamsys.task.instance.FlushStatisticCollectorTask;
 import ru.jamsys.util.Util;
 
 import java.util.LinkedHashMap;
@@ -15,13 +15,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class FlushStatistic extends AbstractTaskHandler {
+@Component
+@SuppressWarnings("unused")
+public class FlushStatisticCollectorTaskHandler implements TaskHandler<FlushStatisticCollectorTask> {
+
+    final Broker broker;
+
+    final Dictionary dictionary;
+
+    final ExceptionHandler exceptionHandler;
 
     String ip = Util.getIp();
 
+    public FlushStatisticCollectorTaskHandler(Dictionary dictionary, Broker broker, ExceptionHandler exceptionHandler) {
+        this.dictionary = dictionary;
+        this.broker = broker;
+        this.exceptionHandler = exceptionHandler;
+    }
+
     @Override
-    public void run(Task task, AtomicBoolean isRun) throws Exception {
-        Dictionary dictionary = App.context.getBean(Dictionary.class);
+    public void run(FlushStatisticCollectorTask task, AtomicBoolean isRun) throws Exception {
         StatisticSec statisticSec = new StatisticSec();
         Util.riskModifierCollection(isRun, dictionary.getListStatisticsCollector(), new StatisticsCollector[0], (StatisticsCollector statisticsCollector) -> {
             Map<String, String> parentTags = new LinkedHashMap<>();
@@ -37,7 +50,11 @@ public class FlushStatistic extends AbstractTaskHandler {
             }
         });
         if (!statisticSec.getList().isEmpty()) {
-            App.context.getBean(Broker.class).add(StatisticSec.class, statisticSec);
+            try {
+                broker.add(StatisticSec.class, statisticSec);
+            } catch (Exception e) {
+                exceptionHandler.handler(e);
+            }
         }
     }
 
@@ -45,5 +62,4 @@ public class FlushStatistic extends AbstractTaskHandler {
     public long getTimeoutMs() {
         return 1000;
     }
-
 }

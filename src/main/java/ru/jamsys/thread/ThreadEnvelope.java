@@ -1,6 +1,5 @@
 package ru.jamsys.thread;
 
-import lombok.Getter;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.pool.Pool;
@@ -19,16 +18,18 @@ public class ThreadEnvelope {
     private final AtomicBoolean inPark = new AtomicBoolean(false);
     private final Pool<ThreadEnvelope> pool;
 
-    @Getter
-    long lastExecute = 0;
-
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, Function<AtomicBoolean, Boolean> consumer) {
         this.pool = pool;
         thread = new Thread(() -> {
             Thread curThread = Thread.currentThread();
             while (isWhile.get() && !curThread.isInterrupted()) {
-                lastExecute = System.currentTimeMillis();
-                if (!consumer.apply(isWhile)) {
+                boolean isContinue = false;
+                try {
+                    isContinue = consumer.apply(isWhile);
+                } catch (Exception e) {
+                    App.context.getBean(ExceptionHandler.class).handler(e);
+                }
+                if (!isContinue) {
                     pause();
                 }
             }

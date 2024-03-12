@@ -14,11 +14,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class Scheduler extends RunnableComponent {
+public class GeneratorManager extends RunnableComponent {
 
     final private ThreadPool threadPool;
 
-    public Scheduler(Dictionary dictionary, ExceptionHandler exceptionHandler) {
+    public GeneratorManager(Dictionary dictionary, ExceptionHandler exceptionHandler) {
         this.threadPool = new ThreadPool(getClass().getSimpleName(), 1, 1, 60000, (AtomicBoolean isWhile) -> {
             Thread currentThread = Thread.currentThread();
             long nextStartMs = System.currentTimeMillis();
@@ -28,6 +28,7 @@ public class Scheduler extends RunnableComponent {
                 for (CronTask cronTask : dictionary.getListCronTask()) {
                     if (cronTask.getCron().getNext(curTimeMs) <= curTimeMs) {
                         Task task = cronTask.getTask();
+                        //TODO: переделать, что бы эта таска улетала в общий пул обработки, а не исполнялась тут
                         @SuppressWarnings("unchecked")
                         TaskHandler<Task> taskHandler = dictionary.getTaskHandler().get(task.getClass());
                         if (taskHandler != null) {

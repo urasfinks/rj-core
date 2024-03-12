@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.App;
+import ru.jamsys.IgnoreClassFinder;
+import ru.jamsys.StatisticsCollector;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.extension.Procedure;
 import ru.jamsys.statistic.AvgMetric;
@@ -21,7 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 @Setter
-public class BrokerQueue<T> implements Queue<T> {
+@IgnoreClassFinder
+public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
 
     private final ConcurrentLinkedDeque<T> queue = new ConcurrentLinkedDeque<>();
     private final Map<T, Long> timing = new ConcurrentHashMap<>();
@@ -82,7 +85,7 @@ public class BrokerQueue<T> implements Queue<T> {
             if (removeMs != null) {
                 timeInQueue.add(System.currentTimeMillis() - removeMs);
             } else {
-                App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Object not found in the timing map. This is a serious problem with your implementation"));
+                App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Object not found in the timing map"));
             }
         }
     }
@@ -138,6 +141,7 @@ public class BrokerQueue<T> implements Queue<T> {
     }
 
     @SuppressWarnings("unused")
+    @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
         List<Statistic> result = new ArrayList<>();
         result.add(new Statistic(parentTags, parentFields)

@@ -1,21 +1,19 @@
 package ru.jamsys.task.generator;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.IgnoreClassFinder;
 import ru.jamsys.task.Task;
-import ru.jamsys.task.instance.FlushStatisticToInfluxTask;
+import ru.jamsys.task.instance.FlushStatisticCollectorTask;
 
 @SuppressWarnings("unused")
 @Component
-@IgnoreClassFinder
-public class FlushStatisticToInfluxGenerator implements Generator {
+public class FlushStatisticCollectorGenerator implements Generator {
     @Override
     public String getCronTemplate() {
-        return "*/5";
+        return "*";
     }
 
     @Override
     public Task getTask() {
-        return new FlushStatisticToInfluxTask();
+        return new FlushStatisticCollectorTask();
     }
 }

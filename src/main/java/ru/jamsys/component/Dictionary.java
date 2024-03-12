@@ -6,7 +6,7 @@ import lombok.ToString;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.RunnableComponent;
-import ru.jamsys.statistic.StatisticsCollector;
+import ru.jamsys.StatisticsCollector;
 import ru.jamsys.task.Task;
 import ru.jamsys.task.handler.TaskHandler;
 import ru.jamsys.template.cron.CronTask;

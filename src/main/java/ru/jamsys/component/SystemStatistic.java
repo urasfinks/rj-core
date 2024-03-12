@@ -1,9 +1,9 @@
-package ru.jamsys.task.handler;
+package ru.jamsys.component;
 
 import com.sun.management.OperatingSystemMXBean;
 import org.springframework.stereotype.Component;
+import ru.jamsys.StatisticsCollector;
 import ru.jamsys.statistic.Statistic;
-import ru.jamsys.statistic.StatisticsCollector;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;

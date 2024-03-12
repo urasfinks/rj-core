@@ -7,7 +7,7 @@ import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.broker.BrokerQueue;
 import ru.jamsys.broker.Queue;
 import ru.jamsys.statistic.Statistic;
-import ru.jamsys.statistic.StatisticsCollector;
+import ru.jamsys.StatisticsCollector;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
