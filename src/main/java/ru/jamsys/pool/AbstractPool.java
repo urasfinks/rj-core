@@ -6,7 +6,7 @@ import lombok.Setter;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.statistic.Statistic;
-import ru.jamsys.thread.RunnableComponent;
+import ru.jamsys.RunnableInterface;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 
-public abstract class AbstractPool<T> implements Pool<T>, RunnableComponent {
+public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
 
     private final int max; //Максимальное кол-во ресурсов
     private final int min; //Минимальное кол-во ресурсов

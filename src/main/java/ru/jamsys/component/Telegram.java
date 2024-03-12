@@ -20,7 +20,7 @@ import java.util.Map;
 
 @Component
 @Lazy
-public class Telegram extends AbstractComponent {
+public class Telegram {
 
     private final Security security;
 

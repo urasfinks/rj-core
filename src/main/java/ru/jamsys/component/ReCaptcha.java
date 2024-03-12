@@ -22,7 +22,7 @@ import java.util.Map;
 @Lazy
 @Getter
 @Setter
-public class ReCaptcha extends AbstractComponent {
+public class ReCaptcha {
     /**
      * Validates Google reCAPTCHA V2 or Invisible reCAPTCHA.
      */

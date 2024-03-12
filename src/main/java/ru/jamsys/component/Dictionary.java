@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.context.annotation.Lazy;
-import ru.jamsys.ApplicationInit;
+import ru.jamsys.RunnableComponent;
 import ru.jamsys.statistic.StatisticsCollector;
 import ru.jamsys.task.Task;
 import ru.jamsys.task.handler.TaskHandler;
@@ -23,7 +23,7 @@ public class Dictionary {
 
     List<StatisticsCollector> listStatisticsCollector = new ArrayList<>();
 
-    List<ApplicationInit> listApplicationInit = new ArrayList<>();
+    List<RunnableComponent> listRunnableComponents = new ArrayList<>();
 
     @SuppressWarnings("rawtypes")
     Map<Class<? extends Task>, TaskHandler> taskHandler = new ConcurrentHashMap<>();

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Lazy
-public class ExceptionHandler extends AbstractComponent {
+public class ExceptionHandler {
 
     public void handler(Exception e) {
         e.printStackTrace();

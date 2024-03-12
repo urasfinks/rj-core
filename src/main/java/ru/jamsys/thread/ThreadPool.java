@@ -1,6 +1,7 @@
 package ru.jamsys.thread;
 
 import ru.jamsys.App;
+import ru.jamsys.RunnableInterface;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.pool.AbstractPool;
 
@@ -8,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-public class ThreadPool extends AbstractPool<ThreadEnvelope> implements RunnableComponent {
+public class ThreadPool extends AbstractPool<ThreadEnvelope> implements RunnableInterface {
 
     AtomicInteger index = new AtomicInteger(1);
 

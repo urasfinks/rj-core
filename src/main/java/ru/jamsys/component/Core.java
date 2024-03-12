@@ -1,8 +1,8 @@
 package ru.jamsys.component;
 
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
-import ru.jamsys.App;
-import ru.jamsys.ApplicationInit;
+import ru.jamsys.RunnableComponent;
 import ru.jamsys.statistic.StatisticsCollector;
 import ru.jamsys.task.Task;
 import ru.jamsys.task.handler.TaskHandler;
@@ -12,34 +12,56 @@ import java.util.*;
 
 @org.springframework.stereotype.Component
 @Lazy
-public class Core extends AbstractComponent implements ApplicationInit {
+public class Core extends RunnableComponent {
 
     private final Dictionary dictionary;
 
-    public Core(Dictionary dictionary) {
+    public Core(ApplicationContext applicationContext, Dictionary dictionary, ClassFinder classFinder) {
         this.dictionary = dictionary;
-    }
-
-    public void applicationInit() {
-        ClassFinder classFinder = App.context.getBean(ClassFinder.class);
         @SuppressWarnings("rawtypes")
         List<Class<TaskHandler>> list = classFinder.findByInstance(TaskHandler.class);
         for (Class<?> taskHandler : list) {
             List<Class<Task>> typeInterface = classFinder.getTypeInterface(taskHandler, Task.class);
             for (Class<Task> iClass : typeInterface) {
-                dictionary.getTaskHandler().put(iClass, (TaskHandler<?>) App.context.getBean(taskHandler));
+                dictionary.getTaskHandler().put(iClass, (TaskHandler<?>) applicationContext.getBean(taskHandler));
             }
         }
         classFinder.findByInstance(StatisticsCollector.class).forEach((Class<StatisticsCollector> statisticsCollector)
-                -> dictionary.getListStatisticsCollector().add(App.context.getBean(statisticsCollector)));
-        classFinder.findByInstance(ApplicationInit.class).forEach((Class<ApplicationInit> applicationInitClass)
-                -> dictionary.getListApplicationInit().add(App.context.getBean(applicationInitClass)));
+                -> {
+            if (!classFinder.instanceOf(this.getClass(), statisticsCollector)) {
+                dictionary.getListStatisticsCollector().add(applicationContext.getBean(statisticsCollector));
+            }
+        });
 
-        dictionary.getListApplicationInit().forEach((ApplicationInit applicationInit) -> {
-            if (!applicationInit.equals(this)) {
-                applicationInit.applicationInit();
+        classFinder.findByInstance(RunnableComponent.class).forEach((Class<RunnableComponent> runnableComponentClass)
+                -> {
+            if (!classFinder.instanceOf(this.getClass(), runnableComponentClass)) {
+                dictionary.getListRunnableComponents().add(applicationContext.getBean(runnableComponentClass));
             }
         });
     }
 
+    @Override
+    public void run() {
+        dictionary.getListRunnableComponents().forEach((RunnableComponent runnableComponent) -> {
+            if (!runnableComponent.equals(this)) {
+                runnableComponent.run();
+            }
+        });
+    }
+
+    @Override
+    public void shutdown() {
+        dictionary.getListRunnableComponents().forEach((RunnableComponent runnableComponent) -> {
+            if (!runnableComponent.equals(this)) {
+                runnableComponent.shutdown();
+            }
+        });
+    }
+
+    @Override
+    synchronized public void reload() {
+        shutdown();
+        run();
+    }
 }

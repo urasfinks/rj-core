@@ -4,7 +4,7 @@ import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.App;
-import ru.jamsys.ApplicationInit;
+import ru.jamsys.RunnableComponent;
 import ru.jamsys.util.*;
 
 import javax.crypto.SecretKey;
@@ -25,7 +25,7 @@ import java.util.Set;
 
 @Component
 @Lazy
-public class Security extends AbstractComponent implements ApplicationInit {
+public class Security extends RunnableComponent {
 
     @Setter
     private String pathStorage;
@@ -36,27 +36,36 @@ public class Security extends AbstractComponent implements ApplicationInit {
     @Setter
     private String pathInitAlias;
 
-    public Security(PropertiesManager propertiesManager) {
-        this.pathStorage = propertiesManager.getProperties("rj.security.path.storage", String.class);
-        this.pathSignature = propertiesManager.getProperties("rj.security.path.signature", String.class);
-        this.pathInitAlias = propertiesManager.getProperties("rj.security.path.init", String.class);
-    }
+    final private ExceptionHandler exceptionHandler;
 
     private volatile KeyStore keyStore = null;
 
     private char[] privateKey = {};
 
     private String hashPassword = null;
+
     private final String hashPasswordType = "SHA1";
+
+    public String typeStorage = "JCEKS";
+
+    private KeyStore.PasswordProtection keyStorePP;
+
+    public Security(PropertiesManager propertiesManager, ExceptionHandler exceptionHandler) {
+        this.pathStorage = propertiesManager.getProperties("rj.security.path.storage", String.class);
+        this.pathSignature = propertiesManager.getProperties("rj.security.path.signature", String.class);
+        this.pathInitAlias = propertiesManager.getProperties("rj.security.path.init", String.class);
+        this.exceptionHandler = exceptionHandler;
+    }
+
+    @SuppressWarnings("unused")
+    public static void init(char[] privateKey) {
+        App.context.getBean(Security.class).setPrivateKey(privateKey);
+    }
 
     @SuppressWarnings("unused")
     public void setPrivateKey(char[] newPrivateKey) {
         privateKey = newPrivateKey;
     }
-
-    public String typeStorage = "JCEKS";
-
-    private KeyStore.PasswordProtection keyStorePP;
 
     private void insertAliases(char[] password) {
         try {
@@ -78,7 +87,7 @@ public class Security extends AbstractComponent implements ApplicationInit {
                 }
             }
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            exceptionHandler.handler(e);
         }
     }
 
@@ -86,7 +95,7 @@ public class Security extends AbstractComponent implements ApplicationInit {
         try {
             return new HashSet<>(Collections.list(keyStore.aliases()));
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            exceptionHandler.handler(e);
         }
         return new HashSet<>();
     }
@@ -178,7 +187,7 @@ public class Security extends AbstractComponent implements ApplicationInit {
                             StandardCharsets.UTF_8
                     ));
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            exceptionHandler.handler(e);
         }
         return false;
     }
@@ -254,11 +263,6 @@ public class Security extends AbstractComponent implements ApplicationInit {
         UtilFile.writeBytes(pathStorage, byteArrayOutputStream.toByteArray(), FileWriteOptions.CREATE_OR_REPLACE);
     }
 
-    @SuppressWarnings("unused")
-    public static void init(char[] privateKey) {
-        App.context.getBean(Security.class).setPrivateKey(privateKey);
-    }
-
     @Deprecated
     public static void printStorage(char[] password, String pathStorage) {
         KeyStore.PasswordProtection keyStorePP = new KeyStore.PasswordProtection(password);
@@ -292,7 +296,7 @@ public class Security extends AbstractComponent implements ApplicationInit {
     }
 
     @Override
-    public void applicationInit() {
+    public void run() {
         byte[] signature = UtilFile.readBytes(pathSignature, null);
 
         Util.logConsole("Security Check privateKey: " + (privateKey != null && privateKey.length > 0));
@@ -329,5 +333,15 @@ public class Security extends AbstractComponent implements ApplicationInit {
             String passwordFromInfoJson = getPasswordFromInfoJson(initJson);
             printNotice(passwordFromInfoJson);
         }
+    }
+
+    @Override
+    public void shutdown() {
+
+    }
+
+    @Override
+    public void reload() {
+
     }
 }

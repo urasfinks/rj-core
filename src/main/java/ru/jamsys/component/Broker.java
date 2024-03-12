@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
-public class Broker extends AbstractComponent implements StatisticsCollector {
+public class Broker implements StatisticsCollector {
 
     private final Map<Class<? extends BrokerCollectible>, Queue<? extends BrokerCollectible>> mapQueue = new ConcurrentHashMap<>();
 
