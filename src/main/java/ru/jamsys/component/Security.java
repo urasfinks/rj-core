@@ -36,6 +36,8 @@ public class Security extends RunnableComponent {
     @Setter
     private String pathInitAlias;
 
+    final private String pathInitSecurityKeyJava;
+
     final private ExceptionHandler exceptionHandler;
 
     private volatile KeyStore keyStore = null;
@@ -54,12 +56,8 @@ public class Security extends RunnableComponent {
         this.pathStorage = propertiesManager.getProperties("rj.security.path.storage", String.class);
         this.pathSignature = propertiesManager.getProperties("rj.security.path.signature", String.class);
         this.pathInitAlias = propertiesManager.getProperties("rj.security.path.init", String.class);
+        this.pathInitSecurityKeyJava = propertiesManager.getProperties("rj.security.path.java", String.class);
         this.exceptionHandler = exceptionHandler;
-    }
-
-    @SuppressWarnings("unused")
-    public static void init(char[] privateKey) {
-        App.context.getBean(Security.class).setPrivateKey(privateKey);
     }
 
     @SuppressWarnings("unused")
@@ -123,16 +121,22 @@ public class Security extends RunnableComponent {
                 byte[] token = UtilRsa.encrypt(keyPair, password.getBytes(StandardCharsets.UTF_8));
                 UtilFile.writeBytes(pathSignature, token, FileWriteOptions.CREATE_OR_REPLACE);
                 String privateKey = UtilBase64.base64Encode(keyPair.getPrivate().getEncoded(), true);
-                System.err.println("== NEED INIT SECURITY ===========================");
-                System.err.println("Security.init(\"\"\"\n" + privateKey + "\n\"\"\".toCharArray());");
+                System.err.println("== INIT SECURITY ===========================");
+                byte[] securityKeyJava = UtilFileResource.get("SecurityKey.java").readAllBytes();
+                UtilFile.writeBytes(
+                        pathInitSecurityKeyJava,
+                        new String(securityKeyJava).replace("{privateKey}", privateKey).getBytes(),
+                        FileWriteOptions.CREATE_OR_REPLACE
+                );
+                System.err.println("Create file: [" + pathInitSecurityKeyJava + "] please restart application");
             } else {
-                System.err.println("== NEED INIT SECURITY ===========================");
+                System.err.println("== INIT SECURITY ===========================");
                 System.err.println("** Update file [" + pathInitAlias + "]; password field must not be empty");
             }
         } catch (Exception e) {
             throw new RuntimeException("Other problem", e);
         }
-        System.err.println("== NEED INIT SECURITY ===========================");
+        System.err.println("== INIT SECURITY ===========================");
         throw new RuntimeException("Security.run() failed");
     }
 
@@ -314,7 +318,7 @@ public class Security extends RunnableComponent {
                 throw new RuntimeException("Security.run() init exception", e);
             }
             if (UtilFile.ifExist(pathInitAlias)) {
-                System.out.println("Please remove file [" + pathInitAlias + "] with credentials information");
+                System.err.println("Please remove file [" + pathInitAlias + "] with credentials information");
                 insertAliases(Util.bytesToChars(passwordKeyStore));
             }
             try {
