@@ -8,7 +8,6 @@ import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.extension.Procedure;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
-import ru.jamsys.statistic.StatisticsCollector;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -22,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 @Setter
-public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
+public class BrokerQueue<T> implements Queue<T> {
 
     private final ConcurrentLinkedDeque<T> queue = new ConcurrentLinkedDeque<>();
     private final Map<T, Long> timing = new ConcurrentHashMap<>();
@@ -138,7 +137,7 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
         return ret;
     }
 
-    @Override
+    @SuppressWarnings("unused")
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
         List<Statistic> result = new ArrayList<>();
         result.add(new Statistic(parentTags, parentFields)

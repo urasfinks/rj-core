@@ -2,7 +2,6 @@ package ru.jamsys.component;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -31,8 +30,7 @@ public class ReCaptcha extends AbstractComponent {
     private final Security security;
     private String securityAlias;
 
-    public ReCaptcha(ApplicationContext applicationContext, Security security, PropertiesManager propertiesManager) {
-        super(applicationContext);
+    public ReCaptcha(Security security, PropertiesManager propertiesManager) {
         this.security = security;
         this.securityAlias = propertiesManager.getProperties("rj.reCaptcha.security.alias", String.class);
     }

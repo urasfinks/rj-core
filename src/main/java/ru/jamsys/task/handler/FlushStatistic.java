@@ -2,7 +2,6 @@ package ru.jamsys.task.handler;
 
 import ru.jamsys.App;
 import ru.jamsys.component.Broker;
-import ru.jamsys.component.Component;
 import ru.jamsys.component.Dictionary;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
@@ -24,25 +23,19 @@ public class FlushStatistic extends AbstractTaskHandler {
     public void run(Task task, AtomicBoolean isRun) throws Exception {
         Dictionary dictionary = App.context.getBean(Dictionary.class);
         StatisticSec statisticSec = new StatisticSec();
-        Util.riskModifierMap(
-                isRun,
-                dictionary.getComponent(),
-                Dictionary.getEmptyType(),
-                (Class<? extends Component> k, Component v) -> {
-                    if (v instanceof StatisticsCollector) {
-                        Map<String, String> parentTags = new LinkedHashMap<>();
-                        parentTags.put("measurement", k.getSimpleName());
-                        parentTags.put("host", ip);
-                        List<Statistic> statistics = ((StatisticsCollector) v).flushAndGetStatistic(
-                                parentTags,
-                                null,
-                                isRun
-                        );
-                        if (statistics != null && !statistics.isEmpty()) {
-                            statisticSec.getList().addAll(statistics);
-                        }
-                    }
-                });
+        Util.riskModifierCollection(isRun, dictionary.getListStatisticsCollector(), new StatisticsCollector[0], (StatisticsCollector statisticsCollector) -> {
+            Map<String, String> parentTags = new LinkedHashMap<>();
+            parentTags.put("measurement", statisticsCollector.getClass().getSimpleName());
+            parentTags.put("host", ip);
+            List<Statistic> statistics = statisticsCollector.flushAndGetStatistic(
+                    parentTags,
+                    null,
+                    isRun
+            );
+            if (statistics != null && !statistics.isEmpty()) {
+                statisticSec.getList().addAll(statistics);
+            }
+        });
         if (!statisticSec.getList().isEmpty()) {
             App.context.getBean(Broker.class).add(StatisticSec.class, statisticSec);
         }

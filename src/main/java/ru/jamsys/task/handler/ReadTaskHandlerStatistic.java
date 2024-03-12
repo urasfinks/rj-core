@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class ReadTaskHandlerStatistic extends AbstractTaskHandler {
 
-    @Override
     public void run(Task _task, AtomicBoolean isRun) throws Exception {
         Broker broker = App.context.getBean(Broker.class);
         Queue<TaskHandlerStatistic> queue = broker.get(TaskHandlerStatistic.class);

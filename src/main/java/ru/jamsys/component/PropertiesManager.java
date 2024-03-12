@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Lazy
 public class PropertiesManager {
+
     ApplicationContext applicationContext;
 
     @Autowired

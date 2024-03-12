@@ -1,8 +1,7 @@
 package ru.jamsys.task.handler;
 
 import com.sun.management.OperatingSystemMXBean;
-import org.springframework.context.ApplicationContext;
-import ru.jamsys.component.AbstractComponent;
+import org.springframework.stereotype.Component;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticsCollector;
 
@@ -13,7 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class SystemStatistic extends AbstractComponent implements StatisticsCollector {
+@Component
+public class SystemStatistic implements StatisticsCollector {
 
     public volatile double cpuUsage;
 
@@ -24,10 +24,6 @@ public class SystemStatistic extends AbstractComponent implements StatisticsColl
     int availableProcessors;
     long prevUpTime;
     long prevProcessCpuTime;
-
-    public SystemStatistic(ApplicationContext applicationContext) {
-        super(applicationContext);
-    }
 
     public void runFirst() {
         operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();

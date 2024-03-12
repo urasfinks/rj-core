@@ -1,7 +1,6 @@
 package ru.jamsys.component;
 
 import lombok.Setter;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -28,8 +27,7 @@ public class Telegram extends AbstractComponent {
     @Setter
     private String securityAlias;
 
-    public Telegram(ApplicationContext applicationContext, Security security, PropertiesManager propertiesManager) {
-        super(applicationContext);
+    public Telegram(Security security, PropertiesManager propertiesManager) {
         this.security = security;
         this.securityAlias = propertiesManager.getProperties("rj.telegram.security.alias", String.class);
     }

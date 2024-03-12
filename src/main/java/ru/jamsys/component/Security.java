@@ -1,10 +1,10 @@
 package ru.jamsys.component;
 
 import lombok.Setter;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.App;
+import ru.jamsys.thread.Starter;
 import ru.jamsys.util.*;
 
 import javax.crypto.SecretKey;
@@ -25,7 +25,7 @@ import java.util.Set;
 
 @Component
 @Lazy
-public class Security extends AbstractComponent {
+public class Security extends AbstractComponent implements Starter {
 
     @Setter
     private String pathStorage;
@@ -36,8 +36,7 @@ public class Security extends AbstractComponent {
     @Setter
     private String pathInitAlias;
 
-    public Security(ApplicationContext applicationContext, PropertiesManager propertiesManager) {
-        super(applicationContext);
+    public Security(PropertiesManager propertiesManager) {
         this.pathStorage = propertiesManager.getProperties("rj.security.path.storage", String.class);
         this.pathSignature = propertiesManager.getProperties("rj.security.path.signature", String.class);
         this.pathInitAlias = propertiesManager.getProperties("rj.security.path.init", String.class);
@@ -61,7 +60,6 @@ public class Security extends AbstractComponent {
 
     @Override
     public void run() {
-        super.run();
         byte[] signature = UtilFile.readBytes(pathSignature, null);
 
         Util.logConsole("Security Check privateKey: " + (privateKey != null && privateKey.length > 0));
@@ -98,6 +96,16 @@ public class Security extends AbstractComponent {
             String passwordFromInfoJson = getPasswordFromInfoJson(initJson);
             printNotice(passwordFromInfoJson);
         }
+    }
+
+    @Override
+    public void shutdown() {
+
+    }
+
+    @Override
+    public void reload() {
+
     }
 
     private void insertAliases(char[] password) {

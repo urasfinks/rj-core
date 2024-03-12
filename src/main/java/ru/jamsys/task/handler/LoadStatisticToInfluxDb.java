@@ -7,7 +7,6 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import lombok.Setter;
 import ru.jamsys.App;
-import ru.jamsys.ApplicationInit;
 import ru.jamsys.broker.Queue;
 import ru.jamsys.component.Broker;
 import ru.jamsys.component.PropertiesManager;
@@ -22,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class LoadStatisticToInfluxDb extends AbstractTaskHandler implements ApplicationInit {
+public class LoadStatisticToInfluxDb extends AbstractTaskHandler {
 
     //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token 'LmbVFdM8Abe6T6atTD6Ai3LJOKrEVrKB61mrFqJzqx5HzANJ13HItZrbWuhDdJXsdLL9mJLn7UB6MtAbLG4AxQ=='
 
@@ -86,7 +85,4 @@ public class LoadStatisticToInfluxDb extends AbstractTaskHandler implements Appl
         return 5000;
     }
 
-    public void applicationInit() {
-
-    }
 }

@@ -25,8 +25,6 @@ public class App {
                 NljKg2dIGRPBWEYH/Nkth7MHHW6nomm0LQIgAi8EFCJ54oT1PHL9/M/uTdFVDMVOrYK4CIg/UmTn
                 XAo=
                 """.toCharArray());
-        //context.getBean(Core.class).applicationInit(LoadStatisticToInfluxDb.class);
-        context.getBean(Core.class).applicationInit(null);
         context.getBean(Core.class).run();
     }
 

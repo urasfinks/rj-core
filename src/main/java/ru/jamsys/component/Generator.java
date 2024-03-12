@@ -1,7 +1,6 @@
 package ru.jamsys.component;
 
 import lombok.Getter;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.task.instance.StatisticTask;
 import ru.jamsys.template.cron.Cron;
@@ -22,8 +21,7 @@ public class Generator extends AbstractComponent implements Starter {
     @Getter
     private final List<CronTask> listCronTask = new ArrayList<>();
 
-    public Generator(ApplicationContext applicationContext) {
-        super(applicationContext);
+    public Generator() {
         listCronTask.add(new CronTask(new Cron("*/5 * * * * *"), new StatisticTask()));
         this.threadPool = new ThreadPool(getClass().getSimpleName(), 1, 1, 60000, (AtomicBoolean isWhile) -> {
             Thread currentThread = Thread.currentThread();

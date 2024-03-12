@@ -4,10 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.context.annotation.Lazy;
+import ru.jamsys.ApplicationInit;
+import ru.jamsys.statistic.StatisticsCollector;
 import ru.jamsys.task.Task;
 import ru.jamsys.task.handler.TaskHandler;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,12 +21,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @ToString
 public class Dictionary {
 
-    @SafeVarargs
-    public static <T extends Component> Class<T>[] getEmptyType(Class<T>... array) {
-        return Arrays.copyOf(array, 0);
-    }
+    List<StatisticsCollector> listStatisticsCollector = new ArrayList<>();
 
-    Map<Class<? extends Component>, Component> component = new ConcurrentHashMap<>();
+    List<ApplicationInit> listApplicationInit = new ArrayList<>();
 
-    Map<Class<? extends Task>, Class<? extends TaskHandler<? extends Task>>> taskHandler = new ConcurrentHashMap<>();
+    @SuppressWarnings("rawtypes")
+    Map<Class<? extends Task>, TaskHandler> taskHandler = new ConcurrentHashMap<>();
 }
