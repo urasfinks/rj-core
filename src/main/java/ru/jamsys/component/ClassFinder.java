@@ -2,8 +2,10 @@ package ru.jamsys.component;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.IgnoreClassFinder;
 
 import javax.tools.*;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -99,6 +101,16 @@ public class ClassFinder {
                     continue;
                 }
                 if (Modifier.isInterface(aClass.getModifiers())) {
+                    continue;
+                }
+                boolean findUnusedAnnotation = false;
+                for (Annotation annotation : aClass.getAnnotations()) {
+                    if (instanceOf(annotation.annotationType(), IgnoreClassFinder.class)) {
+                        findUnusedAnnotation = true;
+                        break;
+                    }
+                }
+                if (findUnusedAnnotation) {
                     continue;
                 }
                 listClass.add(aClass);

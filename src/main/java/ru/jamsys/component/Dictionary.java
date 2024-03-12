@@ -9,6 +9,7 @@ import ru.jamsys.RunnableComponent;
 import ru.jamsys.statistic.StatisticsCollector;
 import ru.jamsys.task.Task;
 import ru.jamsys.task.handler.TaskHandler;
+import ru.jamsys.template.cron.CronTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,8 @@ public class Dictionary {
     List<StatisticsCollector> listStatisticsCollector = new ArrayList<>();
 
     List<RunnableComponent> listRunnableComponents = new ArrayList<>();
+
+    List<CronTask> listCronTask = new ArrayList<>();
 
     @SuppressWarnings("rawtypes")
     Map<Class<? extends Task>, TaskHandler> taskHandler = new ConcurrentHashMap<>();

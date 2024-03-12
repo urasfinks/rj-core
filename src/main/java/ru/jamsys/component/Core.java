@@ -7,9 +7,12 @@ import ru.jamsys.RunnableComponent;
 import ru.jamsys.RunnableInterface;
 import ru.jamsys.statistic.StatisticsCollector;
 import ru.jamsys.task.Task;
+import ru.jamsys.task.generator.Generator;
 import ru.jamsys.task.handler.TaskHandler;
+import ru.jamsys.template.cron.Cron;
+import ru.jamsys.template.cron.CronTask;
 
-import java.util.*;
+import java.util.List;
 
 
 @Component
@@ -37,6 +40,16 @@ public class Core implements RunnableInterface {
         classFinder.findByInstance(RunnableComponent.class).forEach((Class<RunnableComponent> runnableComponentClass) -> {
             if (!classFinder.instanceOf(this.getClass(), runnableComponentClass)) {
                 dictionary.getListRunnableComponents().add(applicationContext.getBean(runnableComponentClass));
+            }
+        });
+
+        classFinder.findByInstance(Generator.class).forEach((Class<Generator> generatorClass) -> {
+            if (!classFinder.instanceOf(this.getClass(), generatorClass)) {
+                Generator generator = applicationContext.getBean(generatorClass);
+                dictionary.getListCronTask().add(new CronTask(
+                        new Cron(generator.getCronTemplate()),
+                        generator.getTask()
+                ));
             }
         });
     }
