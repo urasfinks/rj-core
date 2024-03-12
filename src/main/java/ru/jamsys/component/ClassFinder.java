@@ -1,5 +1,6 @@
 package ru.jamsys.component;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.tools.*;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 @Component
+@Lazy
 public class ClassFinder {
 
     private final List<Class<?>> availableClass;

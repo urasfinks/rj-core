@@ -29,13 +29,6 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
     @Getter
     private final String name;
 
-    public AbstractPool(String name, int min, int max, long keepAliveMs) {
-        this.name = name;
-        this.max = max;
-        this.min = min;
-        this.keepAliveMs = keepAliveMs;
-    }
-
     @Setter
     private Function<Integer, Integer> formulaAddCount = (need) -> need;
 
@@ -43,9 +36,19 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
     private Function<Integer, Integer> formulaRemoveCount = (need) -> need;
 
     protected final ConcurrentLinkedDeque<ResourceEnvelope<T>> parkQueue = new ConcurrentLinkedDeque<>();
+
     protected final Map<T, ResourceEnvelope<T>> map = new ConcurrentHashMap<>();
 
     protected final AtomicBoolean isRun = new AtomicBoolean(false);
+
+    private final AtomicBoolean restartOperation = new AtomicBoolean(false);
+
+    public AbstractPool(String name, int min, int max, long keepAliveMs) {
+        this.name = name;
+        this.max = max;
+        this.min = min;
+        this.keepAliveMs = keepAliveMs;
+    }
 
     public boolean isAllInPark() {
         return map.size() == parkQueue.size();
@@ -166,19 +169,19 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
     @SuppressWarnings("unused")
     @Override
     public void run() {
-        if (isRun.compareAndSet(false, true)) {
-            isRun.set(false);
+        if (restartOperation.compareAndSet(false, true)) {
+            isRun.set(true);
             for (int i = 0; i < min; i++) {
                 add();
             }
-            isRun.set(true);
+            restartOperation.set(false);
         }
     }
 
     @Override
     public void shutdown() {
-        if (isRun.compareAndSet(true, false)) {
-            isRun.set(true); //Что бы кто-нибудь не смог вызвать run
+        if (restartOperation.compareAndSet(false, true)) {
+            isRun.set(false);
             Util.riskModifierMap(
                     null,
                     map,
@@ -189,8 +192,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
                         parkQueue.remove(resourceEnvelope);
                     }
             );
-            //После того как всё потушится, переведём статус
-            isRun.set(true);
+            restartOperation.set(false);
         }
     }
 

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 import ru.jamsys.RunnableComponent;
 import ru.jamsys.statistic.StatisticsCollector;
 import ru.jamsys.task.Task;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@org.springframework.stereotype.Component
+@Component
 @Lazy
 @Getter
 @Setter

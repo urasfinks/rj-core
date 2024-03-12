@@ -1,12 +1,12 @@
 package ru.jamsys.component;
 
 import lombok.Getter;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.RunnableComponent;
 import ru.jamsys.task.instance.StatisticTask;
 import ru.jamsys.template.cron.Cron;
 import ru.jamsys.template.cron.CronTask;
-import ru.jamsys.RunnableInterface;
 import ru.jamsys.thread.ThreadPool;
 import ru.jamsys.util.Util;
 
@@ -15,7 +15,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
-public class Generator extends RunnableComponent implements RunnableInterface {
+@Lazy
+public class Generator extends RunnableComponent {
 
     final private ThreadPool threadPool;
 
@@ -24,6 +25,7 @@ public class Generator extends RunnableComponent implements RunnableInterface {
 
     public Generator() {
         listCronTask.add(new CronTask(new Cron("*/5 * * * * *"), new StatisticTask()));
+
         this.threadPool = new ThreadPool(getClass().getSimpleName(), 1, 1, 60000, (AtomicBoolean isWhile) -> {
             Thread currentThread = Thread.currentThread();
             long nextStartMs = System.currentTimeMillis();
@@ -32,7 +34,7 @@ public class Generator extends RunnableComponent implements RunnableInterface {
                 long curTimeMs = System.currentTimeMillis();
                 for (CronTask cronTask : listCronTask) {
                     if (cronTask.getCron().getNext(curTimeMs) <= curTimeMs) {
-                        System.out.println(cronTask.getTask().getIndex());
+                        Util.logConsole(cronTask.getTask().getIndex());
                     }
                 }
                 if (isWhile.get()) {

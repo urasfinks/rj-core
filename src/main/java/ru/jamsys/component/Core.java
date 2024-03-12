@@ -2,7 +2,9 @@ package ru.jamsys.component;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 import ru.jamsys.RunnableComponent;
+import ru.jamsys.RunnableInterface;
 import ru.jamsys.statistic.StatisticsCollector;
 import ru.jamsys.task.Task;
 import ru.jamsys.task.handler.TaskHandler;
@@ -10,9 +12,9 @@ import ru.jamsys.task.handler.TaskHandler;
 import java.util.*;
 
 
-@org.springframework.stereotype.Component
+@Component
 @Lazy
-public class Core extends RunnableComponent {
+public class Core implements RunnableInterface {
 
     private final Dictionary dictionary;
 
@@ -26,15 +28,13 @@ public class Core extends RunnableComponent {
                 dictionary.getTaskHandler().put(iClass, (TaskHandler<?>) applicationContext.getBean(taskHandler));
             }
         }
-        classFinder.findByInstance(StatisticsCollector.class).forEach((Class<StatisticsCollector> statisticsCollector)
-                -> {
+        classFinder.findByInstance(StatisticsCollector.class).forEach((Class<StatisticsCollector> statisticsCollector) -> {
             if (!classFinder.instanceOf(this.getClass(), statisticsCollector)) {
                 dictionary.getListStatisticsCollector().add(applicationContext.getBean(statisticsCollector));
             }
         });
 
-        classFinder.findByInstance(RunnableComponent.class).forEach((Class<RunnableComponent> runnableComponentClass)
-                -> {
+        classFinder.findByInstance(RunnableComponent.class).forEach((Class<RunnableComponent> runnableComponentClass) -> {
             if (!classFinder.instanceOf(this.getClass(), runnableComponentClass)) {
                 dictionary.getListRunnableComponents().add(applicationContext.getBean(runnableComponentClass));
             }
@@ -43,20 +43,12 @@ public class Core extends RunnableComponent {
 
     @Override
     public void run() {
-        dictionary.getListRunnableComponents().forEach((RunnableComponent runnableComponent) -> {
-            if (!runnableComponent.equals(this)) {
-                runnableComponent.run();
-            }
-        });
+        dictionary.getListRunnableComponents().forEach(RunnableInterface::run);
     }
 
     @Override
     public void shutdown() {
-        dictionary.getListRunnableComponents().forEach((RunnableComponent runnableComponent) -> {
-            if (!runnableComponent.equals(this)) {
-                runnableComponent.shutdown();
-            }
-        });
+        dictionary.getListRunnableComponents().forEach(RunnableInterface::shutdown);
     }
 
     @Override
