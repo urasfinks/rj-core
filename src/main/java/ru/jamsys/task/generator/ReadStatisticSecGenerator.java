@@ -2,7 +2,7 @@ package ru.jamsys.task.generator;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.task.Task;
-import ru.jamsys.task.instance.ReadStatisticSecTask;
+import ru.jamsys.task.task.ReadStatisticSecTask;
 
 @SuppressWarnings("unused")
 @Component

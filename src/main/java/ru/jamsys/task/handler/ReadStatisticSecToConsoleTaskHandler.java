@@ -3,11 +3,10 @@ package ru.jamsys.task.handler;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.IgnoreClassFinder;
 import ru.jamsys.broker.Queue;
 import ru.jamsys.component.Broker;
 import ru.jamsys.statistic.StatisticSec;
-import ru.jamsys.task.instance.ReadStatisticSecTask;
+import ru.jamsys.task.task.ReadStatisticSecTask;
 import ru.jamsys.util.Util;
 import ru.jamsys.util.UtilJson;
 

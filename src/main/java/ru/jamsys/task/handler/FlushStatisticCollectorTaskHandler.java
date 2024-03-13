@@ -7,7 +7,7 @@ import ru.jamsys.component.Dictionary;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
-import ru.jamsys.task.instance.FlushStatisticCollectorTask;
+import ru.jamsys.task.task.FlushStatisticCollectorTask;
 import ru.jamsys.util.Util;
 
 import java.util.LinkedHashMap;

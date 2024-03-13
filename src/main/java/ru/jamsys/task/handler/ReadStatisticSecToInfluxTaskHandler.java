@@ -16,7 +16,7 @@ import ru.jamsys.component.PropertiesManager;
 import ru.jamsys.component.Security;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
-import ru.jamsys.task.instance.ReadStatisticSecTask;
+import ru.jamsys.task.task.ReadStatisticSecTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;

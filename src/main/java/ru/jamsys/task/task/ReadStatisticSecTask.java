@@ -1,4 +1,4 @@
-package ru.jamsys.task.instance;
+package ru.jamsys.task.task;
 
 import ru.jamsys.task.Task;
 
