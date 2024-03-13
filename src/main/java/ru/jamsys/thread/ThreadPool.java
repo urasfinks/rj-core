@@ -47,7 +47,6 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
                 App.context.getBean(ExceptionHandler.class).handler(e);
             }
         }
-
     }
 
     @Override
