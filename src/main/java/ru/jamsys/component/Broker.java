@@ -29,6 +29,12 @@ public class Broker implements StatisticsCollector {
         queue.add(object);
     }
 
+    public <T extends BrokerCollectible> void createQueue(Class<T> cls, Queue<T> queue) {
+        if (!mapQueue.containsKey(cls)) {
+            mapQueue.putIfAbsent(cls, queue);
+        }
+    }
+
     @SuppressWarnings("unused")
     public <T extends BrokerCollectible> Queue<T> get(Class<T> cls) {
         //If the key was not present in the map, it maps the passed value to the key and returns null.
