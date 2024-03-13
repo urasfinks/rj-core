@@ -51,7 +51,7 @@ public class FlushStatisticCollectorTaskHandler implements TaskHandler<FlushStat
         });
         if (!statisticSec.getList().isEmpty()) {
             try {
-                broker.add(StatisticSec.class, statisticSec);
+                broker.add(StatisticSec.class.getSimpleName(), statisticSec);
             } catch (Exception e) {
                 exceptionHandler.handler(e);
             }

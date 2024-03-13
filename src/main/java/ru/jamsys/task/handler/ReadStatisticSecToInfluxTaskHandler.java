@@ -60,7 +60,7 @@ public class ReadStatisticSecToInfluxTaskHandler implements TaskHandler<ReadStat
 
     @Override
     public void run(ReadStatisticSecTask task, AtomicBoolean isRun) throws Exception {
-        Queue<StatisticSec> queue = broker.get(StatisticSec.class);
+        Queue<StatisticSec> queue = broker.get(StatisticSec.class.getSimpleName());
         List<Point> listPoints = new ArrayList<>();
         while (!queue.isEmpty() && isRun.get()) {
             StatisticSec statisticSec = queue.pollFirst();

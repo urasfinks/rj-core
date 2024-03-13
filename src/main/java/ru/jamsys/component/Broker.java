@@ -11,7 +11,6 @@ import ru.jamsys.StatisticsCollector;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,44 +20,35 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Lazy
 public class Broker implements StatisticsCollector {
 
-    private final Map<Class<? extends BrokerCollectible>, Queue<? extends BrokerCollectible>> mapQueue = new ConcurrentHashMap<>();
+    private final Map<String, Queue<? extends BrokerCollectible>> mapQueue = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unused")
-    public <T extends BrokerCollectible> void add(Class<T> cls, T object) throws Exception {
-        Queue<T> queue = get(cls);
+    public <T extends BrokerCollectible> void add(String key, T object) throws Exception {
+        Queue<T> queue = get(key);
         queue.add(object);
     }
 
-    public <T extends BrokerCollectible> void createQueue(Class<T> cls, Queue<T> queue) {
-        if (!mapQueue.containsKey(cls)) {
-            mapQueue.putIfAbsent(cls, queue);
-        }
-    }
-
     @SuppressWarnings("unused")
-    public <T extends BrokerCollectible> Queue<T> get(Class<T> cls) {
+    public <T extends BrokerCollectible> Queue<T> get(String key) {
         //If the key was not present in the map, it maps the passed value to the key and returns null.
-        if (!mapQueue.containsKey(cls)) {
-            mapQueue.putIfAbsent(cls, new BrokerQueue<T>());
+        if (!mapQueue.containsKey(key)) {
+            mapQueue.putIfAbsent(key, new BrokerQueue<T>());
         }
         @SuppressWarnings("unchecked")
-        Queue<T> queue = (Queue<T>) mapQueue.get(cls);
+        Queue<T> queue = (Queue<T>) mapQueue.get(key);
         return queue;
     }
 
     @SuppressWarnings("unused")
-    public <T extends BrokerCollectible> T pollLast(Class<T> c) {
-        return get(c).pollLast();
+    public <T extends BrokerCollectible> T pollLast(String key) {
+        Queue<T> queue = get(key);
+        return queue.pollLast();
     }
 
     @SuppressWarnings("unused")
-    public <T extends BrokerCollectible> T pollFirst(Class<T> c) {
-        return get(c).pollFirst();
-    }
-
-    @SafeVarargs
-    static <T> Class<T>[] getEmptyType(Class<T>... array) {
-        return Arrays.copyOf(array, 0);
+    public <T extends BrokerCollectible> T pollFirst(String key) {
+        Queue<T> queue = get(key);
+        return queue.pollFirst();
     }
 
     @Override
@@ -67,9 +57,9 @@ public class Broker implements StatisticsCollector {
         Util.riskModifierMap(
                 isRun,
                 mapQueue,
-                getEmptyType(),
-                (Class<? extends BrokerCollectible> cls, Queue<? extends BrokerCollectible> queue) -> {
-                    parentTags.put("index", cls.getSimpleName());
+                new String[0],
+                (String cls, Queue<? extends BrokerCollectible> queue) -> {
+                    parentTags.put("index", cls);
                     List<Statistic> statistics = ((StatisticsCollector) queue).flushAndGetStatistic(parentTags, parentFields, isRun);
                     if (statistics != null) {
                         result.addAll(statistics);

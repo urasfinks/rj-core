@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.App;
 import ru.jamsys.broker.BrokerCollectible;
+import ru.jamsys.broker.Queue;
 import ru.jamsys.component.Broker;
 import ru.jamsys.task.handler.TaskHandler;
 import ru.jamsys.util.Util;
@@ -56,7 +57,7 @@ public class TaskHandlerStatistic implements BrokerCollectible {
 
     public static void clearOnStopThread(Thread thread) {
         Broker broker = App.context.getBean(Broker.class);
-        ru.jamsys.broker.Queue<TaskHandlerStatistic> taskHandlerStatisticQueue = broker.get(TaskHandlerStatistic.class);
+        Queue<TaskHandlerStatistic> taskHandlerStatisticQueue = broker.get(TaskHandlerStatistic.class.getSimpleName());
         Util.riskModifierCollection(
                 null,
                 taskHandlerStatisticQueue.getCloneQueue(null),

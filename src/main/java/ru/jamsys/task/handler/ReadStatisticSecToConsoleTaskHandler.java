@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-@IgnoreClassFinder
 public class ReadStatisticSecToConsoleTaskHandler implements TaskHandler<ReadStatisticSecTask> {
 
     final Broker broker;
@@ -27,7 +26,7 @@ public class ReadStatisticSecToConsoleTaskHandler implements TaskHandler<ReadSta
 
     @Override
     public void run(ReadStatisticSecTask task, AtomicBoolean isRun) throws Exception {
-        Queue<StatisticSec> queue = broker.get(StatisticSec.class);
+        Queue<StatisticSec> queue = broker.get(StatisticSec.class.getSimpleName());
         while (!queue.isEmpty() && isRun.get()) {
             StatisticSec statisticSec = queue.pollFirst();
             Util.logConsole(UtilJson.toStringPretty(statisticSec, "{}"));

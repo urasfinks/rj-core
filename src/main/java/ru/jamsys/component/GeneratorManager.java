@@ -3,9 +3,7 @@ package ru.jamsys.component;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.RunnableComponent;
-import ru.jamsys.broker.BalancerQueue;
 import ru.jamsys.task.Task;
-import ru.jamsys.task.handler.TaskHandler;
 import ru.jamsys.template.cron.CronTask;
 import ru.jamsys.thread.ThreadPool;
 import ru.jamsys.util.Util;
@@ -20,9 +18,6 @@ public class GeneratorManager extends RunnableComponent {
     final private ThreadPool threadPool;
 
     public GeneratorManager(Dictionary dictionary, ExceptionHandler exceptionHandler, Broker broker) {
-
-        broker.createQueue(Task.class, new BalancerQueue<>());
-
         this.threadPool = new ThreadPool(getClass().getSimpleName(), 1, 1, 60000, (AtomicBoolean isWhile) -> {
             Thread currentThread = Thread.currentThread();
             long nextStartMs = System.currentTimeMillis();
@@ -32,15 +27,10 @@ public class GeneratorManager extends RunnableComponent {
                 for (CronTask cronTask : dictionary.getListCronTask()) {
                     if (cronTask.getCron().getNext(curTimeMs) <= curTimeMs) {
                         Task task = cronTask.getTask();
-                        //TODO: переделать, что бы эта таска улетала в общий пул обработки, а не исполнялась тут
-                        @SuppressWarnings("unchecked")
-                        TaskHandler<Task> taskHandler = dictionary.getTaskHandler().get(task.getClass());
-                        if (taskHandler != null) {
-                            try {
-                                taskHandler.run(task, isWhile);
-                            } catch (Exception e) {
-                                exceptionHandler.handler(e);
-                            }
+                        try {
+                            broker.get(task.getIndex()).add(task);
+                        } catch (Exception e) {
+                            exceptionHandler.handler(e);
                         }
                     }
                 }

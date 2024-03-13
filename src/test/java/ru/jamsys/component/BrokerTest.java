@@ -24,7 +24,7 @@ class BrokerTest {
     @Test
     void testLiner() throws Exception {
         Broker broker = App.context.getBean(Broker.class);
-        BrokerQueue<XTest> b = (BrokerQueue<XTest>) broker.get(XTest.class);
+        BrokerQueue b = (BrokerQueue) broker.get(XTest.class.getSimpleName());
 
         b.setCyclical(false);
         b.setSizeQueue(10);
@@ -36,11 +36,11 @@ class BrokerTest {
 
         Assertions.assertEquals(10, b.getSize(), "#1");
 
-        XTest t = b.pollFirst();
+        XTest t = (XTest) b.pollFirst();
         Assertions.assertEquals(0, t.x, "#2");
         Assertions.assertEquals(9, b.getSize(), "#3");
 
-        XTest t2 = b.pollLast();
+        XTest t2 = (XTest) b.pollLast();
         Assertions.assertEquals(9, t2.x, "#4");
         Assertions.assertEquals(8, b.getSize(), "#5");
 
@@ -63,7 +63,7 @@ class BrokerTest {
     @Test
     void testCyclic() throws Exception {
         Broker broker = App.context.getBean(Broker.class);
-        BrokerQueue<XTest> b = (BrokerQueue<XTest>) broker.get(XTest.class);
+        BrokerQueue b = (BrokerQueue) broker.get(XTest.class.getSimpleName());
 
         b.setCyclical(true);
         b.setSizeQueue(10);
@@ -75,11 +75,11 @@ class BrokerTest {
 
         Assertions.assertEquals(10, b.getSize(), "#1");
 
-        XTest t = b.pollFirst();
+        XTest t = (XTest) b.pollFirst();
         Assertions.assertEquals(0, t.x, "#2");
         Assertions.assertEquals(9, b.getSize(), "#3");
 
-        XTest t2 = b.pollLast();
+        XTest t2 = (XTest) b.pollLast();
         Assertions.assertEquals(9, t2.x, "#4");
         Assertions.assertEquals(8, b.getSize(), "#5");
 
@@ -103,7 +103,7 @@ class BrokerTest {
     @Test
     void testReference() throws Exception {
         Broker broker = App.context.getBean(Broker.class);
-        Queue<TaskHandlerStatistic> queue = broker.get(TaskHandlerStatistic.class);
+        Queue<TaskHandlerStatistic> queue = broker.get(TaskHandlerStatistic.class.getSimpleName());
         TaskHandlerStatistic obj = new TaskHandlerStatistic(Thread.currentThread(), null, null);
         queue.add(obj);
         List<TaskHandlerStatistic> cloneQueue = queue.getCloneQueue(null);
@@ -117,7 +117,7 @@ class BrokerTest {
     void testReference2() throws Exception {
         AtomicBoolean isRun = new AtomicBoolean(true);
         Broker broker = App.context.getBean(Broker.class);
-        Queue<TaskHandlerStatistic> queue = broker.get(TaskHandlerStatistic.class);
+        Queue<TaskHandlerStatistic> queue = broker.get(TaskHandlerStatistic.class.getSimpleName());
         TaskHandlerStatistic obj = new TaskHandlerStatistic(Thread.currentThread(), null, null);
         TaskHandlerStatistic obj2 = new TaskHandlerStatistic(Thread.currentThread(), null, null);
         queue.add(obj);
