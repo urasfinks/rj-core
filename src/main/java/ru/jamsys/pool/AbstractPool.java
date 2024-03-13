@@ -22,8 +22,14 @@ import java.util.function.Function;
 
 public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
 
-    private final int max; //Максимальное кол-во ресурсов
-    private final int min; //Минимальное кол-во ресурсов
+    @Getter
+    @Setter
+    private int max; //Максимальное кол-во ресурсов
+
+    @Getter
+    @Setter
+    private int min; //Минимальное кол-во ресурсов
+
     private final long keepAliveMs; //Время жизни ресурса без работы
 
     @Getter
@@ -60,18 +66,17 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
         if (resource == null) {
             return;
         }
-        if (isRun.get()) {
-            ResourceEnvelope<T> resourceEnvelope = map.get(resource);
-            if (resourceEnvelope != null) {
-                if (checkExceptionOnComplete(e)) {
-                    remove(resourceEnvelope);
-                } else {
-                    parkQueue.add(resourceEnvelope);
-                }
-            } else {
-                App.context.getBean(ExceptionHandler.class).handler(new Exception("Не найдена обёртка в пуле " + resource));
+        ResourceEnvelope<T> resourceEnvelope = map.get(resource);
+        if (resourceEnvelope == null) {
+            App.context.getBean(ExceptionHandler.class).handler(new Exception("Не найдена обёртка в пуле " + resource));
+            return;
+        }
+        if (map.size() > max || !isRun.get() || checkExceptionOnComplete(e)) {
+            if (remove(resourceEnvelope)) {
+                return;
             }
         }
+        parkQueue.add(resourceEnvelope);
     }
 
     @SuppressWarnings({"unused"})
@@ -117,12 +122,14 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
         return false;
     }
 
-    synchronized private void remove(@NonNull ResourceEnvelope<T> resourceEnvelope) {
+    synchronized private boolean remove(@NonNull ResourceEnvelope<T> resourceEnvelope) {
         if (map.size() > min) {
             map.remove(resourceEnvelope.getResource());
             parkQueue.remove(resourceEnvelope); // На всякий случай
             closeResource(resourceEnvelope.getResource()); //Если выкидываем из пула, то наверное надо закрыть сам ресурс
+            return true;
         }
+        return false;
     }
 
     private void overclocking(int count) {
@@ -155,12 +162,15 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
             final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
             Util.riskModifierMap(null, map, getEmptyType(), (T key, ResourceEnvelope<T> resourceEnvelope) -> {
-                if (maxCounterRemove.getAndDecrement() > 0) {
-                    long future = resourceEnvelope.getLastRunMs() + keepAliveMs;
-                    //Время последнего оживления превысило keepAlive + мы не превысили кол-во удалений за 1 проверку
-                    if (curTimeMs > future) {
-                        remove(resourceEnvelope);
-                    }
+                if (maxCounterRemove.get() == 0) {
+                    return;
+                }
+                //Время последнего оживления превысило keepAlive + мы не превысили кол-во удалений за 1 проверку
+                if (curTimeMs < (resourceEnvelope.getLastRunMs() + keepAliveMs)) {
+                    return;
+                }
+                if (remove(resourceEnvelope)) {
+                    maxCounterRemove.decrementAndGet();
                 }
             });
         }
