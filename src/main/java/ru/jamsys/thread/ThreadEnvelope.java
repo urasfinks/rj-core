@@ -1,9 +1,11 @@
 package ru.jamsys.thread;
 
 import ru.jamsys.App;
+import ru.jamsys.broker.Queue;
+import ru.jamsys.component.Broker;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.pool.Pool;
-import ru.jamsys.task.TaskHandlerStatistic;
+import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -100,10 +102,24 @@ public class ThreadEnvelope {
                 } catch (Exception e) {
                     App.context.getBean(ExceptionHandler.class).handler(e);
                 }
-                TaskHandlerStatistic.clearOnStopThread(thread);
+                clearOnStopThread(thread);
             }
             isRun.set(false);
         }
+    }
+
+    public static void clearOnStopThread(Thread thread) {
+        Broker broker = App.context.getBean(Broker.class);
+        Queue<TaskStatistic> taskHandlerStatisticQueue = broker.get(TaskStatistic.class.getSimpleName());
+        Util.riskModifierCollection(
+                null,
+                taskHandlerStatisticQueue.getCloneQueue(null),
+                new TaskStatistic[0],
+                (TaskStatistic taskStatisticExecute) -> {
+                    if (taskStatisticExecute.getThread().equals(thread)) {
+                        taskHandlerStatisticQueue.remove(taskStatisticExecute);
+                    }
+                });
     }
 
 }

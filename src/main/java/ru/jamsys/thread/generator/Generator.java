@@ -1,6 +1,6 @@
-package ru.jamsys.task.generator;
+package ru.jamsys.thread.generator;
 
-import ru.jamsys.task.Task;
+import ru.jamsys.thread.task.Task;
 
 public interface Generator {
 

@@ -1,8 +1,8 @@
 package ru.jamsys.component;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.task.Task;
-import ru.jamsys.task.handler.TaskHandler;
+import ru.jamsys.thread.task.Task;
+import ru.jamsys.thread.handler.Handler;
 import ru.jamsys.thread.ThreadPool;
 
 import java.util.Map;
@@ -48,10 +48,10 @@ public class TaskManager {
                         return false;
                     }
                     @SuppressWarnings("unchecked")
-                    TaskHandler<Task> taskHandler = dictionary.getTaskHandler().get(task.getClass());
-                    if (taskHandler != null) {
+                    Handler<Task> handler = dictionary.getTaskHandler().get(task.getClass());
+                    if (handler != null) {
                         try {
-                            taskHandler.run(task, isWhile);
+                            handler.run(task, isWhile);
                         } catch (Exception e) {
                             exceptionHandler.handler(e);
                         }

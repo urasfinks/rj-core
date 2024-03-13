@@ -1,4 +1,4 @@
-package ru.jamsys.task.handler.trash;
+package ru.jamsys.thread.handler.trash;
 
 public class ReadTaskHandlerStatistic {
 

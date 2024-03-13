@@ -8,7 +8,7 @@ import ru.jamsys.App;
 import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.broker.BrokerQueue;
 import ru.jamsys.broker.Queue;
-import ru.jamsys.task.TaskHandlerStatistic;
+import ru.jamsys.statistic.TaskStatistic;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -103,10 +103,10 @@ class BrokerTest {
     @Test
     void testReference() throws Exception {
         Broker broker = App.context.getBean(Broker.class);
-        Queue<TaskHandlerStatistic> queue = broker.get(TaskHandlerStatistic.class.getSimpleName());
-        TaskHandlerStatistic obj = new TaskHandlerStatistic(Thread.currentThread(), null, null);
+        Queue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
+        TaskStatistic obj = new TaskStatistic(Thread.currentThread(), null, null);
         queue.add(obj);
-        List<TaskHandlerStatistic> cloneQueue = queue.getCloneQueue(null);
+        List<TaskStatistic> cloneQueue = queue.getCloneQueue(null);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
         queue.remove(obj);
         Assertions.assertEquals(0, queue.getSize(), "#1");
@@ -117,12 +117,12 @@ class BrokerTest {
     void testReference2() throws Exception {
         AtomicBoolean isRun = new AtomicBoolean(true);
         Broker broker = App.context.getBean(Broker.class);
-        Queue<TaskHandlerStatistic> queue = broker.get(TaskHandlerStatistic.class.getSimpleName());
-        TaskHandlerStatistic obj = new TaskHandlerStatistic(Thread.currentThread(), null, null);
-        TaskHandlerStatistic obj2 = new TaskHandlerStatistic(Thread.currentThread(), null, null);
+        Queue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
+        TaskStatistic obj = new TaskStatistic(Thread.currentThread(), null, null);
+        TaskStatistic obj2 = new TaskStatistic(Thread.currentThread(), null, null);
         queue.add(obj);
         queue.add(obj2);
-        List<TaskHandlerStatistic> cloneQueue = queue.getCloneQueue(isRun);
+        List<TaskStatistic> cloneQueue = queue.getCloneQueue(isRun);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
         Assertions.assertEquals(obj2.hashCode(), cloneQueue.get(1).hashCode(), "#2");
         queue.remove(obj);

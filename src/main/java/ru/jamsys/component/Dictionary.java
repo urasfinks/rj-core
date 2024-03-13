@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.RunnableComponent;
 import ru.jamsys.StatisticsCollector;
-import ru.jamsys.task.Task;
-import ru.jamsys.task.handler.TaskHandler;
+import ru.jamsys.thread.task.Task;
+import ru.jamsys.thread.handler.Handler;
 import ru.jamsys.template.cron.CronTask;
 
 import java.util.ArrayList;
@@ -30,5 +30,5 @@ public class Dictionary {
     List<CronTask> listCronTask = new ArrayList<>();
 
     @SuppressWarnings("rawtypes")
-    Map<Class<? extends Task>, TaskHandler> taskHandler = new ConcurrentHashMap<>();
+    Map<Class<? extends Task>, Handler> taskHandler = new ConcurrentHashMap<>();
 }

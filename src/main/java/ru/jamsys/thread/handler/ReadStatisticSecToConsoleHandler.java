@@ -1,4 +1,4 @@
-package ru.jamsys.task.handler;
+package ru.jamsys.thread.handler;
 
 
 import org.springframework.context.annotation.Lazy;
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.broker.Queue;
 import ru.jamsys.component.Broker;
 import ru.jamsys.statistic.StatisticSec;
-import ru.jamsys.task.task.ReadStatisticSecTask;
+import ru.jamsys.thread.task.ReadStatisticSecTask;
 import ru.jamsys.util.Util;
 import ru.jamsys.util.UtilJson;
 
@@ -15,11 +15,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class ReadStatisticSecToConsoleTaskHandler implements TaskHandler<ReadStatisticSecTask> {
+public class ReadStatisticSecToConsoleHandler implements Handler<ReadStatisticSecTask> {
 
     final Broker broker;
 
-    public ReadStatisticSecToConsoleTaskHandler(Broker broker) {
+    public ReadStatisticSecToConsoleHandler(Broker broker) {
         this.broker = broker;
     }
 

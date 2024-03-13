@@ -1,6 +1,8 @@
-package ru.jamsys.task;
+package ru.jamsys.thread.task;
 
 import ru.jamsys.broker.BrokerCollectible;
+import ru.jamsys.statistic.TagIndex;
+import ru.jamsys.thread.task.trace.Trace;
 
 import java.util.ArrayList;
 import java.util.HashMap;

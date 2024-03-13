@@ -1,6 +1,4 @@
-package ru.jamsys.task.task;
-
-import ru.jamsys.task.Task;
+package ru.jamsys.thread.task;
 
 public class FlushStatisticCollectorTask extends Task {
 }

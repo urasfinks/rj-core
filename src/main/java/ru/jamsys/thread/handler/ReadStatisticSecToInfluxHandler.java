@@ -1,4 +1,4 @@
-package ru.jamsys.task.handler;
+package ru.jamsys.thread.handler;
 
 
 import com.influxdb.client.InfluxDBClient;
@@ -16,7 +16,7 @@ import ru.jamsys.component.PropertiesManager;
 import ru.jamsys.component.Security;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
-import ru.jamsys.task.task.ReadStatisticSecTask;
+import ru.jamsys.thread.task.ReadStatisticSecTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 @Lazy
 @IgnoreClassFinder
-public class ReadStatisticSecToInfluxTaskHandler implements TaskHandler<ReadStatisticSecTask> {
+public class ReadStatisticSecToInfluxHandler implements Handler<ReadStatisticSecTask> {
 
     //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token 'LmbVFdM8Abe6T6atTD6Ai3LJOKrEVrKB61mrFqJzqx5HzANJ13HItZrbWuhDdJXsdLL9mJLn7UB6MtAbLG4AxQ=='
 
@@ -49,7 +49,7 @@ public class ReadStatisticSecToInfluxTaskHandler implements TaskHandler<ReadStat
 
     private final Broker broker;
 
-    public ReadStatisticSecToInfluxTaskHandler(Security security, PropertiesManager propertiesManager, Broker broker) {
+    public ReadStatisticSecToInfluxHandler(Security security, PropertiesManager propertiesManager, Broker broker) {
         this.security = security;
         this.host = propertiesManager.getProperties("rj.task.handler.ReadStatisticSecToInfluxTaskHandler.host", String.class);
         this.bucket = propertiesManager.getProperties("rj.task.handler.ReadStatisticSecToInfluxTaskHandler.bucket", String.class);

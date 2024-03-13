@@ -2,11 +2,6 @@ package ru.jamsys.scheduler;
 
 import org.junit.jupiter.api.Test;
 
-import ru.jamsys.task.Task;
-import ru.jamsys.util.Util;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
 class AbstractGeneratorManagerThreadTest {
 
     @Test

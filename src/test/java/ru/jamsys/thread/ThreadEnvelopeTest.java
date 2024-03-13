@@ -1,9 +1,6 @@
 package ru.jamsys.thread;
 
 import org.junit.jupiter.api.Test;
-import ru.jamsys.App;
-import ru.jamsys.component.ExceptionHandler;
-import ru.jamsys.task.TaskHandlerStatistic;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;

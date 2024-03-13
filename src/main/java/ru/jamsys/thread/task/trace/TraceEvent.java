@@ -1,4 +1,4 @@
-package ru.jamsys.task;
+package ru.jamsys.thread.task.trace;
 
 public enum TraceEvent {
     CREATE,

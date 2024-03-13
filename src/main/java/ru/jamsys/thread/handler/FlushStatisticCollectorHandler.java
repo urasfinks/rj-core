@@ -1,4 +1,4 @@
-package ru.jamsys.task.handler;
+package ru.jamsys.thread.handler;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.StatisticsCollector;
@@ -7,7 +7,7 @@ import ru.jamsys.component.Dictionary;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
-import ru.jamsys.task.task.FlushStatisticCollectorTask;
+import ru.jamsys.thread.task.FlushStatisticCollectorTask;
 import ru.jamsys.util.Util;
 
 import java.util.LinkedHashMap;
@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @SuppressWarnings("unused")
-public class FlushStatisticCollectorTaskHandler implements TaskHandler<FlushStatisticCollectorTask> {
+public class FlushStatisticCollectorHandler implements Handler<FlushStatisticCollectorTask> {
 
     final Broker broker;
 
@@ -27,7 +27,7 @@ public class FlushStatisticCollectorTaskHandler implements TaskHandler<FlushStat
 
     String ip = Util.getIp();
 
-    public FlushStatisticCollectorTaskHandler(Dictionary dictionary, Broker broker, ExceptionHandler exceptionHandler) {
+    public FlushStatisticCollectorHandler(Dictionary dictionary, Broker broker, ExceptionHandler exceptionHandler) {
         this.dictionary = dictionary;
         this.broker = broker;
         this.exceptionHandler = exceptionHandler;

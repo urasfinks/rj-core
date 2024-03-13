@@ -1,8 +1,8 @@
-package ru.jamsys.task.generator;
+package ru.jamsys.thread.generator;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.task.Task;
-import ru.jamsys.task.task.FlushStatisticCollectorTask;
+import ru.jamsys.thread.task.Task;
+import ru.jamsys.thread.task.FlushStatisticCollectorTask;
 
 @SuppressWarnings("unused")
 @Component

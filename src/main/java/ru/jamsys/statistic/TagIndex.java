@@ -1,4 +1,4 @@
-package ru.jamsys.task;
+package ru.jamsys.statistic;
 
 import ru.jamsys.util.Util;
 

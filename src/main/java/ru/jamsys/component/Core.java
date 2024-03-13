@@ -6,9 +6,9 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.RunnableComponent;
 import ru.jamsys.RunnableInterface;
 import ru.jamsys.StatisticsCollector;
-import ru.jamsys.task.Task;
-import ru.jamsys.task.generator.Generator;
-import ru.jamsys.task.handler.TaskHandler;
+import ru.jamsys.thread.task.Task;
+import ru.jamsys.thread.generator.Generator;
+import ru.jamsys.thread.handler.Handler;
 import ru.jamsys.template.cron.Cron;
 import ru.jamsys.template.cron.CronTask;
 
@@ -24,11 +24,11 @@ public class Core implements RunnableInterface {
     public Core(ApplicationContext applicationContext, Dictionary dictionary, ClassFinder classFinder) {
         this.dictionary = dictionary;
         @SuppressWarnings("rawtypes")
-        List<Class<TaskHandler>> list = classFinder.findByInstance(TaskHandler.class);
+        List<Class<Handler>> list = classFinder.findByInstance(Handler.class);
         for (Class<?> taskHandler : list) {
             List<Class<Task>> typeInterface = classFinder.getTypeInterface(taskHandler, Task.class);
             for (Class<Task> iClass : typeInterface) {
-                dictionary.getTaskHandler().put(iClass, (TaskHandler<?>) applicationContext.getBean(taskHandler));
+                dictionary.getTaskHandler().put(iClass, (Handler<?>) applicationContext.getBean(taskHandler));
             }
         }
         classFinder.findByInstance(StatisticsCollector.class).forEach((Class<StatisticsCollector> statisticsCollector) -> {

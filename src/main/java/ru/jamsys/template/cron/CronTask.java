@@ -1,7 +1,7 @@
 package ru.jamsys.template.cron;
 
 import lombok.Getter;
-import ru.jamsys.task.Task;
+import ru.jamsys.thread.task.Task;
 
 @Getter
 public class CronTask {
