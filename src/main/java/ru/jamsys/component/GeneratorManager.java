@@ -3,7 +3,6 @@ package ru.jamsys.component;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.RunnableComponent;
-import ru.jamsys.task.Task;
 import ru.jamsys.template.cron.CronTask;
 import ru.jamsys.thread.ThreadPool;
 import ru.jamsys.util.Util;
@@ -17,7 +16,10 @@ public class GeneratorManager extends RunnableComponent {
 
     final private ThreadPool threadPool;
 
-    public GeneratorManager(Dictionary dictionary, ExceptionHandler exceptionHandler, Broker broker) {
+    final private TaskManager taskManager;
+
+    public GeneratorManager(Dictionary dictionary, ExceptionHandler exceptionHandler, Broker broker, TaskManager taskManager) {
+        this.taskManager = taskManager;
         this.threadPool = new ThreadPool(getClass().getSimpleName(), 1, 1, 60000, (AtomicBoolean isWhile) -> {
             Thread currentThread = Thread.currentThread();
             long nextStartMs = System.currentTimeMillis();
@@ -26,12 +28,7 @@ public class GeneratorManager extends RunnableComponent {
                 long curTimeMs = System.currentTimeMillis();
                 for (CronTask cronTask : dictionary.getListCronTask()) {
                     if (cronTask.getCron().getNext(curTimeMs) <= curTimeMs) {
-                        Task task = cronTask.getTask();
-                        try {
-                            broker.get(task.getIndex()).add(task);
-                        } catch (Exception e) {
-                            exceptionHandler.handler(e);
-                        }
+                        taskManager.add(cronTask.getTask());
                     }
                 }
                 if (isWhile.get()) {

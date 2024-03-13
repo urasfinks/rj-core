@@ -40,11 +40,17 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
     @SuppressWarnings("unused")
     public void wakeUp() {
         if (isAllInPark()) {
-            try {
-                ThreadEnvelope resource = getResource(null);
-                resource.resume();
-            } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
+            if (map.size() == 0) {
+                keepAlive();
+            } else {
+                try {
+                    ThreadEnvelope threadEnvelope = getResource(null);
+                    if (threadEnvelope != null) {
+                        threadEnvelope.resume();
+                    }
+                } catch (Exception e) {
+                    App.context.getBean(ExceptionHandler.class).handler(e);
+                }
             }
         }
     }

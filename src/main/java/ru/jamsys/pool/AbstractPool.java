@@ -57,7 +57,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
     }
 
     public boolean isAllInPark() {
-        return map.size() == parkQueue.size();
+        return isRun.get() && map.size() == parkQueue.size();
     }
 
     @SuppressWarnings("unused")
@@ -76,7 +76,15 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
                 return;
             }
         }
-        parkQueue.add(resourceEnvelope);
+        // Конечно лучше не доводить до дублей
+        // Если взять потоки как ресурсы, то после createResource вызывается Thread.start, который после работы сам
+        // себя вносит в пул отработанных (parkQueue)
+        // Но вообще понятие ресурсов статично и они не живут собственной жизнью
+        // поэтому после createResource мы кладём их в parkQueue, что бы их могли взять желающие
+        // И для потоков тут получается первичный дубль
+        if (!parkQueue.contains(resourceEnvelope)) {
+            parkQueue.add(resourceEnvelope);
+        }
     }
 
     @SuppressWarnings({"unused"})
@@ -101,8 +109,9 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
                 }
                 Util.sleepMs(100);
             }
+            throw new Exception("Pool " + getName() + " not active resource. Timeout: " + timeOutMs + "ms");
         }
-        throw new Exception("Pool " + getName() + " not active resource. Timeout: " + timeOutMs + "ms");
+        return null;
     }
 
     @SafeVarargs
