@@ -79,11 +79,7 @@ public class ThreadEnvelope {
                 return;
             } else {
                 Util.logConsole("Thread " + thread.getName() + " > interrupt()");
-                try {
-                    thread.interrupt();
-                } catch (Exception e) {
-                    App.context.getBean(ExceptionHandler.class).handler(e);
-                }
+                thread.interrupt();
             }
             startTimeMs = System.currentTimeMillis();
             while (isRun.get()) { //Пытаемся подождать пока потоки выйдут от interrupt
