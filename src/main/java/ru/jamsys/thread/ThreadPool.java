@@ -20,6 +20,10 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
         this.consumer = consumer;
     }
 
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
+
     @Override
     public ThreadEnvelope createResource() {
         ThreadEnvelope threadEnvelope = new ThreadEnvelope(getName() + "-" + index.getAndIncrement(), this, consumer);
