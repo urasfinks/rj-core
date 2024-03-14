@@ -5,11 +5,12 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.KeepAlive;
 import ru.jamsys.RunnableComponent;
 import ru.jamsys.StatisticsCollector;
-import ru.jamsys.thread.task.Task;
-import ru.jamsys.thread.handler.Handler;
 import ru.jamsys.template.cron.CronTask;
+import ru.jamsys.thread.handler.Handler;
+import ru.jamsys.thread.task.Task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,8 @@ public class Dictionary {
     List<StatisticsCollector> listStatisticsCollector = new ArrayList<>();
 
     List<RunnableComponent> listRunnableComponents = new ArrayList<>();
+
+    List<KeepAlive> listKeepAlive = new ArrayList<>();
 
     List<CronTask> listCronTask = new ArrayList<>();
 
