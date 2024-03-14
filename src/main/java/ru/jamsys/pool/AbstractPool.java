@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import ru.jamsys.App;
+import ru.jamsys.RunnableInterface;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.statistic.Statistic;
-import ru.jamsys.RunnableInterface;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -23,8 +23,15 @@ import java.util.function.Function;
 public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
 
     @Getter
-    @Setter
     private int max; //Максимальное кол-во ресурсов
+
+    public void setMax(int max) {
+        if (max >= min) {
+            this.max = max;
+        } else {
+            Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < " + min);
+        }
+    }
 
     @Getter
     @Setter

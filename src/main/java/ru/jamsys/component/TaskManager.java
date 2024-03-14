@@ -8,12 +8,14 @@ import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.thread.ThreadPool;
 import ru.jamsys.thread.handler.Handler;
+import ru.jamsys.thread.task.RollbackThreadEnvelopeInParkTask;
 import ru.jamsys.thread.task.Task;
 import ru.jamsys.util.Util;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -44,7 +46,7 @@ public class TaskManager implements KeepAlive {
     public void add(Task task) {
         String index = task.getIndex();
         if (!mapPool.containsKey(index)) {
-            addPool(index);
+            addPool(index, task);
         }
         try {
             broker.get(index).add(task);
@@ -54,11 +56,12 @@ public class TaskManager implements KeepAlive {
         }
     }
 
-    private void addPool(String name) {
+    private void addPool(String name, Task ownerTask) {
         if (!mapPool.containsKey(name)) {
+            int minThread = ownerTask instanceof RollbackThreadEnvelopeInParkTask ? 1 : 0;
             ThreadPool threadPool = new ThreadPool(
                     name,
-                    0,
+                    minThread,
                     1,
                     60000,
                     (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
@@ -92,6 +95,8 @@ public class TaskManager implements KeepAlive {
 
     @Override
     public void keepAlive(AtomicBoolean isRun) {
+        Util.logConsole("-------------------");
+        Map<String, Index> cloneMapPool = new HashMap<>(mapPool);
         Map<String, AvgMetric> stat = new HashMap<>();
         Util.riskModifierCollection(isRun, queue, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
             if (taskStatistic.isFinished()) {
@@ -109,30 +114,55 @@ public class TaskManager implements KeepAlive {
             Map<String, Object> flush = avgMetric.flush("");
             mapStat.put(index, (Long) flush.get("Sum"));
         }
-        //TODO: всем тем кто не отмечался выставить 1 поток
+        Util.logConsole("stat: " + mapStat);
         Map<String, Long> calc = calc(mapStat, maxThread);
-        System.out.println(calc);
+        Util.logConsole("calc: " + calc);
+        for (String index : calc.keySet()) {
+            Index obj = cloneMapPool.remove(index);
+            //Util.logConsole(index + "set max = " + calc.get(index).intValue());
+            obj.getThreadPool().setMax(calc.get(index).intValue());
+        }
+        // Очистка пустых пулов, что бы не мешались
+        Util.riskModifierMap(isRun, cloneMapPool, new String[0], (String key, Index obj) -> {
+            if (obj.getThreadPool().isEmpty()) {
+                cloneMapPool.remove(key);
+                mapPool.remove(key);
+            }
+        });
+        //Тем кто остался, но по ним за последние 3 секунды не было активности, выставляем пределы max = 1
+        for (String index : cloneMapPool.keySet()) {
+            //Util.logConsole(index + " set max = 1");
+            mapPool.get(index).getThreadPool().setMax(1);
+        }
+        Util.riskModifierMap(isRun, mapPool, new String[0], (String key, Index obj) -> {
+            obj.getThreadPool().keepAlive();
+        });
     }
 
     public static Map<String, Long> calc(Map<String, Long> map, int count) {
+        Map<String, Long> normalizeMap = new LinkedHashMap<>();
+        for (String index : map.keySet()) {
+            Long aLong = map.get(index);
+            normalizeMap.put(index, aLong < 1 ? 1 : aLong);
+        }
         Map<String, Long> result = new HashMap<>();
         BigDecimal maxCount = new BigDecimal(count);
         BigDecimal maxPrc = new BigDecimal(100);
 
         long sumMax = 0;
-        for (String index : map.keySet()) {
-            sumMax += map.get(index);
+        for (String index : normalizeMap.keySet()) {
+            sumMax += normalizeMap.get(index);
         }
-        BigDecimal midPercent = maxPrc.divide(new BigDecimal(map.size()), 5, RoundingMode.HALF_UP);
+        BigDecimal midPercent = maxPrc.divide(new BigDecimal(normalizeMap.size()), 5, RoundingMode.HALF_UP);
         if (sumMax == 0) {
-            BigDecimal sum = maxCount.divide(new BigDecimal(map.size()), 5, RoundingMode.HALF_UP);
-            for (String index : map.keySet()) {
+            BigDecimal sum = maxCount.divide(new BigDecimal(normalizeMap.size()), 5, RoundingMode.HALF_UP);
+            for (String index : normalizeMap.keySet()) {
                 result.put(index, sum.longValue());
             }
         } else {
             BigDecimal sum = new BigDecimal(sumMax);
-            for (String index : map.keySet()) {
-                BigDecimal currentPercent = new BigDecimal(map.get(index))
+            for (String index : normalizeMap.keySet()) {
+                BigDecimal currentPercent = new BigDecimal(normalizeMap.get(index))
                         .multiply(maxPrc)
                         .divide(sum, 5, RoundingMode.HALF_UP);
                 Long countThread = midPercent.subtract(currentPercent)
@@ -141,6 +171,7 @@ public class TaskManager implements KeepAlive {
                         .divide(maxPrc, 0, RoundingMode.HALF_UP)
                         .longValue();
                 result.put(index, countThread);
+                //result.put(index, 0L);
             }
         }
 

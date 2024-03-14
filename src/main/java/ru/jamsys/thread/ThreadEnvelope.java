@@ -4,8 +4,10 @@ import ru.jamsys.App;
 import ru.jamsys.broker.Queue;
 import ru.jamsys.component.Broker;
 import ru.jamsys.component.ExceptionHandler;
+import ru.jamsys.component.TaskManager;
 import ru.jamsys.pool.Pool;
 import ru.jamsys.statistic.TaskStatistic;
+import ru.jamsys.thread.task.RollbackThreadEnvelopeInParkTask;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,7 +44,14 @@ public class ThreadEnvelope {
 
     private void pause() {
         if (isRun.get() && inPark.compareAndSet(false, true)) {
-            pool.complete(this, null);
+            App.context
+                    .getBean(TaskManager.class)
+                    .add(new RollbackThreadEnvelopeInParkTask(
+                            this,
+                            null,
+                            pool
+                    ));
+            //pool.complete(this, null);
             LockSupport.park(thread);
         }
     }

@@ -44,7 +44,7 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
     @SuppressWarnings("unused")
     public void wakeUp() {
         if (isAllInPark()) {
-            if (map.size() == 0) {
+            if (isEmpty()) {
                 keepAlive();
             } else {
                 try {
