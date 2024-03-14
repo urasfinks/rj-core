@@ -28,7 +28,7 @@ public class ReadStatisticSecToConsoleHandler implements Handler<ReadStatisticSe
         Queue<StatisticSec> queue = broker.get(StatisticSec.class.getSimpleName());
         while (!queue.isEmpty() && isRun.get()) {
             StatisticSec statisticSec = queue.pollFirst();
-            Util.logConsole(UtilJson.toStringPretty(statisticSec, "{}"));
+            //Util.logConsole(UtilJson.toStringPretty(statisticSec, "{}"));
         }
     }
 
