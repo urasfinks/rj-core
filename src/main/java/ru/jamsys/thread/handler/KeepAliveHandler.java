@@ -22,12 +22,11 @@ public class KeepAliveHandler implements Handler<KeepAliveTask> {
 
     @Override
     public void run(KeepAliveTask task, AtomicBoolean isRun) throws Exception {
-        System.out.println("KeepALive");
         Util.riskModifierCollection(
                 isRun,
                 dictionary.getListKeepAlive(),
                 new KeepAlive[0],
-                KeepAlive::keepAlive
+                (KeepAlive keepAlive) -> keepAlive.keepAlive(isRun)
         );
     }
 

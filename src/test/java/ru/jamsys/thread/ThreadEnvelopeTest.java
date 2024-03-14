@@ -9,27 +9,33 @@ class ThreadEnvelopeTest {
     @Test
     public void test() {
 
-        ThreadPool threadPool = new ThreadPool("Generator", 1, 1, 60000, (AtomicBoolean isWhile) -> {
-            Thread currentThread = Thread.currentThread();
-            long nextStartMs = System.currentTimeMillis();
-            while (isWhile.get() && !currentThread.isInterrupted()) {
-                nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
+        ThreadPool threadPool = new ThreadPool(
+                "Generator",
+                1,
+                1,
+                60000,
+                (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
+                    Thread currentThread = Thread.currentThread();
+                    long nextStartMs = System.currentTimeMillis();
+                    while (isWhile.get() && !currentThread.isInterrupted()) {
+                        nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
 
-                if (isWhile.get()) {
-                    long calcSleepMs = nextStartMs - System.currentTimeMillis();
-                    if (calcSleepMs > 0) {
-                        Util.sleepMs(calcSleepMs);
-                    } else {
-                        Util.sleepMs(1);//Что бы поймать Interrupt
-                        nextStartMs = System.currentTimeMillis();
+                        if (isWhile.get()) {
+                            long calcSleepMs = nextStartMs - System.currentTimeMillis();
+                            if (calcSleepMs > 0) {
+                                Util.sleepMs(calcSleepMs);
+                            } else {
+                                Util.sleepMs(1);//Что бы поймать Interrupt
+                                nextStartMs = System.currentTimeMillis();
+                            }
+                        } else {
+                            break;
+                        }
                     }
-                } else {
-                    break;
+                    Util.logConsole(currentThread.getName() + ": STOP");
+                    return false;
                 }
-            }
-            Util.logConsole(currentThread.getName() + ": STOP");
-            return false;
-        });
+        );
         threadPool.run();
         Util.sleepMs(10000);
 

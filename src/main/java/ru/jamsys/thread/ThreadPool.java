@@ -7,15 +7,15 @@ import ru.jamsys.pool.AbstractPool;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public class ThreadPool extends AbstractPool<ThreadEnvelope> implements RunnableInterface {
 
     AtomicInteger index = new AtomicInteger(1);
 
-    final private Function<AtomicBoolean, Boolean> consumer;
+    final private BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer;
 
-    public ThreadPool(String name, int min, int max, long keepAliveMs, Function<AtomicBoolean, Boolean> consumer) {
+    public ThreadPool(String name, int min, int max, long keepAliveMs, BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer) {
         super(name, min, max, keepAliveMs);
         this.consumer = consumer;
     }

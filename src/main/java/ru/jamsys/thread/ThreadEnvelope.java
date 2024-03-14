@@ -10,7 +10,7 @@ import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public class ThreadEnvelope {
 
@@ -20,14 +20,14 @@ public class ThreadEnvelope {
     private final AtomicBoolean inPark = new AtomicBoolean(false);
     private final Pool<ThreadEnvelope> pool;
 
-    public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, Function<AtomicBoolean, Boolean> consumer) {
+    public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer) {
         this.pool = pool;
         thread = new Thread(() -> {
             Thread curThread = Thread.currentThread();
             while (isWhile.get() && !curThread.isInterrupted()) {
                 boolean isContinue = false;
                 try {
-                    isContinue = consumer.apply(isWhile);
+                    isContinue = consumer.apply(isWhile, this);
                 } catch (Exception e) {
                     App.context.getBean(ExceptionHandler.class).handler(e);
                 }
@@ -102,13 +102,14 @@ public class ThreadEnvelope {
                 } catch (Exception e) {
                     App.context.getBean(ExceptionHandler.class).handler(e);
                 }
-                clearOnStopThread(thread);
+                clearOnStopThread(this);
             }
             isRun.set(false);
         }
     }
 
-    public static void clearOnStopThread(Thread thread) {
+    //TODO: узнать что это за чертовщина
+    public static void clearOnStopThread(ThreadEnvelope threadEnvelope) {
         Broker broker = App.context.getBean(Broker.class);
         Queue<TaskStatistic> taskHandlerStatisticQueue = broker.get(TaskStatistic.class.getSimpleName());
         Util.riskModifierCollection(
@@ -116,7 +117,7 @@ public class ThreadEnvelope {
                 taskHandlerStatisticQueue.getCloneQueue(null),
                 new TaskStatistic[0],
                 (TaskStatistic taskStatisticExecute) -> {
-                    if (taskStatisticExecute.getThread().equals(thread)) {
+                    if (taskStatisticExecute.getThreadEnvelope().equals(threadEnvelope)) {
                         taskHandlerStatisticQueue.remove(taskStatisticExecute);
                     }
                 });

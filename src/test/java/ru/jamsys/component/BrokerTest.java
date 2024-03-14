@@ -104,7 +104,7 @@ class BrokerTest {
     void testReference() throws Exception {
         Broker broker = App.context.getBean(Broker.class);
         Queue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
-        TaskStatistic obj = new TaskStatistic(Thread.currentThread(), null, null);
+        TaskStatistic obj = new TaskStatistic(null, null);
         queue.add(obj);
         List<TaskStatistic> cloneQueue = queue.getCloneQueue(null);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
@@ -118,8 +118,8 @@ class BrokerTest {
         AtomicBoolean isRun = new AtomicBoolean(true);
         Broker broker = App.context.getBean(Broker.class);
         Queue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
-        TaskStatistic obj = new TaskStatistic(Thread.currentThread(), null, null);
-        TaskStatistic obj2 = new TaskStatistic(Thread.currentThread(), null, null);
+        TaskStatistic obj = new TaskStatistic(null, null);
+        TaskStatistic obj2 = new TaskStatistic(null, null);
         queue.add(obj);
         queue.add(obj2);
         List<TaskStatistic> cloneQueue = queue.getCloneQueue(isRun);
