@@ -1,6 +1,5 @@
 package ru.jamsys.component;
 
-import lombok.Getter;
 import org.springframework.stereotype.Component;
 import ru.jamsys.KeepAlive;
 import ru.jamsys.statistic.AvgMetric;
@@ -8,7 +7,6 @@ import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.thread.ThreadPool;
 import ru.jamsys.thread.handler.Handler;
-import ru.jamsys.thread.task.RollbackThreadEnvelopeInParkTask;
 import ru.jamsys.thread.task.Task;
 import ru.jamsys.util.Util;
 
@@ -20,7 +18,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Component
 public class TaskManager implements KeepAlive {
@@ -33,7 +30,7 @@ public class TaskManager implements KeepAlive {
 
     final private Dictionary dictionary;
 
-    final private Map<String, Index> mapPool = new ConcurrentHashMap<>();
+    final private Map<String, ThreadPool> mapPool = new ConcurrentHashMap<>();
 
     final private ConcurrentLinkedDeque<TaskStatistic> queue = new ConcurrentLinkedDeque<>();
 
@@ -46,22 +43,21 @@ public class TaskManager implements KeepAlive {
     public void add(Task task) {
         String index = task.getIndex();
         if (!mapPool.containsKey(index)) {
-            addPool(index, task);
+            addPool(index);
         }
         try {
             broker.get(index).add(task);
-            mapPool.get(index).getThreadPool().wakeUp();
+            mapPool.get(index).wakeUp();
         } catch (Exception e) {
             exceptionHandler.handler(e);
         }
     }
 
-    private void addPool(String name, Task ownerTask) {
+    private void addPool(String name) {
         if (!mapPool.containsKey(name)) {
-            int minThread = ownerTask instanceof RollbackThreadEnvelopeInParkTask ? 1 : 0;
             ThreadPool threadPool = new ThreadPool(
                     name,
-                    minThread,
+                    0,
                     1,
                     60000,
                     (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
@@ -88,15 +84,14 @@ public class TaskManager implements KeepAlive {
                         return false;
                     }
             );
-            mapPool.put(name, new Index(threadPool));
+            mapPool.put(name, threadPool);
             threadPool.run();
         }
     }
 
     @Override
     public void keepAlive(AtomicBoolean isRun) {
-        Util.logConsole("-------------------");
-        Map<String, Index> cloneMapPool = new HashMap<>(mapPool);
+        Map<String, ThreadPool> cloneMapPool = new HashMap<>(mapPool);
         Map<String, AvgMetric> stat = new HashMap<>();
         Util.riskModifierCollection(isRun, queue, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
             if (taskStatistic.isFinished()) {
@@ -114,17 +109,14 @@ public class TaskManager implements KeepAlive {
             Map<String, Object> flush = avgMetric.flush("");
             mapStat.put(index, (Long) flush.get("Sum"));
         }
-        Util.logConsole("stat: " + mapStat);
         Map<String, Long> calc = calc(mapStat, maxThread);
-        Util.logConsole("calc: " + calc);
         for (String index : calc.keySet()) {
-            Index obj = cloneMapPool.remove(index);
-            //Util.logConsole(index + "set max = " + calc.get(index).intValue());
-            obj.getThreadPool().setMax(calc.get(index).intValue());
+            ThreadPool obj = cloneMapPool.remove(index);
+            obj.setMax(calc.get(index).intValue());
         }
         // Очистка пустых пулов, что бы не мешались
-        Util.riskModifierMap(isRun, cloneMapPool, new String[0], (String key, Index obj) -> {
-            if (obj.getThreadPool().isEmpty()) {
+        Util.riskModifierMap(isRun, cloneMapPool, new String[0], (String key, ThreadPool obj) -> {
+            if (obj.isEmpty()) {
                 cloneMapPool.remove(key);
                 mapPool.remove(key);
             }
@@ -132,11 +124,9 @@ public class TaskManager implements KeepAlive {
         //Тем кто остался, но по ним за последние 3 секунды не было активности, выставляем пределы max = 1
         for (String index : cloneMapPool.keySet()) {
             //Util.logConsole(index + " set max = 1");
-            mapPool.get(index).getThreadPool().setMax(1);
+            mapPool.get(index).setMax(1);
         }
-        Util.riskModifierMap(isRun, mapPool, new String[0], (String key, Index obj) -> {
-            obj.getThreadPool().keepAlive();
-        });
+        Util.riskModifierMap(isRun, mapPool, new String[0], (String key, ThreadPool obj) -> obj.keepAlive());
     }
 
     public static Map<String, Long> calc(Map<String, Long> map, int count) {
@@ -153,7 +143,6 @@ public class TaskManager implements KeepAlive {
         for (String index : normalizeMap.keySet()) {
             sumMax += normalizeMap.get(index);
         }
-        BigDecimal midPercent = maxPrc.divide(new BigDecimal(normalizeMap.size()), 5, RoundingMode.HALF_UP);
         if (sumMax == 0) {
             BigDecimal sum = maxCount.divide(new BigDecimal(normalizeMap.size()), 5, RoundingMode.HALF_UP);
             for (String index : normalizeMap.keySet()) {
@@ -161,33 +150,30 @@ public class TaskManager implements KeepAlive {
             }
         } else {
             BigDecimal sum = new BigDecimal(sumMax);
+            BigDecimal sumReverse = new BigDecimal(0);
+            Map<String, BigDecimal> prc = new HashMap<>();
+            BigDecimal one = new BigDecimal(1);
             for (String index : normalizeMap.keySet()) {
                 BigDecimal currentPercent = new BigDecimal(normalizeMap.get(index))
                         .multiply(maxPrc)
                         .divide(sum, 5, RoundingMode.HALF_UP);
-                Long countThread = midPercent.subtract(currentPercent)
-                        .add(midPercent)
+                BigDecimal reversePercent = one.divide(currentPercent, 5, RoundingMode.HALF_UP);
+                prc.put(index, reversePercent);
+                sumReverse = sumReverse.add(reversePercent);
+            }
+            for (String index : prc.keySet()) {
+                long res = prc
+                        .get(index)
+                        .multiply(maxPrc)
+                        .divide(sumReverse, 5, RoundingMode.HALF_UP)
                         .multiply(maxCount)
-                        .divide(maxPrc, 0, RoundingMode.HALF_UP)
+                        .divide(maxPrc, 5, RoundingMode.HALF_UP)
                         .longValue();
-                result.put(index, countThread);
-                //result.put(index, 0L);
+
+                result.put(index, res < 1 ? 1 : res);
             }
         }
-
         return result;
     }
 
-    @Getter
-    public static class Index {
-
-        final ThreadPool threadPool;
-
-        final AtomicLong sumTime = new AtomicLong(0);
-
-        public Index(ThreadPool threadPool) {
-            this.threadPool = threadPool;
-        }
-
-    }
 }
