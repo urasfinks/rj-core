@@ -2,7 +2,7 @@ package ru.jamsys.component;
 
 import com.sun.management.OperatingSystemMXBean;
 import org.springframework.stereotype.Component;
-import ru.jamsys.StatisticsCollectorComponent;
+import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.Statistic;
 
 import java.lang.management.ManagementFactory;

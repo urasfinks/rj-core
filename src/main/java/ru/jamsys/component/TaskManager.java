@@ -1,8 +1,8 @@
 package ru.jamsys.component;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.KeepAliveComponent;
-import ru.jamsys.StatisticsCollectorComponent;
+import ru.jamsys.extension.KeepAliveComponent;
+import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.TaskStatistic;

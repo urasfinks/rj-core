@@ -1,10 +1,10 @@
 package ru.jamsys.thread.handler;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.StatisticsCollectorComponent;
 import ru.jamsys.component.Broker;
 import ru.jamsys.component.Dictionary;
 import ru.jamsys.component.ExceptionHandler;
+import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
 import ru.jamsys.thread.task.FlushStatisticCollectorTask;

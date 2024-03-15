@@ -2,8 +2,8 @@ package ru.jamsys.thread.handler;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.KeepAliveComponent;
 import ru.jamsys.component.Dictionary;
+import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.thread.task.KeepAliveTask;
 import ru.jamsys.util.Util;
 

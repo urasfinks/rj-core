@@ -1,8 +1,8 @@
 package ru.jamsys.thread;
 
 import ru.jamsys.App;
-import ru.jamsys.RunnableInterface;
 import ru.jamsys.component.ExceptionHandler;
+import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.pool.AbstractPool;
 
 import java.util.concurrent.atomic.AtomicBoolean;

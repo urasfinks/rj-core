@@ -1,4 +1,4 @@
-package ru.jamsys;
+package ru.jamsys.extension;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

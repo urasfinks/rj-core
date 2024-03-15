@@ -2,7 +2,7 @@ package ru.jamsys.component;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.RunnableComponent;
+import ru.jamsys.extension.RunnableComponent;
 import ru.jamsys.template.cron.CronTask;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.thread.ThreadPool;

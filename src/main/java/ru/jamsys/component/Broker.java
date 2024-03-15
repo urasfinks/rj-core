@@ -3,11 +3,11 @@ package ru.jamsys.component;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.StatisticsCollector;
-import ru.jamsys.StatisticsCollectorComponent;
 import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.broker.BrokerQueue;
 import ru.jamsys.broker.Queue;
+import ru.jamsys.extension.StatisticsCollector;
+import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
 

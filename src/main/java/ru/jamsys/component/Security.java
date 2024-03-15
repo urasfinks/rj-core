@@ -4,7 +4,7 @@ import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.App;
-import ru.jamsys.RunnableComponent;
+import ru.jamsys.extension.RunnableComponent;
 import ru.jamsys.util.*;
 
 import javax.crypto.SecretKey;
