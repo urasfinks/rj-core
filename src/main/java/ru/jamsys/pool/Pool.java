@@ -6,7 +6,7 @@ public interface Pool<T> {
     void complete(T ret, Exception e);
 
     @SuppressWarnings("unused")
-    T getResource(Long timeOutMs) throws Exception;
+    T getResource(Long timeOutMs);
 
     T createResource();
 
@@ -18,9 +18,5 @@ public interface Pool<T> {
     String getName();
 
     boolean checkExceptionOnComplete(Exception e);
-
-    default boolean onCreateResourcePutInPark() { //В случаи с пассивными ресурсами
-        return true;
-    }
 
 }
