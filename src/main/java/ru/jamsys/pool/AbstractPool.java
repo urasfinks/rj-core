@@ -150,8 +150,12 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
             }
             final ResourceEnvelope<T> resourceEnvelope = new ResourceEnvelope<>(createResource());
             if (resourceEnvelope.getResource() != null) {
-                parkQueue.add(resourceEnvelope);
+                //#1
                 map.put(resourceEnvelope.getResource(), resourceEnvelope);
+                //#2
+                if (onCreateResourcePutInPark()) {
+                    parkQueue.add(resourceEnvelope);
+                }
                 return true;
             }
         }

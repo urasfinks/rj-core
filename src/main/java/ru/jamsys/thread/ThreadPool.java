@@ -4,12 +4,22 @@ import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.pool.AbstractPool;
+import ru.jamsys.statistic.Statistic;
+import ru.jamsys.util.Util;
+import ru.jamsys.util.UtilJson;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
 public class ThreadPool extends AbstractPool<ThreadEnvelope> implements RunnableInterface {
+
+    @Override
+    public boolean onCreateResourcePutInPark() {
+        return false;
+    }
 
     AtomicInteger index = new AtomicInteger(1);
 
@@ -63,5 +73,21 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
     public void reload() {
         shutdown();
         run();
+    }
+
+    public void testRun() {
+        new Thread(() -> {
+            while (true) {
+                keepAlive();
+                Util.sleepMs(3000);
+            }
+        }).start();
+        new Thread(() -> {
+            while (true) {
+                List<Statistic> statistics = flushAndGetStatistic(new HashMap<>(), new HashMap<>(), null);
+                System.out.println(UtilJson.toString(statistics, "{}"));
+                Util.sleepMs(1000);
+            }
+        }).start();
     }
 }

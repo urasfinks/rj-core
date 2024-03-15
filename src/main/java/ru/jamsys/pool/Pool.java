@@ -19,4 +19,8 @@ public interface Pool<T> {
 
     boolean checkExceptionOnComplete(Exception e);
 
+    default boolean onCreateResourcePutInPark() { //В случаи с пассивными ресурсами
+        return true;
+    }
+
 }
