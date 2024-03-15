@@ -163,6 +163,8 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
         }
     }
 
+    // Этот метод нельзя вызывать под бизнес задачи, система сама должна это контролировать
+    // Если ресурса нет - ждите
     @Override
     public void keepAlive() {
         if (isRun.get()) {
