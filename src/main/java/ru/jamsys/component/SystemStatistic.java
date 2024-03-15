@@ -33,14 +33,14 @@ public class SystemStatistic implements StatisticsCollector {
         prevProcessCpuTime = operatingSystemMXBean.getProcessCpuTime();
     }
 
-    public void runSecond(List<Statistic> list, Map<String, String> parentTags, Map<String, Object> parentFields) {
+    public void runSecond(Statistic statistic) {
         operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         long upTime = runtimeMXBean.getUptime();
         long processCpuTime = operatingSystemMXBean.getProcessCpuTime();
         long elapsedCpu = processCpuTime - prevProcessCpuTime;
         long elapsedTime = upTime - prevUpTime;
         cpuUsage = Math.min(99F, elapsedCpu / (elapsedTime * 10000F * availableProcessors));
-        list.add(new Statistic(parentTags, parentFields).addField("cpu", cpuUsage));
+        statistic.addField("cpu", cpuUsage);
     }
 
     @Override
@@ -49,7 +49,9 @@ public class SystemStatistic implements StatisticsCollector {
         if (first) {
             runFirst();
         } else {
-            runSecond(result, parentTags, parentFields);
+            Statistic statistic = new Statistic(parentTags, parentFields);
+            runSecond(statistic);
+            result.add(statistic);
         }
         first = !first;
         return result;
