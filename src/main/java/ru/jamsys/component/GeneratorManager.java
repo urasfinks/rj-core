@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class GeneratorManager extends RunnableComponent {
+public class GeneratorManager implements RunnableComponent {
 
     final private ThreadPool threadPool;
 

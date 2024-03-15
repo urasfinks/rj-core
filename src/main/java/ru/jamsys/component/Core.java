@@ -3,10 +3,10 @@ package ru.jamsys.component;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.KeepAlive;
+import ru.jamsys.KeepAliveComponent;
 import ru.jamsys.RunnableComponent;
 import ru.jamsys.RunnableInterface;
-import ru.jamsys.StatisticsCollector;
+import ru.jamsys.StatisticsCollectorComponent;
 import ru.jamsys.template.cron.Cron;
 import ru.jamsys.template.cron.CronTask;
 import ru.jamsys.thread.generator.Generator;
@@ -32,15 +32,15 @@ public class Core implements RunnableInterface {
                 dictionary.getTaskHandler().put(iClass, (Handler<?>) applicationContext.getBean(taskHandler));
             }
         }
-        classFinder.findByInstance(StatisticsCollector.class).forEach((Class<StatisticsCollector> statisticsCollectorClass) -> {
+        classFinder.findByInstance(StatisticsCollectorComponent.class).forEach((Class<StatisticsCollectorComponent> statisticsCollectorClass) -> {
             if (!classFinder.instanceOf(this.getClass(), statisticsCollectorClass)) {
-                dictionary.getListStatisticsCollector().add(applicationContext.getBean(statisticsCollectorClass));
+                dictionary.getListStatisticsCollectorComponent().add(applicationContext.getBean(statisticsCollectorClass));
             }
         });
 
-        classFinder.findByInstance(KeepAlive.class).forEach((Class<KeepAlive> keepAliveClass) -> {
+        classFinder.findByInstance(KeepAliveComponent.class).forEach((Class<KeepAliveComponent> keepAliveClass) -> {
             if (!classFinder.instanceOf(this.getClass(), keepAliveClass)) {
-                dictionary.getListKeepAlive().add(applicationContext.getBean(keepAliveClass));
+                dictionary.getListKeepAliveComponent().add(applicationContext.getBean(keepAliveClass));
             }
         });
 

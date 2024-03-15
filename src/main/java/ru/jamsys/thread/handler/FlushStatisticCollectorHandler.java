@@ -1,7 +1,7 @@
 package ru.jamsys.thread.handler;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.StatisticsCollector;
+import ru.jamsys.StatisticsCollectorComponent;
 import ru.jamsys.component.Broker;
 import ru.jamsys.component.Dictionary;
 import ru.jamsys.component.ExceptionHandler;
@@ -36,11 +36,11 @@ public class FlushStatisticCollectorHandler implements Handler<FlushStatisticCol
     @Override
     public void run(FlushStatisticCollectorTask task, AtomicBoolean isRun) throws Exception {
         StatisticSec statisticSec = new StatisticSec();
-        Util.riskModifierCollection(isRun, dictionary.getListStatisticsCollector(), new StatisticsCollector[0], (StatisticsCollector statisticsCollector) -> {
+        Util.riskModifierCollection(isRun, dictionary.getListStatisticsCollectorComponent(), new StatisticsCollectorComponent[0], (StatisticsCollectorComponent statisticsCollectorComponent) -> {
             Map<String, String> parentTags = new LinkedHashMap<>();
-            parentTags.put("measurement", statisticsCollector.getClass().getSimpleName());
+            parentTags.put("measurement", statisticsCollectorComponent.getClass().getSimpleName());
             parentTags.put("host", ip);
-            List<Statistic> statistics = statisticsCollector.flushAndGetStatistic(
+            List<Statistic> statistics = statisticsCollectorComponent.flushAndGetStatistic(
                     parentTags,
                     null,
                     isRun

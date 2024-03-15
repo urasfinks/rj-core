@@ -25,7 +25,7 @@ import java.util.Set;
 
 @Component
 @Lazy
-public class Security extends RunnableComponent {
+public class Security implements RunnableComponent {
 
     @Setter
     private String pathStorage;

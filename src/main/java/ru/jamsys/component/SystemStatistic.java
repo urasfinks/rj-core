@@ -2,7 +2,7 @@ package ru.jamsys.component;
 
 import com.sun.management.OperatingSystemMXBean;
 import org.springframework.stereotype.Component;
-import ru.jamsys.StatisticsCollector;
+import ru.jamsys.StatisticsCollectorComponent;
 import ru.jamsys.statistic.Statistic;
 
 import java.lang.management.ManagementFactory;
@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
-public class SystemStatistic implements StatisticsCollector {
+public class SystemStatistic implements StatisticsCollectorComponent {
 
     public volatile double cpuUsage;
 

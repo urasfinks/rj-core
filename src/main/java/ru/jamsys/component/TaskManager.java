@@ -1,8 +1,10 @@
 package ru.jamsys.component;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.KeepAlive;
+import ru.jamsys.KeepAliveComponent;
+import ru.jamsys.StatisticsCollectorComponent;
 import ru.jamsys.statistic.AvgMetric;
+import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.thread.ThreadPool;
@@ -12,15 +14,13 @@ import ru.jamsys.util.Util;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
-public class TaskManager implements KeepAlive {
+public class TaskManager implements KeepAliveComponent, StatisticsCollectorComponent {
 
     final int maxThread = 500;
 
@@ -32,7 +32,7 @@ public class TaskManager implements KeepAlive {
 
     final private Map<String, ThreadPool> mapPool = new ConcurrentHashMap<>();
 
-    final private ConcurrentLinkedDeque<TaskStatistic> queue = new ConcurrentLinkedDeque<>();
+    final private ConcurrentLinkedDeque<TaskStatistic> queueStatistics = new ConcurrentLinkedDeque<>();
 
     public TaskManager(Broker broker, ExceptionHandler exceptionHandler, Dictionary dictionary) {
         this.broker = broker;
@@ -70,7 +70,7 @@ public class TaskManager implements KeepAlive {
                             Handler<Task> handler = dictionary.getTaskHandler().get(task.getClass());
                             if (handler != null) {
                                 TaskStatistic taskStatistic = new TaskStatistic(threadEnvelope, task);
-                                queue.add(taskStatistic);
+                                queueStatistics.add(taskStatistic);
                                 try {
                                     handler.run(task, isWhile);
                                 } catch (Exception e) {
@@ -93,9 +93,9 @@ public class TaskManager implements KeepAlive {
     public void keepAlive(AtomicBoolean isRun) {
         Map<String, ThreadPool> cloneMapPool = new HashMap<>(mapPool);
         Map<String, AvgMetric> stat = new HashMap<>();
-        Util.riskModifierCollection(isRun, queue, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
+        Util.riskModifierCollection(isRun, queueStatistics, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
             if (taskStatistic.isFinished()) {
-                queue.remove(taskStatistic);
+                queueStatistics.remove(taskStatistic);
             }
             String index = taskStatistic.getTask().getIndex();
             if (!stat.containsKey(index)) {
@@ -176,4 +176,12 @@ public class TaskManager implements KeepAlive {
         return result;
     }
 
+    @Override
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+        List<Statistic> result = new ArrayList<>();
+        Util.riskModifierMap(isRun, mapPool, new String[0], (String key, ThreadPool threadPool)
+                -> result.addAll(threadPool.flushAndGetStatistic(parentTags, parentFields, isRun)));
+
+        return result;
+    }
 }

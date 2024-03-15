@@ -2,7 +2,7 @@ package ru.jamsys.thread.handler;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.KeepAlive;
+import ru.jamsys.KeepAliveComponent;
 import ru.jamsys.component.Dictionary;
 import ru.jamsys.thread.task.KeepAliveTask;
 import ru.jamsys.util.Util;
@@ -24,9 +24,9 @@ public class KeepAliveHandler implements Handler<KeepAliveTask> {
     public void run(KeepAliveTask task, AtomicBoolean isRun) throws Exception {
         Util.riskModifierCollection(
                 isRun,
-                dictionary.getListKeepAlive(),
-                new KeepAlive[0],
-                (KeepAlive keepAlive) -> keepAlive.keepAlive(isRun)
+                dictionary.getListKeepAliveComponent(),
+                new KeepAliveComponent[0],
+                (KeepAliveComponent keepAliveComponent) -> keepAliveComponent.keepAlive(isRun)
         );
     }
 

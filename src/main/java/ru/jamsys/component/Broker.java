@@ -3,11 +3,12 @@ package ru.jamsys.component;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.StatisticsCollector;
+import ru.jamsys.StatisticsCollectorComponent;
 import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.broker.BrokerQueue;
 import ru.jamsys.broker.Queue;
 import ru.jamsys.statistic.Statistic;
-import ru.jamsys.StatisticsCollector;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
-public class Broker implements StatisticsCollector {
+public class Broker implements StatisticsCollectorComponent {
 
     private final Map<String, Queue<? extends BrokerCollectible>> mapQueue = new ConcurrentHashMap<>();
 

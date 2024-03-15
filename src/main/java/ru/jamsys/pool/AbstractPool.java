@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import ru.jamsys.App;
 import ru.jamsys.RunnableInterface;
+import ru.jamsys.StatisticsCollector;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
@@ -20,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 
-public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
+public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, StatisticsCollector {
 
     @Getter
     private int max; //Максимальное кол-во ресурсов
@@ -252,7 +253,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
         run();
     }
 
-    @SuppressWarnings("unused")
+    @Override
     public List<Statistic> flushAndGetStatistic(
             Map<String, String> parentTags,
             Map<String, Object> parentFields,
