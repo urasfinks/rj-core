@@ -50,6 +50,8 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
 
     protected final ConcurrentLinkedDeque<ResourceEnvelope<T>> parkQueue = new ConcurrentLinkedDeque<>();
 
+    protected final ConcurrentLinkedDeque<ResourceEnvelope<T>> removeQueue = new ConcurrentLinkedDeque<>();
+
     protected final Map<T, ResourceEnvelope<T>> map = new ConcurrentHashMap<>();
 
     protected final AtomicBoolean isRun = new AtomicBoolean(false);
@@ -79,11 +81,16 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
             return;
         }
         if (map.size() > max || !isRun.get() || checkExceptionOnComplete(e)) {
-            if (remove(resourceEnvelope)) {
+            if (map.size() > min) {
+                if (!removeQueue.contains(resourceEnvelope)) {
+                    // Выведено в асинхрон через keepAlive, потому что если ресурс - поток, то когда он себя возвращает
+                    // Механизм closeResource пытается завершить процесс, который ждёт выполнение этой команды
+                    // Грубо это deadLock получается без асинхрона
+                    removeQueue.add(resourceEnvelope);
+                }
                 return;
             }
         }
-        // Конечно лучше не доводить до дублей
         // Если взять потоки как ресурсы, то после createResource вызывается Thread.start, который после работы сам
         // себя вносит в пул отработанных (parkQueue)
         // Но вообще понятие ресурсов статично и они не живут собственной жизнью
@@ -128,6 +135,13 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
 
     private boolean add() {
         if (isRun.get() && map.size() < max) {
+            if (!removeQueue.isEmpty()) {
+                ResourceEnvelope<T> resourceEnvelope = removeQueue.pollLast();
+                if (resourceEnvelope != null) {
+                    parkQueue.add(resourceEnvelope);
+                    return true;
+                }
+            }
             final ResourceEnvelope<T> resourceEnvelope = new ResourceEnvelope<>(createResource());
             if (resourceEnvelope.getResource() != null) {
                 parkQueue.add(resourceEnvelope);
@@ -138,14 +152,10 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
         return false;
     }
 
-    synchronized private boolean remove(@NonNull ResourceEnvelope<T> resourceEnvelope) {
-        if (map.size() > min) {
-            map.remove(resourceEnvelope.getResource());
-            parkQueue.remove(resourceEnvelope); // На всякий случай
-            closeResource(resourceEnvelope.getResource()); //Если выкидываем из пула, то наверное надо закрыть сам ресурс
-            return true;
-        }
-        return false;
+    synchronized private void remove(@NonNull ResourceEnvelope<T> resourceEnvelope) {
+        map.remove(resourceEnvelope.getResource());
+        parkQueue.remove(resourceEnvelope); // На всякий случай
+        closeResource(resourceEnvelope.getResource()); //Если выкидываем из пула, то наверное надо закрыть сам ресурс
     }
 
     private void overclocking(int count) {
@@ -171,6 +181,17 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
                 App.context.getBean(ExceptionHandler.class).handler(e);
             }
         }
+        // Тут происходит непосредственно удаление
+        shutdownRemoveThread();
+    }
+
+    private void shutdownRemoveThread() {
+        while (!removeQueue.isEmpty()) {
+            ResourceEnvelope<T> resourceEnvelope = removeQueue.pollLast();
+            if (resourceEnvelope != null) {
+                remove(resourceEnvelope);
+            }
+        }
     }
 
     private void removeLazy() { //Проверка ждунов, что они давно не вызывались и у них кол-во итераций равно 0 -> нож
@@ -185,7 +206,10 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface {
                 if (curTimeMs < (resourceEnvelope.getLastRunMs() + keepAliveMs)) {
                     return;
                 }
-                if (remove(resourceEnvelope)) {
+                if (map.size() > min) {
+                    if (!removeQueue.contains(resourceEnvelope)) {
+                        removeQueue.add(resourceEnvelope);
+                    }
                     maxCounterRemove.decrementAndGet();
                 }
             });
