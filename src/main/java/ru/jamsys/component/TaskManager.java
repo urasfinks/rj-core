@@ -89,6 +89,14 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
         }
     }
 
+    public void removeInQueueStatistic(ThreadEnvelope threadEnvelope) {
+        Util.riskModifierCollection(null, queueStatistics, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
+            if (taskStatistic.getThreadEnvelope().equals(threadEnvelope)) {
+                queueStatistics.remove(taskStatistic);
+            }
+        });
+    }
+
     @Override
     public void keepAlive(AtomicBoolean isRun) {
         Map<String, ThreadPool> cloneMapPool = new HashMap<>(mapPool);
