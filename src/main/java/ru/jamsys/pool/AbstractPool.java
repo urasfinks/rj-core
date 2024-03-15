@@ -23,24 +23,20 @@ import java.util.function.Function;
 
 public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, StatisticsCollector {
 
-    @Getter
-    private int max; //Максимальное кол-во ресурсов
+    private final AtomicInteger max = new AtomicInteger(0); //Максимальное кол-во ресурсов
 
-    @Getter
+    private final AtomicInteger min = new AtomicInteger(0); //Минимальное кол-во ресурсов
+
     @Setter
-    private long sumTime; //Сколько времени использовались ресурсы за 3сек
+    private long sumTime = -1; //Сколько времени использовались ресурсы за 3сек
 
     public void setMax(int max) {
-        if (max >= min) {
-            this.max = max;
+        if (max >= min.get()) {
+            this.max.set(max);
         } else {
-            Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < " + min);
+            Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < " + min.get());
         }
     }
-
-    @Getter
-    @Setter
-    private int min; //Минимальное кол-во ресурсов
 
     private final long keepAliveMs; //Время жизни ресурса без работы
 
@@ -65,13 +61,9 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
 
     public AbstractPool(String name, int min, int max, long keepAliveMs) {
         this.name = name;
-        this.max = max;
-        this.min = min;
+        this.max.set(max);
+        this.min.set(min);
         this.keepAliveMs = keepAliveMs;
-    }
-
-    public boolean isAllInPark() {
-        return isRun.get() && map.size() == parkQueue.size();
     }
 
     @SuppressWarnings("unused")
@@ -85,14 +77,8 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
             App.context.getBean(ExceptionHandler.class).handler(new Exception("Не найдена обёртка в пуле " + resource));
             return;
         }
-        if (map.size() > max || !isRun.get() || checkExceptionOnComplete(e)) {
-            if (map.size() > min) {
-                if (!removeQueue.contains(resourceEnvelope)) {
-                    // Выведено в асинхрон через keepAlive, потому что если ресурс - поток, то когда он себя возвращает
-                    // Механизм closeResource пытается завершить процесс, который ждёт выполнение этой команды
-                    // Грубо это deadLock получается без асинхрона
-                    removeQueue.addLast(resourceEnvelope);
-                }
+        if (map.size() > max.get() || !isRun.get() || checkExceptionOnComplete(e)) {
+            if (addToRemove(resourceEnvelope, "map.size() =  " + map.size() + " > max = " + max.get())) {
                 return;
             }
         }
@@ -108,9 +94,9 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
 
     @SuppressWarnings({"unused"})
     @Override
-    public T getResource(Long timeOutMs) throws Exception {
+    public T getResource(Long timeOutMs) {
         if (!isRun.get()) {
-            throw new Exception("Pool " + getName() + " stop.");
+            return null;
         }
         if (timeOutMs == null) {
             // Забираем с конца, что бы под нож первые улетели
@@ -129,7 +115,6 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
                 }
                 Util.sleepMs(100);
             }
-            throw new Exception("Pool " + getName() + " not active resource. Timeout: " + timeOutMs + "ms");
         }
         return null;
     }
@@ -140,7 +125,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
     }
 
     private boolean add() {
-        if (isRun.get() && map.size() < max) {
+        if (isRun.get() && map.size() < max.get()) {
             if (!removeQueue.isEmpty()) {
                 ResourceEnvelope<T> resourceEnvelope = removeQueue.pollLast();
                 if (resourceEnvelope != null) {
@@ -150,12 +135,11 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
             }
             final ResourceEnvelope<T> resourceEnvelope = new ResourceEnvelope<>(createResource());
             if (resourceEnvelope.getResource() != null) {
+                //new RuntimeException("add").printStackTrace();
                 //#1
                 map.put(resourceEnvelope.getResource(), resourceEnvelope);
                 //#2
-                if (onCreateResourcePutInPark()) {
-                    parkQueue.add(resourceEnvelope);
-                }
+                parkQueue.add(resourceEnvelope);
                 return true;
             }
         }
@@ -165,11 +149,12 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
     synchronized private void remove(@NonNull ResourceEnvelope<T> resourceEnvelope) {
         map.remove(resourceEnvelope.getResource());
         parkQueue.remove(resourceEnvelope); // На всякий случай
+        removeQueue.remove(resourceEnvelope); // На всякий случай
         closeResource(resourceEnvelope.getResource()); //Если выкидываем из пула, то наверное надо закрыть сам ресурс
     }
 
     private void overclocking(int count) {
-        if (isRun.get() && map.size() < max && count > 0) {
+        if (isRun.get() && map.size() < max.get() && count > 0) {
             for (int i = 0; i < count; i++) {
                 if (!add()) {
                     break;
@@ -184,7 +169,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
             try {
                 if (parkQueue.isEmpty()) { //Если в очереди пустота, попробуем добавить
                     overclocking(formulaAddCount.apply(1));
-                } else if (map.size() > min) { //Кол-во больше минимума
+                } else if (map.size() > min.get()) { //Кол-во больше минимума
                     removeLazy();
                 }
             } catch (Exception e) {
@@ -200,11 +185,25 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
         }
     }
 
-    private void removeLazy() { //Проверка ждунов, что они давно не вызывались и у них кол-во итераций равно 0 -> нож
+    private boolean addToRemove(ResourceEnvelope<T> resourceEnvelope, String cause) {
+        // Выведено в асинхрон через keepAlive, потому что если ресурс - поток, то когда он себя возвращает
+        // Механизм closeResource пытается завершить процесс, который ждёт выполнение этой команды
+        // Грубо это deadLock получается без асинхрона
+        if (map.size() > min.get()) {
+            if (!removeQueue.contains(resourceEnvelope)) {
+                new RuntimeException("toRemove cause: " + cause).printStackTrace();
+                removeQueue.add(resourceEnvelope);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void removeLazy() { //Проверка ждунов, что они давно не вызывались
         if (isRun.get()) {
             final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
-            Util.riskModifierMap(null, map, getEmptyType(), (T key, ResourceEnvelope<T> resourceEnvelope) -> {
+            Util.riskModifierCollection(null, parkQueue, getEmptyType(), (ResourceEnvelope<T> resourceEnvelope) -> {
                 if (maxCounterRemove.get() == 0) {
                     return;
                 }
@@ -212,10 +211,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
                 if (curTimeMs < (resourceEnvelope.getLastRunMs() + keepAliveMs)) {
                     return;
                 }
-                if (map.size() > min) {
-                    if (!removeQueue.contains(resourceEnvelope)) {
-                        removeQueue.add(resourceEnvelope);
-                    }
+                if (addToRemove(resourceEnvelope, "curTimeMs = " + curTimeMs + " > keepAliveMs + lastRun = " + (resourceEnvelope.getLastRunMs() + keepAliveMs))) {
                     maxCounterRemove.decrementAndGet();
                 }
             });
@@ -227,7 +223,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
     public void run() {
         if (restartOperation.compareAndSet(false, true)) {
             isRun.set(true);
-            for (int i = 0; i < min; i++) {
+            for (int i = 0; i < min.get(); i++) {
                 add();
             }
             restartOperation.set(false);
@@ -242,11 +238,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
                     null,
                     map,
                     getEmptyType(),
-                    (T key, ResourceEnvelope<T> resourceEnvelope) -> {
-                        closeResource(resourceEnvelope.getResource());
-                        map.remove(key);
-                        parkQueue.remove(resourceEnvelope);
-                    }
+                    (T key, ResourceEnvelope<T> resourceEnvelope) -> remove(resourceEnvelope)
             );
             restartOperation.set(false);
         }
