@@ -1,11 +1,13 @@
 package ru.jamsys.statistic;
 
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Getter
+@ToString
 public class Statistic {
 
     private final Map<String, String> tags = new LinkedHashMap<>();

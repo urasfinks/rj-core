@@ -26,6 +26,10 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
     @Getter
     private int max; //Максимальное кол-во ресурсов
 
+    @Getter
+    @Setter
+    private long sumTime; //Сколько времени использовались ресурсы за 3сек
+
     public void setMax(int max) {
         if (max >= min) {
             this.max = max;
@@ -87,7 +91,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
                     // Выведено в асинхрон через keepAlive, потому что если ресурс - поток, то когда он себя возвращает
                     // Механизм closeResource пытается завершить процесс, который ждёт выполнение этой команды
                     // Грубо это deadLock получается без асинхрона
-                    removeQueue.add(resourceEnvelope);
+                    removeQueue.addLast(resourceEnvelope);
                 }
                 return;
             }
@@ -98,7 +102,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
         // поэтому после createResource мы кладём их в parkQueue, что бы их могли взять желающие
         // И для потоков тут получается первичный дубль
         if (!parkQueue.contains(resourceEnvelope)) {
-            parkQueue.add(resourceEnvelope);
+            parkQueue.addLast(resourceEnvelope);
         }
     }
 
@@ -109,6 +113,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
             throw new Exception("Pool " + getName() + " stop.");
         }
         if (timeOutMs == null) {
+            // Забираем с конца, что бы под нож первые улетели
             ResourceEnvelope<T> resourceEnvelope = parkQueue.pollLast();
             if (resourceEnvelope != null) {
                 resourceEnvelope.setLastRunMs(System.currentTimeMillis());
@@ -183,10 +188,6 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
             }
         }
         // Тут происходит непосредственно удаление
-        shutdownRemoveThread();
-    }
-
-    private void shutdownRemoveThread() {
         while (!removeQueue.isEmpty()) {
             ResourceEnvelope<T> resourceEnvelope = removeQueue.pollLast();
             if (resourceEnvelope != null) {
@@ -266,6 +267,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
                 .addField("max", max)
                 .addField("size", map.size())
                 .addField("park", parkQueue.size())
+                .addField("sumTime", sumTime)
         );
         return result;
     }

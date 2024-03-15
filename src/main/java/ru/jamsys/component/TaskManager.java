@@ -113,6 +113,7 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
         for (String index : calc.keySet()) {
             ThreadPool obj = cloneMapPool.remove(index);
             obj.setMax(calc.get(index).intValue());
+            obj.setSumTime(mapStat.get(index));
         }
         // Очистка пустых пулов, что бы не мешались
         Util.riskModifierMap(isRun, cloneMapPool, new String[0], (String key, ThreadPool obj) -> {
@@ -123,8 +124,8 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
         });
         //Тем кто остался, но по ним за последние 3 секунды не было активности, выставляем пределы max = 1
         for (String index : cloneMapPool.keySet()) {
-            //Util.logConsole(index + " set max = 1");
             mapPool.get(index).setMax(1);
+            mapPool.get(index).setSumTime(-1);
         }
         Util.riskModifierMap(isRun, mapPool, new String[0], (String key, ThreadPool obj) -> obj.keepAlive());
     }
@@ -181,7 +182,6 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
         List<Statistic> result = new ArrayList<>();
         Util.riskModifierMap(isRun, mapPool, new String[0], (String key, ThreadPool threadPool)
                 -> result.addAll(threadPool.flushAndGetStatistic(parentTags, parentFields, isRun)));
-
         return result;
     }
 }
