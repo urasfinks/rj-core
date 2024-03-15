@@ -1,7 +1,5 @@
 package ru.jamsys.thread;
 
-import ru.jamsys.App;
-import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.pool.AbstractPool;
 import ru.jamsys.statistic.Statistic;
@@ -15,11 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
 public class ThreadPool extends AbstractPool<ThreadEnvelope> implements RunnableInterface {
-
-    @Override
-    public boolean onCreateResourcePutInPark() {
-        return false;
-    }
 
     AtomicInteger index = new AtomicInteger(1);
 
@@ -36,9 +29,7 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
 
     @Override
     public ThreadEnvelope createResource() {
-        ThreadEnvelope threadEnvelope = new ThreadEnvelope(getName() + "-" + index.getAndIncrement(), this, consumer);
-        threadEnvelope.run();
-        return threadEnvelope;
+        return new ThreadEnvelope(getName() + "-" + index.getAndIncrement(), this, consumer);
     }
 
     @Override
@@ -53,19 +44,16 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
 
     @SuppressWarnings("unused")
     public void wakeUp() {
-        if (isAllInPark()) {
-            if (isEmpty()) {
-                keepAlive();
-            } else {
-                try {
-                    ThreadEnvelope threadEnvelope = getResource(null);
-                    if (threadEnvelope != null) {
-                        threadEnvelope.resume();
-                    }
-                } catch (Exception e) {
-                    App.context.getBean(ExceptionHandler.class).handler(e);
-                }
-            }
+        if (!isRun.get()) {
+            return;
+        }
+        if (isEmpty()) {
+            keepAlive();
+            return;
+        }
+        ThreadEnvelope threadEnvelope = getResource(null);
+        if (threadEnvelope != null) {
+            threadEnvelope.run();
         }
     }
 
