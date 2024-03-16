@@ -42,17 +42,13 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
         this.dictionary = dictionary;
     }
 
-    public void add(Task task) {
+    public void add(Task task) throws Exception {
         String index = task.getIndex();
         if (!mapPool.containsKey(index)) {
             addPool(index);
         }
-        try {
-            broker.get(index).add(task);
-            mapPool.get(index).wakeUp();
-        } catch (Exception e) {
-            exceptionHandler.handler(e);
-        }
+        broker.get(index).add(task);
+        mapPool.get(index).wakeUp();
     }
 
     private void addPool(String name) {
