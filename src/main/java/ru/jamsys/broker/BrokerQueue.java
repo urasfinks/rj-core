@@ -65,7 +65,7 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
                 throw new Exception("Limit BrokerQueue: " + o.getClass().getSimpleName() + "; limit: " + sizeQueue + "; object: " + o);
             }
         }
-        if (tpsInput.get() > maxTpsInput.get()) {
+        if (maxTpsInput.get() > 0 && tpsInput.get() > maxTpsInput.get()) {
             throw new Exception("RateLimit BrokerQueue: " + o.getClass().getSimpleName() + "; max tps: " + maxTpsInput.get() + "; object: " + o);
         }
         tpsInput.incrementAndGet();
