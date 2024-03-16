@@ -32,6 +32,7 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
     private final ConcurrentLinkedDeque<T> tail = new ConcurrentLinkedDeque<>();
     private final AtomicInteger tpsInput = new AtomicInteger(0);
     private final AtomicInteger tpsOutput = new AtomicInteger(0);
+    private final AtomicInteger maxTpsInput = new AtomicInteger(-1);
 
     private final AvgMetric timeInQueue = new AvgMetric();
     private final List<Procedure> listProcedure = new ArrayList<>();
@@ -63,6 +64,9 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
             if (queue.size() > sizeQueue) {
                 throw new Exception("Limit BrokerQueue: " + o.getClass().getSimpleName() + "; limit: " + sizeQueue + "; object: " + o);
             }
+        }
+        if (tpsInput.get() > maxTpsInput.get()) {
+            throw new Exception("RateLimit BrokerQueue: " + o.getClass().getSimpleName() + "; max tps: " + maxTpsInput.get() + "; object: " + o);
         }
         tpsInput.incrementAndGet();
         timing.put(o, System.currentTimeMillis());
