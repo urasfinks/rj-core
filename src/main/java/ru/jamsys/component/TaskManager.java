@@ -62,7 +62,7 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
                         int count = 0;
                         while (isWhile.get()) {
                             // Защита от бесконечно очереди
-                            // Предположим, что поменялом максимальное кол-во потоков и надо срезать потоки, а тут
+                            // Предположим, что поменялось максимальное кол-во потоков и надо срезать потоки, а тут
                             // без остановки этот цикл молотит, не хорошо
                             if (count > maxCountIteration) {
                                 return false;
