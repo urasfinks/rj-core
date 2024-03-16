@@ -65,7 +65,7 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
                 throw new Exception("Limit BrokerQueue: " + o.getClass().getSimpleName() + "; limit: " + sizeQueue + "; object: " + o);
             }
         }
-        if (maxTpsInput.get() > 0 && tpsInput.get() > maxTpsInput.get()) {
+        if (maxTpsInput.get() > 0 && tpsInput.get() >= maxTpsInput.get()) {
             throw new Exception("RateLimit BrokerQueue: " + o.getClass().getSimpleName() + "; max tps: " + maxTpsInput.get() + "; object: " + o);
         }
         tpsInput.incrementAndGet();
@@ -127,6 +127,7 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
 
     @Override
     public void reset() {
+        // Рекомендуется использовать только для тестов
         queue.clear();
         timing.clear();
         tail.clear();
@@ -135,6 +136,12 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
         sizeQueue = 3000;
         sizeTail = 5;
         cyclical = true;
+        maxTpsInput.set(-1);
+    }
+
+    @Override
+    public void setMaxTpsInput(int maxTpsInput) {
+        this.maxTpsInput.set(maxTpsInput);
     }
 
     @Override

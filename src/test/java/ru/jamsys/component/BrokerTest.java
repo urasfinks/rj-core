@@ -132,6 +132,27 @@ class BrokerTest {
         queue.reset();
     }
 
+    @Test
+    void testMaxInputTps() {
+        Broker broker = App.context.getBean(Broker.class);
+        Queue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
+        queue.setMaxTpsInput(1);
+        TaskStatistic obj = new TaskStatistic(null, null);
+        try {
+            queue.add(obj);
+        } catch (Exception e) {
+            Assertions.fail();
+        }
+        try {
+            queue.add(obj);
+            Assertions.fail();
+        } catch (Exception e) {
+            Assertions.assertTrue(true);
+        }
+
+        queue.reset();
+    }
+
     static class XTest implements BrokerCollectible {
         final int x;
 

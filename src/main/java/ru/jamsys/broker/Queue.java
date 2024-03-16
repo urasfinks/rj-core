@@ -25,4 +25,6 @@ public interface Queue<T> {
 
     void reset();
 
+    void setMaxTpsInput(int maxTpsInput);
+
 }
