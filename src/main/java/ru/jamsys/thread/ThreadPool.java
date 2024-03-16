@@ -47,7 +47,7 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
         if (!isRun.get()) {
             return;
         }
-        ThreadEnvelope threadEnvelope = getResource(null);
+        ThreadEnvelope threadEnvelope = getResource();
         if (threadEnvelope != null) {
             threadEnvelope.run();
         }

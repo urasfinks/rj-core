@@ -94,27 +94,33 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
 
     @SuppressWarnings({"unused"})
     @Override
+    public T getResource() {
+        if (!isRun.get()) {
+            return null;
+        }
+        // Забираем с конца, что бы под нож первые улетели
+        ResourceEnvelope<T> resourceEnvelope = parkQueue.pollLast();
+        if (resourceEnvelope != null) {
+            resourceEnvelope.setLastRunMs(System.currentTimeMillis());
+            return resourceEnvelope.getResource();
+        }
+        return null;
+    }
+
+    @SuppressWarnings({"unused"})
+    @Override
     public T getResource(Long timeOutMs) {
         if (!isRun.get()) {
             return null;
         }
-        if (timeOutMs == null) {
-            // Забираем с конца, что бы под нож первые улетели
+        long finishTimeMs = System.currentTimeMillis() + timeOutMs;
+        while (isRun.get() && finishTimeMs > System.currentTimeMillis()) {
             ResourceEnvelope<T> resourceEnvelope = parkQueue.pollLast();
             if (resourceEnvelope != null) {
                 resourceEnvelope.setLastRunMs(System.currentTimeMillis());
                 return resourceEnvelope.getResource();
             }
-        } else {
-            long finishTimeMs = System.currentTimeMillis() + timeOutMs;
-            while (isRun.get() && finishTimeMs > System.currentTimeMillis()) {
-                ResourceEnvelope<T> resourceEnvelope = parkQueue.pollLast();
-                if (resourceEnvelope != null) {
-                    resourceEnvelope.setLastRunMs(System.currentTimeMillis());
-                    return resourceEnvelope.getResource();
-                }
-                Util.sleepMs(100);
-            }
+            Util.sleepMs(100);
         }
         return null;
     }

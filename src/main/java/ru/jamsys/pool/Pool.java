@@ -6,7 +6,10 @@ public interface Pool<T> {
     void complete(T ret, Exception e);
 
     @SuppressWarnings("unused")
-    T getResource(Long timeOutMs);
+    T getResource(); // Получить ресурс без ожидания, если нет в park - вернём null
+
+    @SuppressWarnings("unused")
+    T getResource(Long timeOutMs); //Если в parkQueue нет ресурса, будем ждать timeOutMs
 
     T createResource();
 
