@@ -34,6 +34,8 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
 
     final private ConcurrentLinkedDeque<TaskStatistic> queueStatistics = new ConcurrentLinkedDeque<>();
 
+    final private int maxCountIteration = 100;
+
     public TaskManager(Broker broker, ExceptionHandler exceptionHandler, Dictionary dictionary) {
         this.broker = broker;
         this.exceptionHandler = exceptionHandler;
@@ -61,7 +63,14 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
                     1,
                     60000,
                     (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
+                        int count = 0;
                         while (isWhile.get()) {
+                            // Защита от бесконечно очереди
+                            // Предположим, что поменялом максимальное кол-во потоков и надо срезать потоки, а тут
+                            // без остановки этот цикл молотит, не хорошо
+                            if (count > maxCountIteration) {
+                                return false;
+                            }
                             Task task = broker.pollLast(name);
                             if (task == null) {
                                 return false;
@@ -80,6 +89,7 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
                             } else {
                                 exceptionHandler.handler(new RuntimeException("Not find TaskHandler for Task = " + task.getClass()));
                             }
+                            count++;
                         }
                         return false;
                     }
