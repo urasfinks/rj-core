@@ -80,10 +80,15 @@ public class Cron {
         }
     }
 
-    public Long getNext(long curTime, boolean debug) {
-        long result = next;
-        compile(curTime, debug);
+    public boolean isTimeHasCome(long curTime) {
+        boolean result = next <= curTime;
+        compile(curTime, false);
         return result;
+    }
+
+    public Long getNext(long curTime, boolean debug) {
+        compile(curTime, debug);
+        return next;
     }
 
     public Long getNext(long curTime) {
@@ -160,6 +165,9 @@ public class Cron {
             }
             Map<String, Object> flush = avgMetric.flush("");
             if ((long) flush.get("Count") > 0) {
+                if (debug) {
+                    System.out.println("Avg min: " + Util.msToDataFormat((Long) flush.get("Min")) + " realMs: " + flush.get("Min"));
+                }
                 next = (long) flush.get("Min");
             } else {
                 next = null;

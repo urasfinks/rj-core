@@ -17,10 +17,7 @@ public class GeneratorManager implements RunnableComponent {
 
     final private ThreadPool threadPool;
 
-    final private TaskManager taskManager;
-
     public GeneratorManager(Dictionary dictionary, ExceptionHandler exceptionHandler, Broker broker, TaskManager taskManager) {
-        this.taskManager = taskManager;
         this.threadPool = new ThreadPool(
                 getClass().getSimpleName(),
                 1,
@@ -33,7 +30,7 @@ public class GeneratorManager implements RunnableComponent {
                         nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
                         long curTimeMs = System.currentTimeMillis();
                         for (CronTask cronTask : dictionary.getListCronTask()) {
-                            if (cronTask.getCron().getNext(curTimeMs) <= curTimeMs) {
+                            if (cronTask.getCron().isTimeHasCome(curTimeMs)) {
                                 taskManager.add(cronTask.getTask());
                             }
                         }

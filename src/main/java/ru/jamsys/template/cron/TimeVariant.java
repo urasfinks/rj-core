@@ -85,7 +85,7 @@ public class TimeVariant {
                 long n = calendar.getTimeInMillis();
                 if (n > curTime) {
                     if (debug) {
-                        System.out.println("[" + Util.msToDataFormat(n) + "] because > curTime: " + Util.msToDataFormat(curTime));
+                        System.out.println("[" + Util.msToDataFormat(n) + "] because > curTime: " + Util.msToDataFormat(curTime) + " realMs: " + n);
                     }
                     avgMetric.add(n);
                     if (listEmptyUnit.size() == 1 && count == 0) {
