@@ -27,4 +27,6 @@ public interface Queue<T> {
 
     void setMaxTpsInput(int maxTpsInput);
 
+    boolean isExpired();
+
 }
