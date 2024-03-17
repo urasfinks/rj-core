@@ -24,7 +24,7 @@ import java.util.function.Function;
 
 public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, StatisticsCollector {
 
-    private volatile int max; //Максимальное кол-во ресурсов
+    private final AtomicInteger max = new AtomicInteger(0); //Максимальное кол-во ресурсов
 
     private final int min; //Минимальное кол-во ресурсов
 
@@ -57,7 +57,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
 
     public AbstractPool(String name, int min, int max, long keepAliveOnInactivityMs) {
         this.name = name;
-        this.max = max;
+        this.max.set(max);
         this.min = min;
         this.keepAliveOnInactivityMs = keepAliveOnInactivityMs;
     }
@@ -66,9 +66,13 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
         return map.isEmpty();
     }
 
-    public void setMax(int max) {
+    public void setMaxSlowRiseAndFastFall(int max) {
         if (max >= min) {
-            this.max = max;
+            if (max > this.max.get()) { //Медленно поднимаем
+                this.max.incrementAndGet();
+            } else { //Но очень быстро опускаем
+                this.max.set(max);
+            }
         } else {
             Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < " + min);
         }
@@ -85,7 +89,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
             App.context.getBean(ExceptionHandler.class).handler(new Exception("Не найдена обёртка в пуле " + resource));
             return;
         }
-        if (map.size() > max || !isRun.get() || checkExceptionOnComplete(e)) {
+        if (map.size() > max.get() || !isRun.get() || checkExceptionOnComplete(e)) {
             if (addToRemove(resourceEnvelope, "map.size() =  " + map.size() + " > max = " + max)) {
                 return;
             }
@@ -139,7 +143,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
     }
 
     private boolean add() {
-        if (isRun.get() && map.size() < max) {
+        if (isRun.get() && map.size() < max.get()) {
             if (!removeQueue.isEmpty()) {
                 ResourceEnvelope<T> resourceEnvelope = removeQueue.pollLast();
                 if (resourceEnvelope != null) {
@@ -168,7 +172,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
     }
 
     private void overclocking(int count) {
-        if (isRun.get() && map.size() < max && count > 0) {
+        if (isRun.get() && map.size() < max.get() && count > 0) {
             for (int i = 0; i < count; i++) {
                 if (!add()) {
                     break;
