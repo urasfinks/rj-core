@@ -5,10 +5,10 @@ import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
-import ru.jamsys.component.RateLimit;
 import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.extension.Procedure;
 import ru.jamsys.extension.StatisticsCollector;
+import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
@@ -28,16 +28,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
 
     private final ConcurrentLinkedDeque<T> queue = new ConcurrentLinkedDeque<>();
+
     private final Map<T, Long> timing = new ConcurrentHashMap<>();
+
     //Последний сообщения проходящие через очередь
     private final ConcurrentLinkedDeque<T> tail = new ConcurrentLinkedDeque<>();
+
     private final AtomicInteger tpsDequeue = new AtomicInteger(0);
 
     private final AvgMetric timeInQueue = new AvgMetric();
+
     private final List<Procedure> listProcedure = new ArrayList<>();
 
+    private volatile long lastActivity = 0;
+
     private int sizeQueue = 3000;
+
+    private long keepAliveOnInactivityMs = 60_000; // Время жизни очереди, если в ней нет активности
+
     private int sizeTail = 5;
+
     private boolean cyclical = true;
 
     public int getSize() {
@@ -48,9 +58,9 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
         return queue.isEmpty();
     }
 
-    final RateLimit.RateLimitItem rateLimitItem;
+    final RateLimitItem rateLimitItem;
 
-    public BrokerQueue(RateLimit.RateLimitItem rateLimitItem) {
+    public BrokerQueue(RateLimitItem rateLimitItem) {
         this.rateLimitItem = rateLimitItem;
     }
 
@@ -149,6 +159,11 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
     }
 
     @Override
+    public boolean isExpired() {
+        return System.currentTimeMillis() > lastActivity + keepAliveOnInactivityMs;
+    }
+
+    @Override
     public List<T> getTail(@Nullable AtomicBoolean isRun) {
         List<T> ret = new ArrayList<>();
         Util.riskModifierCollection(isRun, tail, getEmptyType(), ret::add);
@@ -159,9 +174,14 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
         List<Statistic> result = new ArrayList<>();
+        int tpsDequeueFlush = tpsDequeue.getAndSet(0);
+        int sizeFlush = queue.size();
+        if (sizeFlush > 0 || tpsDequeueFlush > 0) {
+            lastActivity = System.currentTimeMillis();
+        }
         result.add(new Statistic(parentTags, parentFields)
-                .addField("tpsDequeue", tpsDequeue.getAndSet(0))
-                .addField("size", queue.size())
+                .addField("tpsDequeue", tpsDequeueFlush)
+                .addField("size", sizeFlush)
                 .addFields(timeInQueue.flush("timeMsInQueue"))
         );
         return result;
