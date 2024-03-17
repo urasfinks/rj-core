@@ -31,16 +31,14 @@ public class Broker implements StatisticsCollectorComponent {
 
     @SuppressWarnings("unused")
     public <T extends BrokerCollectible> void add(String key, T object) throws Exception {
-        Queue<T> queue = get(key);
-        queue.add(object);
+        get(key).add(object);
     }
 
     @SuppressWarnings("unused")
     public <T extends BrokerCollectible> Queue<T> get(String key) {
         //If the key was not present in the map, it maps the passed value to the key and returns null.
         if (!mapQueue.containsKey(key)) {
-            String nameRateLimit = getClass().getSimpleName() + "." + key;
-            mapQueue.putIfAbsent(key, new BrokerQueue<>(rateLimit.add(nameRateLimit)));
+            mapQueue.putIfAbsent(key, new BrokerQueue<>(rateLimit.add(getIndex(key))));
         }
         @SuppressWarnings("unchecked")
         Queue<T> queue = (Queue<T>) mapQueue.get(key);
@@ -66,15 +64,23 @@ public class Broker implements StatisticsCollectorComponent {
                 isRun,
                 mapQueue,
                 new String[0],
-                (String cls, Queue<? extends BrokerCollectible> queue) -> {
-                    parentTags.put("index", cls);
+                (String key, Queue<? extends BrokerCollectible> queue) -> {
+                    parentTags.put("index", key);
                     List<Statistic> statistics = ((StatisticsCollector) queue).flushAndGetStatistic(parentTags, parentFields, isRun);
                     if (statistics != null) {
                         result.addAll(statistics);
                     }
+                    if (queue.isExpired()) {
+                        mapQueue.remove(key);
+                        rateLimit.remove(getIndex(key));
+                    }
                 }
         );
         return result;
+    }
+
+    private String getIndex(String key) {
+        return getClass().getSimpleName() + "." + key;
     }
 
 }
