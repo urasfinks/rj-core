@@ -3,6 +3,7 @@ package ru.jamsys.component;
 import org.springframework.stereotype.Component;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
+import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.TaskStatistic;
@@ -30,16 +31,19 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
 
     final private Dictionary dictionary;
 
+    final private RateLimit rateLimit;
+
     final private Map<String, ThreadPool> mapPool = new ConcurrentHashMap<>();
 
     final private ConcurrentLinkedDeque<TaskStatistic> queueStatistics = new ConcurrentLinkedDeque<>();
 
     final private int maxCountIteration = 100; //Защита от бесконечной очереди
 
-    public TaskManager(Broker broker, ExceptionHandler exceptionHandler, Dictionary dictionary) {
+    public TaskManager(Broker broker, ExceptionHandler exceptionHandler, Dictionary dictionary, RateLimit rateLimit) {
         this.broker = broker;
         this.exceptionHandler = exceptionHandler;
         this.dictionary = dictionary;
+        this.rateLimit = rateLimit;
     }
 
     public void addTask(Task task) throws Exception {
@@ -47,27 +51,28 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
         if (!mapPool.containsKey(index)) {
             addPool(index);
         }
-        broker.get(index).add(task);
+        broker.add(index, task);
         mapPool.get(index).wakeUp();
     }
 
-    private void addPool(String name) {
-        if (!mapPool.containsKey(name)) {
+    private void addPool(String index) {
+        RateLimitItem rateLimitItem = rateLimit.add(getIndex(index));
+        if (!mapPool.containsKey(index)) {
             ThreadPool threadPool = new ThreadPool(
-                    name,
+                    index,
                     0,
                     1,
                     60000,
                     (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
                         int count = 0;
-                        while (isWhile.get()) {
+                        while (isWhile.get() && rateLimitItem.check()) {
                             // Защита от бесконечной очереди
                             // Предположим, что поменялось максимальное кол-во потоков и надо срезать потоки, а тут
                             // без остановки этот цикл молотит, не хорошо
                             if (count > maxCountIteration) {
                                 return false;
                             }
-                            Task task = broker.pollLast(name);
+                            Task task = broker.pollLast(index);
                             if (task == null) {
                                 return false;
                             }
@@ -90,7 +95,8 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
                         return false;
                     }
             );
-            mapPool.put(name, threadPool);
+            threadPool.getListProcedureOnShutdown().add(() -> rateLimit.remove(getIndex(index)));
+            mapPool.put(index, threadPool);
             threadPool.run();
         }
     }
@@ -130,10 +136,11 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
             obj.setSumTime(mapStat.get(index));
         }
         // Очистка пустых пулов, что бы не мешались
-        Util.riskModifierMap(isRun, cloneMapPool, new String[0], (String key, ThreadPool obj) -> {
-            if (obj.isEmpty()) {
+        Util.riskModifierMap(isRun, cloneMapPool, new String[0], (String key, ThreadPool threadPool) -> {
+            if (threadPool.isEmpty()) {
                 cloneMapPool.remove(key);
                 mapPool.remove(key);
+                threadPool.shutdown();
             }
         });
         //Тем кто остался, но по ним за последние 3 секунды не было активности, выставляем пределы max = 1
@@ -198,4 +205,9 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
                 -> result.addAll(threadPool.flushAndGetStatistic(parentTags, parentFields, isRun)));
         return result;
     }
+
+    private String getIndex(String key) {
+        return getClass().getSimpleName() + "." + key;
+    }
+
 }
