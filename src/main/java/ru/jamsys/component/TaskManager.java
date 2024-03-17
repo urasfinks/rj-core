@@ -3,8 +3,8 @@ package ru.jamsys.component;
 import org.springframework.stereotype.Component;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
-import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.AvgMetric;
+import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.thread.ThreadEnvelope;
@@ -132,7 +132,7 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
         Map<String, Long> calc = calc(mapStat, maxThread);
         for (String index : calc.keySet()) {
             ThreadPool obj = cloneMapPool.remove(index);
-            obj.setMax(calc.get(index).intValue());
+            obj.setMaxSlowRiseAndFastFall(calc.get(index).intValue());
             obj.setSumTime(mapStat.get(index));
         }
         // Очистка пустых пулов, что бы не мешались
@@ -145,7 +145,7 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
         });
         //Тем кто остался, но по ним за последние 3 секунды не было активности, выставляем пределы max = 1
         for (String index : cloneMapPool.keySet()) {
-            mapPool.get(index).setMax(1);
+            mapPool.get(index).setMaxSlowRiseAndFastFall(1);
             mapPool.get(index).setSumTime(-1);
         }
         Util.riskModifierMap(isRun, mapPool, new String[0], (String key, ThreadPool obj) -> obj.keepAlive());
