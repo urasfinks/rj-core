@@ -59,6 +59,7 @@ public class GeneratorManager implements RunnableComponent {
     @Override
     public void run() {
         threadPool.run();
+        threadPool.wakeUp();
     }
 
     @Override
