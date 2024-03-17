@@ -2,6 +2,7 @@ package ru.jamsys.component;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.extension.StatisticsCollectorComponent;
+import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
 
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("unused")
 @Component
@@ -18,11 +18,26 @@ public class RateLimit implements StatisticsCollectorComponent {
 
     Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
 
+    Map<String, RateLimitItem> mapSaved = new ConcurrentHashMap<>();
+
     public RateLimitItem add(String key) {
         if (!map.containsKey(key)) {
-            map.put(key, new RateLimitItem());
+            map.put(key, restoreRateLimitItem(key));
         }
         return map.get(key);
+    }
+
+    public RateLimitItem restoreRateLimitItem(String key) {
+        if (mapSaved.containsKey(key)) {
+            return mapSaved.get(key);
+        }
+        RateLimitItem rateLimitItem = new RateLimitItem();
+        mapSaved.put(key, rateLimitItem);
+        return rateLimitItem;
+    }
+
+    public void remove(String key) {
+        map.remove(key);
     }
 
     public void setMaxTps(String key, int maxTps) {
@@ -31,7 +46,7 @@ public class RateLimit implements StatisticsCollectorComponent {
 
     public boolean check(String key) {
         if (!map.containsKey(key)) {
-            map.put(key, new RateLimitItem());
+            map.put(key, restoreRateLimitItem(key));
         }
         return map.get(key).check();
     }
@@ -42,33 +57,11 @@ public class RateLimit implements StatisticsCollectorComponent {
         Util.riskModifierMap(isRun, map, new String[0], (String key, RateLimitItem threadPool)
                 -> result.add(new Statistic(parentTags, parentFields)
                 .addTag("index", key)
-                .addField("max", threadPool.maxTps.get())
-                .addField("tps", threadPool.tps.getAndSet(0))));
+                .addField("max", threadPool.getMaxTps())
+                .addField("tps", threadPool.getTps().getAndSet(0))));
+        result.add(new Statistic(parentTags, parentFields)
+                .addTag("index", getClass().getSimpleName())
+                .addField("saved", mapSaved.size()));
         return result;
-    }
-
-    public static class RateLimitItem {
-        AtomicInteger tps = new AtomicInteger(0);
-        AtomicInteger maxTps = new AtomicInteger(-1);
-
-        public boolean check() {
-            int maxTpsInt = maxTps.get();
-            boolean result = maxTpsInt < 0 || (maxTpsInt > 0 && tps.get() < maxTpsInt); // -1 = infinity; 0 = reject
-            tps.incrementAndGet();
-            return result;
-        }
-
-        public int getMaxTps() {
-            return maxTps.get();
-        }
-
-        public void setMaxTps(int maxTps) {
-            this.maxTps.set(maxTps);
-        }
-
-        public void reset() {
-            // Рекомендуется использовать только для тестов
-            tps.set(0);
-        }
     }
 }
