@@ -7,7 +7,7 @@ import ru.jamsys.template.twix.Template;
 import java.util.HashMap;
 import java.util.Map;
 
-class CronTest {
+class TwixTest {
 
     @Test
     void template(){
