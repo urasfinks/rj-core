@@ -1,43 +1,49 @@
 package ru.jamsys.thread;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.SpringApplication;
+import ru.jamsys.App;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class ThreadEnvelopeTest {
+    @BeforeAll
+    static void beforeAll() {
+        String[] args = new String[]{};
+        App.context = SpringApplication.run(App.class, args);
+    }
+
     @Test
     public void test() {
-
         ThreadPool threadPool = new ThreadPool(
-                "Generator",
-                1,
-                1,
-                60000,
+                "TestPool",
+                0,
+                10,
+                10_000,
                 (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
-                    Thread currentThread = Thread.currentThread();
-                    long nextStartMs = System.currentTimeMillis();
-                    while (isWhile.get() && !currentThread.isInterrupted()) {
-                        nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
-
-                        if (isWhile.get()) {
-                            long calcSleepMs = nextStartMs - System.currentTimeMillis();
-                            if (calcSleepMs > 0) {
-                                Util.sleepMs(calcSleepMs);
-                            } else {
-                                Util.sleepMs(1);//Что бы поймать Interrupt
-                                nextStartMs = System.currentTimeMillis();
-                            }
-                        } else {
-                            break;
-                        }
+                    while (true) {
+                        Util.logConsole("Hey");
+                        Util.sleepMs(2000);
                     }
-                    Util.logConsole(currentThread.getName() + ": STOP");
-                    return false;
+                    //return false;
                 }
         );
         threadPool.run();
-        Util.sleepMs(10000);
+        threadPool.testRun();
+
+        for (int i = 0; i < 10; i++) {
+            try {
+                threadPool.wakeUp();
+                Util.sleepMs(1000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        Util.sleepMs(25000);
+
 
 //        ThreadEnvelope threadEnvelope = new ThreadEnvelope();
 //        threadEnvelope.run();
