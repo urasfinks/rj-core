@@ -34,14 +34,6 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
     @Setter
     private long sumTime = -1; //Сколько времени использовались ресурсы за 3сек
 
-    public void setMax(int max) {
-        if (max >= min) {
-            this.max = max;
-        } else {
-            Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < " + min);
-        }
-    }
-
     private final long keepAliveOnInactivityMs; //Время жизни ресурса без работы
 
     @Getter
@@ -68,6 +60,18 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
         this.max = max;
         this.min = min;
         this.keepAliveOnInactivityMs = keepAliveOnInactivityMs;
+    }
+
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
+
+    public void setMax(int max) {
+        if (max >= min) {
+            this.max = max;
+        } else {
+            Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < " + min);
+        }
     }
 
     @SuppressWarnings("unused")
