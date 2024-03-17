@@ -23,6 +23,12 @@ public class Broker implements StatisticsCollectorComponent {
 
     private final Map<String, Queue<? extends BrokerCollectible>> mapQueue = new ConcurrentHashMap<>();
 
+    final private RateLimit rateLimit;
+
+    public Broker(RateLimit rateLimit) {
+        this.rateLimit = rateLimit;
+    }
+
     @SuppressWarnings("unused")
     public <T extends BrokerCollectible> void add(String key, T object) throws Exception {
         Queue<T> queue = get(key);
@@ -33,7 +39,8 @@ public class Broker implements StatisticsCollectorComponent {
     public <T extends BrokerCollectible> Queue<T> get(String key) {
         //If the key was not present in the map, it maps the passed value to the key and returns null.
         if (!mapQueue.containsKey(key)) {
-            mapQueue.putIfAbsent(key, new BrokerQueue<T>());
+            String nameRateLimit = getClass().getSimpleName() + "." + key;
+            mapQueue.putIfAbsent(key, new BrokerQueue<>(rateLimit.add(nameRateLimit)));
         }
         @SuppressWarnings("unchecked")
         Queue<T> queue = (Queue<T>) mapQueue.get(key);
@@ -69,4 +76,5 @@ public class Broker implements StatisticsCollectorComponent {
         );
         return result;
     }
+
 }

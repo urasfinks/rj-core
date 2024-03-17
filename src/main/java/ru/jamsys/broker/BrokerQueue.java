@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
+import ru.jamsys.component.RateLimit;
 import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.extension.Procedure;
 import ru.jamsys.extension.StatisticsCollector;
@@ -30,9 +31,7 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
     private final Map<T, Long> timing = new ConcurrentHashMap<>();
     //Последний сообщения проходящие через очередь
     private final ConcurrentLinkedDeque<T> tail = new ConcurrentLinkedDeque<>();
-    private final AtomicInteger tpsInput = new AtomicInteger(0);
-    private final AtomicInteger tpsOutput = new AtomicInteger(0);
-    private final AtomicInteger maxTpsInput = new AtomicInteger(-1);
+    private final AtomicInteger tpsDequeue = new AtomicInteger(0);
 
     private final AvgMetric timeInQueue = new AvgMetric();
     private final List<Procedure> listProcedure = new ArrayList<>();
@@ -49,6 +48,12 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
         return queue.isEmpty();
     }
 
+    final RateLimit.RateLimitItem rateLimitItem;
+
+    public BrokerQueue(RateLimit.RateLimitItem rateLimitItem) {
+        this.rateLimitItem = rateLimitItem;
+    }
+
     @SuppressWarnings("unused")
     public void onAdd(Procedure procedure) {
         listProcedure.add(procedure);
@@ -56,6 +61,9 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
 
     @Override
     public void add(T o) throws Exception {
+        if (!rateLimitItem.check()) {
+            throw new Exception("RateLimit BrokerQueue: " + o.getClass().getSimpleName() + "; max tps: " + rateLimitItem.getMaxTps() + "; object: " + o);
+        }
         if (cyclical) {
             if (queue.size() >= sizeQueue) {
                 queue.removeFirst();
@@ -65,10 +73,6 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
                 throw new Exception("Limit BrokerQueue: " + o.getClass().getSimpleName() + "; limit: " + sizeQueue + "; object: " + o);
             }
         }
-        if (maxTpsInput.get() > 0 && tpsInput.get() >= maxTpsInput.get()) {
-            throw new Exception("RateLimit BrokerQueue: " + o.getClass().getSimpleName() + "; max tps: " + maxTpsInput.get() + "; object: " + o);
-        }
-        tpsInput.incrementAndGet();
         timing.put(o, System.currentTimeMillis());
         queue.add(o);
         tail.add(o);
@@ -83,8 +87,9 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
     }
 
     private void statistic(T o) {
+        //#1 что бы видеть реальное кол-во опросов изъятия
+        tpsDequeue.incrementAndGet();
         if (o != null) {
-            tpsOutput.incrementAndGet();
             Long removeMs = timing.remove(o);
             if (removeMs != null) {
                 timeInQueue.add(System.currentTimeMillis() - removeMs);
@@ -131,17 +136,16 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
         queue.clear();
         timing.clear();
         tail.clear();
-        tpsInput.set(0);
-        tpsOutput.set(0);
+        tpsDequeue.set(0);
         sizeQueue = 3000;
         sizeTail = 5;
         cyclical = true;
-        maxTpsInput.set(-1);
+        rateLimitItem.reset();
     }
 
     @Override
     public void setMaxTpsInput(int maxTpsInput) {
-        this.maxTpsInput.set(maxTpsInput);
+        rateLimitItem.setMaxTps(maxTpsInput);
     }
 
     @Override
@@ -156,8 +160,7 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
         List<Statistic> result = new ArrayList<>();
         result.add(new Statistic(parentTags, parentFields)
-                .addField("tpsInput", tpsInput.getAndSet(0))
-                .addField("tpsOutput", tpsOutput.getAndSet(0))
+                .addField("tpsDequeue", tpsDequeue.getAndSet(0))
                 .addField("size", queue.size())
                 .addFields(timeInQueue.flush("timeMsInQueue"))
         );
