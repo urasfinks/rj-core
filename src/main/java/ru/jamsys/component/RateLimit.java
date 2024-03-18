@@ -18,50 +18,36 @@ public class RateLimit implements StatisticsCollectorComponent {
 
     Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
 
-    Map<String, RateLimitItem> mapSaved = new ConcurrentHashMap<>();
-
-    public RateLimitItem add(String key) {
+    public RateLimitItem get(String key) {
         if (!map.containsKey(key)) {
-            map.put(key, restoreRateLimitItem(key));
+            map.put(key, new RateLimitItem());
         }
         return map.get(key);
     }
 
-    public RateLimitItem restoreRateLimitItem(String key) {
-        if (mapSaved.containsKey(key)) {
-            return mapSaved.get(key);
-        }
-        RateLimitItem rateLimitItem = new RateLimitItem();
-        mapSaved.put(key, rateLimitItem);
-        return rateLimitItem;
-    }
-
     public void remove(String key) {
-        map.remove(key);
-    }
-
-    public void setMaxTps(String key, int maxTps) {
-        add(key).setMaxTps(maxTps);
+        RateLimitItem rateLimitItem = map.get(key);
+        rateLimitItem.setActive(false);
     }
 
     public boolean check(String key) {
-        if (!map.containsKey(key)) {
-            map.put(key, restoreRateLimitItem(key));
-        }
-        return map.get(key).check();
+        return get(key).check();
     }
 
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
         List<Statistic> result = new ArrayList<>();
-        Util.riskModifierMap(isRun, map, new String[0], (String key, RateLimitItem threadPool)
-                -> result.add(new Statistic(parentTags, parentFields)
-                .addTag("index", key)
-                .addField("max", threadPool.getMaxTps())
-                .addField("tps", threadPool.getTps().getAndSet(0))));
+        Util.riskModifierMap(isRun, map, new String[0], (String key, RateLimitItem rateLimitItem) -> {
+            if (rateLimitItem.isActive()) {
+                result.add(new Statistic(parentTags, parentFields)
+                        .addTag("index", key)
+                        .addField("max", rateLimitItem.getMaxTps())
+                        .addField("tps", rateLimitItem.getTps().getAndSet(0)));
+            }
+        });
         result.add(new Statistic(parentTags, parentFields)
                 .addTag("index", getClass().getSimpleName())
-                .addField("saved", mapSaved.size()));
+                .addField("size", map.size()));
         return result;
     }
 }

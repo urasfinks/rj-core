@@ -29,4 +29,6 @@ public interface Queue<T> {
 
     boolean isExpired();
 
+    void close();
+
 }

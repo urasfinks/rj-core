@@ -56,7 +56,8 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
     }
 
     private void addPool(String index) {
-        RateLimitItem rateLimitItem = rateLimit.add(getIndex(index));
+        String rateLimitKey = getClass().getSimpleName() + "." + index;
+        RateLimitItem rateLimitItem = rateLimit.get(rateLimitKey);
         if (!mapPool.containsKey(index)) {
             ThreadPool threadPool = new ThreadPool(
                     index,
@@ -95,7 +96,7 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
                         return false;
                     }
             );
-            threadPool.getListProcedureOnShutdown().add(() -> rateLimit.remove(getIndex(index)));
+            threadPool.getListProcedureOnShutdown().add(() -> rateLimitItem.setActive(false));
             mapPool.put(index, threadPool);
             threadPool.run();
         }
@@ -204,10 +205,6 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
         Util.riskModifierMap(isRun, mapPool, new String[0], (String key, ThreadPool threadPool)
                 -> result.addAll(threadPool.flushAndGetStatistic(parentTags, parentFields, isRun)));
         return result;
-    }
-
-    private String getIndex(String key) {
-        return getClass().getSimpleName() + "." + key;
     }
 
 }

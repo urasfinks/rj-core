@@ -8,8 +8,8 @@ import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.extension.Procedure;
 import ru.jamsys.extension.StatisticsCollector;
-import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.AvgMetric;
+import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
 
@@ -185,6 +185,11 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
                 .addFields(timeInQueue.flush("timeMsInQueue"))
         );
         return result;
+    }
+
+    @Override
+    public void close() {
+        rateLimitItem.setActive(false);
     }
 
 }
