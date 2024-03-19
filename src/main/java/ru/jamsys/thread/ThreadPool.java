@@ -43,6 +43,12 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
         if (!isRun.get()) {
             return;
         }
+        // Первичный замысел был, что управлением должен заниматься отдельный поток
+        // Но бывает такое, что у пулов может быть min = 0
+        // Pool keepAlive, тоже не запускается из-за того что при инициализации min = 0) - контролировать некому!)
+        if (isEmpty()) {
+            keepAlive();
+        }
         ThreadEnvelope threadEnvelope = getResource();
         if (threadEnvelope != null) {
             threadEnvelope.run();

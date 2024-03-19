@@ -11,17 +11,17 @@ public interface Queue<T> {
 
     boolean isEmpty();
 
-    void add(T o) throws Exception;
+    QueueElementEnvelope<T> add(T element) throws Exception;
 
     T pollFirst();
 
     T pollLast();
 
-    void remove(T object);
+    void remove(QueueElementEnvelope<T> queueElementEnvelope);
 
     List<T> getTail(@Nullable AtomicBoolean isRun);
 
-    List<T> getCloneQueue(@Nullable AtomicBoolean isRun);
+    List<QueueElementEnvelope<T>> getCloneQueue(@Nullable AtomicBoolean isRun);
 
     void reset();
 

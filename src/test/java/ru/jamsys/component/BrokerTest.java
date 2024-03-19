@@ -8,8 +8,10 @@ import ru.jamsys.App;
 import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.broker.BrokerQueue;
 import ru.jamsys.broker.Queue;
+import ru.jamsys.broker.QueueElementEnvelope;
 import ru.jamsys.statistic.TaskStatistic;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -55,7 +57,10 @@ class BrokerTest {
         }
         List<XTest> tail = b.getTail(null);
         Assertions.assertEquals("[XTest{x=11}, XTest{x=12}, XTest{x=13}]", tail.toString(), "#8");
-        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}]", b.getCloneQueue(null).toString(), "#9");
+        List<XTest> cloned = new ArrayList<>();
+        List<QueueElementEnvelope<XTest>> cloneQueue = b.getCloneQueue(null);
+        cloneQueue.forEach((QueueElementEnvelope<XTest> xTest) -> cloned.add(xTest.getElement()));
+        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}]", cloned.toString(), "#9");
         b.reset();
         Assertions.assertEquals("[]", b.getCloneQueue(null).toString(), "#10");
     }
@@ -95,7 +100,13 @@ class BrokerTest {
 
         List<XTest> tail = b.getTail(null);
         Assertions.assertEquals("[XTest{x=12}, XTest{x=13}, XTest{x=14}]", tail.toString(), "#8");
-        Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", b.getCloneQueue(null).toString(), "#9");
+
+        List<XTest> cloned = new ArrayList<>();
+        List<QueueElementEnvelope<XTest>> cloneQueue = b.getCloneQueue(null);
+        cloneQueue.forEach((QueueElementEnvelope<XTest> xTest) -> cloned.add(xTest.getElement()));
+
+
+        Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", cloned.toString(), "#9");
         b.reset();
         Assertions.assertEquals("[]", b.getCloneQueue(null).toString(), "#10");
     }
@@ -105,10 +116,10 @@ class BrokerTest {
         Broker broker = App.context.getBean(Broker.class);
         Queue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
         TaskStatistic obj = new TaskStatistic(null, null);
-        queue.add(obj);
-        List<TaskStatistic> cloneQueue = queue.getCloneQueue(null);
-        Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
-        queue.remove(obj);
+        QueueElementEnvelope<TaskStatistic> o1 = queue.add(obj);
+        List<QueueElementEnvelope<TaskStatistic>> cloneQueue = queue.getCloneQueue(null);
+        Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).getElement().hashCode(), "#1");
+        queue.remove(o1);
         Assertions.assertEquals(0, queue.getSize(), "#1");
         queue.reset();
     }
@@ -120,14 +131,14 @@ class BrokerTest {
         Queue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
         TaskStatistic obj = new TaskStatistic(null, null);
         TaskStatistic obj2 = new TaskStatistic(null, null);
-        queue.add(obj);
-        queue.add(obj2);
-        List<TaskStatistic> cloneQueue = queue.getCloneQueue(isRun);
-        Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
-        Assertions.assertEquals(obj2.hashCode(), cloneQueue.get(1).hashCode(), "#2");
-        queue.remove(obj);
+        QueueElementEnvelope<TaskStatistic> o1 = queue.add(obj);
+        QueueElementEnvelope<TaskStatistic> o2 = queue.add(obj2);
+        List<QueueElementEnvelope<TaskStatistic>> cloneQueue = queue.getCloneQueue(isRun);
+        Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).getElement().hashCode(), "#1");
+        Assertions.assertEquals(obj2.hashCode(), cloneQueue.get(1).getElement().hashCode(), "#2");
+        queue.remove(o1);
         Assertions.assertEquals(1, queue.getSize(), "#3");
-        queue.remove(obj2);
+        queue.remove(o2);
         Assertions.assertEquals(0, queue.getSize(), "#4");
         queue.reset();
     }

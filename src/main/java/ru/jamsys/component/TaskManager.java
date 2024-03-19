@@ -1,6 +1,7 @@
 package ru.jamsys.component;
 
 import org.springframework.stereotype.Component;
+import ru.jamsys.broker.QueueElementEnvelope;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.AvgMetric;
@@ -73,10 +74,11 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
                             if (count > maxCountIteration) {
                                 return false;
                             }
-                            Task task = broker.pollLast(index);
-                            if (task == null) {
+                            QueueElementEnvelope<Task> queueElementEnvelope = broker.pollLast(index);
+                            if (queueElementEnvelope == null) {
                                 return false;
                             }
+                            Task task = queueElementEnvelope.getElement();
                             @SuppressWarnings("unchecked")
                             Handler<Task> handler = dictionary.getTaskHandler().get(task.getClass());
                             if (handler != null) {

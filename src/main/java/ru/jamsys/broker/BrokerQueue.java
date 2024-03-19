@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,9 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @IgnoreClassFinder
 public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
 
-    private final ConcurrentLinkedDeque<T> queue = new ConcurrentLinkedDeque<>();
-
-    private final Map<T, Long> timing = new ConcurrentHashMap<>();
+    private final ConcurrentLinkedDeque<QueueElementEnvelope<T>> queue = new ConcurrentLinkedDeque<>();
 
     //Последний сообщения проходящие через очередь
     private final ConcurrentLinkedDeque<T> tail = new ConcurrentLinkedDeque<>();
@@ -70,9 +67,12 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
     }
 
     @Override
-    public void add(T o) throws Exception {
+    public QueueElementEnvelope<T> add(T element) throws Exception {
+        if (element == null) {
+            throw new Exception("Element null");
+        }
         if (!rateLimitItem.check()) {
-            throw new Exception("RateLimit BrokerQueue: " + o.getClass().getSimpleName() + "; max tps: " + rateLimitItem.getMaxTps() + "; object: " + o);
+            throw new Exception("RateLimit BrokerQueue: " + element.getClass().getSimpleName() + "; max tps: " + rateLimitItem.getMaxTps() + "; object: " + element);
         }
         if (cyclical) {
             if (queue.size() >= sizeQueue) {
@@ -80,12 +80,12 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
             }
         } else {
             if (queue.size() > sizeQueue) {
-                throw new Exception("Limit BrokerQueue: " + o.getClass().getSimpleName() + "; limit: " + sizeQueue + "; object: " + o);
+                throw new Exception("Limit BrokerQueue: " + element.getClass().getSimpleName() + "; limit: " + sizeQueue + "; object: " + element);
             }
         }
-        timing.put(o, System.currentTimeMillis());
-        queue.add(o);
-        tail.add(o);
+        QueueElementEnvelope<T> result = new QueueElementEnvelope<>(element);
+        queue.add(result);
+        tail.add(element);
         if (tail.size() > sizeTail) {
             tail.pollFirst();
         }
@@ -94,37 +94,41 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
         } catch (Exception e) {
             App.context.getBean(ExceptionHandler.class).handler(e);
         }
+        return result;
     }
 
-    private void statistic(T o) {
+    private void statistic(QueueElementEnvelope<T> queueElementEnvelope) {
         //#1 что бы видеть реальное кол-во опросов изъятия
         tpsDequeue.incrementAndGet();
-        if (o != null) {
-            Long removeMs = timing.remove(o);
-            if (removeMs != null) {
-                timeInQueue.add(System.currentTimeMillis() - removeMs);
-            } else {
-                App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Object not found in the timing map"));
-            }
+        if (queueElementEnvelope != null) {
+            timeInQueue.add(System.currentTimeMillis() - queueElementEnvelope.getTimeAdd());
         }
     }
 
     public T pollFirst() {
-        T result = queue.pollFirst();
+        QueueElementEnvelope<T> result = queue.pollFirst();
         statistic(result);
-        return result;
+        if (result != null) {
+            return result.getElement();
+        }
+        return null;
     }
 
     public T pollLast() {
-        T result = queue.pollLast();
+        QueueElementEnvelope<T> result = queue.pollLast();
         statistic(result);
-        return result;
+        if (result != null) {
+            return result.getElement();
+        }
+        return null;
     }
 
     @Override
-    public void remove(T object) {
-        statistic(object);
-        queue.remove(object);
+    public void remove(QueueElementEnvelope<T> queueElementEnvelope) {
+        statistic(queueElementEnvelope);
+        if (queueElementEnvelope != null) {
+            queue.remove(queueElementEnvelope);
+        }
     }
 
     @SafeVarargs
@@ -134,8 +138,8 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
 
     @SuppressWarnings("unused")
     @Override
-    public List<T> getCloneQueue(@Nullable AtomicBoolean isRun) {
-        List<T> ret = new ArrayList<>();
+    public List<QueueElementEnvelope<T>> getCloneQueue(@Nullable AtomicBoolean isRun) {
+        List<QueueElementEnvelope<T>> ret = new ArrayList<>();
         Util.riskModifierCollection(isRun, queue, getEmptyType(), ret::add);
         return ret;
     }
@@ -144,7 +148,6 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
     public void reset() {
         // Рекомендуется использовать только для тестов
         queue.clear();
-        timing.clear();
         tail.clear();
         tpsDequeue.set(0);
         sizeQueue = 3000;
