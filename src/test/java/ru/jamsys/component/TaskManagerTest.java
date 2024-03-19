@@ -45,5 +45,12 @@ class TaskManagerTest {
         map.put("FlushStatisticCollectorTask", 1L);
         calc = TaskManager.calc(map, 500);
         Assertions.assertEquals("{ReadStatisticSecTask=249, KeepAliveTask=1, FlushStatisticCollectorTask=249}", calc.toString(), "#3");
+
+        map.clear();
+        map.put("KeepAliveTask", 0L);
+        map.put("FlushStatisticCollectorTask", 0L);
+        calc = TaskManager.calc(map, 500);
+        Assertions.assertEquals("{KeepAliveTask=250, FlushStatisticCollectorTask=250}", calc.toString(), "#3");
+
     }
 }
