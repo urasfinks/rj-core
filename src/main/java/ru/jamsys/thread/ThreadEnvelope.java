@@ -1,10 +1,10 @@
 package ru.jamsys.thread;
 
-import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.TaskManager;
 import ru.jamsys.pool.Pool;
+import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -69,8 +69,7 @@ public class ThreadEnvelope extends AbstractExpired {
             while (isRun.get()) { //Пытаемся подождать пока потоки самостоятельно закончат свою работу
                 Util.sleepMs(timeOutMs / 4);
                 if (System.currentTimeMillis() - startTimeMs > timeOutMs) { //Не смогли за отведённое время
-                    new RuntimeException(getClass().getSimpleName() + " Self-stop timeOut shutdown " + timeOutMs + "ms").printStackTrace();
-                    //App.context.getBean(ExceptionHandler.class).handler(new RuntimeException(getClass().getSimpleName() + " Self-stop timeOut shutdown " + timeOutMs + "ms"));
+                    App.context.getBean(ExceptionHandler.class).handler(new RuntimeException(getClass().getSimpleName() + " Self-stop timeOut shutdown " + timeOutMs + "ms"));
                     break;
                 }
             }
@@ -84,7 +83,7 @@ public class ThreadEnvelope extends AbstractExpired {
             while (isRun.get()) { //Пытаемся подождать пока потоки выйдут от interrupt
                 Util.sleepMs(timeOutMs / 4);
                 if (System.currentTimeMillis() - startTimeMs > timeOutMs) { //Не смогли за отведённое время
-                    new RuntimeException(getClass().getSimpleName() + " interrupt timeOut shutdown " + timeOutMs + " ms").printStackTrace();
+                    App.context.getBean(ExceptionHandler.class).handler(new RuntimeException(getClass().getSimpleName() + " interrupt timeOut shutdown " + timeOutMs + " ms"));
                     break;
                 }
             }

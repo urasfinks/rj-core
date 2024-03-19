@@ -3,13 +3,13 @@ package ru.jamsys.pool;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.App;
-import ru.jamsys.statistic.Expired;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.extension.Procedure;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.extension.StatisticsCollector;
+import ru.jamsys.statistic.AbstractExpired;
+import ru.jamsys.statistic.Expired;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
 
@@ -197,7 +197,14 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
         // Грубо это deadLock получается без асинхрона
         if (map.size() > min) {
             if (!removeQueue.contains(resource)) {
-                App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("toRemove cause: " + cause));
+                App.context.getBean(ExceptionHandler.class).handler(new RuntimeException(
+                        "Pool: "
+                                + getClass().getSimpleName()
+                                + "; addToRemove("
+                                + resource
+                                + ") cause: "
+                                + cause
+                ));
                 removeQueue.add(resource);
                 return true;
             }

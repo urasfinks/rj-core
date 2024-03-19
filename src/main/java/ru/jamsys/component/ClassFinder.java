@@ -20,7 +20,10 @@ public class ClassFinder {
 
     private final List<Class<?>> availableClass;
 
-    public ClassFinder() {
+    private final ExceptionHandler exceptionHandler;
+
+    public ClassFinder(ExceptionHandler exceptionHandler) {
+        this.exceptionHandler = exceptionHandler;
         @SuppressWarnings("SameParameterValue")
         String pkg = "ru.jamsys";
         availableClass = getAvailableClass(pkg);
@@ -43,7 +46,7 @@ public class ClassFinder {
                                     result.add(tmp);
                                 }
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                exceptionHandler.handler(e);
                             }
                         }
                     }
@@ -116,7 +119,7 @@ public class ClassFinder {
                 listClass.add(aClass);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            exceptionHandler.handler(e);
         }
         return listClass;
     }

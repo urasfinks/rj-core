@@ -132,39 +132,20 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
 
     @Override
     public void keepAlive(AtomicBoolean isRun) {
-        //Map<String, ThreadPool> cloneMapPool = new HashMap<>(mapPool);
         Map<String, Long> taskIndexSumTime = getTaskIndexSumTime(isRun);
         Map<String, Long> countThread = getCountThreadByTime(taskIndexSumTime, maxThread);
         Util.riskModifierMap(isRun, mapPool, new String[0], (String indexTask, ThreadPool threadPool) -> {
+            if (threadPool.isExpired()) {
+                mapPool.remove(indexTask);
+                threadPool.shutdown();
+                return;
+            }
             if (countThread.containsKey(indexTask)) {
                 threadPool.setMaxSlowRiseAndFastFall(countThread.get(indexTask).intValue());
                 threadPool.setSumTime(taskIndexSumTime.get(indexTask));
             }
             threadPool.keepAlive();
         });
-//        for (String indexTask : countThread.keySet()) {
-//            //cloneMapPool из-за рассинхронизации может не содержать ещё ключей
-//            ThreadPool threadPool = cloneMapPool.remove(indexTask);
-//            if (threadPool != null) {
-//                System.out.println(threadPool.getName() + " -> " + countThread.get(indexTask).intValue());
-//                threadPool.setMaxSlowRiseAndFastFall(countThread.get(indexTask).intValue());
-//                threadPool.setSumTime(taskIndexSumTime.get(indexTask));
-//            }
-//        }
-//        // Очистка пустых пулов, что бы не мешались
-//        Util.riskModifierMap(isRun, cloneMapPool, new String[0], (String key, ThreadPool threadPool) -> {
-//            if (threadPool.isEmpty()) {
-//                cloneMapPool.remove(key);
-//                mapPool.remove(key);
-//                threadPool.shutdown();
-//            }
-//        });
-//        //Тем кто остался, но по ним за последние 3 секунды не было активности, выставляем пределы max = 1
-//        for (String index : cloneMapPool.keySet()) {
-//            mapPool.get(index).setMaxSlowRiseAndFastFall(1);
-//            mapPool.get(index).setSumTime(-1);
-//        }
-//        Util.riskModifierMap(isRun, mapPool, new String[0], (String key, ThreadPool obj) -> obj.keepAlive());
     }
 
     public static Map<String, Long> getCountThreadByTime(Map<String, Long> map, int count) {

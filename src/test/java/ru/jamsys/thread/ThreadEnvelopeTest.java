@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import ru.jamsys.App;
+import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,7 +38,7 @@ class ThreadEnvelopeTest {
                 threadPool.wakeUp();
                 Util.sleepMs(1000);
             } catch (Exception e) {
-                e.printStackTrace();
+                App.context.getBean(ExceptionHandler.class).handler(e);
             }
         }
 
