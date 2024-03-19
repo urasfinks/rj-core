@@ -18,8 +18,8 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
 
     final private BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer;
 
-    public ThreadPool(String name, int min, int max, long keepAliveOnInactivityMs, BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer) {
-        super(name, min, max, keepAliveOnInactivityMs);
+    public ThreadPool(String name, int min, int max, BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer) {
+        super(name, min, max);
         this.consumer = consumer;
     }
 

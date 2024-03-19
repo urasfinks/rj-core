@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.App;
+import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.extension.Procedure;
@@ -24,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Getter
 @Setter
 @IgnoreClassFinder
-public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
+public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, StatisticsCollector {
 
     private final ConcurrentLinkedDeque<QueueElementEnvelope<T>> queue = new ConcurrentLinkedDeque<>();
 
@@ -37,11 +38,7 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
 
     private final List<Procedure> listProcedure = new ArrayList<>();
 
-    private volatile long lastActivity = 0;
-
     private int sizeQueue = 3000;
-
-    private long keepAliveOnInactivityMs = 60_000; // Время жизни очереди, если в ней нет активности
 
     private int sizeTail = 5;
 
@@ -162,11 +159,6 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
     }
 
     @Override
-    public boolean isExpired() {
-        return System.currentTimeMillis() > lastActivity + keepAliveOnInactivityMs;
-    }
-
-    @Override
     public List<T> getTail(@Nullable AtomicBoolean isRun) {
         List<T> ret = new ArrayList<>();
         Util.riskModifierCollection(isRun, tail, getEmptyType(), ret::add);
@@ -180,7 +172,7 @@ public class BrokerQueue<T> implements Queue<T>, StatisticsCollector {
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
         int sizeFlush = queue.size();
         if (sizeFlush > 0 || tpsDequeueFlush > 0) {
-            lastActivity = System.currentTimeMillis();
+            active();
         }
         result.add(new Statistic(parentTags, parentFields)
                 .addField("tpsDequeue", tpsDequeueFlush)

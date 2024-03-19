@@ -3,7 +3,9 @@ package ru.jamsys.pool;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.App;
+import ru.jamsys.statistic.Expired;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.extension.Procedure;
 import ru.jamsys.extension.RunnableInterface;
@@ -15,14 +17,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 
-public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, StatisticsCollector {
+public abstract class AbstractPool<T extends Expired> extends AbstractExpired implements Pool<T>, RunnableInterface, StatisticsCollector {
 
     private final AtomicInteger max = new AtomicInteger(0); //Максимальное кол-во ресурсов
 
@@ -34,8 +35,6 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
     @Setter
     private long sumTime = -1; //Сколько времени использовались ресурсы за 3сек
 
-    private final long keepAliveOnInactivityMs; //Время жизни ресурса без работы
-
     @Getter
     private final String name;
 
@@ -45,21 +44,20 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
     @Setter
     private Function<Integer, Integer> formulaRemoveCount = (need) -> need;
 
-    protected final ConcurrentLinkedDeque<ResourceEnvelope<T>> parkQueue = new ConcurrentLinkedDeque<>();
+    protected final ConcurrentLinkedDeque<T> parkQueue = new ConcurrentLinkedDeque<>();
 
-    protected final ConcurrentLinkedDeque<ResourceEnvelope<T>> removeQueue = new ConcurrentLinkedDeque<>();
+    protected final ConcurrentLinkedDeque<T> removeQueue = new ConcurrentLinkedDeque<>();
 
-    protected final Map<T, ResourceEnvelope<T>> map = new ConcurrentHashMap<>();
+    protected final ConcurrentLinkedDeque<T> map = new ConcurrentLinkedDeque<>();
 
     protected final AtomicBoolean isRun = new AtomicBoolean(false);
 
     private final AtomicBoolean restartOperation = new AtomicBoolean(false);
 
-    public AbstractPool(String name, int min, int max, long keepAliveOnInactivityMs) {
+    public AbstractPool(String name, int min, int max) {
         this.name = name;
         this.max.set(max);
         this.min = min;
-        this.keepAliveOnInactivityMs = keepAliveOnInactivityMs;
     }
 
     public boolean isEmpty() {
@@ -84,13 +82,8 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
         if (resource == null) {
             return;
         }
-        ResourceEnvelope<T> resourceEnvelope = map.get(resource);
-        if (resourceEnvelope == null) {
-            App.context.getBean(ExceptionHandler.class).handler(new Exception("Не найдена обёртка в пуле " + resource));
-            return;
-        }
         if (map.size() > max.get() || !isRun.get() || checkExceptionOnComplete(e)) {
-            if (addToRemove(resourceEnvelope, "map.size() =  " + map.size() + " > max = " + max)) {
+            if (addToRemove(resource, "map.size() =  " + map.size() + " > max = " + max)) {
                 return;
             }
         }
@@ -99,8 +92,8 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
         // Но вообще понятие ресурсов статично и они не живут собственной жизнью
         // поэтому после createResource мы кладём их в parkQueue, что бы их могли взять желающие
         // И для потоков тут получается первичный дубль
-        if (!parkQueue.contains(resourceEnvelope)) {
-            parkQueue.addLast(resourceEnvelope);
+        if (!parkQueue.contains(resource)) {
+            parkQueue.addLast(resource);
         }
     }
 
@@ -111,12 +104,7 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
             return null;
         }
         // Забираем с конца, что бы под нож первые улетели
-        ResourceEnvelope<T> resourceEnvelope = parkQueue.pollLast();
-        if (resourceEnvelope != null) {
-            resourceEnvelope.setLastRunMs(System.currentTimeMillis());
-            return resourceEnvelope.getResource();
-        }
-        return null;
+        return parkQueue.pollLast();
     }
 
     @SuppressWarnings({"unused"})
@@ -127,10 +115,9 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
         }
         long finishTimeMs = System.currentTimeMillis() + timeOutMs;
         while (isRun.get() && finishTimeMs > System.currentTimeMillis()) {
-            ResourceEnvelope<T> resourceEnvelope = parkQueue.pollLast();
-            if (resourceEnvelope != null) {
-                resourceEnvelope.setLastRunMs(System.currentTimeMillis());
-                return resourceEnvelope.getResource();
+            T resource = parkQueue.pollLast();
+            if (resource != null) {
+                return resource;
             }
             Util.sleepMs(100);
         }
@@ -145,30 +132,29 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
     private boolean add() {
         if (isRun.get() && map.size() < max.get()) {
             if (!removeQueue.isEmpty()) {
-                ResourceEnvelope<T> resourceEnvelope = removeQueue.pollLast();
-                if (resourceEnvelope != null) {
-                    parkQueue.add(resourceEnvelope);
+                T resource = removeQueue.pollLast();
+                if (resource != null) {
+                    parkQueue.add(resource);
                     return true;
                 }
             }
-            final ResourceEnvelope<T> resourceEnvelope = new ResourceEnvelope<>(createResource());
-            if (resourceEnvelope.getResource() != null) {
-                //new RuntimeException("add").printStackTrace();
+            final T resource = createResource();
+            if (resource != null) {
                 //#1
-                map.put(resourceEnvelope.getResource(), resourceEnvelope);
+                map.add(resource);
                 //#2
-                parkQueue.add(resourceEnvelope);
+                parkQueue.add(resource);
                 return true;
             }
         }
         return false;
     }
 
-    synchronized private void remove(@NonNull ResourceEnvelope<T> resourceEnvelope) {
-        map.remove(resourceEnvelope.getResource());
-        parkQueue.remove(resourceEnvelope); // На всякий случай
-        removeQueue.remove(resourceEnvelope); // На всякий случай
-        closeResource(resourceEnvelope.getResource()); //Если выкидываем из пула, то наверное надо закрыть сам ресурс
+    synchronized private void remove(@NonNull T resource) {
+        map.remove(resource);
+        parkQueue.remove(resource); // На всякий случай
+        removeQueue.remove(resource); // На всякий случай
+        closeResource(resource); //Если выкидываем из пула, то наверное надо закрыть сам ресурс
     }
 
     private void overclocking(int count) {
@@ -198,21 +184,21 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
         }
         // Тут происходит непосредственно удаление
         while (!removeQueue.isEmpty()) {
-            ResourceEnvelope<T> resourceEnvelope = removeQueue.pollLast();
-            if (resourceEnvelope != null) {
-                remove(resourceEnvelope);
+            T resource = removeQueue.pollLast();
+            if (resource != null) {
+                remove(resource);
             }
         }
     }
 
-    private boolean addToRemove(ResourceEnvelope<T> resourceEnvelope, String cause) {
+    private boolean addToRemove(T resource, String cause) {
         // Выведено в асинхрон через keepAlive, потому что если ресурс - поток, то когда он себя возвращает
         // Механизм closeResource пытается завершить процесс, который ждёт выполнение этой команды
         // Грубо это deadLock получается без асинхрона
         if (map.size() > min) {
-            if (!removeQueue.contains(resourceEnvelope)) {
-                new RuntimeException("toRemove cause: " + cause).printStackTrace();
-                removeQueue.add(resourceEnvelope);
+            if (!removeQueue.contains(resource)) {
+                App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("toRemove cause: " + cause));
+                removeQueue.add(resource);
                 return true;
             }
         }
@@ -223,14 +209,18 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
         if (isRun.get()) {
             final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
-            Util.riskModifierCollection(null, parkQueue, getEmptyType(), (ResourceEnvelope<T> resourceEnvelope) -> {
+            Util.riskModifierCollection(null, parkQueue, getEmptyType(), (T resource) -> {
                 if (maxCounterRemove.get() == 0) {
                     return;
                 }
-                if (curTimeMs < (resourceEnvelope.getLastRunMs() + keepAliveOnInactivityMs)) {
+                if (!resource.isExpired(curTimeMs)) {
                     return;
                 }
-                if (addToRemove(resourceEnvelope, "curTimeMs = " + curTimeMs + " > keepAliveMs + lastRun = " + (resourceEnvelope.getLastRunMs() + keepAliveOnInactivityMs))) {
+                if (addToRemove(resource, "curTimeMs = "
+                        + Util.msToDataFormat(curTimeMs)
+                        + " > keepAliveMs + lastRun = "
+                        + resource.getLastActiveFormat()
+                )) {
                     maxCounterRemove.decrementAndGet();
                 }
             });
@@ -253,11 +243,11 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
     public void shutdown() {
         if (restartOperation.compareAndSet(false, true)) {
             isRun.set(false);
-            Util.riskModifierMap(
+            Util.riskModifierCollection(
                     null,
                     map,
                     getEmptyType(),
-                    (T key, ResourceEnvelope<T> resourceEnvelope) -> remove(resourceEnvelope)
+                    this::remove
             );
             listProcedureOnShutdown.forEach(Procedure::run);
             restartOperation.set(false);
@@ -277,12 +267,16 @@ public abstract class AbstractPool<T> implements Pool<T>, RunnableInterface, Sta
             AtomicBoolean isRun
     ) {
         List<Statistic> result = new ArrayList<>();
+        if (map.size() > 0 || parkQueue.size() > 0 || removeQueue.size() > 0) {
+            active();
+        }
         result.add(new Statistic(parentTags, parentFields)
                 .addTag("index", getName())
                 .addField("min", min)
                 .addField("max", max)
-                .addField("size", map.size())
+                .addField("resource", map.size())
                 .addField("park", parkQueue.size())
+                .addField("remove", removeQueue.size())
                 .addField("sumTime", sumTime)
         );
         return result;

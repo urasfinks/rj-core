@@ -21,7 +21,6 @@ class ThreadEnvelopeTest {
                 "TestPool",
                 0,
                 10,
-                10_000,
                 (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
                     while (true) {
                         Util.logConsole("Hey");

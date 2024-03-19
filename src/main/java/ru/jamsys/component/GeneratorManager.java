@@ -22,7 +22,6 @@ public class GeneratorManager implements RunnableComponent {
                 getClass().getSimpleName(),
                 1,
                 1,
-                60000,
                 (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
                     Thread currentThread = Thread.currentThread();
                     long nextStartMs = System.currentTimeMillis();

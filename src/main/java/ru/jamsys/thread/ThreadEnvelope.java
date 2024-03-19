@@ -1,5 +1,6 @@
 package ru.jamsys.thread;
 
+import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.TaskManager;
@@ -10,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BiFunction;
 
-public class ThreadEnvelope {
+public class ThreadEnvelope extends AbstractExpired {
 
     private final Thread thread;
     private final AtomicBoolean isWhile = new AtomicBoolean(true);
@@ -24,6 +25,7 @@ public class ThreadEnvelope {
         thread = new Thread(() -> {
             Thread curThread = Thread.currentThread();
             while (isWhile.get() && !curThread.isInterrupted()) {
+                active();
                 boolean isContinue = false;
                 try {
                     isContinue = consumer.apply(isWhile, this);

@@ -1,6 +1,8 @@
 package ru.jamsys.pool;
 
-public interface Pool<T> {
+import ru.jamsys.statistic.Expired;
+
+public interface Pool<T extends Expired> {
 
     @SuppressWarnings("unused")
     void complete(T ret, Exception e);

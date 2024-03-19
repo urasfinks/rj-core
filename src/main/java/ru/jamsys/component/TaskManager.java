@@ -3,10 +3,7 @@ package ru.jamsys.component;
 import org.springframework.stereotype.Component;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
-import ru.jamsys.statistic.AvgMetric;
-import ru.jamsys.statistic.RateLimitItem;
-import ru.jamsys.statistic.Statistic;
-import ru.jamsys.statistic.TaskStatistic;
+import ru.jamsys.statistic.*;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.thread.ThreadPool;
 import ru.jamsys.thread.handler.Handler;
@@ -35,7 +32,7 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
 
     final private Map<String, ThreadPool> mapPool = new ConcurrentHashMap<>();
 
-    final private ConcurrentLinkedDeque<TaskStatistic> queueStatistics = new ConcurrentLinkedDeque<>();
+    final private ConcurrentLinkedDeque<TaskStatistic> queueTaskStatistics = new ConcurrentLinkedDeque<>();
 
     final private int maxCountIteration = 100; //Защита от бесконечной очереди
 
@@ -47,6 +44,7 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
     }
 
     public void addTask(Task task) throws Exception {
+        System.out.println(task);
         String index = task.getIndex();
         if (!mapPool.containsKey(index)) {
             addPool(index);
@@ -63,7 +61,6 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
                     index,
                     0,
                     1,
-                    60000,
                     (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
                         int count = 0;
                         while (isWhile.get() && rateLimitItem.check()) {
@@ -81,7 +78,7 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
                             Handler<Task> handler = dictionary.getTaskHandler().get(task.getClass());
                             if (handler != null) {
                                 TaskStatistic taskStatistic = new TaskStatistic(threadEnvelope, task);
-                                queueStatistics.add(taskStatistic);
+                                queueTaskStatistics.add(taskStatistic);
                                 try {
                                     handler.run(task, isWhile);
                                 } catch (Exception e) {
@@ -103,56 +100,74 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
     }
 
     public void removeInQueueStatistic(ThreadEnvelope threadEnvelope) {
-        Util.riskModifierCollection(null, queueStatistics, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
+        Util.riskModifierCollection(null, queueTaskStatistics, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
             if (taskStatistic.getThreadEnvelope().equals(threadEnvelope)) {
-                queueStatistics.remove(taskStatistic);
+                queueTaskStatistics.remove(taskStatistic);
             }
         });
     }
 
-    @Override
-    public void keepAlive(AtomicBoolean isRun) {
-        Map<String, ThreadPool> cloneMapPool = new HashMap<>(mapPool);
+    private Map<String, Long> getTaskIndexSumTime(AtomicBoolean isRun) {
         Map<String, AvgMetric> stat = new HashMap<>();
-        Util.riskModifierCollection(isRun, queueStatistics, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
+        // Снимаем статистику задач, которые взяли в работу пулы потоков
+        Util.riskModifierCollection(isRun, queueTaskStatistics, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
             if (taskStatistic.isFinished()) {
-                queueStatistics.remove(taskStatistic);
+                queueTaskStatistics.remove(taskStatistic);
             }
-            String index = taskStatistic.getTask().getIndex();
-            if (!stat.containsKey(index)) {
-                stat.put(index, new AvgMetric());
+            String indexTask = taskStatistic.getTask().getIndex();
+            if (!stat.containsKey(indexTask)) {
+                stat.put(indexTask, new AvgMetric());
             }
-            stat.get(index).add(taskStatistic.getTimeExecuteMs());
+            stat.get(indexTask).add(taskStatistic.getTimeExecuteMs());
         });
+        // Считаем агрегацию по собранным индексам
         Map<String, Long> mapStat = new HashMap<>();
         for (String index : stat.keySet()) {
             AvgMetric avgMetric = stat.get(index);
             Map<String, Object> flush = avgMetric.flush("");
-            mapStat.put(index, (Long) flush.get("Sum"));
+            mapStat.put(index, (Long) flush.get(AvgMetricUnit.SUM.getName()));
         }
-        Map<String, Long> calc = calc(mapStat, maxThread);
-        for (String index : calc.keySet()) {
-            ThreadPool obj = cloneMapPool.remove(index);
-            obj.setMaxSlowRiseAndFastFall(calc.get(index).intValue());
-            obj.setSumTime(mapStat.get(index));
-        }
-        // Очистка пустых пулов, что бы не мешались
-        Util.riskModifierMap(isRun, cloneMapPool, new String[0], (String key, ThreadPool threadPool) -> {
-            if (threadPool.isEmpty()) {
-                cloneMapPool.remove(key);
-                mapPool.remove(key);
-                threadPool.shutdown();
-            }
-        });
-        //Тем кто остался, но по ним за последние 3 секунды не было активности, выставляем пределы max = 1
-        for (String index : cloneMapPool.keySet()) {
-            mapPool.get(index).setMaxSlowRiseAndFastFall(1);
-            mapPool.get(index).setSumTime(-1);
-        }
-        Util.riskModifierMap(isRun, mapPool, new String[0], (String key, ThreadPool obj) -> obj.keepAlive());
+        return mapStat;
     }
 
-    public static Map<String, Long> calc(Map<String, Long> map, int count) {
+    @Override
+    public void keepAlive(AtomicBoolean isRun) {
+        //Map<String, ThreadPool> cloneMapPool = new HashMap<>(mapPool);
+        Map<String, Long> taskIndexSumTime = getTaskIndexSumTime(isRun);
+        Map<String, Long> countThread = getCountThreadByTime(taskIndexSumTime, maxThread);
+        Util.riskModifierMap(isRun, mapPool, new String[0], (String indexTask, ThreadPool threadPool) -> {
+            if (countThread.containsKey(indexTask)) {
+                threadPool.setMaxSlowRiseAndFastFall(countThread.get(indexTask).intValue());
+                threadPool.setSumTime(taskIndexSumTime.get(indexTask));
+            }
+            threadPool.keepAlive();
+        });
+//        for (String indexTask : countThread.keySet()) {
+//            //cloneMapPool из-за рассинхронизации может не содержать ещё ключей
+//            ThreadPool threadPool = cloneMapPool.remove(indexTask);
+//            if (threadPool != null) {
+//                System.out.println(threadPool.getName() + " -> " + countThread.get(indexTask).intValue());
+//                threadPool.setMaxSlowRiseAndFastFall(countThread.get(indexTask).intValue());
+//                threadPool.setSumTime(taskIndexSumTime.get(indexTask));
+//            }
+//        }
+//        // Очистка пустых пулов, что бы не мешались
+//        Util.riskModifierMap(isRun, cloneMapPool, new String[0], (String key, ThreadPool threadPool) -> {
+//            if (threadPool.isEmpty()) {
+//                cloneMapPool.remove(key);
+//                mapPool.remove(key);
+//                threadPool.shutdown();
+//            }
+//        });
+//        //Тем кто остался, но по ним за последние 3 секунды не было активности, выставляем пределы max = 1
+//        for (String index : cloneMapPool.keySet()) {
+//            mapPool.get(index).setMaxSlowRiseAndFastFall(1);
+//            mapPool.get(index).setSumTime(-1);
+//        }
+//        Util.riskModifierMap(isRun, mapPool, new String[0], (String key, ThreadPool obj) -> obj.keepAlive());
+    }
+
+    public static Map<String, Long> getCountThreadByTime(Map<String, Long> map, int count) {
         Map<String, Long> normalizeMap = new LinkedHashMap<>();
         for (String index : map.keySet()) {
             Long aLong = map.get(index);
