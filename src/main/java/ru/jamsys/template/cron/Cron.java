@@ -2,6 +2,7 @@ package ru.jamsys.template.cron;
 
 import lombok.Getter;
 import ru.jamsys.statistic.AvgMetric;
+import ru.jamsys.statistic.AvgMetricUnit;
 import ru.jamsys.util.Util;
 
 import java.util.*;
@@ -164,11 +165,15 @@ public class Cron {
                 }
             }
             Map<String, Object> flush = avgMetric.flush("");
-            if ((long) flush.get("Count") > 0) {
+            if ((long) flush.get(AvgMetricUnit.AVG_COUNT.getName()) > 0) {
                 if (debug) {
-                    System.out.println("Avg min: " + Util.msToDataFormat((Long) flush.get("Min")) + " realMs: " + flush.get("Min"));
+                    System.out.println("Avg min: "
+                            + Util.msToDataFormat((Long) flush.get(AvgMetricUnit.MIN.getName()))
+                            + " realMs: "
+                            + flush.get(AvgMetricUnit.MIN.getName())
+                    );
                 }
-                next = (long) flush.get("Min");
+                next = (long) flush.get(AvgMetricUnit.MIN.getName());
             } else {
                 next = null;
             }

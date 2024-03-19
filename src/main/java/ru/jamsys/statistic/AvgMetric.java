@@ -33,21 +33,21 @@ public class AvgMetric {
         }
         Map<String, Object> result = new LinkedHashMap<>();
         long count = avg.getCount();
-        result.put("Count", avg.getCount());
-        result.put(prefix + "Min", count == 0 ? 0 : avg.getMin());
-        result.put(prefix + "Max", count == 0 ? 0 : avg.getMax());
-        result.put(prefix + "Sum", avg.getSum());
-        result.put(prefix + "Avg", avg.getAverage());
+        result.put(AvgMetricUnit.AVG_COUNT.getName(), avg.getCount());
+        result.put(prefix + AvgMetricUnit.MIN.getName(), count == 0 ? 0 : avg.getMin());
+        result.put(prefix + AvgMetricUnit.MAX.getName(), count == 0 ? 0 : avg.getMax());
+        result.put(prefix + AvgMetricUnit.SUM.getName(), avg.getSum());
+        result.put(prefix + AvgMetricUnit.AVG.getName(), avg.getAverage());
         return result;
     }
 
     public static Map<String, Object> getEmpty(String prefix) {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("Count", 0);
-        result.put(prefix + "Min", 0);
-        result.put(prefix + "Max", 0);
-        result.put(prefix + "Sum", 0);
-        result.put(prefix + "Avg", (double) 0);
+        result.put(AvgMetricUnit.AVG_COUNT.getName(), 0);
+        result.put(prefix + AvgMetricUnit.MIN.getName(), 0);
+        result.put(prefix + AvgMetricUnit.MAX.getName(), 0);
+        result.put(prefix + AvgMetricUnit.SUM.getName(), 0);
+        result.put(prefix + AvgMetricUnit.AVG.getName(), (double) 0);
         return result;
     }
 
