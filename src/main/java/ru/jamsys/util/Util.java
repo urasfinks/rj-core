@@ -60,7 +60,7 @@ public class Util {
     }
 
     public static void logConsole(Thread t, String data) {
-        System.out.println(LocalDateTime.now() + " " + t.getName() + " " + data);
+        System.out.println(Util.msToDataFormat(System.currentTimeMillis()) + " " + t.getName() + " " + data);
     }
 
     @SuppressWarnings("unused")
@@ -232,7 +232,7 @@ public class Util {
         }
         LocalDateTime date =
                 LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneId.systemDefault());
-        return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"));
     }
 
     public static String urlEncode(String data, String charset) throws Exception {
