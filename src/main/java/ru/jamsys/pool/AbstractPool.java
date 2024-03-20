@@ -52,7 +52,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
 
     protected final ConcurrentLinkedDeque<T> removeQueue = new ConcurrentLinkedDeque<>();
 
-    protected final ConcurrentLinkedDeque<T> map = new ConcurrentLinkedDeque<>();
+    protected final ConcurrentLinkedDeque<T> resourceQueue = new ConcurrentLinkedDeque<>();
 
     protected final AtomicBoolean isRun = new AtomicBoolean(false);
 
@@ -69,7 +69,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
     }
 
     public boolean isEmpty() {
-        return map.isEmpty();
+        return resourceQueue.isEmpty();
     }
 
     public void setMaxSlowRiseAndFastFall(int max) {
@@ -90,7 +90,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
         if (resource == null) {
             return;
         }
-        if (map.size() > max.get() || !isRun.get() || checkExceptionOnComplete(e)) {
+        if (resourceQueue.size() > max.get() || !isRun.get() || checkExceptionOnComplete(e)) {
             if (addToRemove(resource)) {
                 return;
             }
@@ -138,7 +138,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
     }
 
     private boolean add() {
-        if (isRun.get() && map.size() < max.get()) {
+        if (isRun.get() && resourceQueue.size() < max.get()) {
             if (!removeQueue.isEmpty()) {
                 T resource = removeQueue.pollLast();
                 if (resource != null) {
@@ -149,7 +149,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
             final T resource = createResource();
             if (resource != null) {
                 //#1
-                map.add(resource);
+                resourceQueue.add(resource);
                 //#2
                 parkQueue.add(resource);
                 return true;
@@ -159,14 +159,14 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
     }
 
     synchronized private void remove(@NonNull T resource) {
-        map.remove(resource);
+        resourceQueue.remove(resource);
         parkQueue.remove(resource); // На всякий случай
         removeQueue.remove(resource); // На всякий случай
         closeResource(resource); //Если выкидываем из пула, то наверное надо закрыть сам ресурс
     }
 
     private void overclocking(int count) {
-        if (isRun.get() && map.size() < max.get() && count > 0) {
+        if (isRun.get() && resourceQueue.size() < max.get() && count > 0) {
             for (int i = 0; i < count; i++) {
                 if (!add()) {
                     break;
@@ -183,7 +183,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
             try {
                 if (parkQueue.isEmpty()) { //Если в очереди пустота, попробуем добавить
                     overclocking(formulaAddCount.apply(1));
-                } else if (map.size() > min) { //Кол-во больше минимума
+                } else if (resourceQueue.size() > min) { //Кол-во больше минимума
                     removeLazy();
                 }
             } catch (Exception e) {
@@ -203,7 +203,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
         // Выведено в асинхрон через keepAlive, потому что если ресурс - поток, то когда он себя возвращает
         // Механизм closeResource пытается завершить процесс, который ждёт выполнение этой команды
         // Грубо это deadLock получается без асинхрона
-        if (map.size() > min) {
+        if (resourceQueue.size() > min) {
             if (!removeQueue.contains(resource)) {
                 removeQueue.add(resource);
                 return true;
@@ -248,7 +248,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
             isRun.set(false);
             Util.riskModifierCollection(
                     null,
-                    map,
+                    resourceQueue,
                     getEmptyType(),
                     this::remove
             );
@@ -270,14 +270,14 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
             AtomicBoolean isRun
     ) {
         List<Statistic> result = new ArrayList<>();
-        if (map.size() > 0 || parkQueue.size() > 0 || removeQueue.size() > 0) {
+        if (resourceQueue.size() > 0 || parkQueue.size() > 0 || removeQueue.size() > 0) {
             active();
         }
         result.add(new Statistic(parentTags, parentFields)
                 .addTag("index", getName())
                 .addField("min", min)
                 .addField("max", max)
-                .addField("resource", map.size())
+                .addField("resource", resourceQueue.size())
                 .addField("park", parkQueue.size())
                 .addField("remove", removeQueue.size())
                 .addField("sumTime", sumTime)
