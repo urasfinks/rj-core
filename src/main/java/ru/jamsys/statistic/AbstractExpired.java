@@ -11,7 +11,7 @@ public abstract class AbstractExpired implements Expired {
     private volatile long lastActivity = 0;
 
     public boolean isExpired() {
-        return System.currentTimeMillis() > lastActivity + keepAliveOnInactivityMs;
+        return isExpired(System.currentTimeMillis());
     }
 
     @Override
