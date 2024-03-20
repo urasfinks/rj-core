@@ -1,8 +1,10 @@
 package ru.jamsys.thread;
 
+import lombok.ToString;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.TaskManager;
+import ru.jamsys.pool.AbstractPool;
 import ru.jamsys.pool.Pool;
 import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.util.Util;
@@ -11,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BiFunction;
 
+@ToString(onlyExplicitlyIncluded = true)
 public class ThreadEnvelope extends AbstractExpired {
 
     private final Thread thread;
@@ -18,12 +21,15 @@ public class ThreadEnvelope extends AbstractExpired {
     private final AtomicBoolean isRun = new AtomicBoolean(false);
     private final AtomicBoolean inPark = new AtomicBoolean(false);
     private final AtomicBoolean isInit = new AtomicBoolean(false);
+
+    @ToString.Include
     private final Pool<ThreadEnvelope> pool;
 
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer) {
         this.pool = pool;
         thread = new Thread(() -> {
             Thread curThread = Thread.currentThread();
+            AbstractPool.userContext.set(pool);
             while (isWhile.get() && !curThread.isInterrupted()) {
                 active();
                 boolean isContinue = false;
@@ -53,6 +59,7 @@ public class ThreadEnvelope extends AbstractExpired {
             //Что бы второй раз не получилось запустить поток после остановки проверим на isWhile
             if (isWhile.get() && isRun.compareAndSet(false, true)) {
                 thread.start(); //start() - create new thread / run() - Runnable run in main thread
+                isInit.set(true);
             }
         } else if (isRun.get() && inPark.compareAndSet(true, false)) {
             LockSupport.unpark(thread);
