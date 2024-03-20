@@ -44,7 +44,6 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
     }
 
     public void addTask(Task task) throws Exception {
-        System.out.println(task);
         String index = task.getIndex();
         if (!mapPool.containsKey(index)) {
             addPool(index);
@@ -139,12 +138,15 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
                 mapPool.remove(indexTask);
                 threadPool.shutdown();
                 return;
-            }
-            if (countThread.containsKey(indexTask)) {
+            } else if (countThread.containsKey(indexTask)) {
                 threadPool.setMaxSlowRiseAndFastFall(countThread.get(indexTask).intValue());
                 threadPool.setSumTime(taskIndexSumTime.get(indexTask));
             }
-            threadPool.keepAlive();
+            // 2024-03-20T13:42:08.002792 KeepAliveTask-1 add thread because: [KeepAliveTask] parkQueue: 0; resource: 1; remove: 0
+            // На деём сами себя оживлять
+            if (!threadPool.isAmI()) {
+                threadPool.keepAlive();
+            }
         });
     }
 

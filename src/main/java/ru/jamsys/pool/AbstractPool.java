@@ -3,6 +3,7 @@ package ru.jamsys.pool;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.extension.Procedure;
@@ -22,8 +23,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-
+@ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<T extends Expired> extends AbstractExpired implements Pool<T>, RunnableInterface, StatisticsCollector {
+
+    public static ThreadLocal<Pool<?>> userContext = new ThreadLocal<>();
 
     private final AtomicInteger max = new AtomicInteger(0); //Максимальное кол-во ресурсов
 
@@ -36,7 +39,8 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
     private long sumTime = -1; //Сколько времени использовались ресурсы за 3сек
 
     @Getter
-    private final String name;
+    @ToString.Include
+    public final String name;
 
     @Setter
     private Function<Integer, Integer> formulaAddCount = (need) -> need;
@@ -58,6 +62,10 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
         this.name = name;
         this.max.set(max);
         this.min = min;
+    }
+
+    public boolean isAmI() {
+        return this.equals(AbstractPool.userContext.get());
     }
 
     public boolean isEmpty() {
@@ -83,7 +91,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
             return;
         }
         if (map.size() > max.get() || !isRun.get() || checkExceptionOnComplete(e)) {
-            if (addToRemove(resource, "map.size() =  " + map.size() + " > max = " + max)) {
+            if (addToRemove(resource)) {
                 return;
             }
         }
@@ -191,20 +199,12 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
         }
     }
 
-    private boolean addToRemove(T resource, String cause) {
+    private boolean addToRemove(T resource) {
         // Выведено в асинхрон через keepAlive, потому что если ресурс - поток, то когда он себя возвращает
         // Механизм closeResource пытается завершить процесс, который ждёт выполнение этой команды
         // Грубо это deadLock получается без асинхрона
         if (map.size() > min) {
             if (!removeQueue.contains(resource)) {
-                App.context.getBean(ExceptionHandler.class).handler(new RuntimeException(
-                        "Pool: "
-                                + getClass().getSimpleName()
-                                + "; addToRemove("
-                                + resource
-                                + ") cause: "
-                                + cause
-                ));
                 removeQueue.add(resource);
                 return true;
             }
@@ -223,11 +223,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
                 if (!resource.isExpired(curTimeMs)) {
                     return;
                 }
-                if (addToRemove(resource, "curTimeMs = "
-                        + Util.msToDataFormat(curTimeMs)
-                        + " > keepAliveMs + lastRun = "
-                        + resource.getLastActiveFormat()
-                )) {
+                if (addToRemove(resource)) {
                     maxCounterRemove.decrementAndGet();
                 }
             });

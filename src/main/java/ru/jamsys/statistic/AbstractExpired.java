@@ -6,9 +6,9 @@ import ru.jamsys.util.Util;
 public abstract class AbstractExpired implements Expired {
 
     @Setter
-    private long keepAliveOnInactivityMs = 60_000; // Время жизни очереди, если в ней нет активности
+    private long keepAliveOnInactivityMs = 6_000; // Время жизни если нет активности
 
-    private volatile long lastActivity = 0;
+    private volatile long lastActivity = System.currentTimeMillis();
 
     public boolean isExpired() {
         return isExpired(System.currentTimeMillis());
@@ -16,7 +16,7 @@ public abstract class AbstractExpired implements Expired {
 
     @Override
     public boolean isExpired(long curTime) {
-        return curTime > lastActivity + keepAliveOnInactivityMs;
+        return curTime > (lastActivity + keepAliveOnInactivityMs);
     }
 
     @Override
