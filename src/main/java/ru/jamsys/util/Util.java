@@ -442,7 +442,8 @@ public class Util {
             result = socket.getLocalAddress().toString();
             socket.close();
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            // Нет в этот момент контекста ещё
+            e.printStackTrace();
         }
         return result;
     }
