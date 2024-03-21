@@ -11,24 +11,34 @@ public class RateLimitItem {
     @Setter
     private boolean active = true;
 
-    @Getter
     private final AtomicInteger tps = new AtomicInteger(0);
 
-    private volatile int maxTps = -1;
+    private volatile int max = -1;
 
-    public boolean check() {
-        boolean result = maxTps < 0 || (maxTps > 0 && tps.get() < maxTps); // -1 = infinity; 0 = reject
+    public boolean checkMax(int max) {
+        if (max < -1) {
+            return false;
+        }
+        return this.max < 0 || (this.max > 0 && this.max >= max);
+    }
+
+    public int flushTps() {
+        return tps.getAndSet(0);
+    }
+
+    public boolean checkTps() {
+        boolean result = max < 0 || (max > 0 && tps.get() < max); // -1 = infinity; 0 = reject
         tps.incrementAndGet();
         active = true;
         return result;
     }
 
-    public int getMaxTps() {
-        return maxTps;
+    public int getMax() {
+        return max;
     }
 
-    public void setMaxTps(int maxTps) {
-        this.maxTps = maxTps;
+    public void setMax(int max) {
+        this.max = max;
     }
 
     public void reset() {

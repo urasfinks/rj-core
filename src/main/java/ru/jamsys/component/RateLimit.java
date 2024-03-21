@@ -31,7 +31,7 @@ public class RateLimit implements StatisticsCollectorComponent {
     }
 
     public boolean check(String key) {
-        return get(key).check();
+        return get(key).checkTps();
     }
 
     @Override
@@ -41,8 +41,8 @@ public class RateLimit implements StatisticsCollectorComponent {
             if (rateLimitItem.isActive()) {
                 result.add(new Statistic(parentTags, parentFields)
                         .addTag("index", key)
-                        .addField("max", rateLimitItem.getMaxTps())
-                        .addField("tps", rateLimitItem.getTps().getAndSet(0)));
+                        .addField("max", rateLimitItem.getMax())
+                        .addField("tps", rateLimitItem.flushTps()));
             }
         });
         result.add(new Statistic(parentTags, parentFields)

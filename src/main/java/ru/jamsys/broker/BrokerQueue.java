@@ -4,11 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.App;
-import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.extension.Procedure;
 import ru.jamsys.extension.StatisticsCollector;
+import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.Statistic;
@@ -68,8 +68,8 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
         if (element == null) {
             throw new Exception("Element null");
         }
-        if (!rateLimitItem.check()) {
-            throw new Exception("RateLimit BrokerQueue: " + element.getClass().getSimpleName() + "; max tps: " + rateLimitItem.getMaxTps() + "; object: " + element);
+        if (!rateLimitItem.checkTps()) {
+            throw new Exception("RateLimit BrokerQueue: " + element.getClass().getSimpleName() + "; max tps: " + rateLimitItem.getMax() + "; object: " + element);
         }
         if (cyclical) {
             if (queue.size() >= sizeQueue) {
@@ -155,7 +155,7 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
 
     @Override
     public void setMaxTpsInput(int maxTpsInput) {
-        rateLimitItem.setMaxTps(maxTpsInput);
+        rateLimitItem.setMax(maxTpsInput);
     }
 
     @Override

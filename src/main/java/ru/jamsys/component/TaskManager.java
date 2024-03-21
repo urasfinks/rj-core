@@ -62,7 +62,7 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
                     1,
                     (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
                         int count = 0;
-                        while (isWhile.get() && rateLimitItem.check()) {
+                        while (isWhile.get() && rateLimitItem.checkTps()) {
                             // Защита от бесконечной очереди
                             // Предположим, что поменялось максимальное кол-во потоков и надо срезать потоки, а тут
                             // без остановки этот цикл молотит, не хорошо
