@@ -56,11 +56,16 @@ public class Util {
 
     @SuppressWarnings("unused")
     public static void logConsole(String data) {
-        logConsole(Thread.currentThread(), data);
+        logConsole(data, false);
     }
 
-    public static void logConsole(Thread t, String data) {
-        System.out.println(Util.msToDataFormat(System.currentTimeMillis()) + " " + t.getName() + " " + data);
+    public static void logConsole(String data, boolean err) {
+        logConsole(Thread.currentThread(), data, err);
+    }
+
+    public static void logConsole(Thread t, String data, boolean err) {
+        PrintStream out = err ? System.err : System.out;
+        out.println(Util.msToDataFormat(System.currentTimeMillis()) + " " + t.getName() + " " + data);
     }
 
     @SuppressWarnings("unused")

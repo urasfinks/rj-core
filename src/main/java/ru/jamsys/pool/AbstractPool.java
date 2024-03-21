@@ -6,11 +6,12 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
-import ru.jamsys.extension.Procedure;
+import ru.jamsys.component.RateLimit;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.Expired;
+import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
 
@@ -26,14 +27,11 @@ import java.util.function.Function;
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<T extends Expired> extends AbstractExpired implements Pool<T>, RunnableInterface, StatisticsCollector {
 
-    public static ThreadLocal<Pool<?>> userContext = new ThreadLocal<>();
+    public static ThreadLocal<Pool<?>> contextPool = new ThreadLocal<>();
 
     private final AtomicInteger max = new AtomicInteger(0); //Максимальное кол-во ресурсов
 
     private final int min; //Минимальное кол-во ресурсов
-
-    @Getter
-    private final List<Procedure> listProcedureOnShutdown = new ArrayList<>();
 
     @Setter
     private long sumTime = -1; //Сколько времени использовались ресурсы за 3сек
@@ -58,14 +56,17 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
 
     private final AtomicBoolean restartOperation = new AtomicBoolean(false);
 
-    public AbstractPool(String name, int min, int max) {
+    protected final RateLimitItem rateLimitItemPool;
+
+    public AbstractPool(String name, int min, int initMax) {
         this.name = name;
-        this.max.set(max);
+        this.max.set(initMax); // Может быть изменён в runTime
         this.min = min;
+        this.rateLimitItemPool = App.context.getBean(RateLimit.class).get(getClass() + "." + name);
     }
 
     public boolean isAmI() {
-        return this.equals(AbstractPool.userContext.get());
+        return this.equals(AbstractPool.contextPool.get());
     }
 
     public boolean isEmpty() {
@@ -73,14 +74,18 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
     }
 
     public void setMaxSlowRiseAndFastFall(int max) {
-        if (max >= min) {
-            if (max > this.max.get()) { //Медленно поднимаем
-                this.max.incrementAndGet();
-            } else { //Но очень быстро опускаем
-                this.max.set(max);
+        if (rateLimitItemPool.checkMax(max)) {
+            if (max >= min) {
+                if (max > this.max.get()) { //Медленно поднимаем
+                    this.max.incrementAndGet();
+                } else { //Но очень быстро опускаем
+                    this.max.set(max);
+                }
+            } else {
+                Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < Pool.min = " + min, true);
             }
         } else {
-            Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < " + min);
+            Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " > RateLimit.max = " + rateLimitItemPool.getMax(), true);
         }
     }
 
@@ -238,6 +243,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
             for (int i = 0; i < min; i++) {
                 add();
             }
+            rateLimitItemPool.setActive(true);
             restartOperation.set(false);
         }
     }
@@ -252,7 +258,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
                     getEmptyType(),
                     this::remove
             );
-            listProcedureOnShutdown.forEach(Procedure::run);
+            rateLimitItemPool.setActive(false);
             restartOperation.set(false);
         }
     }

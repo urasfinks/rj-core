@@ -3,7 +3,10 @@ package ru.jamsys.component;
 import org.springframework.stereotype.Component;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
-import ru.jamsys.statistic.*;
+import ru.jamsys.statistic.AvgMetric;
+import ru.jamsys.statistic.AvgMetricUnit;
+import ru.jamsys.statistic.Statistic;
+import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.thread.ThreadPool;
 import ru.jamsys.thread.handler.Handler;
@@ -28,74 +31,54 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
 
     final private Dictionary dictionary;
 
-    final private RateLimit rateLimit;
-
     final private Map<String, ThreadPool> mapPool = new ConcurrentHashMap<>();
 
     final private ConcurrentLinkedDeque<TaskStatistic> queueTaskStatistics = new ConcurrentLinkedDeque<>();
 
-    final private int maxCountIteration = 100; //Защита от бесконечной очереди
-
-    public TaskManager(Broker broker, ExceptionHandler exceptionHandler, Dictionary dictionary, RateLimit rateLimit) {
+    public TaskManager(Broker broker, ExceptionHandler exceptionHandler, Dictionary dictionary) {
         this.broker = broker;
         this.exceptionHandler = exceptionHandler;
         this.dictionary = dictionary;
-        this.rateLimit = rateLimit;
     }
 
     public void addTask(Task task) throws Exception {
-        String index = task.getIndex();
-        if (!mapPool.containsKey(index)) {
-            addPool(index);
-        }
-        broker.add(index, task);
-        mapPool.get(index).wakeUp();
-    }
-
-    private void addPool(String index) {
-        String rateLimitKey = getClass().getSimpleName() + "." + index;
-        RateLimitItem rateLimitItem = rateLimit.get(rateLimitKey);
-        if (!mapPool.containsKey(index)) {
-            ThreadPool threadPool = new ThreadPool(
-                    index,
-                    0,
-                    1,
-                    (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
-                        int count = 0;
-                        while (isWhile.get() && rateLimitItem.checkTps()) {
-                            // Защита от бесконечной очереди
-                            // Предположим, что поменялось максимальное кол-во потоков и надо срезать потоки, а тут
-                            // без остановки этот цикл молотит, не хорошо
-                            if (count > maxCountIteration) {
-                                return false;
-                            }
-                            Task task = broker.pollLast(index);
-                            if (task == null) {
-                                return false;
-                            }
-                            @SuppressWarnings("unchecked")
-                            Handler<Task> handler = dictionary.getTaskHandler().get(task.getClass());
-                            if (handler != null) {
-                                TaskStatistic taskStatistic = new TaskStatistic(threadEnvelope, task);
-                                queueTaskStatistics.add(taskStatistic);
-                                try {
-                                    handler.run(task, isWhile);
-                                } catch (Exception e) {
-                                    exceptionHandler.handler(e);
-                                }
-                                taskStatistic.finish();
-                            } else {
-                                exceptionHandler.handler(new RuntimeException("Not find TaskHandler for Task = " + task.getClass()));
-                            }
-                            count++;
-                        }
-                        return false;
-                    }
-            );
-            threadPool.getListProcedureOnShutdown().add(() -> rateLimitItem.setActive(false));
-            mapPool.put(index, threadPool);
+        String taskIndex = task.getIndex();
+        if (!mapPool.containsKey(taskIndex)) {
+            ThreadPool threadPool = createThreadPool(taskIndex);
+            mapPool.putIfAbsent(taskIndex, threadPool);
             threadPool.run();
         }
+        broker.add(taskIndex, task);
+        mapPool.get(taskIndex).wakeUp();
+    }
+
+    private ThreadPool createThreadPool(String poolName) {
+        return new ThreadPool(
+                poolName,
+                0,
+                1,
+                (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
+                    Task task = broker.pollLast(poolName);
+                    if (task == null) {
+                        return false;
+                    }
+                    @SuppressWarnings("unchecked")
+                    Handler<Task> handler = dictionary.getTaskHandler().get(task.getClass());
+                    if (handler != null) {
+                        TaskStatistic taskStatistic = new TaskStatistic(threadEnvelope, task);
+                        queueTaskStatistics.add(taskStatistic);
+                        try {
+                            handler.run(task, isWhile);
+                        } catch (Exception e) {
+                            exceptionHandler.handler(e);
+                        }
+                        taskStatistic.finish();
+                    } else {
+                        exceptionHandler.handler(new RuntimeException("Not find TaskHandler for Task = " + task.getClass()));
+                    }
+                    return false;
+                }
+        );
     }
 
     public void removeInQueueStatistic(ThreadEnvelope threadEnvelope) {

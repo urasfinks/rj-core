@@ -1,7 +1,10 @@
 package ru.jamsys.thread;
 
+import ru.jamsys.App;
+import ru.jamsys.component.RateLimit;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.pool.AbstractPool;
+import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
 import ru.jamsys.util.UtilJson;
@@ -14,18 +17,26 @@ import java.util.function.BiFunction;
 
 public class ThreadPool extends AbstractPool<ThreadEnvelope> implements RunnableInterface {
 
-    AtomicInteger index = new AtomicInteger(1);
+    AtomicInteger counter = new AtomicInteger(1);
 
     final private BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer;
 
-    public ThreadPool(String name, int min, int max, BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer) {
-        super(name, min, max);
+    final private RateLimitItem rateLimitItemThread;
+
+    public ThreadPool(
+            String name,
+            int min,
+            int initMax,
+            BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer
+    ) {
+        super(name, min, initMax);
+        this.rateLimitItemThread = App.context.getBean(RateLimit.class).get(getClass() + ".Thread." + name);
         this.consumer = consumer;
     }
 
     @Override
     public ThreadEnvelope createResource() {
-        return new ThreadEnvelope(getName() + "-" + index.getAndIncrement(), this, consumer);
+        return new ThreadEnvelope(getName() + "-" + counter.getAndIncrement(), this, rateLimitItemPool, consumer);
     }
 
     @Override
@@ -53,6 +64,18 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
         if (threadEnvelope != null) {
             threadEnvelope.run();
         }
+    }
+
+    @Override
+    public void run() {
+        super.run();
+        rateLimitItemThread.setActive(true);
+    }
+
+    @Override
+    public void shutdown() {
+        super.shutdown();
+        rateLimitItemThread.setActive(false);
     }
 
     public void testRun() {

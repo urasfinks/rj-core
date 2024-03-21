@@ -17,15 +17,14 @@ public class GeneratorManager implements RunnableComponent {
 
     final private ThreadPool threadPool;
 
-    public GeneratorManager(Dictionary dictionary, ExceptionHandler exceptionHandler, Broker broker, TaskManager taskManager) {
+    public GeneratorManager(Dictionary dictionary, ExceptionHandler exceptionHandler, Broker broker, TaskManager taskManager, RateLimit rateLimit) {
         this.threadPool = new ThreadPool(
                 getClass().getSimpleName(),
                 1,
                 1,
                 (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
-                    Thread currentThread = Thread.currentThread();
                     long nextStartMs = System.currentTimeMillis();
-                    while (isWhile.get() && !currentThread.isInterrupted()) {
+                    while (isWhile.get() && threadEnvelope.isNotInterrupted()) {
                         nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
                         long curTimeMs = System.currentTimeMillis();
                         for (CronTask cronTask : dictionary.getListCronTask()) {
@@ -49,7 +48,7 @@ public class GeneratorManager implements RunnableComponent {
                             break;
                         }
                     }
-                    Util.logConsole(currentThread.getName() + ": STOP");
+                    Util.logConsole("STOP");
                     return false;
                 }
         );
