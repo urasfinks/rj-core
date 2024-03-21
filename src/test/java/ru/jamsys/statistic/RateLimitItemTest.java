@@ -2,6 +2,7 @@ package ru.jamsys.statistic;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.component.RateLimit;
 
 class RateLimitItemTest {
 
@@ -28,5 +29,18 @@ class RateLimitItemTest {
         Assertions.assertTrue(rateLimitItem.checkTps());
         Assertions.assertTrue(rateLimitItem.checkTps());
         Assertions.assertFalse(rateLimitItem.checkTps());
+    }
+
+    @Test
+    void checkEquals() {
+        RateLimit.ComplexKey complexKey1 = new RateLimit.ComplexKey(RateLimitGroup.OTHER, RateLimitGroup.class, "test");
+        RateLimit.ComplexKey complexKey2 = new RateLimit.ComplexKey(RateLimitGroup.OTHER, RateLimitGroup.class, "test");
+        Assertions.assertEquals(complexKey2, complexKey1);
+
+        RateLimit.ComplexKey complexKey3 = new RateLimit.ComplexKey(RateLimitGroup.OTHER, RateLimitGroup.class, "test1");
+        Assertions.assertNotEquals(complexKey3, complexKey1);
+
+        RateLimit.ComplexKey complexKey4 = new RateLimit.ComplexKey(RateLimitGroup.BROKER, RateLimitGroup.class, "test");
+        Assertions.assertNotEquals(complexKey4, complexKey1);
     }
 }
