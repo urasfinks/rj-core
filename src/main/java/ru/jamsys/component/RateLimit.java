@@ -2,6 +2,7 @@ package ru.jamsys.component;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.extension.StatisticsCollectorComponent;
+import ru.jamsys.statistic.RateLimitGroup;
 import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
@@ -12,26 +13,26 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/*
+ * RateLimitItem целевого механизма по удалению элементов - нет
+ * Так как если в runTime будут выставлены для кого-то лимиты, а потом этот объект
+ * Временно остановится и вместе с собой удалит установленные лимиты, то после восстановления работы
+ * Ранее установленные лимиты будут утрачены? Это как-то странно?
+ * Можно только управлять статусов active = true/false для отрисовки статистики
+ * */
+
 @SuppressWarnings("unused")
 @Component
 public class RateLimit implements StatisticsCollectorComponent {
 
     Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
 
-    public RateLimitItem get(String key) {
-        if (!map.containsKey(key)) {
-            map.put(key, new RateLimitItem());
+    public RateLimitItem get(RateLimitGroup rateLimitGroup, Class<?> cls, String key) {
+        String keyItem = rateLimitGroup.getName() + "." + cls.getSimpleName() + "." + key;
+        if (!map.containsKey(keyItem)) {
+            map.put(keyItem, new RateLimitItem());
         }
-        return map.get(key);
-    }
-
-    public void remove(String key) {
-        RateLimitItem rateLimitItem = map.get(key);
-        rateLimitItem.setActive(false);
-    }
-
-    public boolean check(String key) {
-        return get(key).checkTps();
+        return map.get(keyItem);
     }
 
     @Override
@@ -50,4 +51,5 @@ public class RateLimit implements StatisticsCollectorComponent {
                 .addField("size", map.size()));
         return result;
     }
+
 }

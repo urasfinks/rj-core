@@ -5,13 +5,11 @@ import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
+import ru.jamsys.component.RateLimit;
 import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.extension.Procedure;
 import ru.jamsys.extension.StatisticsCollector;
-import ru.jamsys.statistic.AbstractExpired;
-import ru.jamsys.statistic.AvgMetric;
-import ru.jamsys.statistic.RateLimitItem;
-import ru.jamsys.statistic.Statistic;
+import ru.jamsys.statistic.*;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -54,8 +52,8 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
 
     final RateLimitItem rateLimitItem;
 
-    public BrokerQueue(RateLimitItem rateLimitItem) {
-        this.rateLimitItem = rateLimitItem;
+    public BrokerQueue(String key) {
+        this.rateLimitItem = App.context.getBean(RateLimit.class).get(RateLimitGroup.BROKER, getClass(), key);
     }
 
     @SuppressWarnings("unused")

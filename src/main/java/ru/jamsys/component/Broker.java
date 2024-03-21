@@ -38,8 +38,7 @@ public class Broker implements StatisticsCollectorComponent {
     public <T extends BrokerCollectible> Queue<T> get(String key) {
         //If the key was not present in the map, it maps the passed value to the key and returns null.
         if (!mapQueue.containsKey(key)) {
-            String rateLimitKey = getClass().getSimpleName() + "." + key;
-            mapQueue.putIfAbsent(key, new BrokerQueue<>(rateLimit.get(rateLimitKey)));
+            mapQueue.putIfAbsent(key, new BrokerQueue<T>(key));
         }
         @SuppressWarnings("unchecked")
         Queue<T> queue = (Queue<T>) mapQueue.get(key);

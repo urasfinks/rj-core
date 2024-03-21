@@ -9,10 +9,7 @@ import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimit;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.extension.StatisticsCollector;
-import ru.jamsys.statistic.AbstractExpired;
-import ru.jamsys.statistic.Expired;
-import ru.jamsys.statistic.RateLimitItem;
-import ru.jamsys.statistic.Statistic;
+import ru.jamsys.statistic.*;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -62,7 +59,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
         this.name = name;
         this.max.set(initMax); // Может быть изменён в runTime
         this.min = min;
-        this.rateLimitItemPool = App.context.getBean(RateLimit.class).get(getClass() + "." + name);
+        this.rateLimitItemPool = App.context.getBean(RateLimit.class).get(RateLimitGroup.POOL, getClass(), name);
     }
 
     public boolean isAmI() {

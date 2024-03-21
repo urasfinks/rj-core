@@ -4,6 +4,7 @@ import ru.jamsys.App;
 import ru.jamsys.component.RateLimit;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.pool.AbstractPool;
+import ru.jamsys.statistic.RateLimitGroup;
 import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
@@ -30,7 +31,7 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
             BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer
     ) {
         super(name, min, initMax);
-        this.rateLimitItemThread = App.context.getBean(RateLimit.class).get(getClass() + ".Thread." + name);
+        this.rateLimitItemThread = App.context.getBean(RateLimit.class).get(RateLimitGroup.THREAD, getClass(), name);
         this.consumer = consumer;
     }
 
