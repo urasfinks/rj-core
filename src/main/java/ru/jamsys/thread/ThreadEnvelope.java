@@ -29,13 +29,17 @@ public class ThreadEnvelope extends AbstractExpired {
     @ToString.Include
     private final Pool<ThreadEnvelope> pool;
 
+    private final AtomicBoolean isInit = new AtomicBoolean(false);
+
     private final AtomicBoolean isRun = new AtomicBoolean(false);
 
-    private final AtomicBoolean isWhile = new AtomicBoolean(false);
+    private final AtomicBoolean isWhile = new AtomicBoolean(true);
 
     private final AtomicBoolean inPark = new AtomicBoolean(false);
 
     private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+
+    private final StringBuilder info = new StringBuilder();
 
     @Setter
     private int maxCountIteration = 100; //Защита от бесконечных задач
@@ -47,11 +51,13 @@ public class ThreadEnvelope extends AbstractExpired {
     }
 
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, RateLimitItem rateLimitItem, BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer) {
+        info.append("create: ").append(Thread.currentThread().getName()).append(" with name: ").append(name).append("; ");
         this.pool = pool;
         thread = new Thread(() -> {
             AbstractPool.contextPool.set(pool);
             while (isWhile.get() && isNotInterrupted()) {
                 active();
+                countOperation.incrementAndGet();
                 boolean isContinue = false;
                 try {
                     isContinue = consumer.apply(isWhile, this);
@@ -61,40 +67,49 @@ public class ThreadEnvelope extends AbstractExpired {
                 // countOperation - защита от бесконечных задач
                 // Предположим, что поменялось максимальное кол-во потоков и надо срезать потоки
                 // Остановкой даём возможность подрезать нагрузку через пул
-                if (!isContinue || countOperation.get() > maxCountIteration || !rateLimitItem.checkTps()) {
-                    pause();
+                if (!isContinue || !rateLimitItem.checkTps() || countOperation.get() > maxCountIteration) {
+                    if (isWhile.get()) {
+                        pause();
+                    }
                 }
-                countOperation.incrementAndGet();
             }
             isRun.set(false);
         });
         thread.setName(name);
     }
 
-    private void alreadyShutdown() {
-        App.context.getBean(ExceptionHandler.class).handler(new RuntimeException(getClass().getSimpleName() + " thread already stop"));
+    private void raiseUp(String status) {
+        App.context.getBean(ExceptionHandler.class).handler(
+                new RuntimeException(getClass().getSimpleName()
+                        + " thread status [" + status + "]; info: "
+                        + info)
+        );
     }
 
     private void pause() {
-        if (isShutdown.get()) {
-            alreadyShutdown();
+        if (!isInit.get()) {
+            raiseUp("NotInitialize");
             return;
         }
         if (inPark.compareAndSet(false, true)) {
-            pool.complete(this, null);
-            LockSupport.park(thread);
+            if (isShutdown.get()) {
+                pool.removeForce(this);
+            } else {
+                pool.complete(this, null);
+                LockSupport.park(thread);
+            }
         }
     }
 
     public void run() {
-        if (isShutdown.get()) {
-            alreadyShutdown();
-            return;
-        }
         //Что бы второй раз не получилось запустить поток после остановки проверим на isWhile
-        if (isRun.compareAndSet(false, true)) {
-            isWhile.set(true);
-            thread.start(); //start() - create new thread / run() - Runnable run in main thread
+        if (isInit.compareAndSet(false, true)) {
+            if (isRun.compareAndSet(false, true)) {
+                info.append("run: ").append(Thread.currentThread().getName()).append("; ");
+                thread.start(); //start() - create new thread / run() - Runnable run in main thread
+            } else {
+                raiseUp("UNDEFINED STATUS WTF?");
+            }
         } else if (inPark.compareAndSet(true, false)) {
             countOperation.set(0);
             LockSupport.unpark(thread);
@@ -102,16 +117,25 @@ public class ThreadEnvelope extends AbstractExpired {
     }
 
     synchronized public void shutdown() {
-        if (isShutdown.get()) {
-            alreadyShutdown();
+        if (!isInit.get()) {
+            raiseUp("NotInitialize");
             return;
         }
+        if (isShutdown.compareAndSet(false, true)) { //Что бы больше никто не смог начать останавливать
+            doShutdown();
+        } else {
+            raiseUp("Shutdown Already");
+        }
+    }
+
+    private void doShutdown() {
+        info.append("shutdown: ").append(Thread.currentThread().getName()).append("; ");
         //#1
         isWhile.set(false); //Говорим закончить
         //#2
         run(); //Выводим из возможного паркинга
         //#3
-        isShutdown.set(true); //ЧТо бы больше никто не смог начать останавливать
+        isShutdown.set(true);
 
         long timeOutMs = 1000;
         long startTimeMs = System.currentTimeMillis();

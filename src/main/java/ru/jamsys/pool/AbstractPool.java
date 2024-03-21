@@ -62,6 +62,10 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
         this.rateLimitItemPool = App.context.getBean(RateLimit.class).get(RateLimitGroup.POOL, getClass(), name);
     }
 
+    public String getMomentumStatistic() {
+        return "pool: " + getName() + "; resourceQueue: " + resourceQueue.size() + "; max = " + max.get() + " parkQueue: " + parkQueue.size() + "; removeQueue: " + removeQueue.size();
+    }
+
     public boolean isAmI() {
         return this.equals(AbstractPool.contextPool.get());
     }
@@ -160,15 +164,29 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
         return false;
     }
 
-    synchronized private void remove(@NonNull T resource) {
+    //Это когда поток придушили сторонними силами без участия пула
+    public void removeForce(T resource) {
         resourceQueue.remove(resource);
-        parkQueue.remove(resource); // На всякий случай
-        removeQueue.remove(resource); // На всякий случай
-        closeResource(resource); //Если выкидываем из пула, то наверное надо закрыть сам ресурс
+        parkQueue.remove(resource);
+        removeQueue.remove(resource);
+    }
+
+    synchronized private void remove(@NonNull T resource) {
+        // Может такое произойти, что ресурс хлопнут внешними силами через removeForce, больше он нам не подвластен
+        // Всё управление на закрытие ресурса будет на чужой совести
+        if (resourceQueue.contains(resource)) {
+            removeForce(resource);
+            closeResource(resource); //Если выкидываем из пула, то наверное надо закрыть сам ресурс
+        } else {
+            App.context.getBean(ExceptionHandler.class).handler(new RuntimeException(
+                    "Видимо ресурс был закрыт через removeForce, наши полномочия всё"
+            ));
+        }
     }
 
     private void overclocking(int count) {
         if (isRun.get() && resourceQueue.size() < max.get() && count > 0) {
+            Util.logConsole("overclocking() " + getMomentumStatistic());
             for (int i = 0; i < count; i++) {
                 if (!add()) {
                     break;

@@ -24,4 +24,6 @@ public interface Pool<T extends Expired> {
 
     boolean checkExceptionOnComplete(Exception e);
 
+    void removeForce(T resource);
+
 }
