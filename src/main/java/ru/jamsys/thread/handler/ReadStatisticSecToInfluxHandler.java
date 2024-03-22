@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-@IgnoreClassFinder
 public class ReadStatisticSecToInfluxHandler implements Handler<ReadStatisticSecTask> {
 
     //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token 'LmbVFdM8Abe6T6atTD6Ai3LJOKrEVrKB61mrFqJzqx5HzANJ13HItZrbWuhDdJXsdLL9mJLn7UB6MtAbLG4AxQ=='
