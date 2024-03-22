@@ -71,7 +71,15 @@ public class ThreadEnvelope extends AbstractPoolItem {
     }
 
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, RateLimitItem rateLimitItem, BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer) {
-        info.append("create: ").append(Thread.currentThread().getName()).append(" with name: ").append(name).append("; ");
+        info
+                .append("[")
+                .append(Util.msToDataFormat(System.currentTimeMillis()))
+                .append("] ")
+                .append("create: ")
+                .append(Thread.currentThread().getName())
+                .append(" with name: ")
+                .append(name)
+                .append("\r\n");
         this.pool = pool;
         thread = new Thread(() -> {
             AbstractPool.contextPool.set(pool);
@@ -96,17 +104,18 @@ public class ThreadEnvelope extends AbstractPoolItem {
         thread.setName(name);
     }
 
-    private void raiseUp(String status) {
+    private void raiseUp(String cause, String action) {
         App.context.getBean(ExceptionHandler.class).handler(
-                new RuntimeException(getClass().getSimpleName()
-                        + " thread status [" + status + "]; info: "
+                new RuntimeException("class: " + getClass().getSimpleName()
+                        + "; action: " + action
+                        + "; cause: " + cause + " \r\n"
                         + info)
         );
     }
 
     private boolean pause() {
         if (!isInit.get()) {
-            raiseUp("NotInitialize");
+            raiseUp("Thread not initialize", "pause()");
             return false;
         }
         if (inPark.compareAndSet(false, true)) {
@@ -122,19 +131,24 @@ public class ThreadEnvelope extends AbstractPoolItem {
     }
 
     public boolean run() {
-        // Тут нельзя такую проверку сделать, так как doShutdown.run() начинает плеваться ошибками
-//        if (isShutdown.get()) {
-//            raiseUp("Shutdown Already");
-//            return false;
-//        }
+        if (isShutdown.get()) {
+            raiseUp("Thread shutdown", "run()");
+            return false;
+        }
         //Что бы второй раз не получилось запустить поток после остановки проверим на isWhile
         if (isInit.compareAndSet(false, true)) {
             if (isRun.compareAndSet(false, true)) {
-                info.append("run: ").append(Thread.currentThread().getName()).append("; ");
+                info
+                        .append("[")
+                        .append(Util.msToDataFormat(System.currentTimeMillis()))
+                        .append("]")
+                        .append(" run: ")
+                        .append(Thread.currentThread().getName())
+                        .append(";\r\n");
                 thread.start(); //start() - create new thread / run() - Runnable run in main thread
                 return true;
             } else {
-                raiseUp("WTF?");
+                raiseUp("WTF?", "run()");
             }
         } else if (inPark.compareAndSet(true, false)) {
             LockSupport.unpark(thread);
@@ -145,24 +159,33 @@ public class ThreadEnvelope extends AbstractPoolItem {
 
     synchronized public boolean shutdown() {
         if (!isInit.get()) {
-            raiseUp("NotInitialize");
+            raiseUp("Thread not initialize", "shutdown()");
             return false;
         }
         if (isShutdown.compareAndSet(false, true)) { //Что бы больше никто не смог начать останавливать
             doShutdown();
             return true;
         } else {
-            raiseUp("Shutdown Already");
+            raiseUp("Thread shutdown", "shutdown()");
         }
         return false;
     }
 
     private void doShutdown() {
-        info.append("shutdown: ").append(Thread.currentThread().getName()).append("; ");
+        info
+                .append("[")
+                .append(Util.msToDataFormat(System.currentTimeMillis()))
+                .append("] ")
+                .append("shutdown: ")
+                .append(Thread.currentThread().getName())
+                .append("\r\n");
         //#1
         isWhile.set(false); //Говорим закончить
         //#2
-        run(); //Выводим из возможного паркинга
+        if (inPark.compareAndSet(true, false)) {
+            LockSupport.unpark(thread);
+        }
+        //Выводим из возможного паркинга
         //#3
         isShutdown.set(true);
 
@@ -171,14 +194,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
         while (isRun.get()) { //Пытаемся подождать пока потоки самостоятельно закончат свою работу
             Util.sleepMs(timeOutMs / 4);
             if (System.currentTimeMillis() - startTimeMs > timeOutMs) { //Не смогли за отведённое время
-                App.context.getBean(ExceptionHandler.class).handler(
-                        new RuntimeException(
-                                "Thread "
-                                        + getClass().getSimpleName()
-                                        + " on set isWhile = false timeOut"
-                                        + timeOutMs
-                                        + "ms. The thread is keep alive")
-                );
+                raiseUp("timeOut. The thread is keep alive", "isWhile.set(false)");
                 break;
             }
         }
@@ -192,14 +208,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
         while (isRun.get()) { //Пытаемся подождать пока потоки выйдут от interrupt
             Util.sleepMs(timeOutMs / 4);
             if (System.currentTimeMillis() - startTimeMs > timeOutMs) { //Не смогли за отведённое время
-                App.context.getBean(ExceptionHandler.class).handler(
-                        new RuntimeException(
-                                "Thread "
-                                        + getClass().getSimpleName()
-                                        + " on interrupt() timeOut"
-                                        + timeOutMs
-                                        + " ms. The thread is keep alive")
-                );
+                raiseUp("timeOut. The thread is keep alive", "interrupt()");
                 break;
             }
         }
