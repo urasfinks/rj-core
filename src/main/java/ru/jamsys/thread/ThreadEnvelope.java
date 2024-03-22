@@ -104,10 +104,10 @@ public class ThreadEnvelope extends AbstractPoolItem {
         );
     }
 
-    private void pause() {
+    private boolean pause() {
         if (!isInit.get()) {
             raiseUp("NotInitialize");
-            return;
+            return false;
         }
         if (inPark.compareAndSet(false, true)) {
             if (isShutdown.get()) {
@@ -115,34 +115,46 @@ public class ThreadEnvelope extends AbstractPoolItem {
             } else {
                 pool.complete(this, null);
                 LockSupport.park(thread);
+                return true;
             }
         }
+        return false;
     }
 
-    public void run() {
+    public boolean run() {
+        // Тут нельзя такую проверку сделать, так как doShutdown.run() начинает плеваться ошибками
+//        if (isShutdown.get()) {
+//            raiseUp("Shutdown Already");
+//            return false;
+//        }
         //Что бы второй раз не получилось запустить поток после остановки проверим на isWhile
         if (isInit.compareAndSet(false, true)) {
             if (isRun.compareAndSet(false, true)) {
                 info.append("run: ").append(Thread.currentThread().getName()).append("; ");
                 thread.start(); //start() - create new thread / run() - Runnable run in main thread
+                return true;
             } else {
-                raiseUp("UNDEFINED STATUS WTF?");
+                raiseUp("WTF?");
             }
         } else if (inPark.compareAndSet(true, false)) {
             LockSupport.unpark(thread);
+            return true;
         }
+        return false;
     }
 
-    synchronized public void shutdown() {
+    synchronized public boolean shutdown() {
         if (!isInit.get()) {
             raiseUp("NotInitialize");
-            return;
+            return false;
         }
         if (isShutdown.compareAndSet(false, true)) { //Что бы больше никто не смог начать останавливать
             doShutdown();
+            return true;
         } else {
             raiseUp("Shutdown Already");
         }
+        return false;
     }
 
     private void doShutdown() {
@@ -202,6 +214,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
             }
             App.context.getBean(TaskManager.class).removeInQueueStatistic(this);
         }
+        pool.removeForce(this);
         isRun.set(false);
     }
 

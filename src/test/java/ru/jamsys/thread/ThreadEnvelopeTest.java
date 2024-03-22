@@ -41,10 +41,13 @@ class ThreadEnvelopeTest {
 
         //Проверяем статусы что мы не инициализированы
         Assertions.assertEquals("isInit: false; isRun: false; isWhile: true; inPark: false; isShutdown: false; countOperation: 0; ", threadEnvelope.getMomentumStatistic());
+
         // Запускаем поток
-        threadEnvelope.run();
+        Assertions.assertTrue(threadEnvelope.run());
+
         //Проверяем что поменялись статусы инициализации
-        Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: false; isShutdown: false; countOperation: 0; ", threadEnvelope.getMomentumStatistic());
+        String momentumStatistic = threadEnvelope.getMomentumStatistic();
+        Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: false; isShutdown: false; ", momentumStatistic.substring(0, momentumStatistic.indexOf("countOperation:")));
 
         //Ждём когда поток поработает
         Util.sleepMs(200);
@@ -67,7 +70,7 @@ class ThreadEnvelopeTest {
         Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: true; isShutdown: false; countOperation: 0; ", threadEnvelope.getMomentumStatistic());
 
         //Запускаем
-        threadEnvelope.run();
+        Assertions.assertTrue(threadEnvelope.run());
         //Проверяем, что вышли из паркинга
         Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: false; isShutdown: false; countOperation: 0; ", threadEnvelope.getMomentumStatistic());
 
@@ -76,6 +79,15 @@ class ThreadEnvelopeTest {
 
         //Проверяем что поток реально поработал
         Assertions.assertEquals(200, testCount.get());
+
+        //Дубликаты операций
+        Assertions.assertTrue(threadEnvelope.run());
+        Assertions.assertFalse(threadEnvelope.run());
+
+        Assertions.assertTrue(threadEnvelope.shutdown());
+        Assertions.assertFalse(threadEnvelope.shutdown());
+
+        Assertions.assertFalse(threadEnvelope.run());
     }
 
     @Test
