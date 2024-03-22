@@ -7,9 +7,13 @@ import lombok.ToString;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimit;
+import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.extension.StatisticsCollector;
-import ru.jamsys.statistic.*;
+import ru.jamsys.statistic.AbstractExpired;
+import ru.jamsys.statistic.RateLimitGroup;
+import ru.jamsys.statistic.RateLimitItem;
+import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -22,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<T extends Expired> extends AbstractExpired implements Pool<T>, RunnableInterface, StatisticsCollector {
+public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractExpired implements Pool<T>, RunnableInterface, StatisticsCollector {
 
     public static ThreadLocal<Pool<?>> contextPool = new ThreadLocal<>();
 
@@ -53,6 +57,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
 
     private final AtomicBoolean restartOperation = new AtomicBoolean(false);
 
+    @Getter
     protected final RateLimitItem rateLimitItemPool;
 
     public AbstractPool(String name, int min, int initMax) {
@@ -62,8 +67,16 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
         this.rateLimitItemPool = App.context.getBean(RateLimit.class).get(RateLimitGroup.POOL, getClass(), name);
     }
 
+    @SuppressWarnings("StringBufferReplaceableByString")
     public String getMomentumStatistic() {
-        return "pool: " + getName() + "; resourceQueue: " + resourceQueue.size() + "; max = " + max.get() + " parkQueue: " + parkQueue.size() + "; removeQueue: " + removeQueue.size();
+        StringBuilder sb = new StringBuilder();
+        sb.append("resourceQueue: ").append(resourceQueue.size()).append("; ");
+        sb.append("parkQueue: ").append(parkQueue.size()).append("; ");
+        sb.append("removeQueue: ").append(removeQueue.size()).append("; ");
+        sb.append("isRun: ").append(isRun.get()).append("; ");
+        sb.append("min: ").append(min).append("; ");
+        sb.append("max: ").append(max.get()).append("; ");
+        return sb.toString();
     }
 
     public boolean isAmI() {
@@ -118,7 +131,11 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
             return null;
         }
         // Забираем с конца, что бы под нож первые улетели
-        return parkQueue.pollLast();
+        T resource = parkQueue.pollLast();
+        if (resource != null) {
+            resource.polled();
+        }
+        return resource;
     }
 
     @SuppressWarnings({"unused"})
@@ -131,6 +148,7 @@ public abstract class AbstractPool<T extends Expired> extends AbstractExpired im
         while (isRun.get() && finishTimeMs > System.currentTimeMillis()) {
             T resource = parkQueue.pollLast();
             if (resource != null) {
+                resource.polled();
                 return resource;
             }
             Util.sleepMs(100);

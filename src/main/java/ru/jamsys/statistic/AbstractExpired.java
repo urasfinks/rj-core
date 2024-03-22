@@ -29,5 +29,4 @@ public abstract class AbstractExpired implements Expired {
         lastActivity = System.currentTimeMillis();
     }
 
-
 }

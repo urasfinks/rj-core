@@ -65,6 +65,11 @@ public class RateLimit implements StatisticsCollectorComponent {
 
     Map<ComplexKey, RateLimitItem> map = new ConcurrentHashMap<>();
 
+    public boolean contains(RateLimitGroup rateLimitGroup, Class<?> cls, String key) {
+        ComplexKey complexKey = new ComplexKey(rateLimitGroup, cls, key);
+        return map.containsKey(complexKey);
+    }
+
     public RateLimitItem get(RateLimitGroup rateLimitGroup, Class<?> cls, String key) {
         ComplexKey complexKey = new ComplexKey(rateLimitGroup, cls, key);
         /*

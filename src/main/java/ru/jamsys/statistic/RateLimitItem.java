@@ -9,7 +9,7 @@ public class RateLimitItem {
 
     @Getter
     @Setter
-    private boolean active = true;
+    private boolean active = false;
 
     private final AtomicInteger tps = new AtomicInteger(0);
 
@@ -24,6 +24,10 @@ public class RateLimitItem {
 
     public int flushTps() {
         return tps.getAndSet(0);
+    }
+
+    public boolean isOverflowTps() {
+        return !checkTps();
     }
 
     public boolean checkTps() {

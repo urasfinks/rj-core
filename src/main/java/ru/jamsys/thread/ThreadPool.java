@@ -1,5 +1,6 @@
 package ru.jamsys.thread;
 
+import lombok.Getter;
 import ru.jamsys.App;
 import ru.jamsys.component.RateLimit;
 import ru.jamsys.extension.RunnableInterface;
@@ -17,6 +18,7 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
 
     final private BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer;
 
+    @Getter
     final private RateLimitItem rateLimitItemThread;
 
     public ThreadPool(

@@ -5,9 +5,9 @@ import lombok.ToString;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.TaskManager;
+import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.pool.AbstractPool;
 import ru.jamsys.pool.Pool;
-import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.util.Util;
 
@@ -22,7 +22,7 @@ import java.util.function.BiFunction;
  * */
 
 @ToString(onlyExplicitlyIncluded = true)
-public class ThreadEnvelope extends AbstractExpired {
+public class ThreadEnvelope extends AbstractPoolItem {
 
     private final Thread thread;
 
@@ -46,8 +46,27 @@ public class ThreadEnvelope extends AbstractExpired {
 
     private final AtomicInteger countOperation = new AtomicInteger(0);
 
+    @SuppressWarnings("StringBufferReplaceableByString")
+    public String getMomentumStatistic() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("isInit: ").append(isInit.get()).append("; ");
+        sb.append("isRun: ").append(isRun.get()).append("; ");
+        sb.append("isWhile: ").append(isWhile.get()).append("; ");
+        sb.append("inPark: ").append(inPark.get()).append("; ");
+        sb.append("isShutdown: ").append(isShutdown.get()).append("; ");
+        sb.append("maxCountIteration: ").append(maxCountIteration).append("; ");
+        sb.append("countOperation: ").append(countOperation.get()).append("; ");
+        return sb.toString();
+    }
+
     public boolean isNotInterrupted() {
         return !thread.isInterrupted();
+    }
+
+    public boolean isOverflowIteration() {
+        // countOperation - защита от бесконечных задач
+        // Предположим, что поменялось максимальное кол-во потоков и надо срезать потоки
+        return countOperation.getAndIncrement() >= maxCountIteration;
     }
 
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, RateLimitItem rateLimitItem, BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer) {
@@ -57,21 +76,18 @@ public class ThreadEnvelope extends AbstractExpired {
             AbstractPool.contextPool.set(pool);
             while (isWhile.get() && isNotInterrupted()) {
                 active();
-                countOperation.incrementAndGet();
-                boolean isContinue = false;
+                if (rateLimitItem.isOverflowTps() || isOverflowIteration()) {
+                    pause();
+                }
                 try {
-                    isContinue = consumer.apply(isWhile, this);
+                    if (consumer.apply(isWhile, this)) {
+                        continue;
+                    }
                 } catch (Exception e) {
                     App.context.getBean(ExceptionHandler.class).handler(e);
                 }
-                // countOperation - защита от бесконечных задач
-                // Предположим, что поменялось максимальное кол-во потоков и надо срезать потоки
-                // Остановкой даём возможность подрезать нагрузку через пул
-                if (!isContinue || !rateLimitItem.checkTps() || countOperation.get() > maxCountIteration) {
-                    if (isWhile.get()) {
-                        pause();
-                    }
-                }
+                //Конце итерации цикла всегда pause()
+                pause();
             }
             isRun.set(false);
         });
@@ -111,7 +127,6 @@ public class ThreadEnvelope extends AbstractExpired {
                 raiseUp("UNDEFINED STATUS WTF?");
             }
         } else if (inPark.compareAndSet(true, false)) {
-            countOperation.set(0);
             LockSupport.unpark(thread);
         }
     }
@@ -188,4 +203,8 @@ public class ThreadEnvelope extends AbstractExpired {
         isRun.set(false);
     }
 
+    @Override
+    public void polled() {
+        countOperation.set(0);
+    }
 }
