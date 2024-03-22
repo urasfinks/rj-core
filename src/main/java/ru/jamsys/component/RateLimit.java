@@ -92,6 +92,11 @@ public class RateLimit implements StatisticsCollectorComponent {
         return map.get(complexKey);
     }
 
+    public void reset() {
+        //Используйте только для тестирования
+        map.clear();
+    }
+
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
         List<Statistic> result = new ArrayList<>();

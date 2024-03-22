@@ -48,6 +48,10 @@ public class ThreadEnvelope extends AbstractPoolItem {
 
     private final AtomicInteger countOperation = new AtomicInteger(0);
 
+    public boolean isInit() {
+        return isInit.get();
+    }
+
     @SuppressWarnings("StringBufferReplaceableByString")
     public String getMomentumStatistic() {
         StringBuilder sb = new StringBuilder();

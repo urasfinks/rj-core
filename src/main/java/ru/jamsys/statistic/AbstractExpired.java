@@ -19,6 +19,10 @@ public abstract class AbstractExpired implements Expired {
         return curTime > (lastActivity + keepAliveOnInactivityMs);
     }
 
+    public long getExpiryRemaining(long curTime) {
+        return (lastActivity + keepAliveOnInactivityMs) - curTime;
+    }
+
     @Override
     public String getLastActiveFormat() {
         return Util.msToDataFormat(lastActivity);

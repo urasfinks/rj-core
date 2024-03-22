@@ -11,4 +11,8 @@ public interface Expired {
 
     void active();
 
+    void setKeepAliveOnInactivityMs(long ms);
+
+    long getExpiryRemaining(long curTime);
+
 }

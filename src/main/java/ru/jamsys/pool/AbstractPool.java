@@ -51,6 +51,8 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
 
     protected final ConcurrentLinkedDeque<T> removeQueue = new ConcurrentLinkedDeque<>();
 
+    protected final ConcurrentLinkedDeque<T> exceptionQueue = new ConcurrentLinkedDeque<>();
+
     protected final ConcurrentLinkedDeque<T> resourceQueue = new ConcurrentLinkedDeque<>();
 
     protected final AtomicBoolean isRun = new AtomicBoolean(false);
@@ -109,7 +111,11 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         if (resource == null) {
             return;
         }
-        if (resourceQueue.size() > max.get() || !isRun.get() || checkExceptionOnComplete(e)) {
+        if (checkExceptionOnComplete(e)) {
+            exceptionQueue.add(resource);
+            return;
+        }
+        if (resourceQueue.size() > max.get() || !isRun.get()) {
             if (addToRemove(resource)) {
                 return;
             }
@@ -204,7 +210,6 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
 
     private void overclocking(int count) {
         if (isRun.get() && resourceQueue.size() < max.get() && count > 0) {
-            Util.logConsole("overclocking() " + getMomentumStatistic());
             for (int i = 0; i < count; i++) {
                 if (!add()) {
                     break;
@@ -235,17 +240,23 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
                 remove(resource);
             }
         }
+        //Удаление ошибочных
+        while (!exceptionQueue.isEmpty()) {
+            T resource = exceptionQueue.pollLast();
+            if (resource != null) {
+                remove(resource);
+            }
+        }
     }
 
-    private boolean addToRemove(T resource) {
+    // Это не явное удаление, а всего лишь маркировка, что в принципе ресурс может быть удалён
+    public boolean addToRemove(T resource) {
         // Выведено в асинхрон через keepAlive, потому что если ресурс - поток, то когда он себя возвращает
         // Механизм closeResource пытается завершить процесс, который ждёт выполнение этой команды
         // Грубо это deadLock получается без асинхрона
-        if (resourceQueue.size() > min) {
-            if (!removeQueue.contains(resource)) {
-                removeQueue.add(resource);
-                return true;
-            }
+        if (resourceQueue.size() > min && !removeQueue.contains(resource)) {
+            removeQueue.add(resource);
+            return true;
         }
         return false;
     }

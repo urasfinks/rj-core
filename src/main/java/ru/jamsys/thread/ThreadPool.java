@@ -39,7 +39,9 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
 
     @Override
     public void closeResource(ThreadEnvelope resource) {
-        resource.shutdown();
+        if (resource.isInit()) {
+            resource.shutdown();
+        }
     }
 
     @Override
