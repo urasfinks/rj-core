@@ -1,5 +1,6 @@
 package ru.jamsys.thread;
 
+import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.App;
@@ -42,6 +43,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
     private final StringBuilder info = new StringBuilder();
 
     @Setter
+    @Getter
     private int maxCountIteration = 100; //Защита от бесконечных задач
 
     private final AtomicInteger countOperation = new AtomicInteger(0);
@@ -54,7 +56,6 @@ public class ThreadEnvelope extends AbstractPoolItem {
         sb.append("isWhile: ").append(isWhile.get()).append("; ");
         sb.append("inPark: ").append(inPark.get()).append("; ");
         sb.append("isShutdown: ").append(isShutdown.get()).append("; ");
-        sb.append("maxCountIteration: ").append(maxCountIteration).append("; ");
         sb.append("countOperation: ").append(countOperation.get()).append("; ");
         return sb.toString();
     }
@@ -78,6 +79,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
                 active();
                 if (rateLimitItem.isOverflowTps() || isOverflowIteration()) {
                     pause();
+                    continue;
                 }
                 try {
                     if (consumer.apply(isWhile, this)) {

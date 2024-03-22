@@ -38,18 +38,44 @@ class ThreadEnvelopeTest {
         );
         threadPool.run();
         ThreadEnvelope threadEnvelope = threadPool.getResource();
-        Assertions.assertEquals("isInit: false; isRun: false; isWhile: true; inPark: false; isShutdown: false; maxCountIteration: 100; countOperation: 0; ", threadEnvelope.getMomentumStatistic());
+
+        //Проверяем статусы что мы не инициализированы
+        Assertions.assertEquals("isInit: false; isRun: false; isWhile: true; inPark: false; isShutdown: false; countOperation: 0; ", threadEnvelope.getMomentumStatistic());
+        // Запускаем поток
         threadEnvelope.run();
-        Util.sleepMs(100);
-        Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: true; isShutdown: false; maxCountIteration: 100; countOperation: 101; ", threadEnvelope.getMomentumStatistic());
+        //Проверяем что поменялись статусы инициализации
+        Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: false; isShutdown: false; countOperation: 0; ", threadEnvelope.getMomentumStatistic());
+
+        //Ждём когда поток поработает
+        Util.sleepMs(200);
+
+        // Проверяем что поток ушёл на парковку
+        Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: true; isShutdown: false; countOperation: 101; ", threadEnvelope.getMomentumStatistic());
+
+        //Проверяем что отработал предел countOperation
         Assertions.assertEquals(100, testCount.get());
+
+        // Проверяем что поток ушёл на парковку в пуле
         Assertions.assertEquals("resourceQueue: 1; parkQueue: 1; removeQueue: 0; isRun: true; min: 1; max: 10; ", threadPool.getMomentumStatistic());
 
         threadEnvelope = threadPool.getResource();
 
+        //Проверяем что в пуле нет на паркинге никого
         Assertions.assertEquals("resourceQueue: 1; parkQueue: 0; removeQueue: 0; isRun: true; min: 1; max: 10; ", threadPool.getMomentumStatistic());
 
-        Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: true; isShutdown: false; maxCountIteration: 100; countOperation: 0; ", threadEnvelope.getMomentumStatistic());
+        //Проверяем что отработал вызов polled от pool, который зануляет countOperation
+        Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: true; isShutdown: false; countOperation: 0; ", threadEnvelope.getMomentumStatistic());
+
+        //Запускаем
+        threadEnvelope.run();
+        //Проверяем, что вышли из паркинга
+        Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: false; isShutdown: false; countOperation: 0; ", threadEnvelope.getMomentumStatistic());
+
+        //Ждём когда поток поработает
+        Util.sleepMs(200);
+
+        //Проверяем что поток реально поработал
+        Assertions.assertEquals(200, testCount.get());
     }
 
     @Test
