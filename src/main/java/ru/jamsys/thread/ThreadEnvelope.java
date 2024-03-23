@@ -27,6 +27,9 @@ public class ThreadEnvelope extends AbstractPoolItem {
 
     private final Thread thread;
 
+    @Getter
+    private final String name;
+
     @ToString.Include
     private final Pool<ThreadEnvelope> pool;
 
@@ -84,6 +87,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
                 .append(" with name: ")
                 .append(name)
                 .append("\r\n");
+        this.name = name;
         this.pool = pool;
         thread = new Thread(() -> {
             AbstractPool.contextPool.set(pool);
@@ -117,6 +121,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
         );
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     private boolean pause() {
         if (!isInit.get()) {
             raiseUp("Thread not initialize", "pause()");
