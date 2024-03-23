@@ -59,7 +59,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
 
     private final AtomicBoolean restartOperation = new AtomicBoolean(false);
 
-    private final AtomicInteger countReturnToParkQueue = new AtomicInteger(0);
+    private long timeWhenParkIsEmpty = -1;
 
     @Getter
     protected final RateLimitItem rateLimitItemPool;
@@ -71,8 +71,22 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         this.rateLimitItemPool = App.context.getBean(RateLimit.class).get(RateLimitGroup.POOL, getClass(), name);
     }
 
-    public int getCountReturnToParkQueue() {
-        return countReturnToParkQueue.get();
+    private long getTimeWhenParkIsEmpty() {
+        if (timeWhenParkIsEmpty == -1) {
+            return 0;
+        } else {
+            return System.currentTimeMillis() - timeWhenParkIsEmpty;
+        }
+    }
+
+    private void checkPark() {
+        if (parkQueue.isEmpty()) {
+            if (timeWhenParkIsEmpty == -1) {
+                timeWhenParkIsEmpty = System.currentTimeMillis();
+            }
+        } else {
+            timeWhenParkIsEmpty = -1;
+        }
     }
 
     @SuppressWarnings("StringBufferReplaceableByString")
@@ -84,6 +98,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         sb.append("isRun: ").append(isRun.get()).append("; ");
         sb.append("min: ").append(min).append("; ");
         sb.append("max: ").append(max.get()).append("; ");
+        //sb.append("timePark0: ").append(getTimeWhenParkIsEmpty()).append("; ");
         return sb.toString();
     }
 
@@ -133,9 +148,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         // И для потоков тут получается первичный дубль
         if (!parkQueue.contains(resource)) {
             parkQueue.addLast(resource);
-            if (isFinish) {
-                countReturnToParkQueue.incrementAndGet();
-            }
+            checkPark();
         }
     }
 
@@ -147,6 +160,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         }
         // Забираем с начала, что бы под нож улетели последние добавленные
         T resource = parkQueue.pollFirst();
+        checkPark();
         if (resource != null) {
             resource.polled();
         }
@@ -162,6 +176,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         long finishTimeMs = System.currentTimeMillis() + timeOutMs;
         while (isRun.get() && finishTimeMs > System.currentTimeMillis()) {
             T resource = parkQueue.pollFirst();
+            checkPark();
             if (resource != null) {
                 resource.polled();
                 return resource;
@@ -182,6 +197,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
                 T resource = removeQueue.pollLast();
                 if (resource != null) {
                     parkQueue.add(resource);
+                    checkPark();
                     return true;
                 }
             }
@@ -191,6 +207,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
                 resourceQueue.add(resource);
                 //#2
                 parkQueue.add(resource);
+                checkPark();
                 return true;
             }
         }
@@ -201,6 +218,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
     public void removeForce(T resource) {
         resourceQueue.remove(resource);
         parkQueue.remove(resource);
+        checkPark();
         removeQueue.remove(resource);
     }
 
@@ -227,8 +245,15 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         }
     }
 
+    public void addResourceZeroPool() {
+        if (min == 0 && resourceQueue.isEmpty() && parkQueue.isEmpty()) {
+            add();
+        }
+    }
+
     // Этот метод нельзя вызывать под бизнес задачи, система сама должна это контролировать
     // Если ресурса нет - ждите
+    // keepAlive работает на статистике от ресурсов. Если у пула min = 0, этот метод не поможет разогнать
     @Override
     public void keepAlive() {
         if (isRun.get()) {
@@ -238,7 +263,13 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
                 // Получается, что в паркинге нет никого и мы постоянно добавляем туда ресурс
                 // Добавленный ресурс ни кем не используется и попадает под нож, постоянно увеличивая счётчик ресурсов
                 // Поэтому добавили доп условие, что за промежуток времени не было complete со статусом isFinish = true
-                if (countReturnToParkQueue.getAndSet(0) == 0 && parkQueue.isEmpty()) {
+                // Переход на tpoParkQueue оказался провальным, так как иногда задачи выполняются реже чем keepAlive
+                // Это приводит к тому, что tpoParkQueue может быть 0 без и аналогичная ситуация с паркингом при
+                // одновременном выполнении задачи и keepAlive, когда парк пустой и tpoParkQueue = 0 и мы опять
+                // идём в увеличении потоков.
+                // Сейчас буду проигрывать историю, когда буду считать время когда парк опустел до момента, когда в парк
+                // вернулись ресурсы
+                if (getTimeWhenParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
                     overclocking(formulaAddCount.apply(1));
                 } else if (resourceQueue.size() > min) { //Кол-во больше минимума
                     removeLazy();
@@ -268,6 +299,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         //Удалять ресурсы из вне можно только из паркинга, когда они отработали
         if (parkQueue.contains(resource)) {
             parkQueue.remove(resource);
+            checkPark();
         } else {
             return false;
         }

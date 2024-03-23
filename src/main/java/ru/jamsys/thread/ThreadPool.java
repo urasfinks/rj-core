@@ -58,7 +58,7 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
         // Но бывает такое, что у пулов может быть min = 0
         // Pool keepAlive, тоже не запускается из-за того что при инициализации min = 0) - контролировать некому!)
         if (isEmpty()) {
-            keepAlive();
+            addResourceZeroPool();
         }
         ThreadEnvelope threadEnvelope = getResource();
         if (threadEnvelope != null) {

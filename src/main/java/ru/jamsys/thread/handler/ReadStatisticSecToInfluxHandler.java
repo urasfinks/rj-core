@@ -13,7 +13,6 @@ import ru.jamsys.broker.Queue;
 import ru.jamsys.component.Broker;
 import ru.jamsys.component.PropertiesManager;
 import ru.jamsys.component.Security;
-import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
 import ru.jamsys.thread.task.ReadStatisticSecTask;

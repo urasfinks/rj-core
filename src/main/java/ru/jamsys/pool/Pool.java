@@ -31,4 +31,6 @@ public interface Pool<T extends Expired> {
 
     void removeForce(T resource);
 
+    void addResourceZeroPool();
+
 }
