@@ -17,4 +17,9 @@ public class KeepAliveGenerator implements Generator {
     public Task getTask() {
         return new KeepAliveTask();
     }
+
+    @Override
+    public int getId() {
+        return 0;
+    }
 }

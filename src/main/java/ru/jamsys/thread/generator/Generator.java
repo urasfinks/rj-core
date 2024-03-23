@@ -8,4 +8,6 @@ public interface Generator {
 
     Task getTask();
 
+    int getId(); // Для сортировки запуска. Если KeepAlive вызывать последним, то всегда будем получать недостаток потоков
+
 }

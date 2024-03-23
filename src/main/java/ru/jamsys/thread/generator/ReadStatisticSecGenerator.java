@@ -16,4 +16,10 @@ public class ReadStatisticSecGenerator implements Generator {
     public Task getTask() {
         return new ReadStatisticSecTask();
     }
+
+    @Override
+    public int getId() {
+        return 1;
+    }
+
 }

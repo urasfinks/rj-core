@@ -12,6 +12,7 @@ import ru.jamsys.template.cron.CronTask;
 import ru.jamsys.thread.generator.Generator;
 import ru.jamsys.thread.handler.Handler;
 import ru.jamsys.thread.task.Task;
+import ru.jamsys.util.ListSort;
 
 import java.util.List;
 
@@ -50,15 +51,17 @@ public class Core implements RunnableInterface {
             }
         });
 
+        ListSort<CronTask> generatorListSort = new ListSort<>();
         classFinder.findByInstance(Generator.class).forEach((Class<Generator> generatorClass) -> {
             if (!classFinder.instanceOf(this.getClass(), generatorClass)) {
                 Generator generator = applicationContext.getBean(generatorClass);
-                dictionary.getListCronTask().add(new CronTask(
+                generatorListSort.add(generator.getId(), new CronTask(
                         new Cron(generator.getCronTemplate()),
                         generator.getTask()
                 ));
             }
         });
+        generatorListSort.getSorted().forEach(cronTask -> dictionary.getListCronTask().add(cronTask));
     }
 
     @Override
