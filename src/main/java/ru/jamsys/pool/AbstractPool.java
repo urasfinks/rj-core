@@ -136,8 +136,8 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         if (!isRun.get()) {
             return null;
         }
-        // Забираем с конца, что бы под нож первые улетели
-        T resource = parkQueue.pollLast();
+        // Забираем с начала, что бы под нож улетели последние добавленные
+        T resource = parkQueue.pollFirst();
         if (resource != null) {
             resource.polled();
         }
@@ -152,7 +152,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         }
         long finishTimeMs = System.currentTimeMillis() + timeOutMs;
         while (isRun.get() && finishTimeMs > System.currentTimeMillis()) {
-            T resource = parkQueue.pollLast();
+            T resource = parkQueue.pollFirst();
             if (resource != null) {
                 resource.polled();
                 return resource;
@@ -265,6 +265,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         if (isRun.get()) {
             final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
+            //C конца будем пробегать
             Util.riskModifierCollection(null, parkQueue, getEmptyType(), (T resource) -> {
                 if (maxCounterRemove.get() == 0) {
                     return;
@@ -275,7 +276,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
                 if (addToRemove(resource)) {
                     maxCounterRemove.decrementAndGet();
                 }
-            });
+            }, true);
         }
     }
 

@@ -25,6 +25,51 @@ class ThreadEnvelopeTest {
     }
 
     @Test
+    public void lastRemove() {
+        //Тест того, что удаление ресурсов происходит с конца
+        ThreadPool threadPool = new ThreadPool(
+                namePool,
+                0,
+                5,
+                (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
+                    testCount.incrementAndGet();
+                    return true;
+                }
+        );
+        Assertions.assertEquals("resourceQueue: 0; parkQueue: 0; removeQueue: 0; isRun: false; min: 0; max: 5; ", threadPool.getMomentumStatistic());
+        threadPool.run();
+        threadPool.keepAlive();
+        Assertions.assertEquals("resourceQueue: 1; parkQueue: 1; removeQueue: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
+        ThreadEnvelope resource1 = threadPool.getResource();
+        Assertions.assertEquals("TestPool-1", resource1.getName());
+
+        threadPool.keepAlive();
+        Assertions.assertEquals("resourceQueue: 2; parkQueue: 1; removeQueue: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
+
+        ThreadEnvelope resource2 = threadPool.getResource();
+        Assertions.assertEquals("TestPool-2", resource2.getName());
+
+        threadPool.complete(resource1, null);
+        threadPool.complete(resource2, null);
+
+        Assertions.assertEquals("resourceQueue: 2; parkQueue: 2; removeQueue: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
+
+        ThreadEnvelope resourceX = threadPool.getResource();
+        Assertions.assertEquals("TestPool-1", resourceX.getName());
+
+        resource2.setKeepAliveOnInactivityMs(1);
+        Util.sleepMs(100);
+        Assertions.assertEquals("resourceQueue: 2; parkQueue: 1; removeQueue: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
+        threadPool.keepAlive();
+        Assertions.assertEquals("resourceQueue: 1; parkQueue: 0; removeQueue: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
+        threadPool.complete(resourceX, null);
+        Assertions.assertEquals("resourceQueue: 1; parkQueue: 1; removeQueue: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
+
+        ThreadEnvelope resourceX2 = threadPool.getResource();
+        Assertions.assertEquals("TestPool-1", resourceX2.getName());
+    }
+
+    @Test
     public void addToRemoveMinMax2() {
         testCount.set(0);
         ThreadPool threadPool = new ThreadPool(
