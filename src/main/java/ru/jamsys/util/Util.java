@@ -377,10 +377,17 @@ public class Util {
     }
 
     public static <T> void riskModifierCollection(AtomicBoolean isRun, Collection<T> collection, T[] toArray, Consumer<T> consumer) {
+        riskModifierCollection(isRun, collection, toArray, consumer, false);
+    }
+
+    public static <T> void riskModifierCollection(AtomicBoolean isRun, Collection<T> collection, T[] toArray, Consumer<T> consumer, boolean reverse) {
         if (collection != null && !collection.isEmpty()) {
             try {
                 T[] objects = collection.toArray(toArray);
-                for (T value : objects) {
+                int index = reverse ? objects.length - 1 : 0;
+                int inc = reverse ? -1 : 1;
+                while (true) {
+                    T value = objects[index];
                     if (isRun == null || isRun.get()) {
                         try {
                             if (value != null) {
@@ -390,6 +397,10 @@ public class Util {
                             App.context.getBean(ExceptionHandler.class).handler(e2);
                         }
                     } else {
+                        break;
+                    }
+                    index += inc;
+                    if (index < 0 || index > objects.length - 1) {
                         break;
                     }
                 }
