@@ -137,7 +137,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
             return;
         }
         if (resourceQueue.size() > max.get() || !isRun.get()) {
-            if (nativeAddToRemove(resource)) {
+            if (addToRemoveWithoutCheckParking(resource)) {
                 return;
             }
         }
@@ -303,11 +303,11 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         } else {
             return false;
         }
-        return nativeAddToRemove(resource);
+        return addToRemoveWithoutCheckParking(resource);
     }
 
     // Это не явное удаление, а всего лишь маркировка, что в принципе ресурс может быть удалён
-    private boolean nativeAddToRemove(T resource) {
+    private boolean addToRemoveWithoutCheckParking(T resource) {
         // Выведено в асинхрон через keepAlive, потому что если ресурс - поток, то когда он себя возвращает
         // Механизм closeResource пытается завершить процесс, который ждёт выполнение этой команды
         // Грубо это deadLock получается без асинхрона
@@ -330,7 +330,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
                 if (!resource.isExpired(curTimeMs)) {
                     return;
                 }
-                if (nativeAddToRemove(resource)) {
+                if (addToRemove(resource)) {
                     maxCounterRemove.decrementAndGet();
                 }
             }, true);
