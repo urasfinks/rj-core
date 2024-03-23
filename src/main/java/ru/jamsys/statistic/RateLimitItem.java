@@ -50,4 +50,14 @@ public class RateLimitItem {
         tps.set(0);
         active = true;
     }
+
+    @SuppressWarnings({"StringBufferReplaceableByString", "unused"})
+    public String getMomentumStatistic() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("active: ").append(active).append("; ");
+        sb.append("tps: ").append(tps.get()).append("; ");
+        sb.append("max: ").append(max).append("; ");
+        return sb.toString();
+    }
+
 }
