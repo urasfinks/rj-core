@@ -103,7 +103,7 @@ public class RateLimit implements StatisticsCollectorComponent {
         Util.riskModifierMap(isRun, map, new ComplexKey[0], (ComplexKey complexKey, RateLimitItem rateLimitItem) -> {
             if (rateLimitItem.isActive()) {
                 result.add(new Statistic(parentTags, parentFields)
-                        .addTag("index", complexKey.toString())
+                        .addTag("index", complexKey.key)
                         .addTag("group", complexKey.rateLimitGroup.getName())
                         .addField("max", rateLimitItem.getMax())
                         .addField("tps", rateLimitItem.flushTps()));
