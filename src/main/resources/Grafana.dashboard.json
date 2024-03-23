@@ -300,7 +300,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"Broker\" and r._field == \"timeMsInQueueAvg\" and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\"])",
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"Broker\" and r._field == \"timeAvg\" and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\"])",
           "refId": "A"
         }
       ],
@@ -1087,6 +1087,6 @@
   "timezone": "",
   "title": "New dashboard",
   "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 23,
+  "version": 24,
   "weekStart": ""
 }

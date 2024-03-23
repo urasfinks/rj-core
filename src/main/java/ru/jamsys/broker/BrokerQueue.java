@@ -173,9 +173,9 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
             active();
         }
         result.add(new Statistic(parentTags, parentFields)
-                .addField("tpsDequeue", tpsDequeueFlush)
+                .addField("tpsDeq", tpsDequeueFlush)
                 .addField("size", sizeFlush)
-                .addFields(timeInQueue.flush("timeMsInQueue"))
+                .addFields(timeInQueue.flush("time"))
         );
         return result;
     }
