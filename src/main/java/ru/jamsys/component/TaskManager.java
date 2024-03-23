@@ -124,6 +124,8 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
             } else if (countThread.containsKey(indexTask)) {
                 threadPool.setMaxSlowRiseAndFastFall(countThread.get(indexTask).intValue());
                 threadPool.setSumTime(taskIndexSumTime.get(indexTask));
+            } else {
+                threadPool.setSumTime(0);
             }
             // 2024-03-20T13:42:08.002792 KeepAliveTask-1 add thread because: [KeepAliveTask] parkQueue: 0; resource: 1; remove: 0
             // На деём сами себя оживлять
