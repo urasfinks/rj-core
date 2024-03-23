@@ -34,7 +34,7 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
 
     @Override
     public ThreadEnvelope createResource() {
-        return new ThreadEnvelope(getName() + "-" + counter.getAndIncrement(), this, rateLimitItemPool, consumer);
+        return new ThreadEnvelope(getName() + "-" + counter.getAndIncrement(), this, rateLimitItemThread, consumer);
     }
 
     @Override
