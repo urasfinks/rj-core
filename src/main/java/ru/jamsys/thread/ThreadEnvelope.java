@@ -94,7 +94,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
             while (isWhile.get() && isNotInterrupted()) {
                 active();
                 if (rateLimitItem.isOverflowTps() || isOverflowIteration()) {
-                    pause();
+                    pause(false);
                     continue;
                 }
                 try {
@@ -105,7 +105,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
                     App.context.getBean(ExceptionHandler.class).handler(e);
                 }
                 //Конце итерации цикла всегда pause()
-                pause();
+                pause(true);
             }
             isRun.set(false);
         });
@@ -122,7 +122,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    private boolean pause() {
+    private boolean pause(boolean isFinish) {
         if (!isInit.get()) {
             raiseUp("Thread not initialize", "pause()");
             return false;
@@ -131,7 +131,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
             if (isShutdown.get()) {
                 pool.removeForce(this);
             } else {
-                pool.complete(this, null);
+                pool.complete(this, null, isFinish);
                 LockSupport.park(thread);
                 return true;
             }

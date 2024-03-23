@@ -5,7 +5,12 @@ import ru.jamsys.statistic.Expired;
 public interface Pool<T extends Expired> {
 
     @SuppressWarnings("unused")
-    void complete(T ret, Exception e);
+    default void complete(T ret, Exception e) {
+        complete(ret, e, true);
+    }
+
+    @SuppressWarnings("unused")
+    void complete(T ret, Exception e, boolean isFinish);
 
     @SuppressWarnings("unused")
     T getResource(); // Получить ресурс без ожидания, если нет в park - вернём null

@@ -97,8 +97,12 @@ class ThreadEnvelopeTest {
 
         Assertions.assertEquals("resourceQueue: 2; parkQueue: 0; removeQueue: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
+        // Проверка, что удалять не из паркинга нельзя
         threadPool.addToRemove(resource1);
+        Assertions.assertEquals("resourceQueue: 2; parkQueue: 0; removeQueue: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
+        threadPool.complete(resource1, null, false);
+        threadPool.addToRemove(resource1);
         Assertions.assertEquals("resourceQueue: 2; parkQueue: 0; removeQueue: 1; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
         threadPool.keepAlive();
@@ -106,8 +110,9 @@ class ThreadEnvelopeTest {
         Assertions.assertEquals("resourceQueue: 2; parkQueue: 1; removeQueue: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
         //Зачистка происходит из парка, а в парке сейчас resource1
-        resource1.setKeepAliveOnInactivityMs(1000); //По умолчанию сейча 6_000
-        Util.sleepMs(1001);
+        resource1.setKeepAliveOnInactivityMs(1); //По умолчанию сейча 6_000
+        Util.sleepMs(100);
+        Assertions.assertEquals(0, threadPool.getCountReturnToParkQueue());
         threadPool.keepAlive();
         //Ожидаем срез под нож 1 ресурс
         Assertions.assertEquals("resourceQueue: 1; parkQueue: 0; removeQueue: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());

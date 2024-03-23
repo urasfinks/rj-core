@@ -59,6 +59,8 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
 
     private final AtomicBoolean restartOperation = new AtomicBoolean(false);
 
+    private final AtomicInteger countReturnToParkQueue = new AtomicInteger(0);
+
     @Getter
     protected final RateLimitItem rateLimitItemPool;
 
@@ -67,6 +69,10 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         this.max.set(initMax); // Может быть изменён в runTime
         this.min = min;
         this.rateLimitItemPool = App.context.getBean(RateLimit.class).get(RateLimitGroup.POOL, getClass(), name);
+    }
+
+    public int getCountReturnToParkQueue() {
+        return countReturnToParkQueue.get();
     }
 
     @SuppressWarnings("StringBufferReplaceableByString")
@@ -107,7 +113,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
 
     @SuppressWarnings("unused")
     @Override
-    public void complete(T resource, Exception e) {
+    public void complete(T resource, Exception e, boolean isFinish) {
         if (resource == null) {
             return;
         }
@@ -116,7 +122,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
             return;
         }
         if (resourceQueue.size() > max.get() || !isRun.get()) {
-            if (addToRemove(resource)) {
+            if (nativeAddToRemove(resource)) {
                 return;
             }
         }
@@ -127,6 +133,9 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         // И для потоков тут получается первичный дубль
         if (!parkQueue.contains(resource)) {
             parkQueue.addLast(resource);
+            if (isFinish) {
+                countReturnToParkQueue.incrementAndGet();
+            }
         }
     }
 
@@ -224,7 +233,12 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
     public void keepAlive() {
         if (isRun.get()) {
             try {
-                if (parkQueue.isEmpty()) { //Если в очереди пустота, попробуем добавить
+                // Было изначально так: если на парковке никого нет - добавляем ресурс
+                // Из-за того, что задача сбора статистики вызывается в параллель с keepAlive
+                // Получается, что в паркинге нет никого и мы постоянно добавляем туда ресурс
+                // Добавленный ресурс ни кем не используется и попадает под нож, постоянно увеличивая счётчик ресурсов
+                // Поэтому добавили доп условие, что за промежуток времени не было complete со статусом isFinish = true
+                if (countReturnToParkQueue.getAndSet(0) == 0 && parkQueue.isEmpty()) {
                     overclocking(formulaAddCount.apply(1));
                 } else if (resourceQueue.size() > min) { //Кол-во больше минимума
                     removeLazy();
@@ -249,8 +263,19 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         }
     }
 
-    // Это не явное удаление, а всего лишь маркировка, что в принципе ресурс может быть удалён
+    @SuppressWarnings("UnusedReturnValue")
     public boolean addToRemove(T resource) {
+        //Удалять ресурсы из вне можно только из паркинга, когда они отработали
+        if (parkQueue.contains(resource)) {
+            parkQueue.remove(resource);
+        } else {
+            return false;
+        }
+        return nativeAddToRemove(resource);
+    }
+
+    // Это не явное удаление, а всего лишь маркировка, что в принципе ресурс может быть удалён
+    private boolean nativeAddToRemove(T resource) {
         // Выведено в асинхрон через keepAlive, потому что если ресурс - поток, то когда он себя возвращает
         // Механизм closeResource пытается завершить процесс, который ждёт выполнение этой команды
         // Грубо это deadLock получается без асинхрона
@@ -273,7 +298,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
                 if (!resource.isExpired(curTimeMs)) {
                     return;
                 }
-                if (addToRemove(resource)) {
+                if (nativeAddToRemove(resource)) {
                     maxCounterRemove.decrementAndGet();
                 }
             }, true);
