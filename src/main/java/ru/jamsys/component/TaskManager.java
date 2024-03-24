@@ -8,7 +8,7 @@ import ru.jamsys.statistic.AvgMetricUnit;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.thread.ThreadEnvelope;
-import ru.jamsys.thread.ThreadPool;
+import ru.jamsys.pool.ThreadPool;
 import ru.jamsys.thread.handler.Handler;
 import ru.jamsys.thread.task.Task;
 import ru.jamsys.util.Util;

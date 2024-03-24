@@ -1,12 +1,12 @@
-package ru.jamsys.thread;
+package ru.jamsys.pool;
 
 import lombok.Getter;
 import ru.jamsys.App;
 import ru.jamsys.component.RateLimit;
 import ru.jamsys.extension.RunnableInterface;
-import ru.jamsys.pool.AbstractPool;
 import ru.jamsys.statistic.RateLimitGroup;
 import ru.jamsys.statistic.RateLimitItem;
+import ru.jamsys.thread.ThreadEnvelope;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;

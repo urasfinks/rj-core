@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.extension.RunnableComponent;
 import ru.jamsys.template.cron.CronTask;
 import ru.jamsys.thread.ThreadEnvelope;
-import ru.jamsys.thread.ThreadPool;
+import ru.jamsys.pool.ThreadPool;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -93,7 +93,11 @@ public class ThreadEnvelope extends AbstractPoolItem {
             AbstractPool.contextPool.set(pool);
             while (isWhile.get() && isNotInterrupted()) {
                 active();
-                if (rateLimitItem.isOverflowTps() || isOverflowIteration()) {
+                if (rateLimitItem.isOverflowTps()) {
+                    pause(true);
+                    continue;
+                }
+                if (isOverflowIteration()) {
                     pause(false);
                     continue;
                 }
@@ -129,7 +133,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
         }
         if (inPark.compareAndSet(false, true)) {
             if (isShutdown.get()) {
-                pool.removeForce(this);
+                pool.removeForce(this, isFinish);
             } else {
                 pool.complete(this, null, isFinish);
                 LockSupport.park(thread);
@@ -232,7 +236,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
             }
             App.context.getBean(TaskManager.class).removeInQueueStatistic(this);
         }
-        pool.removeForce(this);
+        pool.removeForce(this, true);
         isRun.set(false);
     }
 

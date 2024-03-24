@@ -10,6 +10,7 @@ import ru.jamsys.util.Util;
 public enum RateLimitGroup {
     @SuppressWarnings("unused") OTHER,
     THREAD,
+    RESOURCE,
     BROKER,
     POOL;
 
