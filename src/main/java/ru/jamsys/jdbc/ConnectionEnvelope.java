@@ -44,7 +44,6 @@ public class ConnectionEnvelope extends AbstractPoolItem {
     }
 
     // Использование данного функционала должно быть очень аккуратным
-    // Надо чётко обрабатывать все исключения, так как любой exception будет возвращать
     @SuppressWarnings("unused")
     public void startReusable() throws Exception {
         if (!rateLimitItem.checkTps()) {
