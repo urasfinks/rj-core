@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class ReadStatisticSecToInfluxHandler implements Handler<StatisticSecFlush> {
+public class StatisticSecFlushToInfluxHandler implements Handler<StatisticSecFlush> {
 
     //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token 'LmbVFdM8Abe6T6atTD6Ai3LJOKrEVrKB61mrFqJzqx5HzANJ13HItZrbWuhDdJXsdLL9mJLn7UB6MtAbLG4AxQ=='
 
@@ -47,7 +47,7 @@ public class ReadStatisticSecToInfluxHandler implements Handler<StatisticSecFlus
 
     private final Broker broker;
 
-    public ReadStatisticSecToInfluxHandler(Security security, PropertiesManager propertiesManager, Broker broker) {
+    public StatisticSecFlushToInfluxHandler(Security security, PropertiesManager propertiesManager, Broker broker) {
         this.security = security;
         this.host = propertiesManager.getProperties("rj.task.handler.ReadStatisticSecToInfluxTaskHandler.host", String.class);
         this.bucket = propertiesManager.getProperties("rj.task.handler.ReadStatisticSecToInfluxTaskHandler.bucket", String.class);

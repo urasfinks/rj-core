@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @SuppressWarnings("unused")
-public class FlushStatisticCollectorHandler implements Handler<StatisticCollectorFlush> {
+public class StatisticCollectorFlushHandler implements Handler<StatisticCollectorFlush> {
 
     final Broker broker;
 
@@ -27,7 +27,7 @@ public class FlushStatisticCollectorHandler implements Handler<StatisticCollecto
 
     String ip = Util.getIp();
 
-    public FlushStatisticCollectorHandler(Dictionary dictionary, Broker broker, ExceptionHandler exceptionHandler) {
+    public StatisticCollectorFlushHandler(Dictionary dictionary, Broker broker, ExceptionHandler exceptionHandler) {
         this.dictionary = dictionary;
         this.broker = broker;
         this.exceptionHandler = exceptionHandler;

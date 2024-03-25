@@ -17,11 +17,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 @Lazy
 @IgnoreClassFinder
-public class ReadStatisticSecToConsoleHandler implements Handler<StatisticSecFlush> {
+public class StatisticSecFlushToConsoleHandler implements Handler<StatisticSecFlush> {
 
     final Broker broker;
 
-    public ReadStatisticSecToConsoleHandler(Broker broker) {
+    public StatisticSecFlushToConsoleHandler(Broker broker) {
         this.broker = broker;
     }
 
