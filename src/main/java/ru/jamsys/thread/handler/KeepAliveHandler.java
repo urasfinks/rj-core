@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.component.Dictionary;
 import ru.jamsys.extension.KeepAliveComponent;
-import ru.jamsys.thread.task.KeepAliveTask;
+import ru.jamsys.thread.task.KeepAlive;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class KeepAliveHandler implements Handler<KeepAliveTask> {
+public class KeepAliveHandler implements Handler<KeepAlive> {
 
     final private Dictionary dictionary;
 
@@ -21,7 +21,7 @@ public class KeepAliveHandler implements Handler<KeepAliveTask> {
     }
 
     @Override
-    public void run(KeepAliveTask task, AtomicBoolean isRun) throws Exception {
+    public void run(KeepAlive task, AtomicBoolean isRun) throws Exception {
         Util.riskModifierCollection(
                 isRun,
                 dictionary.getListKeepAliveComponent(),

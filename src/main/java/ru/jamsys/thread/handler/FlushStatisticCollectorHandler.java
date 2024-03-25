@@ -7,7 +7,7 @@ import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
-import ru.jamsys.thread.task.FlushStatisticCollectorTask;
+import ru.jamsys.thread.task.StatisticCollectorFlush;
 import ru.jamsys.util.Util;
 
 import java.util.LinkedHashMap;
@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @SuppressWarnings("unused")
-public class FlushStatisticCollectorHandler implements Handler<FlushStatisticCollectorTask> {
+public class FlushStatisticCollectorHandler implements Handler<StatisticCollectorFlush> {
 
     final Broker broker;
 
@@ -34,7 +34,7 @@ public class FlushStatisticCollectorHandler implements Handler<FlushStatisticCol
     }
 
     @Override
-    public void run(FlushStatisticCollectorTask task, AtomicBoolean isRun) throws Exception {
+    public void run(StatisticCollectorFlush task, AtomicBoolean isRun) throws Exception {
         StatisticSec statisticSec = new StatisticSec();
         Util.riskModifierCollection(isRun, dictionary.getListStatisticsCollectorComponent(), new StatisticsCollectorComponent[0], (StatisticsCollectorComponent statisticsCollectorComponent) -> {
             Map<String, String> parentTags = new LinkedHashMap<>();

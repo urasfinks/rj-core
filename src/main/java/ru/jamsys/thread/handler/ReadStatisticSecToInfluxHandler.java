@@ -15,7 +15,7 @@ import ru.jamsys.component.PropertiesManager;
 import ru.jamsys.component.Security;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
-import ru.jamsys.thread.task.ReadStatisticSecTask;
+import ru.jamsys.thread.task.StatisticSecFlush;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class ReadStatisticSecToInfluxHandler implements Handler<ReadStatisticSecTask> {
+public class ReadStatisticSecToInfluxHandler implements Handler<StatisticSecFlush> {
 
     //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token 'LmbVFdM8Abe6T6atTD6Ai3LJOKrEVrKB61mrFqJzqx5HzANJ13HItZrbWuhDdJXsdLL9mJLn7UB6MtAbLG4AxQ=='
 
@@ -57,7 +57,7 @@ public class ReadStatisticSecToInfluxHandler implements Handler<ReadStatisticSec
     }
 
     @Override
-    public void run(ReadStatisticSecTask task, AtomicBoolean isRun) throws Exception {
+    public void run(StatisticSecFlush task, AtomicBoolean isRun) throws Exception {
         Queue<StatisticSec> queue = broker.get(StatisticSec.class.getSimpleName());
         List<Point> listPoints = new ArrayList<>();
         while (!queue.isEmpty() && isRun.get()) {

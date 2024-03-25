@@ -7,7 +7,7 @@ import ru.jamsys.broker.Queue;
 import ru.jamsys.component.Broker;
 import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.statistic.StatisticSec;
-import ru.jamsys.thread.task.ReadStatisticSecTask;
+import ru.jamsys.thread.task.StatisticSecFlush;
 import ru.jamsys.util.Util;
 import ru.jamsys.util.UtilJson;
 
@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 @Lazy
 @IgnoreClassFinder
-public class ReadStatisticSecToConsoleHandler implements Handler<ReadStatisticSecTask> {
+public class ReadStatisticSecToConsoleHandler implements Handler<StatisticSecFlush> {
 
     final Broker broker;
 
@@ -26,7 +26,7 @@ public class ReadStatisticSecToConsoleHandler implements Handler<ReadStatisticSe
     }
 
     @Override
-    public void run(ReadStatisticSecTask task, AtomicBoolean isRun) throws Exception {
+    public void run(StatisticSecFlush task, AtomicBoolean isRun) throws Exception {
         Queue<StatisticSec> queue = broker.get(StatisticSec.class.getSimpleName());
         while (!queue.isEmpty() && isRun.get()) {
             StatisticSec statisticSec = queue.pollFirst();

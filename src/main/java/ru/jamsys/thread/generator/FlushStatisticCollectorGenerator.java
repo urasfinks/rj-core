@@ -1,7 +1,7 @@
 package ru.jamsys.thread.generator;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.thread.task.FlushStatisticCollectorTask;
+import ru.jamsys.thread.task.StatisticCollectorFlush;
 import ru.jamsys.thread.task.Task;
 
 @SuppressWarnings("unused")
@@ -14,7 +14,7 @@ public class FlushStatisticCollectorGenerator implements Generator {
 
     @Override
     public Task getTask() {
-        return new FlushStatisticCollectorTask();
+        return new StatisticCollectorFlush();
     }
 
     @Override

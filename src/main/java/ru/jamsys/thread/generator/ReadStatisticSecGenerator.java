@@ -1,8 +1,8 @@
 package ru.jamsys.thread.generator;
 
 import org.springframework.stereotype.Component;
+import ru.jamsys.thread.task.StatisticSecFlush;
 import ru.jamsys.thread.task.Task;
-import ru.jamsys.thread.task.ReadStatisticSecTask;
 
 @SuppressWarnings("unused")
 @Component
@@ -14,7 +14,7 @@ public class ReadStatisticSecGenerator implements Generator {
 
     @Override
     public Task getTask() {
-        return new ReadStatisticSecTask();
+        return new StatisticSecFlush();
     }
 
     @Override
