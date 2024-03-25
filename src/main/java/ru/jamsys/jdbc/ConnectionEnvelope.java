@@ -6,6 +6,7 @@ import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.pool.JdbcPool;
 import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.template.jdbc.*;
+import ru.jamsys.thread.task.JdbcRequest;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -58,19 +59,19 @@ public class ConnectionEnvelope extends AbstractPoolItem {
     }
 
     @SuppressWarnings("unused")
-    public List<Map<String, Object>> exec(TemplateEnum templateEnum, Map<String, Object> args, boolean debug) throws Exception {
+    public List<Map<String, Object>> exec(JdbcRequest task) throws Exception {
         if (!rateLimitItem.checkTps() && !reusable.get()) {
             // Если ресурс переиспользуемый - то это было сделано для того, что бы исполнить транзакцию состоящую
             // из нескольких запросов, и даже если tps закончились - надо, что бы транзакция завершилась commit
             throw new Exception("Tps overflow. Max tps = " + rateLimitItem.getMax());
         }
-        Template template = templateEnum.getTemplate();
+        Template template = task.getTemplate();
         if (template == null) {
             complete(null);
-            throw new Exception("TemplateEnum: " + templateEnum + " return null template");
+            throw new Exception("TemplateEnum: " + task.getName() + " return null template");
         }
         try {
-            List<Map<String, Object>> execute = execute(connection, template, args, pool.getStatementControl(), debug);
+            List<Map<String, Object>> execute = execute(connection, template, task.getArgs(), pool.getStatementControl(), task.getDebug());
             complete(null);
             return execute;
         } catch (Exception e) {
@@ -165,10 +166,8 @@ public class ConnectionEnvelope extends AbstractPoolItem {
             Argument arg
     ) throws Exception {
         switch (arg.getDirection()) {
-            case IN ->
-                    statementControl.setInParam(conn, preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());
-            case OUT ->
-                    statementControl.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
+            case IN -> statementControl.setInParam(conn, preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());
+            case OUT -> statementControl.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
             case IN_OUT -> {
                 statementControl.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
                 statementControl.setInParam(conn, preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());

@@ -2,7 +2,7 @@ package ru.jamsys.statistic;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.component.RateLimit;
+import ru.jamsys.extension.RateLimitKey;
 
 class RateLimitItemTest {
 
@@ -33,14 +33,14 @@ class RateLimitItemTest {
 
     @Test
     void checkEquals() {
-        RateLimit.ComplexKey complexKey1 = new RateLimit.ComplexKey(RateLimitGroup.OTHER, RateLimitGroup.class, "test");
-        RateLimit.ComplexKey complexKey2 = new RateLimit.ComplexKey(RateLimitGroup.OTHER, RateLimitGroup.class, "test");
+        RateLimitKey complexKey1 = new RateLimitKey(RateLimitGroup.OTHER, RateLimitGroup.class, "test");
+        RateLimitKey complexKey2 = new RateLimitKey(RateLimitGroup.OTHER, RateLimitGroup.class, "test");
         Assertions.assertEquals(complexKey2, complexKey1);
 
-        RateLimit.ComplexKey complexKey3 = new RateLimit.ComplexKey(RateLimitGroup.OTHER, RateLimitGroup.class, "test1");
+        RateLimitKey complexKey3 = new RateLimitKey(RateLimitGroup.OTHER, RateLimitGroup.class, "test1");
         Assertions.assertNotEquals(complexKey3, complexKey1);
 
-        RateLimit.ComplexKey complexKey4 = new RateLimit.ComplexKey(RateLimitGroup.BROKER, RateLimitGroup.class, "test");
+        RateLimitKey complexKey4 = new RateLimitKey(RateLimitGroup.BROKER, RateLimitGroup.class, "test");
         Assertions.assertNotEquals(complexKey4, complexKey1);
     }
 }

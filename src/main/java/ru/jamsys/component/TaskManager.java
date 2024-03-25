@@ -1,14 +1,15 @@
 package ru.jamsys.component;
 
 import org.springframework.stereotype.Component;
+import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
+import ru.jamsys.pool.ThreadPool;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.AvgMetricUnit;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.thread.ThreadEnvelope;
-import ru.jamsys.pool.ThreadPool;
 import ru.jamsys.thread.handler.Handler;
 import ru.jamsys.thread.task.Task;
 import ru.jamsys.util.Util;
@@ -48,8 +49,14 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
             mapPool.putIfAbsent(taskIndex, threadPool);
             threadPool.run();
         }
-        broker.add(taskIndex, task);
-        mapPool.get(taskIndex).wakeUp();
+        if (task instanceof BrokerCollectible) {
+            broker.add(taskIndex, (BrokerCollectible) task);
+            mapPool.get(taskIndex).wakeUp();
+        } else {
+            exceptionHandler.handler(
+                    new RuntimeException(task.getClass() + " not instanceof " + BrokerCollectible.class.getSimpleName())
+            );
+        }
     }
 
     private ThreadPool createThreadPool(String poolName) {

@@ -1,4 +1,4 @@
 package ru.jamsys.thread.task;
 
-public class StatisticSecFlush extends Task {
+public class StatisticSecFlush extends AbstractTask {
 }

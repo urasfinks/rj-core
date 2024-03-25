@@ -1,7 +1,7 @@
 package ru.jamsys.component;
 
-import lombok.NonNull;
 import org.springframework.stereotype.Component;
+import ru.jamsys.extension.RateLimitKey;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.RateLimitGroup;
 import ru.jamsys.statistic.RateLimitItem;
@@ -26,66 +26,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class RateLimit implements StatisticsCollectorComponent {
 
-    public static class ComplexKey {
-        final RateLimitGroup rateLimitGroup;
-        final Class<?> cls;
-        final String key;
-
-        public ComplexKey(@NonNull RateLimitGroup rateLimitGroup, @NonNull Class<?> cls, @NonNull String key) {
-            this.rateLimitGroup = rateLimitGroup;
-            this.cls = cls;
-            this.key = key;
-        }
-
-        @Override
-        public String toString() {
-            return rateLimitGroup.getName() + "." + cls.getSimpleName() + "." + key;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            ComplexKey that = (ComplexKey) o;
-
-            if (rateLimitGroup != that.rateLimitGroup) return false;
-            if (!cls.equals(that.cls)) return false;
-            return key.equals(that.key);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = rateLimitGroup.hashCode();
-            result = 31 * result + cls.hashCode();
-            result = 31 * result + key.hashCode();
-            return result;
-        }
-    }
-
-    Map<ComplexKey, RateLimitItem> map = new ConcurrentHashMap<>();
+    Map<RateLimitKey, RateLimitItem> map = new ConcurrentHashMap<>();
 
     public boolean contains(RateLimitGroup rateLimitGroup, Class<?> cls, String key) {
-        ComplexKey complexKey = new ComplexKey(rateLimitGroup, cls, key);
+        RateLimitKey complexKey = new RateLimitKey(rateLimitGroup, cls, key);
         return map.containsKey(complexKey);
     }
 
     public RateLimitItem get(RateLimitGroup rateLimitGroup, Class<?> cls, String key) {
-        ComplexKey complexKey = new ComplexKey(rateLimitGroup, cls, key);
-        /*
-            Pool.ThreadPool.KeepAliveTask
-            Pool.ThreadPool.FlushStatisticCollectorTask
-            Pool.ThreadPool.ReadStatisticSecTask
-
-            Thread.ThreadPool.KeepAliveTask
-            Thread.ThreadPool.FlushStatisticCollectorTask
-            Thread.ThreadPool.ReadStatisticSecTask
-
-            Broker.BrokerQueue.KeepAliveTask
-            Broker.BrokerQueue.FlushStatisticCollectorTask
-            Broker.BrokerQueue.ReadStatisticSecTask
-            Broker.BrokerQueue.StatisticSec
-        * */
+        RateLimitKey complexKey = new RateLimitKey(rateLimitGroup, cls, key);
         if (!map.containsKey(complexKey)) {
             map.put(complexKey, new RateLimitItem());
         }
@@ -100,11 +49,11 @@ public class RateLimit implements StatisticsCollectorComponent {
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
         List<Statistic> result = new ArrayList<>();
-        Util.riskModifierMap(isRun, map, new ComplexKey[0], (ComplexKey complexKey, RateLimitItem rateLimitItem) -> {
+        Util.riskModifierMap(isRun, map, new RateLimitKey[0], (RateLimitKey complexKey, RateLimitItem rateLimitItem) -> {
             if (rateLimitItem.isActive()) {
                 result.add(new Statistic(parentTags, parentFields)
-                        .addTag("index", complexKey.key)
-                        .addTag("group", complexKey.rateLimitGroup.getName())
+                        .addTag("index", complexKey.getKey())
+                        .addTag("group", complexKey.getRateLimitGroup().getName())
                         .addField("max", rateLimitItem.getMax())
                         .addField("tps", rateLimitItem.flushTps()));
             }

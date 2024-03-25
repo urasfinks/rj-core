@@ -1,4 +1,4 @@
 package ru.jamsys.thread.task;
 
-public class KeepAlive extends Task {
+public class KeepAlive extends AbstractTask {
 }
