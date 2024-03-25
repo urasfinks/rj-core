@@ -7,7 +7,7 @@ import ru.jamsys.template.jdbc.TemplateEnum;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class JdbcRequest extends AbstractTask implements Task {
+public class JdbcRequest extends AbstractTask {
 
     final String poolName;
 
