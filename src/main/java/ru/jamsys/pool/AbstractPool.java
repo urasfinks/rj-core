@@ -9,7 +9,6 @@ import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.extension.RunnableInterface;
-import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.rate.limit.RateLimitMax;
 import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.Statistic;
@@ -25,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractExpired implements Pool<T>, RunnableInterface, StatisticsCollector {
+public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends AbstractExpired implements Pool<T>, RunnableInterface {
 
     public static ThreadLocal<Pool<?>> contextPool = new ThreadLocal<>();
 
@@ -33,7 +32,6 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
 
     private final int min; //Минимальное кол-во ресурсов
 
-    @Setter
     private long sumTime = -1; //Сколько времени использовались ресурсы за 3сек
 
     @Getter
@@ -68,6 +66,11 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
         this.max.set(initMax); // Может быть изменён в runTime
         this.min = min;
         this.rateLimitMax = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitMax.class, name);
+    }
+
+    @Override
+    public void setSumTime(long time) {
+        sumTime = time;
     }
 
     private long getTimeWhenParkIsEmpty() {

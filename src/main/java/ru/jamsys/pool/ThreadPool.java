@@ -2,14 +2,13 @@ package ru.jamsys.pool;
 
 import ru.jamsys.App;
 import ru.jamsys.component.RateLimitManager;
-import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.rate.limit.RateLimitTps;
 import ru.jamsys.thread.ThreadEnvelope;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-public class ThreadPool extends AbstractPool<ThreadEnvelope> implements RunnableInterface {
+public class ThreadPool extends AbstractPool<ThreadEnvelope> {
 
     AtomicInteger counter = new AtomicInteger(1);
 

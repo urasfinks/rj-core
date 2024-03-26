@@ -1,5 +1,6 @@
 package ru.jamsys.component;
 
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.rate.limit.RateLimit;
@@ -28,17 +29,20 @@ public class RateLimitManager implements StatisticsCollectorComponent {
 
     Map<String, RateLimit> map = new ConcurrentHashMap<>();
 
-    public <T extends RateLimit> String getRateLimitKey(Class<?> clsOwner, Class<T> clsRateLimit, String key) {
-        return clsOwner.getSimpleName() + "." + clsRateLimit.getSimpleName() + "." + key;
+    public <T extends RateLimit> String getRateLimitKey(@NonNull Class<?> clsOwner, @NonNull Class<T> clsRateLimit, String key) {
+        if (key == null) {
+            return clsOwner.getSimpleName() + "." + clsRateLimit.getSimpleName();
+        } else {
+            return clsOwner.getSimpleName() + "." + clsRateLimit.getSimpleName() + "." + key;
+        }
     }
 
-    public <T extends RateLimit> boolean contains(Class<?> clsOwner, Class<T> clsRateLimit, String key) {
+    public <T extends RateLimit> boolean contains(@NonNull Class<?> clsOwner, @NonNull Class<T> clsRateLimit, String key) {
         String complexKey = getRateLimitKey(clsOwner, clsRateLimit, key);
         return map.containsKey(complexKey);
     }
 
-    public <T extends RateLimit> T get(Class<?> clsOwner, Class<T> clsRateLimit, String key) {
-        //RateLimitManagerKey complexKey = new RateLimitManagerKey(rateLimitGroup, clsOwner, clsRateLimit, key);
+    public <T extends RateLimit> T get(@NonNull Class<?> clsOwner, @NonNull Class<T> clsRateLimit, String key) {
         String complexKey = getRateLimitKey(clsOwner, clsRateLimit, key);
         if (!map.containsKey(complexKey)) {
             if (clsRateLimit.equals(RateLimitTps.class)) {

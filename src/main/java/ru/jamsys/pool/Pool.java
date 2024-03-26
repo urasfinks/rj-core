@@ -1,8 +1,9 @@
 package ru.jamsys.pool;
 
+import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.statistic.Expired;
 
-public interface Pool<T extends Expired> {
+public interface Pool<T extends Expired> extends StatisticsCollector {
 
     @SuppressWarnings("unused")
     void complete(T ret, Exception e);
@@ -27,5 +28,7 @@ public interface Pool<T extends Expired> {
     void removeForce(T resource);
 
     void addResourceZeroPool();
+
+    void setSumTime(long time);
 
 }

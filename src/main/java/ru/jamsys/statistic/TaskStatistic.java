@@ -11,15 +11,15 @@ import ru.jamsys.thread.task.Task;
 @Setter
 public class TaskStatistic implements BrokerCollectible {
 
-    AbstractPoolItem threadEnvelope;
+    AbstractPoolItem<?> poolItem;
 
     Task task;
 
     long timeStartMs = System.currentTimeMillis();
     Long timeExecuteMs = null;
 
-    public TaskStatistic(AbstractPoolItem threadEnvelope, @Nullable Task task) {
-        this.threadEnvelope = threadEnvelope;
+    public TaskStatistic(AbstractPoolItem<?> poolItem, @Nullable Task task) {
+        this.poolItem = poolItem;
         this.task = task;
     }
 

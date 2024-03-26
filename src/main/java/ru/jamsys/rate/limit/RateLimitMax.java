@@ -13,8 +13,11 @@ public class RateLimitMax implements RateLimit {
     @Setter
     private boolean active = false;
 
-    @Setter
-    private AtomicInteger max = new AtomicInteger(-1);
+    private final AtomicInteger max = new AtomicInteger(-1);
+
+    public void setMax(int max) {
+        this.max.set(max);
+    }
 
     public int getMax() {
         return max.get();

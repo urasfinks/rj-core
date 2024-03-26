@@ -22,15 +22,12 @@ import java.util.function.Function;
  * */
 
 @ToString(onlyExplicitlyIncluded = true)
-public class ThreadEnvelope extends AbstractPoolItem {
+public class ThreadEnvelope extends AbstractPoolItem<ThreadEnvelope> {
 
     private final Thread thread;
 
     @Getter
     private final String name;
-
-    @ToString.Include
-    private final Pool<ThreadEnvelope> pool;
 
     private final AtomicBoolean isInit = new AtomicBoolean(false);
 
@@ -65,6 +62,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
     }
 
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, Function<ThreadEnvelope, Boolean> consumer) {
+        super(pool);
         info
                 .append("[")
                 .append(Util.msToDataFormat(System.currentTimeMillis()))
@@ -75,7 +73,6 @@ public class ThreadEnvelope extends AbstractPoolItem {
                 .append(name)
                 .append("\r\n");
         this.name = name;
-        this.pool = pool;
         RateLimitTps rateLimitTps = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, pool.getName());
         thread = new Thread(() -> {
             AbstractPool.contextPool.set(pool);
@@ -218,7 +215,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
             } catch (Exception e) {
                 App.context.getBean(ExceptionHandler.class).handler(e);
             }
-            App.context.getBean(TaskManager.class).removeInQueueStatistic(this);
+            App.context.getBean(TaskManager.class).forceRemove(this);
         }
         pool.removeForce(this);
         isRun.set(false);

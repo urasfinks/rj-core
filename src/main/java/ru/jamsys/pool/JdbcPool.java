@@ -6,7 +6,6 @@ import ru.jamsys.App;
 import ru.jamsys.component.PropertiesManager;
 import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.component.Security;
-import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.jdbc.ConnectionEnvelope;
 import ru.jamsys.rate.limit.RateLimitTps;
 import ru.jamsys.template.jdbc.DefaultStatementControl;
@@ -14,7 +13,7 @@ import ru.jamsys.template.jdbc.StatementControl;
 
 import java.sql.DriverManager;
 
-public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements RunnableInterface {
+public class JdbcPool extends AbstractPool<ConnectionEnvelope> {
 
     @Setter
     private String uri;

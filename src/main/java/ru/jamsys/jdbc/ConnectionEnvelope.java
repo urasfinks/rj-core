@@ -5,6 +5,7 @@ import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.pool.JdbcPool;
+import ru.jamsys.pool.Pool;
 import ru.jamsys.rate.limit.RateLimitTps;
 import ru.jamsys.template.jdbc.*;
 import ru.jamsys.thread.task.JdbcRequest;
@@ -16,20 +17,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConnectionEnvelope extends AbstractPoolItem {
+public class ConnectionEnvelope extends AbstractPoolItem<ConnectionEnvelope> {
 
     final private Connection connection;
-
-    final private JdbcPool pool;
 
     final private RateLimitTps rateLimitTps;
 
     private final AtomicBoolean reusable = new AtomicBoolean(false);
 
     //JdbcPool потому что надо получить контроллер sql операторов (pool.getStatementControl())
-    public ConnectionEnvelope(Connection connection, JdbcPool pool) {
+    public ConnectionEnvelope(Connection connection, Pool<ConnectionEnvelope> pool) {
+        super(pool);
         this.connection = connection;
-        this.pool = pool;
         this.rateLimitTps = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, pool.getName());
     }
 
@@ -73,7 +72,13 @@ public class ConnectionEnvelope extends AbstractPoolItem {
             throw new Exception("TemplateEnum: " + task.getName() + " return null template");
         }
         try {
-            List<Map<String, Object>> execute = execute(connection, template, task.getArgs(), pool.getStatementControl(), task.getDebug());
+            List<Map<String, Object>> execute = execute(
+                    connection,
+                    template,
+                    task.getArgs(),
+                    ((JdbcPool) pool).getStatementControl(),
+                    task.getDebug()
+            );
             complete(null);
             return execute;
         } catch (Exception e) {
