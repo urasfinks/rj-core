@@ -28,13 +28,13 @@ public class RateLimitManager implements StatisticsCollectorComponent {
 
     Map<String, RateLimit> map = new ConcurrentHashMap<>();
 
+    public <T extends RateLimit> String getRateLimitKey(Class<?> clsOwner, Class<T> clsRateLimit, String key) {
+        return clsOwner.getSimpleName() + "." + clsRateLimit.getSimpleName() + "." + key;
+    }
+
     public <T extends RateLimit> boolean contains(Class<?> clsOwner, Class<T> clsRateLimit, String key) {
         String complexKey = getRateLimitKey(clsOwner, clsRateLimit, key);
         return map.containsKey(complexKey);
-    }
-
-    public <T extends RateLimit> String getRateLimitKey(Class<?> clsOwner, Class<T> clsRateLimit, String key) {
-        return clsOwner.getSimpleName() + "." + clsRateLimit.getSimpleName() + "." + key;
     }
 
     public <T extends RateLimit> T get(Class<?> clsOwner, Class<T> clsRateLimit, String key) {
