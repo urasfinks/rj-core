@@ -1,40 +1,33 @@
 package ru.jamsys.pool;
 
-import lombok.Getter;
 import ru.jamsys.App;
-import ru.jamsys.component.RateLimit;
+import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.RunnableInterface;
-import ru.jamsys.statistic.RateLimitGroup;
-import ru.jamsys.statistic.RateLimitItem;
+import ru.jamsys.rate.limit.RateLimitTps;
 import ru.jamsys.thread.ThreadEnvelope;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class ThreadPool extends AbstractPool<ThreadEnvelope> implements RunnableInterface {
 
     AtomicInteger counter = new AtomicInteger(1);
 
-    final private BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer;
-
-    @Getter
-    final private RateLimitItem rateLimitItemThread;
+    final private Function<ThreadEnvelope, Boolean> consumer;
 
     public ThreadPool(
             String name,
             int min,
             int initMax,
-            BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer
+            Function<ThreadEnvelope, Boolean> consumer
     ) {
         super(name, min, initMax);
-        this.rateLimitItemThread = App.context.getBean(RateLimit.class).get(RateLimitGroup.THREAD, getClass(), name);
         this.consumer = consumer;
     }
 
     @Override
     public ThreadEnvelope createResource() {
-        return new ThreadEnvelope(getName() + "-" + counter.getAndIncrement(), this, rateLimitItemThread, consumer);
+        return new ThreadEnvelope(getName() + "-" + counter.getAndIncrement(), this, consumer);
     }
 
     @Override
@@ -66,16 +59,21 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Runnable
         }
     }
 
+    public RateLimitTps getRateLimitThread() {
+        return App.context.getBean(RateLimitManager.class)
+                .get(ThreadEnvelope.class, RateLimitTps.class, getName());
+    }
+
     @Override
     public void run() {
         super.run();
-        rateLimitItemThread.setActive(true);
+        getRateLimitThread().setActive(true);
     }
 
     @Override
     public void shutdown() {
         super.shutdown();
-        rateLimitItemThread.setActive(false);
+        getRateLimitThread().setActive(false);
     }
 
 }

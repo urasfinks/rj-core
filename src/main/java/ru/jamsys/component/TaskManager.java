@@ -59,31 +59,35 @@ public class TaskManager implements KeepAliveComponent, StatisticsCollectorCompo
         }
     }
 
+    public void executeTask(ThreadEnvelope threadEnvelope, Task task) {
+        @SuppressWarnings("unchecked")
+        Handler<Task> handler = dictionary.getTaskHandler().get(task.getClass());
+        if (handler != null) {
+            TaskStatistic taskStatistic = new TaskStatistic(threadEnvelope, task);
+            queueTaskStatistics.add(taskStatistic);
+            try {
+                handler.run(task, threadEnvelope.getIsWhile());
+            } catch (Exception e) {
+                exceptionHandler.handler(e);
+            }
+            taskStatistic.finish();
+        } else {
+            exceptionHandler.handler(new RuntimeException("Not find TaskHandler for Task = " + task.getClass()));
+        }
+    }
+
     private ThreadPool createThreadPool(String poolName) {
         return new ThreadPool(
                 poolName,
                 0,
                 1,
-                (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
+                (ThreadEnvelope threadEnvelope) -> {
                     Task task = broker.pollLast(poolName);
                     if (task == null) {
                         return false;
                     }
-                    @SuppressWarnings("unchecked")
-                    Handler<Task> handler = dictionary.getTaskHandler().get(task.getClass());
-                    if (handler != null) {
-                        TaskStatistic taskStatistic = new TaskStatistic(threadEnvelope, task);
-                        queueTaskStatistics.add(taskStatistic);
-                        try {
-                            handler.run(task, isWhile);
-                        } catch (Exception e) {
-                            exceptionHandler.handler(e);
-                        }
-                        taskStatistic.finish();
-                    } else {
-                        exceptionHandler.handler(new RuntimeException("Not find TaskHandler for Task = " + task.getClass()));
-                    }
-                    return false;
+                    executeTask(threadEnvelope, task);
+                    return true;
                 }
         );
     }

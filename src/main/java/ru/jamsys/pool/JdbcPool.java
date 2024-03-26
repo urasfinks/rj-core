@@ -4,12 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.App;
 import ru.jamsys.component.PropertiesManager;
-import ru.jamsys.component.RateLimit;
+import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.component.Security;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.jdbc.ConnectionEnvelope;
-import ru.jamsys.statistic.RateLimitGroup;
-import ru.jamsys.statistic.RateLimitItem;
+import ru.jamsys.rate.limit.RateLimitTps;
 import ru.jamsys.template.jdbc.DefaultStatementControl;
 import ru.jamsys.template.jdbc.StatementControl;
 
@@ -27,9 +26,6 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Runnab
     private String securityAlias;
 
     @Getter
-    final private RateLimitItem rateLimitItemResource;
-
-    @Getter
     private final StatementControl statementControl = new DefaultStatementControl();
 
     public JdbcPool(String name, int min, int max) {
@@ -38,7 +34,6 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Runnab
         this.uri = propertiesManager.getProperties("rj.jdbc.uri", String.class);
         this.user = propertiesManager.getProperties("rj.jdbc.user", String.class);
         this.securityAlias = propertiesManager.getProperties("rj.jdbc.security.alias", String.class);
-        this.rateLimitItemResource = App.context.getBean(RateLimit.class).get(RateLimitGroup.RESOURCE, getClass(), name);
     }
 
     @SuppressWarnings("unused")
@@ -54,8 +49,7 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Runnab
             Security security = App.context.getBean(Security.class);
             return new ConnectionEnvelope(
                     DriverManager.getConnection(uri, user, new String(security.get(securityAlias))),
-                    this,
-                    rateLimitItemResource
+                    this
             );
         } catch (Exception e) {
             e.printStackTrace();
@@ -80,16 +74,21 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Runnab
         return false;
     }
 
+    public RateLimitTps getRateLimitThread() {
+        return App.context.getBean(RateLimitManager.class)
+                .get(ConnectionEnvelope.class, RateLimitTps.class, getName());
+    }
+
     @Override
     public void run() {
         super.run();
-        rateLimitItemResource.setActive(true);
+        getRateLimitThread().setActive(true);
     }
 
     @Override
     public void shutdown() {
         super.shutdown();
-        rateLimitItemResource.setActive(false);
+        getRateLimitThread().setActive(false);
     }
 
 }

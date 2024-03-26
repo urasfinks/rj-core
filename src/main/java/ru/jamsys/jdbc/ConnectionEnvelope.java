@@ -2,9 +2,10 @@ package ru.jamsys.jdbc;
 
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
+import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.pool.JdbcPool;
-import ru.jamsys.statistic.RateLimitItem;
+import ru.jamsys.rate.limit.RateLimitTps;
 import ru.jamsys.template.jdbc.*;
 import ru.jamsys.thread.task.JdbcRequest;
 
@@ -21,14 +22,15 @@ public class ConnectionEnvelope extends AbstractPoolItem {
 
     final private JdbcPool pool;
 
-    final private RateLimitItem rateLimitItem;
+    final private RateLimitTps rateLimitItem;
 
     private final AtomicBoolean reusable = new AtomicBoolean(false);
 
-    public ConnectionEnvelope(Connection connection, JdbcPool pool, RateLimitItem rateLimitItem) {
+    //JdbcPool потому что надо получить контроллер sql операторов (pool.getStatementControl())
+    public ConnectionEnvelope(Connection connection, JdbcPool pool) {
         this.connection = connection;
         this.pool = pool;
-        this.rateLimitItem = rateLimitItem;
+        this.rateLimitItem = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, pool.getName());
     }
 
     @Override

@@ -6,13 +6,12 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
-import ru.jamsys.component.RateLimit;
+import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.extension.StatisticsCollector;
+import ru.jamsys.rate.limit.RateLimitMax;
 import ru.jamsys.statistic.AbstractExpired;
-import ru.jamsys.statistic.RateLimitGroup;
-import ru.jamsys.statistic.RateLimitItem;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
 
@@ -62,13 +61,13 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
     private long timeWhenParkIsEmpty = -1;
 
     @Getter
-    protected final RateLimitItem rateLimitItemPool;
+    protected final RateLimitMax rateLimitItemPool;
 
     public AbstractPool(String name, int min, int initMax) {
         this.name = name;
         this.max.set(initMax); // Может быть изменён в runTime
         this.min = min;
-        this.rateLimitItemPool = App.context.getBean(RateLimit.class).get(RateLimitGroup.POOL, getClass(), name);
+        this.rateLimitItemPool = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitMax.class, name);
     }
 
     private long getTimeWhenParkIsEmpty() {
@@ -111,7 +110,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
     }
 
     public void setMaxSlowRiseAndFastFall(int max) {
-        if (rateLimitItemPool.checkMax(max)) {
+        if (rateLimitItemPool.checkLimit(max)) {
             if (max >= min) {
                 if (max > this.max.get()) { //Медленно поднимаем
                     this.max.incrementAndGet();

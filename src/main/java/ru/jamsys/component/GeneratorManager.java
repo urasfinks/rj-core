@@ -3,9 +3,9 @@ package ru.jamsys.component;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.extension.RunnableComponent;
+import ru.jamsys.pool.ThreadPool;
 import ru.jamsys.template.cron.CronTask;
 import ru.jamsys.thread.ThreadEnvelope;
-import ru.jamsys.pool.ThreadPool;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -17,13 +17,14 @@ public class GeneratorManager implements RunnableComponent {
 
     final private ThreadPool threadPool;
 
-    public GeneratorManager(Dictionary dictionary, ExceptionHandler exceptionHandler, Broker broker, TaskManager taskManager, RateLimit rateLimit) {
+    public GeneratorManager(Dictionary dictionary, ExceptionHandler exceptionHandler, Broker broker, TaskManager taskManager, RateLimitManager rateLimitManager) {
         this.threadPool = new ThreadPool(
                 getClass().getSimpleName(),
                 1,
                 1,
-                (AtomicBoolean isWhile, ThreadEnvelope threadEnvelope) -> {
+                (ThreadEnvelope threadEnvelope) -> {
                     long nextStartMs = System.currentTimeMillis();
+                    AtomicBoolean isWhile = threadEnvelope.getIsWhile();
                     while (isWhile.get() && threadEnvelope.isNotInterrupted()) {
                         nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
                         long curTimeMs = System.currentTimeMillis();

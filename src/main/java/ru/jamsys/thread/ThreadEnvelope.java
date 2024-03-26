@@ -4,17 +4,17 @@ import lombok.Getter;
 import lombok.ToString;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
+import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.component.TaskManager;
 import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.pool.AbstractPool;
 import ru.jamsys.pool.Pool;
-import ru.jamsys.statistic.RateLimitItem;
+import ru.jamsys.rate.limit.RateLimitTps;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /*
  * После остановки поток нельзя переиспользовать
@@ -36,6 +36,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
 
     private final AtomicBoolean isRun = new AtomicBoolean(false);
 
+    @Getter
     private final AtomicBoolean isWhile = new AtomicBoolean(true);
 
     private final AtomicBoolean inPark = new AtomicBoolean(false);
@@ -43,11 +44,6 @@ public class ThreadEnvelope extends AbstractPoolItem {
     private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
     private final StringBuilder info = new StringBuilder();
-
-    // Защита от бесконечных операций должна решаться в RateLimit
-    //private int maxCountIteration = 100; //Защита от бесконечных задач
-
-    private final AtomicInteger countOperation = new AtomicInteger(0);
 
     public boolean isInit() {
         return isInit.get();
@@ -61,7 +57,6 @@ public class ThreadEnvelope extends AbstractPoolItem {
         sb.append("isWhile: ").append(isWhile.get()).append("; ");
         sb.append("inPark: ").append(inPark.get()).append("; ");
         sb.append("isShutdown: ").append(isShutdown.get()).append("; ");
-        sb.append("countOperation: ").append(countOperation.get()).append("; ");
         return sb.toString();
     }
 
@@ -69,7 +64,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
         return !thread.isInterrupted();
     }
 
-    public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, RateLimitItem rateLimitItem, BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer) {
+    public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, Function<ThreadEnvelope, Boolean> consumer) {
         info
                 .append("[")
                 .append(Util.msToDataFormat(System.currentTimeMillis()))
@@ -81,6 +76,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
                 .append("\r\n");
         this.name = name;
         this.pool = pool;
+        RateLimitTps rateLimitItem = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, pool.getName());
         thread = new Thread(() -> {
             AbstractPool.contextPool.set(pool);
             while (isWhile.get() && isNotInterrupted()) {
@@ -90,7 +86,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
                     continue;
                 }
                 try {
-                    if (consumer.apply(isWhile, this)) {
+                    if (consumer.apply(this)) {
                         continue;
                     }
                 } catch (Exception e) {
@@ -228,8 +224,4 @@ public class ThreadEnvelope extends AbstractPoolItem {
         isRun.set(false);
     }
 
-    @Override
-    public void polled() {
-        countOperation.set(0);
-    }
 }

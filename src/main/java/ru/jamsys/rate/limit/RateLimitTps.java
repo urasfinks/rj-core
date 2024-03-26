@@ -1,44 +1,30 @@
-package ru.jamsys.statistic;
+package ru.jamsys.rate.limit;
 
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RateLimitItem {
-
+public class RateLimitTps implements RateLimit {
     @Getter
     @Setter
     private boolean active = false;
 
     private final AtomicInteger tps = new AtomicInteger(0);
 
+    @Getter
     private volatile int max = -1;
-
-    public boolean checkMax(int max) {
-        if (max < -1) {
-            return false;
-        }
-        return this.max < 0 || (this.max > 0 && this.max >= max);
-    }
-
-    public int flushTps() {
-        return tps.getAndSet(0);
-    }
 
     public boolean isOverflowTps() {
         return !checkTps();
     }
 
     public boolean checkTps() {
-        boolean result = max < 0 || (max > 0 && tps.get() < max); // -1 = infinity; 0 = reject
         tps.incrementAndGet();
         active = true;
-        return result;
-    }
-
-    public int getMax() {
-        return max;
+        return max < 0 || (max > 0 && tps.get() <= max); // -1 = infinity; 0 = reject
     }
 
     public void setMax(int max) {
@@ -48,7 +34,16 @@ public class RateLimitItem {
     public void reset() {
         // Рекомендуется использовать только для тестов
         tps.set(0);
-        active = true;
+        active = false;
+    }
+
+    @Override
+    public Map<String, Object> flush() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("class", getClass().getSimpleName());
+        result.put("tps", tps.getAndSet(0));
+        result.put("max", max);
+        return result;
     }
 
     @SuppressWarnings({"StringBufferReplaceableByString", "unused"})
@@ -59,5 +54,4 @@ public class RateLimitItem {
         sb.append("max: ").append(max).append("; ");
         return sb.toString();
     }
-
 }

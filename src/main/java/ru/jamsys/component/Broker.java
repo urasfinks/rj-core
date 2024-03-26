@@ -23,12 +23,6 @@ public class Broker implements StatisticsCollectorComponent {
 
     private final Map<String, Queue<? extends BrokerCollectible>> mapQueue = new ConcurrentHashMap<>();
 
-    final private RateLimit rateLimit;
-
-    public Broker(RateLimit rateLimit) {
-        this.rateLimit = rateLimit;
-    }
-
     @SuppressWarnings("unused")
     public <T extends BrokerCollectible> void add(String key, T object) throws Exception {
         get(key).add(object);
