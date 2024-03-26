@@ -104,7 +104,7 @@ class ThreadEnvelopeTest {
         threadPool.addToRemove(resource1);
         Assertions.assertEquals("resourceQueue: 2; parkQueue: 0; removeQueue: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
-        threadPool.complete(resource1, null, false);
+        threadPool.complete(resource1, null);
         threadPool.addToRemove(resource1);
         Assertions.assertEquals("resourceQueue: 2; parkQueue: 0; removeQueue: 1; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
@@ -173,7 +173,8 @@ class ThreadEnvelopeTest {
 
         for (int i = 0; i < 5; i++) {
             ThreadEnvelope resource = threadPool.getResource();
-            resource.setMaxCountIteration(125);
+            //TODO: отказ от setMaxCountIteration в пользу RateLimit
+            //resource.setMaxCountIteration(125);
             resource.run();
         }
         Util.sleepMs(1000);

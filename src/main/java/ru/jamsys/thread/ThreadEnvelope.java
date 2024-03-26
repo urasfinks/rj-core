@@ -1,7 +1,6 @@
 package ru.jamsys.thread;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
@@ -45,9 +44,8 @@ public class ThreadEnvelope extends AbstractPoolItem {
 
     private final StringBuilder info = new StringBuilder();
 
-    @Setter
-    @Getter
-    private int maxCountIteration = 100; //Защита от бесконечных задач
+    // Защита от бесконечных операций должна решаться в RateLimit
+    //private int maxCountIteration = 100; //Защита от бесконечных задач
 
     private final AtomicInteger countOperation = new AtomicInteger(0);
 
@@ -71,12 +69,6 @@ public class ThreadEnvelope extends AbstractPoolItem {
         return !thread.isInterrupted();
     }
 
-    public boolean isOverflowIteration() {
-        // countOperation - защита от бесконечных задач
-        // Предположим, что поменялось максимальное кол-во потоков и надо срезать потоки
-        return countOperation.getAndIncrement() >= maxCountIteration;
-    }
-
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, RateLimitItem rateLimitItem, BiFunction<AtomicBoolean, ThreadEnvelope, Boolean> consumer) {
         info
                 .append("[")
@@ -94,11 +86,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
             while (isWhile.get() && isNotInterrupted()) {
                 active();
                 if (rateLimitItem.isOverflowTps()) {
-                    pause(true);
-                    continue;
-                }
-                if (isOverflowIteration()) {
-                    pause(false);
+                    pause();
                     continue;
                 }
                 try {
@@ -109,7 +97,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
                     App.context.getBean(ExceptionHandler.class).handler(e);
                 }
                 //Конце итерации цикла всегда pause()
-                pause(true);
+                pause();
             }
             isRun.set(false);
         });
@@ -126,16 +114,16 @@ public class ThreadEnvelope extends AbstractPoolItem {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    private boolean pause(boolean isFinish) {
+    private boolean pause() {
         if (!isInit.get()) {
             raiseUp("Thread not initialize", "pause()");
             return false;
         }
         if (inPark.compareAndSet(false, true)) {
             if (isShutdown.get()) {
-                pool.removeForce(this, isFinish);
+                pool.removeForce(this);
             } else {
-                pool.complete(this, null, isFinish);
+                pool.complete(this, null);
                 LockSupport.park(thread);
                 return true;
             }
@@ -236,7 +224,7 @@ public class ThreadEnvelope extends AbstractPoolItem {
             }
             App.context.getBean(TaskManager.class).removeInQueueStatistic(this);
         }
-        pool.removeForce(this, true);
+        pool.removeForce(this);
         isRun.set(false);
     }
 
