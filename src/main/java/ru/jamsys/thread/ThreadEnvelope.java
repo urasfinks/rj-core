@@ -76,12 +76,12 @@ public class ThreadEnvelope extends AbstractPoolItem {
                 .append("\r\n");
         this.name = name;
         this.pool = pool;
-        RateLimitTps rateLimitItem = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, pool.getName());
+        RateLimitTps rateLimitTps = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, pool.getName());
         thread = new Thread(() -> {
             AbstractPool.contextPool.set(pool);
             while (isWhile.get() && isNotInterrupted()) {
                 active();
-                if (rateLimitItem.isOverflowTps()) {
+                if (rateLimitTps.isOverflowTps()) {
                     pause();
                     continue;
                 }

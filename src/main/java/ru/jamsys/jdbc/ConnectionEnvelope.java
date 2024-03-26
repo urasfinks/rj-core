@@ -22,7 +22,7 @@ public class ConnectionEnvelope extends AbstractPoolItem {
 
     final private JdbcPool pool;
 
-    final private RateLimitTps rateLimitItem;
+    final private RateLimitTps rateLimitTps;
 
     private final AtomicBoolean reusable = new AtomicBoolean(false);
 
@@ -30,7 +30,7 @@ public class ConnectionEnvelope extends AbstractPoolItem {
     public ConnectionEnvelope(Connection connection, JdbcPool pool) {
         this.connection = connection;
         this.pool = pool;
-        this.rateLimitItem = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, pool.getName());
+        this.rateLimitTps = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, pool.getName());
     }
 
     @Override
@@ -49,9 +49,9 @@ public class ConnectionEnvelope extends AbstractPoolItem {
     // Использование данного функционала должно быть очень аккуратным
     @SuppressWarnings("unused")
     public void startReusable() throws Exception {
-        if (!rateLimitItem.checkTps()) {
+        if (!rateLimitTps.checkTps()) {
             stopReusable();
-            throw new Exception("Tps overflow. Max tps = " + rateLimitItem.getMax());
+            throw new Exception("Tps overflow. Max tps = " + rateLimitTps.getMax());
         }
         reusable.set(true);
     }
@@ -62,10 +62,10 @@ public class ConnectionEnvelope extends AbstractPoolItem {
 
     @SuppressWarnings("unused")
     public List<Map<String, Object>> exec(JdbcRequest task) throws Exception {
-        if (!rateLimitItem.checkTps() && !reusable.get()) {
+        if (!rateLimitTps.checkTps() && !reusable.get()) {
             // Если ресурс переиспользуемый - то это было сделано для того, что бы исполнить транзакцию состоящую
             // из нескольких запросов, и даже если tps закончились - надо, что бы транзакция завершилась commit
-            throw new Exception("Tps overflow. Max tps = " + rateLimitItem.getMax());
+            throw new Exception("Tps overflow. Max tps = " + rateLimitTps.getMax());
         }
         Template template = task.getTemplate();
         if (template == null) {

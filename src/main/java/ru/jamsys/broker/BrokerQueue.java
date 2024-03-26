@@ -53,10 +53,10 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
         return queue.isEmpty();
     }
 
-    final RateLimitTps rateLimitItem;
+    final RateLimitTps rateLimitTps;
 
     public BrokerQueue(String key) {
-        this.rateLimitItem = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, key);
+        this.rateLimitTps = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, key);
     }
 
     @SuppressWarnings("unused")
@@ -69,8 +69,8 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
         if (element == null) {
             throw new Exception("Element null");
         }
-        if (!rateLimitItem.checkTps()) {
-            throw new Exception("RateLimit BrokerQueue: " + element.getClass().getSimpleName() + "; max tps: " + rateLimitItem.getMax() + "; object: " + element);
+        if (!rateLimitTps.checkTps()) {
+            throw new Exception("RateLimit BrokerQueue: " + element.getClass().getSimpleName() + "; max tps: " + rateLimitTps.getMax() + "; object: " + element);
         }
         if (cyclical) {
             if (queue.size() >= sizeQueue) {
@@ -151,12 +151,12 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
         sizeQueue = 3000;
         sizeTail = 5;
         cyclical = true;
-        rateLimitItem.reset();
+        rateLimitTps.reset();
     }
 
     @Override
     public void setMaxTpsInput(int maxTpsInput) {
-        rateLimitItem.setMax(maxTpsInput);
+        rateLimitTps.setMax(maxTpsInput);
     }
 
     @Override
@@ -185,7 +185,7 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
 
     @Override
     public void close() {
-        rateLimitItem.setActive(false);
+        rateLimitTps.setActive(false);
     }
 
 }

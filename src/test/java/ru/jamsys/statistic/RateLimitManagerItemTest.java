@@ -9,27 +9,27 @@ class RateLimitManagerItemTest {
 
     @Test
     void checkMax() {
-        RateLimitMax rateLimitItem = new RateLimitMax();
-        rateLimitItem.setMax(2);
-        Assertions.assertTrue(rateLimitItem.checkLimit(1));
-        Assertions.assertTrue(rateLimitItem.checkLimit(2));
-        Assertions.assertFalse(rateLimitItem.checkLimit(3));
-        rateLimitItem.setMax(-1);
-        Assertions.assertTrue(rateLimitItem.checkLimit(3));
-        Assertions.assertTrue(rateLimitItem.checkLimit(3));
+        RateLimitMax rateLimitMax = new RateLimitMax();
+        rateLimitMax.setMax(2);
+        Assertions.assertTrue(rateLimitMax.checkLimit(1));
+        Assertions.assertTrue(rateLimitMax.checkLimit(2));
+        Assertions.assertFalse(rateLimitMax.checkLimit(3));
+        rateLimitMax.setMax(-1);
+        Assertions.assertTrue(rateLimitMax.checkLimit(3));
+        Assertions.assertTrue(rateLimitMax.checkLimit(3));
         // Эту функцию будут вызывать при установки новых значений, низя
-        Assertions.assertTrue(rateLimitItem.checkLimit(-1));
-        Assertions.assertFalse(rateLimitItem.checkLimit(-2));
-        Assertions.assertFalse(rateLimitItem.checkLimit(-3));
+        Assertions.assertTrue(rateLimitMax.checkLimit(-1));
+        Assertions.assertFalse(rateLimitMax.checkLimit(-2));
+        Assertions.assertFalse(rateLimitMax.checkLimit(-3));
     }
 
     @Test
     void checkTps() {
-        RateLimitTps rateLimitItem = new RateLimitTps();
-        rateLimitItem.setMax(2);
-        Assertions.assertTrue(rateLimitItem.checkTps());
-        Assertions.assertTrue(rateLimitItem.checkTps());
-        Assertions.assertFalse(rateLimitItem.checkTps());
+        RateLimitTps rateLimitTps = new RateLimitTps();
+        rateLimitTps.setMax(2);
+        Assertions.assertTrue(rateLimitTps.checkTps());
+        Assertions.assertTrue(rateLimitTps.checkTps());
+        Assertions.assertFalse(rateLimitTps.checkTps());
     }
 
 }

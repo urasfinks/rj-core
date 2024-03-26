@@ -61,13 +61,13 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
     private long timeWhenParkIsEmpty = -1;
 
     @Getter
-    protected final RateLimitMax rateLimitItemPool;
+    protected final RateLimitMax rateLimitMax;
 
     public AbstractPool(String name, int min, int initMax) {
         this.name = name;
         this.max.set(initMax); // Может быть изменён в runTime
         this.min = min;
-        this.rateLimitItemPool = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitMax.class, name);
+        this.rateLimitMax = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitMax.class, name);
     }
 
     private long getTimeWhenParkIsEmpty() {
@@ -110,7 +110,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
     }
 
     public void setMaxSlowRiseAndFastFall(int max) {
-        if (rateLimitItemPool.checkLimit(max)) {
+        if (rateLimitMax.checkLimit(max)) {
             if (max >= min) {
                 if (max > this.max.get()) { //Медленно поднимаем
                     this.max.incrementAndGet();
@@ -121,7 +121,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
                 Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < Pool.min = " + min, true);
             }
         } else {
-            Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " > RateLimit.max = " + rateLimitItemPool.getMax(), true);
+            Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " > RateLimit.max = " + rateLimitMax.getMax(), true);
         }
     }
 
@@ -347,7 +347,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
             for (int i = 0; i < min; i++) {
                 add();
             }
-            rateLimitItemPool.setActive(true);
+            rateLimitMax.setActive(true);
             restartOperation.set(false);
         }
     }
@@ -362,7 +362,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem> extends AbstractE
                     getEmptyType(),
                     this::remove
             );
-            rateLimitItemPool.setActive(false);
+            rateLimitMax.setActive(false);
             restartOperation.set(false);
         }
     }

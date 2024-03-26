@@ -383,7 +383,7 @@ class ThreadEnvelopeTest {
         Assertions.assertTrue(rateLimitManager.contains(ThreadEnvelope.class, RateLimitTps.class, namePool));
 
         //Проверяем статус новых RateLimitItem - что они не активны, до тех пор пока не стартанёт pool
-        RateLimit rateLimitPool = threadPool.getRateLimitItemPool();
+        RateLimit rateLimitPool = threadPool.getRateLimitMax();
         Assertions.assertFalse(rateLimitPool.isActive());
 
         RateLimit rateLimitThread = threadPool.getRateLimitThread();
