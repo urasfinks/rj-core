@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RateLimitMax implements RateLimit {
 
@@ -13,19 +14,22 @@ public class RateLimitMax implements RateLimit {
     private boolean active = false;
 
     @Setter
-    @Getter
-    private volatile int max = -1;
+    private AtomicInteger max = new AtomicInteger(-1);
+
+    public int getMax() {
+        return max.get();
+    }
 
     public boolean checkLimit(int currentValue) {
         if (currentValue < -1) {
             return false;
         }
-        return this.max < 0 || (this.max > 0 && this.max >= currentValue);
+        return this.max.get() < 0 || (this.max.get() > 0 && this.max.get() >= currentValue);
     }
 
     public void reset() {
         // Рекомендуется использовать только для тестов
-        max = -1;
+        max.set(-1);
         active = false;
     }
 
