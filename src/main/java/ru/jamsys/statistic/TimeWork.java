@@ -64,12 +64,15 @@ public class TimeWork {
     }
 
     public static Map<String, Long> getMaxCountResourceByTime(Map<String, Long> map, int count) {
+        Map<String, Long> result = new HashMap<>();
+        if (map.isEmpty()) {
+            return result;
+        }
         Map<String, Long> normalizeMap = new LinkedHashMap<>();
         for (String index : map.keySet()) {
             Long aLong = map.get(index);
             normalizeMap.put(index, aLong < 1 ? 1 : aLong);
         }
-        Map<String, Long> result = new HashMap<>();
         BigDecimal maxCount = new BigDecimal(count);
         BigDecimal maxPrc = new BigDecimal(100);
 

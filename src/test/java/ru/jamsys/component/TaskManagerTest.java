@@ -52,5 +52,9 @@ class TaskManagerTest {
         calc = TaskManager.getMaxCountResourceByTime(map, 500);
         Assertions.assertEquals("{KeepAliveTask=250, FlushStatisticCollectorTask=250}", calc.toString(), "#3");
 
+        map.clear();
+        calc = TaskManager.getMaxCountResourceByTime(map, 500);
+        Assertions.assertEquals("{}", calc.toString(), "#3");
+
     }
 }

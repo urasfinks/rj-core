@@ -38,5 +38,4 @@ public class TaskStatistic implements BrokerCollectible {
         return timeExecuteMs != null;
     }
 
-
 }
