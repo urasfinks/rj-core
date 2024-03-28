@@ -9,8 +9,7 @@ class CronTest {
 
     @Test
     public void single() {
-        //long curTime = 1709734264056L; //2024-03-06T17:11:04.056
-
+        long curTime = 1709734264056L; //2024-03-06T17:11:04.056
     }
 
     @Test
@@ -32,10 +31,18 @@ class CronTest {
         Assertions.assertEquals("Template({Second=[], Minute=[], HourOfDay=[], DayOfMonth=[1], Month=[], DayOfWeek=[]})", new Cron("* * * 1 *").toString());
         Assertions.assertEquals("Template({Second=[], Minute=[], HourOfDay=[], DayOfMonth=[], Month=[1], DayOfWeek=[]})", new Cron("* * * * 1").toString());
         Assertions.assertEquals("Template({Second=[], Minute=[], HourOfDay=[], DayOfMonth=[], Month=[], DayOfWeek=[1]})", new Cron("* * * * * 1").toString());
+        Assertions.assertEquals("Template({Second=[0], Minute=[0], HourOfDay=[0], DayOfMonth=[1], Month=[], DayOfWeek=[]})", new Cron("0 0 0 1 *").toString());
 
 
         System.out.println("Start time: " + Util.msToDataFormat(curTime));
         Assertions.assertEquals("[{Second=1, Minute=null, HourOfDay=null, DayOfMonth=null, Month=null, DayOfWeek=null}]", new Cron("1 * * * *").getListTimeVariant().toString());
+
+        //RateLimit test
+        Assertions.assertEquals("2024-03-06T17:12:00.000", Util.msToDataFormat(new Cron("0 * * * *").getNext(curTime)));
+        Assertions.assertEquals("2024-03-06T18:00:00.000", Util.msToDataFormat(new Cron("0 0 * * *").getNext(curTime)));
+        Assertions.assertEquals("2024-03-07T00:00:00.000", Util.msToDataFormat(new Cron("0 0 0 * *").getNext(curTime)));
+        Assertions.assertEquals("2024-04-01T00:00:00.000", Util.msToDataFormat(new Cron("0 0 0 1 *").getNext(curTime)));
+        Assertions.assertEquals("null", Util.msToDataFormat(new Cron("0 0 0 1 1").getNext(curTime)));
 
         Assertions.assertEquals("2024-03-06T17:12:01.000", Util.msToDataFormat(new Cron("1 * * * * *").getNext(curTime)));
         Assertions.assertEquals("2024-03-06T17:12:02.000", Util.msToDataFormat(new Cron("2 * * * * *").getNext(curTime)));

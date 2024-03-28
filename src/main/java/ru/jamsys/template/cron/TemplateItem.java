@@ -1,6 +1,7 @@
 package ru.jamsys.template.cron;
 
 import lombok.Getter;
+import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 public class TemplateItem {
 
     @Getter
-    List<Integer> list = new ArrayList<>();
+    final List<Integer> list = new ArrayList<>();
 
     @Getter
     Unit unit;
@@ -24,6 +25,10 @@ public class TemplateItem {
     public void add(int x) {
         if (x >= unit.getMin() && x <= unit.getMax() && !list.contains(x)) {
             list.add(x);
+        } else {
+            if (!list.contains(x)) {
+                Util.printStackTrace(getClass().getSimpleName() + " unit value: " + x + " overflow between [" + unit.getMin() + ", " + unit.getMax() + "]");
+            }
         }
     }
 
