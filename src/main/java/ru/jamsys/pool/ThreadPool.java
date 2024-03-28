@@ -1,8 +1,7 @@
 package ru.jamsys.pool;
 
-import ru.jamsys.App;
-import ru.jamsys.component.RateLimitManager;
-import ru.jamsys.rate.limit.RateLimitTps;
+import ru.jamsys.rate.limit.v2.RateLimitItemInstance;
+import ru.jamsys.rate.limit.v2.RateLimitName;
 import ru.jamsys.thread.ThreadEnvelope;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -58,21 +57,16 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> {
         }
     }
 
-    public RateLimitTps getRateLimitThread() {
-        return App.context.getBean(RateLimitManager.class)
-                .get(ThreadEnvelope.class, RateLimitTps.class, getName());
-    }
-
     @Override
     public void run() {
         super.run();
-        getRateLimitThread().setActive(true);
+        getRateLimit().setActive(true);
     }
 
     @Override
     public void shutdown() {
         super.shutdown();
-        getRateLimitThread().setActive(false);
+        getRateLimit().setActive(false);
     }
 
 }

@@ -9,7 +9,10 @@ import ru.jamsys.component.TaskManager;
 import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.pool.AbstractPool;
 import ru.jamsys.pool.Pool;
-import ru.jamsys.rate.limit.RateLimitTps;
+import ru.jamsys.rate.limit.v2.RateLimit;
+import ru.jamsys.rate.limit.v2.RateLimitItem;
+import ru.jamsys.rate.limit.v2.RateLimitItemInstance;
+import ru.jamsys.rate.limit.v2.RateLimitName;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,6 +66,7 @@ public class ThreadEnvelope extends AbstractPoolItem<ThreadEnvelope> {
 
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, Function<ThreadEnvelope, Boolean> consumer) {
         super(pool);
+        RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), pool.getName());
         info
                 .append("[")
                 .append(Util.msToDataFormat(System.currentTimeMillis()))
@@ -73,12 +77,12 @@ public class ThreadEnvelope extends AbstractPoolItem<ThreadEnvelope> {
                 .append(name)
                 .append("\r\n");
         this.name = name;
-        RateLimitTps rateLimitTps = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, pool.getName());
+
         thread = new Thread(() -> {
             AbstractPool.contextPool.set(pool);
             while (isWhile.get() && isNotInterrupted()) {
                 active();
-                if (rateLimitTps.isOverflowTps()) {
+                if (rateLimit.check(null)) {
                     pause();
                     continue;
                 }

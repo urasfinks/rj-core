@@ -10,7 +10,7 @@ public class RateLimitItemMax implements RateLimitItem {
 
     @Override
     public boolean check(Integer limit) {
-        if (limit < -1) {
+        if (limit == null || limit < -1) {
             return false;
         }
         return this.max.get() < 0 || (this.max.get() > 0 && this.max.get() >= limit);
@@ -21,9 +21,19 @@ public class RateLimitItemMax implements RateLimitItem {
     }
 
     @Override
+    public long getMax() {
+        return max.get();
+    }
+
+    @Override
     public Map<String, Object> flushTps(long curTime) {
         Map<String, Object> result = new HashMap<>();
         result.put("max", max.get());
         return result;
+    }
+
+    @Override
+    public void reset() {
+        max.set(-1);
     }
 }

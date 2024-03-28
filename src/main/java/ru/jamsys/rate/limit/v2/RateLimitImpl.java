@@ -32,6 +32,7 @@ public class RateLimitImpl implements RateLimit {
     public void reset() {
         // Рекомендуется использовать только для тестов
         active = false;
+        mapLimit.forEach((String key, RateLimitItem rateLimitItem) -> rateLimitItem.reset());
     }
 
     @Override
@@ -44,4 +45,28 @@ public class RateLimitImpl implements RateLimit {
         }
         return true;
     }
+
+    @Override
+    public RateLimitItem add(String name, RateLimitItemInstance rateLimitItemInstance) {
+        if(!mapLimit.containsKey(name)){
+            mapLimit.put(name, rateLimitItemInstance.create());
+        }
+        return get(name);
+    }
+
+    @Override
+    public RateLimitItem add(RateLimitName name, RateLimitItemInstance rateLimitItemInstance) {
+        return add(name.getName(), rateLimitItemInstance);
+    }
+
+    @Override
+    public RateLimitItem get(String name) {
+        return mapLimit.get(name);
+    }
+
+    @Override
+    public RateLimitItem get(RateLimitName name) {
+        return mapLimit.get(name.getName());
+    }
+
 }

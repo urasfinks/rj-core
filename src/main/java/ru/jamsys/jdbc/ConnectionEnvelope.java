@@ -6,7 +6,10 @@ import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.pool.JdbcPool;
 import ru.jamsys.pool.Pool;
-import ru.jamsys.rate.limit.RateLimitTps;
+import ru.jamsys.rate.limit.v2.RateLimit;
+import ru.jamsys.rate.limit.v2.RateLimitItem;
+import ru.jamsys.rate.limit.v2.RateLimitItemInstance;
+import ru.jamsys.rate.limit.v2.RateLimitName;
 import ru.jamsys.template.jdbc.*;
 import ru.jamsys.thread.task.JdbcRequest;
 
@@ -21,7 +24,7 @@ public class ConnectionEnvelope extends AbstractPoolItem<ConnectionEnvelope> {
 
     final private Connection connection;
 
-    final private RateLimitTps rateLimitTps;
+    final private RateLimit rateLimit;
 
     private final AtomicBoolean reusable = new AtomicBoolean(false);
 
@@ -29,7 +32,8 @@ public class ConnectionEnvelope extends AbstractPoolItem<ConnectionEnvelope> {
     public ConnectionEnvelope(Connection connection, Pool<ConnectionEnvelope> pool) {
         super(pool);
         this.connection = connection;
-        this.rateLimitTps = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, pool.getName());
+        rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), pool.getName());
+        RateLimitItem rateLimitTps = rateLimit.add(RateLimitName.RESOURCE_TPS, RateLimitItemInstance.TPS);
     }
 
     @Override
@@ -48,9 +52,9 @@ public class ConnectionEnvelope extends AbstractPoolItem<ConnectionEnvelope> {
     // Использование данного функционала должно быть очень аккуратным
     @SuppressWarnings("unused")
     public void startReusable() throws Exception {
-        if (!rateLimitTps.checkTps()) {
+        if (!rateLimit.check(null)) {
             stopReusable();
-            throw new Exception("Tps overflow. Max tps = " + rateLimitTps.getMax());
+            throw new Exception("RateLimit overflow");
         }
         reusable.set(true);
     }
@@ -61,10 +65,10 @@ public class ConnectionEnvelope extends AbstractPoolItem<ConnectionEnvelope> {
 
     @SuppressWarnings("unused")
     public List<Map<String, Object>> exec(JdbcRequest task) throws Exception {
-        if (!rateLimitTps.checkTps() && !reusable.get()) {
+        if (!rateLimit.check(null) && !reusable.get()) {
             // Если ресурс переиспользуемый - то это было сделано для того, что бы исполнить транзакцию состоящую
             // из нескольких запросов, и даже если tps закончились - надо, что бы транзакция завершилась commit
-            throw new Exception("Tps overflow. Max tps = " + rateLimitTps.getMax());
+            throw new Exception("RateLimit overflow");
         }
         Template template = task.getTemplate();
         if (template == null) {
@@ -173,8 +177,10 @@ public class ConnectionEnvelope extends AbstractPoolItem<ConnectionEnvelope> {
             Argument arg
     ) throws Exception {
         switch (arg.getDirection()) {
-            case IN -> statementControl.setInParam(conn, preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());
-            case OUT -> statementControl.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
+            case IN ->
+                    statementControl.setInParam(conn, preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());
+            case OUT ->
+                    statementControl.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
             case IN_OUT -> {
                 statementControl.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
                 statementControl.setInParam(conn, preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());

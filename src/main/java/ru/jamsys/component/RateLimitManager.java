@@ -1,11 +1,11 @@
 package ru.jamsys.component;
 
 import lombok.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import ru.jamsys.extension.StatisticsCollectorComponent;
-import ru.jamsys.rate.limit.RateLimit;
-import ru.jamsys.rate.limit.RateLimitMax;
-import ru.jamsys.rate.limit.RateLimitTps;
+import ru.jamsys.rate.limit.v2.RateLimit;
+import ru.jamsys.rate.limit.v2.RateLimitImpl;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
 
@@ -29,31 +29,25 @@ public class RateLimitManager implements StatisticsCollectorComponent {
 
     Map<String, RateLimit> map = new ConcurrentHashMap<>();
 
-    public <T extends RateLimit> String getRateLimitKey(@NonNull Class<?> clsOwner, @NonNull Class<T> clsRateLimit, String key) {
+    public <T extends RateLimit> String getRateLimitKey(@NonNull Class<?> clsOwner, String key) {
         if (key == null) {
-            return clsOwner.getSimpleName() + "." + clsRateLimit.getSimpleName();
+            return clsOwner.getSimpleName();
         } else {
-            return clsOwner.getSimpleName() + "." + clsRateLimit.getSimpleName() + "." + key;
+            return clsOwner.getSimpleName() + "." + key;
         }
     }
 
-    public <T extends RateLimit> boolean contains(@NonNull Class<?> clsOwner, @NonNull Class<T> clsRateLimit, String key) {
-        String complexKey = getRateLimitKey(clsOwner, clsRateLimit, key);
+    public boolean contains(@NonNull Class<?> clsOwner, @Nullable String key) {
+        String complexKey = getRateLimitKey(clsOwner, key);
         return map.containsKey(complexKey);
     }
 
-    public <T extends RateLimit> T get(@NonNull Class<?> clsOwner, @NonNull Class<T> clsRateLimit, String key) {
-        String complexKey = getRateLimitKey(clsOwner, clsRateLimit, key);
+    public RateLimit get(@NonNull Class<?> clsOwner, @Nullable String key) {
+        String complexKey = getRateLimitKey(clsOwner, key);
         if (!map.containsKey(complexKey)) {
-            if (clsRateLimit.equals(RateLimitTps.class)) {
-                map.put(complexKey, new RateLimitTps());
-            } else if (clsRateLimit.equals(RateLimitMax.class)) {
-                map.put(complexKey, new RateLimitMax());
-            }
+            map.put(complexKey, new RateLimitImpl());
         }
-        @SuppressWarnings("unchecked")
-        T result = (T) map.get(complexKey);
-        return result;
+        return map.get(complexKey);
     }
 
     public void reset() {
@@ -64,11 +58,12 @@ public class RateLimitManager implements StatisticsCollectorComponent {
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
         List<Statistic> result = new ArrayList<>();
+        long curTime = System.currentTimeMillis();
         Util.riskModifierMap(isRun, map, new String[0], (String complexKey, RateLimit rateLimit) -> {
             if (rateLimit.isActive()) {
                 result.add(new Statistic(parentTags, parentFields)
                         .addTag("index", complexKey)
-                        .addFields(rateLimit.flush())
+                        .addFields(rateLimit.flushTps(curTime))
                 );
             }
         });

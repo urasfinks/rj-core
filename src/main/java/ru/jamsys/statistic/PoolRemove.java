@@ -5,7 +5,10 @@ import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.pool.AbstractPool;
-import ru.jamsys.rate.limit.RateLimitMax;
+import ru.jamsys.rate.limit.v2.RateLimit;
+import ru.jamsys.rate.limit.v2.RateLimitItem;
+import ru.jamsys.rate.limit.v2.RateLimitItemInstance;
+import ru.jamsys.rate.limit.v2.RateLimitName;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -18,10 +21,11 @@ public class PoolRemove<T extends AbstractPool<?>> extends TimeWork implements S
 
     final protected Map<String, T> mapPool = new ConcurrentHashMap<>();
 
-    final private RateLimitMax rateLimitMax;
+    final private RateLimitItem rateLimitMax;
 
     public PoolRemove(ApplicationContext applicationContext) {
-        this.rateLimitMax = applicationContext.getBean(RateLimitManager.class).get(getClass(), RateLimitMax.class, null);
+        RateLimit rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClass(), null);
+        rateLimitMax = rateLimit.add(RateLimitName.POOL_SIZE, RateLimitItemInstance.MAX);
     }
 
     @Override
@@ -46,7 +50,7 @@ public class PoolRemove<T extends AbstractPool<?>> extends TimeWork implements S
                 threadPool.setSumTime(0);
             }
             // 2024-03-20T13:42:08.002792 KeepAliveTask-1 add thread because: [KeepAliveTask] parkQueue: 0; resource: 1; remove: 0
-            // На деём сами себя оживлять
+            // На даём сами себя оживлять
             if (!threadPool.isAmI()) {
                 threadPool.keepAlive();
             }

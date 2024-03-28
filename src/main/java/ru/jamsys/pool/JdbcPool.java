@@ -4,10 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.App;
 import ru.jamsys.component.PropertiesManager;
-import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.component.Security;
 import ru.jamsys.jdbc.ConnectionEnvelope;
-import ru.jamsys.rate.limit.RateLimitTps;
 import ru.jamsys.template.jdbc.DefaultStatementControl;
 import ru.jamsys.template.jdbc.StatementControl;
 
@@ -15,17 +13,14 @@ import java.sql.DriverManager;
 
 public class JdbcPool extends AbstractPool<ConnectionEnvelope> {
 
-    @Setter
-    private String uri;
-
-    @Setter
-    private String user;
-
-    @Setter
-    private String securityAlias;
-
     @Getter
     private final StatementControl statementControl = new DefaultStatementControl();
+    @Setter
+    private String uri;
+    @Setter
+    private String user;
+    @Setter
+    private String securityAlias;
 
     public JdbcPool(String name, int min, int max) {
         super(name, min, max);
@@ -73,21 +68,16 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> {
         return false;
     }
 
-    public RateLimitTps getRateLimitThread() {
-        return App.context.getBean(RateLimitManager.class)
-                .get(ConnectionEnvelope.class, RateLimitTps.class, getName());
-    }
-
     @Override
     public void run() {
         super.run();
-        getRateLimitThread().setActive(true);
+        getRateLimit().setActive(true);
     }
 
     @Override
     public void shutdown() {
         super.shutdown();
-        getRateLimitThread().setActive(false);
+        getRateLimit().setActive(false);
     }
 
 }

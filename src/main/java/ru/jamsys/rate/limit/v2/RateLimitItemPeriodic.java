@@ -1,5 +1,6 @@
 package ru.jamsys.rate.limit.v2;
 
+import org.springframework.lang.Nullable;
 import ru.jamsys.template.cron.Unit;
 import ru.jamsys.util.Util;
 
@@ -25,13 +26,18 @@ public class RateLimitItemPeriodic implements RateLimitItem {
     }
 
     @Override
-    public boolean check(Integer limit) {
+    public boolean check(@Nullable Integer limit) {
         tpu.incrementAndGet();
         return max.get() < 0 || (max.get() > 0 && tpu.get() <= max.get()); // -1 = infinity; 0 = reject
     }
 
     public void setMax(Integer limit) {
         this.max.set(limit);
+    }
+
+    @Override
+    public long getMax() {
+        return max.get();
     }
 
     @Override
@@ -56,6 +62,14 @@ public class RateLimitItemPeriodic implements RateLimitItem {
         result.put("nextTime", nextTimeFlushFormat);
 
         return result;
+    }
+
+    @Override
+    public void reset() {
+        tpu.set(0);
+        max.set(-1);
+        nextTimeFlush.set(0);
+        nextTimeFlushFormat = "";
     }
 
 }

@@ -9,7 +9,10 @@ import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.extension.RunnableInterface;
-import ru.jamsys.rate.limit.RateLimitMax;
+import ru.jamsys.rate.limit.v2.RateLimit;
+import ru.jamsys.rate.limit.v2.RateLimitItem;
+import ru.jamsys.rate.limit.v2.RateLimitItemInstance;
+import ru.jamsys.rate.limit.v2.RateLimitName;
 import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
@@ -59,13 +62,16 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
     private long timeWhenParkIsEmpty = -1;
 
     @Getter
-    protected final RateLimitMax rateLimitMax;
+    protected final RateLimit rateLimit;
+
+    protected final RateLimitItem rateLimitItemMax;
 
     public AbstractPool(String name, int min, int initMax) {
         this.name = name;
         this.max.set(initMax); // Может быть изменён в runTime
         this.min = min;
-        this.rateLimitMax = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitMax.class, name);
+        rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), name);
+        rateLimitItemMax = rateLimit.add(RateLimitName.POOL_SIZE, RateLimitItemInstance.MAX);
     }
 
     @Override
@@ -113,7 +119,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
     }
 
     public void setMaxSlowRiseAndFastFall(int max) {
-        if (rateLimitMax.checkLimit(max)) {
+        if (rateLimitItemMax.check(max)) {
             if (max >= min) {
                 if (max > this.max.get()) { //Медленно поднимаем
                     this.max.incrementAndGet();
@@ -124,7 +130,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
                 Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < Pool.min = " + min, true);
             }
         } else {
-            Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " > RateLimit.max = " + rateLimitMax.getMax(), true);
+            Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " > RateLimit.max = " + rateLimitItemMax.getMax(), true);
         }
     }
 
@@ -350,7 +356,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
             for (int i = 0; i < min; i++) {
                 add();
             }
-            rateLimitMax.setActive(true);
+            rateLimit.setActive(true);
             restartOperation.set(false);
         }
     }
@@ -365,7 +371,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
                     getEmptyType(),
                     this::remove
             );
-            rateLimitMax.setActive(false);
+            rateLimit.setActive(false);
             restartOperation.set(false);
         }
     }

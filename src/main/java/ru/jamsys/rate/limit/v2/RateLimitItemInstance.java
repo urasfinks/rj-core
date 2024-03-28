@@ -4,6 +4,7 @@ import ru.jamsys.extension.EnumName;
 import ru.jamsys.template.cron.Unit;
 
 public enum RateLimitItemInstance implements EnumName {
+
     TPS,
     TPM,
     TPH,
@@ -11,7 +12,7 @@ public enum RateLimitItemInstance implements EnumName {
     TPW,
     MAX;
 
-    RateLimitItem gen() {
+    RateLimitItem create() {
         return switch (this) {
             case TPS -> new RateLimitItemTps();
             case TPM -> new RateLimitItemPeriodic(Unit.MINUTE);

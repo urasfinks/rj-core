@@ -8,6 +8,10 @@ public interface RateLimitItem {
 
     void setMax(Integer limit);
 
+    long getMax();
+
     Map<String, Object> flushTps(long curTime);
+
+    void reset(); //Используйте преимущественно для тестирования
 
 }

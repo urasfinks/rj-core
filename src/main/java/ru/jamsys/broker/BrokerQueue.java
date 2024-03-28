@@ -9,7 +9,10 @@ import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.extension.Procedure;
 import ru.jamsys.extension.StatisticsCollector;
-import ru.jamsys.rate.limit.RateLimitTps;
+import ru.jamsys.rate.limit.v2.RateLimit;
+import ru.jamsys.rate.limit.v2.RateLimitItem;
+import ru.jamsys.rate.limit.v2.RateLimitItemInstance;
+import ru.jamsys.rate.limit.v2.RateLimitName;
 import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
@@ -53,10 +56,17 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
         return queue.isEmpty();
     }
 
-    final RateLimitTps rateLimitTps;
+    final RateLimit rateLimit;
+
+    final RateLimitItem rateLimitSize;
+
+    final RateLimitItem rateLimitTps;
 
     public BrokerQueue(String key) {
-        this.rateLimitTps = App.context.getBean(RateLimitManager.class).get(getClass(), RateLimitTps.class, key);
+        rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), key);
+        rateLimitSize = rateLimit.add(RateLimitName.BROKER_SIZE, RateLimitItemInstance.MAX);
+        rateLimitSize.setMax(sizeQueue);
+        rateLimitTps = rateLimit.add(RateLimitName.BROKER_TPS, RateLimitItemInstance.TPS);
     }
 
     @SuppressWarnings("unused")
@@ -69,16 +79,16 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
         if (element == null) {
             throw new Exception("Element null");
         }
-        if (!rateLimitTps.checkTps()) {
+        if (!rateLimitTps.check(null)) {
             throw new Exception("RateLimit BrokerQueue: " + element.getClass().getSimpleName() + "; max tps: " + rateLimitTps.getMax() + "; object: " + element);
         }
         if (cyclical) {
-            if (queue.size() >= sizeQueue) {
+            if(!rateLimitSize.check(queue.size())){
                 queue.removeFirst();
             }
         } else {
-            if (queue.size() > sizeQueue) {
-                throw new Exception("Limit BrokerQueue: " + element.getClass().getSimpleName() + "; limit: " + sizeQueue + "; object: " + element);
+            if(!rateLimitSize.check(queue.size())){
+                throw new Exception("Limit BrokerQueue: " + element.getClass().getSimpleName() + "; limit: " + rateLimitSize.getMax() + "; object: " + element);
             }
         }
         QueueElementEnvelope<T> result = new QueueElementEnvelope<>(element);
@@ -151,7 +161,7 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
         sizeQueue = 3000;
         sizeTail = 5;
         cyclical = true;
-        rateLimitTps.reset();
+        rateLimit.reset();
     }
 
     @Override
@@ -185,7 +195,7 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
 
     @Override
     public void close() {
-        rateLimitTps.setActive(false);
+        rateLimit.setActive(false);
     }
 
 }

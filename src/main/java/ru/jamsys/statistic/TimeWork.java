@@ -58,12 +58,12 @@ public class TimeWork {
         return sumTimeMap;
     }
 
-    public Map<String, Long> balancing(AtomicBoolean isRun, int count) {
+    public Map<String, Long> balancing(AtomicBoolean isRun, long count) {
         Map<String, Long> taskIndexSumTime = getSumTime(isRun);
         return getMaxCountResourceByTime(taskIndexSumTime, count);
     }
 
-    public static Map<String, Long> getMaxCountResourceByTime(Map<String, Long> map, int count) {
+    public static Map<String, Long> getMaxCountResourceByTime(Map<String, Long> map, long count) {
         Map<String, Long> result = new HashMap<>();
         if (map.isEmpty()) {
             return result;
