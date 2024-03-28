@@ -9,7 +9,7 @@ class CronTest {
 
     @Test
     public void single() {
-        long curTime = 1709734264056L; //2024-03-06T17:11:04.056
+        //long curTime = 1709734264056L; //2024-03-06T17:11:04.056
     }
 
     @Test
