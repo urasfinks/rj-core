@@ -1,6 +1,9 @@
 package ru.jamsys.template.jdbc;
 
-public enum StatementType {
+import ru.jamsys.extension.EnumName;
+
+public enum StatementType implements EnumName {
+
     SELECT_WITH_AUTO_COMMIT,
     SELECT_WITHOUT_AUTO_COMMIT,
     CALL_WITH_AUTO_COMMIT,

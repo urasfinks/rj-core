@@ -1,11 +1,11 @@
 package ru.jamsys.template.cron;
 
 import lombok.Getter;
-import ru.jamsys.util.Util;
+import ru.jamsys.extension.EnumName;
 
 import java.util.Calendar;
 
-public enum Unit {
+public enum Unit implements EnumName {
 
     MILLISECOND(0, 999, Calendar.MILLISECOND),
     SECOND(0, 59, Calendar.SECOND),
@@ -29,10 +29,6 @@ public enum Unit {
         this.min = min;
         this.max = max;
         this.calendarUnit = calendarUnit;
-    }
-
-    String getName() {
-        return Util.snakeToCamel(name());
     }
 
     @SuppressWarnings("unused")

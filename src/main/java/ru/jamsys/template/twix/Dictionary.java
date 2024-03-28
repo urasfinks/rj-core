@@ -1,20 +1,23 @@
 package ru.jamsys.template.twix;
 
-public enum Dictionary {
+import ru.jamsys.extension.EnumName;
+
+public enum Dictionary implements EnumName {
+
     DOLLAR("$"),
     CURLY_BRACE_OPEN("{"),
     CURLY_BRACE_CLOSE("}"),
     ESCAPE("\\"),
     ANY("*");
 
-    private final String name;
+    private final String alias;
 
-    public String getName() {
-        return name;
+    public String getAlias() {
+        return alias;
     }
 
-    Dictionary(String name) {
-        this.name = name;
+    Dictionary(String alias) {
+        this.alias = alias;
     }
 
     public static Dictionary parse(String ch) {

@@ -40,7 +40,7 @@ public class Parser {
             firstEntry = true;
         } else if (isParse) {
             if (firstEntry) {
-                sb.append(Dictionary.DOLLAR.getName());
+                sb.append(Dictionary.DOLLAR.getAlias());
                 firstEntry = false;
             }
             if (isMust(curState)) {

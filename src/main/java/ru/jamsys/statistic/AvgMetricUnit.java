@@ -1,20 +1,11 @@
 package ru.jamsys.statistic;
 
-public enum AvgMetricUnit {
+import ru.jamsys.extension.EnumName;
 
-    AVG_COUNT("AvgCount"),
-    MIN("Min"),
-    MAX("Max"),
-    SUM("Sum"),
-    AVG("Avg");
-
-    final String name;
-
-    AvgMetricUnit(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return this.name;
-    }
+public enum AvgMetricUnit implements EnumName {
+    AVG_COUNT,
+    MIN,
+    MAX,
+    SUM,
+    AVG
 }

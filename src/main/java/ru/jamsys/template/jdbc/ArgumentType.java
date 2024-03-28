@@ -1,12 +1,15 @@
 package ru.jamsys.template.jdbc;
 
+import ru.jamsys.extension.EnumName;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public enum ArgumentType {
+public enum ArgumentType implements EnumName {
+
     CLOB,
     VARCHAR,
     NUMBER,

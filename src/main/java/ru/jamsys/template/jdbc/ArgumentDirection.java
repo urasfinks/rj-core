@@ -1,6 +1,8 @@
 package ru.jamsys.template.jdbc;
 
-public enum ArgumentDirection {
+import ru.jamsys.extension.EnumName;
+
+public enum ArgumentDirection implements EnumName {
     IN,
     OUT,
     IN_OUT

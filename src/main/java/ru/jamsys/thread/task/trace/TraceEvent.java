@@ -1,6 +1,8 @@
 package ru.jamsys.thread.task.trace;
 
-public enum TraceEvent {
+import ru.jamsys.extension.EnumName;
+
+public enum TraceEvent implements EnumName {
     CREATE,
     EXECUTE,
     TRANSIT,
