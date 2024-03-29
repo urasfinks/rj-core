@@ -29,7 +29,7 @@ public class RateLimitManager implements StatisticsCollectorComponent {
 
     Map<String, RateLimit> map = new ConcurrentHashMap<>();
 
-    public <T extends RateLimit> String getRateLimitKey(@NonNull Class<?> clsOwner, String key) {
+    public <T extends RateLimit> String getKey(@NonNull Class<?> clsOwner, String key) {
         if (key == null) {
             return clsOwner.getSimpleName();
         } else {
@@ -38,12 +38,11 @@ public class RateLimitManager implements StatisticsCollectorComponent {
     }
 
     public boolean contains(@NonNull Class<?> clsOwner, @Nullable String key) {
-        String complexKey = getRateLimitKey(clsOwner, key);
-        return map.containsKey(complexKey);
+        return map.containsKey(getKey(clsOwner, key));
     }
 
     public RateLimit get(@NonNull Class<?> clsOwner, @Nullable String key) {
-        String complexKey = getRateLimitKey(clsOwner, key);
+        String complexKey = getKey(clsOwner, key);
         if (!map.containsKey(complexKey)) {
             map.put(complexKey, new RateLimitImpl());
         }
@@ -59,10 +58,10 @@ public class RateLimitManager implements StatisticsCollectorComponent {
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
         List<Statistic> result = new ArrayList<>();
         long curTime = System.currentTimeMillis();
-        Util.riskModifierMap(isRun, map, new String[0], (String complexKey, RateLimit rateLimit) -> {
+        Util.riskModifierMap(isRun, map, new String[0], (String key, RateLimit rateLimit) -> {
             if (rateLimit.isActive()) {
                 result.add(new Statistic(parentTags, parentFields)
-                        .addTag("index", complexKey)
+                        .addTag("index", key)
                         .addFields(rateLimit.flushTps(curTime))
                 );
             }
