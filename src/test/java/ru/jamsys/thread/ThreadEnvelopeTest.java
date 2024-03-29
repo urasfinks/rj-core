@@ -37,6 +37,7 @@ class ThreadEnvelopeTest {
                 }
         );
         threadPool.getRateLimit().reset();
+        threadPool.getRateLimitPoolItem().reset();
 
         Assertions.assertEquals("resourceQueue: 0; parkQueue: 0; removeQueue: 0; isRun: false; min: 0; max: 5; ", threadPool.getMomentumStatistic());
         threadPool.run();
@@ -85,6 +86,7 @@ class ThreadEnvelopeTest {
                 }
         );
         threadPool.getRateLimit().reset();
+        threadPool.getRateLimitPoolItem().reset();
 
         threadPool.run();
 
@@ -140,6 +142,7 @@ class ThreadEnvelopeTest {
                 }
         );
         threadPool.getRateLimit().reset();
+        threadPool.getRateLimitPoolItem().reset();
 
         threadPool.run();
 
@@ -170,6 +173,7 @@ class ThreadEnvelopeTest {
                 }
         );
         threadPool.getRateLimit().reset();
+        threadPool.getRateLimitPoolItem().reset();
 
         Assertions.assertEquals("resourceQueue: 0; parkQueue: 0; removeQueue: 0; isRun: false; min: 5; max: 5; ", threadPool.getMomentumStatistic());
 
@@ -177,9 +181,7 @@ class ThreadEnvelopeTest {
 
         Assertions.assertEquals("resourceQueue: 5; parkQueue: 5; removeQueue: 0; isRun: true; min: 5; max: 5; ", threadPool.getMomentumStatistic());
 
-        RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(ThreadEnvelope.class, threadPool.getName());
-        rateLimit.get(RateLimitName.THREAD_TPS).setMax(625);
-        //threadPool.getRateLimit().get(RateLimitName.THREAD_TPS).setMax(625);
+        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS).setMax(625);
 
         for (int i = 0; i < 5; i++) {
             ThreadEnvelope resource = threadPool.getResource();
@@ -205,6 +207,7 @@ class ThreadEnvelopeTest {
                 }
         );
         threadPool.getRateLimit().reset();
+        threadPool.getRateLimitPoolItem().reset();
 
         Assertions.assertEquals("resourceQueue: 0; parkQueue: 0; removeQueue: 0; isRun: false; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
@@ -246,7 +249,7 @@ class ThreadEnvelopeTest {
         //Не должны выйти за 5
         Assertions.assertEquals("resourceQueue: 5; parkQueue: 0; removeQueue: 0; isRun: true; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
-        threadPool.getRateLimit().get(RateLimitName.THREAD_TPS).setMax(500);
+        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS).setMax(500);
 
         threadEnvelope1.run();
         threadEnvelope2.run();
@@ -276,8 +279,9 @@ class ThreadEnvelopeTest {
                 }
         );
         threadPool.getRateLimit().reset();
+        threadPool.getRateLimitPoolItem().reset();
 
-        threadPool.getRateLimit().get(RateLimitName.THREAD_TPS).setMax(100);
+        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS).setMax(100);
         threadPool.run();
         ThreadEnvelope threadEnvelope = threadPool.getResource();
 
@@ -308,7 +312,7 @@ class ThreadEnvelopeTest {
         Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: true; isShutdown: false; ", threadEnvelope.getMomentumStatistic());
 
         //Сбросим RateLimit
-        threadPool.getRateLimit().flushTps(System.currentTimeMillis());
+        threadPool.getRateLimitPoolItem().flushTps(System.currentTimeMillis());
         //Запускаем
         Assertions.assertTrue(threadEnvelope.run());
         //Проверяем, что вышли из паркинга (countOperation удалили вообще =) )
@@ -345,6 +349,7 @@ class ThreadEnvelopeTest {
                 }
         );
         threadPool.getRateLimit().reset();
+        threadPool.getRateLimitPoolItem().reset();
 
         threadPool.run();
         //При инициализации ресурс должен попадать в парковку
@@ -378,6 +383,7 @@ class ThreadEnvelopeTest {
                 }
         );
         threadPool.getRateLimit().reset();
+        threadPool.getRateLimitPoolItem().reset();
 
         //Проверяем, что RateLimitItem создались в конструкторе ThreadPool
         Assertions.assertTrue(rateLimitManager.contains(ThreadPool.class, namePool));

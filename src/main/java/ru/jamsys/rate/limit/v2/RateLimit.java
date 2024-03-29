@@ -19,12 +19,10 @@ public interface RateLimit {
     // Нельзя использовать MAX и TPS одновременно - всегда будет false
     boolean check(Integer limit);
 
-    RateLimitItem add(String name, RateLimitItemInstance rateLimitItemInstance);
+    RateLimitItem get(String name, RateLimitItemInstance rateLimitItemInstance);
 
-    RateLimitItem add(RateLimitName name, RateLimitItemInstance rateLimitItemInstance);
-
-    RateLimitItem get(String name);
-
-    RateLimitItem get(RateLimitName name);
+    default RateLimitItem get(RateLimitName name) {
+        return get(name.getName(), name.getRateLimitItemInstance());
+    }
 
 }

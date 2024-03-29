@@ -1,7 +1,5 @@
 package ru.jamsys.pool;
 
-import ru.jamsys.rate.limit.v2.RateLimitItemInstance;
-import ru.jamsys.rate.limit.v2.RateLimitName;
 import ru.jamsys.thread.ThreadEnvelope;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,7 +17,7 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> {
             int initMax,
             Function<ThreadEnvelope, Boolean> consumer
     ) {
-        super(name, min, initMax);
+        super(name, min, initMax, ThreadEnvelope.class);
         this.consumer = consumer;
     }
 
@@ -55,18 +53,6 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> {
         if (threadEnvelope != null) {
             threadEnvelope.run();
         }
-    }
-
-    @Override
-    public void run() {
-        super.run();
-        getRateLimit().setActive(true);
-    }
-
-    @Override
-    public void shutdown() {
-        super.shutdown();
-        getRateLimit().setActive(false);
     }
 
 }

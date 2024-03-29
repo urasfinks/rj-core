@@ -11,7 +11,6 @@ import ru.jamsys.extension.Procedure;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.rate.limit.v2.RateLimit;
 import ru.jamsys.rate.limit.v2.RateLimitItem;
-import ru.jamsys.rate.limit.v2.RateLimitItemInstance;
 import ru.jamsys.rate.limit.v2.RateLimitName;
 import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.AvgMetric;
@@ -64,9 +63,9 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
 
     public BrokerQueue(String key) {
         rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), key);
-        rateLimitSize = rateLimit.add(RateLimitName.BROKER_SIZE, RateLimitItemInstance.MAX);
+        rateLimitSize = rateLimit.get(RateLimitName.BROKER_SIZE);
         rateLimitSize.setMax(sizeQueue);
-        rateLimitTps = rateLimit.add(RateLimitName.BROKER_TPS, RateLimitItemInstance.TPS);
+        rateLimitTps = rateLimit.get(RateLimitName.BROKER_TPS);
     }
 
     @SuppressWarnings("unused")
@@ -83,11 +82,11 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
             throw new Exception("RateLimit BrokerQueue: " + element.getClass().getSimpleName() + "; max tps: " + rateLimitTps.getMax() + "; object: " + element);
         }
         if (cyclical) {
-            if(!rateLimitSize.check(queue.size())){
+            if (!rateLimitSize.check(queue.size())) {
                 queue.removeFirst();
             }
         } else {
-            if(!rateLimitSize.check(queue.size())){
+            if (!rateLimitSize.check(queue.size())) {
                 throw new Exception("Limit BrokerQueue: " + element.getClass().getSimpleName() + "; limit: " + rateLimitSize.getMax() + "; object: " + element);
             }
         }

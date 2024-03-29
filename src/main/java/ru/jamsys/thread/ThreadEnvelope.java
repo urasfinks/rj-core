@@ -10,9 +10,6 @@ import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.pool.AbstractPool;
 import ru.jamsys.pool.Pool;
 import ru.jamsys.rate.limit.v2.RateLimit;
-import ru.jamsys.rate.limit.v2.RateLimitItem;
-import ru.jamsys.rate.limit.v2.RateLimitItemInstance;
-import ru.jamsys.rate.limit.v2.RateLimitName;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -82,7 +79,7 @@ public class ThreadEnvelope extends AbstractPoolItem<ThreadEnvelope> {
             AbstractPool.contextPool.set(pool);
             while (isWhile.get() && isNotInterrupted()) {
                 active();
-                if (rateLimit.check(null)) {
+                if (!rateLimit.check(null)) {
                     pause();
                     continue;
                 }

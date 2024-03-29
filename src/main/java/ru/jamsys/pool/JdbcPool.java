@@ -23,7 +23,7 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> {
     private String securityAlias;
 
     public JdbcPool(String name, int min, int max) {
-        super(name, min, max);
+        super(name, min, max, ConnectionEnvelope.class);
         PropertiesManager propertiesManager = App.context.getBean(PropertiesManager.class);
         this.uri = propertiesManager.getProperties("rj.jdbc.uri", String.class);
         this.user = propertiesManager.getProperties("rj.jdbc.user", String.class);
@@ -66,18 +66,6 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> {
                     || msg.contains("Ошибка ввода/вывода при отправке бэкенду");
         }
         return false;
-    }
-
-    @Override
-    public void run() {
-        super.run();
-        getRateLimit().setActive(true);
-    }
-
-    @Override
-    public void shutdown() {
-        super.shutdown();
-        getRateLimit().setActive(false);
     }
 
 }

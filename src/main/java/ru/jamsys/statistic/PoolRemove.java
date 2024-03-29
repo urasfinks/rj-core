@@ -7,7 +7,6 @@ import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.pool.AbstractPool;
 import ru.jamsys.rate.limit.v2.RateLimit;
 import ru.jamsys.rate.limit.v2.RateLimitItem;
-import ru.jamsys.rate.limit.v2.RateLimitItemInstance;
 import ru.jamsys.rate.limit.v2.RateLimitName;
 import ru.jamsys.util.Util;
 
@@ -25,7 +24,7 @@ public class PoolRemove<T extends AbstractPool<?>> extends TimeWork implements S
 
     public PoolRemove(ApplicationContext applicationContext) {
         RateLimit rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClass(), null);
-        rateLimitMax = rateLimit.add(RateLimitName.POOL_SIZE, RateLimitItemInstance.MAX);
+        rateLimitMax = rateLimit.get(RateLimitName.POOL_SIZE);
     }
 
     @Override
