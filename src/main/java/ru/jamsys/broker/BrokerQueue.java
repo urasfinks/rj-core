@@ -66,6 +66,7 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
         rateLimitSize = rateLimit.get(RateLimitName.BROKER_SIZE);
         rateLimitSize.setMax(sizeQueue);
         rateLimitTps = rateLimit.get(RateLimitName.BROKER_TPS);
+        rateLimit.setActive(true);
     }
 
     @SuppressWarnings("unused")
