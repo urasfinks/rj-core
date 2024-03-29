@@ -10,6 +10,7 @@ import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,10 +61,9 @@ public class RateLimitManager implements StatisticsCollectorComponent {
         long curTime = System.currentTimeMillis();
         Util.riskModifierMap(isRun, map, new String[0], (String key, RateLimit rateLimit) -> {
             if (rateLimit.isActive()) {
-                result.add(new Statistic(parentTags, parentFields)
-                        .addTag("index", key)
-                        .addFields(rateLimit.flushTps(curTime))
-                );
+                HashMap<String, String> stringStringHashMap = new HashMap<>(parentTags);
+                stringStringHashMap.put("index", key);
+                result.addAll(rateLimit.flushAndGetStatistic(stringStringHashMap, parentFields, isRun));
             }
         });
         result.add(new Statistic(parentTags, parentFields)

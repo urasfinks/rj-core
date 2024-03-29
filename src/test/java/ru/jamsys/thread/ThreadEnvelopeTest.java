@@ -312,7 +312,7 @@ class ThreadEnvelopeTest {
         Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: true; isShutdown: false; ", threadEnvelope.getMomentumStatistic());
 
         //Сбросим RateLimit
-        threadPool.getRateLimitPoolItem().flushTps(System.currentTimeMillis());
+        threadPool.getRateLimitPoolItem().flushTps(System.currentTimeMillis(), null, null);
         //Запускаем
         Assertions.assertTrue(threadEnvelope.run());
         //Проверяем, что вышли из паркинга (countOperation удалили вообще =) )

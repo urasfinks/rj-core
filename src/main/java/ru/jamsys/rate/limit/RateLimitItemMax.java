@@ -1,7 +1,11 @@
 package ru.jamsys.rate.limit;
 
-import java.util.HashMap;
+import ru.jamsys.statistic.Statistic;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RateLimitItemMax implements RateLimitItem {
@@ -26,14 +30,14 @@ public class RateLimitItemMax implements RateLimitItem {
     }
 
     @Override
-    public Map<String, Object> flushTps(long curTime) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("max", max.get());
-        return result;
+    public void reset() {
+        max.set(-1);
     }
 
     @Override
-    public void reset() {
-        max.set(-1);
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+        List<Statistic> result = new ArrayList<>();
+        result.add(new Statistic(parentTags, parentFields).addField("max", max.get()));
+        return result;
     }
 }

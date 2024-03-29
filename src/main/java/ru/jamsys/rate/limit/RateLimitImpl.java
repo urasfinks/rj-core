@@ -2,10 +2,10 @@ package ru.jamsys.rate.limit;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.jamsys.statistic.Statistic;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RateLimitImpl implements RateLimit {
 
@@ -14,13 +14,6 @@ public class RateLimitImpl implements RateLimit {
     private boolean active = false;
 
     private final Map<String, RateLimitItem> mapLimit = new LinkedHashMap<>();
-
-    @Override
-    public Map<String, Object> flushTps(long curTime) {
-        Map<String, Object> result = new HashMap<>();
-        mapLimit.forEach((String key, RateLimitItem rateLimitItem) -> result.put(key, rateLimitItem.flushTps(curTime)));
-        return result;
-    }
 
     @SuppressWarnings({"StringBufferReplaceableByString", "unused"})
     public String getMomentumStatistic() {
@@ -54,4 +47,14 @@ public class RateLimitImpl implements RateLimit {
         return mapLimit.get(name);
     }
 
+    @Override
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+        List<Statistic> result = new ArrayList<>();
+        mapLimit.forEach((String key, RateLimitItem rateLimitItem) -> {
+            HashMap<String, String> stringStringHashMap = new HashMap<>(parentTags);
+            stringStringHashMap.put("item", key);
+            result.addAll(rateLimitItem.flushAndGetStatistic(stringStringHashMap, parentFields, isRun));
+        });
+        return result;
+    }
 }

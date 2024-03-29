@@ -1,12 +1,15 @@
 package ru.jamsys.rate.limit;
 
 import org.springframework.lang.Nullable;
+import ru.jamsys.statistic.Statistic;
 import ru.jamsys.template.cron.Unit;
 import ru.jamsys.util.Util;
 
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RateLimitItemPeriodic implements RateLimitItem {
@@ -41,8 +44,18 @@ public class RateLimitItemPeriodic implements RateLimitItem {
     }
 
     @Override
-    public Map<String, Object> flushTps(long curTime) {
-        Map<String, Object> result = new HashMap<>();
+    public void reset() {
+        tpu.set(0);
+        max.set(-1);
+        nextTimeFlush.set(0);
+        nextTimeFlushFormat = "";
+    }
+
+    @Override
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+        List<Statistic> result = new ArrayList<>();
+        long curTime = System.currentTimeMillis();
+        Statistic statistic = new Statistic(parentTags, parentFields);
         if (nextTimeFlush.get() <= curTime) {
             Calendar now = Calendar.getInstance();
             now.setTimeInMillis(curTime);
@@ -51,25 +64,17 @@ public class RateLimitItemPeriodic implements RateLimitItem {
             nextTimeFlush.set(timeInMillis);
             nextTimeFlushFormat = Util.msToDataFormat(timeInMillis);
             tpu.set(0);
-            result.put("flushed", true);
+            statistic.addField("flushed", true);
         } else {
-            result.put("flushed", false);
+            statistic.addField("flushed", false);
         }
 
-        result.put("tpu", tpu.get());
-        result.put("period", period.getName());
-        result.put("max", max.get());
-        result.put("nextTime", nextTimeFlushFormat);
-
+        statistic.addField("tpu", tpu.get());
+        statistic.addField("period", period.getName());
+        statistic.addField("max", max.get());
+        statistic.addField("nextTime", nextTimeFlushFormat);
+        result.add(statistic);
         return result;
-    }
-
-    @Override
-    public void reset() {
-        tpu.set(0);
-        max.set(-1);
-        nextTimeFlush.set(0);
-        nextTimeFlushFormat = "";
     }
 
 }

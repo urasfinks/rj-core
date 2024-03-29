@@ -1,14 +1,12 @@
 package ru.jamsys.rate.limit;
 
-import java.util.Map;
+import ru.jamsys.extension.StatisticsCollector;
 
-public interface RateLimit {
+public interface RateLimit extends StatisticsCollector {
 
     boolean isActive();
 
     void setActive(boolean active);
-
-    Map<String, Object> flushTps(long curTime);
 
     @SuppressWarnings("unused")
     String getMomentumStatistic();
