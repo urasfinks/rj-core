@@ -61,14 +61,13 @@ public class RateLimitManager implements StatisticsCollectorComponent {
         long curTime = System.currentTimeMillis();
         Util.riskModifierMap(isRun, map, new String[0], (String key, RateLimit rateLimit) -> {
             if (rateLimit.isActive()) {
-                HashMap<String, String> stringStringHashMap = new HashMap<>(parentTags);
-                stringStringHashMap.put("index", key);
-                result.addAll(rateLimit.flushAndGetStatistic(stringStringHashMap, parentFields, isRun));
+                HashMap<String, String> newParentTags = new HashMap<>(parentTags);
+                newParentTags.put("index", key);
+                result.addAll(rateLimit.flushAndGetStatistic(newParentTags, parentFields, isRun));
             }
         });
-        result.add(new Statistic(parentTags, parentFields)
-                .addTag("index", getClass().getSimpleName())
-                .addField("size", map.size()));
+        result.add(new Statistic(parentTags, parentFields).addTag("index", getClass().getSimpleName()).addField("size", map.size()));
+        //System.out.println(UtilJson.toStringPretty(result, "{}"));
         return result;
     }
 
