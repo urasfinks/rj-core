@@ -6,7 +6,7 @@ import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.pool.AbstractPool;
 import ru.jamsys.rate.limit.RateLimit;
-import ru.jamsys.rate.limit.RateLimitItem;
+import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.util.Util;
 

@@ -2,6 +2,7 @@ package ru.jamsys.rate.limit;
 
 import lombok.Getter;
 import ru.jamsys.extension.EnumName;
+import ru.jamsys.rate.limit.item.RateLimitItemInstance;
 
 public enum RateLimitName implements EnumName {
 

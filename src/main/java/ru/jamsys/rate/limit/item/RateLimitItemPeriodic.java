@@ -1,14 +1,11 @@
-package ru.jamsys.rate.limit;
+package ru.jamsys.rate.limit.item;
 
 import org.springframework.lang.Nullable;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.template.cron.Unit;
 import ru.jamsys.util.Util;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -53,9 +50,16 @@ public class RateLimitItemPeriodic implements RateLimitItem {
 
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
-        List<Statistic> result = new ArrayList<>();
         long curTime = System.currentTimeMillis();
+        List<Statistic> result = new ArrayList<>();
+        result.add(flushAndGetStatistic(curTime, parentTags, parentFields));
+        return result;
+    }
+
+    public Statistic flushAndGetStatistic(long curTime, Map<String, String> parentTags, Map<String, Object> parentFields) {
         Statistic statistic = new Statistic(parentTags, parentFields);
+        statistic.addField("period", period.getName());
+        statistic.addField("max", max.get());
         if (nextTimeFlush.get() <= curTime) {
             Calendar now = Calendar.getInstance();
             now.setTimeInMillis(curTime);
@@ -63,18 +67,15 @@ public class RateLimitItemPeriodic implements RateLimitItem {
             long timeInMillis = now.getTimeInMillis();
             nextTimeFlush.set(timeInMillis);
             nextTimeFlushFormat = Util.msToDataFormat(timeInMillis);
-            tpu.set(0);
+            statistic.addField("nextTime", nextTimeFlushFormat);
+            statistic.addField("tpu", tpu.getAndSet(0));
             statistic.addField("flushed", true);
         } else {
+            statistic.addField("nextTime", nextTimeFlushFormat);
+            statistic.addField("tpu", tpu.get());
             statistic.addField("flushed", false);
         }
-
-        statistic.addField("tpu", tpu.get());
-        statistic.addField("period", period.getName());
-        statistic.addField("max", max.get());
-        statistic.addField("nextTime", nextTimeFlushFormat);
-        result.add(statistic);
-        return result;
+        return statistic;
     }
 
 }

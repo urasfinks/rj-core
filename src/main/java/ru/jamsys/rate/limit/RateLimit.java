@@ -1,6 +1,8 @@
 package ru.jamsys.rate.limit;
 
 import ru.jamsys.extension.StatisticsCollector;
+import ru.jamsys.rate.limit.item.RateLimitItem;
+import ru.jamsys.rate.limit.item.RateLimitItemInstance;
 
 public interface RateLimit extends StatisticsCollector {
 

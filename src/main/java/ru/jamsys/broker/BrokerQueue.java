@@ -10,7 +10,7 @@ import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.extension.Procedure;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.rate.limit.RateLimit;
-import ru.jamsys.rate.limit.RateLimitItem;
+import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.AvgMetric;

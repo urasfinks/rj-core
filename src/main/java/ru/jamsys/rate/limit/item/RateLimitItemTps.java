@@ -1,5 +1,6 @@
-package ru.jamsys.rate.limit;
+package ru.jamsys.rate.limit.item;
 
+import org.springframework.lang.Nullable;
 import ru.jamsys.statistic.Statistic;
 
 import java.util.ArrayList;
@@ -8,16 +9,16 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class RateLimitItemMax implements RateLimitItem {
+public class RateLimitItemTps implements RateLimitItem {
+
+    private final AtomicLong tps = new AtomicLong(0);
 
     private final AtomicLong max = new AtomicLong(-1);
 
     @Override
-    public boolean check(Integer limit) {
-        if (limit == null || limit < -1) {
-            return false;
-        }
-        return this.max.get() < 0 || (this.max.get() > 0 && this.max.get() >= limit);
+    public boolean check(@Nullable Integer limit) {
+        tps.incrementAndGet();
+        return max.get() < 0 || (max.get() > 0 && tps.get() <= max.get()); // -1 = infinity; 0 = reject
     }
 
     public void setMax(Integer limit) {
@@ -31,13 +32,15 @@ public class RateLimitItemMax implements RateLimitItem {
 
     @Override
     public void reset() {
+        tps.set(0);
         max.set(-1);
     }
 
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
         List<Statistic> result = new ArrayList<>();
-        result.add(new Statistic(parentTags, parentFields).addField("max", max.get()));
+        result.add(new Statistic(parentTags, parentFields).addField("tps", tps.getAndSet(0)));
         return result;
     }
+
 }

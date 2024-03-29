@@ -11,6 +11,7 @@ import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.util.Util;
 
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class ThreadEnvelopeTest {
@@ -312,7 +313,7 @@ class ThreadEnvelopeTest {
         Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: true; isShutdown: false; ", threadEnvelope.getMomentumStatistic());
 
         //Сбросим RateLimit
-        threadPool.getRateLimitPoolItem().flushTps(System.currentTimeMillis(), null, null);
+        threadPool.getRateLimitPoolItem().flushAndGetStatistic(new HashMap<>(), new HashMap<>(), null);
         //Запускаем
         Assertions.assertTrue(threadEnvelope.run());
         //Проверяем, что вышли из паркинга (countOperation удалили вообще =) )

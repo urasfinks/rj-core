@@ -1,4 +1,4 @@
-package ru.jamsys.rate.limit;
+package ru.jamsys.rate.limit.item;
 
 import ru.jamsys.extension.StatisticsCollector;
 
