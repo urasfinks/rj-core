@@ -166,6 +166,7 @@ public class ThreadEnvelope extends AbstractPoolItem<ThreadEnvelope> {
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     private void doShutdown() {
         info
                 .append("[")
