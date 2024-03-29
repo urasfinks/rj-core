@@ -7,8 +7,8 @@ import org.springframework.boot.SpringApplication;
 import ru.jamsys.App;
 import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.pool.ThreadPool;
-import ru.jamsys.rate.limit.v2.RateLimit;
-import ru.jamsys.rate.limit.v2.RateLimitName;
+import ru.jamsys.rate.limit.RateLimit;
+import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicInteger;

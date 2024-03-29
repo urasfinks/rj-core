@@ -4,8 +4,8 @@ import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import ru.jamsys.extension.StatisticsCollectorComponent;
-import ru.jamsys.rate.limit.v2.RateLimit;
-import ru.jamsys.rate.limit.v2.RateLimitImpl;
+import ru.jamsys.rate.limit.RateLimit;
+import ru.jamsys.rate.limit.RateLimitImpl;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
 

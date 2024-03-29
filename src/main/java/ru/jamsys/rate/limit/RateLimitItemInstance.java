@@ -1,4 +1,4 @@
-package ru.jamsys.rate.limit.v2;
+package ru.jamsys.rate.limit;
 
 import ru.jamsys.extension.EnumName;
 import ru.jamsys.template.cron.Unit;

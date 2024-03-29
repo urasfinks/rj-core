@@ -9,7 +9,7 @@ import ru.jamsys.component.TaskManager;
 import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.pool.AbstractPool;
 import ru.jamsys.pool.Pool;
-import ru.jamsys.rate.limit.v2.RateLimit;
+import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;

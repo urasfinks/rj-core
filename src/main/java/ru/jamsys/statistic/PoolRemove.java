@@ -5,9 +5,9 @@ import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.pool.AbstractPool;
-import ru.jamsys.rate.limit.v2.RateLimit;
-import ru.jamsys.rate.limit.v2.RateLimitItem;
-import ru.jamsys.rate.limit.v2.RateLimitName;
+import ru.jamsys.rate.limit.RateLimit;
+import ru.jamsys.rate.limit.RateLimitItem;
+import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;

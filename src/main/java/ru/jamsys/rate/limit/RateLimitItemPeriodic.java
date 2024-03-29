@@ -1,4 +1,4 @@
-package ru.jamsys.rate.limit.v2;
+package ru.jamsys.rate.limit;
 
 import org.springframework.lang.Nullable;
 import ru.jamsys.template.cron.Unit;

@@ -1,4 +1,4 @@
-package ru.jamsys.rate.limit.v2;
+package ru.jamsys.rate.limit;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -6,8 +6,8 @@ import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.pool.JdbcPool;
 import ru.jamsys.pool.Pool;
-import ru.jamsys.rate.limit.v2.RateLimit;
-import ru.jamsys.rate.limit.v2.RateLimitName;
+import ru.jamsys.rate.limit.RateLimit;
+import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.template.jdbc.*;
 import ru.jamsys.thread.task.JdbcRequest;
 

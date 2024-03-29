@@ -1,4 +1,4 @@
-package ru.jamsys.rate.limit.v2;
+package ru.jamsys.rate.limit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
