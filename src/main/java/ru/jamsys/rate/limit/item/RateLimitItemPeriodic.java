@@ -64,6 +64,10 @@ public class RateLimitItemPeriodic implements RateLimitItem {
         return result;
     }
 
+    public String getNextTime() {
+        return nextTimeFlushFormat;
+    }
+
     public Statistic flushAndGetStatistic(long curTime, Map<String, String> parentTags, Map<String, Object> parentFields) {
         Statistic statistic = new Statistic(parentTags, parentFields);
         statistic.addField("period", periodName);
@@ -75,11 +79,9 @@ public class RateLimitItemPeriodic implements RateLimitItem {
             long timeInMillis = now.getTimeInMillis();
             nextTimeFlush.set(timeInMillis);
             nextTimeFlushFormat = Util.msToDataFormat(timeInMillis);
-            statistic.addField("nextTime", nextTimeFlushFormat);
             statistic.addField("tpu", tpu.getAndSet(0));
             statistic.addField("flushed", true);
         } else {
-            statistic.addField("nextTime", nextTimeFlushFormat);
             statistic.addField("tpu", tpu.get());
             statistic.addField("flushed", false);
         }
