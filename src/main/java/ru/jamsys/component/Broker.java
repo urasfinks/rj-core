@@ -59,7 +59,7 @@ public class Broker implements StatisticsCollectorComponent {
                 mapQueue,
                 new String[0],
                 (String key, Queue<? extends BrokerCollectible> queue) -> {
-                    parentTags.put("index", key);
+                    parentTags.put("BrokerKey", key);
                     List<Statistic> statistics = ((StatisticsCollector) queue).flushAndGetStatistic(parentTags, parentFields, isRun);
                     if (statistics != null) {
                         result.addAll(statistics);

@@ -64,7 +64,7 @@ public class RateLimitItemPeriodic implements RateLimitItem {
         return result;
     }
 
-    public String getNextTime() {
+    public String getNextTime(){
         return nextTimeFlushFormat;
     }
 

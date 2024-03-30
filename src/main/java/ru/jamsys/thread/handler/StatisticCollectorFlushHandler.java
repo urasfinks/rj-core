@@ -39,7 +39,7 @@ public class StatisticCollectorFlushHandler implements Handler<StatisticCollecto
         Util.riskModifierCollection(isRun, dictionary.getListStatisticsCollectorComponent(), new StatisticsCollectorComponent[0], (StatisticsCollectorComponent statisticsCollectorComponent) -> {
             Map<String, String> parentTags = new LinkedHashMap<>();
             parentTags.put("measurement", statisticsCollectorComponent.getClass().getSimpleName());
-            parentTags.put("host", ip);
+            parentTags.put("Host", ip);
             List<Statistic> statistics = statisticsCollectorComponent.flushAndGetStatistic(
                     parentTags,
                     null,

@@ -39,7 +39,10 @@ public class RateLimitItemTps implements RateLimitItem {
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
         List<Statistic> result = new ArrayList<>();
-        result.add(new Statistic(parentTags, parentFields).addField("tps", tps.getAndSet(0)));
+        result.add(new Statistic(parentTags, parentFields)
+                .addField("tps", tps.getAndSet(0))
+                .addField("max", max.get())
+        );
         return result;
     }
 

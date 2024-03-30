@@ -54,7 +54,7 @@ public class RateLimitImpl implements RateLimit {
         List<Statistic> result = new ArrayList<>();
         mapLimit.forEach((String key, RateLimitItem rateLimitItem) -> {
             HashMap<String, String> stringStringHashMap = new HashMap<>(parentTags);
-            stringStringHashMap.put("item", key);
+            stringStringHashMap.put("RateLimitItem", key);
             result.addAll(rateLimitItem.flushAndGetStatistic(stringStringHashMap, parentFields, isRun));
         });
         return result;

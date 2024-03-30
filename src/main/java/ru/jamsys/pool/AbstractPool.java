@@ -396,7 +396,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
             active();
         }
         result.add(new Statistic(parentTags, parentFields)
-                .addTag("index", getName())
+                .addTag("Pool", getName())
                 .addField("min", min)
                 .addField("max", max)
                 .addField("resource", resourceQueue.size())
