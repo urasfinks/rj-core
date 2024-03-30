@@ -39,7 +39,7 @@ public class RateLimitItemPeriodic implements RateLimitItem {
         return max.get() < 0 || (max.get() > 0 && tpu.get() <= max.get()); // -1 = infinity; 0 = reject
     }
 
-    public void setMax(Integer limit) {
+    public void setMax(Long limit) {
         this.max.set(limit);
     }
 

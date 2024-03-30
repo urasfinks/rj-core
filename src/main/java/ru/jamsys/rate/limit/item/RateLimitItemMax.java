@@ -20,7 +20,7 @@ public class RateLimitItemMax implements RateLimitItem {
         return this.max.get() < 0 || (this.max.get() > 0 && this.max.get() >= limit);
     }
 
-    public void setMax(Integer limit) {
+    public void setMax(Long limit) {
         this.max.set(limit);
     }
 
