@@ -1,5 +1,6 @@
 package ru.jamsys.statistic;
 
+import lombok.Getter;
 import ru.jamsys.extension.EnumName;
 
 public enum AvgMetricUnit implements EnumName {
@@ -7,5 +8,12 @@ public enum AvgMetricUnit implements EnumName {
     MIN,
     MAX,
     SUM,
-    AVG
+    AVG;
+
+    @Getter
+    private final String nameCache;
+
+    AvgMetricUnit() {
+        this.nameCache = getName();
+    }
 }

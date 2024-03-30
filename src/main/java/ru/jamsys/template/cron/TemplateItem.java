@@ -15,7 +15,7 @@ public class TemplateItem {
     Unit unit;
 
     public String getName() {
-        return unit.getName();
+        return unit.getNameCache();
     }
 
     public TemplateItem(Unit unit) {

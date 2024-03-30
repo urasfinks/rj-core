@@ -1,11 +1,15 @@
 package ru.jamsys.rate.limit.item;
 
+import lombok.Getter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.template.cron.Unit;
 import ru.jamsys.util.Util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -17,12 +21,16 @@ public class RateLimitItemPeriodic implements RateLimitItem {
 
     private final Unit period;
 
+    @Getter
+    private final String periodName;
+
     private final AtomicLong nextTimeFlush = new AtomicLong(0);
 
     private String nextTimeFlushFormat = "";
 
     public RateLimitItemPeriodic(Unit period) {
         this.period = period;
+        this.periodName = period.getName();
     }
 
     @Override
@@ -58,7 +66,7 @@ public class RateLimitItemPeriodic implements RateLimitItem {
 
     public Statistic flushAndGetStatistic(long curTime, Map<String, String> parentTags, Map<String, Object> parentFields) {
         Statistic statistic = new Statistic(parentTags, parentFields);
-        statistic.addField("period", period.getName());
+        statistic.addField("period", periodName);
         statistic.addField("max", max.get());
         if (nextTimeFlush.get() <= curTime) {
             Calendar now = Calendar.getInstance();

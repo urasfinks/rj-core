@@ -25,10 +25,14 @@ public enum Unit implements EnumName {
 
     private final int calendarUnit;
 
+    @Getter
+    private final String nameCache;
+
     Unit(int min, int max, int calendarUnit) {
         this.min = min;
         this.max = max;
         this.calendarUnit = calendarUnit;
+        this.nameCache = getName();
     }
 
     @SuppressWarnings("unused")

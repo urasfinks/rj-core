@@ -15,8 +15,12 @@ public enum RateLimitName implements EnumName {
     @Getter
     final RateLimitItemInstance rateLimitItemInstance;
 
+    @Getter
+    final private String nameCache;
+
     RateLimitName(RateLimitItemInstance rateLimitItemInstance) {
         this.rateLimitItemInstance = rateLimitItemInstance;
+        this.nameCache = getName();
     }
 
 }

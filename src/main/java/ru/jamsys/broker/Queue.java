@@ -21,7 +21,7 @@ public interface Queue<T> {
 
     List<T> getTail(@Nullable AtomicBoolean isRun);
 
-    List<QueueElementEnvelope<T>> getCloneQueue(@Nullable AtomicBoolean isRun);
+    List<T> getCloneQueue(@Nullable AtomicBoolean isRun);
 
     void reset();
 

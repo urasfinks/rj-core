@@ -57,10 +57,9 @@ class BrokerTest {
         }
         List<XTest> tail = b.getTail(null);
         Assertions.assertEquals("[XTest{x=11}, XTest{x=12}, XTest{x=13}]", tail.toString(), "#8");
-        List<XTest> cloned = new ArrayList<>();
-        List<QueueElementEnvelope<XTest>> cloneQueue = b.getCloneQueue(null);
-        cloneQueue.forEach((QueueElementEnvelope<XTest> xTest) -> cloned.add(xTest.getElement()));
-        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}]", cloned.toString(), "#9");
+
+        List<XTest> cloneQueue = b.getCloneQueue(null);
+        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}]", cloneQueue.toString(), "#9");
         b.reset();
         Assertions.assertEquals("[]", b.getCloneQueue(null).toString(), "#10");
     }
@@ -78,21 +77,33 @@ class BrokerTest {
             b.add(new XTest(i));
         }
 
-        Assertions.assertEquals(10, b.getSize(), "#1");
+        Assertions.assertEquals("[XTest{x=0}, XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=9}]", b.getCloneQueue(null).toString());
+
+        Assertions.assertEquals(10, b.getSize());
 
         XTest t = (XTest) b.pollFirst();
-        Assertions.assertEquals(0, t.x, "#2");
-        Assertions.assertEquals(9, b.getSize(), "#3");
+
+        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=9}]", b.getCloneQueue(null).toString());
+
+        Assertions.assertEquals(0, t.x);
+        Assertions.assertEquals(9, b.getSize());
 
         XTest t2 = (XTest) b.pollLast();
-        Assertions.assertEquals(9, t2.x, "#4");
-        Assertions.assertEquals(8, b.getSize(), "#5");
+
+        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}]", b.getCloneQueue(null).toString());
+
+        Assertions.assertEquals(9, t2.x);
+        Assertions.assertEquals(8, b.getSize());
 
         try {
             b.add(new XTest(11));
+            Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}]", b.getCloneQueue(null).toString());
             b.add(new XTest(12));
+            Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}]", b.getCloneQueue(null).toString());
             b.add(new XTest(13));
+            Assertions.assertEquals("[XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}]", b.getCloneQueue(null).toString());
             b.add(new XTest(14));
+            Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", b.getCloneQueue(null).toString());
             Assertions.assertTrue(true, "#6");
         } catch (Exception e) {
             Assertions.fail("#7");
@@ -101,12 +112,7 @@ class BrokerTest {
         List<XTest> tail = b.getTail(null);
         Assertions.assertEquals("[XTest{x=12}, XTest{x=13}, XTest{x=14}]", tail.toString(), "#8");
 
-        List<XTest> cloned = new ArrayList<>();
-        List<QueueElementEnvelope<XTest>> cloneQueue = b.getCloneQueue(null);
-        cloneQueue.forEach((QueueElementEnvelope<XTest> xTest) -> cloned.add(xTest.getElement()));
-
-
-        Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", cloned.toString(), "#9");
+        Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", b.getCloneQueue(null).toString());
         b.reset();
         Assertions.assertEquals("[]", b.getCloneQueue(null).toString(), "#10");
     }
@@ -117,8 +123,8 @@ class BrokerTest {
         Queue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
         TaskStatistic obj = new TaskStatistic(null, null);
         QueueElementEnvelope<TaskStatistic> o1 = queue.add(obj);
-        List<QueueElementEnvelope<TaskStatistic>> cloneQueue = queue.getCloneQueue(null);
-        Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).getElement().hashCode(), "#1");
+        List<TaskStatistic> cloneQueue = queue.getCloneQueue(null);
+        Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
         queue.remove(o1);
         Assertions.assertEquals(0, queue.getSize(), "#1");
         queue.reset();
@@ -133,9 +139,9 @@ class BrokerTest {
         TaskStatistic obj2 = new TaskStatistic(null, null);
         QueueElementEnvelope<TaskStatistic> o1 = queue.add(obj);
         QueueElementEnvelope<TaskStatistic> o2 = queue.add(obj2);
-        List<QueueElementEnvelope<TaskStatistic>> cloneQueue = queue.getCloneQueue(isRun);
-        Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).getElement().hashCode(), "#1");
-        Assertions.assertEquals(obj2.hashCode(), cloneQueue.get(1).getElement().hashCode(), "#2");
+        List<TaskStatistic> cloneQueue = queue.getCloneQueue(isRun);
+        Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
+        Assertions.assertEquals(obj2.hashCode(), cloneQueue.get(1).hashCode(), "#2");
         queue.remove(o1);
         Assertions.assertEquals(1, queue.getSize(), "#3");
         queue.remove(o2);

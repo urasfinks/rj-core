@@ -165,15 +165,15 @@ public class Cron {
                 }
             }
             Map<String, Object> flush = avgMetric.flush("");
-            if ((long) flush.get(AvgMetricUnit.AVG_COUNT.getName()) > 0) {
+            if ((long) flush.get(AvgMetricUnit.AVG_COUNT.getNameCache()) > 0) {
                 if (debug) {
                     System.out.println("Avg min: "
-                            + Util.msToDataFormat((Long) flush.get(AvgMetricUnit.MIN.getName()))
+                            + Util.msToDataFormat((Long) flush.get(AvgMetricUnit.MIN.getNameCache()))
                             + " realMs: "
-                            + flush.get(AvgMetricUnit.MIN.getName())
+                            + flush.get(AvgMetricUnit.MIN.getNameCache())
                     );
                 }
-                next = (long) flush.get(AvgMetricUnit.MIN.getName());
+                next = (long) flush.get(AvgMetricUnit.MIN.getNameCache());
             } else {
                 next = null;
             }

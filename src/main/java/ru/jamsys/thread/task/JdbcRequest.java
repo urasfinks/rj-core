@@ -19,9 +19,12 @@ public class JdbcRequest extends AbstractTask {
 
     boolean debug = false;
 
+    private final String nameCache;
+
     public JdbcRequest(String poolName, TemplateEnum templateEnum) {
         this.poolName = poolName;
         this.templateEnum = templateEnum;
+        this.nameCache = templateEnum.getName();
     }
 
     @SuppressWarnings("unused")
@@ -45,7 +48,7 @@ public class JdbcRequest extends AbstractTask {
     }
 
     public String getName() {
-        return templateEnum.getName();
+        return nameCache;
     }
 
     public boolean getDebug() {

@@ -10,6 +10,7 @@ import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.pool.AbstractPool;
 import ru.jamsys.pool.Pool;
 import ru.jamsys.rate.limit.RateLimit;
+import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -64,6 +65,7 @@ public class ThreadEnvelope extends AbstractPoolItem<ThreadEnvelope> {
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, Function<ThreadEnvelope, Boolean> consumer) {
         super(pool);
         RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), pool.getName());
+        rateLimit.get(RateLimitName.THREAD_TPS);
         info
                 .append("[")
                 .append(Util.msToDataFormat(System.currentTimeMillis()))

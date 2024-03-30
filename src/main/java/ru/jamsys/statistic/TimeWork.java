@@ -51,7 +51,7 @@ public class TimeWork {
         for (String index : stat.keySet()) {
             AvgMetric avgMetric = stat.get(index);
             Map<String, Object> flush = avgMetric.flush("");
-            Long sumTime = (Long) flush.get(AvgMetricUnit.SUM.getName());
+            Long sumTime = (Long) flush.get(AvgMetricUnit.SUM.getNameCache());
             mapPool.get(index).setSumTime(sumTime);
             sumTimeMap.put(index, sumTime);
         }

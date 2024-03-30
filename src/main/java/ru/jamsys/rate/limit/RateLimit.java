@@ -22,7 +22,7 @@ public interface RateLimit extends StatisticsCollector {
     RateLimitItem get(String name, RateLimitItemInstance rateLimitItemInstance);
 
     default RateLimitItem get(RateLimitName name) {
-        return get(name.getName(), name.getRateLimitItemInstance());
+        return get(name.getNameCache(), name.getRateLimitItemInstance());
     }
 
 }

@@ -50,7 +50,7 @@ public class TimeVariant {
         }
         for (Unit curEmptyUnit : listEmptyUnit) {
             if (debug) {
-                System.out.println("====EmptyUnit " + curEmptyUnit.getName() + " for time: " + Util.msToDataFormat(curTime));
+                System.out.println("====EmptyUnit " + curEmptyUnit.getNameCache() + " for time: " + Util.msToDataFormat(curTime));
             }
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(curTime);
@@ -111,12 +111,12 @@ public class TimeVariant {
             }
             if (!listEmptyUnit.contains(vectorUnit)) {
                 if (debug) {
-                    System.out.println(">r Unit." + vectorUnit.getName() + " continue because it is value template");
+                    System.out.println(">r Unit." + vectorUnit.getNameCache() + " continue because it is value template");
                 }
                 continue;
             }
             if (debug) {
-                System.out.println(">r " + vectorUnit.getName() + " = 0");
+                System.out.println(">r " + vectorUnit.getNameCache() + " = 0");
             }
             vectorUnit.setValue(calendar, 0);
         }
@@ -135,7 +135,7 @@ public class TimeVariant {
     public String toString() {
         Map<String, Integer> result = new LinkedHashMap<>();
         for (Unit unit : timeValue.keySet()) {
-            result.put(unit.getName(), timeValue.get(unit));
+            result.put(unit.getNameCache(), timeValue.get(unit));
         }
         return result.toString();
     }

@@ -10,8 +10,8 @@ import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.extension.Procedure;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.rate.limit.RateLimit;
-import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.rate.limit.RateLimitName;
+import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
@@ -69,6 +69,11 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
         rateLimit.setActive(true);
     }
 
+    public void setSizeQueue(int newSize) {
+        sizeQueue = newSize;
+        rateLimitSize.setMax(newSize);
+    }
+
     @SuppressWarnings("unused")
     public void onAdd(Procedure procedure) {
         listProcedure.add(procedure);
@@ -83,7 +88,7 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
             throw new Exception("RateLimit BrokerQueue: " + element.getClass().getSimpleName() + "; max tps: " + rateLimitTps.getMax() + "; object: " + element);
         }
         if (cyclical) {
-            if (!rateLimitSize.check(queue.size())) {
+            if (!rateLimitSize.check(queue.size() + 1)) {
                 queue.removeFirst();
             }
         } else {
@@ -146,10 +151,12 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
 
     @SuppressWarnings("unused")
     @Override
-    public List<QueueElementEnvelope<T>> getCloneQueue(@Nullable AtomicBoolean isRun) {
+    public List<T> getCloneQueue(@Nullable AtomicBoolean isRun) {
+        List<T> cloned = new ArrayList<>();
         List<QueueElementEnvelope<T>> ret = new ArrayList<>();
-        Util.riskModifierCollection(isRun, queue, getEmptyType(), ret::add);
-        return ret;
+        Util.riskModifierCollection(isRun, queue, getEmptyType(), (QueueElementEnvelope<T> elementEnvelope)
+                -> cloned.add(elementEnvelope.getElement()));
+        return cloned;
     }
 
     @Override
