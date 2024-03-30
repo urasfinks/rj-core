@@ -3,14 +3,20 @@ package ru.jamsys.component;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.App;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.RunnableComponent;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.extension.StatisticsCollectorComponent;
+import ru.jamsys.pool.ThreadPool;
+import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.template.cron.Cron;
 import ru.jamsys.template.cron.CronTask;
 import ru.jamsys.thread.generator.Generator;
 import ru.jamsys.thread.handler.Handler;
+import ru.jamsys.thread.task.KeepAlive;
+import ru.jamsys.thread.task.StatisticCollectorFlush;
+import ru.jamsys.thread.task.StatisticSecFlush;
 import ru.jamsys.thread.task.Task;
 import ru.jamsys.util.ListSort;
 
@@ -67,6 +73,29 @@ public class Core implements RunnableInterface {
     @Override
     public void run() {
         dictionary.getListRunnableComponents().forEach(RunnableInterface::run);
+        rateLimitInit();
+    }
+
+    private void rateLimitInit() {
+        RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
+        rateLimitManager.initLimit(
+                ThreadPool.class,
+                StatisticSecFlush.class.getSimpleName(),
+                RateLimitName.POOL_SIZE,
+                1
+        );
+        rateLimitManager.initLimit(
+                ThreadPool.class,
+                KeepAlive.class.getSimpleName(),
+                RateLimitName.POOL_SIZE,
+                1
+        );
+        rateLimitManager.initLimit(
+                ThreadPool.class,
+                StatisticCollectorFlush.class.getSimpleName(),
+                RateLimitName.POOL_SIZE,
+                1
+        );
     }
 
     @Override
