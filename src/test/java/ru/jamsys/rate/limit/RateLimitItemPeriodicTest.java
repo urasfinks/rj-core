@@ -79,11 +79,11 @@ class RateLimitItemPeriodicTest {
     @Test
     void checkMax() {
         RateLimitItem rateLimitMax = new RateLimitItemMax();
-        rateLimitMax.setMax(2);
+        rateLimitMax.setMax(2L);
         Assertions.assertTrue(rateLimitMax.check(1));
         Assertions.assertTrue(rateLimitMax.check(2));
         Assertions.assertFalse(rateLimitMax.check(3));
-        rateLimitMax.setMax(-1);
+        rateLimitMax.setMax(-1L);
         Assertions.assertTrue(rateLimitMax.check(3));
         Assertions.assertTrue(rateLimitMax.check(3));
         // Эту функцию будут вызывать при установки новых значений, низя
@@ -95,7 +95,7 @@ class RateLimitItemPeriodicTest {
     @Test
     void checkTps() {
         RateLimitItem rateLimitTps = new RateLimitItemTps();
-        rateLimitTps.setMax(2);
+        rateLimitTps.setMax(2L);
         Assertions.assertTrue(rateLimitTps.check(null));
         Assertions.assertTrue(rateLimitTps.check(null));
         Assertions.assertFalse(rateLimitTps.check(null));

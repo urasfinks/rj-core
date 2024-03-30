@@ -182,7 +182,7 @@ class ThreadEnvelopeTest {
 
         Assertions.assertEquals("resourceQueue: 5; parkQueue: 5; removeQueue: 0; isRun: true; min: 5; max: 5; ", threadPool.getMomentumStatistic());
 
-        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS).setMax(625);
+        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS).setMax(625L);
 
         for (int i = 0; i < 5; i++) {
             ThreadEnvelope resource = threadPool.getResource();
@@ -250,7 +250,7 @@ class ThreadEnvelopeTest {
         //Не должны выйти за 5
         Assertions.assertEquals("resourceQueue: 5; parkQueue: 0; removeQueue: 0; isRun: true; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
-        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS).setMax(500);
+        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS).setMax(500L);
 
         threadEnvelope1.run();
         threadEnvelope2.run();
@@ -282,7 +282,7 @@ class ThreadEnvelopeTest {
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
 
-        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS).setMax(100);
+        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS).setMax(100L);
         threadPool.run();
         ThreadEnvelope threadEnvelope = threadPool.getResource();
 
