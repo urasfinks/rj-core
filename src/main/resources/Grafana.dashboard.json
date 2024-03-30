@@ -87,7 +87,7 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
+        "w": 4,
         "x": 0,
         "y": 0
       },
@@ -110,7 +110,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"SystemStatistic\" and r._field == \"cpu\" and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\"])\n",
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"SystemStatistic\" and r._field == \"cpu\" and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"host\"])\n",
           "refId": "A"
         }
       ],
@@ -180,8 +180,8 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
-        "x": 6,
+        "w": 5,
+        "x": 4,
         "y": 0
       },
       "id": 6,
@@ -205,7 +205,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"Broker\" and r._field == \"size\" and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\"])",
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"Broker\" and r._field == \"size\" and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\"])",
           "refId": "A"
         }
       ],
@@ -275,8 +275,8 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
-        "x": 12,
+        "w": 5,
+        "x": 9,
         "y": 0
       },
       "id": 7,
@@ -300,7 +300,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"Broker\" and r._field == \"timeAvg\" and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\"])",
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"Broker\" and r._field == \"timeAvg\" and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\"])",
           "refId": "A"
         }
       ],
@@ -369,8 +369,8 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
-        "x": 18,
+        "w": 5,
+        "x": 14,
         "y": 0
       },
       "id": 8,
@@ -395,12 +395,162 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"Broker\" and r._field == \"tpsDequeue\" and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\"])",
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"Broker\" and r._field == \"tpsDeq\" and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\"])",
           "refId": "A"
         }
       ],
       "title": "Broker tpsDequeue",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unitScale": true
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "RateLimitItem"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 5,
+        "x": 19,
+        "y": 0
+      },
+      "id": 13,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "10.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> limit(n: 1)\n|> filter(fn: (r) => r._measurement == \"RateLimitManager\" and r._field == \"max\" and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\", \"_start\", \"_stop\", \"_measurement\"])\n//|> group(columns: [\"_time\"])\n//|> sort(columns: [\"RateLimitKey\", \"RateLimitItem\", \"_field\", \"_value\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "RateLimit",
+      "transformations": [
+        {
+          "id": "seriesToRows",
+          "options": {}
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "Metric"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Metric": true,
+              "Time": true,
+              "max": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "Metric": 1,
+              "RateLimitItem": 4,
+              "RateLimitKey": 2,
+              "Time": 0,
+              "Value": 5,
+              "max": 3
+            },
+            "renameByName": {
+              "RateLimitItem": "Item",
+              "RateLimitKey": "Key",
+              "Value": "Value"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Key"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "table"
     },
     {
       "datasource": {
@@ -427,7 +577,7 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
+        "w": 4,
         "x": 0,
         "y": 7
       },
@@ -461,7 +611,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"TaskManager\" and r._field == \"max\" and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\"])",
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"TaskManager\" and r._field == \"max\" and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\"])",
           "refId": "A"
         }
       ],
@@ -538,8 +688,8 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
-        "x": 6,
+        "w": 5,
+        "x": 4,
         "y": 7
       },
       "id": 4,
@@ -564,7 +714,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"TaskManager\" and (r._field == \"sumTime\") and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\"])",
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"TaskManager\" and (r._field == \"sumTime\") and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\"])",
           "refId": "A"
         }
       ],
@@ -642,8 +792,8 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
-        "x": 12,
+        "w": 5,
+        "x": 9,
         "y": 7
       },
       "id": 5,
@@ -668,11 +818,11 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"TaskManager\" and r._field == \"resource\" and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\"])",
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"TaskManager\" and (r._field == \"resource\" or r._field == \"park\") and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\"])",
           "refId": "A"
         }
       ],
-      "title": "TaskManager Resource",
+      "title": "TaskManager Resource / Park",
       "type": "timeseries"
     },
     {
@@ -745,112 +895,9 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
-        "x": 18,
+        "w": 5,
+        "x": 14,
         "y": 7
-      },
-      "id": 11,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": false
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "10.3.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"TaskManager\" and r._field == \"park\" and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\"])",
-          "refId": "A"
-        }
-      ],
-      "title": "TaskManager Park",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 5,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "linearThreshold": 1,
-              "log": 2,
-              "type": "symlog"
-            },
-            "showPoints": "auto",
-            "spanNulls": 5000,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none",
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 6,
-        "x": 0,
-        "y": 14
       },
       "id": 12,
       "options": {
@@ -874,179 +921,12 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"RateLimit\" and r._field == \"tps\" and r.group == \"Broker\" and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\", \"group\"])",
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"RateLimitManager\" and r._field == \"tps\"  and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\", \"RateLimitItem\"])",
           "refId": "A"
         }
       ],
-      "title": "RateLimit Broker",
+      "title": "RateLimit Tps",
       "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 5,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "linearThreshold": 1,
-              "log": 2,
-              "type": "symlog"
-            },
-            "showPoints": "auto",
-            "spanNulls": 5000,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none",
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 6,
-        "x": 6,
-        "y": 14
-      },
-      "id": 14,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": false
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "10.3.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"RateLimit\" and r._field == \"tps\" and r.group == \"Thread\" and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\", \"group\"])",
-          "refId": "A"
-        }
-      ],
-      "title": "RateLimit Thread",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 6,
-        "x": 12,
-        "y": 14
-      },
-      "id": 13,
-      "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
-      },
-      "pluginVersion": "10.3.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"RateLimit\" and r._field == \"max\" and r.group == \"Pool\" and r.host =~ /${Host:regex}/)\n|> drop(columns: [\"host\", \"group\"])",
-          "refId": "A"
-        }
-      ],
-      "title": "RateLimit Pool",
-      "type": "gauge"
     }
   ],
   "refresh": "5s",
@@ -1087,6 +967,6 @@
   "timezone": "",
   "title": "New dashboard",
   "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 24,
+  "version": 27,
   "weekStart": ""
 }
