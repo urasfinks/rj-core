@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RateLimitItemMax implements RateLimitItem {
 
-    private final AtomicLong max = new AtomicLong(-1);
+    private final AtomicInteger max = new AtomicInteger(-1);
 
     @Override
     public boolean check(Integer limit) {
@@ -20,7 +20,8 @@ public class RateLimitItemMax implements RateLimitItem {
         return this.max.get() < 0 || (this.max.get() > 0 && this.max.get() >= limit);
     }
 
-    public void setMax(Long limit) {
+    @Override
+    public void setMax(Integer limit) {
         this.max.set(limit);
     }
 

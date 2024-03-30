@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RateLimitItemTps implements RateLimitItem {
 
-    private final AtomicLong tps = new AtomicLong(0);
+    private final AtomicInteger tps = new AtomicInteger(0);
 
-    private final AtomicLong max = new AtomicLong(-1);
+    private final AtomicInteger max = new AtomicInteger(-1);
 
     @Override
     public boolean check(@Nullable Integer limit) {
@@ -21,7 +21,8 @@ public class RateLimitItemTps implements RateLimitItem {
         return max.get() < 0 || (max.get() > 0 && tps.get() <= max.get()); // -1 = infinity; 0 = reject
     }
 
-    public void setMax(Long limit) {
+    @Override
+    public void setMax(Integer limit) {
         this.max.set(limit);
     }
 

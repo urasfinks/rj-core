@@ -41,7 +41,7 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
 
     private final List<Procedure> listProcedure = new ArrayList<>();
 
-    private long sizeQueue = 3000;
+    private int sizeQueue = 3000;
 
     private int sizeTail = 5;
 
@@ -69,7 +69,7 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
         rateLimit.setActive(true);
     }
 
-    public void setSizeQueue(long newSize) {
+    public void setSizeQueue(int newSize) {
         sizeQueue = newSize;
         rateLimitSize.setMax(newSize);
     }
@@ -172,7 +172,7 @@ public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, Statist
     }
 
     @Override
-    public void setMaxTpsInput(long maxTpsInput) {
+    public void setMaxTpsInput(int maxTpsInput) {
         rateLimitTps.setMax(maxTpsInput);
     }
 

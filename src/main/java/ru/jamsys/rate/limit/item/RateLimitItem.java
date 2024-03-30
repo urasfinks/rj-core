@@ -6,7 +6,7 @@ public interface RateLimitItem extends StatisticsCollector {
 
     boolean check(Integer limit);
 
-    void setMax(Long limit);
+    void setMax(Integer limit);
 
     long getMax();
 

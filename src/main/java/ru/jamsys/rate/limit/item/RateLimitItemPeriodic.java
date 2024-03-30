@@ -11,13 +11,14 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RateLimitItemPeriodic implements RateLimitItem {
 
-    private final AtomicLong tpu = new AtomicLong(0);
+    private final AtomicInteger tpu = new AtomicInteger(0);
 
-    private final AtomicLong max = new AtomicLong(-1);
+    private final AtomicInteger max = new AtomicInteger(-1);
 
     private final Unit period;
 
@@ -39,7 +40,8 @@ public class RateLimitItemPeriodic implements RateLimitItem {
         return max.get() < 0 || (max.get() > 0 && tpu.get() <= max.get()); // -1 = infinity; 0 = reject
     }
 
-    public void setMax(Long limit) {
+    @Override
+    public void setMax(Integer limit) {
         this.max.set(limit);
     }
 
@@ -64,7 +66,7 @@ public class RateLimitItemPeriodic implements RateLimitItem {
         return result;
     }
 
-    public String getNextTime(){
+    public String getNextTime() {
         return nextTimeFlushFormat;
     }
 
