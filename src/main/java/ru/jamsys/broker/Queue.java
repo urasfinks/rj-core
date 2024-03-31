@@ -1,11 +1,12 @@
 package ru.jamsys.broker;
 
 import org.springframework.lang.Nullable;
+import ru.jamsys.statistic.Expired;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public interface Queue<T> {
+public interface Queue<T> extends Expired {
 
     int getSize();
 
@@ -26,8 +27,6 @@ public interface Queue<T> {
     void reset();
 
     void setMaxTpsInput(int maxTpsInput);
-
-    boolean isExpired();
 
     void close();
 
