@@ -7,6 +7,4 @@ public interface Handler<T extends Task> {
 
     void run(T task, ThreadEnvelope threadEnvelope) throws Exception;
 
-    long getTimeoutMs();
-
 }

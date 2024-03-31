@@ -33,8 +33,4 @@ public class StatisticSecFlushToConsoleHandler implements Handler<StatisticSecFl
         }
     }
 
-    @Override
-    public long getTimeoutMs() {
-        return 1000;
-    }
 }

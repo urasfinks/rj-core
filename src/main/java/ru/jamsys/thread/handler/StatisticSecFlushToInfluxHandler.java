@@ -87,8 +87,4 @@ public class StatisticSecFlushToInfluxHandler implements Handler<StatisticSecFlu
         }
     }
 
-    @Override
-    public long getTimeoutMs() {
-        return 5000;
-    }
 }

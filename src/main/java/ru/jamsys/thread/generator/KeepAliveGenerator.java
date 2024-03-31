@@ -15,7 +15,7 @@ public class KeepAliveGenerator implements Generator {
 
     @Override
     public Task getTask() {
-        return new KeepAlive();
+        return new KeepAlive(60_000);
     }
 
     @Override

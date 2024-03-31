@@ -1,7 +1,8 @@
-package ru.jamsys.statistic;
+package ru.jamsys.pool;
 
-import ru.jamsys.pool.AbstractPoolItem;
-import ru.jamsys.pool.Pool;
+import ru.jamsys.statistic.AvgMetric;
+import ru.jamsys.statistic.AvgMetricUnit;
+import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.thread.task.Task;
 import ru.jamsys.util.Util;
 
@@ -13,7 +14,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class TimeWork {
+public class TaskStatisticHandler {
 
     final private ConcurrentLinkedDeque<TaskStatistic> queueTaskStatistics = new ConcurrentLinkedDeque<>();
 
@@ -23,6 +24,7 @@ public class TimeWork {
         return taskStatistic;
     }
 
+    // Вызывается когда произошла неизбежность thread.stop()
     public void forceRemove(AbstractPoolItem<?> abstractPoolItem) {
         Util.riskModifierCollection(null, queueTaskStatistics, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
             if (taskStatistic.getPoolItem().equals(abstractPoolItem)) {
@@ -31,18 +33,21 @@ public class TimeWork {
         });
     }
 
-    private Map<String, Long> getSumTime(AtomicBoolean isRun) {
+    public Map<String, Long> balancing(AtomicBoolean isRun, long count) {
         Map<String, AvgMetric> stat = new HashMap<>();
-        // Снимаем статистику задач, которые взяли в работу пулы потоков
-        Map<String, Pool<?>> mapPool = new HashMap<>();
+        // Снимаем статистику задач, которые взял в работу пул
+        Map<String, Pool<?>> mapPoolStatistic = new HashMap<>();
         Util.riskModifierCollection(isRun, queueTaskStatistics, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
             if (taskStatistic.isFinished()) {
                 queueTaskStatistics.remove(taskStatistic);
+            } else if (taskStatistic.getTimeExecuteMs() > taskStatistic.getTask().getMaxTimeExecute()) {
+                queueTaskStatistics.remove(taskStatistic);
+                taskStatistic.getPoolItem().closeAndRemove();
             }
             String indexTask = taskStatistic.getTask().getIndex();
             if (!stat.containsKey(indexTask)) {
                 stat.put(indexTask, new AvgMetric());
-                mapPool.put(indexTask, taskStatistic.getPoolItem().getPool());
+                mapPoolStatistic.put(indexTask, taskStatistic.getPoolItem().getPool());
             }
             stat.get(indexTask).add(taskStatistic.getTimeExecuteMs());
         });
@@ -52,15 +57,10 @@ public class TimeWork {
             AvgMetric avgMetric = stat.get(index);
             Map<String, Object> flush = avgMetric.flush("");
             Long sumTime = (Long) flush.get(AvgMetricUnit.SUM.getNameCache());
-            mapPool.get(index).setSumTime(sumTime);
+            mapPoolStatistic.get(index).setSumTime(sumTime);
             sumTimeMap.put(index, sumTime);
         }
-        return sumTimeMap;
-    }
-
-    public Map<String, Long> balancing(AtomicBoolean isRun, long count) {
-        Map<String, Long> taskIndexSumTime = getSumTime(isRun);
-        return getMaxCountResourceByTime(taskIndexSumTime, count);
+        return getMaxCountResourceByTime(sumTimeMap, count);
     }
 
     public static Map<String, Long> getMaxCountResourceByTime(Map<String, Long> map, long count) {

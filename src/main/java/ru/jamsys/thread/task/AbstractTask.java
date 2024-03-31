@@ -14,5 +14,15 @@ public abstract class AbstractTask extends TagIndexImpl implements Task, BrokerC
     List<Trace> listTrace = new ArrayList<>();
     Map<String, Object> property = new HashMap<>();
     long timeMsExpired = 0;
+    final int maxTimeExecute;
+
+    public AbstractTask(int maxTimeExecute) {
+        this.maxTimeExecute = maxTimeExecute;
+    }
+
+    @Override
+    public int getMaxTimeExecute() {
+        return maxTimeExecute;
+    }
 
 }

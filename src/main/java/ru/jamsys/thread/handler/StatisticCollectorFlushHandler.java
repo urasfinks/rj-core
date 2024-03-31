@@ -58,8 +58,4 @@ public class StatisticCollectorFlushHandler implements Handler<StatisticCollecto
         }
     }
 
-    @Override
-    public long getTimeoutMs() {
-        return 1000;
-    }
 }

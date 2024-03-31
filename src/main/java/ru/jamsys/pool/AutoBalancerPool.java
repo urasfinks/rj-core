@@ -8,7 +8,6 @@ import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.statistic.Statistic;
-import ru.jamsys.statistic.TimeWork;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class AutoBalancerPool<T extends AbstractPool<?>> extends TimeWork implements StatisticsCollector, KeepAlive {
+public class AutoBalancerPool<T extends AbstractPool<?>> extends TaskStatisticHandler implements StatisticsCollector, KeepAlive {
 
     final protected Map<String, T> mapPool = new ConcurrentHashMap<>();
 

@@ -21,7 +21,8 @@ public class JdbcRequest extends AbstractTask {
 
     private final String nameCache;
 
-    public JdbcRequest(String poolName, TemplateEnum templateEnum) {
+    public JdbcRequest(String poolName, TemplateEnum templateEnum, int maxTimeExecute) {
+        super(maxTimeExecute);
         this.poolName = poolName;
         this.templateEnum = templateEnum;
         this.nameCache = templateEnum.getName();

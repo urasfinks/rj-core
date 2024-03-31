@@ -14,7 +14,7 @@ public class ReadStatisticSecGenerator implements Generator {
 
     @Override
     public Task getTask() {
-        return new StatisticSecFlush();
+        return new StatisticSecFlush(5_000);
     }
 
     @Override

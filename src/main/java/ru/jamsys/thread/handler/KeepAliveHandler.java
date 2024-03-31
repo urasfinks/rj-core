@@ -29,8 +29,4 @@ public class KeepAliveHandler implements Handler<KeepAlive> {
         );
     }
 
-    @Override
-    public long getTimeoutMs() {
-        return 1000;
-    }
 }

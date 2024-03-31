@@ -14,7 +14,7 @@ public class FlushStatisticCollectorGenerator implements Generator {
 
     @Override
     public Task getTask() {
-        return new StatisticCollectorFlush();
+        return new StatisticCollectorFlush(1_000);
     }
 
     @Override
