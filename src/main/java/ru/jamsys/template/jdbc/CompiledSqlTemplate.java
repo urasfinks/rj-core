@@ -1,11 +1,13 @@
 package ru.jamsys.template.jdbc;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 public class CompiledSqlTemplate {
     private List<Argument> listArgument = new ArrayList<>();
     private String sql;
