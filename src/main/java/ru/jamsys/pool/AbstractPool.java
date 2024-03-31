@@ -27,7 +27,7 @@ import java.util.function.Function;
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends AbstractExpired implements Pool<T>, RunnableInterface {
 
-    public static ThreadLocal<Pool<?>> contextPool = new ThreadLocal<>();
+    public static ThreadLocal<Pool<?>> context = new ThreadLocal<>();
 
     private final AtomicInteger max = new AtomicInteger(0); //Максимальное кол-во ресурсов
 
@@ -110,7 +110,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
     }
 
     public boolean isAmI() {
-        return this.equals(AbstractPool.contextPool.get());
+        return this.equals(AbstractPool.context.get());
     }
 
     public boolean isEmpty() {
@@ -222,8 +222,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
         return false;
     }
 
-    //Это когда поток придушили сторонними силами без участия пула
-    public void removeForce(T resource) {
+    public void removeFromPool(T resource) {
         resourceQueue.remove(resource);
         parkQueue.remove(resource);
         checkPark();
@@ -232,7 +231,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
 
     synchronized private void remove(@NonNull T resource) {
         if (resourceQueue.contains(resource)) {
-            removeForce(resource);
+            removeFromPool(resource);
             closeResource(resource); //Если выкидываем из пула, то наверное надо закрыть сам ресурс
         } else {
             App.context.getBean(ExceptionHandler.class).handler(new RuntimeException(
