@@ -1,18 +1,37 @@
 package ru.jamsys.statistic;
 
+import ru.jamsys.util.Util;
+
 public interface Expired {
 
+    default boolean isExpired() {
+        return isExpired(System.currentTimeMillis());
+    }
+
+    default boolean isExpired(long curTime) {
+        return curTime > (getLastActivity() + getKeepAliveOnInactivityMs());
+    }
+
+    default void active() {
+        setLastActivity(System.currentTimeMillis());
+    }
+
     @SuppressWarnings("unused")
-    boolean isExpired();
+    default long getExpiryRemaining(long curTime) {
+        return (getLastActivity() + getKeepAliveOnInactivityMs()) - curTime;
+    }
 
-    boolean isExpired(long curTime);
+    @SuppressWarnings("unused")
+    default String getLastActivityFormat() {
+        return Util.msToDataFormat(getLastActivity());
+    }
 
-    String getLastActiveFormat();
+    long getLastActivity();
 
-    void active();
+    long getKeepAliveOnInactivityMs();
 
-    void setKeepAliveOnInactivityMs(long ms);
+    void setLastActivity(long time);
 
-    long getExpiryRemaining(long curTime);
+    void setKeepAliveOnInactivityMs(long time);
 
 }
