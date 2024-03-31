@@ -1,13 +1,14 @@
-package ru.jamsys.statistic;
+package ru.jamsys.pool;
 
 import org.springframework.context.ApplicationContext;
 import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.StatisticsCollector;
-import ru.jamsys.pool.AbstractPool;
 import ru.jamsys.rate.limit.RateLimit;
-import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.rate.limit.RateLimitName;
+import ru.jamsys.rate.limit.item.RateLimitItem;
+import ru.jamsys.statistic.Statistic;
+import ru.jamsys.statistic.TimeWork;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -16,13 +17,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class PoolRemove<T extends AbstractPool<?>> extends TimeWork implements StatisticsCollector, KeepAlive {
+public class AutoBalancerPool<T extends AbstractPool<?>> extends TimeWork implements StatisticsCollector, KeepAlive {
 
     final protected Map<String, T> mapPool = new ConcurrentHashMap<>();
 
     final private RateLimitItem rateLimitMax;
 
-    public PoolRemove(ApplicationContext applicationContext) {
+    public AutoBalancerPool(ApplicationContext applicationContext) {
         RateLimit rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClass(), null);
         rateLimitMax = rateLimit.get(RateLimitName.POOL_SIZE);
     }
@@ -37,21 +38,21 @@ public class PoolRemove<T extends AbstractPool<?>> extends TimeWork implements S
 
     @Override
     public void keepAlive(AtomicBoolean isRun) {
-        Map<String, Long> countThread = balancing(isRun, rateLimitMax.getMax());
-        Util.riskModifierMap(isRun, mapPool, new String[0], (String indexTask, T threadPool) -> {
-            if (threadPool.isExpired()) {
-                mapPool.remove(indexTask);
-                threadPool.shutdown();
+        Map<String, Long> countResource = balancing(isRun, rateLimitMax.getMax());
+        Util.riskModifierMap(isRun, mapPool, new String[0], (String key, T pool) -> {
+            if (pool.isExpired()) {
+                mapPool.remove(key);
+                pool.shutdown();
                 return;
-            } else if (countThread.containsKey(indexTask)) {
-                threadPool.setMaxSlowRiseAndFastFall(countThread.get(indexTask).intValue());
+            } else if (countResource.containsKey(key)) {
+                pool.setMaxSlowRiseAndFastFall(countResource.get(key).intValue());
             } else {
-                threadPool.setSumTime(0);
+                pool.setSumTime(0);
             }
             // 2024-03-20T13:42:08.002792 KeepAliveTask-1 add thread because: [KeepAliveTask] parkQueue: 0; resource: 1; remove: 0
             // На даём сами себя оживлять
-            if (!threadPool.isAmI()) {
-                threadPool.keepAlive();
+            if (!pool.isAmI()) {
+                pool.keepAlive();
             }
         });
     }

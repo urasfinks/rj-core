@@ -6,14 +6,14 @@ import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.pool.ThreadPool;
-import ru.jamsys.statistic.PoolRemove;
+import ru.jamsys.pool.AutoBalancerPool;
 import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.thread.handler.Handler;
 import ru.jamsys.thread.task.Task;
 
 @Component
-public class TaskManager extends PoolRemove<ThreadPool> implements KeepAliveComponent, StatisticsCollectorComponent {
+public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAliveComponent, StatisticsCollectorComponent {
 
     final private Broker broker;
 
