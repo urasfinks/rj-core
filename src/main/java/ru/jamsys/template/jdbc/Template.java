@@ -23,7 +23,7 @@ public class Template {
 
     private List<Argument> listArgument;
 
-    public Template(String sql, StatementType statementType) throws Exception {
+    public Template(String sql, StatementType statementType) {
         this.statementType = statementType;
         parse(sql);
     }
@@ -39,7 +39,7 @@ public class Template {
         return null;
     }
 
-    private void parse(String sql) throws Exception {
+    private void parse(String sql) {
         listTemplateItem = ru.jamsys.template.twix.Template.getParsedTemplate(sql);
         listArgument = new ArrayList<>();
         for (TemplateItem templateItem : listTemplateItem) {
@@ -55,10 +55,10 @@ public class Template {
         analyze();
     }
 
-    private void analyze() throws Exception {
+    private void analyze() {
         for (Argument argument : listArgument) {
             if (statementType.isSelect() && (argument.getDirection() == ArgumentDirection.OUT || argument.getDirection() == ArgumentDirection.IN_OUT)) {
-                throw new Exception("Нельзя использовать OUT переменные в простых выборках");
+                throw new RuntimeException("Нельзя использовать OUT переменные в простых выборках");
             }
         }
     }
