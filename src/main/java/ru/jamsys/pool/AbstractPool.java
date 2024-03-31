@@ -9,10 +9,11 @@ import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.rate.limit.RateLimit;
-import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.rate.limit.RateLimitName;
+import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -177,12 +178,12 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
 
     @SuppressWarnings({"unused"})
     @Override
-    public T getResource(Long timeOutMs) {
+    public T getResource(int timeOutMs, ThreadEnvelope threadEnvelope) {
         if (!isRun.get()) {
             return null;
         }
         long finishTimeMs = System.currentTimeMillis() + timeOutMs;
-        while (isRun.get() && finishTimeMs > System.currentTimeMillis()) {
+        while (isRun.get() && threadEnvelope.getIsWhile().get() && finishTimeMs > System.currentTimeMillis()) {
             T resource = parkQueue.pollFirst();
             checkPark();
             if (resource != null) {

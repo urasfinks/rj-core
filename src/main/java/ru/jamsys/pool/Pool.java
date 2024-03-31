@@ -2,6 +2,7 @@ package ru.jamsys.pool;
 
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.statistic.Expired;
+import ru.jamsys.thread.ThreadEnvelope;
 
 public interface Pool<T extends Expired> extends StatisticsCollector {
 
@@ -12,7 +13,7 @@ public interface Pool<T extends Expired> extends StatisticsCollector {
     T getResource(); // Получить ресурс без ожидания, если нет в park - вернём null
 
     @SuppressWarnings("unused")
-    T getResource(Long timeOutMs); //Если в parkQueue нет ресурса, будем ждать timeOutMs
+    T getResource(int timeOutMs, ThreadEnvelope threadEnvelope); //Если в parkQueue нет ресурса, будем ждать timeOutMs
 
     T createResource();
 
