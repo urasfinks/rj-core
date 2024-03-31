@@ -143,7 +143,7 @@
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": false,
+            "insertNulls": 5000,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -238,7 +238,7 @@
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": false,
+            "insertNulls": 5000,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -249,7 +249,7 @@
             "spanNulls": false,
             "stacking": {
               "group": "A",
-              "mode": "none"
+              "mode": "normal"
             },
             "thresholdsStyle": {
               "mode": "off"
@@ -332,7 +332,7 @@
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": false,
+            "insertNulls": 5000,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -645,7 +645,7 @@
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": false,
+            "insertNulls": 5000,
             "lineInterpolation": "linear",
             "lineStyle": {
               "fill": "solid"
@@ -749,7 +749,7 @@
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": false,
+            "insertNulls": 5000,
             "lineInterpolation": "linear",
             "lineStyle": {
               "fill": "solid"
@@ -852,7 +852,7 @@
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": false,
+            "insertNulls": 5000,
             "lineInterpolation": "linear",
             "lineStyle": {
               "fill": "solid"
@@ -967,6 +967,6 @@
   "timezone": "",
   "title": "New dashboard",
   "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 27,
+  "version": 28,
   "weekStart": ""
 }
