@@ -2,7 +2,7 @@ package ru.jamsys.thread.task;
 
 import lombok.Getter;
 import ru.jamsys.template.jdbc.Template;
-import ru.jamsys.template.jdbc.TemplateEnum;
+import ru.jamsys.template.jdbc.JdbcTemplate;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -12,7 +12,7 @@ public class JdbcRequest extends AbstractTask {
     final String poolName;
 
     @Getter
-    final TemplateEnum templateEnum;
+    final JdbcTemplate jdbcTemplate;
 
     @Getter
     final Map<String, Object> args = new LinkedHashMap<>();
@@ -21,11 +21,11 @@ public class JdbcRequest extends AbstractTask {
 
     private final String nameCache;
 
-    public JdbcRequest(String poolName, TemplateEnum templateEnum, int maxTimeExecute) {
+    public JdbcRequest(String poolName, JdbcTemplate jdbcTemplate, int maxTimeExecute) {
         super(maxTimeExecute);
         this.poolName = poolName;
-        this.templateEnum = templateEnum;
-        this.nameCache = templateEnum.getName();
+        this.jdbcTemplate = jdbcTemplate;
+        this.nameCache = jdbcTemplate.getName();
     }
 
     @SuppressWarnings("unused")
@@ -45,7 +45,7 @@ public class JdbcRequest extends AbstractTask {
     }
 
     public Template getTemplate() {
-        return templateEnum.getTemplate();
+        return jdbcTemplate.getTemplate();
     }
 
     public String getName() {
