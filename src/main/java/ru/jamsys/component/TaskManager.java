@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
-import ru.jamsys.pool.ThreadPool;
 import ru.jamsys.pool.AutoBalancerPool;
+import ru.jamsys.pool.ThreadPool;
 import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.thread.handler.Handler;
@@ -35,14 +35,8 @@ public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAli
             mapPool.putIfAbsent(taskIndex, threadPool);
             threadPool.run();
         }
-        if (task instanceof BrokerCollectible) {
-            broker.add(taskIndex, (BrokerCollectible) task);
-            mapPool.get(taskIndex).wakeUp();
-        } else {
-            exceptionHandler.handler(
-                    new RuntimeException(task.getClass() + " not instanceof " + BrokerCollectible.class.getSimpleName())
-            );
-        }
+        broker.add(taskIndex, (BrokerCollectible) task);
+        mapPool.get(taskIndex).wakeUp();
     }
 
     public void executeTask(ThreadEnvelope threadEnvelope, Task task) {
