@@ -51,7 +51,7 @@ public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAli
         if (handler != null) {
             TaskStatistic taskStatistic = getTaskStatistic(threadEnvelope, task);
             try {
-                handler.run(task, threadEnvelope.getIsWhile());
+                handler.run(task, threadEnvelope);
             } catch (Exception e) {
                 exceptionHandler.handler(e);
             }
