@@ -1,10 +1,42 @@
 package ru.jamsys.statistic;
 
+import ru.jamsys.util.Util;
+
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public interface TagIndex {
 
-    String getIndex();
+    Map<String, String> getTag();
 
-    Map<String, String> getTags();
+    String getIndexCache();
+
+    void setIndexCache(String index);
+
+    default String compileIndex() {
+        Map<String, String> tags = getTags();
+        StringBuilder sb = new StringBuilder();
+        sb.append(Util.capitalize(getClass().getSimpleName()));
+        SortedSet<String> keys = new TreeSet<>(tags.keySet());
+        for (String key : keys) {
+            sb.append("-");
+            sb.append(Util.capitalize(key));
+            sb.append("=");
+            sb.append(Util.capitalize(tags.get(key)));
+        }
+        return sb.toString();
+    }
+
+    default Map<String, String> getTags() {
+        setIndexCache(null);
+        return getTag();
+    }
+
+    default String getIndex() {
+        if (getIndexCache() == null) {
+            setIndexCache(compileIndex());
+        }
+        return getIndexCache();
+    }
 }

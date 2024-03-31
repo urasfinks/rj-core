@@ -14,10 +14,7 @@ import ru.jamsys.template.cron.Cron;
 import ru.jamsys.template.cron.CronTask;
 import ru.jamsys.thread.generator.Generator;
 import ru.jamsys.thread.handler.Handler;
-import ru.jamsys.thread.task.KeepAlive;
-import ru.jamsys.thread.task.StatisticCollectorFlush;
-import ru.jamsys.thread.task.StatisticSecFlush;
-import ru.jamsys.thread.task.Task;
+import ru.jamsys.thread.task.*;
 import ru.jamsys.util.ListSort;
 
 import java.util.List;
@@ -34,8 +31,8 @@ public class Core implements RunnableInterface {
         @SuppressWarnings("rawtypes")
         List<Class<Handler>> list = classFinder.findByInstance(Handler.class);
         for (Class<?> taskHandler : list) {
-            List<Class<Task>> typeInterface = classFinder.getTypeInterface(taskHandler, Task.class);
-            for (Class<Task> iClass : typeInterface) {
+            List<Class<AbstractTask>> typeInterface = classFinder.getTypeInterface(taskHandler, AbstractTask.class);
+            for (Class<AbstractTask> iClass : typeInterface) {
                 dictionary.getTaskHandler().put(iClass, (Handler<?>) applicationContext.getBean(taskHandler));
             }
         }

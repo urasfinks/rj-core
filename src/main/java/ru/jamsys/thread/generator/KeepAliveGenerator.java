@@ -1,8 +1,8 @@
 package ru.jamsys.thread.generator;
 
 import org.springframework.stereotype.Component;
+import ru.jamsys.thread.task.AbstractTask;
 import ru.jamsys.thread.task.KeepAlive;
-import ru.jamsys.thread.task.Task;
 
 @SuppressWarnings("unused")
 @Component
@@ -14,7 +14,7 @@ public class KeepAliveGenerator implements Generator {
     }
 
     @Override
-    public Task getTask() {
+    public AbstractTask getTask() {
         return new KeepAlive(60_000);
     }
 

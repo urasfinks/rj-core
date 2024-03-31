@@ -3,7 +3,7 @@ package ru.jamsys.pool;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.AvgMetricUnit;
 import ru.jamsys.statistic.TaskStatistic;
-import ru.jamsys.thread.task.Task;
+import ru.jamsys.thread.task.AbstractTask;
 import ru.jamsys.util.Util;
 
 import java.math.BigDecimal;
@@ -18,7 +18,7 @@ public class TaskStatisticHandler {
 
     final private ConcurrentLinkedDeque<TaskStatistic> queueTaskStatistics = new ConcurrentLinkedDeque<>();
 
-    public TaskStatistic getTaskStatistic(AbstractPoolItem<?> abstractPoolItem, Task task) {
+    public TaskStatistic getTaskStatistic(AbstractPoolItem<?> abstractPoolItem, AbstractTask task) {
         TaskStatistic taskStatistic = new TaskStatistic(abstractPoolItem, task);
         queueTaskStatistics.add(taskStatistic);
         return taskStatistic;

@@ -10,7 +10,7 @@ import ru.jamsys.pool.ThreadPool;
 import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.thread.handler.Handler;
-import ru.jamsys.thread.task.Task;
+import ru.jamsys.thread.task.AbstractTask;
 
 @Component
 public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAliveComponent, StatisticsCollectorComponent {
@@ -28,7 +28,7 @@ public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAli
         this.dictionary = dictionary;
     }
 
-    public void addTask(Task task) throws Exception {
+    public void addTask(AbstractTask task) throws Exception {
         String taskIndex = task.getIndex();
         if (!mapPool.containsKey(taskIndex)) {
             ThreadPool threadPool = createThreadPool(taskIndex);
@@ -39,9 +39,9 @@ public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAli
         mapPool.get(taskIndex).wakeUp();
     }
 
-    public void executeTask(ThreadEnvelope threadEnvelope, Task task) {
+    public void executeTask(ThreadEnvelope threadEnvelope, AbstractTask task) {
         @SuppressWarnings("unchecked")
-        Handler<Task> handler = dictionary.getTaskHandler().get(task.getClass());
+        Handler<AbstractTask> handler = dictionary.getTaskHandler().get(task.getClass());
         if (handler != null) {
             TaskStatistic taskStatistic = getTaskStatistic(threadEnvelope, task);
             try {
@@ -61,7 +61,7 @@ public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAli
                 0,
                 1,
                 (ThreadEnvelope threadEnvelope) -> {
-                    Task task = broker.pollLast(poolName);
+                    AbstractTask task = broker.pollLast(poolName);
                     if (task == null) {
                         return false;
                     }

@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.pool.AbstractPoolItem;
-import ru.jamsys.thread.task.Task;
+import ru.jamsys.thread.task.AbstractTask;
 
 @Getter
 @Setter
@@ -13,12 +13,12 @@ public class TaskStatistic implements BrokerCollectible {
 
     AbstractPoolItem<?> poolItem;
 
-    Task task;
+    AbstractTask task;
 
     long timeStartMs = System.currentTimeMillis();
     Long timeExecuteMs = null;
 
-    public TaskStatistic(AbstractPoolItem<?> poolItem, @Nullable Task task) {
+    public TaskStatistic(AbstractPoolItem<?> poolItem, @Nullable AbstractTask task) {
         this.poolItem = poolItem;
         this.task = task;
     }

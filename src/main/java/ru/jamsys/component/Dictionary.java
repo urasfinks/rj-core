@@ -10,7 +10,7 @@ import ru.jamsys.extension.RunnableComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.template.cron.CronTask;
 import ru.jamsys.thread.handler.Handler;
-import ru.jamsys.thread.task.Task;
+import ru.jamsys.thread.task.AbstractTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,5 +33,5 @@ public class Dictionary {
     List<CronTask> listCronTask = new ArrayList<>();
 
     @SuppressWarnings("rawtypes")
-    Map<Class<? extends Task>, Handler> taskHandler = new ConcurrentHashMap<>();
+    Map<Class<? extends AbstractTask>, Handler> taskHandler = new ConcurrentHashMap<>();
 }

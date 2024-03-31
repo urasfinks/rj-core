@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.thread.handler.Handler;
-import ru.jamsys.thread.task.Task;
+import ru.jamsys.thread.task.AbstractTask;
 
 @Getter
 @Setter
@@ -12,9 +12,9 @@ import ru.jamsys.thread.task.Task;
 public class Trace {
     long timeMs;
     TraceEvent traceEvent;
-    Handler<? extends Task> abstractHandler;
+    Handler<? extends AbstractTask> abstractHandler;
 
-    public Trace(long timeMs, TraceEvent traceEvent, Handler<? extends Task> abstractHandler) {
+    public Trace(long timeMs, TraceEvent traceEvent, Handler<? extends AbstractTask> abstractHandler) {
         this.timeMs = timeMs;
         this.traceEvent = traceEvent;
         this.abstractHandler = abstractHandler;
