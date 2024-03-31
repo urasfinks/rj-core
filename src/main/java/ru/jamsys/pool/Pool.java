@@ -26,7 +26,9 @@ public interface Pool<T extends Expired> extends StatisticsCollector {
 
     boolean checkExceptionOnComplete(Exception e);
 
-    void removeFromPool(T resource);
+    void remove(T resource);
+
+    void removeAndClose(T resource);
 
     void addResourceZeroPool();
 

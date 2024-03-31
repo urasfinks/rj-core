@@ -19,7 +19,7 @@ public abstract class AbstractPoolItem<T extends Expired> extends AbstractExpire
     public void closeAndRemove() {
         @SuppressWarnings("unchecked")
         T resource = (T) this;
-        pool.closeResource(resource);
+        pool.removeAndClose(resource);
     }
 
 }

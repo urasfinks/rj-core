@@ -117,7 +117,7 @@ public class ThreadEnvelope extends AbstractPoolItem<ThreadEnvelope> {
         }
         if (inPark.compareAndSet(false, true)) {
             if (isShutdown.get()) {
-                pool.removeFromPool(this);
+                pool.remove(this);
             } else {
                 pool.complete(this, null);
                 LockSupport.park(thread);
@@ -221,7 +221,7 @@ public class ThreadEnvelope extends AbstractPoolItem<ThreadEnvelope> {
             }
             App.context.getBean(TaskManager.class).forceRemove(this);
         }
-        pool.removeFromPool(this);
+        pool.remove(this);
         isRun.set(false);
     }
 

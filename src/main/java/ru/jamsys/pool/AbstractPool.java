@@ -223,22 +223,18 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
         return false;
     }
 
-    public void removeFromPool(T resource) {
+    // Бывают случаи когда что-то прекращает работать само собой и надо просто вырезать из пула ссылки
+    public void remove(@NonNull T resource) {
         resourceQueue.remove(resource);
         parkQueue.remove(resource);
         checkPark();
         removeQueue.remove(resource);
     }
 
-    synchronized private void remove(@NonNull T resource) {
-        if (resourceQueue.contains(resource)) {
-            removeFromPool(resource);
-            closeResource(resource); //Если выкидываем из пула, то наверное надо закрыть сам ресурс
-        } else {
-            App.context.getBean(ExceptionHandler.class).handler(new RuntimeException(
-                    "Видимо ресурс был закрыт через removeForce, наши полномочия всё"
-            ));
-        }
+    // А бывает когда надо удалить ссылки и закрыть ресурс по причине самого пула, что ресурс не нужен
+    public void removeAndClose(@NonNull T resource) {
+        remove(resource);
+        closeResource(resource);
     }
 
     private void overclocking(int count) {
@@ -293,14 +289,14 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
         while (!removeQueue.isEmpty()) {
             T resource = removeQueue.pollLast();
             if (resource != null) {
-                remove(resource);
+                removeAndClose(resource);
             }
         }
         //Удаление ошибочных
         while (!exceptionQueue.isEmpty()) {
             T resource = exceptionQueue.pollLast();
             if (resource != null) {
-                remove(resource);
+                removeAndClose(resource);
             }
         }
     }
@@ -370,7 +366,7 @@ public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends Abstra
                     null,
                     resourceQueue,
                     getEmptyType(),
-                    this::remove
+                    this::removeAndClose
             );
             rateLimit.setActive(false);
             rateLimitPoolItem.setActive(false);
