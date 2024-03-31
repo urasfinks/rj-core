@@ -1,6 +1,6 @@
 package ru.jamsys.statistic;
 
-import ru.jamsys.extension.AbstractPoolItem;
+import ru.jamsys.pool.AbstractPoolItem;
 import ru.jamsys.pool.Pool;
 import ru.jamsys.thread.task.Task;
 import ru.jamsys.util.Util;

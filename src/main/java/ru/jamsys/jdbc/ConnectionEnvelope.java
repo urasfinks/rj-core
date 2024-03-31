@@ -3,7 +3,7 @@ package ru.jamsys.jdbc;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
-import ru.jamsys.extension.AbstractPoolItem;
+import ru.jamsys.pool.AbstractPoolItem;
 import ru.jamsys.pool.JdbcPool;
 import ru.jamsys.pool.Pool;
 import ru.jamsys.rate.limit.RateLimit;

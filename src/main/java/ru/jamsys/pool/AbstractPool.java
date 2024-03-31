@@ -7,7 +7,6 @@ import lombok.ToString;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
-import ru.jamsys.extension.AbstractPoolItem;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.rate.limit.item.RateLimitItem;

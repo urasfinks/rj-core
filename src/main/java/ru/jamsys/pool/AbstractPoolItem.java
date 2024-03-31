@@ -1,6 +1,6 @@
-package ru.jamsys.extension;
+package ru.jamsys.pool;
 
-import ru.jamsys.pool.Pool;
+import ru.jamsys.extension.Pollable;
 import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.Expired;
 

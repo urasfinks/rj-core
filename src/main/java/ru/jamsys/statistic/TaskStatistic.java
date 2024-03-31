@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.broker.BrokerCollectible;
-import ru.jamsys.extension.AbstractPoolItem;
+import ru.jamsys.pool.AbstractPoolItem;
 import ru.jamsys.thread.task.Task;
 
 @Getter
