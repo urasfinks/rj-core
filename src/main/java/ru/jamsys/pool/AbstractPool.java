@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<T extends AbstractPoolItem<?>> extends AbstractExpired implements Pool<T>, RunnableInterface {
+public abstract class AbstractPool<T extends AbstractPoolResource<?>> extends AbstractExpired implements Pool<T>, RunnableInterface {
 
     public static ThreadLocal<Pool<?>> context = new ThreadLocal<>();
 

@@ -18,16 +18,16 @@ public class TaskStatisticHandler {
 
     final private ConcurrentLinkedDeque<TaskStatistic> queueTaskStatistics = new ConcurrentLinkedDeque<>();
 
-    public TaskStatistic getTaskStatistic(AbstractPoolItem<?> abstractPoolItem, AbstractTask task) {
-        TaskStatistic taskStatistic = new TaskStatistic(abstractPoolItem, task);
+    public TaskStatistic getTaskStatistic(AbstractPoolResource<?> abstractPoolResource, AbstractTask task) {
+        TaskStatistic taskStatistic = new TaskStatistic(abstractPoolResource, task);
         queueTaskStatistics.add(taskStatistic);
         return taskStatistic;
     }
 
     // Вызывается когда произошла неизбежность thread.stop()
-    public void forceRemove(AbstractPoolItem<?> abstractPoolItem) {
+    public void forceRemove(AbstractPoolResource<?> abstractPoolResource) {
         Util.riskModifierCollection(null, queueTaskStatistics, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
-            if (taskStatistic.getPoolItem().equals(abstractPoolItem)) {
+            if (taskStatistic.getResource().equals(abstractPoolResource)) {
                 queueTaskStatistics.remove(taskStatistic);
             }
         });
@@ -42,12 +42,12 @@ public class TaskStatisticHandler {
                 queueTaskStatistics.remove(taskStatistic);
             } else if (taskStatistic.getTimeExecuteMs() > taskStatistic.getTask().getMaxTimeExecute()) {
                 queueTaskStatistics.remove(taskStatistic);
-                taskStatistic.getPoolItem().closeAndRemove();
+                taskStatistic.getResource().closeAndRemove();
             }
             String indexTask = taskStatistic.getTask().getIndex();
             if (!stat.containsKey(indexTask)) {
                 stat.put(indexTask, new AvgMetric());
-                mapPoolStatistic.put(indexTask, taskStatistic.getPoolItem().getPool());
+                mapPoolStatistic.put(indexTask, taskStatistic.getResource().getPool());
             }
             stat.get(indexTask).add(taskStatistic.getTimeExecuteMs());
         });

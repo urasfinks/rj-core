@@ -3,7 +3,7 @@ package ru.jamsys.jdbc;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
-import ru.jamsys.pool.AbstractPoolItem;
+import ru.jamsys.pool.AbstractPoolResource;
 import ru.jamsys.pool.JdbcPool;
 import ru.jamsys.pool.Pool;
 import ru.jamsys.rate.limit.RateLimit;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConnectionEnvelope extends AbstractPoolItem<ConnectionEnvelope> {
+public class ConnectionEnvelope extends AbstractPoolResource<ConnectionEnvelope> {
 
     final private Connection connection;
 

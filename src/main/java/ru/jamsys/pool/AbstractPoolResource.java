@@ -4,11 +4,11 @@ import ru.jamsys.extension.Pollable;
 import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.Expired;
 
-public abstract class AbstractPoolItem<T extends Expired> extends AbstractExpired implements Pollable {
+public abstract class AbstractPoolResource<T extends Expired> extends AbstractExpired implements Pollable {
 
     protected final Pool<T> pool;
 
-    protected AbstractPoolItem(Pool<T> pool) {
+    protected AbstractPoolResource(Pool<T> pool) {
         this.pool = pool;
     }
 
