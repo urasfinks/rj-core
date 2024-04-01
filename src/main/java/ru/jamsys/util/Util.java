@@ -28,6 +28,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -380,6 +381,7 @@ public class Util {
         riskModifierCollection(isRun, collection, toArray, consumer, false);
     }
 
+    //TODO: перевести всё на break
     public static <T> void riskModifierCollection(AtomicBoolean isRun, Collection<T> collection, T[] toArray, Consumer<T> consumer, boolean reverse) {
         if (collection != null && !collection.isEmpty()) {
             try {
@@ -401,6 +403,32 @@ public class Util {
                     }
                     index += inc;
                     if (index < 0 || index > objects.length - 1) {
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                App.context.getBean(ExceptionHandler.class).handler(e);
+            }
+        }
+    }
+
+    public static <K, V> void riskModifierMapBreak(AtomicBoolean isRun, Map<K, V> map, K[] toArray, BiFunction<K, V, Boolean> consumer) {
+        if (map != null && !map.isEmpty()) {
+            try {
+                K[] objects = map.keySet().toArray(toArray);
+                for (K key : objects) {
+                    if (isRun == null || isRun.get()) {
+                        try {
+                            V value = map.get(key);
+                            if (value != null) {
+                                if (!consumer.apply(key, value)) {
+                                    break;
+                                }
+                            }
+                        } catch (Exception e2) {
+                            App.context.getBean(ExceptionHandler.class).handler(e2);
+                        }
+                    } else {
                         break;
                     }
                 }
