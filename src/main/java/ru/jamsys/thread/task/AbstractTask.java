@@ -3,7 +3,7 @@ package ru.jamsys.thread.task;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.broker.BrokerCollectible;
-import ru.jamsys.statistic.Expired;
+import ru.jamsys.statistic.AbstractExpired;
 import ru.jamsys.statistic.TagIndex;
 import ru.jamsys.thread.task.trace.Trace;
 
@@ -12,18 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractTask implements TagIndex, Expired, BrokerCollectible {
+public abstract class AbstractTask extends AbstractExpired implements TagIndex, BrokerCollectible {
 
-    //--Expired
-    @Getter
-    @Setter
-    private long keepAliveOnInactivityMs = 30_000; // Время жизни если нет активности
-
-    @Getter
-    @Setter
-    private volatile long lastActivity = System.currentTimeMillis();
-
-    //--TagIndex
+    //--Impl TagIndex
     @Getter
     private final Map<String, String> tag = new HashMap<>();
 

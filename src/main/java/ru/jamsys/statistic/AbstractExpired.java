@@ -11,6 +11,10 @@ public abstract class AbstractExpired implements Expired {
 
     @Getter
     @Setter
-    private volatile long lastActivity = System.currentTimeMillis();
+    private long lastActivity = System.currentTimeMillis();
+
+    @Getter
+    @Setter
+    private Long timeStop = null;
 
 }

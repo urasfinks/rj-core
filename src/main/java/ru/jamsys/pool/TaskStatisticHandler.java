@@ -37,10 +37,11 @@ public class TaskStatisticHandler {
         Map<String, AvgMetric> stat = new HashMap<>();
         // Снимаем статистику задач, которые взял в работу пул
         Map<String, Pool<?>> mapPoolStatistic = new HashMap<>();
+        long curTime = System.currentTimeMillis();
         Util.riskModifierCollection(isRun, queueTaskStatistics, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
-            if (taskStatistic.isFinished()) {
+            if (taskStatistic.isStop()) {
                 queueTaskStatistics.remove(taskStatistic);
-            } else if (taskStatistic.getTimeExecuteMs() > taskStatistic.getTask().getMaxTimeExecute()) {
+            } else if (taskStatistic.getOffsetLastActivityMs(curTime) > taskStatistic.getTask().getMaxTimeExecute()) {
                 queueTaskStatistics.remove(taskStatistic);
                 taskStatistic.getResource().closeAndRemove();
             }
@@ -49,7 +50,7 @@ public class TaskStatisticHandler {
                 stat.put(indexTask, new AvgMetric());
                 mapPoolStatistic.put(indexTask, taskStatistic.getResource().getPool());
             }
-            stat.get(indexTask).add(taskStatistic.getTimeExecuteMs());
+            stat.get(indexTask).add(taskStatistic.getOffsetLastActivityMs(curTime));
         });
         // Считаем агрегацию по собранным индексам
         Map<String, Long> sumTimeMap = new HashMap<>();

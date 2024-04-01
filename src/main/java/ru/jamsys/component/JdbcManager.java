@@ -41,7 +41,7 @@ public class JdbcManager extends AutoBalancerPool<JdbcPool> implements KeepAlive
         }
         TaskStatistic taskStatistic = getTaskStatistic(resource, task);
         List<Map<String, Object>> result = resource.exec(task);
-        taskStatistic.finish();
+        taskStatistic.stop();
         return result;
     }
 

@@ -49,7 +49,7 @@ public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAli
             } catch (Exception e) {
                 exceptionHandler.handler(e);
             }
-            taskStatistic.finish();
+            taskStatistic.stop();
         } else {
             exceptionHandler.handler(new RuntimeException("Not find TaskHandler for Task = " + task.getClass()));
         }
