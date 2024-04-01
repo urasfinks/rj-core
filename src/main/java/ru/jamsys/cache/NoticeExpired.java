@@ -1,5 +1,6 @@
 package ru.jamsys.cache;
 
+import lombok.Setter;
 import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.statistic.Statistic;
@@ -14,26 +15,33 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
-public class TimeCollectionExpired<T> implements StatisticsCollector, KeepAlive {
+// Для задач, когда надо сформировать ошибки, если какие либо задачи не исполнились
+// Всегда есть лаг срабатывания onExpired, не будет такого, что моментально тик в тик сработает функция
+// Ускорить можно путём более частого вызова keepAlive
 
-    final Map<Long, ConcurrentLinkedQueue<TimeEnvelope<T>>> map = new ConcurrentHashMap<>();
+public class NoticeExpired<T> implements StatisticsCollector, KeepAlive {
 
-    final AtomicLong itemSize = new AtomicLong(0);
+    private final Map<Long, ConcurrentLinkedQueue<TimeEnvelope<T>>> map = new ConcurrentHashMap<>();
 
-    final Consumer<T> onExpired;
+    private final AtomicLong itemSize = new AtomicLong(0);
 
-    public TimeCollectionExpired(Consumer<T> onExpired) {
-        this.onExpired = onExpired;
-    }
+    @Setter
+    private Consumer<T> onExpired;
 
     public TimeEnvelope<T> add(T obj, long curTime, int timeOutMs) {
         long timeMsExpired = curTime + timeOutMs;
+        //Отбрасываем миллисекунды, что бы в карте не было слишком много разных значений
+        //А то теряется весь смысл ускорения
+        timeMsExpired = Util.zeroLastNDigits(timeMsExpired, 3);
         //If the key was not present in the map, it maps the passed value to the key and returns null.
         if (!map.containsKey(timeMsExpired)) { //Что бы лишний раз не создавать ConcurrentLinkedQueue при пробе putIfAbsent
             map.putIfAbsent(timeMsExpired, new ConcurrentLinkedQueue<>());
         }
+
         TimeEnvelope<T> timeEnvelope = new TimeEnvelope<>(obj);
         timeEnvelope.setKeepAliveOnInactivityMs(timeOutMs);
+        timeEnvelope.setLastActivity(curTime);
+
         itemSize.incrementAndGet();
         map.get(timeMsExpired).add(timeEnvelope);
         return timeEnvelope;
@@ -54,14 +62,17 @@ public class TimeCollectionExpired<T> implements StatisticsCollector, KeepAlive 
     }
 
     public void keepAlive(AtomicBoolean isRun, long curTimeMs) {
+        //TODO: переделать через отсортированный список времён
         Util.riskModifierMap(isRun, map, new Long[0], (Long timeMs, ConcurrentLinkedQueue<TimeEnvelope<T>> queue) -> {
-            if (curTimeMs >= timeMs) {
+            if (curTimeMs > timeMs) {
                 while (!queue.isEmpty()) {
                     TimeEnvelope<T> timeEnvelope = queue.poll();
-                    if (!timeEnvelope.isStop()) {
-                        onExpired.accept(timeEnvelope.getValue());
+                    if (timeEnvelope != null) {
+                        if (timeEnvelope.isExpired() && onExpired != null) {
+                            onExpired.accept(timeEnvelope.getValue());
+                        }
+                        itemSize.decrementAndGet();
                     }
-                    itemSize.decrementAndGet();
                 }
                 map.remove(timeMs);
             }
@@ -72,4 +83,5 @@ public class TimeCollectionExpired<T> implements StatisticsCollector, KeepAlive 
     public void keepAlive(AtomicBoolean isRun) {
         keepAlive(isRun, System.currentTimeMillis());
     }
+
 }
