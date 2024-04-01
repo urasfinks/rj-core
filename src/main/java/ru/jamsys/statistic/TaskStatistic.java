@@ -9,7 +9,7 @@ import ru.jamsys.thread.task.AbstractTask;
 
 @Getter
 @Setter
-public class TaskStatistic extends AbstractTimeController implements BrokerCollectible {
+public class TaskStatistic extends TimeControllerImpl implements BrokerCollectible {
 
     AbstractPoolResource<?> resource;
 

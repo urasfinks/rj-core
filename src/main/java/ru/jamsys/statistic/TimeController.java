@@ -57,7 +57,7 @@ public interface TimeController {
     // Зафиксировать конец активности
     @SuppressWarnings("unused")
     default void stop(long curTime) {
-        setTimeStop(curTime - getLastActivity());
+        setTimeStop(curTime);
     }
 
     // Зафиксировать конец активности

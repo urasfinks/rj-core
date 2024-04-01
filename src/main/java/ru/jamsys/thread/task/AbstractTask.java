@@ -3,8 +3,8 @@ package ru.jamsys.thread.task;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.broker.BrokerCollectible;
-import ru.jamsys.statistic.AbstractTimeController;
 import ru.jamsys.statistic.TagIndex;
+import ru.jamsys.statistic.TimeControllerImpl;
 import ru.jamsys.thread.task.trace.Trace;
 
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractTask extends AbstractTimeController implements TagIndex, BrokerCollectible {
+public abstract class AbstractTask extends TimeControllerImpl implements TagIndex, BrokerCollectible {
 
     //--Impl TagIndex
     @Getter

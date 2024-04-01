@@ -3,7 +3,7 @@ package ru.jamsys.statistic;
 import lombok.Getter;
 import lombok.Setter;
 
-public abstract class AbstractTimeController implements TimeController {
+public class TimeControllerImpl implements TimeController {
 
     @Getter
     @Setter
@@ -16,5 +16,4 @@ public abstract class AbstractTimeController implements TimeController {
     @Getter
     @Setter
     private Long timeStop = null;
-
 }

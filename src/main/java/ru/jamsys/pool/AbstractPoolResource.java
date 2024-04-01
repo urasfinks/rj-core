@@ -1,10 +1,10 @@
 package ru.jamsys.pool;
 
 import ru.jamsys.extension.Pollable;
-import ru.jamsys.statistic.AbstractTimeController;
 import ru.jamsys.statistic.TimeController;
+import ru.jamsys.statistic.TimeControllerImpl;
 
-public abstract class AbstractPoolResource<T extends TimeController> extends AbstractTimeController implements Pollable {
+public abstract class AbstractPoolResource<T extends TimeController> extends TimeControllerImpl implements Pollable {
 
     protected final Pool<T> pool;
 
