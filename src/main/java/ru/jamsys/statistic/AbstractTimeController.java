@@ -3,7 +3,7 @@ package ru.jamsys.statistic;
 import lombok.Getter;
 import lombok.Setter;
 
-public abstract class AbstractExpired implements Expired {
+public abstract class AbstractTimeController implements TimeController {
 
     @Getter
     @Setter

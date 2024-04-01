@@ -1,10 +1,10 @@
 package ru.jamsys.pool;
 
 import ru.jamsys.extension.StatisticsCollector;
-import ru.jamsys.statistic.Expired;
+import ru.jamsys.statistic.TimeController;
 import ru.jamsys.thread.ThreadEnvelope;
 
-public interface Pool<T extends Expired> extends StatisticsCollector {
+public interface Pool<T extends TimeController> extends StatisticsCollector {
 
     @SuppressWarnings("unused")
     void complete(T ret, Exception e);

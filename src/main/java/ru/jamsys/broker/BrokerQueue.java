@@ -12,7 +12,7 @@ import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.rate.limit.item.RateLimitItem;
-import ru.jamsys.statistic.AbstractExpired;
+import ru.jamsys.statistic.AbstractTimeController;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.util.Util;
@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Getter
 @Setter
 @IgnoreClassFinder
-public class BrokerQueue<T> extends AbstractExpired implements Queue<T>, StatisticsCollector {
+public class BrokerQueue<T> extends AbstractTimeController implements Queue<T>, StatisticsCollector {
 
     private final ConcurrentLinkedDeque<QueueElementEnvelope<T>> queue = new ConcurrentLinkedDeque<>();
 

@@ -2,7 +2,7 @@ package ru.jamsys.statistic;
 
 import ru.jamsys.util.Util;
 
-public interface Expired {
+public interface TimeController {
 
     // Объект закончившись
     default boolean isExpired() {

@@ -11,7 +11,7 @@ import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.rate.limit.item.RateLimitItem;
-import ru.jamsys.statistic.AbstractExpired;
+import ru.jamsys.statistic.AbstractTimeController;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<T extends AbstractPoolResource<?>> extends AbstractExpired implements Pool<T>, RunnableInterface {
+public abstract class AbstractPool<T extends AbstractPoolResource<?>> extends AbstractTimeController implements Pool<T>, RunnableInterface {
 
     public static ThreadLocal<Pool<?>> context = new ThreadLocal<>();
 

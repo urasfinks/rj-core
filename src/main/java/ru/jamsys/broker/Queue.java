@@ -1,12 +1,12 @@
 package ru.jamsys.broker;
 
 import org.springframework.lang.Nullable;
-import ru.jamsys.statistic.Expired;
+import ru.jamsys.statistic.TimeController;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public interface Queue<T> extends Expired {
+public interface Queue<T> extends TimeController {
 
     int getSize();
 
