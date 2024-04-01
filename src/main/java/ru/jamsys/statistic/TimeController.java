@@ -4,13 +4,16 @@ import ru.jamsys.util.Util;
 
 public interface TimeController {
 
-    // Объект закончившись
+    // Объект просрочен
     default boolean isExpired() {
         return isExpired(System.currentTimeMillis());
     }
 
-    // Объект закончившись
+    // Объект просрочен
     default boolean isExpired(long curTime) {
+        if (isStop()) {
+            return false;
+        }
         return curTime > (getLastActivity() + getKeepAliveOnInactivityMs());
     }
 
@@ -22,20 +25,22 @@ public interface TimeController {
     // Кол-во миллисекунд до момента, когда наступит протухание
     @SuppressWarnings("unused")
     default long getExpiryRemainingMs(long curTime) {
+        if (isStop()) {
+            return 0L;
+        }
         return (getLastActivity() + getKeepAliveOnInactivityMs()) - curTime;
     }
 
     // Кол-во миллисекунд до момента, когда наступит протухание
     @SuppressWarnings("unused")
     default long getExpiryRemainingMs() {
-        return (getLastActivity() + getKeepAliveOnInactivityMs()) - System.currentTimeMillis();
+        return getExpiryRemainingMs(System.currentTimeMillis());
     }
 
     // Кол-во миллисекунд с момента последней активности до остановки (если конечно она произошла)
     @SuppressWarnings("unused")
     default long getOffsetLastActivityMs(long curTime) {
-        Long timeStop = getTimeStop();
-        if (timeStop != null) {
+        if (isStop()) {
             return getTimeStop() - getLastActivity();
         } else {
             return curTime - getLastActivity();
