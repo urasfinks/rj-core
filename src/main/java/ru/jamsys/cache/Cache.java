@@ -6,6 +6,7 @@ import lombok.ToString;
 import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -85,7 +86,7 @@ public class Cache<K, V> implements StatisticsCollector, KeepAlive {
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
         result.add(new Statistic(parentTags, parentFields)
                 .addField("MapSize", map.size())

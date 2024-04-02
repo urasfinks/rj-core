@@ -6,6 +6,7 @@ import ru.jamsys.cache.Cache;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -28,12 +29,12 @@ public class CacheManager implements KeepAliveComponent, StatisticsCollectorComp
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
-        Util.riskModifierMap(isRun, map, new String[0], (String key, Cache<?, ?> cache) -> {
+        Util.riskModifierMap(threadEnvelope.getIsWhile(), map, new String[0], (String key, Cache<?, ?> cache) -> {
             Map<String, String> parentTagsNew = new LinkedHashMap<>(parentTags);
             parentTagsNew.put("KeyCache", key);
-            result.addAll(cache.flushAndGetStatistic(parentTagsNew, parentFields, isRun));
+            result.addAll(cache.flushAndGetStatistic(parentTagsNew, parentFields, threadEnvelope));
         });
         return result;
     }

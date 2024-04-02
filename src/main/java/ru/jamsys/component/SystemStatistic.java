@@ -4,14 +4,15 @@ import com.sun.management.OperatingSystemMXBean;
 import org.springframework.stereotype.Component;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.thread.ThreadEnvelope;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
+@SuppressWarnings("unused")
 @Component
 public class SystemStatistic implements StatisticsCollectorComponent {
 
@@ -44,7 +45,7 @@ public class SystemStatistic implements StatisticsCollectorComponent {
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
         if (first) {
             runFirst();

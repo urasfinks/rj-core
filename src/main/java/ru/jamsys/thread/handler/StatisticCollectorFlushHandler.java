@@ -43,7 +43,7 @@ public class StatisticCollectorFlushHandler implements Handler<StatisticCollecto
             List<Statistic> statistics = statisticsCollectorComponent.flushAndGetStatistic(
                     parentTags,
                     null,
-                    threadEnvelope.getIsWhile()
+                    threadEnvelope
             );
             if (statistics != null && !statistics.isEmpty()) {
                 statisticSec.getList().addAll(statistics);

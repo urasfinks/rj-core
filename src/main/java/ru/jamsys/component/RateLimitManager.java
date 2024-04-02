@@ -10,6 +10,7 @@ import ru.jamsys.rate.limit.RateLimitImpl;
 import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * RateLimitItem целевого механизма по удалению элементов - нет
@@ -76,14 +76,14 @@ public class RateLimitManager implements StatisticsCollectorComponent {
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
         long curTime = System.currentTimeMillis();
-        Util.riskModifierMap(isRun, map, new String[0], (String key, RateLimit rateLimit) -> {
+        Util.riskModifierMap(threadEnvelope.getIsWhile(), map, new String[0], (String key, RateLimit rateLimit) -> {
             if (rateLimit.isActive()) {
                 HashMap<String, String> newParentTags = new HashMap<>(parentTags);
                 newParentTags.put("RateLimitKey", key);
-                result.addAll(rateLimit.flushAndGetStatistic(newParentTags, parentFields, isRun));
+                result.addAll(rateLimit.flushAndGetStatistic(newParentTags, parentFields, threadEnvelope));
             }
         });
         return result;

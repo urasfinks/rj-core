@@ -4,13 +4,13 @@ import lombok.Getter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.template.cron.Unit;
+import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -59,7 +59,7 @@ public class RateLimitItemPeriodic implements RateLimitItem {
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         long curTime = System.currentTimeMillis();
         List<Statistic> result = new ArrayList<>();
         result.add(flushAndGetStatistic(curTime, parentTags, parentFields));

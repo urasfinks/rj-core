@@ -8,6 +8,7 @@ import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -28,10 +29,10 @@ public class AutoBalancerPool<T extends AbstractPool<?>> extends TaskStatisticHa
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
-        Util.riskModifierMap(isRun, mapPool, new String[0], (String key, T pool)
-                -> result.addAll(pool.flushAndGetStatistic(parentTags, parentFields, isRun)));
+        Util.riskModifierMap(threadEnvelope.getIsWhile(), mapPool, new String[0], (String key, T pool)
+                -> result.addAll(pool.flushAndGetStatistic(parentTags, parentFields, threadEnvelope)));
         return result;
     }
 

@@ -381,11 +381,7 @@ public abstract class AbstractPool<T extends AbstractPoolResource<?>> extends Ti
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(
-            Map<String, String> parentTags,
-            Map<String, Object> parentFields,
-            AtomicBoolean isRun
-    ) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
         if (resourceQueue.size() > 0 || parkQueue.size() > 0 || removeQueue.size() > 0) {
             active();

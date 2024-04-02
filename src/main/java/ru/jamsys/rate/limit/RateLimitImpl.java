@@ -5,9 +5,9 @@ import lombok.Setter;
 import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.thread.ThreadEnvelope;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RateLimitImpl implements RateLimit {
 
@@ -50,12 +50,12 @@ public class RateLimitImpl implements RateLimit {
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
         mapLimit.forEach((String key, RateLimitItem rateLimitItem) -> {
             HashMap<String, String> stringStringHashMap = new HashMap<>(parentTags);
             stringStringHashMap.put("RateLimitItem", key);
-            result.addAll(rateLimitItem.flushAndGetStatistic(stringStringHashMap, parentFields, isRun));
+            result.addAll(rateLimitItem.flushAndGetStatistic(stringStringHashMap, parentFields, threadEnvelope));
         });
         return result;
     }

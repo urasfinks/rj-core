@@ -9,13 +9,13 @@ import ru.jamsys.broker.Queue;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
@@ -52,15 +52,15 @@ public class Broker implements StatisticsCollectorComponent {
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
         Util.riskModifierMap(
-                isRun,
+                threadEnvelope.getIsWhile(),
                 mapQueue,
                 new String[0],
                 (String key, Queue<? extends BrokerCollectible> queue) -> {
                     parentTags.put("BrokerKey", key);
-                    List<Statistic> statistics = ((StatisticsCollector) queue).flushAndGetStatistic(parentTags, parentFields, isRun);
+                    List<Statistic> statistics = ((StatisticsCollector) queue).flushAndGetStatistic(parentTags, parentFields, threadEnvelope);
                     if (statistics != null) {
                         result.addAll(statistics);
                     }

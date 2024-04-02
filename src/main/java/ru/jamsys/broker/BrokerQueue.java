@@ -15,6 +15,7 @@ import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.TimeControllerImpl;
+import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
 
 import java.util.ArrayList;
@@ -185,7 +186,7 @@ public class BrokerQueue<T> extends TimeControllerImpl implements Queue<T>, Stat
 
     @SuppressWarnings("unused")
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
         int sizeFlush = queue.size();

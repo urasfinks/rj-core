@@ -1,11 +1,11 @@
 package ru.jamsys.rate.limit.item;
 
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.thread.ThreadEnvelope;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RateLimitItemMax implements RateLimitItem {
@@ -36,7 +36,7 @@ public class RateLimitItemMax implements RateLimitItem {
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
         result.add(new Statistic(parentTags, parentFields).addField("max", max.get()));
         return result;
