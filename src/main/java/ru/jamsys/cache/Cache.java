@@ -24,23 +24,23 @@ import java.util.function.Consumer;
 // Но надо помнить, что всегда есть лаг срабатывания onExpired, так как keepAlive вызывается по расписанию
 // Уменьшить лаг можно путём более частого вызова keepAlive
 
-public class MapExpired<K, V> implements StatisticsCollector, KeepAlive {
+public class Cache<K, V> implements StatisticsCollector, KeepAlive {
 
-    final Map<K, TimeEnvelope<V>> map = new ConcurrentHashMap<>();
+    final Map<K, TimerEnvelope<V>> map = new ConcurrentHashMap<>();
 
     @Getter
     ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<K>> bucket = new ConcurrentSkipListMap<>();
 
     @Setter
-    private Consumer<TimeEnvelope<V>> onExpired;
+    private Consumer<TimerEnvelope<V>> onExpired;
 
     public boolean add(K key, V value, long curTime, long timeoutMs) {
         if (!map.containsKey(key)) {
-            TimeEnvelope<V> timeEnvelope = new TimeEnvelope<>(value);
-            timeEnvelope.setKeepAliveOnInactivityMs(timeoutMs);
-            timeEnvelope.setLastActivity(curTime);
+            TimerEnvelope<V> timerEnvelope = new TimerEnvelope<>(value);
+            timerEnvelope.setKeepAliveOnInactivityMs(timeoutMs);
+            timerEnvelope.setLastActivity(curTime);
 
-            map.put(key, timeEnvelope);
+            map.put(key, timerEnvelope);
             long timeMsExpired = Util.zeroLastNDigits(curTime + timeoutMs, 3);
             if (!bucket.containsKey(timeMsExpired)) {
                 bucket.putIfAbsent(timeMsExpired, new ConcurrentLinkedQueue<>());
@@ -56,15 +56,15 @@ public class MapExpired<K, V> implements StatisticsCollector, KeepAlive {
     }
 
     public V get(K key) {
-        TimeEnvelope<V> timeEnvelope = map.get(key);
-        if (timeEnvelope != null && !timeEnvelope.isExpired()) {
-            timeEnvelope.stop();
-            return timeEnvelope.getValue();
+        TimerEnvelope<V> timerEnvelope = map.get(key);
+        if (timerEnvelope != null && !timerEnvelope.isExpired()) {
+            timerEnvelope.stop();
+            return timerEnvelope.getValue();
         }
         return null;
     }
 
-    public Map<K, TimeEnvelope<V>> get() {
+    public Map<K, TimerEnvelope<V>> get() {
         return map;
     }
 
@@ -116,11 +116,11 @@ public class MapExpired<K, V> implements StatisticsCollector, KeepAlive {
             }
             keepAliveResult.getReadBucket().add(time);
             Util.riskModifierCollection(isRun, queue, getEmptyType(), (K key) -> {
-                TimeEnvelope<V> timeEnvelope = map.get(key);
-                if (timeEnvelope != null) {
-                    if (timeEnvelope.isExpired()) {
+                TimerEnvelope<V> timerEnvelope = map.get(key);
+                if (timerEnvelope != null) {
+                    if (timerEnvelope.isExpired()) {
                         if (onExpired != null) {
-                            onExpired.accept(timeEnvelope);
+                            onExpired.accept(timerEnvelope);
                         }
                         queue.remove(key);
                         map.remove(key);
