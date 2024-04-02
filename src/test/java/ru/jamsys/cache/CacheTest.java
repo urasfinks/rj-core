@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import ru.jamsys.App;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.thread.TestThreadEnvelope;
 import ru.jamsys.util.Util;
 
 import java.util.Map;
@@ -37,7 +38,8 @@ class CacheTest {
         Assertions.assertEquals(3, cache.get().size(), "#4");
 
         Util.sleepMs(200);
-        cache.keepAlive(null);
+        TestThreadEnvelope te2 = new TestThreadEnvelope("test", null, null);
+        cache.keepAlive(te2);
 
         cache.add(1234567, "Hello world", 100);
         Assertions.assertEquals(2, cache.get().size(), "#5");
@@ -125,11 +127,13 @@ class CacheTest {
         AtomicBoolean isRun2 = new AtomicBoolean(true);
         AtomicInteger counter = new AtomicInteger(0);
 
+        TestThreadEnvelope te2 = new TestThreadEnvelope("test", null, null);
+
         //Сначала надо запустить keepAlive потому что старт потоков будет медленный и мы начнём терять секунды так как не запущенны
         new Thread(() -> {
             while (isRun2.get()) {
                 long cur = System.currentTimeMillis();
-                Cache.KeepAliveResult keepAliveResult = cache.keepAlive(isRun2, cur);
+                Cache.KeepAliveResult keepAliveResult = cache.keepAlive(te2, cur);
                 System.out.println(keepAliveResult);
                 Util.sleepMs(sleepKeepAlive);
             }

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AutoBalancerPool<T extends AbstractPool<?>> extends TaskStatisticHandler implements StatisticsCollector, KeepAlive {
 
@@ -37,9 +36,9 @@ public class AutoBalancerPool<T extends AbstractPool<?>> extends TaskStatisticHa
     }
 
     @Override
-    public void keepAlive(AtomicBoolean isRun) {
-        Map<String, Long> countResource = balancing(isRun, rateLimitMax.getMax());
-        Util.riskModifierMap(isRun, mapPool, new String[0], (String key, T pool) -> {
+    public void keepAlive(ThreadEnvelope threadEnvelope) {
+        Map<String, Long> countResource = balancing(threadEnvelope.getIsWhile(), rateLimitMax.getMax());
+        Util.riskModifierMap(threadEnvelope.getIsWhile(), mapPool, new String[0], (String key, T pool) -> {
             if (pool.isExpired()) {
                 mapPool.remove(key);
                 pool.shutdown();

@@ -32,7 +32,7 @@ public class ThreadEnvelope extends AbstractPoolResource<ThreadEnvelope> {
 
     private final AtomicBoolean isInit = new AtomicBoolean(false);
 
-    private final AtomicBoolean isRun = new AtomicBoolean(false);
+    protected final AtomicBoolean isRun = new AtomicBoolean(false);
 
     @Getter
     private final AtomicBoolean isWhile = new AtomicBoolean(true);

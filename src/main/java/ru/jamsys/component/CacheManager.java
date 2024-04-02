@@ -14,7 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("unused")
 @Component
@@ -24,8 +23,8 @@ public class CacheManager implements KeepAliveComponent, StatisticsCollectorComp
     Map<String, Cache<?, ?>> map = new ConcurrentHashMap<>();
 
     @Override
-    public void keepAlive(AtomicBoolean isRun) {
-        Util.riskModifierMap(isRun, map, new String[0], (String key, Cache<?, ?> cache) -> cache.keepAlive(isRun));
+    public void keepAlive(ThreadEnvelope threadEnvelope) {
+        Util.riskModifierMap(threadEnvelope.getIsWhile(), map, new String[0], (String key, Cache<?, ?> cache) -> cache.keepAlive(threadEnvelope));
     }
 
     @Override

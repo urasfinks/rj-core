@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -109,14 +108,14 @@ public class Cache<K, V> implements StatisticsCollector, KeepAlive {
     }
 
     //Для тестирования будем возвращать пачку на которой
-    public KeepAliveResult keepAlive(AtomicBoolean isRun, long curTimeMs) {
+    public KeepAliveResult keepAlive(ThreadEnvelope threadEnvelope, long curTimeMs) {
         KeepAliveResult keepAliveResult = new KeepAliveResult();
-        Util.riskModifierMapBreak(isRun, bucket, getEmptyType(), (Long time, ConcurrentLinkedQueue<K> queue) -> {
+        Util.riskModifierMapBreak(threadEnvelope.getIsWhile(), bucket, getEmptyType(), (Long time, ConcurrentLinkedQueue<K> queue) -> {
             if (time > curTimeMs) {
                 return false;
             }
             keepAliveResult.getReadBucket().add(time);
-            Util.riskModifierCollection(isRun, queue, getEmptyType(), (K key) -> {
+            Util.riskModifierCollection(threadEnvelope.getIsWhile(), queue, getEmptyType(), (K key) -> {
                 CacheItem<V> cacheItem = map.get(key);
                 if (cacheItem != null) {
                     if (cacheItem.isExpired()) {
@@ -139,8 +138,8 @@ public class Cache<K, V> implements StatisticsCollector, KeepAlive {
     }
 
     @Override
-    public void keepAlive(AtomicBoolean isRun) {
-        keepAlive(isRun, System.currentTimeMillis());
+    public void keepAlive(ThreadEnvelope threadEnvelope) {
+        keepAlive(threadEnvelope, System.currentTimeMillis());
     }
 
 }

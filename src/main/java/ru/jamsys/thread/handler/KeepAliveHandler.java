@@ -25,7 +25,7 @@ public class KeepAliveHandler implements Handler<KeepAlive> {
                 threadEnvelope.getIsWhile(),
                 dictionary.getListKeepAliveComponent(),
                 new KeepAliveComponent[0],
-                (KeepAliveComponent keepAliveComponent) -> keepAliveComponent.keepAlive(threadEnvelope.getIsWhile())
+                (KeepAliveComponent keepAliveComponent) -> keepAliveComponent.keepAlive(threadEnvelope)
         );
     }
 
