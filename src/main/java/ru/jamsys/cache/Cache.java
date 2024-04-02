@@ -26,21 +26,21 @@ import java.util.function.Consumer;
 
 public class Cache<K, V> implements StatisticsCollector, KeepAlive {
 
-    final Map<K, TimerEnvelope<V>> map = new ConcurrentHashMap<>();
+    final Map<K, CacheItem<V>> map = new ConcurrentHashMap<>();
 
     @Getter
     ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<K>> bucket = new ConcurrentSkipListMap<>();
 
     @Setter
-    private Consumer<TimerEnvelope<V>> onExpired;
+    private Consumer<CacheItem<V>> onExpired;
 
     public boolean add(K key, V value, long curTime, long timeoutMs) {
         if (!map.containsKey(key)) {
-            TimerEnvelope<V> timerEnvelope = new TimerEnvelope<>(value);
-            timerEnvelope.setKeepAliveOnInactivityMs(timeoutMs);
-            timerEnvelope.setLastActivity(curTime);
+            CacheItem<V> cacheItem = new CacheItem<>(value);
+            cacheItem.setKeepAliveOnInactivityMs(timeoutMs);
+            cacheItem.setLastActivity(curTime);
 
-            map.put(key, timerEnvelope);
+            map.put(key, cacheItem);
             long timeMsExpired = Util.zeroLastNDigits(curTime + timeoutMs, 3);
             if (!bucket.containsKey(timeMsExpired)) {
                 bucket.putIfAbsent(timeMsExpired, new ConcurrentLinkedQueue<>());
@@ -56,15 +56,15 @@ public class Cache<K, V> implements StatisticsCollector, KeepAlive {
     }
 
     public V get(K key) {
-        TimerEnvelope<V> timerEnvelope = map.get(key);
-        if (timerEnvelope != null && !timerEnvelope.isExpired()) {
-            timerEnvelope.stop();
-            return timerEnvelope.getValue();
+        CacheItem<V> cacheItem = map.get(key);
+        if (cacheItem != null && !cacheItem.isExpired()) {
+            cacheItem.stop();
+            return cacheItem.getValue();
         }
         return null;
     }
 
-    public Map<K, TimerEnvelope<V>> get() {
+    public Map<K, CacheItem<V>> get() {
         return map;
     }
 
@@ -116,11 +116,11 @@ public class Cache<K, V> implements StatisticsCollector, KeepAlive {
             }
             keepAliveResult.getReadBucket().add(time);
             Util.riskModifierCollection(isRun, queue, getEmptyType(), (K key) -> {
-                TimerEnvelope<V> timerEnvelope = map.get(key);
-                if (timerEnvelope != null) {
-                    if (timerEnvelope.isExpired()) {
+                CacheItem<V> cacheItem = map.get(key);
+                if (cacheItem != null) {
+                    if (cacheItem.isExpired()) {
                         if (onExpired != null) {
-                            onExpired.accept(timerEnvelope);
+                            onExpired.accept(cacheItem);
                         }
                         queue.remove(key);
                         map.remove(key);

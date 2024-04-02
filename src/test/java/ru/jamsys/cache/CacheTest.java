@@ -114,7 +114,7 @@ class CacheTest {
     Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
         Cache<Integer, String> cache = new Cache<>();
         AvgMetric avgMetric = new AvgMetric();
-        cache.setOnExpired((TimerEnvelope<String> env) -> {
+        cache.setOnExpired((CacheItem<String> env) -> {
             if (env.getExpiryRemainingMs() > 0) {
                 Assertions.fail("ALARMA");
             } else {

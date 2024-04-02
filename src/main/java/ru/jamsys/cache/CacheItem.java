@@ -3,12 +3,12 @@ package ru.jamsys.cache;
 import lombok.Getter;
 import ru.jamsys.statistic.TimeControllerImpl;
 
-public class TimerEnvelope<T> extends TimeControllerImpl {
+public class CacheItem<T> extends TimeControllerImpl {
 
     @Getter
     final T value;
 
-    public TimerEnvelope(T value) {
+    public CacheItem(T value) {
         this.value = value;
     }
 
