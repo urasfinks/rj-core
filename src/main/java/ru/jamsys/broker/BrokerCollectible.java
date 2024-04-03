@@ -1,4 +1,6 @@
 package ru.jamsys.broker;
 
-public interface BrokerCollectible {
+import ru.jamsys.statistic.TimeController;
+
+public interface BrokerCollectible extends TimeController {
 }

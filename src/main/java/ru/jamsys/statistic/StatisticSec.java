@@ -9,7 +9,8 @@ import java.util.List;
 
 @Getter
 @Setter
-public class StatisticSec implements BrokerCollectible {
+public class StatisticSec extends TimeControllerImpl implements BrokerCollectible {
+
     private List<Statistic> list = new ArrayList<>();
-    private long timeMs = System.currentTimeMillis();
+
 }

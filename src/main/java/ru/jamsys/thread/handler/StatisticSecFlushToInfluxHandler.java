@@ -71,7 +71,7 @@ public class StatisticSecFlushToInfluxHandler implements Handler<StatisticSecFlu
                             Point.measurement(measurement)
                                     .addTags(newTags)
                                     .addFields(statistic.getFields())
-                                    .time(statisticSec.getTimeMs(), WritePrecision.MS)
+                                    .time(statisticSec.getLastActivity(), WritePrecision.MS)
                     );
                 }
             }

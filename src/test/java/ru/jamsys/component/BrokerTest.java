@@ -10,8 +10,8 @@ import ru.jamsys.broker.BrokerQueue;
 import ru.jamsys.broker.Queue;
 import ru.jamsys.broker.QueueElementEnvelope;
 import ru.jamsys.statistic.TaskStatistic;
+import ru.jamsys.statistic.TimeControllerImpl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -170,7 +170,7 @@ class BrokerTest {
         queue.reset();
     }
 
-    static class XTest implements BrokerCollectible {
+    static class XTest extends TimeControllerImpl implements BrokerCollectible {
         final int x;
 
         XTest(int x) {
