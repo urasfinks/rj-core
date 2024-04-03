@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("unused")
-public abstract class AbstractComponent<T extends TimeController & Closable & Addable<I, WI>, I, WI> implements ComponentItem<T>, StatisticsCollector {
+public abstract class AbstractMapComponent<T extends TimeController & Closable & Addable<I, WI>, I, WI> implements ComponentItem<T>, StatisticsCollector {
 
     private final Map<String, T> mapQueue = new ConcurrentHashMap<>();
 

@@ -10,7 +10,7 @@ import ru.jamsys.statistic.TimeEnvelope;
 
 @Component
 @Lazy
-public class Broker<T extends BrokerCollectible> extends AbstractComponent<BrokerQueue<T>, T, TimeEnvelope<T>> implements StatisticsCollectorComponent {
+public class Broker<T extends BrokerCollectible> extends AbstractMapComponent<BrokerQueue<T>, T, TimeEnvelope<T>> implements StatisticsCollectorComponent {
 
     @Override
     public BrokerQueue<T> createComponentItem(String key) {
