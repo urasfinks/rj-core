@@ -8,6 +8,7 @@ import ru.jamsys.App;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.thread.TestThreadEnvelope;
+import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
 
 import java.util.Map;
@@ -38,8 +39,8 @@ class CacheTest {
         Assertions.assertEquals(3, cache.get().size(), "#4");
 
         Util.sleepMs(200);
-        TestThreadEnvelope te2 = new TestThreadEnvelope("test", null, null);
-        cache.keepAlive(te2);
+
+        cache.keepAlive(TestThreadEnvelope.get());
 
         cache.add(1234567, "Hello world", 100);
         Assertions.assertEquals(2, cache.get().size(), "#5");
@@ -47,6 +48,7 @@ class CacheTest {
 
     @Test
     void checkSize() {
+        ThreadEnvelope threadEnvelope = TestThreadEnvelope.get();
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         Cache<Integer, String> cache = new Cache<>();
 
@@ -79,7 +81,7 @@ class CacheTest {
         statistics = cache.flushAndGetStatistic(null, null, null).get(0);
         Assertions.assertEquals("{MapSize=100, BucketSize=50}", statistics.getFields().toString());
 
-        Cache.KeepAliveResult keepAliveResult = cache.keepAlive(null, curTimeMs);
+        Cache.KeepAliveResult keepAliveResult = cache.keepAlive(threadEnvelope, curTimeMs);
         // Никаких обработок пачек не должно быть, так как
         Assertions.assertEquals("[]", keepAliveResult.getReadBucket().toString());
         Assertions.assertEquals(0, keepAliveResult.getCountRemove().get());
@@ -87,7 +89,7 @@ class CacheTest {
         statistics = cache.flushAndGetStatistic(null, null, null).get(0);
         Assertions.assertEquals("{MapSize=100, BucketSize=50}", statistics.getFields().toString());
 
-        keepAliveResult = cache.keepAlive(null, curTimeMs + 100);
+        keepAliveResult = cache.keepAlive(threadEnvelope, curTimeMs + 100);
         Assertions.assertEquals(0, keepAliveResult.getCountRemove().get());
         Assertions.assertEquals("[]", keepAliveResult.getReadBucket().toString());
         statistics = cache.flushAndGetStatistic(null, null, null).get(0);
@@ -96,13 +98,13 @@ class CacheTest {
         Assertions.assertEquals("2024-03-06T17:11:05.006", Util.msToDataFormat(curTimeMs + 950));
         Assertions.assertEquals("2024-03-06T17:11:05.000", Util.msToDataFormat(Util.zeroLastNDigits(curTimeMs + 950, 3)));
 
-        keepAliveResult = cache.keepAlive(null, curTimeMs + 950);
+        keepAliveResult = cache.keepAlive(threadEnvelope, curTimeMs + 950);
         Assertions.assertEquals(2, keepAliveResult.getCountRemove().get());
         Assertions.assertEquals("[2024-03-06T17:11:05.000]", keepAliveResult.getReadBucketFormat().toString());
         statistics = cache.flushAndGetStatistic(null, null, null).get(0);
         Assertions.assertEquals("{MapSize=98, BucketSize=49}", statistics.getFields().toString());
 
-        keepAliveResult = cache.keepAlive(null, curTimeMs + (500 * 10));
+        keepAliveResult = cache.keepAlive(threadEnvelope, curTimeMs + (500 * 10));
         // 8 потому что 2 уже были удалены до этого
         Assertions.assertEquals(8, keepAliveResult.getCountRemove().get());
         // Это значит пробежка была от 2024-03-06T17:11:05.000 до 2024-03-06T17:11:05.999
@@ -127,7 +129,7 @@ class CacheTest {
         AtomicBoolean isRun2 = new AtomicBoolean(true);
         AtomicInteger counter = new AtomicInteger(0);
 
-        TestThreadEnvelope te2 = new TestThreadEnvelope("test", null, null);
+        ThreadEnvelope te2 = TestThreadEnvelope.get();
 
         //Сначала надо запустить keepAlive потому что старт потоков будет медленный и мы начнём терять секунды так как не запущенны
         new Thread(() -> {
