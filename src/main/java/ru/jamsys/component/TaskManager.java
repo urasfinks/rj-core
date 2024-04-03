@@ -2,7 +2,6 @@ package ru.jamsys.component;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.pool.AutoBalancerPool;
@@ -15,13 +14,13 @@ import ru.jamsys.thread.task.AbstractTask;
 @Component
 public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAliveComponent, StatisticsCollectorComponent {
 
-    final private Broker broker;
+    final private Broker<AbstractTask> broker;
 
     final private ExceptionHandler exceptionHandler;
 
     final private Dictionary dictionary;
 
-    public TaskManager(Broker broker, ExceptionHandler exceptionHandler, Dictionary dictionary, ApplicationContext applicationContext) {
+    public TaskManager(Broker<AbstractTask> broker, ExceptionHandler exceptionHandler, Dictionary dictionary, ApplicationContext applicationContext) {
         super(applicationContext);
         this.broker = broker;
         this.exceptionHandler = exceptionHandler;
@@ -35,7 +34,7 @@ public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAli
             mapPool.putIfAbsent(taskIndex, threadPool);
             threadPool.run();
         }
-        broker.add(taskIndex, (BrokerCollectible) task);
+        broker.add(taskIndex, task);
         mapPool.get(taskIndex).wakeUp();
     }
 

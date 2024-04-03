@@ -6,15 +6,14 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
-import ru.jamsys.extension.IgnoreClassFinder;
-import ru.jamsys.extension.Procedure;
-import ru.jamsys.extension.StatisticsCollector;
+import ru.jamsys.extension.*;
 import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.TimeControllerImpl;
+import ru.jamsys.statistic.TimeEnvelope;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
 
@@ -29,9 +28,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Getter
 @Setter
 @IgnoreClassFinder
-public class BrokerQueue<T> extends TimeControllerImpl implements Queue<T>, StatisticsCollector {
+public class BrokerQueue<T> extends TimeControllerImpl implements StatisticsCollector, Closable, Addable<T, TimeEnvelope<T>> {
 
-    private final ConcurrentLinkedDeque<QueueElementEnvelope<T>> queue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<TimeEnvelope<T>> queue = new ConcurrentLinkedDeque<>();
 
     //Последний сообщения проходящие через очередь
     private final ConcurrentLinkedDeque<T> tail = new ConcurrentLinkedDeque<>();
@@ -80,68 +79,36 @@ public class BrokerQueue<T> extends TimeControllerImpl implements Queue<T>, Stat
         listProcedure.add(procedure);
     }
 
-    @Override
-    public QueueElementEnvelope<T> add(T element) throws Exception {
-        if (element == null) {
-            throw new Exception("Element null");
-        }
-        if (!rateLimitTps.check(null)) {
-            throw new Exception("RateLimit BrokerQueue: " + element.getClass().getSimpleName() + "; max tps: " + rateLimitTps.getMax() + "; object: " + element);
-        }
-        if (cyclical) {
-            if (!rateLimitSize.check(queue.size() + 1)) {
-                queue.removeFirst();
-            }
-        } else {
-            if (!rateLimitSize.check(queue.size())) {
-                throw new Exception("Limit BrokerQueue: " + element.getClass().getSimpleName() + "; limit: " + rateLimitSize.getMax() + "; object: " + element);
-            }
-        }
-        QueueElementEnvelope<T> result = new QueueElementEnvelope<>(element);
-        queue.add(result);
-        tail.add(element);
-        if (tail.size() > sizeTail) {
-            tail.pollFirst();
-        }
-        try {
-            listProcedure.forEach(Procedure::run);
-        } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
-        }
-        return result;
-    }
-
-    private void statistic(QueueElementEnvelope<T> queueElementEnvelope) {
+    private void statistic(TimeEnvelope<T> timeEnvelope) {
         //#1 что бы видеть реальное кол-во опросов изъятия
         tpsDequeue.incrementAndGet();
-        if (queueElementEnvelope != null) {
-            timeInQueue.add(System.currentTimeMillis() - queueElementEnvelope.getTimeAdd());
+        if (timeEnvelope != null) {
+            timeInQueue.add(timeEnvelope.getOffsetLastActivityMs());
         }
     }
 
     public T pollFirst() {
-        QueueElementEnvelope<T> result = queue.pollFirst();
+        TimeEnvelope<T> result = queue.pollFirst();
         statistic(result);
         if (result != null) {
-            return result.getElement();
+            return result.getValue();
         }
         return null;
     }
 
     public T pollLast() {
-        QueueElementEnvelope<T> result = queue.pollLast();
+        TimeEnvelope<T> result = queue.pollLast();
         statistic(result);
         if (result != null) {
-            return result.getElement();
+            return result.getValue();
         }
         return null;
     }
 
-    @Override
-    public void remove(QueueElementEnvelope<T> queueElementEnvelope) {
-        statistic(queueElementEnvelope);
-        if (queueElementEnvelope != null) {
-            queue.remove(queueElementEnvelope);
+    public void remove(TimeEnvelope<T> timeEnvelope) {
+        statistic(timeEnvelope);
+        if (timeEnvelope != null) {
+            queue.remove(timeEnvelope);
         }
     }
 
@@ -151,16 +118,14 @@ public class BrokerQueue<T> extends TimeControllerImpl implements Queue<T>, Stat
     }
 
     @SuppressWarnings("unused")
-    @Override
     public List<T> getCloneQueue(@Nullable AtomicBoolean isRun) {
         List<T> cloned = new ArrayList<>();
-        List<QueueElementEnvelope<T>> ret = new ArrayList<>();
-        Util.riskModifierCollection(isRun, queue, getEmptyType(), (QueueElementEnvelope<T> elementEnvelope)
-                -> cloned.add(elementEnvelope.getElement()));
+        List<TimeEnvelope<T>> ret = new ArrayList<>();
+        Util.riskModifierCollection(isRun, queue, getEmptyType(), (TimeEnvelope<T> elementEnvelope)
+                -> cloned.add(elementEnvelope.getValue()));
         return cloned;
     }
 
-    @Override
     public void reset() {
         // Рекомендуется использовать только для тестов
         queue.clear();
@@ -172,12 +137,10 @@ public class BrokerQueue<T> extends TimeControllerImpl implements Queue<T>, Stat
         rateLimit.reset();
     }
 
-    @Override
     public void setMaxTpsInput(int maxTpsInput) {
         rateLimitTps.setMax(maxTpsInput);
     }
 
-    @Override
     public List<T> getTail(@Nullable AtomicBoolean isRun) {
         List<T> ret = new ArrayList<>();
         Util.riskModifierCollection(isRun, tail, getEmptyType(), ret::add);
@@ -185,7 +148,6 @@ public class BrokerQueue<T> extends TimeControllerImpl implements Queue<T>, Stat
     }
 
     @SuppressWarnings("unused")
-    @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
@@ -204,6 +166,37 @@ public class BrokerQueue<T> extends TimeControllerImpl implements Queue<T>, Stat
     @Override
     public void close() {
         rateLimit.setActive(false);
+    }
+
+    @Override
+    public TimeEnvelope<T> add(T element) throws Exception {
+        if (element == null) {
+            throw new Exception("Element null");
+        }
+        if (!rateLimitTps.check(null)) {
+            throw new Exception("RateLimit BrokerQueue: " + element.getClass().getSimpleName() + "; max tps: " + rateLimitTps.getMax() + "; object: " + element);
+        }
+        if (cyclical) {
+            if (!rateLimitSize.check(queue.size() + 1)) {
+                queue.removeFirst();
+            }
+        } else {
+            if (!rateLimitSize.check(queue.size())) {
+                throw new Exception("Limit BrokerQueue: " + element.getClass().getSimpleName() + "; limit: " + rateLimitSize.getMax() + "; object: " + element);
+            }
+        }
+        TimeEnvelope<T> result = new TimeEnvelope<>(element);
+        queue.add(result);
+        tail.add(element);
+        if (tail.size() > sizeTail) {
+            tail.pollFirst();
+        }
+        try {
+            listProcedure.forEach(Procedure::run);
+        } catch (Exception e) {
+            App.context.getBean(ExceptionHandler.class).handler(e);
+        }
+        return result;
     }
 
 }

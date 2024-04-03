@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import ru.jamsys.App;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.statistic.TimeEnvelope;
 import ru.jamsys.thread.TestThreadEnvelope;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
@@ -118,7 +119,7 @@ class CacheTest {
     Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
         Cache<Integer, String> cache = new Cache<>();
         AvgMetric avgMetric = new AvgMetric();
-        cache.setOnExpired((CacheItem<String> env) -> {
+        cache.setOnExpired((TimeEnvelope<String> env) -> {
             if (env.getExpiryRemainingMs() > 0) {
                 Assertions.fail("ALARMA");
             } else {

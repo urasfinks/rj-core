@@ -7,10 +7,9 @@ import org.springframework.boot.SpringApplication;
 import ru.jamsys.App;
 import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.broker.BrokerQueue;
-import ru.jamsys.broker.Queue;
-import ru.jamsys.broker.QueueElementEnvelope;
 import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.statistic.TimeControllerImpl;
+import ru.jamsys.statistic.TimeEnvelope;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -120,9 +119,9 @@ class BrokerTest {
     @Test
     void testReference() throws Exception {
         Broker broker = App.context.getBean(Broker.class);
-        Queue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
+        BrokerQueue<TaskStatistic> queue = (BrokerQueue<TaskStatistic>) broker.get(TaskStatistic.class.getSimpleName());
         TaskStatistic obj = new TaskStatistic(null, null);
-        QueueElementEnvelope<TaskStatistic> o1 = queue.add(obj);
+        TimeEnvelope<TaskStatistic> o1 = queue.add(obj);
         List<TaskStatistic> cloneQueue = queue.getCloneQueue(null);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
         queue.remove(o1);
@@ -134,11 +133,11 @@ class BrokerTest {
     void testReference2() throws Exception {
         AtomicBoolean isRun = new AtomicBoolean(true);
         Broker broker = App.context.getBean(Broker.class);
-        Queue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
+        BrokerQueue<TaskStatistic> queue = (BrokerQueue<TaskStatistic>) broker.get(TaskStatistic.class.getSimpleName());
         TaskStatistic obj = new TaskStatistic(null, null);
         TaskStatistic obj2 = new TaskStatistic(null, null);
-        QueueElementEnvelope<TaskStatistic> o1 = queue.add(obj);
-        QueueElementEnvelope<TaskStatistic> o2 = queue.add(obj2);
+        TimeEnvelope<TaskStatistic> o1 = queue.add(obj);
+        TimeEnvelope<TaskStatistic> o2 = queue.add(obj2);
         List<TaskStatistic> cloneQueue = queue.getCloneQueue(isRun);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
         Assertions.assertEquals(obj2.hashCode(), cloneQueue.get(1).hashCode(), "#2");
@@ -152,7 +151,7 @@ class BrokerTest {
     @Test
     void testMaxInputTps() {
         Broker broker = App.context.getBean(Broker.class);
-        Queue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
+        BrokerQueue<TaskStatistic> queue = (BrokerQueue<TaskStatistic>) broker.get(TaskStatistic.class.getSimpleName());
         queue.setMaxTpsInput(1);
         TaskStatistic obj = new TaskStatistic(null, null);
         try {

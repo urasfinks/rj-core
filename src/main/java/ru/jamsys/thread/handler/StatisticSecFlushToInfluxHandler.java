@@ -9,7 +9,7 @@ import com.influxdb.client.write.Point;
 import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.broker.Queue;
+import ru.jamsys.broker.BrokerQueue;
 import ru.jamsys.component.Broker;
 import ru.jamsys.component.PropertiesManager;
 import ru.jamsys.component.Security;
@@ -45,9 +45,9 @@ public class StatisticSecFlushToInfluxHandler implements Handler<StatisticSecFlu
 
     private final Security security;
 
-    private final Broker broker;
+    private final Broker<StatisticSec> broker;
 
-    public StatisticSecFlushToInfluxHandler(Security security, PropertiesManager propertiesManager, Broker broker) {
+    public StatisticSecFlushToInfluxHandler(Security security, PropertiesManager propertiesManager, Broker<StatisticSec> broker) {
         this.security = security;
         this.host = propertiesManager.getProperties("rj.task.handler.ReadStatisticSecToInfluxTaskHandler.host", String.class);
         this.bucket = propertiesManager.getProperties("rj.task.handler.ReadStatisticSecToInfluxTaskHandler.bucket", String.class);
@@ -58,7 +58,7 @@ public class StatisticSecFlushToInfluxHandler implements Handler<StatisticSecFlu
 
     @Override
     public void run(StatisticSecFlush task, ThreadEnvelope threadEnvelope) throws Exception {
-        Queue<StatisticSec> queue = broker.get(StatisticSec.class.getSimpleName());
+        BrokerQueue<StatisticSec> queue = broker.get(StatisticSec.class.getSimpleName());
         List<Point> listPoints = new ArrayList<>();
         while (!queue.isEmpty() && threadEnvelope.getIsWhile().get()) {
             StatisticSec statisticSec = queue.pollFirst();

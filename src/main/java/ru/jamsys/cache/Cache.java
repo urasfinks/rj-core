@@ -6,6 +6,7 @@ import lombok.ToString;
 import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.statistic.TimeEnvelope;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
 
@@ -26,21 +27,21 @@ import java.util.function.Consumer;
 
 public class Cache<K, V> implements StatisticsCollector, KeepAlive {
 
-    final Map<K, CacheItem<V>> map = new ConcurrentHashMap<>();
+    final Map<K, TimeEnvelope<V>> map = new ConcurrentHashMap<>();
 
     @Getter
     ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<K>> bucket = new ConcurrentSkipListMap<>();
 
     @Setter
-    private Consumer<CacheItem<V>> onExpired;
+    private Consumer<TimeEnvelope<V>> onExpired;
 
     public boolean add(K key, V value, long curTime, long timeoutMs) {
         if (!map.containsKey(key)) {
-            CacheItem<V> cacheItem = new CacheItem<>(value);
-            cacheItem.setKeepAliveOnInactivityMs(timeoutMs);
-            cacheItem.setLastActivity(curTime);
+            TimeEnvelope<V> timeEnvelope = new TimeEnvelope<>(value);
+            timeEnvelope.setKeepAliveOnInactivityMs(timeoutMs);
+            timeEnvelope.setLastActivity(curTime);
 
-            map.put(key, cacheItem);
+            map.put(key, timeEnvelope);
             long timeMsExpired = Util.zeroLastNDigits(curTime + timeoutMs, 3);
             if (!bucket.containsKey(timeMsExpired)) {
                 bucket.putIfAbsent(timeMsExpired, new ConcurrentLinkedQueue<>());
@@ -56,15 +57,15 @@ public class Cache<K, V> implements StatisticsCollector, KeepAlive {
     }
 
     public V get(K key) {
-        CacheItem<V> cacheItem = map.get(key);
-        if (cacheItem != null && !cacheItem.isExpired()) {
-            cacheItem.stop();
-            return cacheItem.getValue();
+        TimeEnvelope<V> timeEnvelope = map.get(key);
+        if (timeEnvelope != null && !timeEnvelope.isExpired()) {
+            timeEnvelope.stop();
+            return timeEnvelope.getValue();
         }
         return null;
     }
 
-    public Map<K, CacheItem<V>> get() {
+    public Map<K, TimeEnvelope<V>> get() {
         return map;
     }
 
@@ -116,11 +117,11 @@ public class Cache<K, V> implements StatisticsCollector, KeepAlive {
             }
             keepAliveResult.getReadBucket().add(time);
             Util.riskModifierCollection(threadEnvelope.getIsWhile(), queue, getEmptyType(), (K key) -> {
-                CacheItem<V> cacheItem = map.get(key);
-                if (cacheItem != null) {
-                    if (cacheItem.isExpired()) {
+                TimeEnvelope<V> timeEnvelope = map.get(key);
+                if (timeEnvelope != null) {
+                    if (timeEnvelope.isExpired()) {
                         if (onExpired != null) {
-                            onExpired.accept(cacheItem);
+                            onExpired.accept(timeEnvelope);
                         }
                         queue.remove(key);
                         map.remove(key);
