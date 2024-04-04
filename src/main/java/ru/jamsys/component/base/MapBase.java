@@ -13,7 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class MapBase<T extends Closable & TimeController> implements StatisticsCollector, ItemBuilder<T> {
+public abstract class MapBase<T extends Closable & TimeController>
+        implements
+        StatisticsCollector,
+        ItemBuilder<T> {
 
     protected final Map<String, T> map = new ConcurrentHashMap<>();
 
@@ -47,6 +50,17 @@ public abstract class MapBase<T extends Closable & TimeController> implements St
             map.putIfAbsent(key, build(key));
         }
         return map.get(key);
+    }
+
+    //Используйте только для тестирования
+    @SuppressWarnings("unused")
+    public void reset() {
+        map.clear();
+    }
+
+    @SuppressWarnings("unused")
+    public boolean contains(String key) {
+        return map.containsKey(key);
     }
 
 }
