@@ -6,7 +6,7 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
-import ru.jamsys.component.base.AddableListElement;
+import ru.jamsys.extension.AddableComponentItemList;
 import ru.jamsys.extension.Closable;
 import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.extension.Procedure;
@@ -42,10 +42,10 @@ public class BrokerQueue<TEO>
         implements
         StatisticsCollector,
         Closable,
-        AddableListElement<
-                TimeEnvelope<TEO>,
-                TimeEnvelope<TEO>
-                > {
+        AddableComponentItemList<
+                                                        TimeEnvelope<TEO>,
+                                                        TimeEnvelope<TEO>
+                                                        > {
 
     private final ConcurrentLinkedDeque<TimeEnvelope<TEO>> queue = new ConcurrentLinkedDeque<>();
 

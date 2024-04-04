@@ -3,7 +3,7 @@ package ru.jamsys.component.item;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.jamsys.component.base.AddableMapElement;
+import ru.jamsys.extension.AddableComponentItemMap;
 import ru.jamsys.extension.Closable;
 import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.StatisticsCollector;
@@ -34,7 +34,7 @@ public class Cache<
         K,
         TEO
         > extends TimeControllerImpl
-        implements StatisticsCollector, KeepAlive, Closable, AddableMapElement<K, TimeEnvelope<TEO>, TimeEnvelope<TEO>> {
+        implements StatisticsCollector, KeepAlive, Closable, AddableComponentItemMap<K, TimeEnvelope<TEO>, TimeEnvelope<TEO>> {
 
     @Getter
     final Map<K, TimeEnvelope<TEO>> map = new ConcurrentHashMap<>();

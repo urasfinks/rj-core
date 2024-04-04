@@ -3,7 +3,7 @@ package ru.jamsys.component;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.component.item.Cache;
-import ru.jamsys.component.base.MapItem;
+import ru.jamsys.component.base.BaseItemMap;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.TimeEnvelope;
@@ -16,7 +16,7 @@ import ru.jamsys.util.Util;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class CacheManager<MOI> extends MapItem<
+public class CacheManager<MOI> extends BaseItemMap<
         Cache<String, MOI>,
         TimeEnvelope<MOI>,
         TimeEnvelope<MOI>

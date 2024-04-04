@@ -1,6 +1,7 @@
 package ru.jamsys.component.base;
 
 import ru.jamsys.extension.Closable;
+import ru.jamsys.extension.ComponentItemBuilder;
 import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.statistic.Statistic;
@@ -14,11 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class MapBase<T extends Closable & TimeController>
+public abstract class Base<T extends Closable & TimeController>
         implements
         StatisticsCollector,
         KeepAlive,
-        ItemBuilder<T> {
+        ComponentItemBuilder<T> {
 
     protected final Map<String, T> map = new ConcurrentHashMap<>();
 
