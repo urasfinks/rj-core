@@ -5,8 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import ru.jamsys.App;
-import ru.jamsys.broker.BrokerCollectible;
-import ru.jamsys.broker.BrokerQueue;
+import ru.jamsys.component.item.BrokerQueue;
 import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.statistic.TimeControllerImpl;
 import ru.jamsys.statistic.TimeEnvelope;
@@ -169,7 +168,7 @@ class BrokerTest {
         queue.reset();
     }
 
-    static class XTest extends TimeControllerImpl implements BrokerCollectible {
+    static class XTest extends TimeControllerImpl {
         final int x;
 
         XTest(int x) {

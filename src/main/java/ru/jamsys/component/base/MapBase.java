@@ -1,6 +1,7 @@
 package ru.jamsys.component.base;
 
 import ru.jamsys.extension.Closable;
+import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.TimeController;
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class MapBase<T extends Closable & TimeController>
         implements
         StatisticsCollector,
+        KeepAlive,
         ItemBuilder<T> {
 
     protected final Map<String, T> map = new ConcurrentHashMap<>();
@@ -34,13 +36,24 @@ public abstract class MapBase<T extends Closable & TimeController>
                     if (statistics != null) {
                         result.addAll(statistics);
                     }
+                }
+        );
+        return result;
+    }
+
+    @Override
+    public void keepAlive(ThreadEnvelope threadEnvelope) {
+        Util.riskModifierMap(
+                threadEnvelope.getIsWhile(),
+                map,
+                new String[0],
+                (String key, T element) -> {
                     if (element.isExpired()) {
                         map.remove(key);
                         element.close();
                     }
                 }
         );
-        return result;
     }
 
     @SuppressWarnings("unused")

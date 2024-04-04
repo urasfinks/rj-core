@@ -2,7 +2,6 @@ package ru.jamsys.thread.task;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.statistic.TagIndex;
 import ru.jamsys.statistic.TimeControllerImpl;
 import ru.jamsys.thread.task.trace.Trace;
@@ -12,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractTask extends TimeControllerImpl implements TagIndex, BrokerCollectible {
+public abstract class AbstractTask extends TimeControllerImpl implements TagIndex {
 
     //--Impl TagIndex
     @Getter

@@ -9,7 +9,7 @@ import com.influxdb.client.write.Point;
 import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.broker.BrokerQueue;
+import ru.jamsys.component.item.BrokerQueue;
 import ru.jamsys.component.Broker;
 import ru.jamsys.component.PropertiesManager;
 import ru.jamsys.component.Security;

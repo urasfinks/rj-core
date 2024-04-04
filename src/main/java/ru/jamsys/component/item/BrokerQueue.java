@@ -1,4 +1,4 @@
-package ru.jamsys.broker;
+package ru.jamsys.component.item;
 
 import lombok.Getter;
 import lombok.Setter;

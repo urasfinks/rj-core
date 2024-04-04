@@ -3,7 +3,7 @@ package ru.jamsys.thread.handler;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.broker.BrokerQueue;
+import ru.jamsys.component.item.BrokerQueue;
 import ru.jamsys.component.Broker;
 import ru.jamsys.extension.IgnoreClassFinder;
 import ru.jamsys.statistic.StatisticSec;

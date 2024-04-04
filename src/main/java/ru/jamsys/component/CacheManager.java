@@ -2,7 +2,7 @@ package ru.jamsys.component;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.cache.Cache;
+import ru.jamsys.component.item.Cache;
 import ru.jamsys.component.base.MapItem;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;

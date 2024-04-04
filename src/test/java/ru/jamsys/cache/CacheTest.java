@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import ru.jamsys.App;
+import ru.jamsys.component.item.Cache;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.TimeEnvelope;
