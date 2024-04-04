@@ -31,7 +31,7 @@ public class GeneratorManager implements RunnableComponent {
                         for (CronTask cronTask : dictionary.getListCronTask()) {
                             if (cronTask.getCron().isTimeHasCome(curTimeMs)) {
                                 try {
-                                    taskManager.addTask(cronTask.getTimeEnvelope());
+                                    taskManager.addTask(cronTask.getGenerator().getTaskTimeEnvelope());
                                 } catch (Exception e) {
                                     exceptionHandler.handler(e);
                                 }

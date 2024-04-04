@@ -2,8 +2,7 @@ package ru.jamsys.template.cron;
 
 import lombok.Getter;
 import lombok.ToString;
-import ru.jamsys.statistic.TimeEnvelope;
-import ru.jamsys.thread.task.AbstractTask;
+import ru.jamsys.thread.generator.Generator;
 
 @Getter
 @ToString
@@ -11,11 +10,11 @@ public class CronTask {
 
     private final Cron cron;
 
-    private final TimeEnvelope<AbstractTask> timeEnvelope;
+    private final Generator generator;
 
-    public CronTask(Cron cron, TimeEnvelope<AbstractTask> timeEnvelope) {
+    public CronTask(Cron cron, Generator generator) {
         this.cron = cron;
-        this.timeEnvelope = timeEnvelope;
+        this.generator = generator;
     }
 
 }

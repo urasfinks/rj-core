@@ -63,7 +63,7 @@ public class Core implements RunnableInterface {
                 Generator generator = applicationContext.getBean(generatorClass);
                 generatorListSort.add(generator.getId(), new CronTask(
                         new Cron(generator.getCronTemplate()),
-                        generator.getTaskTimeEnvelope()
+                        generator
                 ));
             }
         });
