@@ -936,7 +936,7 @@
     "list": [
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "All",
           "value": "$__all"
         },
@@ -944,13 +944,13 @@
           "type": "influxdb",
           "uid": "P951FEA4DE68E13C5"
         },
-        "definition": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(\n    bucket: \"5gm\",\n    tag: \"host\",\n    predicate: (r) => true,\n    start: -3000d\n)",
+        "definition": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(\n    bucket: \"5gm\",\n    tag: \"Host\",\n    predicate: (r) => true,\n    start: -3000d\n)",
         "hide": 0,
         "includeAll": true,
         "multi": false,
         "name": "Host",
         "options": [],
-        "query": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(\n    bucket: \"5gm\",\n    tag: \"host\",\n    predicate: (r) => true,\n    start: -3000d\n)",
+        "query": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(\n    bucket: \"5gm\",\n    tag: \"Host\",\n    predicate: (r) => true,\n    start: -3000d\n)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -967,6 +967,6 @@
   "timezone": "",
   "title": "New dashboard",
   "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 28,
+  "version": 29,
   "weekStart": ""
 }
