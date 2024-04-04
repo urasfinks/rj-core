@@ -24,7 +24,6 @@ public class Broker<MOI extends TimeController>
         return new BrokerQueue<>(key);
     }
 
-    @SuppressWarnings("unused")
     public TimeEnvelope<MOI> pollLast(String key) {
         BrokerQueue<MOI> queue = get(key);
         return queue.pollLast();
