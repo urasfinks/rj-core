@@ -26,14 +26,4 @@ public abstract class AbstractTask extends TimeControllerImpl implements TagInde
     List<Trace> listTrace = new ArrayList<>();
     Map<String, Object> property = new HashMap<>();
 
-    final int maxTimeExecute;
-
-    public AbstractTask(int maxTimeExecute) {
-        this.maxTimeExecute = maxTimeExecute;
-    }
-
-    public int getMaxTimeExecute() {
-        return maxTimeExecute;
-    }
-
 }

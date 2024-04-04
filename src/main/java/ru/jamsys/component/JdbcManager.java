@@ -20,7 +20,7 @@ import java.util.Map;
 @Lazy
 public class JdbcManager extends AutoBalancerPool<JdbcPool> implements KeepAliveComponent, StatisticsCollectorComponent {
 
-    public JdbcManager(ApplicationContext applicationContext, Broker broker) {
+    public JdbcManager(ApplicationContext applicationContext) {
         super(applicationContext);
     }
 
@@ -34,7 +34,7 @@ public class JdbcManager extends AutoBalancerPool<JdbcPool> implements KeepAlive
         JdbcPool jdbcPool = mapPool.get(poolName);
         jdbcPool.addResourceZeroPool();
         // -200 что бы коннект под нож статистики keepAlive не попал
-        ConnectionEnvelope resource = jdbcPool.getResource(task.getMaxTimeExecute() - 200, threadEnvelope);
+        ConnectionEnvelope resource = jdbcPool.getResource(task.getExpiryRemainingMs() - 200, threadEnvelope);
 
         if (resource == null) {
             throw new RuntimeException("Resource null");

@@ -1,6 +1,7 @@
 package ru.jamsys.thread.generator;
 
 import org.springframework.stereotype.Component;
+import ru.jamsys.statistic.TimeEnvelope;
 import ru.jamsys.thread.task.AbstractTask;
 import ru.jamsys.thread.task.StatisticSecFlush;
 
@@ -13,8 +14,10 @@ public class ReadStatisticSecGenerator implements Generator {
     }
 
     @Override
-    public AbstractTask getTask() {
-        return new StatisticSecFlush(5_000);
+    public TimeEnvelope<AbstractTask> getTaskTimeEnvelope() {
+        TimeEnvelope<AbstractTask> timeEnvelope = new TimeEnvelope<>(new StatisticSecFlush());
+        timeEnvelope.setKeepAliveOnInactivityMs(5_000);
+        return timeEnvelope;
     }
 
     @Override

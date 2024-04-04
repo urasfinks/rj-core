@@ -7,6 +7,7 @@ import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.Statistic;
 import ru.jamsys.statistic.StatisticSec;
+import ru.jamsys.statistic.TimeEnvelope;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.thread.task.StatisticCollectorFlush;
 import ru.jamsys.util.Util;
@@ -19,7 +20,7 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public class StatisticCollectorFlushHandler implements Handler<StatisticCollectorFlush> {
 
-    final Broker broker;
+    final Broker<StatisticSec> broker;
 
     final Dictionary dictionary;
 
@@ -27,7 +28,7 @@ public class StatisticCollectorFlushHandler implements Handler<StatisticCollecto
 
     String ip = Util.getIp();
 
-    public StatisticCollectorFlushHandler(Dictionary dictionary, Broker broker, ExceptionHandler exceptionHandler) {
+    public StatisticCollectorFlushHandler(Dictionary dictionary, Broker<StatisticSec> broker, ExceptionHandler exceptionHandler) {
         this.dictionary = dictionary;
         this.broker = broker;
         this.exceptionHandler = exceptionHandler;
@@ -51,7 +52,7 @@ public class StatisticCollectorFlushHandler implements Handler<StatisticCollecto
         });
         if (!statisticSec.getList().isEmpty()) {
             try {
-                broker.add(StatisticSec.class.getSimpleName(), statisticSec);
+                broker.add(StatisticSec.class.getSimpleName(), new TimeEnvelope<>(statisticSec));
             } catch (Exception e) {
                 exceptionHandler.handler(e);
             }

@@ -17,7 +17,7 @@ public class GeneratorManager implements RunnableComponent {
 
     final private ThreadPool threadPool;
 
-    public GeneratorManager(Dictionary dictionary, ExceptionHandler exceptionHandler, Broker broker, TaskManager taskManager, RateLimitManager rateLimitManager) {
+    public GeneratorManager(Dictionary dictionary, ExceptionHandler exceptionHandler, TaskManager taskManager, RateLimitManager rateLimitManager) {
         this.threadPool = new ThreadPool(
                 getClass().getSimpleName(),
                 1,
@@ -31,7 +31,7 @@ public class GeneratorManager implements RunnableComponent {
                         for (CronTask cronTask : dictionary.getListCronTask()) {
                             if (cronTask.getCron().isTimeHasCome(curTimeMs)) {
                                 try {
-                                    taskManager.addTask(cronTask.getTask());
+                                    taskManager.addTask(cronTask.getTimeEnvelope());
                                 } catch (Exception e) {
                                     exceptionHandler.handler(e);
                                 }

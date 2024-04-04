@@ -24,32 +24,32 @@ class BrokerTest {
 
     @Test
     void testLiner() throws Exception {
-        Broker broker = App.context.getBean(Broker.class);
-        BrokerQueue b = (BrokerQueue) broker.get(XTest.class.getSimpleName());
+        Broker<XTest> broker = App.context.getBean(Broker.class);
+        BrokerQueue b = broker.get(XTest.class.getSimpleName());
 
         b.setCyclical(false);
         b.setSizeQueue(10);
         b.setSizeTail(3);
 
         for (int i = 0; i < 10; i++) {
-            b.add(new XTest(i));
+            b.addTest(new XTest(i));
         }
 
         Assertions.assertEquals(10, b.getSize(), "#1");
 
-        XTest t = (XTest) b.pollFirst();
-        Assertions.assertEquals(0, t.x, "#2");
+        TimeEnvelope<XTest> t = b.pollFirst();
+        Assertions.assertEquals(0, t.getValue().x, "#2");
         Assertions.assertEquals(9, b.getSize(), "#3");
 
-        XTest t2 = (XTest) b.pollLast();
-        Assertions.assertEquals(9, t2.x, "#4");
+        TimeEnvelope<XTest> t2 = b.pollLast();
+        Assertions.assertEquals(9, t2.getValue().x, "#4");
         Assertions.assertEquals(8, b.getSize(), "#5");
 
         try {
-            b.add(new XTest(11));
-            b.add(new XTest(12));
-            b.add(new XTest(13));
-            b.add(new XTest(14));
+            b.addTest(new XTest(11));
+            b.addTest(new XTest(12));
+            b.addTest(new XTest(13));
+            b.addTest(new XTest(14));
             Assertions.fail("#6");
         } catch (Exception e) {
             Assertions.assertTrue(true, "#7");
@@ -65,43 +65,43 @@ class BrokerTest {
 
     @Test
     void testCyclic() throws Exception {
-        Broker broker = App.context.getBean(Broker.class);
-        BrokerQueue b = (BrokerQueue) broker.get(XTest.class.getSimpleName());
+        Broker<XTest> broker = App.context.getBean(Broker.class);
+        BrokerQueue b = broker.get(XTest.class.getSimpleName());
 
         b.setCyclical(true);
         b.setSizeQueue(10);
         b.setSizeTail(3);
 
         for (int i = 0; i < 10; i++) {
-            b.add(new XTest(i));
+            b.addTest(new XTest(i));
         }
 
         Assertions.assertEquals("[XTest{x=0}, XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=9}]", b.getCloneQueue(null).toString());
 
         Assertions.assertEquals(10, b.getSize());
 
-        XTest t = (XTest) b.pollFirst();
+        TimeEnvelope<XTest> t = b.pollFirst();
 
         Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=9}]", b.getCloneQueue(null).toString());
 
-        Assertions.assertEquals(0, t.x);
+        Assertions.assertEquals(0, t.getValue().x);
         Assertions.assertEquals(9, b.getSize());
 
-        XTest t2 = (XTest) b.pollLast();
+        TimeEnvelope<XTest> t2 = b.pollLast();
 
         Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}]", b.getCloneQueue(null).toString());
 
-        Assertions.assertEquals(9, t2.x);
+        Assertions.assertEquals(9, t2.getValue().x);
         Assertions.assertEquals(8, b.getSize());
 
         try {
-            b.add(new XTest(11));
+            b.addTest(new XTest(11));
             Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}]", b.getCloneQueue(null).toString());
-            b.add(new XTest(12));
+            b.addTest(new XTest(12));
             Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}]", b.getCloneQueue(null).toString());
-            b.add(new XTest(13));
+            b.addTest(new XTest(13));
             Assertions.assertEquals("[XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}]", b.getCloneQueue(null).toString());
-            b.add(new XTest(14));
+            b.addTest(new XTest(14));
             Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", b.getCloneQueue(null).toString());
             Assertions.assertTrue(true, "#6");
         } catch (Exception e) {
@@ -118,10 +118,10 @@ class BrokerTest {
 
     @Test
     void testReference() throws Exception {
-        Broker broker = App.context.getBean(Broker.class);
-        BrokerQueue<TaskStatistic> queue = (BrokerQueue<TaskStatistic>) broker.get(TaskStatistic.class.getSimpleName());
+        Broker<TaskStatistic> broker = App.context.getBean(Broker.class);
+        BrokerQueue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
         TaskStatistic obj = new TaskStatistic(null, null);
-        TimeEnvelope<TaskStatistic> o1 = queue.add(obj);
+        TimeEnvelope<TaskStatistic> o1 = queue.addTest(obj);
         List<TaskStatistic> cloneQueue = queue.getCloneQueue(null);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
         queue.remove(o1);
@@ -132,12 +132,12 @@ class BrokerTest {
     @Test
     void testReference2() throws Exception {
         AtomicBoolean isRun = new AtomicBoolean(true);
-        Broker broker = App.context.getBean(Broker.class);
-        BrokerQueue<TaskStatistic> queue = (BrokerQueue<TaskStatistic>) broker.get(TaskStatistic.class.getSimpleName());
+        Broker<TaskStatistic> broker = App.context.getBean(Broker.class);
+        BrokerQueue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
         TaskStatistic obj = new TaskStatistic(null, null);
         TaskStatistic obj2 = new TaskStatistic(null, null);
-        TimeEnvelope<TaskStatistic> o1 = queue.add(obj);
-        TimeEnvelope<TaskStatistic> o2 = queue.add(obj2);
+        TimeEnvelope<TaskStatistic> o1 = queue.addTest(obj);
+        TimeEnvelope<TaskStatistic> o2 = queue.addTest(obj2);
         List<TaskStatistic> cloneQueue = queue.getCloneQueue(isRun);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
         Assertions.assertEquals(obj2.hashCode(), cloneQueue.get(1).hashCode(), "#2");
@@ -150,17 +150,17 @@ class BrokerTest {
 
     @Test
     void testMaxInputTps() {
-        Broker broker = App.context.getBean(Broker.class);
-        BrokerQueue<TaskStatistic> queue = (BrokerQueue<TaskStatistic>) broker.get(TaskStatistic.class.getSimpleName());
+        Broker<TaskStatistic> broker = App.context.getBean(Broker.class);
+        BrokerQueue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
         queue.setMaxTpsInput(1);
         TaskStatistic obj = new TaskStatistic(null, null);
         try {
-            queue.add(obj);
+            queue.addTest(obj);
         } catch (Exception e) {
             Assertions.fail();
         }
         try {
-            queue.add(obj);
+            queue.addTest(obj);
             Assertions.fail();
         } catch (Exception e) {
             Assertions.assertTrue(true);

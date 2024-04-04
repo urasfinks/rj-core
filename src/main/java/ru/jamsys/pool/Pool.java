@@ -13,7 +13,7 @@ public interface Pool<T extends TimeController> extends StatisticsCollector {
     T getResource(); // Получить ресурс без ожидания, если нет в park - вернём null
 
     @SuppressWarnings("unused")
-    T getResource(int timeOutMs, ThreadEnvelope threadEnvelope); //Если в parkQueue нет ресурса, будем ждать timeOutMs
+    T getResource(long timeOutMs, ThreadEnvelope threadEnvelope); //Если в parkQueue нет ресурса, будем ждать timeOutMs
 
     T createResource();
 

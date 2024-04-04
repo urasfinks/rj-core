@@ -4,6 +4,10 @@ import ru.jamsys.util.Util;
 
 public interface TimeController {
 
+    default long getExpiredMs() {
+        return getLastActivity() + getKeepAliveOnInactivityMs();
+    }
+
     // Объект просрочен
     default boolean isExpired() {
         return isExpired(System.currentTimeMillis());

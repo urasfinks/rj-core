@@ -1,8 +1,8 @@
 package ru.jamsys.thread.task;
 
 import lombok.Getter;
-import ru.jamsys.template.jdbc.Template;
 import ru.jamsys.template.jdbc.JdbcTemplate;
+import ru.jamsys.template.jdbc.Template;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,7 +22,7 @@ public class JdbcRequest extends AbstractTask {
     private final String nameCache;
 
     public JdbcRequest(String poolName, JdbcTemplate jdbcTemplate, int maxTimeExecute) {
-        super(maxTimeExecute);
+        setKeepAliveOnInactivityMs(maxTimeExecute);
         this.poolName = poolName;
         this.jdbcTemplate = jdbcTemplate;
         this.nameCache = jdbcTemplate.getName();

@@ -5,27 +5,34 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.broker.BrokerCollectible;
 import ru.jamsys.broker.BrokerQueue;
+import ru.jamsys.component.base.ListItem;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.TimeEnvelope;
 
 @Component
 @Lazy
-public class Broker<T extends BrokerCollectible> extends AbstractMapComponent<BrokerQueue<T>, T, TimeEnvelope<T>> implements StatisticsCollectorComponent {
+public class Broker<MOI extends BrokerCollectible>
+        extends ListItem<
+        BrokerQueue<MOI>,
+        TimeEnvelope<MOI>,
+        TimeEnvelope<MOI>
+        >
+        implements StatisticsCollectorComponent {
 
     @Override
-    public BrokerQueue<T> createComponentItem(String key) {
+    public BrokerQueue<MOI> build(String key) {
         return new BrokerQueue<>(key);
     }
 
     @SuppressWarnings("unused")
-    public T pollLast(String key) {
-        BrokerQueue<T> queue = get(key);
+    public TimeEnvelope<MOI> pollLast(String key) {
+        BrokerQueue<MOI> queue = get(key);
         return queue.pollLast();
     }
 
     @SuppressWarnings("unused")
-    public T pollFirst(String key) {
-        BrokerQueue<T> queue = get(key);
+    public TimeEnvelope<MOI> pollFirst(String key) {
+        BrokerQueue<MOI> queue = get(key);
         return queue.pollFirst();
     }
 

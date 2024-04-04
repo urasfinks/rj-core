@@ -6,7 +6,11 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
-import ru.jamsys.extension.*;
+import ru.jamsys.component.base.AddableListElement;
+import ru.jamsys.extension.Closable;
+import ru.jamsys.extension.IgnoreClassFinder;
+import ru.jamsys.extension.Procedure;
+import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.rate.limit.item.RateLimitItem;
@@ -25,15 +29,28 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// Раньше на вставку был просто объект TEO и внутри происходила обёртка TimeEnvelope<TEO>
+// Но потом пришла реализация  Cache  где нельзя было такое сделать
+// и на вход надо было уже подавать объект TimeEnvelope<TEO>
+// Я захотел, что бы везде было одинаково только лишь поэтому TEO -> TimeEnvelope<TEO>
+
 @Getter
 @Setter
 @IgnoreClassFinder
-public class BrokerQueue<T> extends TimeControllerImpl implements StatisticsCollector, Closable, Addable<T, TimeEnvelope<T>> {
+public class BrokerQueue<TEO>
+        extends TimeControllerImpl
+        implements
+        StatisticsCollector,
+        Closable,
+        AddableListElement<
+                TimeEnvelope<TEO>,
+                TimeEnvelope<TEO>
+                > {
 
-    private final ConcurrentLinkedDeque<TimeEnvelope<T>> queue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<TimeEnvelope<TEO>> queue = new ConcurrentLinkedDeque<>();
 
     //Последний сообщения проходящие через очередь
-    private final ConcurrentLinkedDeque<T> tail = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<TimeEnvelope<TEO>> tail = new ConcurrentLinkedDeque<>();
 
     private final AtomicInteger tpsDequeue = new AtomicInteger(0);
 
@@ -79,7 +96,7 @@ public class BrokerQueue<T> extends TimeControllerImpl implements StatisticsColl
         listProcedure.add(procedure);
     }
 
-    private void statistic(TimeEnvelope<T> timeEnvelope) {
+    private void statistic(TimeEnvelope<TEO> timeEnvelope) {
         //#1 что бы видеть реальное кол-во опросов изъятия
         tpsDequeue.incrementAndGet();
         if (timeEnvelope != null) {
@@ -87,29 +104,21 @@ public class BrokerQueue<T> extends TimeControllerImpl implements StatisticsColl
         }
     }
 
-    public T pollFirst() {
-        TimeEnvelope<T> result = queue.pollFirst();
+    public TimeEnvelope<TEO> pollFirst() {
+        TimeEnvelope<TEO> result = queue.pollFirst();
         statistic(result);
-        if (result != null) {
-            return result.getValue();
-        }
-        return null;
+        return result;
     }
 
-    public T pollLast() {
-        TimeEnvelope<T> result = queue.pollLast();
+    public TimeEnvelope<TEO> pollLast() {
+        TimeEnvelope<TEO> result = queue.pollLast();
         statistic(result);
-        if (result != null) {
-            return result.getValue();
-        }
-        return null;
+        return result;
     }
 
-    public void remove(TimeEnvelope<T> timeEnvelope) {
+    public void remove(TimeEnvelope<TEO> timeEnvelope) {
         statistic(timeEnvelope);
-        if (timeEnvelope != null) {
-            queue.remove(timeEnvelope);
-        }
+        queue.remove(timeEnvelope);
     }
 
     @SafeVarargs
@@ -118,10 +127,10 @@ public class BrokerQueue<T> extends TimeControllerImpl implements StatisticsColl
     }
 
     @SuppressWarnings("unused")
-    public List<T> getCloneQueue(@Nullable AtomicBoolean isRun) {
-        List<T> cloned = new ArrayList<>();
-        List<TimeEnvelope<T>> ret = new ArrayList<>();
-        Util.riskModifierCollection(isRun, queue, getEmptyType(), (TimeEnvelope<T> elementEnvelope)
+    public List<TEO> getCloneQueue(@Nullable AtomicBoolean isRun) {
+        List<TEO> cloned = new ArrayList<>();
+        List<TimeEnvelope<TEO>> ret = new ArrayList<>();
+        Util.riskModifierCollection(isRun, queue, getEmptyType(), (TimeEnvelope<TEO> elementEnvelope)
                 -> cloned.add(elementEnvelope.getValue()));
         return cloned;
     }
@@ -141,9 +150,9 @@ public class BrokerQueue<T> extends TimeControllerImpl implements StatisticsColl
         rateLimitTps.setMax(maxTpsInput);
     }
 
-    public List<T> getTail(@Nullable AtomicBoolean isRun) {
-        List<T> ret = new ArrayList<>();
-        Util.riskModifierCollection(isRun, tail, getEmptyType(), ret::add);
+    public List<TEO> getTail(@Nullable AtomicBoolean isRun) {
+        List<TEO> ret = new ArrayList<>();
+        Util.riskModifierCollection(isRun, tail, getEmptyType(), (TimeEnvelope<TEO> elementEnvelope) -> ret.add(elementEnvelope.getValue()));
         return ret;
     }
 
@@ -168,13 +177,30 @@ public class BrokerQueue<T> extends TimeControllerImpl implements StatisticsColl
         rateLimit.setActive(false);
     }
 
+    public TimeEnvelope<TEO> addTest(TEO element) throws Exception {
+        return add(element, 6_000);
+    }
+
+    public TimeEnvelope<TEO> add(TEO element, long curTime, long timeOut) throws Exception {
+        TimeEnvelope<TEO> timeEnvelope = new TimeEnvelope<>(element);
+        timeEnvelope.setLastActivity(curTime);
+        timeEnvelope.setKeepAliveOnInactivityMs(timeOut);
+        return add(timeEnvelope);
+    }
+
+    public TimeEnvelope<TEO> add(TEO element, long timeOut) throws Exception {
+        TimeEnvelope<TEO> timeEnvelope = new TimeEnvelope<>(element);
+        timeEnvelope.setKeepAliveOnInactivityMs(timeOut);
+        return add(timeEnvelope);
+    }
+
     @Override
-    public TimeEnvelope<T> add(T element) throws Exception {
-        if (element == null) {
+    public TimeEnvelope<TEO> add(TimeEnvelope<TEO> timeEnvelope) throws Exception {
+        if (timeEnvelope == null) {
             throw new Exception("Element null");
         }
         if (!rateLimitTps.check(null)) {
-            throw new Exception("RateLimit BrokerQueue: " + element.getClass().getSimpleName() + "; max tps: " + rateLimitTps.getMax() + "; object: " + element);
+            throw new Exception("RateLimit BrokerQueue: " + timeEnvelope.getValue().getClass().getSimpleName() + "; max tps: " + rateLimitTps.getMax() + "; object: " + timeEnvelope);
         }
         if (cyclical) {
             if (!rateLimitSize.check(queue.size() + 1)) {
@@ -182,12 +208,11 @@ public class BrokerQueue<T> extends TimeControllerImpl implements StatisticsColl
             }
         } else {
             if (!rateLimitSize.check(queue.size())) {
-                throw new Exception("Limit BrokerQueue: " + element.getClass().getSimpleName() + "; limit: " + rateLimitSize.getMax() + "; object: " + element);
+                throw new Exception("Limit BrokerQueue: " + timeEnvelope.getValue().getClass().getSimpleName() + "; limit: " + rateLimitSize.getMax() + "; object: " + timeEnvelope);
             }
         }
-        TimeEnvelope<T> result = new TimeEnvelope<>(element);
-        queue.add(result);
-        tail.add(element);
+        queue.add(timeEnvelope);
+        tail.add(timeEnvelope);
         if (tail.size() > sizeTail) {
             tail.pollFirst();
         }
@@ -196,7 +221,7 @@ public class BrokerQueue<T> extends TimeControllerImpl implements StatisticsColl
         } catch (Exception e) {
             App.context.getBean(ExceptionHandler.class).handler(e);
         }
-        return result;
+        return timeEnvelope;
     }
 
 }

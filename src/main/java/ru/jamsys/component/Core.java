@@ -14,7 +14,10 @@ import ru.jamsys.template.cron.Cron;
 import ru.jamsys.template.cron.CronTask;
 import ru.jamsys.thread.generator.Generator;
 import ru.jamsys.thread.handler.Handler;
-import ru.jamsys.thread.task.*;
+import ru.jamsys.thread.task.AbstractTask;
+import ru.jamsys.thread.task.KeepAlive;
+import ru.jamsys.thread.task.StatisticCollectorFlush;
+import ru.jamsys.thread.task.StatisticSecFlush;
 import ru.jamsys.util.ListSort;
 
 import java.util.List;
@@ -60,7 +63,7 @@ public class Core implements RunnableInterface {
                 Generator generator = applicationContext.getBean(generatorClass);
                 generatorListSort.add(generator.getId(), new CronTask(
                         new Cron(generator.getCronTemplate()),
-                        generator.getTask()
+                        generator.getTaskTimeEnvelope()
                 ));
             }
         });

@@ -41,7 +41,7 @@ public class TaskStatisticHandler {
         Util.riskModifierCollection(isRun, queueTaskStatistics, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
             if (taskStatistic.isStop()) {
                 queueTaskStatistics.remove(taskStatistic);
-            } else if (taskStatistic.getOffsetLastActivityMs(curTime) > taskStatistic.getTask().getMaxTimeExecute()) {
+            } else if (taskStatistic.isExpired(curTime)) {
                 queueTaskStatistics.remove(taskStatistic);
                 taskStatistic.getResource().closeAndRemove();
             }

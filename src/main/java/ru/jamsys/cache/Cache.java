@@ -3,9 +3,12 @@ package ru.jamsys.cache;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import ru.jamsys.component.base.AddableMapElement;
+import ru.jamsys.extension.Closable;
 import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.statistic.Statistic;
+import ru.jamsys.statistic.TimeControllerImpl;
 import ru.jamsys.statistic.TimeEnvelope;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.util.Util;
@@ -25,48 +28,55 @@ import java.util.function.Consumer;
 // Но надо помнить, что всегда есть лаг срабатывания onExpired, так как keepAlive вызывается по расписанию
 // Уменьшить лаг можно путём более частого вызова keepAlive
 
-public class Cache<K, V> implements StatisticsCollector, KeepAlive {
+//Мы не можем себе позволить постфактум менять timeout, так как в map заносится expiredTime из .getExpiredMs()
 
-    final Map<K, TimeEnvelope<V>> map = new ConcurrentHashMap<>();
+public class Cache<
+        K,
+        TEO
+        > extends TimeControllerImpl
+        implements StatisticsCollector, KeepAlive, Closable, AddableMapElement<K, TimeEnvelope<TEO>, TimeEnvelope<TEO>> {
+
+    @Getter
+    final Map<K, TimeEnvelope<TEO>> map = new ConcurrentHashMap<>();
 
     @Getter
     ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<K>> bucket = new ConcurrentSkipListMap<>();
 
     @Setter
-    private Consumer<TimeEnvelope<V>> onExpired;
+    private Consumer<TimeEnvelope<TEO>> onExpired;
 
-    public boolean add(K key, V value, long curTime, long timeoutMs) {
+    @Override
+    public TimeEnvelope<TEO> add(K key, TimeEnvelope<TEO> value) throws Exception {
         if (!map.containsKey(key)) {
-            TimeEnvelope<V> timeEnvelope = new TimeEnvelope<>(value);
-            timeEnvelope.setKeepAliveOnInactivityMs(timeoutMs);
-            timeEnvelope.setLastActivity(curTime);
-
-            map.put(key, timeEnvelope);
-            long timeMsExpired = Util.zeroLastNDigits(curTime + timeoutMs, 3);
-            if (!bucket.containsKey(timeMsExpired)) {
-                bucket.putIfAbsent(timeMsExpired, new ConcurrentLinkedQueue<>());
+            map.put(key, value);
+            long timeMsExpiredFloor = Util.zeroLastNDigits(value.getExpiredMs(), 3);
+            if (!bucket.containsKey(timeMsExpiredFloor)) {
+                bucket.putIfAbsent(timeMsExpiredFloor, new ConcurrentLinkedQueue<>());
             }
-            bucket.get(timeMsExpired).add(key);
-            return true;
+            bucket.get(timeMsExpiredFloor).add(key);
         }
-        return false;
+        return value;
     }
 
-    public boolean add(K key, V value, long timeoutMs) {
+    public TimeEnvelope<TEO> add(K key, TEO value, long curTime, long timeoutMs) throws Exception {
+        TimeEnvelope<TEO> timeEnvelope = new TimeEnvelope<>(value);
+        timeEnvelope.setKeepAliveOnInactivityMs(timeoutMs);
+        timeEnvelope.setLastActivity(curTime);
+        add(key, timeEnvelope);
+        return timeEnvelope;
+    }
+
+    public TimeEnvelope<TEO> add(K key, TEO value, long timeoutMs) throws Exception {
         return add(key, value, System.currentTimeMillis(), timeoutMs);
     }
 
-    public V get(K key) {
-        TimeEnvelope<V> timeEnvelope = map.get(key);
+    public TEO get(K key) {
+        TimeEnvelope<TEO> timeEnvelope = map.get(key);
         if (timeEnvelope != null && !timeEnvelope.isExpired()) {
             timeEnvelope.stop();
             return timeEnvelope.getValue();
         }
         return null;
-    }
-
-    public Map<K, TimeEnvelope<V>> get() {
-        return map;
     }
 
     public List<Long> getBucketKey() {
@@ -117,7 +127,7 @@ public class Cache<K, V> implements StatisticsCollector, KeepAlive {
             }
             keepAliveResult.getReadBucket().add(time);
             Util.riskModifierCollection(threadEnvelope.getIsWhile(), queue, getEmptyType(), (K key) -> {
-                TimeEnvelope<V> timeEnvelope = map.get(key);
+                TimeEnvelope<TEO> timeEnvelope = map.get(key);
                 if (timeEnvelope != null) {
                     if (timeEnvelope.isExpired()) {
                         if (onExpired != null) {
@@ -141,6 +151,11 @@ public class Cache<K, V> implements StatisticsCollector, KeepAlive {
     @Override
     public void keepAlive(ThreadEnvelope threadEnvelope) {
         keepAlive(threadEnvelope, System.currentTimeMillis());
+    }
+
+    @Override
+    public void close() {
+
     }
 
 }

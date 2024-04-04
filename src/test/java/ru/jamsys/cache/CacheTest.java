@@ -25,30 +25,28 @@ class CacheTest {
     }
 
     @Test
-    void add() {
+    void add() throws Exception {
         Cache<Integer, String> cache = new Cache<>();
 
         cache.add(1234, "Hello world", 100);
-        Assertions.assertEquals(1, cache.get().size(), "#1");
+        Assertions.assertEquals(1, cache.getMap().size(), "#1");
 
         cache.add(12345, "Hello world", 100);
-        Assertions.assertEquals(2, cache.get().size(), "#2");
-
-        Assertions.assertFalse(cache.add(12345, "Hello world", 100), "#3");
+        Assertions.assertEquals(2, cache.getMap().size(), "#2");
 
         cache.add(123456, "Hello world", 1000);
-        Assertions.assertEquals(3, cache.get().size(), "#4");
+        Assertions.assertEquals(3, cache.getMap().size(), "#4");
 
         Util.sleepMs(200);
 
         cache.keepAlive(TestThreadEnvelope.get());
 
         cache.add(1234567, "Hello world", 100);
-        Assertions.assertEquals(2, cache.get().size(), "#5");
+        Assertions.assertEquals(2, cache.getMap().size(), "#5");
     }
 
     @Test
-    void checkSize() {
+    void checkSize() throws Exception {
         ThreadEnvelope threadEnvelope = TestThreadEnvelope.get();
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         Cache<Integer, String> cache = new Cache<>();
@@ -148,7 +146,11 @@ class CacheTest {
             new Thread(() -> {
                 while (isRun.get()) {
                     for (int j = 0; j < 1000; j++) {
-                        cache.add(counter.getAndIncrement(), java.util.UUID.randomUUID().toString(), timeoutMs);
+                        try {
+                            cache.add(counter.getAndIncrement(), java.util.UUID.randomUUID().toString(), timeoutMs);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     Util.sleepMs((100 * x) + 10);
                 }

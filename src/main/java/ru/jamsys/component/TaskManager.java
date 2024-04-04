@@ -7,6 +7,7 @@ import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.pool.AutoBalancerPool;
 import ru.jamsys.pool.ThreadPool;
 import ru.jamsys.statistic.TaskStatistic;
+import ru.jamsys.statistic.TimeEnvelope;
 import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.thread.handler.Handler;
 import ru.jamsys.thread.task.AbstractTask;
@@ -27,14 +28,14 @@ public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAli
         this.dictionary = dictionary;
     }
 
-    public void addTask(AbstractTask task) throws Exception {
-        String taskIndex = task.getIndex();
+    public void addTask(TimeEnvelope<AbstractTask> timeEnvelope) throws Exception {
+        String taskIndex = timeEnvelope.getValue().getIndex();
         if (!mapPool.containsKey(taskIndex)) {
             ThreadPool threadPool = createThreadPool(taskIndex);
             mapPool.putIfAbsent(taskIndex, threadPool);
             threadPool.run();
         }
-        broker.add(taskIndex, task);
+        broker.add(taskIndex, timeEnvelope);
         mapPool.get(taskIndex).wakeUp();
     }
 
@@ -60,11 +61,11 @@ public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAli
                 0,
                 1,
                 (ThreadEnvelope threadEnvelope) -> {
-                    AbstractTask task = broker.pollLast(poolName);
-                    if (task == null) {
+                    TimeEnvelope<AbstractTask> timeEnvelope = broker.pollLast(poolName);
+                    if (timeEnvelope == null) {
                         return false;
                     }
-                    executeTask(threadEnvelope, task);
+                    executeTask(threadEnvelope, timeEnvelope.getValue());
                     return true;
                 }
         );

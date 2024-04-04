@@ -178,7 +178,7 @@ public abstract class AbstractPool<T extends AbstractPoolResource<?>> extends Ti
 
     @SuppressWarnings({"unused"})
     @Override
-    public T getResource(int timeOutMs, ThreadEnvelope threadEnvelope) {
+    public T getResource(long timeOutMs, ThreadEnvelope threadEnvelope) {
         if (!isRun.get()) {
             return null;
         }
