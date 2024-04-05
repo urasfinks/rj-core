@@ -6,6 +6,9 @@ public interface RunnableInterface {
 
     void shutdown();
 
-    void reload();
+    default void reload() {
+        shutdown();
+        run();
+    }
 
 }

@@ -103,9 +103,4 @@ public class Core implements RunnableInterface {
         dictionary.getListRunnableComponents().forEach(RunnableInterface::shutdown);
     }
 
-    @Override
-    synchronized public void reload() {
-        shutdown();
-        run();
-    }
 }

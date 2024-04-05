@@ -66,10 +66,4 @@ public class GeneratorManager implements RunnableComponent {
         threadPool.shutdown();
     }
 
-    @Override
-    synchronized public void reload() {
-        shutdown();
-        run();
-    }
-
 }

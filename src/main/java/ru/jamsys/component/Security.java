@@ -344,8 +344,4 @@ public class Security implements RunnableComponent {
 
     }
 
-    @Override
-    public void reload() {
-
-    }
 }
