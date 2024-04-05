@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class Base<T extends Closable & TimeController>
+public abstract class Base<T extends Closable & TimeController & StatisticsCollector>
         implements
         StatisticsCollector,
         KeepAlive,
@@ -33,7 +33,7 @@ public abstract class Base<T extends Closable & TimeController>
                 (String key, T element) -> {
                     LinkedHashMap<String, String> newParentTags = new LinkedHashMap<>(parentTags);
                     newParentTags.put(getClass().getSimpleName(), key);
-                    List<Statistic> statistics = ((StatisticsCollector) element).flushAndGetStatistic(newParentTags, parentFields, threadEnvelope);
+                    List<Statistic> statistics = element.flushAndGetStatistic(newParentTags, parentFields, threadEnvelope);
                     if (statistics != null) {
                         result.addAll(statistics);
                     }

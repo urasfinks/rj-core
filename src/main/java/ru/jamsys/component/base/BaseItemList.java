@@ -2,13 +2,14 @@ package ru.jamsys.component.base;
 
 import ru.jamsys.extension.AddableComponentItemList;
 import ru.jamsys.extension.Closable;
+import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.statistic.TimeController;
 
 //MO - MapObject
 //MOI - MapObjectItem
 //MOIW - MapObjectItemWrap
 public abstract class BaseItemList<
-        MO extends AddableComponentItemList<MOI, MOIW> & Closable & TimeController,
+        MO extends AddableComponentItemList<MOI, MOIW> & Closable & TimeController & StatisticsCollector,
         MOI,
         MOIW
         > extends Base<MO> {
