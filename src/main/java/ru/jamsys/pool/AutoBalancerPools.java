@@ -30,7 +30,7 @@ public abstract class AutoBalancerPools<
                 & Closable
                 & StatisticsCollector
                 & RunnableInterface,
-        MOI extends AbstractPoolResource<MOI>
+        MOI extends PoolItem<MOI>
         >
         extends AbstractComponent<MO> {
 
@@ -43,18 +43,18 @@ public abstract class AutoBalancerPools<
 
     @Override
     public void keepAlive(ThreadEnvelope threadEnvelope) {
-        Map<String, Long> countResource = balancing(threadEnvelope.getIsWhile(), rateLimitMax.getMax());
+        Map<String, Long> countPoolItem = balancing(threadEnvelope.getIsWhile(), rateLimitMax.getMax());
         Util.riskModifierMap(threadEnvelope.getIsWhile(), map, new String[0], (String key, MO pool) -> {
             if (pool.isExpired()) {
                 map.remove(key);
                 pool.shutdown();
                 return;
-            } else if (countResource.containsKey(key)) {
-                pool.setMaxSlowRiseAndFastFall(countResource.get(key).intValue());
+            } else if (countPoolItem.containsKey(key)) {
+                pool.setMaxSlowRiseAndFastFall(countPoolItem.get(key).intValue());
             } else {
                 pool.setSumTime(0);
             }
-            // 2024-03-20T13:42:08.002792 KeepAliveTask-1 add thread because: [KeepAliveTask] parkQueue: 0; resource: 1; remove: 0
+            // 2024-03-20T13:42:08.002792 KeepAliveTask-1 add thread because: [KeepAliveTask] parkQueue: 0; item: 1; remove: 0
             // На даём сами себя оживлять
             if (!pool.isAmI()) {
                 pool.keepAlive(threadEnvelope);
@@ -64,16 +64,16 @@ public abstract class AutoBalancerPools<
 
     final private ConcurrentLinkedDeque<TaskStatistic> queueTaskStatistics = new ConcurrentLinkedDeque<>();
 
-    public TaskStatistic getTaskStatistic(AbstractPoolResource<?> abstractPoolResource, AbstractTask task) {
-        TaskStatistic taskStatistic = new TaskStatistic(abstractPoolResource, task);
+    public TaskStatistic getTaskStatistic(PoolItem<?> poolItem, AbstractTask task) {
+        TaskStatistic taskStatistic = new TaskStatistic(poolItem, task);
         queueTaskStatistics.add(taskStatistic);
         return taskStatistic;
     }
 
     // Вызывается когда произошла неизбежность thread.stop()
-    public void forceRemove(AbstractPoolResource<?> abstractPoolResource) {
+    public void forceRemove(PoolItem<?> poolItem) {
         Util.riskModifierCollection(null, queueTaskStatistics, new TaskStatistic[0], (TaskStatistic taskStatistic) -> {
-            if (taskStatistic.getResource().equals(abstractPoolResource)) {
+            if (taskStatistic.getPoolItem().equals(poolItem)) {
                 queueTaskStatistics.remove(taskStatistic);
             }
         });
@@ -89,12 +89,12 @@ public abstract class AutoBalancerPools<
                 queueTaskStatistics.remove(taskStatistic);
             } else if (taskStatistic.isExpired(curTime)) {
                 queueTaskStatistics.remove(taskStatistic);
-                taskStatistic.getResource().closeAndRemove();
+                taskStatistic.getPoolItem().closeAndRemove();
             }
             String indexTask = taskStatistic.getTask().getIndex();
             if (!stat.containsKey(indexTask)) {
                 stat.put(indexTask, new AvgMetric());
-                mapPoolStatistic.put(indexTask, taskStatistic.getResource().getPool());
+                mapPoolStatistic.put(indexTask, taskStatistic.getPoolItem().getPool());
             }
             stat.get(indexTask).add(taskStatistic.getOffsetLastActivityMs(curTime));
         });
@@ -107,10 +107,10 @@ public abstract class AutoBalancerPools<
             mapPoolStatistic.get(index).setSumTime(sumTime);
             sumTimeMap.put(index, sumTime);
         }
-        return getMaxCountResourceByTime(sumTimeMap, count);
+        return getMaxCountPoolItemByTime(sumTimeMap, count);
     }
 
-    public static Map<String, Long> getMaxCountResourceByTime(Map<String, Long> map, long count) {
+    public static Map<String, Long> getMaxCountPoolItemByTime(Map<String, Long> map, long count) {
         Map<String, Long> result = new HashMap<>();
         if (map.isEmpty()) {
             return result;

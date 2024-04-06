@@ -27,14 +27,14 @@ public class JdbcManager extends AutoBalancerPools<JdbcPool, ConnectionEnvelope>
     public List<Map<String, Object>> execTask(JdbcRequest task, ThreadEnvelope threadEnvelope) throws Exception {
         String poolName = task.getPoolName();
         JdbcPool jdbcPool = getItem(poolName);
-        jdbcPool.addResourceZeroPool();
+        jdbcPool.addPoolItemIfEmpty();
         // -200 что бы коннект под нож статистики keepAlive не попал
-        ConnectionEnvelope resource = jdbcPool.getResource(task.getExpiryRemainingMs() - 200, threadEnvelope);
-        if (resource == null) {
-            throw new RuntimeException("Resource null");
+        ConnectionEnvelope connectionEnvelope = jdbcPool.getPoolItem(task.getExpiryRemainingMs() - 200, threadEnvelope);
+        if (connectionEnvelope == null) {
+            throw new RuntimeException("connectionEnvelope is null");
         }
-        TaskStatistic taskStatistic = getTaskStatistic(resource, task);
-        List<Map<String, Object>> result = resource.exec(task);
+        TaskStatistic taskStatistic = getTaskStatistic(connectionEnvelope, task);
+        List<Map<String, Object>> result = connectionEnvelope.exec(task);
         taskStatistic.stop();
         return result;
     }

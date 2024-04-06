@@ -11,6 +11,6 @@ public class TestThreadEnvelope {
                 (ThreadEnvelope threadEnvelope) -> false
         );
         threadPool.run();
-        return threadPool.getResource();
+        return threadPool.getPoolItem();
     }
 }

@@ -9,24 +9,24 @@ public interface Pool<T> extends StatisticsCollector {
     void complete(T ret, Exception e);
 
     @SuppressWarnings("unused")
-    T getResource(); // Получить ресурс без ожидания, если нет в park - вернём null
+    T getPoolItem(); // Получить ресурс без ожидания, если нет в park - вернём null
 
     @SuppressWarnings("unused")
-    T getResource(long timeOutMs, ThreadEnvelope threadEnvelope); //Если в parkQueue нет ресурса, будем ждать timeOutMs
+    T getPoolItem(long timeOutMs, ThreadEnvelope threadEnvelope); //Если в parkQueue нет ресурса, будем ждать timeOutMs
 
-    T createResource();
+    T createPoolItem();
 
-    void closeResource(T resource);
+    void closePoolItem(T poolItem);
 
     String getName();
 
     boolean checkExceptionOnComplete(Exception e);
 
-    void remove(T resource);
+    void remove(T poolItem);
 
-    void removeAndClose(T resource);
+    void removeAndClose(T poolItem);
 
-    void addResourceZeroPool();
+    void addPoolItemIfEmpty();
 
     void setSumTime(long time);
 

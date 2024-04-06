@@ -3,7 +3,7 @@ package ru.jamsys.jdbc;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
-import ru.jamsys.pool.AbstractPoolResource;
+import ru.jamsys.pool.PoolItem;
 import ru.jamsys.pool.JdbcPool;
 import ru.jamsys.pool.Pool;
 import ru.jamsys.rate.limit.RateLimit;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConnectionEnvelope extends AbstractPoolResource<ConnectionEnvelope> {
+public class ConnectionEnvelope extends PoolItem<ConnectionEnvelope> {
 
     final private Connection connection;
 
@@ -32,7 +32,7 @@ public class ConnectionEnvelope extends AbstractPoolResource<ConnectionEnvelope>
         super(pool);
         this.connection = connection;
         rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), pool.getName());
-        rateLimit.get(RateLimitName.RESOURCE_TPS);
+        rateLimit.get(RateLimitName.POOL_ITEM_TPS);
     }
 
     @Override

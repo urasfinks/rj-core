@@ -10,7 +10,7 @@ public enum RateLimitName implements EnumName {
     BROKER_TPS(RateLimitItemInstance.TPS),
     POOL_SIZE(RateLimitItemInstance.MAX),
     THREAD_TPS(RateLimitItemInstance.TPS),
-    RESOURCE_TPS(RateLimitItemInstance.TPS);
+    POOL_ITEM_TPS(RateLimitItemInstance.TPS);
 
     @Getter
     final RateLimitItemInstance rateLimitItemInstance;

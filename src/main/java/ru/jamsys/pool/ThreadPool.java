@@ -23,14 +23,14 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Closable
     }
 
     @Override
-    public ThreadEnvelope createResource() {
+    public ThreadEnvelope createPoolItem() {
         return new ThreadEnvelope(getName() + "-" + counter.getAndIncrement(), this, consumer);
     }
 
     @Override
-    public void closeResource(ThreadEnvelope resource) {
-        if (resource.isInit()) {
-            resource.shutdown();
+    public void closePoolItem(ThreadEnvelope threadEnvelope) {
+        if (threadEnvelope.isInit()) {
+            threadEnvelope.shutdown();
         }
     }
 
@@ -48,9 +48,9 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Closable
         // Но бывает такое, что у пулов может быть min = 0
         // Pool keepAlive, тоже не запускается из-за того что при инициализации min = 0) - контролировать некому!)
         if (isEmpty()) {
-            addResourceZeroPool();
+            addPoolItemIfEmpty();
         }
-        ThreadEnvelope threadEnvelope = getResource();
+        ThreadEnvelope threadEnvelope = getPoolItem();
         if (threadEnvelope != null) {
             threadEnvelope.run();
         }

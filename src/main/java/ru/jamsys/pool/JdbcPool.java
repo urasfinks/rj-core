@@ -39,7 +39,7 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Closab
     }
 
     @Override
-    public ConnectionEnvelope createResource() {
+    public ConnectionEnvelope createPoolItem() {
         try {
             Security security = App.context.getBean(Security.class);
             return new ConnectionEnvelope(
@@ -53,8 +53,8 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Closab
     }
 
     @Override
-    public void closeResource(ConnectionEnvelope resource) {
-        resource.close();
+    public void closePoolItem(ConnectionEnvelope connectionEnvelope) {
+        connectionEnvelope.close();
     }
 
     @Override

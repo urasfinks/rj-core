@@ -7,7 +7,7 @@ import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.component.TaskManager;
 import ru.jamsys.pool.AbstractPool;
-import ru.jamsys.pool.AbstractPoolResource;
+import ru.jamsys.pool.PoolItem;
 import ru.jamsys.pool.Pool;
 import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.rate.limit.RateLimitName;
@@ -23,7 +23,7 @@ import java.util.function.Function;
  * */
 
 @ToString(onlyExplicitlyIncluded = true)
-public class ThreadEnvelope extends AbstractPoolResource<ThreadEnvelope> {
+public class ThreadEnvelope extends PoolItem<ThreadEnvelope> {
 
     private final Thread thread;
 

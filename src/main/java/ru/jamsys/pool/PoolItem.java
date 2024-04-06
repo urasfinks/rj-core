@@ -4,11 +4,11 @@ import ru.jamsys.extension.Pollable;
 import ru.jamsys.statistic.TimeController;
 import ru.jamsys.statistic.TimeControllerImpl;
 
-public abstract class AbstractPoolResource<T> extends TimeControllerImpl implements Pollable, TimeController {
+public abstract class PoolItem<T> extends TimeControllerImpl implements Pollable, TimeController {
 
     protected final Pool<T> pool;
 
-    protected AbstractPoolResource(Pool<T> pool) {
+    protected PoolItem(Pool<T> pool) {
         this.pool = pool;
     }
 
@@ -18,8 +18,8 @@ public abstract class AbstractPoolResource<T> extends TimeControllerImpl impleme
 
     public void closeAndRemove() {
         @SuppressWarnings("unchecked")
-        T resource = (T) this;
-        pool.removeAndClose(resource);
+        T poolItem = (T) this;
+        pool.removeAndClose(poolItem);
     }
 
 }

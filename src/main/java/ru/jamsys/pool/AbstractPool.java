@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<T extends AbstractPoolResource<T>>
+public abstract class AbstractPool<T extends PoolItem<T>>
         extends TimeControllerImpl
         implements Pool<T>, RunnableInterface, KeepAlive {
 
@@ -43,7 +43,7 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
 
     protected final ConcurrentLinkedDeque<T> exceptionQueue = new ConcurrentLinkedDeque<>();
 
-    protected final ConcurrentLinkedDeque<T> resourceQueue = new ConcurrentLinkedDeque<>();
+    protected final ConcurrentLinkedDeque<T> itemQueue = new ConcurrentLinkedDeque<>();
 
     protected final AtomicBoolean isRun = new AtomicBoolean(false);
 
@@ -110,9 +110,9 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
     @SuppressWarnings("StringBufferReplaceableByString")
     public String getMomentumStatistic() {
         StringBuilder sb = new StringBuilder();
-        sb.append("resourceQueue: ").append(resourceQueue.size()).append("; ");
-        sb.append("parkQueue: ").append(parkQueue.size()).append("; ");
-        sb.append("removeQueue: ").append(removeQueue.size()).append("; ");
+        sb.append("item: ").append(itemQueue.size()).append("; ");
+        sb.append("park: ").append(parkQueue.size()).append("; ");
+        sb.append("remove: ").append(removeQueue.size()).append("; ");
         sb.append("isRun: ").append(isRun.get()).append("; ");
         sb.append("min: ").append(min).append("; ");
         sb.append("max: ").append(max.get()).append("; ");
@@ -125,7 +125,7 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
     }
 
     public boolean isEmpty() {
-        return resourceQueue.isEmpty();
+        return itemQueue.isEmpty();
     }
 
     public void setMaxSlowRiseAndFastFall(int max) {
@@ -147,60 +147,60 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
 
     @SuppressWarnings("unused")
     @Override
-    public void complete(T resource, Exception e) {
-        if (resource == null) {
+    public void complete(T poolItem, Exception e) {
+        if (poolItem == null) {
             return;
         }
         if (checkExceptionOnComplete(e)) {
-            exceptionQueue.add(resource);
+            exceptionQueue.add(poolItem);
             return;
         }
-        if (resourceQueue.size() > max.get() || !isRun.get()) {
-            if (addToRemoveWithoutCheckParking(resource)) {
+        if (itemQueue.size() > max.get() || !isRun.get()) {
+            if (addToRemoveWithoutCheckParking(poolItem)) {
                 return;
             }
         }
-        // Если взять потоки как ресурсы, то после createResource вызывается Thread.start, который после работы сам
+        // Если взять потоки как ресурсы, то после createPoolItem вызывается Thread.start, который после работы сам
         // себя вносит в пул отработанных (parkQueue)
         // Но вообще понятие ресурсов статично и они не живут собственной жизнью
-        // поэтому после createResource мы кладём их в parkQueue, что бы их могли взять желающие
+        // поэтому после createPoolItem мы кладём их в parkQueue, что бы их могли взять желающие
         // И для потоков тут получается первичный дубль
-        if (!parkQueue.contains(resource)) {
-            parkQueue.addLast(resource);
+        if (!parkQueue.contains(poolItem)) {
+            parkQueue.addLast(poolItem);
             checkPark();
         }
     }
 
     @SuppressWarnings({"unused"})
     @Override
-    public T getResource() {
+    public T getPoolItem() {
         if (!isRun.get()) {
             return null;
         }
         tpsDequeue.incrementAndGet();
         // Забираем с начала, что бы под нож улетели последние добавленные
-        T resource = parkQueue.pollFirst();
+        T poolItem = parkQueue.pollFirst();
         checkPark();
-        if (resource != null) {
-            resource.polled();
+        if (poolItem != null) {
+            poolItem.polled();
         }
-        return resource;
+        return poolItem;
     }
 
     @SuppressWarnings({"unused"})
     @Override
-    public T getResource(long timeOutMs, ThreadEnvelope threadEnvelope) {
+    public T getPoolItem(long timeOutMs, ThreadEnvelope threadEnvelope) {
         if (!isRun.get()) {
             return null;
         }
         tpsDequeue.incrementAndGet();
         long finishTimeMs = System.currentTimeMillis() + timeOutMs;
         while (isRun.get() && threadEnvelope.getIsWhile().get() && finishTimeMs > System.currentTimeMillis()) {
-            T resource = parkQueue.pollFirst();
+            T poolItem = parkQueue.pollFirst();
             checkPark();
-            if (resource != null) {
-                resource.polled();
-                return resource;
+            if (poolItem != null) {
+                poolItem.polled();
+                return poolItem;
             }
             Util.sleepMs(100);
         }
@@ -208,21 +208,21 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
     }
 
     private boolean add() {
-        if (isRun.get() && resourceQueue.size() < max.get()) {
+        if (isRun.get() && itemQueue.size() < max.get()) {
             if (!removeQueue.isEmpty()) {
-                T resource = removeQueue.pollLast();
-                if (resource != null) {
-                    parkQueue.add(resource);
+                T poolItem = removeQueue.pollLast();
+                if (poolItem != null) {
+                    parkQueue.add(poolItem);
                     checkPark();
                     return true;
                 }
             }
-            final T resource = createResource();
-            if (resource != null) {
+            final T poolItem = createPoolItem();
+            if (poolItem != null) {
                 //#1
-                resourceQueue.add(resource);
+                itemQueue.add(poolItem);
                 //#2
-                parkQueue.add(resource);
+                parkQueue.add(poolItem);
                 checkPark();
                 return true;
             }
@@ -231,21 +231,21 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
     }
 
     // Бывают случаи когда что-то прекращает работать само собой и надо просто вырезать из пула ссылки
-    public void remove(@NonNull T resource) {
-        resourceQueue.remove(resource);
-        parkQueue.remove(resource);
+    public void remove(@NonNull T poolItem) {
+        itemQueue.remove(poolItem);
+        parkQueue.remove(poolItem);
         checkPark();
-        removeQueue.remove(resource);
+        removeQueue.remove(poolItem);
     }
 
     // А бывает когда надо удалить ссылки и закрыть ресурс по причине самого пула, что ресурс не нужен
-    public void removeAndClose(@NonNull T resource) {
-        remove(resource);
-        closeResource(resource);
+    public void removeAndClose(@NonNull T poolItem) {
+        remove(poolItem);
+        closePoolItem(poolItem);
     }
 
     private void overclocking(int count) {
-        if (isRun.get() && resourceQueue.size() < max.get() && count > 0) {
+        if (isRun.get() && itemQueue.size() < max.get() && count > 0) {
             for (int i = 0; i < count; i++) {
                 if (!add()) {
                     break;
@@ -254,8 +254,8 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
         }
     }
 
-    public void addResourceZeroPool() {
-        if (min == 0 && resourceQueue.isEmpty() && parkQueue.isEmpty()) {
+    public void addPoolItemIfEmpty() {
+        if (min == 0 && itemQueue.isEmpty() && parkQueue.isEmpty()) {
             add();
         }
     }
@@ -285,7 +285,7 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
                 // должно решаться в RateLimit
                 if (getTimeWhenParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
                     overclocking(formulaAddCount.apply(1));
-                } else if (resourceQueue.size() > min) { //Кол-во больше минимума
+                } else if (itemQueue.size() > min) { //Кол-во больше минимума
                     removeLazy();
                 }
             } catch (Exception e) {
@@ -294,39 +294,39 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
         }
         // Тут происходит непосредственно удаление
         while (!removeQueue.isEmpty()) {
-            T resource = removeQueue.pollLast();
-            if (resource != null) {
-                removeAndClose(resource);
+            T poolItem = removeQueue.pollLast();
+            if (poolItem != null) {
+                removeAndClose(poolItem);
             }
         }
         //Удаление ошибочных
         while (!exceptionQueue.isEmpty()) {
-            T resource = exceptionQueue.pollLast();
-            if (resource != null) {
-                removeAndClose(resource);
+            T poolItem = exceptionQueue.pollLast();
+            if (poolItem != null) {
+                removeAndClose(poolItem);
             }
         }
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public boolean addToRemove(T resource) {
+    public boolean addToRemove(T poolItem) {
         //Удалять ресурсы из вне можно только из паркинга, когда они отработали
-        if (parkQueue.contains(resource)) {
-            parkQueue.remove(resource);
+        if (parkQueue.contains(poolItem)) {
+            parkQueue.remove(poolItem);
             checkPark(); //Если сказали, что надо удалять, то наверное противится уже не стоит
         } else {
             return false;
         }
-        return addToRemoveWithoutCheckParking(resource);
+        return addToRemoveWithoutCheckParking(poolItem);
     }
 
     // Это не явное удаление, а всего лишь маркировка, что в принципе ресурс может быть удалён
-    private boolean addToRemoveWithoutCheckParking(T resource) {
+    private boolean addToRemoveWithoutCheckParking(T poolItem) {
         // Выведено в асинхрон через keepAlive, потому что если ресурс - поток, то когда он себя возвращает
-        // Механизм closeResource пытается завершить процесс, который ждёт выполнение этой команды
+        // Механизм closePoolItem пытается завершить процесс, который ждёт выполнение этой команды
         // Грубо это deadLock получается без асинхрона
-        if (resourceQueue.size() > min && !removeQueue.contains(resource)) {
-            removeQueue.add(resource);
+        if (itemQueue.size() > min && !removeQueue.contains(poolItem)) {
+            removeQueue.add(poolItem);
             return true;
         }
         return false;
@@ -337,14 +337,14 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
             final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
             //C конца будем пробегать
-            Util.riskModifierCollection(null, parkQueue, getEmptyType(), (T resource) -> {
+            Util.riskModifierCollection(null, parkQueue, getEmptyType(), (T poolItem) -> {
                 if (maxCounterRemove.get() == 0) {
                     return;
                 }
-                if (!resource.isExpired(curTimeMs)) {
+                if (!poolItem.isExpired(curTimeMs)) {
                     return;
                 }
-                if (addToRemove(resource)) {
+                if (addToRemove(poolItem)) {
                     maxCounterRemove.decrementAndGet();
                 }
             }, true);
@@ -371,7 +371,7 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
             isRun.set(false);
             Util.riskModifierCollection(
                     null,
-                    resourceQueue,
+                    itemQueue,
                     getEmptyType(),
                     this::removeAndClose
             );
@@ -393,7 +393,7 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
                 .addField("tpsDeq", tpsDequeueFlush)
                 .addField("min", min)
                 .addField("max", max)
-                .addField("resource", resourceQueue.size())
+                .addField("item", itemQueue.size())
                 .addField("park", parkQueue.size())
                 .addField("remove", removeQueue.size())
                 .addField("sumTime", sumTime)
