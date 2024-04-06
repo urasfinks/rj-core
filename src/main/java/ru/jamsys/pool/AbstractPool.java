@@ -32,27 +32,44 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
         implements Pool<T>, RunnableInterface, KeepAlive {
 
     public static ThreadLocal<Pool<?>> context = new ThreadLocal<>();
+
     @Getter
     @ToString.Include
     public final String name;
+
     protected final ConcurrentLinkedDeque<T> parkQueue = new ConcurrentLinkedDeque<>();
+
     protected final ConcurrentLinkedDeque<T> removeQueue = new ConcurrentLinkedDeque<>();
+
     protected final ConcurrentLinkedDeque<T> exceptionQueue = new ConcurrentLinkedDeque<>();
+
     protected final ConcurrentLinkedDeque<T> resourceQueue = new ConcurrentLinkedDeque<>();
+
     protected final AtomicBoolean isRun = new AtomicBoolean(false);
+
     @Getter
     protected final RateLimit rateLimit;
+
     @Getter
     protected final RateLimit rateLimitPoolItem;
+
     private final AtomicInteger max = new AtomicInteger(0); //Максимальное кол-во ресурсов
+
     private final int min; //Минимальное кол-во ресурсов
+
     private final AtomicBoolean restartOperation = new AtomicBoolean(false);
+
     private long sumTime = -1; //Сколько времени использовались ресурсы за 3сек
+
     @Setter
     private Function<Integer, Integer> formulaAddCount = (need) -> need;
+
     @Setter
     private Function<Integer, Integer> formulaRemoveCount = (need) -> need;
+
     private long timeWhenParkIsEmpty = -1;
+
+    private final AtomicInteger tpsDequeue = new AtomicInteger(0);
 
     public AbstractPool(String name, int min, int initMax, Class<T> cls) {
         this.name = name;
@@ -160,6 +177,7 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
         if (!isRun.get()) {
             return null;
         }
+        tpsDequeue.incrementAndGet();
         // Забираем с начала, что бы под нож улетели последние добавленные
         T resource = parkQueue.pollFirst();
         checkPark();
@@ -175,6 +193,7 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
         if (!isRun.get()) {
             return null;
         }
+        tpsDequeue.incrementAndGet();
         long finishTimeMs = System.currentTimeMillis() + timeOutMs;
         while (isRun.get() && threadEnvelope.getIsWhile().get() && finishTimeMs > System.currentTimeMillis()) {
             T resource = parkQueue.pollFirst();
@@ -365,11 +384,13 @@ public abstract class AbstractPool<T extends AbstractPoolResource<T>>
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
-        if (resourceQueue.size() > 0 || parkQueue.size() > 0 || removeQueue.size() > 0) {
+        int tpsDequeueFlush = tpsDequeue.getAndSet(0);
+        if (tpsDequeueFlush > 0) {
             active();
         }
         result.add(new Statistic(parentTags, parentFields)
                 .addTag("Pool", getName())
+                .addField("tpsDeq", tpsDequeueFlush)
                 .addField("min", min)
                 .addField("max", max)
                 .addField("resource", resourceQueue.size())

@@ -10,6 +10,7 @@ import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.template.jdbc.*;
 import ru.jamsys.thread.task.JdbcRequest;
+import ru.jamsys.util.Util;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -68,6 +69,7 @@ public class ConnectionEnvelope extends AbstractPoolResource<ConnectionEnvelope>
             // из нескольких запросов, и даже если tps закончились - надо, что бы транзакция завершилась commit
             throw new Exception("RateLimit overflow");
         }
+        active();
         Template template = task.getTemplate();
         if (template == null) {
             complete(null);
@@ -105,8 +107,8 @@ public class ConnectionEnvelope extends AbstractPoolResource<ConnectionEnvelope>
     ) throws Exception {
         CompiledSqlTemplate compiledSqlTemplate = template.compile(args);
         if (debug) {
-            System.out.println(compiledSqlTemplate.getSql());
-            System.out.println(template.debug(compiledSqlTemplate));
+            Util.logConsole(compiledSqlTemplate.getSql());
+            Util.logConsole(template.debug(compiledSqlTemplate));
         }
         StatementType statementType = template.getStatementType();
         conn.setAutoCommit(statementType.isAutoCommit());
