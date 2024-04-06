@@ -24,7 +24,7 @@ class BrokerTest {
     @Test
     void testLiner() throws Exception {
         Broker<XTest> broker = App.context.getBean(Broker.class);
-        BrokerQueue b = broker.get(XTest.class.getSimpleName());
+        BrokerQueue b = broker.getItem(XTest.class.getSimpleName());
 
         b.setCyclical(false);
         b.setSizeQueue(10);
@@ -65,7 +65,7 @@ class BrokerTest {
     @Test
     void testCyclic() throws Exception {
         Broker<XTest> broker = App.context.getBean(Broker.class);
-        BrokerQueue b = broker.get(XTest.class.getSimpleName());
+        BrokerQueue b = broker.getItem(XTest.class.getSimpleName());
 
         b.setCyclical(true);
         b.setSizeQueue(10);
@@ -118,7 +118,7 @@ class BrokerTest {
     @Test
     void testReference() throws Exception {
         Broker<TaskStatistic> broker = App.context.getBean(Broker.class);
-        BrokerQueue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
+        BrokerQueue<TaskStatistic> queue = broker.getItem(TaskStatistic.class.getSimpleName());
         TaskStatistic obj = new TaskStatistic(null, null);
         TimeEnvelope<TaskStatistic> o1 = queue.addTest(obj);
         List<TaskStatistic> cloneQueue = queue.getCloneQueue(null);
@@ -132,7 +132,7 @@ class BrokerTest {
     void testReference2() throws Exception {
         AtomicBoolean isRun = new AtomicBoolean(true);
         Broker<TaskStatistic> broker = App.context.getBean(Broker.class);
-        BrokerQueue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
+        BrokerQueue<TaskStatistic> queue = broker.getItem(TaskStatistic.class.getSimpleName());
         TaskStatistic obj = new TaskStatistic(null, null);
         TaskStatistic obj2 = new TaskStatistic(null, null);
         TimeEnvelope<TaskStatistic> o1 = queue.addTest(obj);
@@ -150,7 +150,7 @@ class BrokerTest {
     @Test
     void testMaxInputTps() {
         Broker<TaskStatistic> broker = App.context.getBean(Broker.class);
-        BrokerQueue<TaskStatistic> queue = broker.get(TaskStatistic.class.getSimpleName());
+        BrokerQueue<TaskStatistic> queue = broker.getItem(TaskStatistic.class.getSimpleName());
         queue.setMaxTpsInput(1);
         TaskStatistic obj = new TaskStatistic(null, null);
         try {

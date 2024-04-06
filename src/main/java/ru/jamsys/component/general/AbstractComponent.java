@@ -1,4 +1,4 @@
-package ru.jamsys.component.base;
+package ru.jamsys.component.general;
 
 import ru.jamsys.extension.Closable;
 import ru.jamsys.extension.ComponentItemBuilder;
@@ -15,13 +15,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class Base<T extends Closable & TimeController & StatisticsCollector>
+public abstract class AbstractComponent<MO extends Closable & TimeController & StatisticsCollector>
         implements
         StatisticsCollector,
         KeepAlive,
-        ComponentItemBuilder<T> {
+        ComponentItemBuilder<MO> {
 
-    protected final Map<String, T> map = new ConcurrentHashMap<>();
+    protected final Map<String, MO> map = new ConcurrentHashMap<>();
 
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
@@ -30,7 +30,7 @@ public abstract class Base<T extends Closable & TimeController & StatisticsColle
                 threadEnvelope.getIsWhile(),
                 map,
                 new String[0],
-                (String key, T element) -> {
+                (String key, MO element) -> {
                     LinkedHashMap<String, String> newParentTags = new LinkedHashMap<>(parentTags);
                     newParentTags.put(getClass().getSimpleName(), key);
                     List<Statistic> statistics = element.flushAndGetStatistic(newParentTags, parentFields, threadEnvelope);
@@ -48,17 +48,19 @@ public abstract class Base<T extends Closable & TimeController & StatisticsColle
                 threadEnvelope.getIsWhile(),
                 map,
                 new String[0],
-                (String key, T element) -> {
+                (String key, MO element) -> {
                     if (element.isExpired()) {
                         map.remove(key);
                         element.close();
+                    } else if (element instanceof KeepAlive) {
+                        ((KeepAlive) element).keepAlive(threadEnvelope);
                     }
                 }
         );
     }
 
     @SuppressWarnings("unused")
-    public T get(String key) {
+    public MO getItem(String key) {
         //If the key was not present in the map, it maps the passed value to the key and returns null.
         if (!map.containsKey(key)) {
             map.putIfAbsent(key, build(key));
@@ -73,7 +75,7 @@ public abstract class Base<T extends Closable & TimeController & StatisticsColle
     }
 
     @SuppressWarnings("unused")
-    public boolean contains(String key) {
+    public boolean containsKey(String key) {
         return map.containsKey(key);
     }
 

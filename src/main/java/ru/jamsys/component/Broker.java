@@ -3,7 +3,7 @@ package ru.jamsys.component;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.component.base.BaseItemList;
+import ru.jamsys.component.general.AbstractComponentCollection;
 import ru.jamsys.component.item.BrokerQueue;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.statistic.TimeController;
@@ -12,11 +12,11 @@ import ru.jamsys.statistic.TimeEnvelope;
 @Component
 @Lazy
 public class Broker<MOI extends TimeController>
-        extends BaseItemList<
-                BrokerQueue<MOI>,
-                TimeEnvelope<MOI>,
-                TimeEnvelope<MOI>
-                >
+        extends AbstractComponentCollection<
+        BrokerQueue<MOI>,
+        TimeEnvelope<MOI>,
+        TimeEnvelope<MOI>
+        >
         implements StatisticsCollectorComponent {
 
     @Override
@@ -25,13 +25,13 @@ public class Broker<MOI extends TimeController>
     }
 
     public TimeEnvelope<MOI> pollLast(String key) {
-        BrokerQueue<MOI> queue = get(key);
+        BrokerQueue<MOI> queue = getItem(key);
         return queue.pollLast();
     }
 
     @SuppressWarnings("unused")
     public TimeEnvelope<MOI> pollFirst(String key) {
-        BrokerQueue<MOI> queue = get(key);
+        BrokerQueue<MOI> queue = getItem(key);
         return queue.pollFirst();
     }
 

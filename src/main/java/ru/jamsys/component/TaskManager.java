@@ -4,7 +4,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.extension.KeepAliveComponent;
 import ru.jamsys.extension.StatisticsCollectorComponent;
-import ru.jamsys.pool.AutoBalancerPool;
+import ru.jamsys.pool.AutoBalancerPools;
 import ru.jamsys.pool.ThreadPool;
 import ru.jamsys.statistic.TaskStatistic;
 import ru.jamsys.statistic.TimeEnvelope;
@@ -13,7 +13,8 @@ import ru.jamsys.thread.handler.Handler;
 import ru.jamsys.thread.task.AbstractTask;
 
 @Component
-public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAliveComponent, StatisticsCollectorComponent {
+public class TaskManager extends AutoBalancerPools<ThreadPool, ThreadEnvelope>
+        implements KeepAliveComponent, StatisticsCollectorComponent {
 
     final private Broker<AbstractTask> broker;
 
@@ -30,13 +31,9 @@ public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAli
 
     public void addTask(TimeEnvelope<AbstractTask> timeEnvelope) throws Exception {
         String taskIndex = timeEnvelope.getValue().getIndex();
-        if (!mapPool.containsKey(taskIndex)) {
-            ThreadPool threadPool = createThreadPool(taskIndex);
-            mapPool.putIfAbsent(taskIndex, threadPool);
-            threadPool.run();
-        }
+        ThreadPool threadPool = getItem(taskIndex);
         broker.add(taskIndex, timeEnvelope);
-        mapPool.get(taskIndex).wakeUp();
+        threadPool.wakeUp();
     }
 
     public void executeTask(ThreadEnvelope threadEnvelope, AbstractTask task) {
@@ -69,6 +66,13 @@ public class TaskManager extends AutoBalancerPool<ThreadPool> implements KeepAli
                     return true;
                 }
         );
+    }
+
+    @Override
+    public ThreadPool build(String key) {
+        ThreadPool threadPool = createThreadPool(key);
+        threadPool.run();
+        return threadPool;
     }
 
 }

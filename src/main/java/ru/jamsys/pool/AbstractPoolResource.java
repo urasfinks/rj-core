@@ -4,7 +4,7 @@ import ru.jamsys.extension.Pollable;
 import ru.jamsys.statistic.TimeController;
 import ru.jamsys.statistic.TimeControllerImpl;
 
-public abstract class AbstractPoolResource<T extends TimeController> extends TimeControllerImpl implements Pollable {
+public abstract class AbstractPoolResource<T> extends TimeControllerImpl implements Pollable, TimeController {
 
     protected final Pool<T> pool;
 

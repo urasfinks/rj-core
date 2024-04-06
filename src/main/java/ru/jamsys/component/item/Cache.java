@@ -3,7 +3,7 @@ package ru.jamsys.component.item;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.jamsys.extension.AddableComponentItemMap;
+import ru.jamsys.component.general.addable.AddableMapItem;
 import ru.jamsys.extension.Closable;
 import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.StatisticsCollector;
@@ -30,11 +30,9 @@ import java.util.function.Consumer;
 
 //Мы не можем себе позволить постфактум менять timeout, так как в map заносится expiredTime из .getExpiredMs()
 
-public class Cache<
-        K,
-        TEO
-        > extends TimeControllerImpl
-        implements StatisticsCollector, KeepAlive, Closable, AddableComponentItemMap<K, TimeEnvelope<TEO>, TimeEnvelope<TEO>> {
+public class Cache<K, TEO>
+        extends TimeControllerImpl
+        implements StatisticsCollector, KeepAlive, Closable, AddableMapItem<K, TimeEnvelope<TEO>, TimeEnvelope<TEO>> {
 
     @Getter
     final Map<K, TimeEnvelope<TEO>> map = new ConcurrentHashMap<>();

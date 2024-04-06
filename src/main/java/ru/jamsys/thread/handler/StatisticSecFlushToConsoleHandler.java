@@ -27,7 +27,7 @@ public class StatisticSecFlushToConsoleHandler implements Handler<StatisticSecFl
 
     @Override
     public void run(StatisticSecFlush task, ThreadEnvelope threadEnvelope) throws Exception {
-        BrokerQueue<StatisticSec> queue = broker.get(StatisticSec.class.getSimpleName());
+        BrokerQueue<StatisticSec> queue = broker.getItem(StatisticSec.class.getSimpleName());
         while (!queue.isEmpty() && threadEnvelope.getIsWhile().get()) {
             TimeEnvelope<StatisticSec> statisticSec = queue.pollFirst();
             Util.logConsole(UtilJson.toStringPretty(statisticSec.getValue(), "{}"));

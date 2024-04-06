@@ -1,11 +1,12 @@
 package ru.jamsys.pool;
 
+import ru.jamsys.extension.Closable;
 import ru.jamsys.thread.ThreadEnvelope;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-public class ThreadPool extends AbstractPool<ThreadEnvelope> {
+public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Closable {
 
     AtomicInteger counter = new AtomicInteger(1);
 
@@ -53,6 +54,11 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> {
         if (threadEnvelope != null) {
             threadEnvelope.run();
         }
+    }
+
+    @Override
+    public void close() {
+        shutdown();
     }
 
 }

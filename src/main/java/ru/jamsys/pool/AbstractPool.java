@@ -7,6 +7,7 @@ import lombok.ToString;
 import ru.jamsys.App;
 import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
+import ru.jamsys.extension.KeepAlive;
 import ru.jamsys.extension.RunnableInterface;
 import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.rate.limit.RateLimitName;
@@ -26,45 +27,32 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<T extends AbstractPoolResource<?>> extends TimeControllerImpl implements Pool<T>, RunnableInterface {
+public abstract class AbstractPool<T extends AbstractPoolResource<T>>
+        extends TimeControllerImpl
+        implements Pool<T>, RunnableInterface, KeepAlive {
 
     public static ThreadLocal<Pool<?>> context = new ThreadLocal<>();
-
-    private final AtomicInteger max = new AtomicInteger(0); //Максимальное кол-во ресурсов
-
-    private final int min; //Минимальное кол-во ресурсов
-
-    private long sumTime = -1; //Сколько времени использовались ресурсы за 3сек
-
     @Getter
     @ToString.Include
     public final String name;
-
-    @Setter
-    private Function<Integer, Integer> formulaAddCount = (need) -> need;
-
-    @Setter
-    private Function<Integer, Integer> formulaRemoveCount = (need) -> need;
-
     protected final ConcurrentLinkedDeque<T> parkQueue = new ConcurrentLinkedDeque<>();
-
     protected final ConcurrentLinkedDeque<T> removeQueue = new ConcurrentLinkedDeque<>();
-
     protected final ConcurrentLinkedDeque<T> exceptionQueue = new ConcurrentLinkedDeque<>();
-
     protected final ConcurrentLinkedDeque<T> resourceQueue = new ConcurrentLinkedDeque<>();
-
     protected final AtomicBoolean isRun = new AtomicBoolean(false);
-
-    private final AtomicBoolean restartOperation = new AtomicBoolean(false);
-
-    private long timeWhenParkIsEmpty = -1;
-
     @Getter
     protected final RateLimit rateLimit;
-
     @Getter
     protected final RateLimit rateLimitPoolItem;
+    private final AtomicInteger max = new AtomicInteger(0); //Максимальное кол-во ресурсов
+    private final int min; //Минимальное кол-во ресурсов
+    private final AtomicBoolean restartOperation = new AtomicBoolean(false);
+    private long sumTime = -1; //Сколько времени использовались ресурсы за 3сек
+    @Setter
+    private Function<Integer, Integer> formulaAddCount = (need) -> need;
+    @Setter
+    private Function<Integer, Integer> formulaRemoveCount = (need) -> need;
+    private long timeWhenParkIsEmpty = -1;
 
     public AbstractPool(String name, int min, int initMax, Class<T> cls) {
         this.name = name;
@@ -72,6 +60,11 @@ public abstract class AbstractPool<T extends AbstractPoolResource<?>> extends Ti
         this.min = min;
         rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), name);
         rateLimitPoolItem = App.context.getBean(RateLimitManager.class).get(cls, name);
+    }
+
+    @SafeVarargs
+    static <T> T[] getEmptyType(T... array) {
+        return Arrays.copyOf(array, 0);
     }
 
     @Override
@@ -195,11 +188,6 @@ public abstract class AbstractPool<T extends AbstractPoolResource<?>> extends Ti
         return null;
     }
 
-    @SafeVarargs
-    static <T> T[] getEmptyType(T... array) {
-        return Arrays.copyOf(array, 0);
-    }
-
     private boolean add() {
         if (isRun.get() && resourceQueue.size() < max.get()) {
             if (!removeQueue.isEmpty()) {
@@ -257,7 +245,7 @@ public abstract class AbstractPool<T extends AbstractPoolResource<?>> extends Ti
     // Если ресурса нет - ждите
     // keepAlive работает на статистике от ресурсов. Если у пула min = 0, этот метод не поможет разогнать
     @Override
-    public void keepAlive() {
+    public void keepAlive(ThreadEnvelope threadEnvelope) {
         if (isRun.get()) {
             try {
                 // Было изначально так: если на парковке никого нет - добавляем ресурс

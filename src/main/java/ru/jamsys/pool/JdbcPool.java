@@ -5,13 +5,14 @@ import lombok.Setter;
 import ru.jamsys.App;
 import ru.jamsys.component.PropertiesManager;
 import ru.jamsys.component.Security;
+import ru.jamsys.extension.Closable;
 import ru.jamsys.jdbc.ConnectionEnvelope;
 import ru.jamsys.template.jdbc.DefaultStatementControl;
 import ru.jamsys.template.jdbc.StatementControl;
 
 import java.sql.DriverManager;
 
-public class JdbcPool extends AbstractPool<ConnectionEnvelope> {
+public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Closable {
 
     @Getter
     private final StatementControl statementControl = new DefaultStatementControl();
@@ -66,6 +67,11 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> {
                     || msg.contains("Ошибка ввода/вывода при отправке бэкенду");
         }
         return false;
+    }
+
+    @Override
+    public void close() {
+        shutdown();
     }
 
 }

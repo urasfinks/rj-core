@@ -25,6 +25,8 @@ class ThreadEnvelopeTest {
         App.context = SpringApplication.run(App.class, args);
     }
 
+    ThreadEnvelope mock = TestThreadEnvelope.get();
+
     @Test
     public void lastRemove() {
         //Тест того, что удаление ресурсов происходит с конца
@@ -48,7 +50,7 @@ class ThreadEnvelopeTest {
         Assertions.assertEquals("TestPool-1", resource1.getName());
 
         Util.sleepMs(1001);
-        threadPool.keepAlive();
+        threadPool.keepAlive(mock);
         Assertions.assertEquals("resourceQueue: 2; parkQueue: 1; removeQueue: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
 
         ThreadEnvelope resource2 = threadPool.getResource();
@@ -65,7 +67,7 @@ class ThreadEnvelopeTest {
         resource2.setKeepAliveOnInactivityMs(1);
         Util.sleepMs(100);
         Assertions.assertEquals("resourceQueue: 2; parkQueue: 1; removeQueue: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
-        threadPool.keepAlive();
+        threadPool.keepAlive(mock);
         Assertions.assertEquals("resourceQueue: 1; parkQueue: 0; removeQueue: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
         threadPool.complete(resourceX, null);
         Assertions.assertEquals("resourceQueue: 1; parkQueue: 1; removeQueue: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
@@ -98,7 +100,7 @@ class ThreadEnvelopeTest {
         Assertions.assertEquals("resourceQueue: 1; parkQueue: 0; removeQueue: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
         Util.sleepMs(1001);
-        threadPool.keepAlive();
+        threadPool.keepAlive(mock);
 
         Assertions.assertEquals("resourceQueue: 2; parkQueue: 1; removeQueue: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
@@ -115,7 +117,7 @@ class ThreadEnvelopeTest {
         Assertions.assertEquals("resourceQueue: 2; parkQueue: 0; removeQueue: 1; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
         Util.sleepMs(1001);
-        threadPool.keepAlive();
+        threadPool.keepAlive(mock);
         //  Ожидаем увеличение ресурсов из удалённых, так как в парке нет свободных
         Assertions.assertEquals("resourceQueue: 2; parkQueue: 1; removeQueue: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
@@ -123,7 +125,7 @@ class ThreadEnvelopeTest {
         resource1.setKeepAliveOnInactivityMs(1); //По умолчанию сейча 6_000
         Util.sleepMs(100);
 
-        threadPool.keepAlive();
+        threadPool.keepAlive(mock);
         //Ожидаем срез под нож 1 ресурс
         Assertions.assertEquals("resourceQueue: 1; parkQueue: 0; removeQueue: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
@@ -222,31 +224,31 @@ class ThreadEnvelopeTest {
         Assertions.assertEquals("resourceQueue: 2; parkQueue: 0; removeQueue: 0; isRun: true; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
         Util.sleepMs(1001);
-        threadPool.keepAlive();
+        threadPool.keepAlive(mock);
         Assertions.assertEquals("resourceQueue: 3; parkQueue: 1; removeQueue: 0; isRun: true; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
-        threadPool.keepAlive();
+        threadPool.keepAlive(mock);
         //Останется 3 потому что parkQueue > 0, типо незачем наращивать если на парковке есть ресурсы
         Assertions.assertEquals("resourceQueue: 3; parkQueue: 1; removeQueue: 0; isRun: true; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
         ThreadEnvelope threadEnvelope3 = threadPool.getResource();
 
         Util.sleepMs(1001);
-        threadPool.keepAlive();
+        threadPool.keepAlive(mock);
         Assertions.assertEquals("resourceQueue: 4; parkQueue: 1; removeQueue: 0; isRun: true; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
         ThreadEnvelope threadEnvelope4 = threadPool.getResource();
 
         Util.sleepMs(1001);
-        threadPool.keepAlive();
+        threadPool.keepAlive(mock);
         Assertions.assertEquals("resourceQueue: 5; parkQueue: 1; removeQueue: 0; isRun: true; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
         ThreadEnvelope threadEnvelope5 = threadPool.getResource();
-        threadPool.keepAlive();
+        threadPool.keepAlive(mock);
         //Не должны выйти за 5
         Assertions.assertEquals("resourceQueue: 5; parkQueue: 0; removeQueue: 0; isRun: true; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
-        threadPool.keepAlive();
+        threadPool.keepAlive(mock);
         //Не должны выйти за 5
         Assertions.assertEquals("resourceQueue: 5; parkQueue: 0; removeQueue: 0; isRun: true; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
@@ -409,7 +411,7 @@ class ThreadEnvelopeTest {
         Assertions.assertEquals("resourceQueue: 0; parkQueue: 0; removeQueue: 0; isRun: true; min: 0; max: 10; ", threadPool.getMomentumStatistic());
 
         //Если пул min = 1 keepAlive ничего не сделает
-        threadPool.keepAlive();
+        threadPool.keepAlive(mock);
         Assertions.assertEquals("resourceQueue: 0; parkQueue: 0; removeQueue: 0; isRun: true; min: 0; max: 10; ", threadPool.getMomentumStatistic());
 
         //На помощь приходит старт ресурсов для таких прикольных пулов

@@ -1,8 +1,18 @@
 package ru.jamsys.pool;
 
+import org.springframework.context.ApplicationContext;
+import ru.jamsys.component.RateLimitManager;
+import ru.jamsys.component.general.AbstractComponent;
+import ru.jamsys.extension.Closable;
+import ru.jamsys.extension.RunnableInterface;
+import ru.jamsys.extension.StatisticsCollector;
+import ru.jamsys.rate.limit.RateLimit;
+import ru.jamsys.rate.limit.RateLimitName;
+import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.statistic.AvgMetric;
 import ru.jamsys.statistic.AvgMetricUnit;
 import ru.jamsys.statistic.TaskStatistic;
+import ru.jamsys.thread.ThreadEnvelope;
 import ru.jamsys.thread.task.AbstractTask;
 import ru.jamsys.util.Util;
 
@@ -14,7 +24,43 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class TaskStatisticHandler {
+public abstract class AutoBalancerPools<
+        MO extends
+                AbstractPool<MOI>
+                & Closable
+                & StatisticsCollector
+                & RunnableInterface,
+        MOI extends AbstractPoolResource<MOI>
+        >
+        extends AbstractComponent<MO> {
+
+    final private RateLimitItem rateLimitMax;
+
+    public AutoBalancerPools(ApplicationContext applicationContext) {
+        RateLimit rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClass(), null);
+        rateLimitMax = rateLimit.get(RateLimitName.POOL_SIZE);
+    }
+
+    @Override
+    public void keepAlive(ThreadEnvelope threadEnvelope) {
+        Map<String, Long> countResource = balancing(threadEnvelope.getIsWhile(), rateLimitMax.getMax());
+        Util.riskModifierMap(threadEnvelope.getIsWhile(), map, new String[0], (String key, MO pool) -> {
+            if (pool.isExpired()) {
+                map.remove(key);
+                pool.shutdown();
+                return;
+            } else if (countResource.containsKey(key)) {
+                pool.setMaxSlowRiseAndFastFall(countResource.get(key).intValue());
+            } else {
+                pool.setSumTime(0);
+            }
+            // 2024-03-20T13:42:08.002792 KeepAliveTask-1 add thread because: [KeepAliveTask] parkQueue: 0; resource: 1; remove: 0
+            // На даём сами себя оживлять
+            if (!pool.isAmI()) {
+                pool.keepAlive(threadEnvelope);
+            }
+        });
+    }
 
     final private ConcurrentLinkedDeque<TaskStatistic> queueTaskStatistics = new ConcurrentLinkedDeque<>();
 
