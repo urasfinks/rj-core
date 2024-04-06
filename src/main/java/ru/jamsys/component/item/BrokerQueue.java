@@ -191,7 +191,7 @@ public class BrokerQueue<TEO>
             throw new Exception("Element null");
         }
         if (!rateLimitTps.check(null)) {
-            throw new Exception("RateLimit BrokerQueue: " + timeEnvelope.getValue().getClass().getSimpleName() + "; max tps: " + rateLimitTps.getMax() + "; object: " + timeEnvelope);
+            throw new Exception(getExceptionInformation("RateLimitTps", timeEnvelope));
         }
         if (cyclical) {
             if (!rateLimitSize.check(queue.size() + 1)) {
@@ -199,8 +199,11 @@ public class BrokerQueue<TEO>
             }
         } else {
             if (!rateLimitSize.check(queue.size())) {
-                throw new Exception("Limit BrokerQueue: " + timeEnvelope.getValue().getClass().getSimpleName() + "; limit: " + rateLimitSize.getMax() + "; object: " + timeEnvelope);
+                throw new Exception(getExceptionInformation("RateLimitSize", timeEnvelope));
             }
+        }
+        if (timeEnvelope.isExpired()) {
+            throw new Exception(getExceptionInformation("Expired", timeEnvelope));
         }
         queue.add(timeEnvelope);
         tail.add(timeEnvelope);
@@ -208,6 +211,17 @@ public class BrokerQueue<TEO>
             tail.pollFirst();
         }
         return timeEnvelope;
+    }
+
+    @SuppressWarnings("StringBufferReplaceableByString")
+    String getExceptionInformation(String cause, TimeEnvelope<TEO> timeEnvelope) {
+        StringBuilder sb = new StringBuilder()
+                .append("Cause: ").append(cause).append("; ")
+                .append("Max tps: ").append(rateLimitTps.getMax()).append("; ")
+                .append("Limit size: ").append(rateLimitSize.getMax()).append("; ")
+                .append("Class add: ").append(timeEnvelope.getValue().getClass().getSimpleName()).append("; ")
+                .append("Object add: ").append(timeEnvelope.getValue().toString()).append("; ");
+        return sb.toString();
     }
 
 }
