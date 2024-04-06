@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 
 public class Cache<K, TEO>
         extends TimeControllerImpl
-        implements StatisticsCollector, KeepAlive, Closable, AddableMapItem<K, TimeEnvelope<TEO>, TimeEnvelope<TEO>> {
+        implements StatisticsCollector, KeepAlive, Closable, AddableMapItem<K, TimeEnvelope<TEO>> {
 
     @Getter
     final Map<K, TimeEnvelope<TEO>> map = new ConcurrentHashMap<>();
@@ -44,7 +44,7 @@ public class Cache<K, TEO>
     private Consumer<TimeEnvelope<TEO>> onExpired;
 
     @Override
-    public TimeEnvelope<TEO> add(K key, TimeEnvelope<TEO> value) throws Exception {
+    public void add(K key, TimeEnvelope<TEO> value) throws Exception {
         if (!map.containsKey(key)) {
             map.put(key, value);
             long timeMsExpiredFloor = Util.zeroLastNDigits(value.getExpiredMs(), 3);
@@ -53,7 +53,6 @@ public class Cache<K, TEO>
             }
             bucket.get(timeMsExpiredFloor).add(key);
         }
-        return value;
     }
 
     public TimeEnvelope<TEO> add(K key, TEO value, long curTime, long timeoutMs) throws Exception {

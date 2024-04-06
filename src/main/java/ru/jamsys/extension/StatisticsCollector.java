@@ -8,5 +8,7 @@ import java.util.Map;
 
 //Сбор статистики должен быть быстрым, не надо закладывать туда бизнес функции, которые влияют на функционал
 public interface StatisticsCollector {
+
     List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope);
+
 }

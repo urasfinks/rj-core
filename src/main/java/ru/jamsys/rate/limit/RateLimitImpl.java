@@ -2,39 +2,57 @@ package ru.jamsys.rate.limit;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.jamsys.component.general.addable.AddableMapItem;
+import ru.jamsys.extension.Closable;
+import ru.jamsys.extension.StatisticsCollectorMap;
 import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.rate.limit.item.RateLimitItemInstance;
-import ru.jamsys.statistic.Statistic;
-import ru.jamsys.thread.ThreadEnvelope;
+import ru.jamsys.statistic.TimeControllerImpl;
 
-import java.util.*;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class RateLimitImpl implements RateLimit {
+public class RateLimitImpl
+        extends TimeControllerImpl
+        implements StatisticsCollectorMap<RateLimitItem>, Closable, AddableMapItem<String, RateLimitItem>, RateLimit {
+
+    @Getter
+    final Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
 
     @Getter
     @Setter
     private boolean active = false;
 
-    private final Map<String, RateLimitItem> mapLimit = new LinkedHashMap<>();
+    @Override
+    public void close() {
+        setActive(false);
+    }
 
-    @SuppressWarnings({"StringBufferReplaceableByString", "unused"})
+    @Override
+    public Map<String, RateLimitItem> getMapStatisticCollectorMap() {
+        return map;
+    }
+
+    @SuppressWarnings("StringBufferReplaceableByString")
+    @Override
     public String getMomentumStatistic() {
         StringBuilder sb = new StringBuilder();
         sb.append("active: ").append(active).append("; ");
         return sb.toString();
     }
 
+    @Override
     public void reset() {
         // Рекомендуется использовать только для тестов
         active = false;
-        mapLimit.forEach((String key, RateLimitItem rateLimitItem) -> rateLimitItem.reset());
+        map.forEach((String key, RateLimitItem rateLimitItem) -> rateLimitItem.reset());
     }
 
     @Override
     public boolean check(Integer limit) {
         active = true;
-        for (String key : mapLimit.keySet()) {
-            if (!mapLimit.get(key).check(limit)) {
+        for (String key : map.keySet()) {
+            if (!map.get(key).check(limit)) {
                 return false;
             }
         }
@@ -43,20 +61,9 @@ public class RateLimitImpl implements RateLimit {
 
     @Override
     public RateLimitItem get(String name, RateLimitItemInstance rateLimitItemInstance) {
-        if (!mapLimit.containsKey(name)) {
-            mapLimit.put(name, rateLimitItemInstance.create());
+        if (!map.containsKey(name)) {
+            map.put(name, rateLimitItemInstance.create());
         }
-        return mapLimit.get(name);
-    }
-
-    @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
-        List<Statistic> result = new ArrayList<>();
-        mapLimit.forEach((String key, RateLimitItem rateLimitItem) -> {
-            HashMap<String, String> stringStringHashMap = new HashMap<>(parentTags);
-            stringStringHashMap.put("RateLimitItem", key);
-            result.addAll(rateLimitItem.flushAndGetStatistic(stringStringHashMap, parentFields, threadEnvelope));
-        });
-        return result;
+        return map.get(name);
     }
 }

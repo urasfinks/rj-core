@@ -16,7 +16,6 @@ import ru.jamsys.statistic.TimeEnvelope;
 @Lazy
 public class CacheManager<MOI> extends AbstractComponentMap<
         Cache<String, MOI>,
-        TimeEnvelope<MOI>,
         TimeEnvelope<MOI>
         > implements KeepAliveComponent, StatisticsCollectorComponent {
 

@@ -7,15 +7,13 @@ import ru.jamsys.statistic.TimeController;
 
 //MO - MapObject
 //MOI - MapObjectItem
-//MOIE - MapObjectItemEnvelop
 public abstract class AbstractComponentMap<
-        MO extends AddableMapItem<String, MOI, MOIE> & Closable & TimeController & StatisticsCollector,
-        MOI,
-        MOIE
+        MO extends AddableMapItem<String, MOI> & Closable & TimeController & StatisticsCollector,
+        MOI
         > extends AbstractComponent<MO> {
 
-    public MOIE add(String key, String key2, MOI object) throws Exception {
-        return getItem(key).add(key2, object);
+    public void add(String key, String key2, MOI object) throws Exception {
+        getItem(key).add(key2, object);
     }
 
 }

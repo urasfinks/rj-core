@@ -315,7 +315,7 @@ class ThreadEnvelopeTest {
         Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: true; isShutdown: false; ", threadEnvelope.getMomentumStatistic());
 
         //Сбросим RateLimit
-        threadPool.getRateLimitPoolItem().flushAndGetStatistic(new HashMap<>(), new HashMap<>(), null);
+        threadPool.getRateLimitPoolItem().flushAndGetStatistic(new HashMap<>(), new HashMap<>(), mock);
         //Запускаем
         Assertions.assertTrue(threadEnvelope.run());
         //Проверяем, что вышли из паркинга (countOperation удалили вообще =) )
