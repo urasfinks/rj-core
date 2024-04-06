@@ -4,12 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.App;
-import ru.jamsys.component.ExceptionHandler;
 import ru.jamsys.component.RateLimitManager;
 import ru.jamsys.component.general.addable.AddableCollectionItem;
 import ru.jamsys.extension.Closable;
 import ru.jamsys.extension.IgnoreClassFinder;
-import ru.jamsys.extension.Procedure;
 import ru.jamsys.extension.StatisticsCollector;
 import ru.jamsys.rate.limit.RateLimit;
 import ru.jamsys.rate.limit.RateLimitName;
@@ -43,9 +41,9 @@ public class BrokerQueue<TEO>
         StatisticsCollector,
         Closable,
         AddableCollectionItem<
-                                                                        TimeEnvelope<TEO>,
-                                                                        TimeEnvelope<TEO>
-                                                                        > {
+                TimeEnvelope<TEO>,
+                TimeEnvelope<TEO>
+                > {
 
     private final ConcurrentLinkedDeque<TimeEnvelope<TEO>> queue = new ConcurrentLinkedDeque<>();
 
@@ -55,8 +53,6 @@ public class BrokerQueue<TEO>
     private final AtomicInteger tpsDequeue = new AtomicInteger(0);
 
     private final AvgMetric timeInQueue = new AvgMetric();
-
-    private final List<Procedure> listProcedure = new ArrayList<>();
 
     private int sizeQueue = 3000;
 
@@ -89,11 +85,6 @@ public class BrokerQueue<TEO>
     public void setSizeQueue(int newSize) {
         sizeQueue = newSize;
         rateLimitSize.setMax(newSize);
-    }
-
-    @SuppressWarnings("unused")
-    public void onAdd(Procedure procedure) {
-        listProcedure.add(procedure);
     }
 
     private void statistic(TimeEnvelope<TEO> timeEnvelope) {
@@ -215,11 +206,6 @@ public class BrokerQueue<TEO>
         tail.add(timeEnvelope);
         if (tail.size() > sizeTail) {
             tail.pollFirst();
-        }
-        try {
-            listProcedure.forEach(Procedure::run);
-        } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
         }
         return timeEnvelope;
     }
