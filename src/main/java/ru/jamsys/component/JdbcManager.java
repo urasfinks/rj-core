@@ -18,7 +18,8 @@ import java.util.Map;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class JdbcManager extends AutoBalancerPools<JdbcPool, ConnectionEnvelope> implements KeepAliveComponent, StatisticsCollectorComponent {
+public class JdbcManager extends AutoBalancerPools<JdbcPool, ConnectionEnvelope>
+        implements KeepAliveComponent, StatisticsCollectorComponent {
 
     public JdbcManager(ApplicationContext applicationContext) {
         super(applicationContext);
