@@ -7,7 +7,6 @@ public class TestThreadEnvelope {
         ThreadPool threadPool = new ThreadPool(
                 "Test",
                 1,
-                1,
                 (ThreadEnvelope threadEnvelope) -> false
         );
         threadPool.run();

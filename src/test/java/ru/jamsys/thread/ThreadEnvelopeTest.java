@@ -13,6 +13,7 @@ import ru.jamsys.util.Util;
 
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 class ThreadEnvelopeTest {
 
@@ -33,7 +34,6 @@ class ThreadEnvelopeTest {
         ThreadPool threadPool = new ThreadPool(
                 namePool,
                 0,
-                5,
                 (ThreadEnvelope threadEnvelope) -> {
                     testCount.incrementAndGet();
                     return true;
@@ -41,6 +41,7 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE).setMax(5);
 
         Assertions.assertEquals("item: 0; park: 0; remove: 0; isRun: false; min: 0; max: 5; ", threadPool.getMomentumStatistic());
         threadPool.run();
@@ -82,7 +83,6 @@ class ThreadEnvelopeTest {
         ThreadPool threadPool = new ThreadPool(
                 namePool,
                 1,
-                5,
                 (ThreadEnvelope threadEnvelope) -> {
                     testCount.incrementAndGet();
                     return true;
@@ -90,6 +90,7 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE).setMax(5);
 
         threadPool.run();
 
@@ -138,7 +139,6 @@ class ThreadEnvelopeTest {
         ThreadPool threadPool = new ThreadPool(
                 namePool,
                 5,
-                5,
                 (ThreadEnvelope threadEnvelope) -> {
                     testCount.incrementAndGet();
                     return true;
@@ -146,6 +146,7 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE).setMax(5);
 
         threadPool.run();
 
@@ -163,12 +164,24 @@ class ThreadEnvelopeTest {
         threadPool.shutdown();
     }
 
+    boolean sleepCondition(int timeOutMs, Supplier<Boolean> supplier) {
+        long curTime = System.currentTimeMillis();
+        long finishTimeMs = curTime + timeOutMs;
+        while (finishTimeMs > System.currentTimeMillis()) {
+            if (supplier.get()) {
+                System.out.println("Time sleep ms: " + (System.currentTimeMillis() - curTime));
+                return true;
+            }
+            Util.sleepMs(100);
+        }
+        return false;
+    }
+
     @Test
     public void checkSetMaxOperation() {
         testCount.set(0);
         ThreadPool threadPool = new ThreadPool(
                 namePool,
-                5,
                 5,
                 (ThreadEnvelope threadEnvelope) -> {
                     testCount.incrementAndGet();
@@ -177,6 +190,7 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE).setMax(5);
 
         Assertions.assertEquals("item: 0; park: 0; remove: 0; isRun: false; min: 5; max: 5; ", threadPool.getMomentumStatistic());
 
@@ -187,12 +201,45 @@ class ThreadEnvelopeTest {
         threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS).setMax(625);
 
         for (int i = 0; i < 5; i++) {
-            ThreadEnvelope threadEnvelope = threadPool.getPoolItem();
-            threadEnvelope.run();
+            threadPool.getPoolItem().run();
         }
-        Util.sleepMs(1000);
+
+        Assertions.assertTrue(sleepCondition(4999, threadPool::allInPark));
 
         Assertions.assertEquals(625, testCount.get());
+
+        threadPool.shutdown();
+    }
+
+    @Test
+    public void checkSumCounter() {
+        testCount.set(0);
+        int countThread = 10;
+        ThreadPool threadPool = new ThreadPool(
+                namePool,
+                countThread,
+                (ThreadEnvelope threadEnvelope) -> {
+                    testCount.incrementAndGet();
+                    Util.sleepMs(10);
+                    return true;
+                }
+        );
+        threadPool.getRateLimit().reset();
+        threadPool.getRateLimitPoolItem().reset();
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE).setMax(countThread);
+
+        threadPool.run();
+
+        int c = 1000;
+
+        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS).setMax(c);
+
+        for (int i = 0; i < countThread; i++) {
+            threadPool.getPoolItem().run();
+        }
+        Assertions.assertTrue(sleepCondition(5000, threadPool::allInPark));
+
+        Assertions.assertEquals(c, testCount.get());
 
         threadPool.shutdown();
     }
@@ -203,7 +250,6 @@ class ThreadEnvelopeTest {
         ThreadPool threadPool = new ThreadPool(
                 namePool,
                 2,
-                5,
                 (ThreadEnvelope threadEnvelope) -> {
                     testCount.incrementAndGet();
                     return true;
@@ -211,6 +257,7 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE).setMax(5);
 
         Assertions.assertEquals("item: 0; park: 0; remove: 0; isRun: false; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
@@ -260,7 +307,7 @@ class ThreadEnvelopeTest {
         threadEnvelope4.run();
         threadEnvelope5.run();
 
-        Util.sleepMs(1000);
+        Assertions.assertTrue(sleepCondition(5000, threadPool::allInPark));
 
         Assertions.assertEquals("item: 5; park: 5; remove: 0; isRun: true; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
@@ -275,7 +322,6 @@ class ThreadEnvelopeTest {
         ThreadPool threadPool = new ThreadPool(
                 namePool,
                 1,
-                10,
                 (ThreadEnvelope threadEnvelope) -> {
                     testCount.incrementAndGet();
                     return true;
@@ -285,6 +331,7 @@ class ThreadEnvelopeTest {
         threadPool.getRateLimitPoolItem().reset();
 
         threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS).setMax(100);
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE).setMax(10);
         threadPool.run();
         ThreadEnvelope threadEnvelope = threadPool.getPoolItem();
 
@@ -295,7 +342,7 @@ class ThreadEnvelopeTest {
         Assertions.assertTrue(threadEnvelope.run());
 
         //Ждём когда поток поработает
-        Util.sleepMs(200);
+        Assertions.assertTrue(sleepCondition(5000, threadPool::allInPark));
 
         // Проверяем что поток ушёл на парковку
         Assertions.assertEquals("isInit: true; isRun: true; isWhile: true; inPark: true; isShutdown: false; ", threadEnvelope.getMomentumStatistic());
@@ -322,7 +369,7 @@ class ThreadEnvelopeTest {
         Assertions.assertTrue(threadEnvelope.getMomentumStatistic().contains("inPark: false;"));
 
         //Ждём когда поток поработает
-        Util.sleepMs(200);
+        Assertions.assertTrue(sleepCondition(5000, threadPool::allInPark));
 
 
         //Проверяем что поток реально поработал
@@ -345,7 +392,6 @@ class ThreadEnvelopeTest {
         ThreadPool threadPool = new ThreadPool(
                 namePool,
                 1,
-                10,
                 (ThreadEnvelope threadEnvelope) -> {
                     testCount.incrementAndGet();
                     return true;
@@ -353,6 +399,7 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE).setMax(10);
 
         threadPool.run();
         //При инициализации ресурс должен попадать в парковку
@@ -379,7 +426,6 @@ class ThreadEnvelopeTest {
         ThreadPool threadPool = new ThreadPool(
                 namePool,
                 0,
-                10,
                 (ThreadEnvelope threadEnvelope) -> {
                     testCount.incrementAndGet();
                     return true;
@@ -387,6 +433,7 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE).setMax(10);
 
         //Проверяем, что RateLimitItem создались в конструкторе ThreadPool
         Assertions.assertTrue(rateLimitManager.contains(ThreadPool.class, namePool));

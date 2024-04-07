@@ -15,10 +15,9 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Closable
     public ThreadPool(
             String name,
             int min,
-            int initMax,
             Function<ThreadEnvelope, Boolean> consumer
     ) {
-        super(name, min, initMax, ThreadEnvelope.class);
+        super(name, min, ThreadEnvelope.class);
         this.consumer = consumer;
     }
 

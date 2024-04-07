@@ -56,7 +56,6 @@ public class TaskManager extends AutoBalancerPools<ThreadPool, ThreadEnvelope>
         return new ThreadPool(
                 poolName,
                 0,
-                1,
                 (ThreadEnvelope threadEnvelope) -> {
                     TimeEnvelope<AbstractTask> timeEnvelope = broker.pollLast(poolName);
                     if (timeEnvelope == null) {
@@ -71,6 +70,7 @@ public class TaskManager extends AutoBalancerPools<ThreadPool, ThreadEnvelope>
     @Override
     public ThreadPool build(String key) {
         ThreadPool threadPool = createThreadPool(key);
+        threadPool.setDynamicPollSize(true);
         threadPool.run();
         return threadPool;
     }

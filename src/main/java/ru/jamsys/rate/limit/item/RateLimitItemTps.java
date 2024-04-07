@@ -47,4 +47,9 @@ public class RateLimitItemTps implements RateLimitItem {
         return result;
     }
 
+    @Override
+    public void incrementMax() {
+        max.incrementAndGet();
+    }
+
 }

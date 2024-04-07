@@ -53,8 +53,6 @@ public abstract class AbstractPool<T extends PoolItem<T>>
     @Getter
     protected final RateLimit rateLimitPoolItem;
 
-    private final AtomicInteger max = new AtomicInteger(0); //Максимальное кол-во ресурсов
-
     private final int min; //Минимальное кол-во ресурсов
 
     private final AtomicBoolean restartOperation = new AtomicBoolean(false);
@@ -71,12 +69,24 @@ public abstract class AbstractPool<T extends PoolItem<T>>
 
     private final AtomicInteger tpsDequeue = new AtomicInteger(0);
 
-    public AbstractPool(String name, int min, int initMax, Class<T> cls) {
+    private final AtomicBoolean dynamicPollSize = new AtomicBoolean(false);
+
+    private final RateLimitItem poolSize;
+
+    public AbstractPool(String name, int min, Class<T> cls) {
         this.name = name;
-        this.max.set(initMax); // Может быть изменён в runTime
         this.min = min;
         rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), name);
         rateLimitPoolItem = App.context.getBean(RateLimitManager.class).get(cls, name);
+        poolSize = rateLimit.get(RateLimitName.POOL_SIZE);
+    }
+
+    public void setDynamicPollSize(boolean dynamic) {
+        dynamicPollSize.set(dynamic);
+    }
+
+    public boolean allInPark() {
+        return parkQueue.size() == itemQueue.size();
     }
 
     @SafeVarargs
@@ -115,7 +125,7 @@ public abstract class AbstractPool<T extends PoolItem<T>>
         sb.append("remove: ").append(removeQueue.size()).append("; ");
         sb.append("isRun: ").append(isRun.get()).append("; ");
         sb.append("min: ").append(min).append("; ");
-        sb.append("max: ").append(max.get()).append("; ");
+        sb.append("max: ").append(poolSize.getMax()).append("; ");
         //sb.append("timePark0: ").append(getTimeWhenParkIsEmpty()).append("; ");
         return sb.toString();
     }
@@ -129,19 +139,16 @@ public abstract class AbstractPool<T extends PoolItem<T>>
     }
 
     public void setMaxSlowRiseAndFastFall(int max) {
-        RateLimitItem poolSize = rateLimit.get(RateLimitName.POOL_SIZE);
-        if (poolSize.check(max)) {
+        if (dynamicPollSize.get()) {
             if (max >= min) {
-                if (max > this.max.get()) { //Медленно поднимаем
-                    this.max.incrementAndGet();
+                if (max > poolSize.getMax()) { //Медленно поднимаем
+                    poolSize.incrementMax();
                 } else { //Но очень быстро опускаем
-                    this.max.set(max);
+                    poolSize.setMax(max);
                 }
             } else {
                 Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < Pool.min = " + min, true);
             }
-        } else {
-            Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " > RateLimit.max = " + poolSize.getMax(), true);
         }
     }
 
@@ -155,7 +162,7 @@ public abstract class AbstractPool<T extends PoolItem<T>>
             exceptionQueue.add(poolItem);
             return;
         }
-        if (itemQueue.size() > max.get() || !isRun.get()) {
+        if (!poolSize.check(itemQueue.size()) || !isRun.get()) {
             if (addToRemoveWithoutCheckParking(poolItem)) {
                 return;
             }
@@ -208,7 +215,7 @@ public abstract class AbstractPool<T extends PoolItem<T>>
     }
 
     private boolean add() {
-        if (isRun.get() && itemQueue.size() < max.get()) {
+        if (isRun.get() && poolSize.check(itemQueue.size())) {
             if (!removeQueue.isEmpty()) {
                 T poolItem = removeQueue.pollLast();
                 if (poolItem != null) {
@@ -245,7 +252,7 @@ public abstract class AbstractPool<T extends PoolItem<T>>
     }
 
     private void overclocking(int count) {
-        if (isRun.get() && itemQueue.size() < max.get() && count > 0) {
+        if (isRun.get() && poolSize.check(itemQueue.size()) && count > 0) {
             for (int i = 0; i < count; i++) {
                 if (!add()) {
                     break;
@@ -392,7 +399,7 @@ public abstract class AbstractPool<T extends PoolItem<T>>
                 .addTag("Pool", getName())
                 .addField("tpsDeq", tpsDequeueFlush)
                 .addField("min", min)
-                .addField("max", max)
+                .addField("max", poolSize.getMax())
                 .addField("item", itemQueue.size())
                 .addField("park", parkQueue.size())
                 .addField("remove", removeQueue.size())

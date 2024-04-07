@@ -21,7 +21,6 @@ public class GeneratorManager implements RunnableComponent {
         this.threadPool = new ThreadPool(
                 getClass().getSimpleName(),
                 1,
-                1,
                 (ThreadEnvelope threadEnvelope) -> {
                     long nextStartMs = System.currentTimeMillis();
                     AtomicBoolean isWhile = threadEnvelope.getIsWhile();

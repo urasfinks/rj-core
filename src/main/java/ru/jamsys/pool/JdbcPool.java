@@ -23,8 +23,8 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Closab
     @Setter
     private String securityAlias;
 
-    public JdbcPool(String name, int min, int max) {
-        super(name, min, max, ConnectionEnvelope.class);
+    public JdbcPool(String name, int min) {
+        super(name, min, ConnectionEnvelope.class);
         PropertiesManager propertiesManager = App.context.getBean(PropertiesManager.class);
         this.uri = propertiesManager.getProperties("rj.jdbc.uri", String.class);
         this.user = propertiesManager.getProperties("rj.jdbc.user", String.class);

@@ -12,4 +12,6 @@ public interface RateLimitItem extends StatisticsCollector {
 
     void reset(); //Используйте преимущественно для тестирования
 
+    void incrementMax();
+
 }

@@ -42,7 +42,8 @@ public class JdbcManager extends AutoBalancerPools<JdbcPool, ConnectionEnvelope>
 
     @Override
     public JdbcPool build(String key) {
-        JdbcPool jdbcPool = new JdbcPool(key, 0, 1);
+        JdbcPool jdbcPool = new JdbcPool(key, 0);
+        jdbcPool.setDynamicPollSize(true);
         jdbcPool.run();
         return jdbcPool;
     }

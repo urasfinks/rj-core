@@ -90,4 +90,9 @@ public class RateLimitItemPeriodic implements RateLimitItem {
         return statistic;
     }
 
+    @Override
+    public void incrementMax() {
+        max.incrementAndGet();
+    }
+
 }
