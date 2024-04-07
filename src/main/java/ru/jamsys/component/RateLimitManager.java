@@ -23,11 +23,13 @@ public class RateLimitManager
         extends AbstractComponentMap<RateLimit, RateLimitItem>
         implements StatisticsCollectorComponent {
 
+    public RateLimitManager() {
+        setCleanableMap(false);
+    }
+
     @Override
     public RateLimit build(String key) {
-        RateLimit rateLimit = new RateLimit();
-        rateLimit.setUnlimited();
-        return rateLimit;
+        return new RateLimit();
     }
 
     public String getKey(@NonNull Class<?> clsOwner, String key) {
