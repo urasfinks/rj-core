@@ -396,7 +396,6 @@ public abstract class AbstractPool<T extends PoolItem<T>>
             active();
         }
         result.add(new Statistic(parentTags, parentFields)
-                .addTag("Pool", getName())
                 .addField("tpsDeq", tpsDequeueFlush)
                 .addField("min", min)
                 .addField("max", poolSize.getMax())
