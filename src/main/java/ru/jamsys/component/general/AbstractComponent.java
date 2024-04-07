@@ -1,5 +1,6 @@
 package ru.jamsys.component.general;
 
+import lombok.Setter;
 import ru.jamsys.extension.*;
 import ru.jamsys.statistic.TimeController;
 import ru.jamsys.thread.ThreadEnvelope;
@@ -16,6 +17,9 @@ public abstract class AbstractComponent<MO extends Closable & TimeController & S
 
     protected final Map<String, MO> map = new ConcurrentHashMap<>();
 
+    @Setter
+    protected boolean cleanableMap = true;
+
     @Override
     public Map<String, MO> getMapStatisticCollectorMap() {
         return map;
@@ -28,7 +32,7 @@ public abstract class AbstractComponent<MO extends Closable & TimeController & S
                 map,
                 new String[0],
                 (String key, MO element) -> {
-                    if (element.isExpired()) {
+                    if (cleanableMap && element.isExpired()) {
                         map.remove(key);
                         element.close();
                     } else if (element instanceof KeepAlive) {
@@ -45,6 +49,10 @@ public abstract class AbstractComponent<MO extends Closable & TimeController & S
             map.putIfAbsent(key, build(key));
         }
         return map.get(key);
+    }
+
+    public void addItem(String key, MO object) {
+        map.putIfAbsent(key, object);
     }
 
     //Используйте только для тестирования
