@@ -172,7 +172,7 @@ public class File extends TimeControllerImpl implements Closable, StatisticsColl
 
     @Override
     public void close() {
-
+        reset();
     }
 
     @Override
