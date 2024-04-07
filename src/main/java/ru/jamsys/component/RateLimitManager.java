@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.component.general.AbstractComponentMap;
 import ru.jamsys.extension.StatisticsCollectorComponent;
 import ru.jamsys.rate.limit.RateLimit;
-import ru.jamsys.rate.limit.RateLimitImpl;
 import ru.jamsys.rate.limit.RateLimitName;
 import ru.jamsys.rate.limit.item.RateLimitItem;
 
@@ -21,14 +20,14 @@ import ru.jamsys.rate.limit.item.RateLimitItem;
 @SuppressWarnings("unused")
 @Component
 public class RateLimitManager
-        extends AbstractComponentMap<RateLimitImpl, RateLimitItem>
+        extends AbstractComponentMap<RateLimit, RateLimitItem>
         implements StatisticsCollectorComponent {
 
     @Override
-    public RateLimitImpl build(String key) {
-        RateLimitImpl rateLimitImpl = new RateLimitImpl();
-        rateLimitImpl.setUnlimited();
-        return rateLimitImpl;
+    public RateLimit build(String key) {
+        RateLimit rateLimit = new RateLimit();
+        rateLimit.setUnlimited();
+        return rateLimit;
     }
 
     public String getKey(@NonNull Class<?> clsOwner, String key) {

@@ -1,27 +1,69 @@
 package ru.jamsys.rate.limit;
 
-import ru.jamsys.extension.StatisticsCollector;
+import lombok.Getter;
+import lombok.Setter;
+import ru.jamsys.component.general.addable.AddableMapItem;
+import ru.jamsys.extension.Closable;
+import ru.jamsys.extension.StatisticsCollectorMap;
 import ru.jamsys.rate.limit.item.RateLimitItem;
 import ru.jamsys.rate.limit.item.RateLimitItemInstance;
+import ru.jamsys.statistic.TimeControllerImpl;
 
-public interface RateLimit extends StatisticsCollector {
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-    boolean isActive();
+public class RateLimit
+        extends TimeControllerImpl
+        implements StatisticsCollectorMap<RateLimitItem>, Closable, AddableMapItem<String, RateLimitItem> {
 
-    void setActive(boolean active);
+    @Getter
+    final Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
 
-    @SuppressWarnings("unused")
-    String getMomentumStatistic();
+    @Getter
+    @Setter
+    private boolean active = false;
 
-    void reset();
+    @Override
+    public void close() {
+        setActive(false);
+    }
 
-    // Необходимо соблюдать идентичность классификации вызываемых проверок
-    // Нельзя использовать MAX и TPS одновременно - всегда будет false
-    boolean check(Integer limit);
+    @Override
+    public Map<String, RateLimitItem> getMapStatisticCollectorMap() {
+        return map;
+    }
 
-    RateLimitItem get(String name, RateLimitItemInstance rateLimitItemInstance);
+    @SuppressWarnings({"StringBufferReplaceableByString", "unused"})
+    public String getMomentumStatistic() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("active: ").append(active).append("; ");
+        return sb.toString();
+    }
 
-    default RateLimitItem get(RateLimitName name) {
+    public void reset() {
+        // Рекомендуется использовать только для тестов
+        active = false;
+        map.forEach((String key, RateLimitItem rateLimitItem) -> rateLimitItem.reset());
+    }
+
+    public boolean check(Integer limit) {
+        active = true;
+        for (String key : map.keySet()) {
+            if (!map.get(key).check(limit)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public RateLimitItem get(String name, RateLimitItemInstance rateLimitItemInstance) {
+        if (!map.containsKey(name)) {
+            map.put(name, rateLimitItemInstance.create());
+        }
+        return map.get(name);
+    }
+
+    public RateLimitItem get(RateLimitName name) {
         return get(name.getNameCache(), name.getRateLimitItemInstance());
     }
 
