@@ -296,6 +296,8 @@ public class Security implements RunnableComponent {
             } catch (Exception e) {
                 App.context.getBean(ExceptionHandler.class).handler(e);
             }
+        }else{
+            Util.logConsole("file not exist");
         }
     }
 
