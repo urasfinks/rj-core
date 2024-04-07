@@ -4,10 +4,6 @@ import ru.jamsys.util.Util;
 
 public interface TimeController {
 
-    default void setUnlimited(){ //Установить безлимитище)
-        setLastActivity(Long.MAX_VALUE);
-    }
-
     default long getExpiredMs() {
         return getLastActivity() + getKeepAliveOnInactivityMs();
     }
