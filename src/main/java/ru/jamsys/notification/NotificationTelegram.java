@@ -42,7 +42,7 @@ public class NotificationTelegram implements Notification2 {
 
         this.url = propertiesManager.getProperties("rj.notification.telegram.url", String.class);
         this.securityAlias = propertiesManager.getProperties("rj.notification.telegram.security.alias", String.class);
-        this.idChat = propertiesManager.getProperties("rj.notification.android.telegram.idChat", String.class);
+        this.idChat = propertiesManager.getProperties("rj.notification.telegram.idChat", String.class);
         this.connectTimeoutMs = propertiesManager.getProperties("rj.notification.telegram.connectTimeoutMs", Integer.class);
         this.readTimeout = propertiesManager.getProperties("rj.notification.telegram.readTimeoutMs", Integer.class);
 

@@ -19,7 +19,7 @@ import java.util.Map;
 
 @Component
 @Lazy
-public class NotificationIos implements Notification {
+public class NotificationApple implements Notification {
 
     @Setter
     private String storage;
@@ -49,7 +49,7 @@ public class NotificationIos implements Notification {
 
     private boolean init = false;
 
-    public NotificationIos(VirtualFileSystem virtualFileSystem, PropertiesManager propertiesManager) {
+    public NotificationApple(VirtualFileSystem virtualFileSystem, PropertiesManager propertiesManager) {
 
         this.virtualFileSystem = virtualFileSystem;
 
@@ -64,10 +64,10 @@ public class NotificationIos implements Notification {
     }
 
     @Override
-    public NotificationIos getInstance() {
+    public NotificationApple getInstance() {
         VirtualFileSystem virtualFileSystem = App.context.getBean(VirtualFileSystem.class);
         PropertiesManager propertiesManager = App.context.getBean(PropertiesManager.class);
-        return new NotificationIos(virtualFileSystem, propertiesManager);
+        return new NotificationApple(virtualFileSystem, propertiesManager);
     }
 
     public HttpClient notify(String title, Map<String, Object> data) throws Exception {

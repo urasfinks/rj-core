@@ -2,6 +2,8 @@ package ru.jamsys.notification;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import lombok.Setter;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 import ru.jamsys.App;
 import ru.jamsys.component.PropertiesManager;
 import ru.jamsys.component.Security;
@@ -16,6 +18,8 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Component
+@Lazy
 public class NotificationAndroid implements Notification {
 
     @Setter
@@ -56,7 +60,7 @@ public class NotificationAndroid implements Notification {
         Map<String, Object> root = new LinkedHashMap<>();
         Map<String, Object> message = new LinkedHashMap<>();
         Map<String, Object> notification = new LinkedHashMap<>();
-        Map<String, Object> dataS = new LinkedHashMap<>();
+
 
         message.put("token", new String(security.get(securityAlias)));
 
@@ -64,12 +68,15 @@ public class NotificationAndroid implements Notification {
         notification.put("body", title);
         message.put("notification", notification);
 
-        dataS.put("data", data);
-        message.put("data", dataS);
+        if (!data.isEmpty()) {
+            Map<String, Object> dataS = new LinkedHashMap<>();
+            dataS.put("message", UtilJson.toString(data, "{}"));
+            message.put("data", dataS);
+        }
 
         root.put("message", message);
 
-        String postData = UtilJson.toString(root, "{}");
+        String postData = UtilJson.toStringPretty(root, "{}");
         if (postData != null) {
             httpClient.setPostData(postData.getBytes(StandardCharsets.UTF_8));
             httpClient.exec();
