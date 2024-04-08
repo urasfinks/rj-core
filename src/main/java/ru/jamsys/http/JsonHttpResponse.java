@@ -65,7 +65,7 @@ public class JsonHttpResponse {
 
     @SuppressWarnings("unused")
     public void addException(Exception e) {
-        description = e.getMessage();
+        description = e.getClass().getSimpleName() + ": " + e.getMessage();
         status = false;
         httpStatus = HttpStatus.EXPECTATION_FAILED;
         exception.add(LocalDateTime.now() + " " + getStringError(e));

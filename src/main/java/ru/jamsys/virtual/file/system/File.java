@@ -11,7 +11,6 @@ import ru.jamsys.virtual.file.system.view.FileView;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 @SuppressWarnings("unused")
@@ -126,37 +125,34 @@ public class File extends TimeControllerImpl implements Closable, StatisticsColl
         fileData = null;
     }
 
-    private void init() {
+    private void init() throws Exception {
         if (fileData == null) {
-            try {
-                fileData = loader.get();
-                Set<Class<? extends FileView>> classes = view.keySet();
-                for (Class<? extends FileView> c : classes) {
-                    view.get(c).createCache();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            fileData = loader.get();
+            Set<Class<? extends FileView>> classes = view.keySet();
+            for (Class<? extends FileView> c : classes) {
+                view.get(c).createCache();
             }
+
         }
         active();
     }
 
-    public byte[] getBytes() {
+    public byte[] getBytes() throws Exception {
         init();
         return fileData;
     }
 
     @SuppressWarnings("unused")
-    public String getString(String charset) throws UnsupportedEncodingException {
+    public String getString(String charset) throws Exception {
         return new String(getBytes(), charset);
     }
 
-    public InputStream getInputStream() {
+    public InputStream getInputStream() throws Exception {
         return new ByteArrayInputStream(getBytes());
     }
 
     @SuppressWarnings("unused")
-    public String getBase64() {
+    public String getBase64() throws Exception {
         return UtilBase64.base64Encode(getBytes(), true);
     }
 

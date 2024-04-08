@@ -1,12 +1,11 @@
 package ru.jamsys.notification;
 
-import ru.jamsys.http.HttpClient;
-
-import java.util.Map;
+import ru.jamsys.http.JsonHttpResponse;
 
 public interface Notification {
 
-    HttpClient notify(String title, Map<String, Object> data) throws Exception;
+    @SuppressWarnings("unused")
+    JsonHttpResponse notify(String title, Object data, String to);
 
     Notification getInstance();
 

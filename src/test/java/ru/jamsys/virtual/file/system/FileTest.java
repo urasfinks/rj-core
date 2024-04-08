@@ -9,8 +9,6 @@ import ru.jamsys.component.Security;
 import ru.jamsys.component.VirtualFileSystem;
 import ru.jamsys.util.UtilFile;
 
-import java.io.UnsupportedEncodingException;
-
 class FileTest {
     @BeforeAll
     static void beforeAll() {
@@ -37,7 +35,7 @@ class FileTest {
     }
 
     @Test
-    public void testGetString() throws UnsupportedEncodingException {
+    public void testGetString() throws Exception {
         File file = new File("/hello/world/1.txt", FileLoaderFactory.fromString("Hello world", "UTF-8"));
         Assertions.assertEquals("Hello world", file.getString("UTF-8"), "#1");
 
@@ -46,13 +44,13 @@ class FileTest {
     }
 
     @Test
-    public void testGetBase64() {
+    public void testGetBase64() throws Exception {
         File file = new File("/hello/world/1.txt", FileLoaderFactory.fromString("Hello world", "UTF-8"));
         Assertions.assertEquals("SGVsbG8gd29ybGQ=", file.getBase64(), "#1");
     }
 
     @Test
-    public void testFromFileSystem() throws UnsupportedEncodingException {
+    public void testFromFileSystem() throws Exception {
         File file = new File("/hello/world/1.txt", FileLoaderFactory.fromFileSystem("pom.xml"));
         Assertions.assertTrue(file.getString("UTF-8").length() > 0, "#1");
     }

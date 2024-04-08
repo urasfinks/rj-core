@@ -8,6 +8,7 @@ import ru.jamsys.component.PropertiesManager;
 import ru.jamsys.component.VirtualFileSystem;
 import ru.jamsys.http.HttpClient;
 import ru.jamsys.http.HttpClientNewImpl;
+import ru.jamsys.http.JsonHttpResponse;
 import ru.jamsys.util.UtilJson;
 import ru.jamsys.virtual.file.system.File;
 import ru.jamsys.virtual.file.system.FileLoaderFactory;
@@ -64,48 +65,64 @@ public class NotificationApple implements Notification {
     }
 
     @Override
+    public JsonHttpResponse notify(String title, Object data, String device) {
+        JsonHttpResponse jRet = new JsonHttpResponse();
+        if (jRet.isStatus() && device == null) {
+            jRet.addException("device is null");
+        }
+        if (jRet.isStatus()) {
+            if (!init) {
+                virtualFileSystem.add(new File(virtualPath, FileLoaderFactory.fromFileSystem(storage)));
+                init = true;
+            }
+        }
+
+        HttpClient httpClient = null;
+
+        if (jRet.isStatus()) {
+            httpClient = new HttpClientNewImpl();
+            httpClient.setUrl(url + device);
+            Map<String, Object> root = new LinkedHashMap<>();
+            Map<String, Object> aps = new LinkedHashMap<>();
+            aps.put("alert", title);
+            root.put("aps", aps);
+            root.put("message", data);
+
+            String postData = UtilJson.toString(root, "{}");
+            if (postData != null) {
+                httpClient.setPostData(postData.getBytes(StandardCharsets.UTF_8));
+                httpClient.exec();
+            }
+
+            httpClient.setRequestHeader("apns-push-type", pushType);
+            httpClient.setRequestHeader("apns-expiration", expiration);
+            httpClient.setRequestHeader("apns-priority", priority);
+            httpClient.setRequestHeader("apns-topic", topic);
+
+            try {
+                httpClient.setKeyStore(
+                        virtualFileSystem.getItem(virtualPath),
+                        FileViewKeyStore.prop.SECURITY_KEY.name(), securityAlias,
+                        FileViewKeyStore.prop.TYPE.name(), "PKCS12"
+                );
+            } catch (Exception e) {
+                jRet.addException(e);
+            }
+        }
+        if (jRet.isStatus() && httpClient != null) {
+            httpClient.exec();
+        }
+        if (jRet.isStatus() && httpClient != null && httpClient.getException() != null) {
+            jRet.addException(httpClient.getException());
+        }
+        return jRet;
+    }
+
+    @Override
     public NotificationApple getInstance() {
         VirtualFileSystem virtualFileSystem = App.context.getBean(VirtualFileSystem.class);
         PropertiesManager propertiesManager = App.context.getBean(PropertiesManager.class);
         return new NotificationApple(virtualFileSystem, propertiesManager);
-    }
-
-    public HttpClient notify(String title, Map<String, Object> data) throws Exception {
-        if (!init) {
-            virtualFileSystem.add(new File(virtualPath, FileLoaderFactory.fromFileSystem(storage)));
-            init = true;
-        }
-        File appleCert = virtualFileSystem.getItem(virtualPath);
-
-        HttpClient httpClient = new HttpClientNewImpl();
-        httpClient.setUrl(url);
-
-
-        Map<String, Object> root = new LinkedHashMap<>();
-        Map<String, Object> aps = new LinkedHashMap<>();
-        aps.put("alert", title);
-        root.put("aps", aps);
-        root.put("message", data);
-
-        String postData = UtilJson.toString(root, "{}");
-        if (postData != null) {
-            httpClient.setPostData(postData.getBytes(StandardCharsets.UTF_8));
-            httpClient.exec();
-        }
-
-        httpClient.setRequestHeader("apns-push-type", pushType);
-        httpClient.setRequestHeader("apns-expiration", expiration);
-        httpClient.setRequestHeader("apns-priority", priority);
-        httpClient.setRequestHeader("apns-topic", topic);
-
-        httpClient.setKeyStore(
-                appleCert,
-                FileViewKeyStore.prop.SECURITY_KEY.name(), securityAlias,
-                FileViewKeyStore.prop.TYPE.name(), "PKCS12"
-        );
-
-        httpClient.exec();
-        return httpClient;
     }
 
 }

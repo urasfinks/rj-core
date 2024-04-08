@@ -17,15 +17,12 @@ import java.util.Map;
 
 @Component
 @Lazy
-public class NotificationTelegram implements Notification2 {
+public class NotificationTelegram implements Notification {
 
     private final Security security;
 
     @Setter
     private String securityAlias;
-
-    @Setter
-    private String idChat;
 
     @Setter
     private String url;
@@ -42,18 +39,13 @@ public class NotificationTelegram implements Notification2 {
 
         this.url = propertiesManager.getProperties("rj.notification.telegram.url", String.class);
         this.securityAlias = propertiesManager.getProperties("rj.notification.telegram.security.alias", String.class);
-        this.idChat = propertiesManager.getProperties("rj.notification.telegram.idChat", String.class);
         this.connectTimeoutMs = propertiesManager.getProperties("rj.notification.telegram.connectTimeoutMs", Integer.class);
         this.readTimeout = propertiesManager.getProperties("rj.notification.telegram.readTimeoutMs", Integer.class);
 
     }
 
     @Override
-    public JsonHttpResponse notify(String title, Object data) {
-        return notify(idChat, title, data);
-    }
-
-    public JsonHttpResponse notify(String idChat, String title, Object data) {
+    public JsonHttpResponse notify(String title, Object data, String idChat) {
         JsonHttpResponse jRet = new JsonHttpResponse();
         if (jRet.isStatus() && idChat == null) {
             jRet.addException("idChatTelegram is null");
@@ -101,7 +93,7 @@ public class NotificationTelegram implements Notification2 {
     }
 
     @Override
-    public Notification2 getInstance() {
+    public Notification getInstance() {
         Security security = App.context.getBean(Security.class);
         PropertiesManager propertiesManager = App.context.getBean(PropertiesManager.class);
         return new NotificationTelegram(security, propertiesManager);
