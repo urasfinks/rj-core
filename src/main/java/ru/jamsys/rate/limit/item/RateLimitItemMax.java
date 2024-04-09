@@ -41,6 +41,11 @@ public class RateLimitItemMax implements RateLimitItem {
     }
 
     @Override
+    public String getMomentumStatistic() {
+        return "{max: " + max.get() + "}";
+    }
+
+    @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, ThreadEnvelope threadEnvelope) {
         List<Statistic> result = new ArrayList<>();
         result.add(new Statistic(parentTags, parentFields).addField("max", max.get()));

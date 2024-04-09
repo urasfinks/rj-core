@@ -23,6 +23,8 @@ class ThreadEnvelopeTest {
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{};
+        //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
+        // который будет сбрасывать счётчики tps и тесты будут разваливаться
         App.context = SpringApplication.run(App.class, args);
     }
 

@@ -36,8 +36,8 @@ public class RateLimitItemPeriodic implements RateLimitItem {
 
     @Override
     public boolean check(@Nullable Integer limit) {
-        tpu.incrementAndGet();
-        return max.get() < 0 || (max.get() > 0 && tpu.get() <= max.get()); // -1 = infinity; 0 = reject
+        int curTpu = tpu.incrementAndGet();
+        return max.get() < 0 || (max.get() > 0 && curTpu <= max.get()); // -1 = infinity; 0 = reject
     }
 
     @Override
@@ -93,6 +93,11 @@ public class RateLimitItemPeriodic implements RateLimitItem {
     @Override
     public void incrementMax() {
         max.incrementAndGet();
+    }
+
+    @Override
+    public String getMomentumStatistic() {
+        return "{period: " + periodName + "; max: " + max.get() + "; tpu: " + tpu.get() + "}";
     }
 
 }

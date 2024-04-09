@@ -14,4 +14,6 @@ public interface RateLimitItem extends StatisticsCollector {
 
     void incrementMax();
 
+    String getMomentumStatistic();
+
 }

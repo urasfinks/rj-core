@@ -33,10 +33,13 @@ public class RateLimit
         return map;
     }
 
-    @SuppressWarnings({"StringBufferReplaceableByString", "unused"})
+    @SuppressWarnings({"unused"})
     public String getMomentumStatistic() {
         StringBuilder sb = new StringBuilder();
         sb.append("active: ").append(active).append("; ");
+        for (String key : map.keySet()) {
+            sb.append(key).append(": ").append(map.get(key).getMomentumStatistic());
+        }
         return sb.toString();
     }
 

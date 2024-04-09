@@ -17,8 +17,8 @@ public class RateLimitItemTps implements RateLimitItem {
 
     @Override
     public boolean check(@Nullable Integer limit) {
-        tps.incrementAndGet();
-        return max.get() < 0 || (max.get() > 0 && tps.get() <= max.get()); // -1 = infinity; 0 = reject
+        int curTps = tps.incrementAndGet();
+        return max.get() < 0 || (max.get() > 0 && curTps <= max.get()); // -1 = infinity; 0 = reject
     }
 
     @Override
@@ -50,6 +50,11 @@ public class RateLimitItemTps implements RateLimitItem {
     @Override
     public void incrementMax() {
         max.incrementAndGet();
+    }
+
+    @Override
+    public String getMomentumStatistic() {
+        return "{max: " + max.get() + "; tps: " + tps.get() + "}";
     }
 
 }
