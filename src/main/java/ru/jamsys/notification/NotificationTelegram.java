@@ -28,6 +28,9 @@ public class NotificationTelegram implements Notification {
     private String url;
 
     @Setter
+    private String idChat;
+
+    @Setter
     private int connectTimeoutMs;
 
     @Setter
@@ -38,6 +41,7 @@ public class NotificationTelegram implements Notification {
         this.security = security;
 
         this.url = propertiesManager.getProperties("rj.notification.telegram.url", String.class);
+        this.idChat = propertiesManager.getProperties("rj.notification.telegram.idChat", String.class);
         this.securityAlias = propertiesManager.getProperties("rj.notification.telegram.security.alias", String.class);
         this.connectTimeoutMs = propertiesManager.getProperties("rj.notification.telegram.connectTimeoutMs", Integer.class);
         this.readTimeout = propertiesManager.getProperties("rj.notification.telegram.readTimeoutMs", Integer.class);
@@ -90,6 +94,10 @@ public class NotificationTelegram implements Notification {
             }
         }
         return jRet;
+    }
+
+    public JsonHttpResponse notify(String title, Object data) {
+        return notify(title, data, idChat);
     }
 
     @Override
