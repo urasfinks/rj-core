@@ -5,6 +5,9 @@
     "server.ssl.key-store-password": "",
     "jdbc.postgresql.password": "",
     "google.recaptcha.secret": "",
-    "influx.token": ""
+    "influx.token": "",
+    "apple.notification.cert.password": "",
+    "android.notification.token": "",
+    "email.notification.password": ""
   }
 }

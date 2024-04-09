@@ -16,7 +16,7 @@ class NotificationTest {
 
     @SuppressWarnings("unused")
     void telegramSend() {
-        NotificationTelegram notificationTelegram = App.context.getBean(NotificationTelegram.class);
+        Notification notificationTelegram = App.context.getBean(NotificationTelegram.class);
         JsonHttpResponse notify = notificationTelegram.notify("Hello", "world", "290029195");
         System.out.println(notify);
     }
@@ -24,10 +24,10 @@ class NotificationTest {
     @SuppressWarnings("unused")
     void appleSend() {
         try {
-            NotificationApple NotificationApple = App.context.getBean(NotificationApple.class);
+            Notification notificationApple = App.context.getBean(NotificationApple.class);
             HashMap<String, Object> data = new HashMap<>();
             data.put("x1", 1);
-            JsonHttpResponse helloKitty = NotificationApple.notify("Hello Kitty", data, "e81156eeb16246fd0498c53f55f870dfc5892806dde0a6e073cbf586e761382c");
+            JsonHttpResponse helloKitty = notificationApple.notify("Hello Kitty", data, "e81156eeb16246fd0498c53f55f870dfc5892806dde0a6e073cbf586e761382c");
             System.out.println(helloKitty);
         } catch (Exception e) {
             e.printStackTrace();
@@ -38,10 +38,26 @@ class NotificationTest {
     @SuppressWarnings("unused")
     void androidSend() {
         try {
-            NotificationAndroid NotificationAndroid = App.context.getBean(NotificationAndroid.class);
+            Notification notificationAndroid = App.context.getBean(NotificationAndroid.class);
             HashMap<String, Object> data = new HashMap<>();
             data.put("x1", 1);
-            JsonHttpResponse helloKitty = NotificationAndroid.notify("Hello Kitty", data, "fyP9dxiISLW9OLJfsb73kT:APA91bGSXWN4hR9_OdXEi3THPTNs-RAsMjASA9_XXXMpq5yjkUQAG8CUvucSopPb9xcffQgyMG5K-yoA0p5JS3DyMVVTw618a566zQdvVS_a9Tmr_ktHlI5ZY5aQ60HjkhWWzI6AwsdB");
+            JsonHttpResponse helloKitty = notificationAndroid.notify("Hello Kitty", data, "fyP9dxiISLW9OLJfsb73kT:APA91bGSXWN4hR9_OdXEi3THPTNs-RAsMjASA9_XXXMpq5yjkUQAG8CUvucSopPb9xcffQgyMG5K-yoA0p5JS3DyMVVTw618a566zQdvVS_a9Tmr_ktHlI5ZY5aQ60HjkhWWzI6AwsdB");
+            System.out.println(helloKitty);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    void emailSend() {
+        try {
+            NotificationEmail notificationEmail = App.context.getBean(NotificationEmail.class);
+            HashMap<String, String> data = new HashMap<>();
+            data.put("code", "321");
+            JsonHttpResponse helloKitty = notificationEmail.notify(
+                    "Hello Kitty",
+                    notificationEmail.compileTemplate(data),
+                    "urasfinks@yandex.ru");
             System.out.println(helloKitty);
         } catch (Exception e) {
             e.printStackTrace();

@@ -9,6 +9,13 @@ import ru.jamsys.App;
 import ru.jamsys.component.PropertiesManager;
 import ru.jamsys.component.Security;
 import ru.jamsys.http.JsonHttpResponse;
+import ru.jamsys.template.twix.Template;
+import ru.jamsys.template.twix.TemplateItem;
+import ru.jamsys.util.UtilFileResource;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 @Component
@@ -19,6 +26,9 @@ public class NotificationEmail implements Notification {
 
     @Setter
     private String host;
+
+    @Setter
+    private String template;
 
     @Setter
     private String user;
@@ -41,9 +51,13 @@ public class NotificationEmail implements Notification {
     @Setter
     private boolean ssl;
 
+    List<TemplateItem> parsedTemplate = null;
+
     public NotificationEmail(Security security, PropertiesManager propertiesManager) {
 
         this.security = security;
+
+        this.template = propertiesManager.getProperties("rj.notification.email.template", String.class);
 
         this.host = propertiesManager.getProperties("rj.notification.email.host", String.class);
         this.user = propertiesManager.getProperties("rj.notification.email.user", String.class);
@@ -58,14 +72,38 @@ public class NotificationEmail implements Notification {
 
     }
 
+    public String compileTemplate(Map<String, String> args) throws IOException {
+        if (parsedTemplate == null) {
+            parsedTemplate = Template.getParsedTemplate(UtilFileResource.getAsString(template));
+        }
+        return Template.template(parsedTemplate, args);
+    }
+
     @Override
     public JsonHttpResponse notify(String title, Object data, String to) {
+        return notify(title, null, data.toString(), to);
+    }
+
+    public JsonHttpResponse notify(String title, String data, String dataHtml, String to) {
         JsonHttpResponse jRet = new JsonHttpResponse();
         HtmlEmail email = new HtmlEmail();
         try {
             setting(email);
         } catch (Exception e) {
             jRet.addException(e);
+        }
+        if (jRet.isStatus()) {
+            try {
+                email.addTo(to);
+                email.setSubject(title);
+                if (data != null) {
+                    email.setTextMsg(data);
+                }
+                email.setHtmlMsg(dataHtml);
+                email.send();
+            } catch (Exception e) {
+                jRet.addException(e);
+            }
         }
         return jRet;
     }
