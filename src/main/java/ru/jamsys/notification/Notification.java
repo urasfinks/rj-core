@@ -1,11 +1,11 @@
 package ru.jamsys.notification;
 
-import ru.jamsys.http.JsonHttpResponse;
+import ru.jamsys.http.HttpResponseEnvelope;
 
 public interface Notification {
 
     @SuppressWarnings("unused")
-    JsonHttpResponse notify(String title, Object data, String to);
+    HttpResponseEnvelope notify(String title, Object data, String to);
 
     Notification getInstance();
 

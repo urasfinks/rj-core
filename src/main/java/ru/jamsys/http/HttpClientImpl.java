@@ -123,8 +123,13 @@ public class HttpClientImpl implements HttpClient {
             this.headerResponse = httpURLConnection.getHeaderFields();
             return httpURLConnection.getInputStream();
         } catch (Exception e) {
-            return httpURLConnection.getErrorStream();
+            try {
+                return httpURLConnection.getErrorStream();
+            } catch (Exception e2) {
+                e.printStackTrace();
+            }
         }
+        return null;
     }
 
     private void configureSsl(HttpsURLConnection httpsURLConnection) {

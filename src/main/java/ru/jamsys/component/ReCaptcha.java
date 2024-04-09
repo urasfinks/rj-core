@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import ru.jamsys.http.JsonHttpResponse;
+import ru.jamsys.http.HttpResponseEnvelope;
 import ru.jamsys.util.JsonEnvelope;
 import ru.jamsys.util.UtilJson;
 
@@ -36,23 +36,23 @@ public class ReCaptcha {
     }
 
     @SuppressWarnings("unused")
-    public JsonHttpResponse isValid(String captchaValue) {
+    public HttpResponseEnvelope isValid(String captchaValue) {
         return isValid(captchaValue, null);
     }
 
-    public JsonHttpResponse isValid(String captchaValue, @Nullable JsonHttpResponse refJRet) {
-        JsonHttpResponse jRet = refJRet != null ? refJRet : new JsonHttpResponse();
+    public HttpResponseEnvelope isValid(String captchaValue, @Nullable HttpResponseEnvelope refJRet) {
+        HttpResponseEnvelope httpResponseEnvelope = refJRet != null ? refJRet : new HttpResponseEnvelope();
         try {
-            if (jRet.isStatus() && securityAlias.isEmpty()) {
-                jRet.addException("Ключ reCaptchaSecretKey не определён");
+            if (httpResponseEnvelope.isStatus() && securityAlias.isEmpty()) {
+                httpResponseEnvelope.addException("Ключ reCaptchaSecretKey не определён");
             }
-            if (jRet.isStatus()) {
+            if (httpResponseEnvelope.isStatus()) {
                 char[] chars = security.get(securityAlias);
                 if (chars == null) {
-                    jRet.addException("Приватное значение ключа reCaptchaSecretKey пустое");
+                    httpResponseEnvelope.addException("Приватное значение ключа reCaptchaSecretKey пустое");
                 }
             }
-            if (jRet.isStatus()) {
+            if (httpResponseEnvelope.isStatus()) {
                 String url = "https://www.google.com/recaptcha/api/siteverify",
                         params = "secret=" + new String(security.get(securityAlias)) + "&response=" + captchaValue;
 
@@ -79,18 +79,18 @@ public class ReCaptcha {
                 String response = sb.toString();
                 JsonEnvelope<Map<Object, Object>> mapWrapJsonToObject = UtilJson.toMap(response);
                 if (mapWrapJsonToObject.getException() != null) {
-                    jRet.addException(mapWrapJsonToObject.getException());
+                    httpResponseEnvelope.addException(mapWrapJsonToObject.getException());
                 }
-                jRet.addData("reCaptchaResponse", mapWrapJsonToObject.getObject());
+                httpResponseEnvelope.addData("reCaptchaResponse", mapWrapJsonToObject.getObject());
                 Boolean success = (Boolean) mapWrapJsonToObject.getObject().get("success");
                 if (success == null || !success) {
-                    jRet.addException("reCaptcha не пройдена");
+                    httpResponseEnvelope.addException("reCaptcha не пройдена");
                 }
             }
         } catch (Exception e) {
-            jRet.addException(e);
+            httpResponseEnvelope.addException(e);
         }
-        return jRet;
+        return httpResponseEnvelope;
     }
 
 }

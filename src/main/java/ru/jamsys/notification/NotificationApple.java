@@ -8,7 +8,7 @@ import ru.jamsys.component.PropertiesManager;
 import ru.jamsys.component.VirtualFileSystem;
 import ru.jamsys.http.HttpClient;
 import ru.jamsys.http.HttpClientNewImpl;
-import ru.jamsys.http.JsonHttpResponse;
+import ru.jamsys.http.HttpResponseEnvelope;
 import ru.jamsys.util.UtilJson;
 import ru.jamsys.virtual.file.system.File;
 import ru.jamsys.virtual.file.system.FileLoaderFactory;
@@ -74,12 +74,12 @@ public class NotificationApple implements Notification {
     }
 
     @Override
-    public JsonHttpResponse notify(String title, Object data, String device) {
-        JsonHttpResponse jRet = new JsonHttpResponse();
-        if (jRet.isStatus() && device == null) {
-            jRet.addException("device is null");
+    public HttpResponseEnvelope notify(String title, Object data, String device) {
+        HttpResponseEnvelope httpResponseEnvelope = new HttpResponseEnvelope();
+        if (httpResponseEnvelope.isStatus() && device == null) {
+            httpResponseEnvelope.addException("device is null");
         }
-        if (jRet.isStatus()) {
+        if (httpResponseEnvelope.isStatus()) {
             if (!init) {
                 virtualFileSystem.add(new File(virtualPath, FileLoaderFactory.fromFileSystem(storage)));
                 init = true;
@@ -88,7 +88,7 @@ public class NotificationApple implements Notification {
 
         HttpClient httpClient = null;
 
-        if (jRet.isStatus()) {
+        if (httpResponseEnvelope.isStatus()) {
             httpClient = new HttpClientNewImpl();
             httpClient.setUrl(url + device);
             httpClient.setConnectTimeoutMillis(connectTimeoutMs);
@@ -118,16 +118,16 @@ public class NotificationApple implements Notification {
                         FileViewKeyStore.prop.TYPE.name(), "PKCS12"
                 );
             } catch (Exception e) {
-                jRet.addException(e);
+                httpResponseEnvelope.addException(e);
             }
         }
-        if (jRet.isStatus() && httpClient != null) {
+        if (httpResponseEnvelope.isStatus() && httpClient != null) {
             httpClient.exec();
         }
-        if (jRet.isStatus() && httpClient != null && httpClient.getException() != null) {
-            jRet.addException(httpClient.getException());
+        if (httpResponseEnvelope.isStatus() && httpClient != null) {
+            httpClient.getHttpResponseEnvelope(httpResponseEnvelope);
         }
-        return jRet;
+        return httpResponseEnvelope;
     }
 
     @Override
