@@ -33,11 +33,19 @@ public class NotificationAndroid implements Notification {
 
     private final String[] messagingScope;
 
+    @Setter
+    private int connectTimeoutMs;
+
+    @Setter
+    private int readTimeout;
+
     public NotificationAndroid(PropertiesManager propertiesManager) {
         this.url = propertiesManager.getProperties("rj.notification.android.url", String.class);
         this.messagingScope = new String[]{propertiesManager.getProperties("rj.notification.android.messaging.scope", String.class)};
         this.storageCredentials = propertiesManager.getProperties("rj.notification.android.storage.credentials", String.class);
         this.applicationName = propertiesManager.getProperties("rj.notification.android.application.name", String.class);
+        this.connectTimeoutMs = propertiesManager.getProperties("rj.notification.android.connectTimeoutMs", Integer.class);
+        this.readTimeout = propertiesManager.getProperties("rj.notification.android.readTimeoutMs", Integer.class);
     }
 
     private String getAccessToken() throws IOException {
@@ -63,7 +71,10 @@ public class NotificationAndroid implements Notification {
         if (jRet.isStatus()) {
             httpClient = new HttpClientNewImpl();
             httpClient.setUrl(url);
+            httpClient.setConnectTimeoutMillis(connectTimeoutMs);
+            httpClient.setReadTimeoutMillis(readTimeout);
             httpClient.setRequestHeader("Content-type", "application/json");
+
             try {
                 httpClient.setRequestHeader("Authorization", "Bearer " + getAccessToken());
             } catch (Exception e) {

@@ -50,18 +50,27 @@ public class NotificationApple implements Notification {
 
     private boolean init = false;
 
+    @Setter
+    private int connectTimeoutMs;
+
+    @Setter
+    private int readTimeout;
+
     public NotificationApple(VirtualFileSystem virtualFileSystem, PropertiesManager propertiesManager) {
 
         this.virtualFileSystem = virtualFileSystem;
 
-        this.url = propertiesManager.getProperties("rj.notification.ios.url", String.class);
-        this.storage = propertiesManager.getProperties("rj.notification.ios.storage", String.class);
-        this.virtualPath = propertiesManager.getProperties("rj.notification.ios.virtual.path", String.class);
-        this.securityAlias = propertiesManager.getProperties("rj.notification.ios.security.alias", String.class);
-        this.topic = propertiesManager.getProperties("rj.notification.ios.topic", String.class);
-        this.priority = propertiesManager.getProperties("rj.notification.ios.priority", String.class);
-        this.expiration = propertiesManager.getProperties("rj.notification.ios.expiration", String.class);
-        this.pushType = propertiesManager.getProperties("rj.notification.ios.pushType", String.class);
+        this.url = propertiesManager.getProperties("rj.notification.apple.url", String.class);
+        this.storage = propertiesManager.getProperties("rj.notification.apple.storage", String.class);
+        this.virtualPath = propertiesManager.getProperties("rj.notification.apple.virtual.path", String.class);
+        this.securityAlias = propertiesManager.getProperties("rj.notification.apple.security.alias", String.class);
+        this.topic = propertiesManager.getProperties("rj.notification.apple.topic", String.class);
+        this.priority = propertiesManager.getProperties("rj.notification.apple.priority", String.class);
+        this.expiration = propertiesManager.getProperties("rj.notification.apple.expiration", String.class);
+        this.pushType = propertiesManager.getProperties("rj.notification.apple.pushType", String.class);
+        this.connectTimeoutMs = propertiesManager.getProperties("rj.notification.apple.connectTimeoutMs", Integer.class);
+        this.readTimeout = propertiesManager.getProperties("rj.notification.apple.readTimeoutMs", Integer.class);
+
     }
 
     @Override
@@ -82,6 +91,9 @@ public class NotificationApple implements Notification {
         if (jRet.isStatus()) {
             httpClient = new HttpClientNewImpl();
             httpClient.setUrl(url + device);
+            httpClient.setConnectTimeoutMillis(connectTimeoutMs);
+            httpClient.setReadTimeoutMillis(readTimeout);
+
             Map<String, Object> root = new LinkedHashMap<>();
             Map<String, Object> aps = new LinkedHashMap<>();
             aps.put("alert", title);
