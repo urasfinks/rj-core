@@ -10,7 +10,7 @@ class ReCaptchaTest {
     @BeforeAll
     static void beforeAll() {
 //        String[] args = new String[]{};
-//        App.context = SpringApplication.run(App.class, args);
+//        App.main(args);
 //        Security security = App.context.getBean(Security.class);
 //        security.setPathStorage("unit-test.jks");
 //        char[] password = "12345".toCharArray();

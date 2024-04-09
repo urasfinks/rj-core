@@ -3,7 +3,6 @@ package ru.jamsys.cache;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringApplication;
 import ru.jamsys.App;
 import ru.jamsys.component.item.Cache;
 import ru.jamsys.statistic.AvgMetric;
@@ -22,7 +21,7 @@ class CacheTest {
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{};
-        App.context = SpringApplication.run(App.class, args);
+        App.main(args);
     }
 
     @Test

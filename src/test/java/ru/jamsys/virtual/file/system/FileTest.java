@@ -3,7 +3,6 @@ package ru.jamsys.virtual.file.system;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringApplication;
 import ru.jamsys.App;
 import ru.jamsys.component.Security;
 import ru.jamsys.component.VirtualFileSystem;
@@ -13,7 +12,7 @@ class FileTest {
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{};
-        App.context = SpringApplication.run(App.class, args);
+        App.main(args);
     }
 
     @Test
