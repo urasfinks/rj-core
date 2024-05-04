@@ -187,7 +187,7 @@ public class ThreadEnvelope extends PoolItem<ThreadEnvelope> {
         //#3
         isShutdown.set(true);
 
-        long timeOutMs = 1000;
+        long timeOutMs = 1500; // Так как есть CronManager и по его жизненному циклу нормально спать 1000ms
         long startTimeMs = System.currentTimeMillis();
         while (isRun.get()) { //Пытаемся подождать пока потоки самостоятельно закончат свою работу
             Util.sleepMs(timeOutMs / 4);

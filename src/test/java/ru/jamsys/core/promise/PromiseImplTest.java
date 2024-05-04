@@ -199,7 +199,7 @@ class PromiseImplTest {
                 .onComplete(complete::incrementAndGet)
                 .run()
                 .await(2000);
-
+        System.out.println(wf.getLog());
         Assertions.assertEquals(1, error.get());
         Assertions.assertEquals(0, complete.get());
         Assertions.assertEquals(2, exec.get());

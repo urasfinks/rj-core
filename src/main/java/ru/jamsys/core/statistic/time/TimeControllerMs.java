@@ -64,6 +64,11 @@ public interface TimeControllerMs {
         return Util.msToDataFormat(getLastActivityMs());
     }
 
+    // Возвратит время, когда объект будет просрочен
+    default String getExpiredFormat() {
+        return Util.msToDataFormat(getLastActivityMs() + getKeepAliveOnInactivityMs());
+    }
+
     // Зафиксировать конец активности
     default void stop(long curTime) {
         setTimeStopMs(curTime);

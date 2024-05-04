@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-@JsonPropertyOrder({"rqUid", "index", "exception", "completed", "trace", "exceptionTrace", "property"})
+@JsonPropertyOrder({"rqUid", "index", "addTime", "expTime", "diffTimeMs", "exception", "completed", "trace", "exceptionTrace", "property"})
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
 public abstract class AbstractPromise extends TimeControllerMsImpl implements Promise {
 
@@ -93,6 +93,21 @@ public abstract class AbstractPromise extends TimeControllerMsImpl implements Pr
     @JsonProperty
     public boolean isException() {
         return isException.get();
+    }
+
+    @JsonProperty
+    public String getAddTime() {
+        return getLastActivityFormat();
+    }
+
+    @JsonProperty
+    public String getExpTime() { //Сократил, что бы время InitTime было ровно над временем ExprTime
+        return getExpiredFormat();
+    }
+
+    @JsonProperty
+    public long getDiffTimeMs() { //Сократил, что бы время InitTime было ровно над временем ExprTime
+        return getExpiryRemainingMs();
     }
 
 }
