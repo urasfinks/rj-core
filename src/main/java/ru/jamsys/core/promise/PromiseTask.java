@@ -6,9 +6,9 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.promise.PromiseTaskTime;
 import ru.jamsys.core.component.promise.cron.PromiseTaskRetry;
-import ru.jamsys.core.statistic.time.TimeEnvelopeNano;
 import ru.jamsys.core.component.resource.RealThreadManager;
 import ru.jamsys.core.component.resource.VirtualThreadManager;
+import ru.jamsys.core.statistic.time.TimeEnvelopeNano;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,6 +47,7 @@ public class PromiseTask implements Runnable {
                 case IO -> App.context.getBean(VirtualThreadManager.class).submit(this);
                 case COMPUTE -> App.context.getBean(RealThreadManager.class).submit(this);
                 case JOIN -> run();
+                case ASYNC -> Thread.onSpinWait(); //Логика не нужна
             }
         }
     }
@@ -95,10 +96,10 @@ public class PromiseTask implements Runnable {
         long timeStart = System.nanoTime();
         try {
             if (supplier != null) {
-                promise.complete(isThreadRun, this, supplier.apply(isThreadRun));
+                promise.complete(this, supplier.apply(isThreadRun));
             } else if (procedure != null) {
                 procedure.accept(isThreadRun);
-                promise.complete(isThreadRun, this);
+                promise.complete(this);
             }
         } catch (Throwable th) {
             App.context.getBean(ExceptionHandler.class).handler(th);
@@ -107,7 +108,7 @@ public class PromiseTask implements Runnable {
                 promise.getExceptionTrace().add(new Trace<>(index, th));
                 App.context.getBean(PromiseTaskRetry.class).add(this);
             } else {
-                promise.complete(isThreadRun, this, th);
+                promise.complete(this, th);
             }
         }
         timer.stop();

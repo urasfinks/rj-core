@@ -48,6 +48,7 @@ public abstract class AbstractPromiseApi<T> implements PromiseApi<T> {
 
     @Override
     public void extend(Promise promise) {
+        this.promise = promise;
         promise.append(index, promiseTaskType, this::execute);
     }
 

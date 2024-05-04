@@ -4,6 +4,7 @@ import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.promise.api.PromiseApi;
 import ru.jamsys.core.extension.Procedure;
+import ru.jamsys.core.statistic.time.TimeControllerMs;
 
 import java.util.List;
 import java.util.Map;
@@ -12,17 +13,17 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface Promise {
+public interface Promise extends TimeControllerMs {
 
     void setTimeOut(long ms);
 
     String getRqUid();
 
-    void complete(AtomicBoolean isThreadRun, @NonNull PromiseTask task, @NonNull Throwable exception);
+    void complete(@NonNull PromiseTask task, @NonNull Throwable exception);
 
-    void complete(AtomicBoolean isThreadRun, @Nullable PromiseTask task);
+    void complete(@Nullable PromiseTask task);
 
-    void complete(AtomicBoolean isThreadRun, @Nullable PromiseTask task, List<PromiseTask> toHead);
+    void complete(@Nullable PromiseTask task, List<PromiseTask> toHead);
 
     void complete();
 

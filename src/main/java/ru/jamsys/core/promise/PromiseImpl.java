@@ -3,16 +3,10 @@ package ru.jamsys.core.promise;
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.List;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class PromiseImpl extends AbstractPromiseBuilder {
-
-    public void complete(AtomicBoolean isThreadRun, @NonNull PromiseTask task, @NonNull Throwable exception) {
-        setError(task.getIndex(), exception);
-        complete();
-    }
 
     private void setError(String indexTask, Throwable exception) {
         this.exception = exception;
@@ -20,14 +14,19 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         isException.set(true);
     }
 
-    public void complete(AtomicBoolean isThreadRun, @Nullable PromiseTask task) {
+    public void complete(@NonNull PromiseTask task, @NonNull Throwable exception) {
+        setError(task.getIndex(), exception);
+        complete();
+    }
+
+    public void complete(@Nullable PromiseTask task) {
         if (task != null) {
             task.setComplete(true);
         }
         complete();
     }
 
-    public void complete(AtomicBoolean isThreadRun, @Nullable PromiseTask task, List<PromiseTask> toHead) {
+    public void complete(@Nullable PromiseTask task, List<PromiseTask> toHead) {
         if (task != null) {
             task.setComplete(true);
         }
@@ -116,11 +115,6 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             return true;
         }
         return isRunningTaskNotComplete();
-    }
-
-    // Если необходимо повторить повторную проверку задач на исключения -> вернуть true
-    public boolean rollbackExceptionTask() {
-        return false;
     }
 
     // Не все запущенные задачи имеют результат

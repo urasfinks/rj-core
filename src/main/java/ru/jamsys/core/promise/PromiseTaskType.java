@@ -18,7 +18,10 @@ public enum PromiseTaskType implements EnumName {
     IO((_) -> false, true),
 
     //Запускаем эту задачу в RealThread
-    COMPUTE((_) -> false, true);
+    COMPUTE((_) -> false, true),
+
+    // Асинхронная задача, complete будет вызван сторонними средствами
+    ASYNC((_) -> false, true);
 
     private final Function<PromiseImpl, Boolean> fnIsRollback;
 

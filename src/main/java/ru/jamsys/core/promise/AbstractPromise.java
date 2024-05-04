@@ -15,7 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-@JsonPropertyOrder({"rqUid", "trace", "exceptionTrace", "property"})
+@SuppressWarnings({"unused", "UnusedReturnValue"})
+@JsonPropertyOrder({"rqUid", "exception", "completed", "trace", "exceptionTrace", "property"})
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
 public abstract class AbstractPromise extends TimeControllerMsImpl implements Promise {
 
@@ -61,7 +62,7 @@ public abstract class AbstractPromise extends TimeControllerMsImpl implements Pr
 
     protected PromiseTaskType lastType = PromiseTaskType.JOIN;
 
-    @JsonProperty("exception")
+    @JsonProperty("exceptionTrace")
     @Getter
     protected List<Trace<String, Throwable>> exceptionTrace = new ArrayList<>();
 
@@ -78,6 +79,16 @@ public abstract class AbstractPromise extends TimeControllerMsImpl implements Pr
     @Override
     public String getLog() {
         return UtilJson.toStringPretty(this, "{}");
+    }
+
+    @JsonProperty
+    public boolean isCompleted() {
+        return !inProgress();
+    }
+
+    @JsonProperty
+    public boolean isException() {
+        return isException.get();
     }
 
 }

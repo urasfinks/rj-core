@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package speechkit.v3;
+
+option go_package = "a.yandex-team.ru/voicetech/asr/cloud_engine/api/speechkit/v3/proto/common;speech_kit";
+option java_package = "speechkit.common.v3";
+
+
+
+message AudioContent {
+    // The audio source to read the data from.
+    oneof AudioSource {
+        bytes content = 1;
+    }
+
+    // Description of the audio format.
+    AudioFormatOptions audio_spec = 2;
+}
+
+message AudioFormatOptions {
+    oneof AudioFormat {
+        // The audio format specified in request parameters.
+        RawAudio raw_audio = 1;
+
+        // The audio format specified inside the file header.
+        ContainerAudio container_audio = 2;
+    }
+}
+
+message RawAudio {
+    enum AudioEncoding {
+        AUDIO_ENCODING_UNSPECIFIED = 0;
+
+        // 16-bit signed little-endian (Linear PCM)
+        LINEAR16_PCM = 1;
+    }
+
+    // Encoding type.
+    AudioEncoding audio_encoding = 1;
+
+    // Sampling frequency of the signal.
+    int64 sample_rate_hertz = 2;
+    int64 audio_channel_count = 3;
+}
+
+message ContainerAudio {
+    enum ContainerAudioType {
+        CONTAINER_AUDIO_TYPE_UNSPECIFIED = 0;
+
+        // RIFF linear pcm with header audio file format.
+        WAV = 1;
+        OGG_OPUS = 2;
+        MP3 = 3;
+    }
+    ContainerAudioType container_audio_type = 1;
+}
+
+
+
+message AudioChunk {
+    // sequence of bytes with audio data
+    bytes data = 1;
+}
+
+message SilenceChunk {
+    int64 duration_ms = 1;
+}

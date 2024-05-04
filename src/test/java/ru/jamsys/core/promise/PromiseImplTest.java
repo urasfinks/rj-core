@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.promise.api.HttpClientPromise;
+import ru.jamsys.core.component.promise.api.YandexSpeechPromise;
 import ru.jamsys.core.util.Util;
 
 import java.util.ArrayList;
@@ -228,6 +229,16 @@ class PromiseImplTest {
         wf.api("req1", new HttpClientPromise().setup((HttpClientPromise _) -> {
 
         })).run(null).await(1000);
+        System.out.println(wf.getLog());
+    }
+
+    @Test
+    void promiseYandexSpeechKit() {
+        Promise wf = new PromiseImpl();
+        wf.api("sound", new YandexSpeechPromise().setup((YandexSpeechPromise yandexSpeechPromise) -> {
+            yandexSpeechPromise.setText("Привет страна");
+            yandexSpeechPromise.setFilePath("target/result2.wav");
+        })).run(null).await(10000);
         System.out.println(wf.getLog());
     }
 
