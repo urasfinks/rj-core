@@ -1,10 +1,10 @@
 package ru.jamsys.core.promise;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.promise.api.HttpClientPromise;
 import ru.jamsys.core.component.promise.api.YandexSpeechPromise;
 import ru.jamsys.core.util.Util;
 
@@ -52,12 +52,11 @@ class PromiseImplTest {
     @Test
     void test2() {
         PromiseImpl wf = new PromiseImpl("test");
-        wf.setType(PromiseTaskType.JOIN);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
             final int x = i;
-            wf.then("test", (AtomicBoolean _) -> deque.add(x));
+            wf.then("test", PromiseTaskType.JOIN, (AtomicBoolean _) -> deque.add(x));
             dequeRes.add(i);
         }
         wf.run();
@@ -67,12 +66,11 @@ class PromiseImplTest {
     @Test
     void test3() {
         PromiseImpl wf = new PromiseImpl("test");
-        wf.setType(PromiseTaskType.JOIN);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 1000; i++) {
             final int x = i;
-            wf.then("test", (AtomicBoolean _) -> deque.add(x));
+            wf.then("test", PromiseTaskType.JOIN, (AtomicBoolean _) -> deque.add(x));
             dequeRes.add(i);
         }
         wf.run();
@@ -82,12 +80,11 @@ class PromiseImplTest {
     @Test
     void test4() {
         PromiseImpl wf = new PromiseImpl("test");
-        wf.setType(PromiseTaskType.IO);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
             final int x = i;
-            wf.then("test", (AtomicBoolean _) -> deque.add(x));
+            wf.then("test", PromiseTaskType.IO, (AtomicBoolean _) -> deque.add(x));
             dequeRes.add(i);
         }
         wf.run();
@@ -98,12 +95,11 @@ class PromiseImplTest {
     @Test
     void test5() {
         PromiseImpl wf = new PromiseImpl("test");
-        wf.setType(PromiseTaskType.IO);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 1000; i++) {
             final int x = i;
-            wf.then("test", (AtomicBoolean _) -> deque.add(x));
+            wf.then("test", PromiseTaskType.IO, (AtomicBoolean _) -> deque.add(x));
             dequeRes.add(i);
         }
         //System.out.println("start size: " + wf.getListPendingTasks().size());
@@ -203,6 +199,7 @@ class PromiseImplTest {
                 .onComplete(complete::incrementAndGet)
                 .run()
                 .await(2000);
+
         Assertions.assertEquals(1, error.get());
         Assertions.assertEquals(0, complete.get());
         Assertions.assertEquals(2, exec.get());
@@ -220,15 +217,6 @@ class PromiseImplTest {
                 })
                 .run()
                 .await(1000);
-        System.out.println(wf.getLog());
-    }
-
-    @Test
-    void promiseApi() {
-        Promise wf = new PromiseImpl("test");
-        wf.api("req1", new HttpClientPromise().setup((HttpClientPromise _) -> {
-
-        })).run().await(1000);
         System.out.println(wf.getLog());
     }
 
@@ -260,6 +248,11 @@ class PromiseImplTest {
             yandexSpeechPromise.setFilePath("target/result2.wav");
         })).run().await(10000);
         System.out.println(wf.getLog());
+    }
+
+    @AfterAll
+    static void shutdown() {
+        App.shutdown();
     }
 
 }

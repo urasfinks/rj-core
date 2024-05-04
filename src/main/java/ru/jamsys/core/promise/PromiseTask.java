@@ -41,6 +41,11 @@ public class PromiseTask implements Runnable {
     @Getter
     private final String index;
 
+    // Багу поймал, когда задача на JOIN выполняется в родительском потоке
+    // Там нет передачи isThreadRun, только в случаях [IO, COMPUTE] Setter вызывается
+    @Setter
+    AtomicBoolean isThreadRun = new AtomicBoolean(true);
+
     public void start() {
         switch (type) {
             case IO -> App.context.getBean(VirtualThreadManager.class).submit(this);
@@ -97,9 +102,6 @@ public class PromiseTask implements Runnable {
         this.retryDelayMs = delayMs;
         return this;
     }
-
-    @Setter
-    AtomicBoolean isThreadRun;
 
     @Override
     public void run() {

@@ -7,6 +7,7 @@ import ru.jamsys.core.extension.PingComponent;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseImpl;
+import ru.jamsys.core.promise.PromiseTaskType;
 import ru.jamsys.core.template.cron.release.Cron3s;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class Ping implements Cron3s, PromiseGenerator {
     @Override
     public Promise generate() {
         return new PromiseImpl(getClass().getName())
-                .append(this.getClass().getName(), (AtomicBoolean _)
+                .append(this.getClass().getName(), PromiseTaskType.IO, (AtomicBoolean _)
                         -> list.forEach(ru.jamsys.core.extension.Ping::ping));
     }
 }

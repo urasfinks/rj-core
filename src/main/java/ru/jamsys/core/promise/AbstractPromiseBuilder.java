@@ -21,11 +21,6 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
         return this;
     }
 
-    public Promise setType(PromiseTaskType type) {
-        this.lastType = type;
-        return this;
-    }
-
     public Promise onComplete(Procedure onComplete) {
         this.onComplete = onComplete;
         return this;
@@ -37,18 +32,12 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
     }
 
     public Promise append(PromiseTask task) {
-        setType(task.type);
         listPendingTasks.add(task);
         return this;
     }
 
     public Promise append(String index, PromiseTaskType promiseTaskType, Function<AtomicBoolean, List<PromiseTask>> fn) {
         append(new PromiseTask(index, this, promiseTaskType, fn));
-        return this;
-    }
-
-    public Promise append(String index, Function<AtomicBoolean, List<PromiseTask>> fn) {
-        append(new PromiseTask(index, this, lastType, fn));
         return this;
     }
 
@@ -64,11 +53,6 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
         return this;
     }
 
-    public Promise then(String index, Function<AtomicBoolean, List<PromiseTask>> fn) {
-        then(new PromiseTask(index, this, lastType, fn));
-        return this;
-    }
-
     public Promise waits() {
         this.append(new PromiseTask(PromiseTaskType.WAIT.getName(), this, PromiseTaskType.WAIT));
         return this;
@@ -81,18 +65,8 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
         return this;
     }
 
-    public Promise append(String index, Consumer<AtomicBoolean> fn) {
-        append(new PromiseTask(index, this, lastType, fn));
-        return this;
-    }
-
     public Promise then(String index, PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn) {
         then(new PromiseTask(index, this, promiseTaskType, fn));
-        return this;
-    }
-
-    public Promise then(String index, Consumer<AtomicBoolean> fn) {
-        then(new PromiseTask(index, this, lastType, fn));
         return this;
     }
 

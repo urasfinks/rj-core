@@ -9,6 +9,7 @@ import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseImpl;
+import ru.jamsys.core.promise.PromiseTaskType;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.StatisticSec;
 import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
@@ -48,7 +49,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
     @Override
     public Promise generate() {
         return new PromiseImpl(getClass().getName())
-                .append(this.getClass().getName(), (AtomicBoolean isThreadRun) -> {
+                .append(this.getClass().getName(), PromiseTaskType.IO, (AtomicBoolean isThreadRun) -> {
                     StatisticSec statisticSec = new StatisticSec();
                     Util.riskModifierCollection(isThreadRun, list, new StatisticsFlushComponent[0], (StatisticsFlushComponent statisticsFlushComponent) -> {
                         Map<String, String> parentTags = new LinkedHashMap<>();

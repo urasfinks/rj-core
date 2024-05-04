@@ -41,8 +41,6 @@ public interface Promise extends TimeControllerMs {
 
     Promise setLog(boolean log);
 
-    Promise setType(PromiseTaskType type);
-
     Promise onComplete(Procedure onComplete);
 
     Promise onError(Consumer<Throwable> onError);
@@ -51,23 +49,15 @@ public interface Promise extends TimeControllerMs {
 
     Promise append(String index, PromiseTaskType promiseTaskType, Function<AtomicBoolean, List<PromiseTask>> fn);
 
-    Promise append(String index, Function<AtomicBoolean, List<PromiseTask>> fn);
-
     Promise then(PromiseTask task);
 
     Promise then(String index, PromiseTaskType promiseTaskType, Function<AtomicBoolean, List<PromiseTask>> fn);
-
-    Promise then(String index, Function<AtomicBoolean, List<PromiseTask>> fn);
 
     Promise waits();
 
     Promise append(String index, PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn);
 
-    Promise append(String index, Consumer<AtomicBoolean> fn);
-
     Promise then(String index, PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn);
-
-    Promise then(String index, Consumer<AtomicBoolean> fn);
 
     PromiseTask getLastAppendedTask();
 

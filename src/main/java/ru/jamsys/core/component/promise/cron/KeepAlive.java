@@ -4,9 +4,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.api.ClassFinder;
 import ru.jamsys.core.extension.KeepAliveComponent;
-import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.Promise;
+import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseImpl;
+import ru.jamsys.core.promise.PromiseTaskType;
 import ru.jamsys.core.template.cron.release.Cron3s;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class KeepAlive implements Cron3s, PromiseGenerator {
     @Override
     public Promise generate() {
         return new PromiseImpl(getClass().getName())
-                .append(this.getClass().getName(), (AtomicBoolean isThreadRun)
+                .append(this.getClass().getName(), PromiseTaskType.IO, (AtomicBoolean isThreadRun)
                         -> list.forEach((KeepAliveComponent keepAliveComponent)
                         -> keepAliveComponent.keepAlive(isThreadRun)));
     }

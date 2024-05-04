@@ -19,4 +19,11 @@ public class App {
         }
     }
 
+    public static void shutdown() {
+        if (context != null) {
+            context.getBean(Core.class).shutdown();
+            context = null;
+        }
+    }
+
 }

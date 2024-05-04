@@ -66,8 +66,6 @@ public abstract class AbstractPromise extends TimeControllerMsImpl implements Pr
     // Вызовется если произошло исключение
     protected Consumer<Throwable> onError = null;
 
-    protected PromiseTaskType lastType = PromiseTaskType.JOIN;
-
     @JsonProperty("exceptionTrace")
     @Getter
     protected List<Trace<String, Throwable>> exceptionTrace = new ArrayList<>();
