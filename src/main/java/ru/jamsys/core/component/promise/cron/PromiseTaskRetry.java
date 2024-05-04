@@ -36,7 +36,7 @@ public class PromiseTaskRetry implements Cron1s, PromiseGenerator {
 
     @Override
     public Promise generate() {
-        return new PromiseImpl()
+        return new PromiseImpl(getClass().getName())
                 .append(this.getClass().getName(), (AtomicBoolean isThreadRun)
                         -> promiseCache.keepAlive(isThreadRun));
     }

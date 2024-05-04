@@ -42,13 +42,25 @@ public class PromiseTask implements Runnable {
     private final String index;
 
     public void start() {
-        if (supplier != null || procedure != null) {
-            switch (type) {
-                case IO -> App.context.getBean(VirtualThreadManager.class).submit(this);
-                case COMPUTE -> App.context.getBean(RealThreadManager.class).submit(this);
-                case JOIN -> run();
-                case ASYNC -> Thread.onSpinWait(); //Логика не нужна
-            }
+        switch (type) {
+            case IO -> App.context.getBean(VirtualThreadManager.class).submit(this);
+            case COMPUTE -> App.context.getBean(RealThreadManager.class).submit(this);
+            case JOIN -> run();
+            case ASYNC -> promise.getTrace().add(new Trace<>(index + "::async.start", TraceTimer.getInstanceZero()));
+        }
+    }
+
+    public void complete() {
+        if (type == PromiseTaskType.ASYNC) {
+            promise.getTrace().add(new Trace<>(index + "::async.stop", TraceTimer.getInstanceZero()));
+            promise.complete(this);
+        }
+    }
+
+    public void error(Throwable th) {
+        if (type == PromiseTaskType.ASYNC) {
+            promise.getTrace().add(new Trace<>(index + "::async.stop", TraceTimer.getInstanceZero()));
+            promise.complete(this, th);
         }
     }
 

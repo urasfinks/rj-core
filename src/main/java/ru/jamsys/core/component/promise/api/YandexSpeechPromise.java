@@ -18,7 +18,8 @@ import java.util.function.Consumer;
 
 @Getter
 @Setter
-public class YandexSpeechPromise extends AbstractPromiseApi<YandexSpeechPromise> {
+public class
+YandexSpeechPromise extends AbstractPromiseApi<YandexSpeechPromise> {
 
     private final Map<String, Object> settings = new HashMap<>();
 
@@ -78,8 +79,8 @@ public class YandexSpeechPromise extends AbstractPromiseApi<YandexSpeechPromise>
                     text,
                     new File(filePath),
                     settings,
-                    () -> asyncPromiseTask.getPromise().complete(asyncPromiseTask),
-                    (Throwable t) -> asyncPromiseTask.getPromise().complete(asyncPromiseTask, t)
+                    () -> asyncPromiseTask.complete(),
+                    (Throwable t) -> asyncPromiseTask.error(t)
             );
         } catch (Exception e) {
             throw new RuntimeException(e);

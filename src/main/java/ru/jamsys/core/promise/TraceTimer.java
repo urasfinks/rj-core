@@ -17,4 +17,9 @@ public class TraceTimer {
         this.nano = nano;
     }
 
+    public static TraceTimer getInstanceZero() {
+        long time = System.currentTimeMillis();
+        return  new TraceTimer(time, time, 0);
+    }
+
 }

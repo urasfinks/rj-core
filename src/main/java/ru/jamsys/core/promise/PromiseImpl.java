@@ -8,6 +8,10 @@ import java.util.List;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class PromiseImpl extends AbstractPromiseBuilder {
 
+    public PromiseImpl(String index) {
+        setIndex(index);
+    }
+
     private void setError(String indexTask, Throwable exception) {
         this.exception = exception;
         this.exceptionTrace.add(new Trace<>(indexTask, exception));

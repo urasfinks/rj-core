@@ -25,7 +25,7 @@ class PromiseImplTest {
 
     @Test
     void test1() {
-        PromiseImpl wf = new PromiseImpl();
+        PromiseImpl wf = new PromiseImpl("test");
         wf
                 .append("test", PromiseTaskType.IO, (AtomicBoolean _) -> {
                     Util.sleepMs(1000);
@@ -45,13 +45,13 @@ class PromiseImplTest {
                     return null;
                 })
                 .then("test", PromiseTaskType.JOIN, (AtomicBoolean _) -> System.out.println(Thread.currentThread().getName() + " FINISH"))
-                .run(null)
+                .run()
                 .await(4000);
     }
 
     @Test
     void test2() {
-        PromiseImpl wf = new PromiseImpl();
+        PromiseImpl wf = new PromiseImpl("test");
         wf.setType(PromiseTaskType.JOIN);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
@@ -60,13 +60,13 @@ class PromiseImplTest {
             wf.then("test", (AtomicBoolean _) -> deque.add(x));
             dequeRes.add(i);
         }
-        wf.run(null);
+        wf.run();
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
     }
 
     @Test
     void test3() {
-        PromiseImpl wf = new PromiseImpl();
+        PromiseImpl wf = new PromiseImpl("test");
         wf.setType(PromiseTaskType.JOIN);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
@@ -75,13 +75,13 @@ class PromiseImplTest {
             wf.then("test", (AtomicBoolean _) -> deque.add(x));
             dequeRes.add(i);
         }
-        wf.run(null);
+        wf.run();
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
     }
 
     @Test
     void test4() {
-        PromiseImpl wf = new PromiseImpl();
+        PromiseImpl wf = new PromiseImpl("test");
         wf.setType(PromiseTaskType.IO);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
@@ -90,14 +90,14 @@ class PromiseImplTest {
             wf.then("test", (AtomicBoolean _) -> deque.add(x));
             dequeRes.add(i);
         }
-        wf.run(null);
+        wf.run();
         Util.sleepMs(1000);
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
     }
 
     @Test
     void test5() {
-        PromiseImpl wf = new PromiseImpl();
+        PromiseImpl wf = new PromiseImpl("test");
         wf.setType(PromiseTaskType.IO);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
@@ -107,7 +107,7 @@ class PromiseImplTest {
             dequeRes.add(i);
         }
         //System.out.println("start size: " + wf.getListPendingTasks().size());
-        wf.run(null);
+        wf.run();
         wf.await(5000);
         //System.out.println("time: " + (System.currentTimeMillis() - start));
         //System.out.println("fin size: " + wf.getListPendingTasks().size());
@@ -127,7 +127,7 @@ class PromiseImplTest {
 
     @Test
     void test7() {
-        Promise wf = new PromiseImpl();
+        Promise wf = new PromiseImpl("test");
         AtomicInteger retry = new AtomicInteger(0);
         AtomicInteger error = new AtomicInteger(0);
         AtomicInteger complete = new AtomicInteger(0);
@@ -139,7 +139,7 @@ class PromiseImplTest {
                 .getLastAppendedTask().setRetryCount(1, 1000).getPromise()
                 .onError((Throwable _) -> error.incrementAndGet())
                 .onComplete(complete::incrementAndGet)
-                .run(null)
+                .run()
                 .await(3000);
         System.out.println(wf.getLog());
         Assertions.assertEquals(2, retry.get());
@@ -154,7 +154,7 @@ class PromiseImplTest {
         AtomicInteger complete = new AtomicInteger(0);
         AtomicInteger exec = new AtomicInteger(0);
 
-        Promise wf = new PromiseImpl();
+        Promise wf = new PromiseImpl("test");
         wf.setTimeOut(1_500);
         wf
                 .append("1", PromiseTaskType.JOIN, (AtomicBoolean _) -> {
@@ -171,7 +171,7 @@ class PromiseImplTest {
                 })
                 .onError((Throwable _) -> error.incrementAndGet())
                 .onComplete(complete::incrementAndGet)
-                .run(null)
+                .run()
                 .await(2000);
         Assertions.assertEquals(1, error.get());
         Assertions.assertEquals(0, complete.get());
@@ -184,7 +184,7 @@ class PromiseImplTest {
         AtomicInteger complete = new AtomicInteger(0);
         AtomicInteger exec = new AtomicInteger(0);
 
-        Promise wf = new PromiseImpl();
+        Promise wf = new PromiseImpl("test");
         wf.setTimeOut(1_500);
         wf
                 .append("1", PromiseTaskType.IO, (AtomicBoolean _) -> {
@@ -201,7 +201,7 @@ class PromiseImplTest {
                 })
                 .onError((Throwable _) -> error.incrementAndGet())
                 .onComplete(complete::incrementAndGet)
-                .run(null)
+                .run()
                 .await(2000);
         Assertions.assertEquals(1, error.get());
         Assertions.assertEquals(0, complete.get());
@@ -210,7 +210,7 @@ class PromiseImplTest {
 
     @Test
     void toLog() {
-        Promise wf = new PromiseImpl();
+        Promise wf = new PromiseImpl("test");
         wf.setTimeOut(1_500);
         wf
                 .append("1", PromiseTaskType.IO, (AtomicBoolean _) -> System.out.println(1))
@@ -218,27 +218,47 @@ class PromiseImplTest {
                 .then("3", PromiseTaskType.IO, (AtomicBoolean _) -> {
                     throw new RuntimeException("Test");
                 })
-                .run(null)
+                .run()
                 .await(1000);
         System.out.println(wf.getLog());
     }
 
     @Test
     void promiseApi() {
-        Promise wf = new PromiseImpl();
+        Promise wf = new PromiseImpl("test");
         wf.api("req1", new HttpClientPromise().setup((HttpClientPromise _) -> {
 
-        })).run(null).await(1000);
+        })).run().await(1000);
         System.out.println(wf.getLog());
     }
 
     @Test
+    void testAsync() {
+        Promise wf = new PromiseImpl("test");
+        wf.setIndex("Async");
+        PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskType.ASYNC);
+        wf.append(promiseTask);
+        wf.run().await(1000);
+
+        Assertions.assertEquals(1, wf.getTrace().size());
+        Assertions.assertEquals(0, wf.getExceptionTrace().size());
+        Assertions.assertFalse(wf.isCompleted());
+
+        promiseTask.complete();
+        Assertions.assertTrue(wf.isCompleted());
+        Assertions.assertEquals(2, wf.getTrace().size());
+
+        System.out.println(wf.getLog());
+
+    }
+
+    @SuppressWarnings("unused")
     void promiseYandexSpeechKit() {
-        Promise wf = new PromiseImpl();
+        Promise wf = new PromiseImpl("test");
         wf.api("sound", new YandexSpeechPromise().setup((YandexSpeechPromise yandexSpeechPromise) -> {
             yandexSpeechPromise.setText("Привет страна");
             yandexSpeechPromise.setFilePath("target/result2.wav");
-        })).run(null).await(10000);
+        })).run().await(10000);
         System.out.println(wf.getLog());
     }
 

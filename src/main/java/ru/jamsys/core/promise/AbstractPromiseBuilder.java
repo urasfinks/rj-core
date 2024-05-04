@@ -96,7 +96,7 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
         return this;
     }
 
-    public Promise run(AtomicBoolean isThreadRun) {
+    public Promise run() {
         complete();
         return this;
     }

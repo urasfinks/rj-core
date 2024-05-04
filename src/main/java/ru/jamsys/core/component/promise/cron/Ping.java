@@ -26,7 +26,7 @@ public class Ping implements Cron3s, PromiseGenerator {
 
     @Override
     public Promise generate() {
-        return new PromiseImpl()
+        return new PromiseImpl(getClass().getName())
                 .append(this.getClass().getName(), (AtomicBoolean _)
                         -> list.forEach(ru.jamsys.core.extension.Ping::ping));
     }

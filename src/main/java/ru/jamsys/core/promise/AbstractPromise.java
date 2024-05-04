@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
+import lombok.Setter;
 import ru.jamsys.core.extension.Procedure;
 import ru.jamsys.core.statistic.time.TimeControllerMsImpl;
 import ru.jamsys.core.util.UtilJson;
@@ -16,9 +17,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-@JsonPropertyOrder({"rqUid", "exception", "completed", "trace", "exceptionTrace", "property"})
+@JsonPropertyOrder({"rqUid", "index", "exception", "completed", "trace", "exceptionTrace", "property"})
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
 public abstract class AbstractPromise extends TimeControllerMsImpl implements Promise {
+
+    @JsonProperty
+    @Setter
+    @Getter
+    private String index;
 
     @JsonProperty
     @Getter

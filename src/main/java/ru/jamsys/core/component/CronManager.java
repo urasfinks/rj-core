@@ -44,7 +44,7 @@ public class CronManager implements RunnableComponent {
                         nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
                         long curTimeMs = System.currentTimeMillis();
 
-                        runCronTask(curTimeMs, isWhile);
+                        runCronTask(curTimeMs);
 
                         if (isWhile.get()) {
                             long calcSleepMs = nextStartMs - System.currentTimeMillis();
@@ -64,11 +64,11 @@ public class CronManager implements RunnableComponent {
         );
     }
 
-    private void runCronTask(long curTimeMs, AtomicBoolean isThreadRun) {
+    private void runCronTask(long curTimeMs) {
         listItem.forEach((CronPromise cronPromise) -> {
             if (cronPromise.getCron().isTimeHasCome(curTimeMs)) {
                 try {
-                    cronPromise.getPromiseGenerator().generate().run(isThreadRun);
+                    cronPromise.getPromiseGenerator().generate().run();
                 } catch (Exception e) {
                     App.context.getBean(ExceptionHandler.class).handler(e);
                 }

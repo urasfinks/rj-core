@@ -15,6 +15,10 @@ import java.util.function.Function;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface Promise extends TimeControllerMs {
 
+    String getIndex();
+
+    void setIndex(String index);
+
     void setTimeOut(long ms);
 
     String getRqUid();
@@ -31,7 +35,7 @@ public interface Promise extends TimeControllerMs {
 
     void await(long timeoutMs);
 
-    Promise run(AtomicBoolean isThreadRun);
+    Promise run();
 
     Promise setRqUid(String rqUid);
 
@@ -76,5 +80,7 @@ public interface Promise extends TimeControllerMs {
     Promise api(String index, PromiseApi<?> promiseApi);
 
     Map<String, Object> getProperty();
+
+    boolean isCompleted();
 
 }
