@@ -1,7 +1,7 @@
-package ru.jamsys;
+package ru.jamsys.core;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.component.Security;
+import ru.jamsys.core.component.Security;
 
 @SuppressWarnings("unused")
 @Component
