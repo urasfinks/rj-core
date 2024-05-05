@@ -3,10 +3,12 @@ package ru.jamsys.core.resource.jdbc;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.api.RateLimitManager;
+import ru.jamsys.core.extension.CLassNameTitle;
 import ru.jamsys.core.pool.Pool;
 import ru.jamsys.core.pool.PoolItem;
+import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.rate.limit.RateLimitType;
+import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.template.jdbc.*;
 import ru.jamsys.core.util.Util;
 
@@ -17,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConnectionEnvelope extends PoolItem<ConnectionEnvelope> {
+public class ConnectionEnvelope extends PoolItem<ConnectionEnvelope> implements CLassNameTitle {
 
     final private Connection connection;
 
@@ -29,8 +31,8 @@ public class ConnectionEnvelope extends PoolItem<ConnectionEnvelope> {
     public ConnectionEnvelope(Connection connection, Pool<ConnectionEnvelope> pool) {
         super(pool);
         this.connection = connection;
-        rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), pool.getName());
-        rateLimit.init(RateLimitType.POOL_ITEM_TPS);
+        rateLimit = App.context.getBean(RateLimitManager.class).get(getClassNameTitle(pool.getName()));
+        rateLimit.init(RateLimitName.POOL_ITEM_TPS.getName(), RateLimitItemInstance.TPS);
     }
 
     @Override

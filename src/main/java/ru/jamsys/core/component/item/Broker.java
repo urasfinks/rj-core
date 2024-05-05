@@ -5,13 +5,12 @@ import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.api.RateLimitManager;
-import ru.jamsys.core.extension.Closable;
-import ru.jamsys.core.extension.IgnoreClassFinder;
-import ru.jamsys.core.extension.StatisticsFlush;
+import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
+import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.rate.limit.RateLimitType;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
+import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.time.TimeControllerMsImpl;
@@ -34,8 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 //              После установки время протухания изменить нельзя, так как индекс уже был зафиксирован
 // Я захотел, что бы везде было одинаково. Только лишь поэтому TEO -> TimeEnvelope<TEO>
 
-//TODO: кто чистит очередь от протухших сообщение?
-
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Getter
 @Setter
@@ -43,8 +40,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Broker<TEO>
         extends TimeControllerMsImpl
         implements
+        CLassNameTitle,
         StatisticsFlush,
         Closable,
+        KeepAlive,
         AddToList<
                 TimeEnvelopeMs<TEO>,
                 TimeEnvelopeMs<TEO>
@@ -78,15 +77,23 @@ public class Broker<TEO>
 
     final RateLimitItem rliTps;
 
-    public Broker(String key, ApplicationContext applicationContext) {
-        rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClass(), key);
-        rliQueueSize = rateLimit.get(RateLimitType.BROKER_SIZE);
+    final String index;
+
+    public Broker(String index, ApplicationContext applicationContext) {
+        this.index = index;
+
+        rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassNameTitle(index))
+                .init(RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)
+                .init(RateLimitName.BROKER_TAIL_SIZE.getName(), RateLimitItemInstance.MAX)
+                .init(RateLimitName.BROKER_TPS.getName(), RateLimitItemInstance.TPS);
+
+        rliQueueSize = rateLimit.get(RateLimitName.BROKER_SIZE.getName());
         rliQueueSize.setMax(3000);
 
-        rliTailSize = rateLimit.get(RateLimitType.BROKER_TAIL_SIZE);
+        rliTailSize = rateLimit.get(RateLimitName.BROKER_TAIL_SIZE.getName());
         rliTailSize.setMax(5);
 
-        rliTps = rateLimit.get(RateLimitType.BROKER_TPS);
+        rliTps = rateLimit.get(RateLimitName.BROKER_TPS.getName());
         rateLimit.setActive(true);
     }
 
@@ -231,4 +238,12 @@ public class Broker<TEO>
         return sb.toString();
     }
 
+    @Override
+    public void keepAlive(AtomicBoolean isThreadRun) {
+        Util.riskModifierCollection(isThreadRun, queue, new TimeEnvelopeMs[0], (TimeEnvelopeMs<TEO> teoTimeEnvelopeMs) -> {
+            if (teoTimeEnvelopeMs.isExpired()) {
+                queue.remove(teoTimeEnvelopeMs);
+            }
+        });
+    }
 }

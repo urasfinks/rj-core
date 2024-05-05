@@ -3,14 +3,13 @@ package ru.jamsys.core.component.item;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.StatisticsFlush;
+import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.time.TimeControllerMsImpl;
 import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
-
 import ru.jamsys.core.util.Util;
 
 import java.util.ArrayList;
@@ -44,6 +43,12 @@ public class Cache<K, TEO>
 
     @Setter
     private Consumer<TimeEnvelopeMs<TEO>> onExpired;
+
+    private final String index;
+
+    public Cache(String index) {
+        this.index = index;
+    }
 
     @Override
     public void add(K key, TimeEnvelopeMs<TEO> value) {

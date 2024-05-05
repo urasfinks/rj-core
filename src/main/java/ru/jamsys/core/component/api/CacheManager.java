@@ -21,7 +21,7 @@ public class CacheManager<MOI> extends AbstractComponentMap<
         > implements KeepAliveComponent, StatisticsFlushComponent {
 
     @Override
-    public Cache<String, MOI> build(String key) {
-        return new Cache<>();
+    public Cache<String, MOI> build(String index) {
+        return new Cache<>(index);
     }
 }

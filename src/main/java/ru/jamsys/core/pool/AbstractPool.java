@@ -7,11 +7,14 @@ import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.api.RateLimitManager;
+import ru.jamsys.core.extension.CLassNameTitle;
+import ru.jamsys.core.extension.CLassNameTitleImpl;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.RunnableInterface;
+import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.rate.limit.RateLimitType;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
+import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.time.TimeControllerMsImpl;
 import ru.jamsys.core.util.Util;
@@ -28,8 +31,7 @@ import java.util.function.Function;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<T extends PoolItem<T>>
-        extends TimeControllerMsImpl
-        implements Pool<T>, RunnableInterface, KeepAlive {
+        extends TimeControllerMsImpl implements Pool<T>, RunnableInterface, KeepAlive, CLassNameTitle {
 
     public static ThreadLocal<Pool<?>> context = new ThreadLocal<>();
 
@@ -69,14 +71,18 @@ public abstract class AbstractPool<T extends PoolItem<T>>
 
     private final AtomicBoolean dynamicPollSize = new AtomicBoolean(false);
 
-    private final RateLimitItem poolSize;
+    private final RateLimitItem rliPoolSize;
 
     public AbstractPool(String name, int min, Class<T> cls) {
         this.name = name;
         this.min = min;
-        rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), name);
-        rateLimitPoolItem = App.context.getBean(RateLimitManager.class).get(cls, name);
-        poolSize = rateLimit.get(RateLimitType.POOL_SIZE);
+        RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
+        rateLimit = rateLimitManager.get(getClassNameTitle(name))
+                .init(RateLimitName.POOL_SIZE.getName(), RateLimitItemInstance.MAX);
+        rliPoolSize = rateLimit.get(RateLimitName.POOL_SIZE.getName());
+
+        rateLimitPoolItem = rateLimitManager.get(CLassNameTitleImpl.getClassNameTitleStatic(cls, name));
+
     }
 
     public void setDynamicPollSize(boolean dynamic) {
@@ -118,7 +124,7 @@ public abstract class AbstractPool<T extends PoolItem<T>>
         sb.append("remove: ").append(removeQueue.size()).append("; ");
         sb.append("isRun: ").append(isRun.get()).append("; ");
         sb.append("min: ").append(min).append("; ");
-        sb.append("max: ").append(poolSize.getMax()).append("; ");
+        sb.append("max: ").append(rliPoolSize.getMax()).append("; ");
         //sb.append("timePark0: ").append(getTimeWhenParkIsEmpty()).append("; ");
         return sb.toString();
     }
@@ -134,10 +140,10 @@ public abstract class AbstractPool<T extends PoolItem<T>>
     public void setMaxSlowRiseAndFastFall(int max) {
         if (dynamicPollSize.get()) {
             if (max >= min) {
-                if (max > poolSize.getMax()) { //Медленно поднимаем
-                    poolSize.incrementMax();
+                if (max > rliPoolSize.getMax()) { //Медленно поднимаем
+                    rliPoolSize.incrementMax();
                 } else { //Но очень быстро опускаем
-                    poolSize.setMax(max);
+                    rliPoolSize.setMax(max);
                 }
             } else {
                 Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < Pool.min = " + min, true);
@@ -155,7 +161,7 @@ public abstract class AbstractPool<T extends PoolItem<T>>
             exceptionQueue.add(poolItem);
             return;
         }
-        if (!poolSize.check(itemQueue.size()) || !isRun.get()) {
+        if (!rliPoolSize.check(itemQueue.size()) || !isRun.get()) {
             if (addToRemoveWithoutCheckParking(poolItem)) {
                 return;
             }
@@ -208,7 +214,7 @@ public abstract class AbstractPool<T extends PoolItem<T>>
     }
 
     private boolean add() {
-        if (isRun.get() && poolSize.check(itemQueue.size())) {
+        if (isRun.get() && rliPoolSize.check(itemQueue.size())) {
             if (!removeQueue.isEmpty()) {
                 T poolItem = removeQueue.pollLast();
                 if (poolItem != null) {
@@ -245,7 +251,7 @@ public abstract class AbstractPool<T extends PoolItem<T>>
     }
 
     private void overclocking(int count) {
-        if (isRun.get() && poolSize.check(itemQueue.size()) && count > 0) {
+        if (isRun.get() && rliPoolSize.check(itemQueue.size()) && count > 0) {
             for (int i = 0; i < count; i++) {
                 if (!add()) {
                     break;
@@ -390,8 +396,7 @@ public abstract class AbstractPool<T extends PoolItem<T>>
         }
         result.add(new Statistic(parentTags, parentFields)
                 .addField("tpsDeq", tpsDequeueFlush)
-                .addField("min", min)
-                .addField("max", poolSize.getMax())
+                .addField("min", min).addField("max", rliPoolSize.getMax())
                 .addField("item", itemQueue.size())
                 .addField("park", parkQueue.size())
                 .addField("remove", removeQueue.size())

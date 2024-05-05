@@ -25,7 +25,7 @@ class CacheTest {
 
     @Test
     void add() {
-        Cache<Integer, String> cache = new Cache<>();
+        Cache<Integer, String> cache = new Cache<>("test");
 
         cache.add(1234, "Hello world", 100);
         Assertions.assertEquals(1, cache.getMap().size(), "#1");
@@ -47,7 +47,7 @@ class CacheTest {
     @Test
     void checkSize() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        Cache<Integer, String> cache = new Cache<>();
+        Cache<Integer, String> cache = new Cache<>("test");
 
         //2024-03-06T17:11:04.056 + 0 => 11:04.056 + 1000 => 11:05.056 => 11:05.000
         cache.add(0, "Hello world", curTimeMs, 1000);
@@ -113,7 +113,7 @@ class CacheTest {
     }
 
     Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
-        Cache<Integer, String> cache = new Cache<>();
+        Cache<Integer, String> cache = new Cache<>("test");
         AvgMetric avgMetric = new AvgMetric();
         cache.setOnExpired((TimeEnvelopeMs<String> env) -> {
             if (env.getExpiryRemainingMs() > 0) {

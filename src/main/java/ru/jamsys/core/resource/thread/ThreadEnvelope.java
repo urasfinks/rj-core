@@ -5,11 +5,13 @@ import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.api.RateLimitManager;
+import ru.jamsys.core.extension.CLassNameTitle;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.Pool;
 import ru.jamsys.core.pool.PoolItem;
+import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.rate.limit.RateLimitType;
+import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,7 +25,7 @@ import java.util.function.Function;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @ToString(onlyExplicitlyIncluded = true)
-public class ThreadEnvelope extends PoolItem<ThreadEnvelope> {
+public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements CLassNameTitle {
 
     private final Thread thread;
 
@@ -64,8 +66,8 @@ public class ThreadEnvelope extends PoolItem<ThreadEnvelope> {
 
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, Function<ThreadEnvelope, Boolean> fn) {
         super(pool);
-        RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), pool.getName());
-        rateLimit.get(RateLimitType.THREAD_TPS);
+        RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClassNameTitle(pool.getName()));
+        rateLimit.init(RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);
         info
                 .append("[")
                 .append(Util.msToDataFormat(System.currentTimeMillis()))

@@ -2,9 +2,9 @@ package ru.jamsys.core.rate.limit;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.StatisticsCollectorMap;
+import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.time.TimeControllerMsImpl;
@@ -22,6 +22,12 @@ public class RateLimit
 
     @Setter
     private volatile boolean active = false;
+
+    private final String index;
+
+    public RateLimit(String index) {
+        this.index = index;
+    }
 
     @Override
     public void close() {
@@ -58,19 +64,15 @@ public class RateLimit
         return true;
     }
 
-    public RateLimitItem get(String name, RateLimitItemInstance rateLimitItemInstance) {
-        if (!map.containsKey(name)) {
-            map.put(name, rateLimitItemInstance.create());
-        }
+    public RateLimitItem get(String name) {
         return map.get(name);
     }
 
-    public void init(RateLimitType name) {
-        get(name);
-    }
-
-    public RateLimitItem get(RateLimitType name) {
-        return get(name.getNameCache(), name.getRateLimitItemInstance());
+    public RateLimit init(String name, RateLimitItemInstance rateLimitItemInstance) {
+        if (!map.containsKey(name)) {
+            map.put(name, rateLimitItemInstance.create());
+        }
+        return this;
     }
 
 }

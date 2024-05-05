@@ -15,7 +15,7 @@ public class VirtualFileSystem extends AbstractComponent<File> {
     }
 
     @Override
-    public File build(String key) {
+    public File build(String index) {
         return null;
     }
 

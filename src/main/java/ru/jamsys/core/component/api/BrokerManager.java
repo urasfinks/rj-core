@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.AbstractComponentCollection;
 import ru.jamsys.core.component.item.Broker;
+import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
 
@@ -18,7 +19,7 @@ public class BrokerManager<MOI>
         TimeEnvelopeMs<MOI>,
         TimeEnvelopeMs<MOI>
                 >
-        implements StatisticsFlushComponent {
+        implements StatisticsFlushComponent, KeepAliveComponent {
 
     private final ApplicationContext applicationContext;
 
@@ -27,8 +28,8 @@ public class BrokerManager<MOI>
     }
 
     @Override
-    public Broker<MOI> build(String key) {
-        return new Broker<>(key, applicationContext);
+    public Broker<MOI> build(String index) {
+        return new Broker<>(index, applicationContext);
     }
 
     public TimeEnvelopeMs<MOI> pollLast(String key) {

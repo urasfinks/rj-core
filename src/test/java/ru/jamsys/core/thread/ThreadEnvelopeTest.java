@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.api.RateLimitManager;
+import ru.jamsys.core.extension.CLassNameTitleImpl;
+import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.rate.limit.RateLimitType;
 import ru.jamsys.core.resource.thread.ThreadEnvelope;
 import ru.jamsys.core.resource.thread.ThreadPool;
 import ru.jamsys.core.util.Util;
-
 
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,8 +32,6 @@ class ThreadEnvelopeTest {
         }
     }
 
-
-
     @Test
     public void lastRemove() {
         //Тест того, что удаление ресурсов происходит с конца
@@ -47,7 +45,7 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
-        threadPool.getRateLimit().get(RateLimitType.POOL_SIZE).setMax(5);
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE.getName()).setMax(5);
 
         Assertions.assertEquals("item: 0; park: 0; remove: 0; isRun: false; min: 0; max: 5; ", threadPool.getMomentumStatistic());
         threadPool.run();
@@ -96,7 +94,7 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
-        threadPool.getRateLimit().get(RateLimitType.POOL_SIZE).setMax(5);
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE.getName()).setMax(5);
 
         threadPool.run();
 
@@ -152,7 +150,7 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
-        threadPool.getRateLimit().get(RateLimitType.POOL_SIZE).setMax(5);
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE.getName()).setMax(5);
 
         threadPool.run();
 
@@ -190,13 +188,14 @@ class ThreadEnvelopeTest {
                 namePool,
                 5,
                 (ThreadEnvelope _) -> {
+                    //System.out.println(testCount.get());
                     testCount.incrementAndGet();
                     return true;
                 }
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
-        threadPool.getRateLimit().get(RateLimitType.POOL_SIZE).setMax(5);
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE.getName()).setMax(5);
 
         Assertions.assertEquals("item: 0; park: 0; remove: 0; isRun: false; min: 5; max: 5; ", threadPool.getMomentumStatistic());
 
@@ -204,7 +203,7 @@ class ThreadEnvelopeTest {
 
         Assertions.assertEquals("item: 5; park: 5; remove: 0; isRun: true; min: 5; max: 5; ", threadPool.getMomentumStatistic());
 
-        threadPool.getRateLimitPoolItem().get(RateLimitType.THREAD_TPS).setMax(625);
+        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS.getName()).setMax(625);
 
         for (int i = 0; i < 5; i++) {
             threadPool.getPoolItem().run();
@@ -232,13 +231,13 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
-        threadPool.getRateLimit().get(RateLimitType.POOL_SIZE).setMax(countThread);
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE.getName()).setMax(countThread);
 
         threadPool.run();
 
         int c = 1000;
 
-        threadPool.getRateLimitPoolItem().get(RateLimitType.THREAD_TPS).setMax(c);
+        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS.getName()).setMax(c);
 
         for (int i = 0; i < countThread; i++) {
             threadPool.getPoolItem().run();
@@ -263,7 +262,7 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
-        threadPool.getRateLimit().get(RateLimitType.POOL_SIZE).setMax(5);
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE.getName()).setMax(5);
 
         Assertions.assertEquals("item: 0; park: 0; remove: 0; isRun: false; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
@@ -305,7 +304,7 @@ class ThreadEnvelopeTest {
         //Не должны выйти за 5
         Assertions.assertEquals("item: 5; park: 0; remove: 0; isRun: true; min: 2; max: 5; ", threadPool.getMomentumStatistic());
 
-        threadPool.getRateLimitPoolItem().get(RateLimitType.THREAD_TPS).setMax(500);
+        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS.getName()).setMax(500);
 
         threadEnvelope1.run();
         threadEnvelope2.run();
@@ -336,8 +335,8 @@ class ThreadEnvelopeTest {
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
 
-        threadPool.getRateLimitPoolItem().get(RateLimitType.THREAD_TPS).setMax(100);
-        threadPool.getRateLimit().get(RateLimitType.POOL_SIZE).setMax(10);
+        threadPool.getRateLimitPoolItem().get(RateLimitName.THREAD_TPS.getName()).setMax(100);
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE.getName()).setMax(10);
         threadPool.run();
         ThreadEnvelope threadEnvelope = threadPool.getPoolItem();
 
@@ -405,7 +404,7 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
-        threadPool.getRateLimit().get(RateLimitType.POOL_SIZE).setMax(10);
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE.getName()).setMax(10);
 
         threadPool.run();
         //При инициализации ресурс должен попадать в парковку
@@ -426,8 +425,8 @@ class ThreadEnvelopeTest {
         RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
         rateLimitManager.clear(); //Так предыдущие тесты уже насоздавали там данные
 
-        Assertions.assertFalse(rateLimitManager.contains(ThreadPool.class, namePool));
-        Assertions.assertFalse(rateLimitManager.contains(ThreadEnvelope.class, namePool));
+        Assertions.assertFalse(rateLimitManager.containsKey(CLassNameTitleImpl.getClassNameTitleStatic(ThreadPool.class, namePool)));
+        Assertions.assertFalse(rateLimitManager.containsKey(CLassNameTitleImpl.getClassNameTitleStatic(ThreadEnvelope.class, namePool)));
 
         ThreadPool threadPool = new ThreadPool(
                 namePool,
@@ -439,11 +438,11 @@ class ThreadEnvelopeTest {
         );
         threadPool.getRateLimit().reset();
         threadPool.getRateLimitPoolItem().reset();
-        threadPool.getRateLimit().get(RateLimitType.POOL_SIZE).setMax(10);
+        threadPool.getRateLimit().get(RateLimitName.POOL_SIZE.getName()).setMax(10);
 
         //Проверяем, что RateLimitItem создались в конструкторе ThreadPool
-        Assertions.assertTrue(rateLimitManager.contains(ThreadPool.class, namePool));
-        Assertions.assertTrue(rateLimitManager.contains(ThreadEnvelope.class, namePool));
+        Assertions.assertTrue(rateLimitManager.containsKey(threadPool.getClassNameTitle(namePool)));
+        Assertions.assertTrue(rateLimitManager.containsKey(threadPool.getClassNameTitle(namePool)));
 
         //Проверяем статус новых RateLimitItem - что они не активны, до тех пор пока не стартанёт pool
         RateLimit rateLimitPool = threadPool.getRateLimit();
