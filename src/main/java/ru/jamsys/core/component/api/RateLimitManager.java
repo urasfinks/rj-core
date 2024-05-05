@@ -41,7 +41,7 @@ public class RateLimitManager
     }
 
     public RateLimit get(@NonNull Class<?> clsOwner, @Nullable String key) {
-        return getItem(getKey(clsOwner, key));
+        return get(getKey(clsOwner, key));
     }
 
     public boolean contains(@NonNull Class<?> clsOwner, @Nullable String key) {

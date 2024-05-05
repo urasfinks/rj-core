@@ -19,7 +19,7 @@ public class PromiseTaskRetry implements Cron1s, PromiseGenerator {
     public PromiseTaskRetry(ApplicationContext applicationContext) {
         @SuppressWarnings("unchecked")
         CacheManager<PromiseTask> cacheManager = applicationContext.getBean(CacheManager.class);
-        this.promiseCache = cacheManager.getItem(PromiseTask.class.getSimpleName());
+        this.promiseCache = cacheManager.get(PromiseTask.class.getSimpleName());
         this.promiseCache.setOnExpired(this::retryPromiseTask);
     }
 

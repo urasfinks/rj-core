@@ -28,7 +28,7 @@ class BrokerTest {
     void testLiner() throws Exception {
         @SuppressWarnings("unchecked")
         BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
-        Broker<XTest> b = broker.getItem(XTest.class.getSimpleName());
+        Broker<XTest> b = broker.get(XTest.class.getSimpleName());
 
         b.setCyclical(false);
         b.setSizeQueue(10);
@@ -70,7 +70,7 @@ class BrokerTest {
     void testCyclic() throws Exception {
         @SuppressWarnings("unchecked")
         BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
-        Broker<XTest> b = broker.getItem(XTest.class.getSimpleName());
+        Broker<XTest> b = broker.get(XTest.class.getSimpleName());
 
         b.setCyclical(true);
         b.setSizeQueue(10);
@@ -124,7 +124,7 @@ class BrokerTest {
     void testReference() throws Exception {
         @SuppressWarnings("unchecked")
         BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
-        Broker<XTest> queue = broker.getItem(TimeControllerMs.class.getSimpleName());
+        Broker<XTest> queue = broker.get(TimeControllerMs.class.getSimpleName());
         XTest obj = new XTest(1);
         TimeEnvelopeMs<XTest> o1 = queue.addTest(obj);
         List<XTest> cloneQueue = queue.getCloneQueue(null);
@@ -139,7 +139,7 @@ class BrokerTest {
         AtomicBoolean isRun = new AtomicBoolean(true);
         @SuppressWarnings("unchecked")
         BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
-        Broker<XTest> queue = broker.getItem(XTest.class.getSimpleName());
+        Broker<XTest> queue = broker.get(XTest.class.getSimpleName());
         XTest obj = new XTest(1);
         XTest obj2 = new XTest(2);
         TimeEnvelopeMs<XTest> o1 = queue.addTest(obj);
@@ -158,7 +158,7 @@ class BrokerTest {
     void testMaxInputTps() {
         @SuppressWarnings("unchecked")
         BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
-        Broker<XTest> queue = broker.getItem(XTest.class.getSimpleName());
+        Broker<XTest> queue = broker.get(XTest.class.getSimpleName());
         queue.setMaxTpsInput(1);
         XTest obj = new XTest(1);
         try {

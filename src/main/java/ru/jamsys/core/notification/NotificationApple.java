@@ -113,7 +113,7 @@ public class NotificationApple implements Notification {
 
             try {
                 httpClient.setKeyStore(
-                        virtualFileSystem.getItem(virtualPath),
+                        virtualFileSystem.get(virtualPath),
                         FileViewKeyStore.prop.SECURITY_KEY.name(), securityAlias,
                         FileViewKeyStore.prop.TYPE.name(), "PKCS12"
                 );

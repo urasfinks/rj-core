@@ -77,7 +77,7 @@ class FileTest {
         File file = new File("hello/world/1.txt", FileLoaderFactory.fromString("Hello world", "UTF-8"));
         VirtualFileSystem virtualFileSystem = App.context.getBean(VirtualFileSystem.class);
         virtualFileSystem.add(file);
-        File file1 = virtualFileSystem.getItem("/hello/world/1.txt");
+        File file1 = virtualFileSystem.get("/hello/world/1.txt");
 
         Assertions.assertEquals(file, file1, "Файлы не равны");
 

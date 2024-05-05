@@ -15,7 +15,7 @@ public abstract class AbstractComponentCollection<
         > extends AbstractComponent<MO> {
 
     public MOIE add(String key, MOI object) throws Exception {
-        return getItem(key).add(object);
+        return get(key).add(object);
     }
 
 }

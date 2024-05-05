@@ -13,7 +13,7 @@ public abstract class AbstractComponentMap<
         > extends AbstractComponent<MO> {
 
     public void add(String key, String key2, MOI object) throws Exception {
-        getItem(key).add(key2, object);
+        get(key).add(key2, object);
     }
 
 }

@@ -424,7 +424,7 @@ class ThreadEnvelopeTest {
     public void checkInitialize2() {
 
         RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
-        rateLimitManager.reset(); //Так предыдущие тесты уже насоздавали там данные
+        rateLimitManager.clear(); //Так предыдущие тесты уже насоздавали там данные
 
         Assertions.assertFalse(rateLimitManager.contains(ThreadPool.class, namePool));
         Assertions.assertFalse(rateLimitManager.contains(ThreadEnvelope.class, namePool));

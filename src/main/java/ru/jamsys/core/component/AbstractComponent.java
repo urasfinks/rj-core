@@ -43,7 +43,7 @@ public abstract class AbstractComponent<MO extends Closable & TimeControllerMs &
     }
 
     @SuppressWarnings("unused")
-    public MO getItem(String key) {
+    public MO get(String key) {
         //If the key was not present in the map, it maps the passed value to the key and returns null.
         if (!map.containsKey(key)) {
             map.putIfAbsent(key, build(key));
@@ -51,13 +51,13 @@ public abstract class AbstractComponent<MO extends Closable & TimeControllerMs &
         return map.get(key);
     }
 
-    public void addItem(String key, MO object) {
+    public void put(String key, MO object) {
         map.putIfAbsent(key, object);
     }
 
     //Используйте только для тестирования
     @SuppressWarnings("unused")
-    public void reset() {
+    public void clear() {
         map.clear();
     }
 

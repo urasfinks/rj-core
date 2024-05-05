@@ -20,7 +20,7 @@ public class VirtualFileSystem extends AbstractComponent<File> {
     }
 
     public void add(File file) {
-        addItem(file.getAbsolutePath(), file);
+        put(file.getAbsolutePath(), file);
     }
 
 }

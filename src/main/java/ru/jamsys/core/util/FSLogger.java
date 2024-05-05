@@ -39,8 +39,8 @@ public class FSLogger {
     public FSLogger(ApplicationContext applicationContext) {
         @SuppressWarnings("unchecked")
         BrokerManager<Item> broker = applicationContext.getBean(BrokerManager.class);
-        toFs = broker.getItem(getClass().getSimpleName() + ".toFS");
-        fromFs = broker.getItem(getClass().getSimpleName() + ".fromFS");
+        toFs = broker.get(getClass().getSimpleName() + ".toFS");
+        fromFs = broker.get(getClass().getSimpleName() + ".fromFS");
     }
 
     public Item append(Map<String, String> header, String data) throws Exception {

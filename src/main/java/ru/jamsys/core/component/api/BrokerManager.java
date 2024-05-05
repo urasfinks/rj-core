@@ -32,13 +32,13 @@ public class BrokerManager<MOI>
     }
 
     public TimeEnvelopeMs<MOI> pollLast(String key) {
-        Broker<MOI> queue = getItem(key);
+        Broker<MOI> queue = get(key);
         return queue.pollLast();
     }
 
     @SuppressWarnings("unused")
     public TimeEnvelopeMs<MOI> pollFirst(String key) {
-        Broker<MOI> queue = getItem(key);
+        Broker<MOI> queue = get(key);
         return queue.pollFirst();
     }
 
