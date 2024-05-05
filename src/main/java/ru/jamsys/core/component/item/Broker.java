@@ -176,10 +176,6 @@ public class Broker<TEO>
         rateLimit.setActive(false);
     }
 
-    public TimeEnvelopeMs<TEO> addTest(TEO element) throws Exception {
-        return add(element, 6_000);
-    }
-
     public TimeEnvelopeMs<TEO> add(TEO element, long curTime, long timeOut) throws Exception {
         TimeEnvelopeMs<TEO> timeEnvelopeMs = new TimeEnvelopeMs<>(element);
         timeEnvelopeMs.setLastActivityMs(curTime);

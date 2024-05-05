@@ -35,7 +35,7 @@ class BrokerTest {
         b.setSizeQueueTail(3);
 
         for (int i = 0; i < 10; i++) {
-            b.addTest(new XTest(i));
+            b.add(new XTest(i), 6_000L);
         }
 
         Assertions.assertEquals(10, b.size(), "#1");
@@ -49,10 +49,10 @@ class BrokerTest {
         Assertions.assertEquals(8, b.size(), "#5");
 
         try {
-            b.addTest(new XTest(11));
-            b.addTest(new XTest(12));
-            b.addTest(new XTest(13));
-            b.addTest(new XTest(14));
+            b.add(new XTest(11), 6_000L);
+            b.add(new XTest(12), 6_000L);
+            b.add(new XTest(13), 6_000L);
+            b.add(new XTest(14), 6_000L);
             Assertions.fail("#6");
         } catch (Exception e) {
             Assertions.assertTrue(true, "#7");
@@ -77,7 +77,7 @@ class BrokerTest {
         b.setSizeQueueTail(3);
 
         for (int i = 0; i < 10; i++) {
-            b.addTest(new XTest(i));
+            b.add(new XTest(i), 6_000L);
         }
 
         Assertions.assertEquals("[XTest{x=0}, XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=9}]", b.getCloneQueue(null).toString());
@@ -99,13 +99,13 @@ class BrokerTest {
         Assertions.assertEquals(8, b.size());
 
         try {
-            b.addTest(new XTest(11));
+            b.add(new XTest(11), 6_000L);
             Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}]", b.getCloneQueue(null).toString());
-            b.addTest(new XTest(12));
+            b.add(new XTest(12), 6_000L);
             Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}]", b.getCloneQueue(null).toString());
-            b.addTest(new XTest(13));
+            b.add(new XTest(13), 6_000L);
             Assertions.assertEquals("[XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}]", b.getCloneQueue(null).toString());
-            b.addTest(new XTest(14));
+            b.add(new XTest(14), 6_000L);
             Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", b.getCloneQueue(null).toString());
             Assertions.assertTrue(true, "#6");
         } catch (Exception e) {
@@ -126,7 +126,7 @@ class BrokerTest {
         BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
         Broker<XTest> queue = broker.get(TimeControllerMs.class.getSimpleName());
         XTest obj = new XTest(1);
-        TimeEnvelopeMs<XTest> o1 = queue.addTest(obj);
+        TimeEnvelopeMs<XTest> o1 = queue.add(obj, 6_000L);
         List<XTest> cloneQueue = queue.getCloneQueue(null);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.getFirst().hashCode(), "#1");
         queue.remove(o1);
@@ -142,8 +142,8 @@ class BrokerTest {
         Broker<XTest> queue = broker.get(XTest.class.getSimpleName());
         XTest obj = new XTest(1);
         XTest obj2 = new XTest(2);
-        TimeEnvelopeMs<XTest> o1 = queue.addTest(obj);
-        TimeEnvelopeMs<XTest> o2 = queue.addTest(obj2);
+        TimeEnvelopeMs<XTest> o1 = queue.add(obj, 6_000L);
+        TimeEnvelopeMs<XTest> o2 = queue.add(obj2, 6_000L);
         List<XTest> cloneQueue = queue.getCloneQueue(isRun);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
         Assertions.assertEquals(obj2.hashCode(), cloneQueue.get(1).hashCode(), "#2");
@@ -162,12 +162,12 @@ class BrokerTest {
         queue.setMaxTpsInput(1);
         XTest obj = new XTest(1);
         try {
-            queue.addTest(obj);
+            queue.add(obj, 6_000L);
         } catch (Exception e) {
             Assertions.fail();
         }
         try {
-            queue.addTest(obj);
+            queue.add(obj, 6_000L);
             Assertions.fail();
         } catch (Exception e) {
             Assertions.assertTrue(true);
