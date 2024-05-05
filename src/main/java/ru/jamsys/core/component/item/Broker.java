@@ -2,13 +2,13 @@ package ru.jamsys.core.component.item;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.api.RateLimitManager;
-import ru.jamsys.core.extension.addable.AddableCollectionItem;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.IgnoreClassFinder;
 import ru.jamsys.core.extension.StatisticsFlush;
+import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.RateLimitType;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 // и на вход надо было уже подавать объект TimeEnvelope<TEO>
 // Я захотел, что бы везде было одинаково только лишь поэтому TEO -> TimeEnvelope<TEO>
 
+//TODO: кто чистит очередь от протухших сообщение?
+
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Getter
 @Setter
@@ -40,7 +42,7 @@ public class Broker<TEO>
         implements
         StatisticsFlush,
         Closable,
-        AddableCollectionItem<
+        AddToList<
                 TimeEnvelopeMs<TEO>,
                 TimeEnvelopeMs<TEO>
                 > {
@@ -54,13 +56,9 @@ public class Broker<TEO>
 
     private final AvgMetric timeInQueue = new AvgMetric();
 
-    private int sizeQueue = 3000;
-
-    private int sizeTail = 5;
-
     private boolean cyclical = true;
 
-    public int getSize() {
+    public int size() {
         return queue.size();
     }
 
@@ -70,21 +68,30 @@ public class Broker<TEO>
 
     final RateLimit rateLimit;
 
-    final RateLimitItem rateLimitSize;
+    final RateLimitItem rliQueueSize;
 
-    final RateLimitItem rateLimitTps;
+    final RateLimitItem rliTailSize;
 
-    public Broker(String key) {
-        rateLimit = App.context.getBean(RateLimitManager.class).get(getClass(), key);
-        rateLimitSize = rateLimit.get(RateLimitType.BROKER_SIZE);
-        rateLimitSize.setMax(sizeQueue);
-        rateLimitTps = rateLimit.get(RateLimitType.BROKER_TPS);
+    final RateLimitItem rliTps;
+
+    public Broker(String key, ApplicationContext applicationContext) {
+        rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClass(), key);
+        rliQueueSize = rateLimit.get(RateLimitType.BROKER_SIZE);
+        rliQueueSize.setMax(3000);
+
+        rliTailSize = rateLimit.get(RateLimitType.BROKER_TAIL_SIZE);
+        rliTailSize.setMax(5);
+
+        rliTps = rateLimit.get(RateLimitType.BROKER_TPS);
         rateLimit.setActive(true);
     }
 
     public void setSizeQueue(int newSize) {
-        sizeQueue = newSize;
-        rateLimitSize.setMax(newSize);
+        rliQueueSize.setMax(newSize);
+    }
+
+    public void setSizeQueueTail(int newSize) {
+        rliTailSize.setMax(newSize);
     }
 
     private void statistic(TimeEnvelopeMs<TEO> timeEnvelopeMs) {
@@ -131,14 +138,14 @@ public class Broker<TEO>
         queue.clear();
         tail.clear();
         tpsDequeue.set(0);
-        sizeQueue = 3000;
-        sizeTail = 5;
         cyclical = true;
         rateLimit.reset();
+        rliTailSize.setMax(5);
+        rliQueueSize.setMax(3000);
     }
 
     public void setMaxTpsInput(int maxTpsInput) {
-        rateLimitTps.setMax(maxTpsInput);
+        rliTps.setMax(maxTpsInput);
     }
 
     public List<TEO> getTail(@Nullable AtomicBoolean isRun) {
@@ -190,15 +197,15 @@ public class Broker<TEO>
         if (timeEnvelopeMs == null) {
             throw new Exception("Element null");
         }
-        if (!rateLimitTps.check(null)) {
+        if (!rliTps.check(null)) {
             throw new Exception(getExceptionInformation("RateLimitTps", timeEnvelopeMs));
         }
         if (cyclical) {
-            if (!rateLimitSize.check(queue.size() + 1)) {
+            if (!rliQueueSize.check(queue.size() + 1)) {
                 queue.removeFirst();
             }
         } else {
-            if (!rateLimitSize.check(queue.size())) {
+            if (!rliQueueSize.check(queue.size())) {
                 throw new Exception(getExceptionInformation("RateLimitSize", timeEnvelopeMs));
             }
         }
@@ -207,7 +214,7 @@ public class Broker<TEO>
         }
         queue.add(timeEnvelopeMs);
         tail.add(timeEnvelopeMs);
-        if (tail.size() > sizeTail) {
+        if (!rliTailSize.check(tail.size())) {
             tail.pollFirst();
         }
         return timeEnvelopeMs;
@@ -217,8 +224,8 @@ public class Broker<TEO>
     String getExceptionInformation(String cause, TimeEnvelopeMs<TEO> timeEnvelopeMs) {
         StringBuilder sb = new StringBuilder()
                 .append("Cause: ").append(cause).append("; ")
-                .append("Max tps: ").append(rateLimitTps.getMax()).append("; ")
-                .append("Limit size: ").append(rateLimitSize.getMax()).append("; ")
+                .append("Max tps: ").append(rliTps.getMax()).append("; ")
+                .append("Limit size: ").append(rliQueueSize.getMax()).append("; ")
                 .append("Class add: ").append(timeEnvelopeMs.getValue().getClass().getSimpleName()).append("; ")
                 .append("Object add: ").append(timeEnvelopeMs.getValue().toString()).append("; ");
         return sb.toString();

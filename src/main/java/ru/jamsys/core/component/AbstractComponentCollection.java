@@ -1,6 +1,6 @@
 package ru.jamsys.core.component;
 
-import ru.jamsys.core.extension.addable.AddableCollectionItem;
+import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.statistic.time.TimeControllerMs;
@@ -9,7 +9,7 @@ import ru.jamsys.core.statistic.time.TimeControllerMs;
 //MOI - MapObjectItem
 //MOIE - MapObjectItemEnvelop
 public abstract class AbstractComponentCollection<
-        MO extends AddableCollectionItem<MOI, MOIE> & Closable & TimeControllerMs & StatisticsFlush,
+        MO extends AddToList<MOI, MOIE> & Closable & TimeControllerMs & StatisticsFlush,
         MOI,
         MOIE
         > extends AbstractComponent<MO> {

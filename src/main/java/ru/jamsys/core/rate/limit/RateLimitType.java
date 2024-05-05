@@ -8,6 +8,7 @@ import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 public enum RateLimitType implements EnumName {
 
     BROKER_SIZE(RateLimitItemInstance.MAX),
+    BROKER_TAIL_SIZE(RateLimitItemInstance.MAX),
     BROKER_TPS(RateLimitItemInstance.TPS),
     POOL_SIZE(RateLimitItemInstance.MAX),
     THREAD_TPS(RateLimitItemInstance.TPS),

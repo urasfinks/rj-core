@@ -1,6 +1,6 @@
 package ru.jamsys.core.component;
 
-import ru.jamsys.core.extension.addable.AddableMapItem;
+import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.statistic.time.TimeControllerMs;
@@ -8,7 +8,7 @@ import ru.jamsys.core.statistic.time.TimeControllerMs;
 //MO - MapObject
 //MOI - MapObjectItem
 public abstract class AbstractComponentMap<
-        MO extends AddableMapItem<String, MOI> & Closable & TimeControllerMs & StatisticsFlush,
+        MO extends AddToMap<String, MOI> & Closable & TimeControllerMs & StatisticsFlush,
         MOI
         > extends AbstractComponent<MO> {
 

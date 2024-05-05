@@ -3,7 +3,7 @@ package ru.jamsys.core.extension.addable;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-public interface AddableMapItem<K, V> {
+public interface AddToMap<K, V> {
 
     Map<K, V> getMap();
 

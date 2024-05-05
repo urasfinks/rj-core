@@ -2,7 +2,7 @@ package ru.jamsys.core.rate.limit;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.extension.addable.AddableMapItem;
+import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.StatisticsCollectorMap;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @SuppressWarnings("unused")
 public class RateLimit
         extends TimeControllerMsImpl
-        implements StatisticsCollectorMap<RateLimitItem>, Closable, AddableMapItem<String, RateLimitItem> {
+        implements StatisticsCollectorMap<RateLimitItem>, Closable, AddToMap<String, RateLimitItem> {
 
     final Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
 

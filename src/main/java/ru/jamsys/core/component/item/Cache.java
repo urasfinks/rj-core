@@ -3,7 +3,7 @@ package ru.jamsys.core.component.item;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.jamsys.core.extension.addable.AddableMapItem;
+import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.StatisticsFlush;
@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class Cache<K, TEO>
         extends TimeControllerMsImpl
-        implements StatisticsFlush, KeepAlive, Closable, AddableMapItem<K, TimeEnvelopeMs<TEO>> {
+        implements StatisticsFlush, KeepAlive, Closable, AddToMap<K, TimeEnvelopeMs<TEO>> {
 
     @Getter
     final Map<K, TimeEnvelopeMs<TEO>> map = new ConcurrentHashMap<>();

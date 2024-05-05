@@ -5,11 +5,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import ru.jamsys.core.App;
-
-import ru.jamsys.core.component.item.Broker;
 import ru.jamsys.core.component.api.BrokerManager;
+import ru.jamsys.core.component.item.Broker;
 import ru.jamsys.core.statistic.time.TimeControllerMs;
-import ru.jamsys.core.statistic.time.TimeControllerMsImpl;
 import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
 
 import java.util.List;
@@ -34,21 +32,21 @@ class BrokerTest {
 
         b.setCyclical(false);
         b.setSizeQueue(10);
-        b.setSizeTail(3);
+        b.setSizeQueueTail(3);
 
         for (int i = 0; i < 10; i++) {
             b.addTest(new XTest(i));
         }
 
-        Assertions.assertEquals(10, b.getSize(), "#1");
+        Assertions.assertEquals(10, b.size(), "#1");
 
         TimeEnvelopeMs<XTest> t = b.pollFirst();
         Assertions.assertEquals(0, t.getValue().x, "#2");
-        Assertions.assertEquals(9, b.getSize(), "#3");
+        Assertions.assertEquals(9, b.size(), "#3");
 
         TimeEnvelopeMs<XTest> t2 = b.pollLast();
         Assertions.assertEquals(9, t2.getValue().x, "#4");
-        Assertions.assertEquals(8, b.getSize(), "#5");
+        Assertions.assertEquals(8, b.size(), "#5");
 
         try {
             b.addTest(new XTest(11));
@@ -76,7 +74,7 @@ class BrokerTest {
 
         b.setCyclical(true);
         b.setSizeQueue(10);
-        b.setSizeTail(3);
+        b.setSizeQueueTail(3);
 
         for (int i = 0; i < 10; i++) {
             b.addTest(new XTest(i));
@@ -84,21 +82,21 @@ class BrokerTest {
 
         Assertions.assertEquals("[XTest{x=0}, XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=9}]", b.getCloneQueue(null).toString());
 
-        Assertions.assertEquals(10, b.getSize());
+        Assertions.assertEquals(10, b.size());
 
         TimeEnvelopeMs<XTest> t = b.pollFirst();
 
         Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=9}]", b.getCloneQueue(null).toString());
 
         Assertions.assertEquals(0, t.getValue().x);
-        Assertions.assertEquals(9, b.getSize());
+        Assertions.assertEquals(9, b.size());
 
         TimeEnvelopeMs<XTest> t2 = b.pollLast();
 
         Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}]", b.getCloneQueue(null).toString());
 
         Assertions.assertEquals(9, t2.getValue().x);
-        Assertions.assertEquals(8, b.getSize());
+        Assertions.assertEquals(8, b.size());
 
         try {
             b.addTest(new XTest(11));
@@ -132,7 +130,7 @@ class BrokerTest {
         List<XTest> cloneQueue = queue.getCloneQueue(null);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.getFirst().hashCode(), "#1");
         queue.remove(o1);
-        Assertions.assertEquals(0, queue.getSize(), "#1");
+        Assertions.assertEquals(0, queue.size(), "#1");
         queue.reset();
     }
 
@@ -150,9 +148,9 @@ class BrokerTest {
         Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
         Assertions.assertEquals(obj2.hashCode(), cloneQueue.get(1).hashCode(), "#2");
         queue.remove(o1);
-        Assertions.assertEquals(1, queue.getSize(), "#3");
+        Assertions.assertEquals(1, queue.size(), "#3");
         queue.remove(o2);
-        Assertions.assertEquals(0, queue.getSize(), "#4");
+        Assertions.assertEquals(0, queue.size(), "#4");
         queue.reset();
     }
 
@@ -178,7 +176,7 @@ class BrokerTest {
         queue.reset();
     }
 
-    static class XTest extends TimeControllerMsImpl {
+    static class XTest {
         final int x;
 
         XTest(int x) {
@@ -192,4 +190,5 @@ class BrokerTest {
                     '}';
         }
     }
+
 }

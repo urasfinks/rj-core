@@ -38,3 +38,4 @@ build/
 /security/
 /security/*
 /src/main/java/ru/jamsys/core/SecurityKey.java
+/log/
