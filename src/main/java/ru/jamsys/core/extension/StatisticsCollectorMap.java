@@ -11,11 +11,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface StatisticsCollectorMap<T extends StatisticsFlush> extends StatisticsFlush {
 
-    Map<String, T> getMapStatisticCollectorMap();
+    Map<String, T> getMapForFlushStatistic();
 
     @Override
     default List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun){
-        Map<String, T> map = getMapStatisticCollectorMap();
+        Map<String, T> map = getMapForFlushStatistic();
         List<Statistic> result = new ArrayList<>();
         String clsName = getClass().getSimpleName();
         Util.riskModifierMap(

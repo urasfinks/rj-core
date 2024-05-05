@@ -29,7 +29,7 @@ public class RateLimit
     }
 
     @Override
-    public Map<String, RateLimitItem> getMapStatisticCollectorMap() {
+    public Map<String, RateLimitItem> getMapForFlushStatistic() {
         return map;
     }
 

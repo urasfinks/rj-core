@@ -21,7 +21,7 @@ public abstract class AbstractComponent<MO extends Closable & TimeControllerMs &
     protected boolean cleanableMap = true;
 
     @Override
-    public Map<String, MO> getMapStatisticCollectorMap() {
+    public Map<String, MO> getMapForFlushStatistic() {
         return map;
     }
 
