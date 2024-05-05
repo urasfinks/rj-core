@@ -1,4 +1,4 @@
-package ru.jamsys.core.util;
+package ru.jamsys.core.component.resource;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -19,7 +19,7 @@ import java.util.Map;
 
 @Getter
 @Component
-public class FSLogger {
+public class LoggerManager {
 
     @ToString
     public static class Item {
@@ -36,7 +36,7 @@ public class FSLogger {
 
     public final Broker<Item> fromFs;
 
-    public FSLogger(ApplicationContext applicationContext) {
+    public LoggerManager(ApplicationContext applicationContext) {
         @SuppressWarnings("unchecked")
         BrokerManager<Item> broker = applicationContext.getBean(BrokerManager.class);
         toFs = broker.get(getClass().getSimpleName() + ".toFS");
