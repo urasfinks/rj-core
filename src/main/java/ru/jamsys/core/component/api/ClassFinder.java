@@ -1,6 +1,6 @@
 package ru.jamsys.core.component.api;
 
-import org.springframework.context.annotation.Lazy;
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.IgnoreClassFinder;
@@ -10,17 +10,17 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
-@Lazy
 public class ClassFinder {
 
     private final List<Class<?>> availableClass;
+
+    // Используется для однозначности имён на графиках в CLassNameTitle
+    @Getter
+    private final Map<Class<?>, String> uniqueClassName = new HashMap<>();
 
     private final ExceptionHandler exceptionHandler;
 
@@ -29,6 +29,31 @@ public class ClassFinder {
         @SuppressWarnings("SameParameterValue")
         String pkg = "ru.jamsys";
         availableClass = getAvailableClass(pkg);
+        fillUniqueClassName();
+    }
+
+    private void fillUniqueClassName() {
+        Map<String, Integer> countDuplicateSimpleName = new HashMap<>();
+        availableClass.forEach((Class<?> cls) -> {
+            String simpleName = cls.getSimpleName();
+            if (!simpleName.isEmpty()) {
+                if (!countDuplicateSimpleName.containsKey(simpleName)) {
+                    countDuplicateSimpleName.put(simpleName, 0);
+                }
+                countDuplicateSimpleName.put(simpleName, countDuplicateSimpleName.get(simpleName) + 1);
+            }
+        });
+        availableClass.forEach((Class<?> cls) -> {
+            String simpleName = cls.getSimpleName();
+            if (!simpleName.isEmpty()) {
+                if (countDuplicateSimpleName.get(simpleName) > 1) {
+                    uniqueClassName.put(cls, cls.getName());
+                    System.err.println("Duplicate class name: " + cls.getName());
+                } else {
+                    uniqueClassName.put(cls, cls.getSimpleName());
+                }
+            }
+        });
     }
 
     private <T> List<Class<T>> getActualType(Type[] genericInterfaces, Class<T> fnd) {

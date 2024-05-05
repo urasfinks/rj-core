@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Getter
 @Setter
-@IgnoreClassFinder
+//@IgnoreClassFinder // не знаю почему он был исключён
 public class Broker<TEO>
         extends TimeControllerMsImpl
         implements
@@ -82,7 +82,7 @@ public class Broker<TEO>
     public Broker(String index, ApplicationContext applicationContext) {
         this.index = index;
 
-        rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassNameTitle(index))
+        rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassNameTitle(index, applicationContext))
                 .init(RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(RateLimitName.BROKER_TAIL_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(RateLimitName.BROKER_TPS.getName(), RateLimitItemInstance.TPS);

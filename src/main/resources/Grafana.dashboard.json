@@ -456,12 +456,12 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "RateLimitItem"
+              "options": "RateLimit"
             },
             "properties": [
               {
                 "id": "custom.width",
-                "value": 100
+                "value": 115
               },
               {
                 "id": "custom.align",
@@ -936,7 +936,7 @@
     "list": [
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "All",
           "value": "$__all"
         },
@@ -967,6 +967,6 @@
   "timezone": "",
   "title": "New dashboard",
   "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 30,
+  "version": 31,
   "weekStart": ""
 }
