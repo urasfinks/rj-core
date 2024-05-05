@@ -52,6 +52,7 @@ public class Broker<TEO>
     //Последний сообщения проходящие через очередь
     private final ConcurrentLinkedDeque<TimeEnvelopeMs<TEO>> tail = new ConcurrentLinkedDeque<>();
 
+    // Я подумал, при деградации хорошо увидеть, что очередь вообще читается
     private final AtomicInteger tpsDequeue = new AtomicInteger(0);
 
     private final AvgMetric timeInQueue = new AvgMetric();
