@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Broker<TEO>
         extends TimeControllerMsImpl
         implements
-        CLassNameTitle,
+        ClassName,
         StatisticsFlush,
         Closable,
         KeepAlive,
@@ -82,7 +82,7 @@ public class Broker<TEO>
     public Broker(String index, ApplicationContext applicationContext) {
         this.index = index;
 
-        rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassNameTitle(index, applicationContext))
+        rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(index, applicationContext))
                 .init(RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(RateLimitName.BROKER_TAIL_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(RateLimitName.BROKER_TPS.getName(), RateLimitItemInstance.TPS);

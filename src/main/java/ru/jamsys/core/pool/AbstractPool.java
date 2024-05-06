@@ -7,8 +7,8 @@ import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.api.RateLimitManager;
-import ru.jamsys.core.extension.CLassNameTitle;
-import ru.jamsys.core.extension.CLassNameTitleImpl;
+import ru.jamsys.core.extension.ClassName;
+import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.RunnableInterface;
 import ru.jamsys.core.rate.limit.RateLimitName;
@@ -31,7 +31,7 @@ import java.util.function.Function;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<T extends PoolItem<T>>
-        extends TimeControllerMsImpl implements Pool<T>, RunnableInterface, KeepAlive, CLassNameTitle {
+        extends TimeControllerMsImpl implements Pool<T>, RunnableInterface, KeepAlive, ClassName {
 
     public static ThreadLocal<Pool<?>> context = new ThreadLocal<>();
 
@@ -77,11 +77,11 @@ public abstract class AbstractPool<T extends PoolItem<T>>
         this.name = name;
         this.min = min;
         RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
-        rateLimit = rateLimitManager.get(getClassNameTitle(name))
+        rateLimit = rateLimitManager.get(getClassName(name))
                 .init(RateLimitName.POOL_SIZE.getName(), RateLimitItemInstance.MAX);
         rliPoolSize = rateLimit.get(RateLimitName.POOL_SIZE.getName());
 
-        rateLimitPoolItem = rateLimitManager.get(CLassNameTitleImpl.getClassNameTitleStatic(cls, name));
+        rateLimitPoolItem = rateLimitManager.get(ClassNameImpl.getClassNameStatic(cls, name));
 
     }
 

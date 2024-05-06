@@ -7,7 +7,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.api.ClassFinder;
 import ru.jamsys.core.component.api.RateLimitManager;
 import ru.jamsys.core.component.item.CronPromise;
-import ru.jamsys.core.extension.CLassNameTitle;
+import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.RunnableComponent;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.resource.thread.ThreadEnvelope;
@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
-public class CronManager implements RunnableComponent, CLassNameTitle {
+public class CronManager implements RunnableComponent, ClassName {
 
     final private ThreadPool threadPool;
     final private List<CronPromise> listItem = new ArrayList<>();
@@ -36,7 +36,7 @@ public class CronManager implements RunnableComponent, CLassNameTitle {
     ) {
         initList(classFinder, applicationContext, exceptionHandler);
         this.threadPool = new ThreadPool(
-                getClassNameTitle(null),
+                getClassName(),
                 1,
                 (ThreadEnvelope threadEnvelope) -> {
                     long nextStartMs = System.currentTimeMillis();

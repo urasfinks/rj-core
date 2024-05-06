@@ -3,7 +3,7 @@ package ru.jamsys.core.resource.jdbc;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.api.RateLimitManager;
-import ru.jamsys.core.extension.CLassNameTitle;
+import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.pool.Pool;
 import ru.jamsys.core.pool.PoolItem;
 import ru.jamsys.core.rate.limit.RateLimitName;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConnectionEnvelope extends PoolItem<ConnectionEnvelope> implements CLassNameTitle {
+public class ConnectionEnvelope extends PoolItem<ConnectionEnvelope> implements ClassName {
 
     final private Connection connection;
 
@@ -31,7 +31,7 @@ public class ConnectionEnvelope extends PoolItem<ConnectionEnvelope> implements 
     public ConnectionEnvelope(Connection connection, Pool<ConnectionEnvelope> pool) {
         super(pool);
         this.connection = connection;
-        rateLimit = App.context.getBean(RateLimitManager.class).get(getClassNameTitle(pool.getName()));
+        rateLimit = App.context.getBean(RateLimitManager.class).get(getClassName(pool.getName()));
         rateLimit.init(RateLimitName.POOL_ITEM_TPS.getName(), RateLimitItemInstance.TPS);
     }
 

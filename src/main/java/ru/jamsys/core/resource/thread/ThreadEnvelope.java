@@ -5,7 +5,7 @@ import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.api.RateLimitManager;
-import ru.jamsys.core.extension.CLassNameTitle;
+import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.Pool;
 import ru.jamsys.core.pool.PoolItem;
@@ -25,7 +25,7 @@ import java.util.function.Function;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @ToString(onlyExplicitlyIncluded = true)
-public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements CLassNameTitle {
+public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements ClassName {
 
     private final Thread thread;
 
@@ -66,7 +66,7 @@ public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements CLassNam
 
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, Function<ThreadEnvelope, Boolean> fn) {
         super(pool);
-        RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClassNameTitle(pool.getName()));
+        RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClassName(pool.getName()));
         rateLimit.init(RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);
         info
                 .append("[")
@@ -104,7 +104,7 @@ public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements CLassNam
 
     private void raiseUp(String cause, String action) {
         App.context.getBean(ExceptionHandler.class).handler(
-                new RuntimeException("class: " + getClassNameTitle(null)
+                new RuntimeException("class: " + getClassName()
                         + "; action: " + action
                         + "; cause: " + cause + " \r\n"
                         + info)

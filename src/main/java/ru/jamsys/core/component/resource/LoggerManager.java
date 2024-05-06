@@ -8,7 +8,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.api.BrokerManager;
 import ru.jamsys.core.component.item.Broker;
-import ru.jamsys.core.extension.CLassNameTitle;
+import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
 
 import java.io.FileInputStream;
@@ -22,7 +22,7 @@ import java.util.Map;
 
 @Getter
 @Component
-public class LoggerManager implements CLassNameTitle {
+public class LoggerManager implements ClassName {
 
     @ToString
     public static class Item {
@@ -40,7 +40,7 @@ public class LoggerManager implements CLassNameTitle {
     public LoggerManager(ApplicationContext applicationContext) {
         @SuppressWarnings("unchecked")
         BrokerManager<Item> broker = applicationContext.getBean(BrokerManager.class);
-        toFs = broker.get(getClassNameTitle("ToFS", applicationContext));
+        toFs = broker.get(getClassName("ToFS", applicationContext));
     }
 
     public Item append(Map<String, String> header, String data) throws Exception {

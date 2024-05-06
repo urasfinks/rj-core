@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.api.BrokerManager;
 import ru.jamsys.core.component.item.Broker;
 import ru.jamsys.core.component.promise.api.InfluxClientPromise;
-import ru.jamsys.core.extension.CLassNameTitle;
-import ru.jamsys.core.extension.CLassNameTitleImpl;
+import ru.jamsys.core.extension.ClassName;
+import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseImpl;
@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
-public class SendStatisticToInflux implements Cron5s, PromiseGenerator, CLassNameTitle {
+public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassName {
 
     final BrokerManager<StatisticSec> broker;
 
@@ -34,7 +34,7 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, CLassNam
 
     @Override
     public Promise generate() {
-        Promise promise = new PromiseImpl(getClassNameTitle(null));
+        Promise promise = new PromiseImpl(getClassName());
         return promise;
     }
 
@@ -42,7 +42,7 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, CLassNam
         //TODO: replace ::collector IO -> COMPUTE (в текущий момент нет реализации COMPUTE)
         Promise promise = new PromiseImpl(getClass().getName());
         promise.append(getClass().getName() + "::collector", PromiseTaskType.IO, (AtomicBoolean isThreadRun) -> {
-                    Broker<StatisticSec> queue = broker.get(CLassNameTitleImpl.getClassNameTitleStatic(StatisticSec.class, null));
+                    Broker<StatisticSec> queue = broker.get(ClassNameImpl.getClassNameStatic(StatisticSec.class, null));
                     List<Point> listPoints = new ArrayList<>();
                     while (!queue.isEmpty() && isThreadRun.get()) {
                         TimeEnvelopeMs<StatisticSec> statisticSec = queue.pollFirst();

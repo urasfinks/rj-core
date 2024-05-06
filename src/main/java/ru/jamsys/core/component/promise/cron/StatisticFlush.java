@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.api.BrokerManager;
 import ru.jamsys.core.component.api.ClassFinder;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.extension.CLassNameTitleImpl;
+import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
@@ -44,7 +44,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
             ExceptionHandler exceptionHandler
     ) {
         this.broker = broker;
-        this.brokerIndex = CLassNameTitleImpl.getClassNameTitleStatic(StatisticSec.class, null, applicationContext);
+        this.brokerIndex = ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext);
         this.exceptionHandler = exceptionHandler;
         classFinder.findByInstance(StatisticsFlushComponent.class).forEach((Class<StatisticsFlushComponent> statisticsCollectorClass)
                 -> list.add(applicationContext.getBean(statisticsCollectorClass)));
@@ -57,7 +57,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
                     StatisticSec statisticSec = new StatisticSec();
                     Util.riskModifierCollection(isThreadRun, list, new StatisticsFlushComponent[0], (StatisticsFlushComponent statisticsFlushComponent) -> {
                         Map<String, String> parentTags = new LinkedHashMap<>();
-                        String measurement = CLassNameTitleImpl.getClassNameTitleStatic(statisticsFlushComponent.getClass(), null);
+                        String measurement = ClassNameImpl.getClassNameStatic(statisticsFlushComponent.getClass(), null);
                         parentTags.put("measurement", measurement);
                         parentTags.put("Host", ip);
                         List<Statistic> statistics = statisticsFlushComponent.flushAndGetStatistic(

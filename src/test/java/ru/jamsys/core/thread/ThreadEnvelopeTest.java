@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.api.RateLimitManager;
-import ru.jamsys.core.extension.CLassNameTitleImpl;
+import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.resource.thread.ThreadEnvelope;
@@ -425,8 +425,8 @@ class ThreadEnvelopeTest {
         RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
         rateLimitManager.clear(); //Так предыдущие тесты уже насоздавали там данные
 
-        Assertions.assertFalse(rateLimitManager.containsKey(CLassNameTitleImpl.getClassNameTitleStatic(ThreadPool.class, namePool)));
-        Assertions.assertFalse(rateLimitManager.containsKey(CLassNameTitleImpl.getClassNameTitleStatic(ThreadEnvelope.class, namePool)));
+        Assertions.assertFalse(rateLimitManager.containsKey(ClassNameImpl.getClassNameStatic(ThreadPool.class, namePool)));
+        Assertions.assertFalse(rateLimitManager.containsKey(ClassNameImpl.getClassNameStatic(ThreadEnvelope.class, namePool)));
 
         ThreadPool threadPool = new ThreadPool(
                 namePool,
@@ -441,8 +441,8 @@ class ThreadEnvelopeTest {
         threadPool.getRateLimit().get(RateLimitName.POOL_SIZE.getName()).setMax(10);
 
         //Проверяем, что RateLimitItem создались в конструкторе ThreadPool
-        Assertions.assertTrue(rateLimitManager.containsKey(threadPool.getClassNameTitle(namePool)));
-        Assertions.assertTrue(rateLimitManager.containsKey(threadPool.getClassNameTitle(namePool)));
+        Assertions.assertTrue(rateLimitManager.containsKey(threadPool.getClassName(namePool)));
+        Assertions.assertTrue(rateLimitManager.containsKey(threadPool.getClassName(namePool)));
 
         //Проверяем статус новых RateLimitItem - что они не активны, до тех пор пока не стартанёт pool
         RateLimit rateLimitPool = threadPool.getRateLimit();
