@@ -41,7 +41,7 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
     public Promise generateOld() {
         //TODO: replace ::collector IO -> COMPUTE (в текущий момент нет реализации COMPUTE)
         Promise promise = new PromiseImpl(getClass().getName());
-        promise.append(getClass().getName() + "::collector", PromiseTaskType.IO, (AtomicBoolean isThreadRun) -> {
+        promise.append(getClassName("collector"), PromiseTaskType.IO, (AtomicBoolean isThreadRun) -> {
                     Broker<StatisticSec> queue = broker.get(ClassNameImpl.getClassNameStatic(StatisticSec.class, null));
                     List<Point> listPoints = new ArrayList<>();
                     while (!queue.isEmpty() && isThreadRun.get()) {
@@ -63,7 +63,7 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
                     promise.getProperty().put("preparePoint", listPoints);
                 })
                 .waits()
-                .api(getClass().getName() + "::sendToInflux", new InfluxClientPromise().beforeExecute((InfluxClientPromise influxClientPromise) -> {
+                .api(getClassName("sendToInflux"), new InfluxClientPromise().beforeExecute((InfluxClientPromise influxClientPromise) -> {
                     @SuppressWarnings("unchecked")
                     List<Point> list = (List<Point>) promise.getProperty().get("preparePoint");
                     influxClientPromise.getList().addAll(list);

@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 //              После установки время протухания изменить нельзя, так как индекс уже был зафиксирован
 // Я захотел, что бы везде было одинаково. Только лишь поэтому TEO -> TimeEnvelope<TEO>
 
+//TODO: сделать TEO наследуемым от getIndex (RqUID)
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Getter
 @Setter
@@ -108,26 +109,44 @@ public class Broker<TEO>
     private void statistic(TimeEnvelopeMs<TEO> timeEnvelopeMs) {
         //#1, что бы видеть реальное кол-во опросов изъятия
         tpsDequeue.incrementAndGet();
-        if (timeEnvelopeMs != null) {
-            timeInQueue.add(timeEnvelopeMs.getOffsetLastActivityMs());
-        }
+        timeInQueue.add(timeEnvelopeMs.getOffsetLastActivityMs());
     }
 
     public TimeEnvelopeMs<TEO> pollFirst() {
-        TimeEnvelopeMs<TEO> result = queue.pollFirst();
-        statistic(result);
-        return result;
+        do {
+            TimeEnvelopeMs<TEO> result = queue.pollFirst();
+            if (result == null) {
+                return null;
+            }
+            statistic(result);
+            if (result.isExpired()) {
+                continue;
+            }
+            return result;
+        } while (!queue.isEmpty());
+        return null;
     }
 
     public TimeEnvelopeMs<TEO> pollLast() {
-        TimeEnvelopeMs<TEO> result = queue.pollLast();
-        statistic(result);
-        return result;
+        do {
+            TimeEnvelopeMs<TEO> result = queue.pollLast();
+            if (result == null) {
+                return null;
+            }
+            statistic(result);
+            if (result.isExpired()) {
+                continue;
+            }
+            return result;
+        } while (!queue.isEmpty());
+        return null;
     }
 
     public void remove(TimeEnvelopeMs<TEO> timeEnvelopeMs) {
-        statistic(timeEnvelopeMs);
-        queue.remove(timeEnvelopeMs);
+        if (timeEnvelopeMs != null) {
+            statistic(timeEnvelopeMs);
+            queue.remove(timeEnvelopeMs);
+        }
     }
 
     @SafeVarargs
