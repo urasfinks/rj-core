@@ -6,6 +6,9 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.item.Log;
 import ru.jamsys.core.component.resource.LogManager;
 
+import java.util.List;
+import java.util.Map;
+
 class LogManagerTest {
     @BeforeAll
     static void beforeAll() {
@@ -21,7 +24,8 @@ class LogManagerTest {
         logManager.append("log", new Log().setData("Hello world"));
         logManager.append("log", new Log().setData("Hello world"));
         logManager.append("log", new Log().setData("Hello world"));
-        logManager.writeToFs("log");
+        List<Map<String, Integer>> log = logManager.writeToFs("log");
+        System.out.println(log);
 
 //        LogManager.Item item1 = logManager.append(new HashMapBuilder<String, String>().append("test", "hello"), "world");
 //        Assertions.assertEquals(1, logManager.getToFs().size());

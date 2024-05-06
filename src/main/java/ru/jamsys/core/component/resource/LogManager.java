@@ -82,7 +82,8 @@ public class LogManager implements ClassName {
         }
     }
 
-    public void writeToFs(String indexBroker) {
+    public List<Map<String, Integer>> writeToFs(String indexBroker) {
+        List<Map<String, Integer>> result = new ArrayList<>();
         Broker<Log> logBroker = brokerManager.get(getClassName(indexBroker));
         RateLimitItem maxIndex = rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName());
         while (!logBroker.isEmpty()) {
@@ -93,9 +94,9 @@ public class LogManager implements ClassName {
                 indexFile.get(indexBroker).set(1);
             }
             String path = indexBroker + "." + indexFile.get(indexBroker).getAndIncrement();
-            Map<String, Integer> write = write(logFolder, path, logBroker);
-            System.out.println(write);
+            result.add(write(logFolder, path, logBroker));
         }
+        return result;
     }
 
     private Map<String, Integer> write(String dir, String path, Broker<Log> logBroker) {
