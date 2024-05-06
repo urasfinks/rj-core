@@ -8,5 +8,7 @@ public enum RateLimitName implements EnumName {
     BROKER_SIZE,
     BROKER_TAIL_SIZE,
     BROKER_TPS,
-    THREAD_TPS
+    THREAD_TPS,
+    FILE_LOG_SIZE,
+    FILE_LOG_INDEX
 }

@@ -87,4 +87,15 @@ public class UtilFile {
         return Paths.get(path).getFileName().toString();
     }
 
+    public static boolean rename(String pathFrom, String pathTo) {
+        try {
+            File file = new File(pathFrom);
+            File file2 = new File(pathTo);
+            return file.renameTo(file2);
+        } catch (Exception e) {
+            App.context.getBean(ExceptionHandler.class).handler(e);
+        }
+        return false;
+    }
+
 }

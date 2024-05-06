@@ -6,12 +6,17 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.api.BrokerManager;
+import ru.jamsys.core.component.api.RateLimitManager;
 import ru.jamsys.core.component.item.Broker;
 import ru.jamsys.core.component.item.Log;
 import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.statistic.StatisticSec;
+import ru.jamsys.core.extension.HashMapBuilder;
+import ru.jamsys.core.rate.limit.RateLimit;
+import ru.jamsys.core.rate.limit.RateLimitName;
+import ru.jamsys.core.rate.limit.item.RateLimitItem;
+import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
-import ru.jamsys.core.util.UtilJson;
+import ru.jamsys.core.util.UtilFile;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -30,27 +35,21 @@ public class LogManager implements ClassName {
 
     public final Map<String, Broker<Log>> map = new HashMap<>();
 
-    public final BrokerManager<Log> brokerManager;
+    private final BrokerManager<Log> brokerManager;
 
-    public final String indexLog;
-
-    public final String indexStatistic;
+    private final RateLimit rateLimit;
 
     private final Map<String, AtomicInteger> indexFile = new HashMap<>();
 
     public LogManager(BrokerManager<Log> brokerManager, ApplicationContext applicationContext) {
         this.brokerManager = brokerManager;
-        this.indexLog = getClassName("log", applicationContext);
-        this.indexStatistic = getClassName("statistic", applicationContext);
-    }
+        rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(applicationContext))
+                .init(RateLimitName.FILE_LOG_SIZE.getName(), RateLimitItemInstance.MAX)
+                .init(RateLimitName.FILE_LOG_INDEX.getName(), RateLimitItemInstance.MAX);
+        //rateLimit.get(RateLimitName.FILE_LOG_SIZE.getName()).setMax(19 * 1_024 * 1_024);
+        rateLimit.get(RateLimitName.FILE_LOG_SIZE.getName()).setMax(20);
+        rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName()).setMax(1);
 
-    public void statistic(StatisticSec statisticSec) throws Exception {
-        Log item = new Log(UtilJson.toString(statisticSec, "{}"));
-        append(indexStatistic, item);
-    }
-
-    public void log(Log item) throws Exception {
-        append(indexLog, item);
     }
 
     // В стандартной истории есть циклические очереди по N элементов
@@ -76,31 +75,48 @@ public class LogManager implements ClassName {
         }
     }
 
-    public void write(String indexBroker) {
+    public void writeToFs(String dir, String indexBroker) {
         Broker<Log> logBroker = brokerManager.get(getClassName(indexBroker));
+        RateLimitItem maxIndex = rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName());
         while (!logBroker.isEmpty()) {
             if (!indexFile.containsKey(indexBroker)) {
-                indexFile.put(indexBroker, new AtomicInteger(0));
+                indexFile.put(indexBroker, new AtomicInteger(1));
             }
-            String path = indexBroker + "." + (indexFile.get(indexBroker).getAndIncrement()) + ".start.bin";
-            try (FileOutputStream fos = new FileOutputStream(path)) {
-                while (!logBroker.isEmpty()) {
-                    TimeEnvelopeMs<Log> itemTimeEnvelopeMs = logBroker.pollFirst();
-                    Log item = itemTimeEnvelopeMs.getValue();
-                    // Запись кол-ва заголовков
-                    fos.write(shortToBytes((short) item.header.size()));
-                    // Запись заголовков
-                    for (String key : item.header.keySet()) {
-                        writeShortStringBlock(fos, key);
-                        writeShortStringBlock(fos, item.header.get(key));
-                    }
-                    // Запись тела
-                    writeStringBlock(fos, item.data);
-                }
-            } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
+            if (!maxIndex.check(indexFile.get(indexBroker).get())) {
+                indexFile.get(indexBroker).set(1);
             }
+            String path = indexBroker + "." + indexFile.get(indexBroker).getAndIncrement();
+            Map<String, Integer> write = write(dir, path, logBroker);
+            System.out.println(write);
         }
+    }
+
+    private Map<String, Integer> write(String dir, String path, Broker<Log> logBroker) {
+        RateLimitItem maxSize = rateLimit.get(RateLimitName.FILE_LOG_SIZE.getName());
+        AtomicInteger writeByte = new AtomicInteger();
+        try (FileOutputStream fos = new FileOutputStream(dir + "/" + path + ".start.bin")) {
+            while (!logBroker.isEmpty()) {
+                TimeEnvelopeMs<Log> itemTimeEnvelopeMs = logBroker.pollFirst();
+                Log item = itemTimeEnvelopeMs.getValue();
+                // Запись кол-ва заголовков
+                writeByte.addAndGet(2);
+                fos.write(shortToBytes((short) item.header.size()));
+                // Запись заголовков
+                for (String key : item.header.keySet()) {
+                    writeShortStringBlock(fos, key, writeByte);
+                    writeShortStringBlock(fos, item.header.get(key), writeByte);
+                }
+                // Запись тела
+                writeStringBlock(fos, item.data, writeByte);
+                if (!maxSize.check(writeByte.get())) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            App.context.getBean(ExceptionHandler.class).handler(e);
+        }
+        UtilFile.rename(dir + "/" + path + ".start.bin", dir + "/" + path + ".stop.bin");
+        return new HashMapBuilder<String, Integer>().append(dir + "/" + path + ".stop.bin", writeByte.get());
     }
 
     public List<Log> read() {
@@ -131,16 +147,18 @@ public class LogManager implements ClassName {
         return new String(fis.readNBytes(len), StandardCharsets.UTF_8);
     }
 
-    public void writeShortStringBlock(FileOutputStream fos, String data) throws Exception {
+    public void writeShortStringBlock(FileOutputStream fos, String data, AtomicInteger writeByte) throws Exception {
         byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
         fos.write(shortToBytes((short) dataBytes.length));
         fos.write(dataBytes);
+        writeByte.addAndGet(dataBytes.length + 2);
     }
 
-    public void writeStringBlock(FileOutputStream fos, String data) throws Exception {
+    public void writeStringBlock(FileOutputStream fos, String data, AtomicInteger writeByte) throws Exception {
         byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
         fos.write(intToBytes(dataBytes.length));
         fos.write(dataBytes);
+        writeByte.addAndGet(dataBytes.length + 4);
     }
 
 
