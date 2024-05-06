@@ -52,9 +52,10 @@ public class LogManager implements ClassName {
         rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(applicationContext))
                 .init(RateLimitName.FILE_LOG_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(RateLimitName.FILE_LOG_INDEX.getName(), RateLimitItemInstance.MAX);
-        //rateLimit.get(RateLimitName.FILE_LOG_SIZE.getName()).setMax(19 * 1_024 * 1_024);
-        rateLimit.get(RateLimitName.FILE_LOG_SIZE.getName()).setMax(20);
-        rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName()).setMax(1);
+        int fileLogSizeMb = propertiesManager.getProperties("rj.log.manager.file.log.size.mb", Integer.class);
+        rateLimit.get(RateLimitName.FILE_LOG_SIZE.getName()).setMax(fileLogSizeMb * 1_024 * 1_024);
+        int fileLogIndex = propertiesManager.getProperties("rj.log.manager.file.log.index", Integer.class);
+        rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName()).setMax(fileLogIndex);
 
         this.logFolder = propertiesManager.getProperties("rj.log.manager.folder", String.class);
     }
@@ -67,8 +68,8 @@ public class LogManager implements ClassName {
     // Запись будет файлы не более 20мб
     // Имя файла: [0-N].indexBroker.start.bin -> по завершению [0-N].indexBroker.stop.bin
     // При старте приклада будет пробежка по FS с расчётом текущего уже записанного индекса
-    // Все файлы на момент старта с типом stop в 3-ей секции имени файла будут удалены
-    // При достижении N файла будет происходить перезапись
+    // Все файлы на момент старта с типом start в 3-ей секции имени файла будут удалены
+    // При достижении индекса до N будет происходить перезапись с 0
     public void append(String indexBroker, Log log) throws Exception {
         if (!map.containsKey(indexBroker)) {
             Broker<Log> logBroker = brokerManager.get(getClassName(indexBroker));

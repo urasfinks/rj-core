@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class UtilFile {
 
     @SuppressWarnings("unused")
@@ -63,6 +63,17 @@ public class UtilFile {
 
     public static void remove(String path) throws IOException {
         Files.delete(Paths.get(path));
+    }
+
+    public static void removeAllFilesInFolder(String path) {
+        getFilesRecursive(path).forEach(s -> {
+            try {
+                remove(s);
+            } catch (IOException e) {
+                App.context.getBean(ExceptionHandler.class).handler(e);
+            }
+        });
+
     }
 
     public static void listFilesForFolder(final File folder, List<String> list) {
