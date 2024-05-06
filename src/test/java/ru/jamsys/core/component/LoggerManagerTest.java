@@ -1,4 +1,4 @@
-package ru.jamsys.core.util;
+package ru.jamsys.core.component;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -7,6 +7,8 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.resource.LoggerManager;
 import ru.jamsys.core.extension.HashMapBuilder;
 import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
+
+import java.util.List;
 
 class LoggerManagerTest {
     @BeforeAll
@@ -25,12 +27,14 @@ class LoggerManagerTest {
         loggerManager.write();
         Assertions.assertEquals(0, loggerManager.getToFs().size());
 
-        Assertions.assertEquals(0, loggerManager.getFromFs().size());
-        loggerManager.read();
-        Assertions.assertEquals(1, loggerManager.getFromFs().size());
 
-        TimeEnvelopeMs<LoggerManager.Item> itemTimeEnvelopeMs = loggerManager.fromFs.pollFirst();
+        //Assertions.assertEquals(0, loggerManager.getFromFs().size());
+        List<LoggerManager.Item> read = loggerManager.read();
 
-        Assertions.assertEquals(item1.toString(), itemTimeEnvelopeMs.getValue().toString());
+        Assertions.assertEquals(1, read.size());
+
+        LoggerManager.Item itemTimeEnvelopeMs = read.getFirst();
+
+        Assertions.assertEquals(item1.toString(), itemTimeEnvelopeMs.toString());
     }
 }

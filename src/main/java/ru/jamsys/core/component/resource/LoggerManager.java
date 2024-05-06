@@ -15,7 +15,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -35,13 +37,10 @@ public class LoggerManager implements CLassNameTitle {
 
     public final Broker<Item> toFs;
 
-    public final Broker<Item> fromFs;
-
     public LoggerManager(ApplicationContext applicationContext) {
         @SuppressWarnings("unchecked")
         BrokerManager<Item> broker = applicationContext.getBean(BrokerManager.class);
         toFs = broker.get(getClassNameTitle("ToFS", applicationContext));
-        fromFs = broker.get(getClassNameTitle("FromFS", applicationContext));
     }
 
     public Item append(Map<String, String> header, String data) throws Exception {
@@ -73,7 +72,8 @@ public class LoggerManager implements CLassNameTitle {
         }
     }
 
-    public void read() {
+    public List<Item> read() {
+        List<Item> result = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream("data.bin")) {
             while (fis.available() > 0) {
                 Item item = new Item(new HashMap<>(), "");
@@ -82,11 +82,12 @@ public class LoggerManager implements CLassNameTitle {
                     item.header.put(readShortString(fis), readShortString(fis));
                 }
                 item.data = readString(fis);
-                fromFs.add(item, 6_000L);
+                result.add(item);
             }
         } catch (Exception e) {
             App.context.getBean(ExceptionHandler.class).handler(e);
         }
+        return result;
     }
 
     public String readShortString(FileInputStream fis) throws Exception {
