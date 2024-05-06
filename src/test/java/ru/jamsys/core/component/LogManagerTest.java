@@ -21,7 +21,7 @@ class LogManagerTest {
         logManager.append("log", new Log().setData("Hello world"));
         logManager.append("log", new Log().setData("Hello world"));
         logManager.append("log", new Log().setData("Hello world"));
-        logManager.writeToFs("log", "log");
+        logManager.writeToFs("log");
 
 //        LogManager.Item item1 = logManager.append(new HashMapBuilder<String, String>().append("test", "hello"), "world");
 //        Assertions.assertEquals(1, logManager.getToFs().size());

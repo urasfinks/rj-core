@@ -41,7 +41,13 @@ public class LogManager implements ClassName {
 
     private final Map<String, AtomicInteger> indexFile = new HashMap<>();
 
-    public LogManager(BrokerManager<Log> brokerManager, ApplicationContext applicationContext) {
+    private final String logFolder;
+
+    public LogManager(
+            BrokerManager<Log> brokerManager,
+            ApplicationContext applicationContext,
+            PropertiesManager propertiesManager
+    ) {
         this.brokerManager = brokerManager;
         rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(applicationContext))
                 .init(RateLimitName.FILE_LOG_SIZE.getName(), RateLimitItemInstance.MAX)
@@ -50,6 +56,7 @@ public class LogManager implements ClassName {
         rateLimit.get(RateLimitName.FILE_LOG_SIZE.getName()).setMax(20);
         rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName()).setMax(1);
 
+        this.logFolder = propertiesManager.getProperties("rj.log.manager.folder", String.class);
     }
 
     // В стандартной истории есть циклические очереди по N элементов
@@ -75,7 +82,7 @@ public class LogManager implements ClassName {
         }
     }
 
-    public void writeToFs(String dir, String indexBroker) {
+    public void writeToFs(String indexBroker) {
         Broker<Log> logBroker = brokerManager.get(getClassName(indexBroker));
         RateLimitItem maxIndex = rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName());
         while (!logBroker.isEmpty()) {
@@ -86,7 +93,7 @@ public class LogManager implements ClassName {
                 indexFile.get(indexBroker).set(1);
             }
             String path = indexBroker + "." + indexFile.get(indexBroker).getAndIncrement();
-            Map<String, Integer> write = write(dir, path, logBroker);
+            Map<String, Integer> write = write(logFolder, path, logBroker);
             System.out.println(write);
         }
     }
