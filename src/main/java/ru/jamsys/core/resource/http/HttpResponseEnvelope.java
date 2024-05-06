@@ -63,7 +63,7 @@ public class HttpResponseEnvelope {
 
     @SuppressWarnings("unused")
     public void addException(Exception e) {
-        description = e.getClass().getSimpleName() + ": " + e.getMessage();
+        description = e.getClass().getName() + ": " + e.getMessage();
         status = false;
         httpStatus = HttpStatus.EXPECTATION_FAILED;
         exception.add(LocalDateTime.now() + " " + getStringError(e));

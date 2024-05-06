@@ -233,7 +233,7 @@ public class Broker<TEO>
                 .append("Cause: ").append(cause).append("; ")
                 .append("Max tps: ").append(rliTps.getMax()).append("; ")
                 .append("Limit size: ").append(rliQueueSize.getMax()).append("; ")
-                .append("Class add: ").append(timeEnvelopeMs.getValue().getClass().getSimpleName()).append("; ")
+                .append("Class add: ").append(timeEnvelopeMs.getValue().getClass().getName()).append("; ")
                 .append("Object add: ").append(timeEnvelopeMs.getValue().toString()).append("; ");
         return sb.toString();
     }

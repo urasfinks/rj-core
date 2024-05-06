@@ -1,12 +1,13 @@
 package ru.jamsys.core.statistic;
 
+import ru.jamsys.core.extension.CLassNameTitle;
 import ru.jamsys.core.util.Util;
 
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public interface TagIndex {
+public interface TagIndex extends CLassNameTitle {
 
     Map<String, String> getTag();
 
@@ -17,7 +18,7 @@ public interface TagIndex {
     default String compileIndex() {
         Map<String, String> tags = getTags();
         StringBuilder sb = new StringBuilder();
-        sb.append(Util.capitalize(getClass().getSimpleName()));
+        sb.append(Util.capitalize(getClassNameTitle(null)));
         SortedSet<String> keys = new TreeSet<>(tags.keySet());
         for (String key : keys) {
             sb.append("-");

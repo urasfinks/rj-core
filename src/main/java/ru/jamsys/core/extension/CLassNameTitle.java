@@ -20,7 +20,7 @@ public interface CLassNameTitle {
         if (classFinder.getUniqueClassName().containsKey(cls)) {
             clsName = classFinder.getUniqueClassName().get(cls);
         }
-        return clsName + "::" + index;
+        return index == null ? clsName : (clsName + "::" + index);
     }
 
     default String getClassNameTitle(Class<?> cls, String index) {

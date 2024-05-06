@@ -14,10 +14,10 @@ public interface StatisticsCollectorMap<T extends StatisticsFlush> extends Stati
     Map<String, T> getMapForFlushStatistic();
 
     @Override
-    default List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun){
+    default List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         Map<String, T> map = getMapForFlushStatistic();
         List<Statistic> result = new ArrayList<>();
-        String clsName = getClass().getSimpleName();
+        String clsName = CLassNameTitleImpl.getClassNameTitleStatic(getClass(), null);
         Util.riskModifierMap(
                 isThreadRun,
                 map,

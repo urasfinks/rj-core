@@ -92,7 +92,7 @@ public class PromiseTask implements Runnable {
     public PromiseTask setRetryCount(int count, int delayMs) {
         if (type == PromiseTaskType.JOIN) {
             throw new RuntimeException(
-                    this.getClass().getSimpleName()
+                    this.getClass().getName()
                             + " with type: ["
                             + PromiseTaskType.JOIN.getName()
                             + "] doesn't work with retries"

@@ -26,7 +26,7 @@ public class TemplateItem {
             list.add(x);
         } else {
             if (!list.contains(x)) {
-                Util.printStackTrace(getClass().getSimpleName() + " unit value: " + x + " overflow between [" + timeUnit.getMin() + ", " + timeUnit.getMax() + "]");
+                Util.printStackTrace(getClass().getName() + " unit value: " + x + " overflow between [" + timeUnit.getMin() + ", " + timeUnit.getMax() + "]");
             }
         }
     }

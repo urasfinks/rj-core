@@ -4,6 +4,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.api.CacheManager;
 import ru.jamsys.core.component.item.Cache;
+import ru.jamsys.core.extension.CLassNameTitleImpl;
 import ru.jamsys.core.promise.*;
 import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
 import ru.jamsys.core.template.cron.release.Cron1s;
@@ -19,7 +20,7 @@ public class PromiseTaskRetry implements Cron1s, PromiseGenerator {
     public PromiseTaskRetry(ApplicationContext applicationContext) {
         @SuppressWarnings("unchecked")
         CacheManager<PromiseTask> cacheManager = applicationContext.getBean(CacheManager.class);
-        this.promiseCache = cacheManager.get(PromiseTask.class.getSimpleName());
+        this.promiseCache = cacheManager.get(CLassNameTitleImpl.getClassNameTitleStatic(PromiseTask.class, null, applicationContext));
         this.promiseCache.setOnExpired(this::retryPromiseTask);
     }
 

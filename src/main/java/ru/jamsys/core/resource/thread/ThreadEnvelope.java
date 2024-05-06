@@ -104,7 +104,7 @@ public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements CLassNam
 
     private void raiseUp(String cause, String action) {
         App.context.getBean(ExceptionHandler.class).handler(
-                new RuntimeException("class: " + getClass().getSimpleName()
+                new RuntimeException("class: " + getClassNameTitle(null)
                         + "; action: " + action
                         + "; cause: " + cause + " \r\n"
                         + info)
