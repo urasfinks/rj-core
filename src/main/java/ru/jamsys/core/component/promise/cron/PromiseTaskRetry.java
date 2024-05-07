@@ -6,7 +6,7 @@ import ru.jamsys.core.component.api.CacheManager;
 import ru.jamsys.core.component.item.Cache;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.promise.*;
-import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
 import ru.jamsys.core.template.cron.release.Cron1s;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,7 +24,7 @@ public class PromiseTaskRetry implements Cron1s, PromiseGenerator {
         this.promiseCache.setOnExpired(this::retryPromiseTask);
     }
 
-    private void retryPromiseTask(TimeEnvelopeMs<PromiseTask> tePromiseTask) {
+    private void retryPromiseTask(ExpiredMsMutableEnvelope<PromiseTask> tePromiseTask) {
         tePromiseTask.getValue().start();
     }
 

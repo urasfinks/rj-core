@@ -2,12 +2,12 @@ package ru.jamsys.core.pool;
 
 import lombok.Getter;
 import ru.jamsys.core.extension.Pollable;
-import ru.jamsys.core.statistic.time.TimeControllerMs;
-import ru.jamsys.core.statistic.time.TimeControllerMsImpl;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutable;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
 
 @Getter
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public abstract class PoolItem<T> extends TimeControllerMsImpl implements Pollable, TimeControllerMs {
+public abstract class PoolItem<T> extends ExpiredMsMutableImpl implements Pollable, ExpiredMsMutable {
 
     protected final Pool<T> pool;
 

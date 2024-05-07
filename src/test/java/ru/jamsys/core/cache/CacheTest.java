@@ -7,7 +7,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.item.Cache;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
 import ru.jamsys.core.util.Util;
 
 import java.util.Map;
@@ -115,7 +115,7 @@ class CacheTest {
     Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
         Cache<Integer, String> cache = new Cache<>("test");
         AvgMetric avgMetric = new AvgMetric();
-        cache.setOnExpired((TimeEnvelopeMs<String> env) -> {
+        cache.setOnExpired((ExpiredMsMutableEnvelope<String> env) -> {
             if (env.getExpiryRemainingMs() > 0) {
                 Assertions.fail("ALARM");
             } else {

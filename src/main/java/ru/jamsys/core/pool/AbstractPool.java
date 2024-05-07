@@ -16,7 +16,7 @@ import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.statistic.time.TimeControllerMsImpl;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
 import ru.jamsys.core.util.Util;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import java.util.function.Function;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<T extends PoolItem<T>>
-        extends TimeControllerMsImpl implements Pool<T>, RunnableInterface, KeepAlive, ClassName {
+        extends ExpiredMsMutableImpl implements Pool<T>, RunnableInterface, KeepAlive, ClassName {
 
     public static ThreadLocal<Pool<?>> context = new ThreadLocal<>();
 

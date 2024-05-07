@@ -2,7 +2,7 @@ package ru.jamsys.core.balancer.algorithm;
 
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.balancer.BalancerItem;
-import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
 import ru.jamsys.core.util.Util;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class StickySessions implements BalancerAlgorithm {
 
     List<BalancerItem> list = new ArrayList<>();
 
-    Map<String, TimeEnvelopeMs<BalancerItem>> map = new ConcurrentHashMap<>();
+    Map<String, ExpiredMsMutableEnvelope<BalancerItem>> map = new ConcurrentHashMap<>();
 
     @Override
     public void update(List<BalancerItem> list) {
@@ -37,7 +37,7 @@ public class StickySessions implements BalancerAlgorithm {
     }
 
     private void remove(BalancerItem balancerItem) {
-        Util.riskModifierMap(null, map, new String[0], (String key, TimeEnvelopeMs<BalancerItem> timer) -> {
+        Util.riskModifierMap(null, map, new String[0], (String key, ExpiredMsMutableEnvelope<BalancerItem> timer) -> {
             if (timer.getValue().equals(balancerItem)) {
                 map.remove(key);
             }
@@ -48,19 +48,19 @@ public class StickySessions implements BalancerAlgorithm {
     public BalancerItem get(@Nullable String index) {
         if (!map.containsKey(index)) {
             BalancerItem balancerItem = list.get(Util.stringToInt(index, 0, list.size()));
-            TimeEnvelopeMs<BalancerItem> balancerItemTimeEnvelopeMs = new TimeEnvelopeMs<>(balancerItem);
-            balancerItemTimeEnvelopeMs.setKeepAliveOnInactivityMin(5);
-            map.put(index, balancerItemTimeEnvelopeMs);
+            ExpiredMsMutableEnvelope<BalancerItem> balancerItemExpiredMsMutableEnvelope = new ExpiredMsMutableEnvelope<>(balancerItem);
+            balancerItemExpiredMsMutableEnvelope.setKeepAliveOnInactivityMin(5);
+            map.put(index, balancerItemExpiredMsMutableEnvelope);
         }
-        TimeEnvelopeMs<BalancerItem> balancerItemTimeEnvelopeMs = map.get(index);
-        balancerItemTimeEnvelopeMs.active();
-        return balancerItemTimeEnvelopeMs.getValue();
+        ExpiredMsMutableEnvelope<BalancerItem> balancerItemExpiredMsMutableEnvelope = map.get(index);
+        balancerItemExpiredMsMutableEnvelope.active();
+        return balancerItemExpiredMsMutableEnvelope.getValue();
     }
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        Util.riskModifierMap(isThreadRun, map, new String[0], (String key, TimeEnvelopeMs<BalancerItem> timeEnvelopeMs) -> {
-            if (timeEnvelopeMs.isExpired()) {
+        Util.riskModifierMap(isThreadRun, map, new String[0], (String key, ExpiredMsMutableEnvelope<BalancerItem> expiredMsMutableEnvelope) -> {
+            if (expiredMsMutableEnvelope.isExpired()) {
                 map.remove(key);
             }
         });

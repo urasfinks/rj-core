@@ -8,8 +8,8 @@ import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.statistic.time.TimeControllerMsImpl;
-import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
 import ru.jamsys.core.util.Util;
 
 import java.util.ArrayList;
@@ -32,17 +32,17 @@ import java.util.function.Consumer;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class Cache<K, TEO>
-        extends TimeControllerMsImpl
-        implements StatisticsFlush, KeepAlive, Closable, AddToMap<K, TimeEnvelopeMs<TEO>> {
+        extends ExpiredMsMutableImpl
+        implements StatisticsFlush, KeepAlive, Closable, AddToMap<K, ExpiredMsMutableEnvelope<TEO>> {
 
     @Getter
-    final Map<K, TimeEnvelopeMs<TEO>> map = new ConcurrentHashMap<>();
+    final Map<K, ExpiredMsMutableEnvelope<TEO>> map = new ConcurrentHashMap<>();
 
     @Getter
     ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<K>> bucket = new ConcurrentSkipListMap<>();
 
     @Setter
-    private Consumer<TimeEnvelopeMs<TEO>> onExpired;
+    private Consumer<ExpiredMsMutableEnvelope<TEO>> onExpired;
 
     private final String index;
 
@@ -51,7 +51,7 @@ public class Cache<K, TEO>
     }
 
     @Override
-    public void add(K key, TimeEnvelopeMs<TEO> value) {
+    public void add(K key, ExpiredMsMutableEnvelope<TEO> value) {
         if (!map.containsKey(key)) {
             map.put(key, value);
             long timeMsExpiredFloor = Util.zeroLastNDigits(value.getExpiredMs(), 3);
@@ -62,23 +62,23 @@ public class Cache<K, TEO>
         }
     }
 
-    public TimeEnvelopeMs<TEO> add(K key, TEO value, long curTime, long timeoutMs) {
-        TimeEnvelopeMs<TEO> timeEnvelopeMs = new TimeEnvelopeMs<>(value);
-        timeEnvelopeMs.setKeepAliveOnInactivityMs(timeoutMs);
-        timeEnvelopeMs.setLastActivityMs(curTime);
-        add(key, timeEnvelopeMs);
-        return timeEnvelopeMs;
+    public ExpiredMsMutableEnvelope<TEO> add(K key, TEO value, long curTime, long timeoutMs) {
+        ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope = new ExpiredMsMutableEnvelope<>(value);
+        expiredMsMutableEnvelope.setKeepAliveOnInactivityMs(timeoutMs);
+        expiredMsMutableEnvelope.setLastActivityMs(curTime);
+        add(key, expiredMsMutableEnvelope);
+        return expiredMsMutableEnvelope;
     }
 
-    public TimeEnvelopeMs<TEO> add(K key, TEO value, long timeoutMs) {
+    public ExpiredMsMutableEnvelope<TEO> add(K key, TEO value, long timeoutMs) {
         return add(key, value, System.currentTimeMillis(), timeoutMs);
     }
 
     public TEO get(K key) {
-        TimeEnvelopeMs<TEO> timeEnvelopeMs = map.get(key);
-        if (timeEnvelopeMs != null && !timeEnvelopeMs.isExpired()) {
-            timeEnvelopeMs.stop();
-            return timeEnvelopeMs.getValue();
+        ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope = map.get(key);
+        if (expiredMsMutableEnvelope != null && !expiredMsMutableEnvelope.isExpired()) {
+            expiredMsMutableEnvelope.stop();
+            return expiredMsMutableEnvelope.getValue();
         }
         return null;
     }
@@ -131,11 +131,11 @@ public class Cache<K, TEO>
             }
             keepAliveResult.getReadBucket().add(time);
             Util.riskModifierCollection(isThreadRun, queue, getEmptyType(), (K key) -> {
-                TimeEnvelopeMs<TEO> timeEnvelopeMs = map.get(key);
-                if (timeEnvelopeMs != null) {
-                    if (timeEnvelopeMs.isExpired()) {
+                ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope = map.get(key);
+                if (expiredMsMutableEnvelope != null) {
+                    if (expiredMsMutableEnvelope.isExpired()) {
                         if (onExpired != null) {
-                            onExpired.accept(timeEnvelopeMs);
+                            onExpired.accept(expiredMsMutableEnvelope);
                         }
                         queue.remove(key);
                         map.remove(key);

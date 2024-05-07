@@ -4,7 +4,7 @@ import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.promise.api.PromiseApi;
 import ru.jamsys.core.extension.Procedure;
-import ru.jamsys.core.statistic.time.TimeControllerMs;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutable;
 
 import java.util.List;
 import java.util.Map;
@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface Promise extends TimeControllerMs {
+public interface Promise extends ExpiredMsMutable {
 
     String getIndex();
 

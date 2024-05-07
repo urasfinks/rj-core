@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.StatisticsCollectorMap;
 import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
-import ru.jamsys.core.statistic.time.TimeControllerMsImpl;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Getter
 @SuppressWarnings("unused")
 public class RateLimit
-        extends TimeControllerMsImpl
+        extends ExpiredMsMutableImpl
         implements StatisticsCollectorMap<RateLimitItem>, Closable, AddToMap<String, RateLimitItem> {
 
     final Map<String, RateLimitItem> map = new ConcurrentHashMap<>();

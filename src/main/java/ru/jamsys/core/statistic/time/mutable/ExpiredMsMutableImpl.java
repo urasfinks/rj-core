@@ -1,16 +1,16 @@
-package ru.jamsys.core.statistic.time;
+package ru.jamsys.core.statistic.time.mutable;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
-public class TimeControllerMsImpl implements TimeControllerMs {
+public class ExpiredMsMutableImpl implements ExpiredMsMutable {
 
     private long keepAliveOnInactivityMs = 6_000; // Время жизни если нет активности
 
     private volatile long lastActivityMs = System.currentTimeMillis();
 
-    private Long timeStopMs = null;
+    private Long stopTimeMs = null;
 
 }

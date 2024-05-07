@@ -12,6 +12,8 @@ import ru.jamsys.core.util.UtilFile;
 import java.util.List;
 import java.util.Map;
 
+
+//TODO: добавить тесты когда нет директории LogManager
 class LogManagerTest {
 
     @BeforeAll

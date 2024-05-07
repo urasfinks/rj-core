@@ -13,8 +13,8 @@ import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.statistic.time.TimeControllerMsImpl;
-import ru.jamsys.core.statistic.time.TimeEnvelopeMs;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
 import ru.jamsys.core.util.Util;
 
 import java.util.ArrayList;
@@ -39,21 +39,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Setter
 //@IgnoreClassFinder // не знаю почему он был исключён
 public class Broker<TEO>
-        extends TimeControllerMsImpl
+        extends ExpiredMsMutableImpl
         implements
         ClassName,
         StatisticsFlush,
         Closable,
         KeepAlive,
         AddToList<
-                TimeEnvelopeMs<TEO>,
-                TimeEnvelopeMs<TEO>
+                ExpiredMsMutableEnvelope<TEO>,
+                ExpiredMsMutableEnvelope<TEO>
                 > {
 
-    private final ConcurrentLinkedDeque<TimeEnvelopeMs<TEO>> queue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<ExpiredMsMutableEnvelope<TEO>> queue = new ConcurrentLinkedDeque<>();
 
     //Последний сообщения проходящие через очередь
-    private final ConcurrentLinkedDeque<TimeEnvelopeMs<TEO>> tail = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<ExpiredMsMutableEnvelope<TEO>> tail = new ConcurrentLinkedDeque<>();
 
     // Я подумал, при деградации хорошо увидеть, что очередь вообще читается
     private final AtomicInteger tpsDequeue = new AtomicInteger(0);
@@ -106,20 +106,28 @@ public class Broker<TEO>
         rliTailSize.setMax(newSize);
     }
 
-    private void statistic(TimeEnvelopeMs<TEO> timeEnvelopeMs) {
+    private void statistic(ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope) {
         //#1, что бы видеть реальное кол-во опросов изъятия
         tpsDequeue.incrementAndGet();
-        timeInQueue.add(timeEnvelopeMs.getOffsetLastActivityMs());
+        timeInQueue.add(expiredMsMutableEnvelope.getInactivityTimeMs());
     }
 
-    public TimeEnvelopeMs<TEO> pollFirst() {
+    // Получить процент заполненности очереди
+    public int getOccupancyPercentage() {
+        /*  MAX - 100
+            500 - x    */
+        return queue.size() * 100 / (int) rliQueueSize.getMax();
+    }
+
+    public ExpiredMsMutableEnvelope<TEO> pollFirst() {
         do {
-            TimeEnvelopeMs<TEO> result = queue.pollFirst();
+            ExpiredMsMutableEnvelope<TEO> result = queue.pollFirst();
             if (result == null) {
                 return null;
             }
             statistic(result);
             if (result.isExpired()) {
+                Thread.onSpinWait();
                 continue;
             }
             return result;
@@ -127,14 +135,15 @@ public class Broker<TEO>
         return null;
     }
 
-    public TimeEnvelopeMs<TEO> pollLast() {
+    public ExpiredMsMutableEnvelope<TEO> pollLast() {
         do {
-            TimeEnvelopeMs<TEO> result = queue.pollLast();
+            ExpiredMsMutableEnvelope<TEO> result = queue.pollLast();
             if (result == null) {
                 return null;
             }
             statistic(result);
             if (result.isExpired()) {
+                Thread.onSpinWait();
                 continue;
             }
             return result;
@@ -142,10 +151,10 @@ public class Broker<TEO>
         return null;
     }
 
-    public void remove(TimeEnvelopeMs<TEO> timeEnvelopeMs) {
-        if (timeEnvelopeMs != null) {
-            statistic(timeEnvelopeMs);
-            queue.remove(timeEnvelopeMs);
+    public void remove(ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope) {
+        if (expiredMsMutableEnvelope != null) {
+            statistic(expiredMsMutableEnvelope);
+            queue.remove(expiredMsMutableEnvelope);
         }
     }
 
@@ -157,8 +166,8 @@ public class Broker<TEO>
     @SuppressWarnings("unused")
     public List<TEO> getCloneQueue(@Nullable AtomicBoolean isRun) {
         List<TEO> cloned = new ArrayList<>();
-        List<TimeEnvelopeMs<TEO>> ret = new ArrayList<>();
-        Util.riskModifierCollection(isRun, queue, getEmptyType(), (TimeEnvelopeMs<TEO> elementEnvelope)
+        List<ExpiredMsMutableEnvelope<TEO>> ret = new ArrayList<>();
+        Util.riskModifierCollection(isRun, queue, getEmptyType(), (ExpiredMsMutableEnvelope<TEO> elementEnvelope)
                 -> cloned.add(elementEnvelope.getValue()));
         return cloned;
     }
@@ -180,7 +189,7 @@ public class Broker<TEO>
 
     public List<TEO> getTail(@Nullable AtomicBoolean isRun) {
         List<TEO> ret = new ArrayList<>();
-        Util.riskModifierCollection(isRun, tail, getEmptyType(), (TimeEnvelopeMs<TEO> elementEnvelope) -> ret.add(elementEnvelope.getValue()));
+        Util.riskModifierCollection(isRun, tail, getEmptyType(), (ExpiredMsMutableEnvelope<TEO> elementEnvelope) -> ret.add(elementEnvelope.getValue()));
         return ret;
     }
 
@@ -205,26 +214,26 @@ public class Broker<TEO>
         rateLimit.setActive(false);
     }
 
-    public TimeEnvelopeMs<TEO> add(TEO element, long curTime, long timeOut) throws Exception {
-        TimeEnvelopeMs<TEO> timeEnvelopeMs = new TimeEnvelopeMs<>(element);
-        timeEnvelopeMs.setLastActivityMs(curTime);
-        timeEnvelopeMs.setKeepAliveOnInactivityMs(timeOut);
-        return add(timeEnvelopeMs);
+    public ExpiredMsMutableEnvelope<TEO> add(TEO element, long curTime, long timeOut) throws Exception {
+        ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope = new ExpiredMsMutableEnvelope<>(element);
+        expiredMsMutableEnvelope.setLastActivityMs(curTime);
+        expiredMsMutableEnvelope.setKeepAliveOnInactivityMs(timeOut);
+        return add(expiredMsMutableEnvelope);
     }
 
-    public TimeEnvelopeMs<TEO> add(TEO element, long timeOut) throws Exception {
-        TimeEnvelopeMs<TEO> timeEnvelopeMs = new TimeEnvelopeMs<>(element);
-        timeEnvelopeMs.setKeepAliveOnInactivityMs(timeOut);
-        return add(timeEnvelopeMs);
+    public ExpiredMsMutableEnvelope<TEO> add(TEO element, long timeOut) throws Exception {
+        ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope = new ExpiredMsMutableEnvelope<>(element);
+        expiredMsMutableEnvelope.setKeepAliveOnInactivityMs(timeOut);
+        return add(expiredMsMutableEnvelope);
     }
 
     @Override
-    public TimeEnvelopeMs<TEO> add(TimeEnvelopeMs<TEO> timeEnvelopeMs) throws Exception {
-        if (timeEnvelopeMs == null) {
+    public ExpiredMsMutableEnvelope<TEO> add(ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope) throws Exception {
+        if (expiredMsMutableEnvelope == null) {
             throw new Exception("Element null");
         }
         if (!rliTps.check(null)) {
-            throw new Exception(getExceptionInformation("RateLimitTps", timeEnvelopeMs));
+            throw new Exception(getExceptionInformation("RateLimitTps", expiredMsMutableEnvelope));
         }
         if (cyclical) {
             if (!rliQueueSize.check(queue.size() + 1)) {
@@ -232,36 +241,36 @@ public class Broker<TEO>
             }
         } else {
             if (!rliQueueSize.check(queue.size())) {
-                throw new Exception(getExceptionInformation("RateLimitSize", timeEnvelopeMs));
+                throw new Exception(getExceptionInformation("RateLimitSize", expiredMsMutableEnvelope));
             }
         }
-        if (timeEnvelopeMs.isExpired()) {
-            throw new Exception(getExceptionInformation("Expired", timeEnvelopeMs));
+        if (expiredMsMutableEnvelope.isExpired()) {
+            throw new Exception(getExceptionInformation("Expired", expiredMsMutableEnvelope));
         }
-        queue.add(timeEnvelopeMs);
-        tail.add(timeEnvelopeMs);
+        queue.add(expiredMsMutableEnvelope);
+        tail.add(expiredMsMutableEnvelope);
         if (!rliTailSize.check(tail.size())) {
             tail.pollFirst();
         }
-        return timeEnvelopeMs;
+        return expiredMsMutableEnvelope;
     }
 
     @SuppressWarnings("StringBufferReplaceableByString")
-    String getExceptionInformation(String cause, TimeEnvelopeMs<TEO> timeEnvelopeMs) {
+    String getExceptionInformation(String cause, ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope) {
         StringBuilder sb = new StringBuilder()
                 .append("Cause: ").append(cause).append("; ")
                 .append("Max tps: ").append(rliTps.getMax()).append("; ")
                 .append("Limit size: ").append(rliQueueSize.getMax()).append("; ")
-                .append("Class add: ").append(timeEnvelopeMs.getValue().getClass().getName()).append("; ")
-                .append("Object add: ").append(timeEnvelopeMs.getValue().toString()).append("; ");
+                .append("Class add: ").append(expiredMsMutableEnvelope.getValue().getClass().getName()).append("; ")
+                .append("Object add: ").append(expiredMsMutableEnvelope.getValue().toString()).append("; ");
         return sb.toString();
     }
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        Util.riskModifierCollection(isThreadRun, queue, new TimeEnvelopeMs[0], (TimeEnvelopeMs<TEO> teoTimeEnvelopeMs) -> {
-            if (teoTimeEnvelopeMs.isExpired()) {
-                queue.remove(teoTimeEnvelopeMs);
+        Util.riskModifierCollection(isThreadRun, queue, new ExpiredMsMutableEnvelope[0], (ExpiredMsMutableEnvelope<TEO> teoExpiredMsMutableEnvelope) -> {
+            if (teoExpiredMsMutableEnvelope.isExpired()) {
+                queue.remove(teoExpiredMsMutableEnvelope);
             }
         });
     }

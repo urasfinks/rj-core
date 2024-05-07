@@ -6,7 +6,7 @@ import ru.jamsys.core.extension.SupplierThrowing;
 import ru.jamsys.core.resource.virtual.file.system.view.FileView;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.statistic.time.TimeControllerMsImpl;
+import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
 import ru.jamsys.core.util.UtilBase64;
 
 import java.io.ByteArrayInputStream;
@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("unused")
-public class File extends TimeControllerMsImpl implements Closable, StatisticsFlush, KeepAlive {
+public class File extends ExpiredMsMutableImpl implements Closable, StatisticsFlush, KeepAlive {
 
     @Getter
     protected String folder; //Абсолютный путь виртуальной папки

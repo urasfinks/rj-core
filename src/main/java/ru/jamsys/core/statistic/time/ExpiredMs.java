@@ -1,10 +1,8 @@
 package ru.jamsys.core.statistic.time;
 
-
 import ru.jamsys.core.util.Util;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface TimeControllerMs {
+public interface ExpiredMs {
 
     default long getExpiredMs() {
         return getLastActivityMs() + getKeepAliveOnInactivityMs();
@@ -27,11 +25,6 @@ public interface TimeControllerMs {
         return new TimeOutException(getLastActivityMs(), getKeepAliveOnInactivityMs());
     }
 
-    // Установить время последней активности
-    default void active() {
-        setLastActivityMs(System.currentTimeMillis());
-    }
-
     // Кол-во миллисекунд до момента, когда наступит протухание
     default long getExpiryRemainingMs(long curTime) {
         if (isStop()) {
@@ -46,21 +39,21 @@ public interface TimeControllerMs {
     }
 
     // Кол-во миллисекунд с момента последней активности до остановки (если конечно она произошла)
-    default long getOffsetLastActivityMs(long curTime) {
+    default long getInactivityTimeMs(long curTime) {
         if (isStop()) {
-            return getTimeStopMs() - getLastActivityMs();
+            return getStopTimeMs() - getLastActivityMs();
         } else {
             return curTime - getLastActivityMs();
         }
     }
 
     // Кол-во миллисекунд с момента последней активности до остановки (если конечно она произошла)
-    default long getOffsetLastActivityMs() {
-        return getOffsetLastActivityMs(System.currentTimeMillis());
+    default long getInactivityTimeMs() {
+        return getInactivityTimeMs(System.currentTimeMillis());
     }
 
     // Кол-во миллисекунд с момента последней активности
-    default String getLastActivityFormat() {
+    default String getInactivityTimeFormat() {
         return Util.msToDataFormat(getLastActivityMs());
     }
 
@@ -71,7 +64,7 @@ public interface TimeControllerMs {
 
     // Зафиксировать конец активности
     default void stop(long curTime) {
-        setTimeStopMs(curTime);
+        setStopTimeMs(curTime);
     }
 
     // Зафиксировать конец активности
@@ -81,27 +74,15 @@ public interface TimeControllerMs {
 
     // Зафиксировать конец активности
     default boolean isStop() {
-        return getTimeStopMs() != null;
+        return getStopTimeMs() != null;
     }
-
-    default void setKeepAliveOnInactivitySec(long timeSec) {
-        setKeepAliveOnInactivityMs(timeSec * 1_000);
-    }
-
-    default void setKeepAliveOnInactivityMin(long timeMin) {
-        setKeepAliveOnInactivityMs(timeMin * 60_000);
-    }
-
-    void setLastActivityMs(long timeMs);
 
     long getLastActivityMs();
 
-    void setKeepAliveOnInactivityMs(long timeMs);
-
     long getKeepAliveOnInactivityMs();
 
-    void setTimeStopMs(Long timeMs);
+    void setStopTimeMs(Long timeMs);
 
-    Long getTimeStopMs();
+    Long getStopTimeMs();
 
 }
