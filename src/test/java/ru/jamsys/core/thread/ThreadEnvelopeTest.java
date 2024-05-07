@@ -11,9 +11,11 @@ import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.resource.thread.ThreadEnvelope;
 import ru.jamsys.core.resource.thread.ThreadPool;
+import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.util.Util;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -479,4 +481,39 @@ class ThreadEnvelopeTest {
         threadPool.shutdown();
 
     }
+
+    @Test
+    void test() {
+        ConcurrentHashMap<Long, AvgMetric> map = new ConcurrentHashMap<>();
+
+        AtomicInteger counter = new AtomicInteger(0);
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                while (map.size() < 3) {
+                    long sec = Util.zeroLastNDigits(System.currentTimeMillis(), 3);
+                    map.computeIfAbsent(sec, _ -> {
+                        counter.incrementAndGet();
+                        return new AvgMetric();
+                    });
+                    Thread.onSpinWait();
+                }
+
+            }).start();
+        }
+        Util.sleepMs(4000);
+        System.out.println("map.size() = " + map.size() + "; counter: " + counter.get());
+        Assertions.assertEquals(3, map.size());
+        Assertions.assertEquals(3, counter.get());
+    }
+
+
+
+    @Test
+    void test3() {
+        ConcurrentHashMap<Long, AvgMetric> map = new ConcurrentHashMap<>();
+        AvgMetric avgMetric = map.computeIfAbsent(1L, s -> new AvgMetric());
+        AvgMetric avgMetric2 = map.computeIfAbsent(1L, s -> new AvgMetric());
+        Assertions.assertEquals(avgMetric, avgMetric2);
+    }
+
 }

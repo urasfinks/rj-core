@@ -52,14 +52,13 @@ public class Cache<K, TEO>
 
     @Override
     public void add(K key, ExpiredMsMutableEnvelope<TEO> value) {
-        if (!map.containsKey(key)) {
-            map.put(key, value);
+        map.computeIfAbsent(key, s -> {
             long timeMsExpiredFloor = Util.zeroLastNDigits(value.getExpiredMs(), 3);
-            if (!bucket.containsKey(timeMsExpiredFloor)) {
-                bucket.putIfAbsent(timeMsExpiredFloor, new ConcurrentLinkedQueue<>());
-            }
-            bucket.get(timeMsExpiredFloor).add(key);
-        }
+            bucket
+                    .computeIfAbsent(timeMsExpiredFloor, s2 -> new ConcurrentLinkedQueue<>())
+                    .add(key);
+            return value;
+        });
     }
 
     public ExpiredMsMutableEnvelope<TEO> add(K key, TEO value, long curTime, long timeoutMs) {

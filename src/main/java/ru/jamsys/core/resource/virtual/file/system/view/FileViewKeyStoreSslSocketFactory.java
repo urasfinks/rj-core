@@ -15,16 +15,16 @@ public class FileViewKeyStoreSslSocketFactory extends FileViewKeyStore {
         if (super.getKeyStore() == null) {
             return null;
         }
-        if (!sslSocketFactory.containsKey(sslContextType)) {
+        return sslSocketFactory.computeIfAbsent(sslContextType, s -> {
             try {
                 SSLContext ssl = SSLContext.getInstance(sslContextType);
                 ssl.init(super.getKeyManagers(), super.getTrustManager().getListTrustManager(), new SecureRandom());
-                sslSocketFactory.put(sslContextType, ssl.getSocketFactory());
+                return ssl.getSocketFactory();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-        return sslSocketFactory.get(sslContextType);
+            return null;
+        });
     }
 
     @Override

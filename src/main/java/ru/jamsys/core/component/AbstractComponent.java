@@ -44,15 +44,11 @@ public abstract class AbstractComponent<MO extends Closable & ExpiredMsMutable &
 
     @SuppressWarnings("unused")
     public MO get(String key) {
-        //If the key was not present in the map, it maps the passed value to the key and returns null.
-        if (!map.containsKey(key)) {
-            map.putIfAbsent(key, build(key));
-        }
-        return map.get(key);
+        return map.computeIfAbsent(key, _ -> build(key));
     }
 
     public void put(String key, MO object) {
-        map.putIfAbsent(key, object);
+        map.computeIfAbsent(key, _ -> object);
     }
 
     //Используйте только для тестирования

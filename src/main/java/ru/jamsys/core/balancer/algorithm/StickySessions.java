@@ -46,12 +46,12 @@ public class StickySessions implements BalancerAlgorithm {
 
     @Override
     public BalancerItem get(@Nullable String index) {
-        if (!map.containsKey(index)) {
+        map.computeIfAbsent(index, s -> {
             BalancerItem balancerItem = list.get(Util.stringToInt(index, 0, list.size()));
             ExpiredMsMutableEnvelope<BalancerItem> balancerItemExpiredMsMutableEnvelope = new ExpiredMsMutableEnvelope<>(balancerItem);
             balancerItemExpiredMsMutableEnvelope.setKeepAliveOnInactivityMin(5);
-            map.put(index, balancerItemExpiredMsMutableEnvelope);
-        }
+            return balancerItemExpiredMsMutableEnvelope;
+        });
         ExpiredMsMutableEnvelope<BalancerItem> balancerItemExpiredMsMutableEnvelope = map.get(index);
         balancerItemExpiredMsMutableEnvelope.active();
         return balancerItemExpiredMsMutableEnvelope.getValue();

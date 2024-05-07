@@ -69,9 +69,7 @@ public class RateLimit
     }
 
     public RateLimit init(String name, RateLimitItemInstance rateLimitItemInstance) {
-        if (!map.containsKey(name)) {
-            map.put(name, rateLimitItemInstance.create());
-        }
+        map.computeIfAbsent(name, s -> rateLimitItemInstance.create());
         return this;
     }
 
