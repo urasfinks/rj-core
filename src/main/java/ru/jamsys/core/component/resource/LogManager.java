@@ -15,7 +15,7 @@ import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
+import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableEnvelope;
 import ru.jamsys.core.util.UtilFile;
 
 import java.io.FileInputStream;
@@ -109,10 +109,10 @@ public class LogManager implements ClassName {
         RateLimitItem maxSize = rateLimit.get(RateLimitName.FILE_LOG_SIZE.getName());
         AtomicInteger writeByte = new AtomicInteger();
         Exception exception = null;
-        List<ExpiredMsMutableEnvelope<Log>> insuranceRestore = new ArrayList<>();
+        List<ExpiredMsImmutableEnvelope<Log>> insuranceRestore = new ArrayList<>();
         try (FileOutputStream fos = new FileOutputStream(dir + "/" + path + ".start.bin")) {
             while (!logBroker.isEmpty()) {
-                ExpiredMsMutableEnvelope<Log> itemExpiredMsMutableEnvelope = logBroker.pollFirst();
+                ExpiredMsImmutableEnvelope<Log> itemExpiredMsMutableEnvelope = logBroker.pollFirst();
                 // Запоминаем что считали, что бы если что-то произойдёт с FS - мы ба восстановили в очереди
                 insuranceRestore.add(itemExpiredMsMutableEnvelope);
 
@@ -145,7 +145,7 @@ public class LogManager implements ClassName {
                 // Может быть получится хоть что-то восстановить из него, но с другой стороны
                 // я хотел удалять файлы .start.bin при старте приложения, так как они поломанные
                 // может стоит пересмотреть первичную позицию
-                for (ExpiredMsMutableEnvelope<Log> restore : insuranceRestore) {
+                for (ExpiredMsImmutableEnvelope<Log> restore : insuranceRestore) {
                     logBroker.add(restore);
                 }
                 UtilFile.remove(dir + "/" + path + ".start.bin");

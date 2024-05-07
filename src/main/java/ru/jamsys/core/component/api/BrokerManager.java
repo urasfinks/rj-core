@@ -8,7 +8,7 @@ import ru.jamsys.core.component.AbstractComponentCollection;
 import ru.jamsys.core.component.item.Broker;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
+import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableEnvelope;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
@@ -16,8 +16,8 @@ import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
 public class BrokerManager<MOI>
         extends AbstractComponentCollection<
         Broker<MOI>,
-        ExpiredMsMutableEnvelope<MOI>,
-        ExpiredMsMutableEnvelope<MOI>
+        ExpiredMsImmutableEnvelope<MOI>,
+        ExpiredMsImmutableEnvelope<MOI>
                 >
         implements StatisticsFlushComponent, KeepAliveComponent {
 
@@ -32,13 +32,13 @@ public class BrokerManager<MOI>
         return new Broker<>(index, applicationContext);
     }
 
-    public ExpiredMsMutableEnvelope<MOI> pollLast(String key) {
+    public ExpiredMsImmutableEnvelope<MOI> pollLast(String key) {
         Broker<MOI> queue = get(key);
         return queue.pollLast();
     }
 
     @SuppressWarnings("unused")
-    public ExpiredMsMutableEnvelope<MOI> pollFirst(String key) {
+    public ExpiredMsImmutableEnvelope<MOI> pollFirst(String key) {
         Broker<MOI> queue = get(key);
         return queue.pollFirst();
     }

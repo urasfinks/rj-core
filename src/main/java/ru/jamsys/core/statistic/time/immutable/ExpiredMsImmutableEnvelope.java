@@ -1,14 +1,19 @@
 package ru.jamsys.core.statistic.time.immutable;
 
 import lombok.Getter;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
 
 @Getter
-public class ExpiredMsImmutableEnvelope<T> extends ExpiredMsMutableImpl {
+public class ExpiredMsImmutableEnvelope<T> extends ExpiredMsImmutableImpl {
 
     final T value;
 
-    public ExpiredMsImmutableEnvelope(T value) {
+    public ExpiredMsImmutableEnvelope(T value, long keepAliveOnInactivityMs) {
+        super(keepAliveOnInactivityMs);
+        this.value = value;
+    }
+
+    public ExpiredMsImmutableEnvelope(T value, long keepAliveOnInactivityMs, long lastActivityMs) {
+        super(keepAliveOnInactivityMs, lastActivityMs);
         this.value = value;
     }
 
