@@ -1,8 +1,6 @@
 package ru.jamsys.core.component.item;
 
 import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.StatisticsFlush;
@@ -13,15 +11,12 @@ import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
 import ru.jamsys.core.util.Util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 // Для задач когда надо прихранить какие-либо данные на время по ключу
 // Для задач, когда надо сформировать ошибки, если какие-либо задачи не исполнились
@@ -40,9 +35,6 @@ public class Cache<K, TEO>
 
     @Getter
     ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<K>> bucket = new ConcurrentSkipListMap<>();
-
-    @Setter
-    private Consumer<ExpiredMsMutableEnvelope<TEO>> onExpired;
 
     private final String index;
 
@@ -82,22 +74,6 @@ public class Cache<K, TEO>
         return null;
     }
 
-    public List<Long> getBucketKey() {
-        return bucket.keySet().stream().toList();
-    }
-
-    @SuppressWarnings("unused")
-    public List<String> getBucketKeyFormat() {
-        List<String> result = new ArrayList<>();
-        getBucketKey().forEach(x -> result.add(Util.msToDataFormat(x)));
-        return result;
-    }
-
-    @SafeVarargs
-    static <K> K[] getEmptyType(K... array) {
-        return Arrays.copyOf(array, 0);
-    }
-
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         List<Statistic> result = new ArrayList<>();
@@ -108,52 +84,9 @@ public class Cache<K, TEO>
         return result;
     }
 
-    @Getter
-    @ToString
-    public static class KeepAliveResult {
-        List<Long> readBucket = new ArrayList<>();
-        AtomicInteger countRemove = new AtomicInteger(0);
-
-        public List<String> getReadBucketFormat() {
-            List<String> result = new ArrayList<>();
-            readBucket.forEach(x -> result.add(Util.msToDataFormat(x)));
-            return result;
-        }
-    }
-
-    //Для тестирования будем возвращать пачку на которой
-    public KeepAliveResult keepAlive(AtomicBoolean isThreadRun, long curTimeMs) {
-        KeepAliveResult keepAliveResult = new KeepAliveResult();
-        Util.riskModifierMapBreak(isThreadRun, bucket, getEmptyType(), (Long time, ConcurrentLinkedQueue<K> queue) -> {
-            if (time > curTimeMs) {
-                return false;
-            }
-            keepAliveResult.getReadBucket().add(time);
-            Util.riskModifierCollection(isThreadRun, queue, getEmptyType(), (K key) -> {
-                ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope = map.get(key);
-                if (expiredMsMutableEnvelope != null) {
-                    if (expiredMsMutableEnvelope.isExpired()) {
-                        if (onExpired != null) {
-                            onExpired.accept(expiredMsMutableEnvelope);
-                        }
-                        queue.remove(key);
-                        map.remove(key);
-                        keepAliveResult.getCountRemove().incrementAndGet();
-                    }
-                }
-            });
-            if (queue.isEmpty()) {
-                bucket.remove(time);
-                return true;
-            }
-            return false;
-        });
-        return keepAliveResult;
-    }
-
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        keepAlive(isThreadRun, System.currentTimeMillis());
+
     }
 
     @Override

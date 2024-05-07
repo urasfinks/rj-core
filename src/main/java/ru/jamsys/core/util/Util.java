@@ -512,4 +512,9 @@ public class Util {
         return (int) result;
     }
 
+    @SafeVarargs
+    static <ANY> ANY[] getEmptyType(ANY... array) {
+        return Arrays.copyOf(array, 0);
+    }
+
 }
