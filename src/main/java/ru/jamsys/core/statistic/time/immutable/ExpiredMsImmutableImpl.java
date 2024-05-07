@@ -3,6 +3,7 @@ package ru.jamsys.core.statistic.time.immutable;
 import lombok.Getter;
 import lombok.Setter;
 
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Getter
 public class ExpiredMsImmutableImpl implements ExpiredMsImmutable {
 
