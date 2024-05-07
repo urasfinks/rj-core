@@ -511,8 +511,8 @@ class ThreadEnvelopeTest {
     @Test
     void test3() {
         ConcurrentHashMap<Long, AvgMetric> map = new ConcurrentHashMap<>();
-        AvgMetric avgMetric = map.computeIfAbsent(1L, s -> new AvgMetric());
-        AvgMetric avgMetric2 = map.computeIfAbsent(1L, s -> new AvgMetric());
+        AvgMetric avgMetric = map.computeIfAbsent(1L, _ -> new AvgMetric());
+        AvgMetric avgMetric2 = map.computeIfAbsent(1L, _ -> new AvgMetric());
         Assertions.assertEquals(avgMetric, avgMetric2);
     }
 
