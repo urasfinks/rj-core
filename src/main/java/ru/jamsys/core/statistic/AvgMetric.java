@@ -8,6 +8,7 @@ import java.util.LongSummaryStatistics;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 @ToString
 public class AvgMetric {
 
@@ -21,6 +22,17 @@ public class AvgMetric {
 
     public List<Long> get() {
         return List.of(queue.toArray(new Long[0]));
+    }
+
+    public LongSummaryStatistics flush() {
+        LongSummaryStatistics avg = new LongSummaryStatistics();
+        while (!queue.isEmpty()) {
+            Long poll = queue.poll();
+            if (poll != null) {
+                avg.accept(poll);
+            }
+        }
+        return avg;
     }
 
     public Map<String, Object> flush(String prefix) {
