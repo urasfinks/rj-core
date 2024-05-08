@@ -4,6 +4,7 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.balancer.BalancerItem;
 import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
 import ru.jamsys.core.util.Util;
+import ru.jamsys.core.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,7 @@ public class StickySessions implements BalancerAlgorithm {
     }
 
     private void remove(BalancerItem balancerItem) {
-        Util.riskModifierMap(null, map, new String[0], (String key, ExpiredMsMutableEnvelope<BalancerItem> timer) -> {
+        UtilRisc.forEach(null, map, (String key, ExpiredMsMutableEnvelope<BalancerItem> timer) -> {
             if (timer.getValue().equals(balancerItem)) {
                 map.remove(key);
             }
@@ -59,7 +60,7 @@ public class StickySessions implements BalancerAlgorithm {
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        Util.riskModifierMap(isThreadRun, map, new String[0], (String key, ExpiredMsMutableEnvelope<BalancerItem> expiredMsMutableEnvelope) -> {
+        UtilRisc.forEach(isThreadRun, map, (String key, ExpiredMsMutableEnvelope<BalancerItem> expiredMsMutableEnvelope) -> {
             if (expiredMsMutableEnvelope.isExpired()) {
                 map.remove(key);
             }

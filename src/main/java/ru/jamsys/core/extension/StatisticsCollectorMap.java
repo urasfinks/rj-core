@@ -1,7 +1,7 @@
 package ru.jamsys.core.extension;
 
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -18,10 +18,9 @@ public interface StatisticsCollectorMap<T extends StatisticsFlush> extends Stati
         Map<String, T> map = getMapForFlushStatistic();
         List<Statistic> result = new ArrayList<>();
         String clsName = ClassNameImpl.getClassNameStatic(getClass(), null);
-        Util.riskModifierMap(
+        UtilRisc.forEach(
                 isThreadRun,
                 map,
-                new String[0],
                 (String key, T element) -> {
                     LinkedHashMap<String, String> newParentTags = new LinkedHashMap<>(parentTags);
                     newParentTags.put(clsName, key);

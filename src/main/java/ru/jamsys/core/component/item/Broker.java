@@ -15,10 +15,9 @@ import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableEnvelope;
 import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.util.UtilRisc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -158,16 +157,11 @@ public class Broker<TEO>
         }
     }
 
-    @SafeVarargs
-    static <T> T[] getEmptyType(T... array) {
-        return Arrays.copyOf(array, 0);
-    }
-
     @SuppressWarnings("unused")
     public List<TEO> getCloneQueue(@Nullable AtomicBoolean isRun) {
         List<TEO> cloned = new ArrayList<>();
         List<ExpiredMsImmutableEnvelope<TEO>> ret = new ArrayList<>();
-        Util.riskModifierCollection(isRun, queue, getEmptyType(), (ExpiredMsImmutableEnvelope<TEO> elementEnvelope)
+        UtilRisc.forEach(isRun, queue, (ExpiredMsImmutableEnvelope<TEO> elementEnvelope)
                 -> cloned.add(elementEnvelope.getValue()));
         return cloned;
     }
@@ -189,7 +183,7 @@ public class Broker<TEO>
 
     public List<TEO> getTail(@Nullable AtomicBoolean isRun) {
         List<TEO> ret = new ArrayList<>();
-        Util.riskModifierCollection(isRun, tail, getEmptyType(), (ExpiredMsImmutableEnvelope<TEO> elementEnvelope) -> ret.add(elementEnvelope.getValue()));
+        UtilRisc.forEach(isRun, tail, (ExpiredMsImmutableEnvelope<TEO> elementEnvelope) -> ret.add(elementEnvelope.getValue()));
         return ret;
     }
 
@@ -265,7 +259,7 @@ public class Broker<TEO>
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        Util.riskModifierCollection(isThreadRun, queue, new ExpiredMsImmutableEnvelope[0], (ExpiredMsImmutableEnvelope<TEO> teoExpiredMsImmutableEnvelope) -> {
+        UtilRisc.forEach(isThreadRun, queue, (ExpiredMsImmutableEnvelope<TEO> teoExpiredMsImmutableEnvelope) -> {
             if (teoExpiredMsImmutableEnvelope.isExpired()) {
                 queue.remove(teoExpiredMsImmutableEnvelope);
             }

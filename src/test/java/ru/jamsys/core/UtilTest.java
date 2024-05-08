@@ -2,10 +2,14 @@ package ru.jamsys.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.extension.HashMapBuilder;
 import ru.jamsys.core.util.Util;
+import ru.jamsys.core.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class UtilTest {
 
@@ -26,12 +30,32 @@ class UtilTest {
         list.add("!");
 
         List<String> result = new ArrayList<>();
-        Util.riskModifierCollection(null, list, new String[0], result::add);
+        UtilRisc.forEach(null, list, (String s) -> {
+            result.add(s);
+        });
         Assertions.assertEquals("[Hello, world, !]", result.toString());
 
         List<String> result2 = new ArrayList<>();
-        Util.riskModifierCollection(null, list, new String[0], result2::add, true);
+        UtilRisc.forEach(null, list, (String s) -> {
+            result2.add(s);
+        }, true);
         Assertions.assertEquals("[!, world, Hello]", result2.toString());
 
+    }
+
+    @Test
+    void testRiskCollection() {
+        AtomicInteger counter = new AtomicInteger(0);
+        StringBuilder sb = new StringBuilder();
+        Map<String, Object> map = new HashMapBuilder<String, Object>()
+                .append("test", 1)
+                .append("x", "y");
+        UtilRisc.forEach(null, map, (String key, Object value) -> {
+            counter.incrementAndGet();
+            sb.append(key);
+            sb.append(value);
+        });
+        Assertions.assertEquals(2, counter.get());
+        Assertions.assertEquals("test1xy", sb.toString());
     }
 }

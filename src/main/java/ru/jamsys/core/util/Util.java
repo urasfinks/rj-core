@@ -11,8 +11,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -26,24 +24,19 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class Util {
 
     static final String defaultCharset = "UTF-8";
 
-    @SuppressWarnings("unused")
     public static <T> void printArray(T[] arr) {
         logConsole(Arrays.toString(arr));
     }
 
-    @SuppressWarnings("unused")
     public static <T, R> List<R> forEach(T[] array, Function<T, R> fn) {
         List<R> list = new ArrayList<>();
         for (T item : array) {
@@ -55,7 +48,6 @@ public class Util {
         return list;
     }
 
-    @SuppressWarnings("unused")
     public static void logConsole(String data) {
         logConsole(data, false);
     }
@@ -69,12 +61,10 @@ public class Util {
         out.println(Util.msToDataFormat(System.currentTimeMillis()) + " " + t.getName() + " " + data);
     }
 
-    @SuppressWarnings("unused")
     public static long getTimestamp() {
         return System.currentTimeMillis() / 1000;
     }
 
-    @SuppressWarnings("unused")
     public static String getApplicationProperties(String key) throws Exception {
         throw new Exception("Deprecated");
     }
@@ -88,12 +78,10 @@ public class Util {
         }
     }
 
-    @SuppressWarnings("unused")
     public static String genUser() {
         return "u" + ThreadLocalRandom.current().nextInt(10000, 99999);
     }
 
-    @SuppressWarnings("unused")
     public static String genPassword() {
 
         /*
@@ -124,7 +112,6 @@ public class Util {
         return "p" + password;
     }
 
-    @SuppressWarnings("unused")
     public static String stackTraceToString(Throwable e) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -132,7 +119,6 @@ public class Util {
         return sw.toString();
     }
 
-    @SuppressWarnings("unused")
     public static String padRight(String data, int n) {
         if (data == null) {
             return "";
@@ -140,7 +126,6 @@ public class Util {
         return String.format("%-" + n + "s", data);
     }
 
-    @SuppressWarnings("unused")
     public static String padRight(String data, int n, String ch) {
         if (data == null) {
             return "";
@@ -154,12 +139,10 @@ public class Util {
         }
     }
 
-    @SuppressWarnings("unused")
     public static String padLeft(String data, int n) {
         return String.format("%" + n + "s", data);
     }
 
-    @SuppressWarnings("unused")
     public static String padLeft(String data, int n, String ch) {
         if (data == null) {
             return "";
@@ -178,7 +161,6 @@ public class Util {
         }
     }
 
-    @SuppressWarnings("unused")
     public static String trimLeft(String data, String ch) {
         StringBuilder sb = new StringBuilder(data);
         while (!sb.isEmpty() && ch.equals(sb.charAt(0) + "")) {
@@ -187,7 +169,6 @@ public class Util {
         return sb.toString();
     }
 
-    @SuppressWarnings("unused")
     public static String trimRight(String data, String ch) {
         StringBuilder sb = new StringBuilder(data);
         while (!sb.isEmpty() && ch.equals(sb.charAt(sb.length() - 1) + "")) {
@@ -196,26 +177,22 @@ public class Util {
         return sb.toString();
     }
 
-    @SuppressWarnings("unused")
     public static String getDate(String format) {
         Date now = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat(format);
         return formatter.format(now);
     }
 
-    @SuppressWarnings("unused")
     public static long getTimestamp(String date, String format) throws Exception {
         DateFormat dateFormat = new SimpleDateFormat(format);
         Date d1 = dateFormat.parse(date);
         return d1.getTime() / 1000;
     }
 
-    @SuppressWarnings("unused")
     public static long getTimestampFromPostgreSql(String date) throws Exception {
         return getTimestamp(date, "yyyy-MM-dd HH:mm:ss.SSSX");
     }
 
-    @SuppressWarnings("unused")
     public static boolean dateValidate(String date, String format) {
         DateFormat DATE_FORMAT = new SimpleDateFormat(format);
         DATE_FORMAT.setLenient(true);
@@ -227,7 +204,6 @@ public class Util {
         return false;
     }
 
-    @SuppressWarnings("unused")
     public static String timestampToDateFormat(long timestamp, String format) {
         Timestamp stamp = new Timestamp(timestamp * 1000);
         return new SimpleDateFormat(format).format(new Date(stamp.getTime()));
@@ -237,8 +213,7 @@ public class Util {
         if (ms == null) {
             return "null";
         }
-        LocalDateTime date =
-                LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneId.systemDefault());
+        LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneId.systemDefault());
         return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"));
     }
 
@@ -246,17 +221,15 @@ public class Util {
         return URLEncoder.encode(data, charset);
     }
 
-    @SuppressWarnings("unused")
+
     public static String urlEncode(String data) throws Exception {
         return urlEncode(data, defaultCharset);
     }
 
-    @SuppressWarnings("unused")
     public static String urlDecode(String data, String charset) throws Exception {
         return URLDecoder.decode(data, charset);
     }
 
-    @SuppressWarnings("unused")
     public static String urlDecode(String data) throws Exception {
         return urlDecode(data, defaultCharset);
     }
@@ -273,31 +246,14 @@ public class Util {
         return getHash(data.getBytes(charset), hashType);
     }
 
-    @SuppressWarnings("unused")
     public static String getHash(String data, String hashType) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         return new String(getHash(data, hashType, defaultCharset), defaultCharset);
     }
 
-    @SuppressWarnings("unused")
     public static Integer random(Integer minimum, Integer maximum) {
         return minimum + ThreadLocalRandom.current().nextInt((maximum - minimum) + 1);
     }
 
-    @SuppressWarnings("unused")
-    public static void reverseBytes(byte[] array) {
-        int i = 0;
-        int j = array.length - 1;
-        byte tmp;
-        while (j > i) {
-            tmp = array[j];
-            array[j] = array[i];
-            array[i] = tmp;
-            j--;
-            i++;
-        }
-    }
-
-    @SuppressWarnings("unused")
     public static String regexpReplace(String data, String pattern, String replace) {
         Pattern p = Pattern.compile(pattern);
         Matcher m = p.matcher(data);
@@ -309,19 +265,16 @@ public class Util {
         return sb.toString();
     }
 
-    @SuppressWarnings("unused")
     public static String regexpFind(String str, String pattern) {
         Pattern p = Pattern.compile(pattern);
         Matcher m = p.matcher(str);
         return m.find() ? m.group(0) : null;
     }
 
-    @SuppressWarnings("unused")
     public static String capitalize(String str) {
         return StringUtils.capitalize(str);
     }
 
-    @SuppressWarnings("unused")
     public static boolean isNumeric(String num) {
         try {
             Double.parseDouble(num);
@@ -331,7 +284,6 @@ public class Util {
         return false;
     }
 
-    @SuppressWarnings("unused")
     public static boolean isInt(String num) {
         try {
             Integer.parseInt(num);
@@ -341,7 +293,6 @@ public class Util {
         return false;
     }
 
-    @SuppressWarnings("unused")
     public static String getResourceContent(Resource resource, String charset) {
         try (Reader reader = new InputStreamReader(resource.getInputStream(), charset)) {
             return FileCopyUtils.copyToString(reader);
@@ -350,14 +301,12 @@ public class Util {
         }
     }
 
-    @SuppressWarnings("unused")
     public static void printStackTrace(String label) {
         Exception exception = new Exception(label);
         //App.context.getBean(ExceptionHandler.class).handler(exception);
         exception.printStackTrace();
     }
 
-    @SuppressWarnings("unused")
     public static void overflow(Map<String, Object> def, Map<String, Object> newObj) {
         for (String key : newObj.keySet()) {
             def.put(key, newObj.get(key));
@@ -373,105 +322,8 @@ public class Util {
         return sb.toString();
     }
 
-    @SuppressWarnings("unused")
     public static String ucword(String someString) {
         return someString.substring(0, 1).toUpperCase() + someString.substring(1);
-    }
-
-    public static <T> void riskModifierCollection(AtomicBoolean isRun, Collection<T> collection, T[] toArray, Consumer<T> consumer) {
-        riskModifierCollection(isRun, collection, toArray, consumer, false);
-    }
-
-    //TODO: перевести всё на break
-    public static <T> void riskModifierCollection(AtomicBoolean isRun, Collection<T> collection, T[] toArray, Consumer<T> consumer, boolean reverse) {
-        if (collection != null && !collection.isEmpty()) {
-            try {
-                T[] objects = collection.toArray(toArray);
-                int index = reverse ? objects.length - 1 : 0;
-                int inc = reverse ? -1 : 1;
-                while (true) {
-                    T value = objects[index];
-                    if (isRun == null || isRun.get()) {
-                        try {
-                            if (value != null) {
-                                consumer.accept(value);
-                            }
-                        } catch (Exception e2) {
-                            App.context.getBean(ExceptionHandler.class).handler(e2);
-                        }
-                    } else {
-                        break;
-                    }
-                    index += inc;
-                    if (index < 0 || index > objects.length - 1) {
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
-            }
-        }
-    }
-
-    public static <K, V> void riskModifierMapBreak(AtomicBoolean isRun, Map<K, V> map, K[] toArray, BiFunction<K, V, Boolean> consumer) {
-        if (map != null && !map.isEmpty()) {
-            try {
-                K[] objects = map.keySet().toArray(toArray);
-                for (K key : objects) {
-                    if (isRun == null || isRun.get()) {
-                        try {
-                            V value = map.get(key);
-                            if (value != null) {
-                                if (!consumer.apply(key, value)) {
-                                    break;
-                                }
-                            }
-                        } catch (Exception e2) {
-                            App.context.getBean(ExceptionHandler.class).handler(e2);
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
-            }
-        }
-    }
-
-    public static <K, V> void riskModifierMap(AtomicBoolean isRun, Map<K, V> map, K[] toArray, BiConsumer<K, V> consumer) {
-        if (map != null && !map.isEmpty()) {
-            try {
-                K[] objects = map.keySet().toArray(toArray);
-                for (K key : objects) {
-                    if (isRun == null || isRun.get()) {
-                        try {
-                            V value = map.get(key);
-                            if (value != null) {
-                                consumer.accept(key, value);
-                            }
-                        } catch (Exception e2) {
-                            App.context.getBean(ExceptionHandler.class).handler(e2);
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
-            }
-        }
-    }
-
-    public static byte[] charsToBytes(char[] chars) {
-        ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap(chars));
-        return Arrays.copyOf(byteBuffer.array(), byteBuffer.limit());
-    }
-
-    @SuppressWarnings("unused")
-    public static char[] bytesToChars(byte[] bytes) {
-        CharBuffer charBuffer = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(bytes));
-        return Arrays.copyOf(charBuffer.array(), charBuffer.limit());
     }
 
     public static long zeroLastNDigits(long x, long n) {
@@ -510,11 +362,6 @@ public class Util {
         int sumReverse = Integer.parseInt(new StringBuilder(sum + "").reverse().toString());
         double result = min + Math.floor(Double.parseDouble("0." + sumReverse) * (max - min + 1));
         return (int) result;
-    }
-
-    @SafeVarargs
-    static <ANY> ANY[] getEmptyType(ANY... array) {
-        return Arrays.copyOf(array, 0);
     }
 
 }

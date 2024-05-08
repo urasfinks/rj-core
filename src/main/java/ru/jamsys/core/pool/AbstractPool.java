@@ -18,9 +18,9 @@ import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
 import ru.jamsys.core.util.Util;
+import ru.jamsys.core.util.UtilRisc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -91,11 +91,6 @@ public abstract class AbstractPool<T extends PoolItem<T>>
 
     public boolean allInPark() {
         return parkQueue.size() == itemQueue.size();
-    }
-
-    @SafeVarargs
-    static <T> T[] getEmptyType(T... array) {
-        return Arrays.copyOf(array, 0);
     }
 
     private long getTimeWhenParkIsEmpty() {
@@ -343,7 +338,7 @@ public abstract class AbstractPool<T extends PoolItem<T>>
             final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
             //C конца будем пробегать
-            Util.riskModifierCollection(null, parkQueue, getEmptyType(), (T poolItem) -> {
+            UtilRisc.forEach(null, parkQueue, (T poolItem) -> {
                 if (maxCounterRemove.get() == 0) {
                     return;
                 }
@@ -375,10 +370,9 @@ public abstract class AbstractPool<T extends PoolItem<T>>
     public void shutdown() {
         if (restartOperation.compareAndSet(false, true)) {
             isRun.set(false);
-            Util.riskModifierCollection(
+            UtilRisc.forEach(
                     null,
                     itemQueue,
-                    getEmptyType(),
                     this::removeAndClose
             );
             rateLimit.setActive(false);

@@ -3,7 +3,7 @@ package ru.jamsys.core.component;
 import lombok.Setter;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutable;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.util.UtilRisc;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,10 +27,9 @@ public abstract class AbstractComponent<MO extends Closable & ExpiredMsMutable &
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        Util.riskModifierMap(
+        UtilRisc.forEach(
                 isThreadRun,
                 map,
-                new String[0],
                 (String key, MO element) -> {
                     if (cleanableMap && element.isExpired()) {
                         map.remove(key);

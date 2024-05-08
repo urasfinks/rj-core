@@ -16,11 +16,11 @@ import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableEnvelope;
+import ru.jamsys.core.util.UtilByte;
 import ru.jamsys.core.util.UtilFile;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -119,7 +119,7 @@ public class LogManager implements ClassName {
                 Log item = itemExpiredMsMutableEnvelope.getValue();
                 // Запись кол-ва заголовков
                 writeByte.addAndGet(2);
-                fos.write(shortToBytes((short) item.header.size()));
+                fos.write(UtilByte.shortToBytes((short) item.header.size()));
                 // Запись заголовков
                 for (String key : item.header.keySet()) {
                     writeShortStringBlock(fos, key, writeByte);
@@ -161,7 +161,7 @@ public class LogManager implements ClassName {
         try (FileInputStream fis = new FileInputStream("data.bin")) {
             while (fis.available() > 0) {
                 Log item = new Log(new HashMap<>(), "");
-                short countHeader = bytesToShort(fis.readNBytes(2));
+                short countHeader = UtilByte.bytesToShort(fis.readNBytes(2));
                 for (int i = 0; i < countHeader; i++) {
                     item.header.put(readShortString(fis), readShortString(fis));
                 }
@@ -175,44 +175,27 @@ public class LogManager implements ClassName {
     }
 
     public String readShortString(FileInputStream fis) throws Exception {
-        short len = bytesToShort(fis.readNBytes(2));
+        short len = UtilByte.bytesToShort(fis.readNBytes(2));
         return new String(fis.readNBytes(len), StandardCharsets.UTF_8);
     }
 
     public String readString(FileInputStream fis) throws Exception {
-        int len = bytesToInt(fis.readNBytes(4));
+        int len = UtilByte.bytesToInt(fis.readNBytes(4));
         return new String(fis.readNBytes(len), StandardCharsets.UTF_8);
     }
 
     public void writeShortStringBlock(FileOutputStream fos, String data, AtomicInteger writeByte) throws Exception {
         byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
-        fos.write(shortToBytes((short) dataBytes.length));
+        fos.write(UtilByte.shortToBytes((short) dataBytes.length));
         fos.write(dataBytes);
         writeByte.addAndGet(dataBytes.length + 2);
     }
 
     public void writeStringBlock(FileOutputStream fos, String data, AtomicInteger writeByte) throws Exception {
         byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
-        fos.write(intToBytes(dataBytes.length));
+        fos.write(UtilByte.intToBytes(dataBytes.length));
         fos.write(dataBytes);
         writeByte.addAndGet(dataBytes.length + 4);
-    }
-
-
-    public static byte[] intToBytes(int value) {
-        return new byte[]{(byte) (value >>> 24), (byte) (value >>> 16), (byte) (value >>> 8), (byte) value};
-    }
-
-    public static int bytesToInt(byte[] bytes) {
-        return ((bytes[0] & 0xFF) << 24) | ((bytes[1] & 0xFF) << 16) | ((bytes[2] & 0xFF) << 8) | ((bytes[3] & 0xFF));
-    }
-
-    public static byte[] shortToBytes(short s) {
-        return ByteBuffer.allocate(2).putShort(s).array();
-    }
-
-    public static short bytesToShort(byte[] bytes) {
-        return ByteBuffer.wrap(bytes).getShort();
     }
 
 }

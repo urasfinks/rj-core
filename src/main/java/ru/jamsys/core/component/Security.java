@@ -144,7 +144,7 @@ public class Security implements RunnableComponent {
     }
 
     private byte[] decryptStoragePassword(byte[] token) {
-        byte[] bytesPrivateKey = UtilBase64.base64DecodeResultBytes(Util.charsToBytes(privateKey));
+        byte[] bytesPrivateKey = UtilBase64.base64DecodeResultBytes(UtilByte.charsToBytes(privateKey));
         if (bytesPrivateKey == null || bytesPrivateKey.length == 0) {
             throw new RuntimeException("Private key is empty");
         }
@@ -190,7 +190,7 @@ public class Security implements RunnableComponent {
             return hashPassword != null
                     && hashPassword.equals(
                     new String(
-                            Util.getHash(Util.charsToBytes(password), hashPasswordType),
+                            Util.getHash(UtilByte.charsToBytes(password), hashPasswordType),
                             StandardCharsets.UTF_8
                     ));
         } catch (Exception e) {
@@ -203,7 +203,7 @@ public class Security implements RunnableComponent {
         if (password == null || password.length == 0) {
             throw new RuntimeException("Password is empty; Change/remove token file: [" + pathSignature + "]");
         }
-        hashPassword = new String(Util.getHash(Util.charsToBytes(password), hashPasswordType), StandardCharsets.UTF_8);
+        hashPassword = new String(Util.getHash(UtilByte.charsToBytes(password), hashPasswordType), StandardCharsets.UTF_8);
         keyStorePP = new KeyStore.PasswordProtection(password);
         File f = new File(pathStorage);
         if (!f.exists()) {
@@ -318,13 +318,13 @@ public class Security implements RunnableComponent {
                 throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + pathSignature + "]");
             }
             try {
-                loadKeyStorage(Util.bytesToChars(passwordKeyStore));
+                loadKeyStorage(UtilByte.bytesToChars(passwordKeyStore));
             } catch (Exception e) {
                 throw new RuntimeException("Security.run() init exception", e);
             }
             if (UtilFile.ifExist(pathInitAlias)) {
                 System.err.println("Please remove file [" + pathInitAlias + "] with credentials information");
-                insertAliases(Util.bytesToChars(passwordKeyStore));
+                insertAliases(UtilByte.bytesToChars(passwordKeyStore));
             }
             try {
                 Util.logConsole(

@@ -8,14 +8,12 @@ import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
 import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 // Для задач когда надо прихранить какие-либо данные на время по ключу
@@ -26,31 +24,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 //Мы не можем себе позволить постфактум менять timeout, так как в map заносится expiredTime из .getExpiredMs()
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public class Cache<K, TEO>
+public class Session<K, TEO>
         extends ExpiredMsMutableImpl
         implements StatisticsFlush, KeepAlive, Closable, AddToMap<K, ExpiredMsMutableEnvelope<TEO>> {
 
     @Getter
     final Map<K, ExpiredMsMutableEnvelope<TEO>> map = new ConcurrentHashMap<>();
 
-    @Getter
-    ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<K>> bucket = new ConcurrentSkipListMap<>();
-
     private final String index;
 
-    public Cache(String index) {
+    public Session(String index) {
         this.index = index;
     }
 
     @Override
     public void add(K key, ExpiredMsMutableEnvelope<TEO> value) {
-        map.computeIfAbsent(key, s -> {
-            long timeMsExpiredFloor = Util.zeroLastNDigits(value.getExpiredMs(), 3);
-            bucket
-                    .computeIfAbsent(timeMsExpiredFloor, s2 -> new ConcurrentLinkedQueue<>())
-                    .add(key);
-            return value;
-        });
+        map.computeIfAbsent(key, s -> value).active();
     }
 
     public ExpiredMsMutableEnvelope<TEO> add(K key, TEO value, long curTime, long timeoutMs) {
@@ -67,8 +56,8 @@ public class Cache<K, TEO>
 
     public TEO get(K key) {
         ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope = map.get(key);
-        if (expiredMsMutableEnvelope != null && !expiredMsMutableEnvelope.isExpired()) {
-            expiredMsMutableEnvelope.stop();
+        if (expiredMsMutableEnvelope != null) {
+            expiredMsMutableEnvelope.active();
             return expiredMsMutableEnvelope.getValue();
         }
         return null;
@@ -79,19 +68,22 @@ public class Cache<K, TEO>
         List<Statistic> result = new ArrayList<>();
         result.add(new Statistic(parentTags, parentFields)
                 .addField("MapSize", map.size())
-                .addField("BucketSize", bucket.size())
         );
         return result;
     }
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-
+        UtilRisc.forEach(isThreadRun, map, (K key, ExpiredMsMutableEnvelope<TEO> value) -> {
+            if (value.isExpired()) {
+                map.remove(key);
+            }
+        });
     }
 
     @Override
     public void close() {
-
+        map.clear();
     }
 
 }

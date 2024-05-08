@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.AbstractComponentMap;
 
-import ru.jamsys.core.component.item.Cache;
+import ru.jamsys.core.component.item.Session;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
@@ -15,13 +15,13 @@ import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
-public class CacheManager<MOI> extends AbstractComponentMap<
-        Cache<String, MOI>,
+public class SessionManager<MOI> extends AbstractComponentMap<
+        Session<String, MOI>,
         ExpiredMsMutableEnvelope<MOI>
         > implements KeepAliveComponent, StatisticsFlushComponent {
 
     @Override
-    public Cache<String, MOI> build(String index) {
-        return new Cache<>(index);
+    public Session<String, MOI> build(String index) {
+        return new Session<>(index);
     }
 }

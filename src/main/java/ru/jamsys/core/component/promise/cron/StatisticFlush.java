@@ -16,6 +16,7 @@ import ru.jamsys.core.statistic.StatisticSec;
 import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableEnvelope;
 import ru.jamsys.core.template.cron.release.Cron1s;
 import ru.jamsys.core.util.Util;
+import ru.jamsys.core.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -55,7 +56,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
         return new PromiseImpl(getClass().getName())
                 .append(this.getClass().getName(), PromiseTaskType.IO, (AtomicBoolean isThreadRun) -> {
                     StatisticSec statisticSec = new StatisticSec();
-                    Util.riskModifierCollection(isThreadRun, list, new StatisticsFlushComponent[0], (StatisticsFlushComponent statisticsFlushComponent) -> {
+                    UtilRisc.forEach(isThreadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
                         Map<String, String> parentTags = new LinkedHashMap<>();
                         String measurement = ClassNameImpl.getClassNameStatic(statisticsFlushComponent.getClass(), null);
                         parentTags.put("measurement", measurement);

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.time.TimeEnvelopeNano;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.util.UtilRisc;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +28,7 @@ public class PromiseTaskTime implements KeepAliveComponent {
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
         Map<String, AvgMetric> tmp = new HashMap<>();
-        Util.riskModifierCollection(isThreadRun, queue, new TimeEnvelopeNano[0], (TimeEnvelopeNano<String> timeEnvelope) -> {
+        UtilRisc.forEach(isThreadRun, queue, (TimeEnvelopeNano<String> timeEnvelope) -> {
             String index = timeEnvelope.getValue();
             if (!tmp.containsKey(index)) {
                 tmp.put(index, new AvgMetric());
