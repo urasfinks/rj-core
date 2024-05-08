@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class AbstractComponent<MO extends Closable & ExpiredMsMutable & StatisticsFlush>
+public abstract class AbstractManager<MO extends Closable & ExpiredMsMutable & StatisticsFlush>
         implements
         StatisticsCollectorMap<MO>,
         KeepAlive,

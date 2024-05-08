@@ -2,13 +2,13 @@ package ru.jamsys.core.component.resource;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.AbstractComponent;
+import ru.jamsys.core.component.AbstractManager;
 import ru.jamsys.core.resource.virtual.file.system.File;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
-public class VirtualFileSystem extends AbstractComponent<File> {
+public class VirtualFileSystem extends AbstractManager<File> {
 
     public VirtualFileSystem() {
         setCleanableMap(false);

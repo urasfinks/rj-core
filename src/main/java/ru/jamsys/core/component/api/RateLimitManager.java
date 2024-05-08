@@ -1,7 +1,7 @@
 package ru.jamsys.core.component.api;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.AbstractComponentMap;
+import ru.jamsys.core.component.AbstractManagerMapItem;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
@@ -17,7 +17,7 @@ import ru.jamsys.core.rate.limit.item.RateLimitItem;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 public class RateLimitManager
-        extends AbstractComponentMap<RateLimit, RateLimitItem>
+        extends AbstractManagerMapItem<RateLimit, RateLimitItem>
         implements StatisticsFlushComponent {
 
     public RateLimitManager() {
