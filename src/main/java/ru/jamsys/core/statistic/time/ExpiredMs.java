@@ -53,7 +53,7 @@ public interface ExpiredMs {
     }
 
     // Кол-во миллисекунд с момента последней активности
-    default String getInactivityTimeFormat() {
+    default String getLastActivityFormat() {
         return Util.msToDataFormat(getLastActivityMs());
     }
 

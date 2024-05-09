@@ -97,7 +97,7 @@ public abstract class AbstractPromise extends ExpiredMsMutableImpl implements Pr
 
     @JsonProperty
     public String getAddTime() {
-        return getInactivityTimeFormat();
+        return getLastActivityFormat();
     }
 
     @JsonProperty
