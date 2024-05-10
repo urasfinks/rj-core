@@ -39,6 +39,7 @@ class ExpiredManagerTest {
         AtomicInteger counterExpired = new AtomicInteger(0);
         test.setOnExpired(_ -> counterExpired.incrementAndGet());
         ExpiredMsImmutableEnvelope<XItem> add = test.add(new ExpiredMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
+        //Стопаем задачу, что не выполнилсмя onExpired
         add.stop();
         ControlExpiredKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + 1001);
         Assertions.assertEquals(1, keepAliveResult.getCountRemove().get());
