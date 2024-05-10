@@ -14,6 +14,7 @@ import ru.jamsys.core.util.Util;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class ExpiredManagerTest {
     AtomicBoolean isThreadRun = new AtomicBoolean(true);
@@ -26,6 +27,26 @@ class ExpiredManagerTest {
     }
 
     public static class XItem {
+
+    }
+
+    @Test
+    void testStop() throws Exception {
+        long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
+        @SuppressWarnings("unchecked")
+        ExpiredManager<XItem> expiredManager = App.context.getBean(ExpiredManager.class);
+        Expired<XItem> test = expiredManager.get("test");
+        AtomicInteger counterExpired = new AtomicInteger(0);
+        test.setOnExpired(_ -> counterExpired.incrementAndGet());
+        ExpiredMsImmutableEnvelope<XItem> add = test.add(new ExpiredMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
+        add.stop();
+        ControlExpiredKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + 1001);
+        Assertions.assertEquals(1, keepAliveResult.getCountRemove().get());
+
+        Assertions.assertEquals(0, counterExpired.get());
+
+        Statistic statistics = test.flushAndGetStatistic(null, null, null).getFirst();
+        Assertions.assertEquals("{ItemSize=0, BucketSize=0}", statistics.getFields().toString());
 
     }
 

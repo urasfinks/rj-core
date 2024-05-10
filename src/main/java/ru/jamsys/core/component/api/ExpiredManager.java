@@ -5,6 +5,7 @@ import ru.jamsys.core.component.AbstractManagerListItem;
 import ru.jamsys.core.component.item.Expired;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.statistic.time.immutable.DisposableExpiredMsImmutableEnvelope;
 import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableEnvelope;
 
 
@@ -14,7 +15,7 @@ public class ExpiredManager<V>
         extends AbstractManagerListItem<
         Expired<V>,
         ExpiredMsImmutableEnvelope<V>,
-        ExpiredMsImmutableEnvelope<V>
+        DisposableExpiredMsImmutableEnvelope<V>
         > implements StatisticsFlushComponent, KeepAliveComponent{
 
 

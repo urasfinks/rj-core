@@ -17,11 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 // Для задач когда надо прихранить какие-либо данные на время по ключу
-// Для задач, когда надо сформировать ошибки, если какие-либо задачи не исполнились
-// Но надо помнить, что всегда есть лаг срабатывания onExpired, так как keepAlive вызывается по расписанию
-// Уменьшить лаг можно путём более частого вызова keepAlive
 
-//Мы не можем себе позволить постфактум менять timeout, так как в map заносится expiredTime из .getExpiredMs()
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class Session<K, TEO>
