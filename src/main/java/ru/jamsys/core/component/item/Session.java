@@ -35,14 +35,14 @@ public class Session<K, TEO>
 
     @Override
     public void add(K key, ExpiredMsMutableEnvelope<TEO> value) {
-        map.computeIfAbsent(key, s -> value).active();
+        map.computeIfAbsent(key, _ -> value).active();
     }
 
     public ExpiredMsMutableEnvelope<TEO> add(K key, TEO value, long curTime, long timeoutMs) {
         ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope = new ExpiredMsMutableEnvelope<>(value);
         expiredMsMutableEnvelope.setKeepAliveOnInactivityMs(timeoutMs);
-        expiredMsMutableEnvelope.setLastActivityMs(curTime);
-        add(key, expiredMsMutableEnvelope);
+        // Что бы не переопределить активность
+        map.computeIfAbsent(key, _ -> expiredMsMutableEnvelope).setLastActivityMs(curTime);
         return expiredMsMutableEnvelope;
     }
 

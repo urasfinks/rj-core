@@ -69,7 +69,7 @@ public class RateLimit
     }
 
     public RateLimit init(String name, RateLimitItemInstance rateLimitItemInstance) {
-        map.computeIfAbsent(name, s -> rateLimitItemInstance.create());
+        map.computeIfAbsent(name, _ -> rateLimitItemInstance.create());
         return this;
     }
 

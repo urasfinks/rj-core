@@ -66,9 +66,9 @@ public class UtilFile {
     }
 
     public static void removeAllFilesInFolder(String path) {
-        getFilesRecursive(path).forEach(s -> {
+        getFilesRecursive(path).forEach(curPath -> {
             try {
-                remove(s);
+                remove(curPath);
             } catch (IOException e) {
                 App.context.getBean(ExceptionHandler.class).handler(e);
             }

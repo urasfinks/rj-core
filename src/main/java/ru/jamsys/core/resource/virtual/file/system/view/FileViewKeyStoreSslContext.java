@@ -14,7 +14,7 @@ public class FileViewKeyStoreSslContext extends FileViewKeyStore {
         if (super.getKeyStore() == null) {
             return null;
         }
-        return sslContext.computeIfAbsent(sslContextType, s -> {
+        return sslContext.computeIfAbsent(sslContextType, _ -> {
             try {
                 SSLContext ssl = SSLContext.getInstance(sslContextType);
                 ssl.init(super.getKeyManagers(), super.getTrustManager().getListTrustManager(), new SecureRandom());

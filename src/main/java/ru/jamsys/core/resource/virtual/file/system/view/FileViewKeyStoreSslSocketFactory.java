@@ -15,7 +15,7 @@ public class FileViewKeyStoreSslSocketFactory extends FileViewKeyStore {
         if (super.getKeyStore() == null) {
             return null;
         }
-        return sslSocketFactory.computeIfAbsent(sslContextType, s -> {
+        return sslSocketFactory.computeIfAbsent(sslContextType, _ -> {
             try {
                 SSLContext ssl = SSLContext.getInstance(sslContextType);
                 ssl.init(super.getKeyManagers(), super.getTrustManager().getListTrustManager(), new SecureRandom());
