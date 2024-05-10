@@ -102,17 +102,12 @@ class ExpiredManagerTest {
 
 
     Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
-
+        @SuppressWarnings("unchecked")
         ExpiredManager<XItem> expiredManager = App.context.getBean(ExpiredManager.class);
         Expired<XItem> test = expiredManager.get("test");
 
-
         AvgMetric avgMetric = new AvgMetric();
         test.setOnExpired((ExpiredMsImmutableEnvelope<XItem> env) -> {
-//            System.out.println("now: " + Util.msToDataFormat(System.currentTimeMillis()));
-//            System.out.println("add: " + env.getLastActivityFormat());
-//            System.out.println("exp: " + env.getExpiredFormat());
-//            System.out.println("offset: " + env.getExpiryRemainingMs());
             if (env.getExpiryRemainingMs() > 0) {
                 Assertions.fail("ALARM");
             } else {
@@ -170,30 +165,30 @@ class ExpiredManagerTest {
         Map<String, Object> stat = multiThread(100, 500);
         double timeAvg = (double) stat.get("Avg");
         Assertions.assertTrue(timeAvg <= 100);
-//
-//        stat = multiThread(100, 1000);
-//        timeAvg = (double) stat.get("Avg");
-//        Assertions.assertTrue(timeAvg <= 100);
-//
-//        stat = multiThread(200, 600);
-//        timeAvg = (double) stat.get("Avg");
-//        Assertions.assertTrue(timeAvg <= 200);
-//
-//        stat = multiThread(600, 600);
-//        timeAvg = (double) stat.get("Avg");
-//        Assertions.assertTrue(timeAvg <= 600);
-//
-//        stat = multiThread(1200, 600);
-//        timeAvg = (double) stat.get("Avg");
-//        Assertions.assertTrue(timeAvg <= 1200);
-//
-//        stat = multiThread(2400, 600);
-//        timeAvg = (double) stat.get("Avg");
-//        Assertions.assertTrue(timeAvg <= 2400);
-//
-//        stat = multiThread(4800, 600);
-//        timeAvg = (double) stat.get("Avg");
-//        Assertions.assertTrue(timeAvg <= 4800);
+
+        stat = multiThread(100, 1000);
+        timeAvg = (double) stat.get("Avg");
+        Assertions.assertTrue(timeAvg <= 100);
+
+        stat = multiThread(200, 600);
+        timeAvg = (double) stat.get("Avg");
+        Assertions.assertTrue(timeAvg <= 200);
+
+        stat = multiThread(600, 600);
+        timeAvg = (double) stat.get("Avg");
+        Assertions.assertTrue(timeAvg <= 600);
+
+        stat = multiThread(1200, 600);
+        timeAvg = (double) stat.get("Avg");
+        Assertions.assertTrue(timeAvg <= 1200);
+
+        stat = multiThread(2400, 600);
+        timeAvg = (double) stat.get("Avg");
+        Assertions.assertTrue(timeAvg <= 2400);
+
+        stat = multiThread(4800, 600);
+        timeAvg = (double) stat.get("Avg");
+        Assertions.assertTrue(timeAvg <= 4800);
 
     }
 

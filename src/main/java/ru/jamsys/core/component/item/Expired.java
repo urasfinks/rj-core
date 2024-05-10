@@ -59,14 +59,16 @@ public class Expired<V>
     public ControlExpiredKeepAliveResult keepAlive(AtomicBoolean isThreadRun, long curTimeMs) {
         ControlExpiredKeepAliveResult keepAliveResult = new ControlExpiredKeepAliveResult();
         UtilRisc.forEach(isThreadRun, bucket, (Long time, ConcurrentLinkedQueue<ExpiredMsImmutableEnvelope<V>> queue) -> {
-            if (time > curTimeMs - 1000) {
+            if (time > curTimeMs) {
                 return false;
             }
             keepAliveResult.getReadBucket().add(time);
             UtilRisc.forEach(isThreadRun, queue, (ExpiredMsImmutableEnvelope<V> expiredMsMutableEnvelope) -> {
-                onExpired.accept(expiredMsMutableEnvelope);
-                queue.remove(expiredMsMutableEnvelope);
-                keepAliveResult.getCountRemove().incrementAndGet();
+                if (expiredMsMutableEnvelope.isExpired()) {
+                    onExpired.accept(expiredMsMutableEnvelope);
+                    queue.remove(expiredMsMutableEnvelope);
+                    keepAliveResult.getCountRemove().incrementAndGet();
+                }
             });
             if (queue.isEmpty()) {
                 bucket.remove(time);
