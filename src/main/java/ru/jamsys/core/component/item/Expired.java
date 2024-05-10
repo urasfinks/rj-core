@@ -1,5 +1,6 @@
 package ru.jamsys.core.component.item;
 
+import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.statistic.time.immutable.DisposableExpiredMsImmutableEnvelope;
@@ -46,6 +47,7 @@ public class Expired<V>
 
     private final ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<DisposableExpiredMsImmutableEnvelope<V>>> bucket = new ConcurrentSkipListMap<>();
 
+    @Getter
     private final String index;
 
     @Setter

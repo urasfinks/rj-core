@@ -19,12 +19,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // Для задач когда надо прихранить какие-либо данные на время по ключу
 
 
+@Getter
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class Session<K, TEO>
         extends ExpiredMsMutableImpl
         implements StatisticsFlush, KeepAlive, Closable, AddToMap<K, ExpiredMsMutableEnvelope<TEO>> {
 
-    @Getter
     final Map<K, ExpiredMsMutableEnvelope<TEO>> map = new ConcurrentHashMap<>();
 
     private final String index;

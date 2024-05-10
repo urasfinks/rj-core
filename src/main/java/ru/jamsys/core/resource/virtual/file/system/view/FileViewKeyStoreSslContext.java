@@ -1,5 +1,8 @@
 package ru.jamsys.core.resource.virtual.file.system.view;
 
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.ExceptionHandler;
+
 import javax.net.ssl.SSLContext;
 import java.security.SecureRandom;
 import java.util.Map;
@@ -20,7 +23,7 @@ public class FileViewKeyStoreSslContext extends FileViewKeyStore {
                 ssl.init(super.getKeyManagers(), super.getTrustManager().getListTrustManager(), new SecureRandom());
                 return ssl;
             } catch (Exception e) {
-                e.printStackTrace();
+                App.context.getBean(ExceptionHandler.class).handler(e);
             }
             return null;
         });
