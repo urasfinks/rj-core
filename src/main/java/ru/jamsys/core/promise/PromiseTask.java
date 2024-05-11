@@ -5,9 +5,9 @@ import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.promise.PromiseTaskTime;
-import ru.jamsys.core.component.resource.RealThreadManager;
-import ru.jamsys.core.component.resource.VirtualThreadManager;
-import ru.jamsys.core.statistic.time.TimeEnvelopeNano;
+import ru.jamsys.core.component.resource.RealThreadComponent;
+import ru.jamsys.core.component.resource.VirtualThreadComponent;
+import ru.jamsys.core.statistic.expiration.TimeEnvelopeNano;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,8 +47,8 @@ public class PromiseTask implements Runnable {
 
     public void start() {
         switch (type) {
-            case IO -> App.context.getBean(VirtualThreadManager.class).submit(this);
-            case COMPUTE -> App.context.getBean(RealThreadManager.class).submit(this);
+            case IO -> App.context.getBean(VirtualThreadComponent.class).submit(this);
+            case COMPUTE -> App.context.getBean(RealThreadComponent.class).submit(this);
             case JOIN -> run();
             case ASYNC -> promise.getTrace().add(new Trace<>(index + "::async.start", TraceTimer.getInstanceZero()));
         }

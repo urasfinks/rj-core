@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.Security;
-import ru.jamsys.core.component.resource.PropertiesManager;
+import ru.jamsys.core.component.resource.PropertiesComponent;
 import ru.jamsys.core.extension.RunnableComponent;
 
 import java.util.List;
@@ -38,12 +38,12 @@ public class InfluxClientImpl implements InfluxClient, RunnableComponent {
 
     private final Security security;
 
-    public InfluxClientImpl(Security security, PropertiesManager propertiesManager) {
+    public InfluxClientImpl(Security security, PropertiesComponent propertiesComponent) {
         this.security = security;
-        this.host = propertiesManager.getProperties("rj.influx.host", String.class);
-        this.bucket = propertiesManager.getProperties("rj.influx.bucket", String.class);
-        this.org = propertiesManager.getProperties("rj.influx.org", String.class);
-        this.alias = propertiesManager.getProperties("rj.influx.security.alias", String.class);
+        this.host = propertiesComponent.getProperties("rj.influx.host", String.class);
+        this.bucket = propertiesComponent.getProperties("rj.influx.bucket", String.class);
+        this.org = propertiesComponent.getProperties("rj.influx.org", String.class);
+        this.alias = propertiesComponent.getProperties("rj.influx.security.alias", String.class);
     }
 
     public static InfluxClient getComponent() {
@@ -51,7 +51,7 @@ public class InfluxClientImpl implements InfluxClient, RunnableComponent {
     }
 
     public static InfluxClient getNewInstance() {
-        return new InfluxClientImpl(App.context.getBean(Security.class), App.context.getBean(PropertiesManager.class));
+        return new InfluxClientImpl(App.context.getBean(Security.class), App.context.getBean(PropertiesComponent.class));
     }
 
     @Override

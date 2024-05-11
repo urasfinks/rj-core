@@ -6,7 +6,7 @@ import org.apache.commons.mail.HtmlEmail;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.resource.PropertiesManager;
+import ru.jamsys.core.component.resource.PropertiesComponent;
 import ru.jamsys.core.component.Security;
 import ru.jamsys.core.resource.http.HttpResponseEnvelope;
 import ru.jamsys.core.template.twix.Template;
@@ -56,24 +56,24 @@ public class NotificationEmail implements Notification {
 
     List<TemplateItem> parsedTemplate = null;
 
-    public NotificationEmail(Security security, PropertiesManager propertiesManager) {
+    public NotificationEmail(Security security, PropertiesComponent propertiesComponent) {
 
         this.security = security;
 
 
-        this.template = propertiesManager.getProperties("rj.notification.email.template", String.class);
-        this.supportAddress = propertiesManager.getProperties("rj.notification.email.support.address", String.class);
+        this.template = propertiesComponent.getProperties("rj.notification.email.template", String.class);
+        this.supportAddress = propertiesComponent.getProperties("rj.notification.email.support.address", String.class);
 
-        this.host = propertiesManager.getProperties("rj.notification.email.host", String.class);
-        this.user = propertiesManager.getProperties("rj.notification.email.user", String.class);
-        this.from = propertiesManager.getProperties("rj.notification.email.from", String.class);
-        this.charset = propertiesManager.getProperties("rj.notification.email.charset", String.class);
-        this.securityAlias = propertiesManager.getProperties("rj.notification.email.security.alias", String.class);
+        this.host = propertiesComponent.getProperties("rj.notification.email.host", String.class);
+        this.user = propertiesComponent.getProperties("rj.notification.email.user", String.class);
+        this.from = propertiesComponent.getProperties("rj.notification.email.from", String.class);
+        this.charset = propertiesComponent.getProperties("rj.notification.email.charset", String.class);
+        this.securityAlias = propertiesComponent.getProperties("rj.notification.email.security.alias", String.class);
 
-        this.port = propertiesManager.getProperties("rj.notification.email.port", Integer.class);
-        this.connectTimeoutMs = propertiesManager.getProperties("rj.notification.email.connectTimeoutMs", Integer.class);
+        this.port = propertiesComponent.getProperties("rj.notification.email.port", Integer.class);
+        this.connectTimeoutMs = propertiesComponent.getProperties("rj.notification.email.connectTimeoutMs", Integer.class);
 
-        this.ssl = propertiesManager.getProperties("rj.notification.email.ssl", Boolean.class);
+        this.ssl = propertiesComponent.getProperties("rj.notification.email.ssl", Boolean.class);
 
     }
 
@@ -117,8 +117,8 @@ public class NotificationEmail implements Notification {
     @Override
     public Notification getInstance() {
         Security security = App.context.getBean(Security.class);
-        PropertiesManager propertiesManager = App.context.getBean(PropertiesManager.class);
-        return new NotificationEmail(security, propertiesManager);
+        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        return new NotificationEmail(security, propertiesComponent);
     }
 
     private void setting(HtmlEmail email) throws Exception {

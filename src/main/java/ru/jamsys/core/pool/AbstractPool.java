@@ -6,7 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.api.RateLimitManager;
+import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.KeepAlive;
@@ -16,7 +16,7 @@ import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import ru.jamsys.core.util.Util;
 import ru.jamsys.core.util.UtilRisc;
 

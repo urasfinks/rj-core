@@ -2,7 +2,7 @@ package ru.jamsys.core.resource.jdbc;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.api.RateLimitManager;
+import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.pool.Pool;
 import ru.jamsys.core.pool.PoolItem;

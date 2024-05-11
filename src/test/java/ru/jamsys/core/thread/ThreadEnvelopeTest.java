@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.api.RateLimitManager;
+import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.RateLimit;

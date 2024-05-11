@@ -2,7 +2,7 @@ package ru.jamsys.core.component.promise.cron;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.api.ExpirationManager;
+import ru.jamsys.core.component.manager.ExpirationManager;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;

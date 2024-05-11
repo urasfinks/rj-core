@@ -2,7 +2,7 @@ package ru.jamsys.core.balancer.algorithm;
 
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.balancer.BalancerItem;
-import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableEnvelope;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableEnvelope;
 import ru.jamsys.core.util.Util;
 import ru.jamsys.core.util.UtilRisc;
 

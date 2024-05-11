@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.Security;
-import ru.jamsys.core.component.resource.PropertiesManager;
+import ru.jamsys.core.component.resource.PropertiesComponent;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.promise.PromiseTaskType;
@@ -41,10 +41,10 @@ YandexSpeechPromise extends AbstractPromiseApi<YandexSpeechPromise> {
         settings.put("voice", "marina");
         settings.put("role", "neutral");
 
-        PropertiesManager propertiesManager = App.context.getBean(PropertiesManager.class);
-        securityAlias = propertiesManager.getProperties("rj.yandex.speech.kit.security.alias", String.class);
-        host = propertiesManager.getProperties("rj.yandex.speech.kit.host", String.class);
-        port = propertiesManager.getProperties("rj.yandex.speech.kit.port", Integer.class);
+        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        securityAlias = propertiesComponent.getProperties("rj.yandex.speech.kit.security.alias", String.class);
+        host = propertiesComponent.getProperties("rj.yandex.speech.kit.host", String.class);
+        port = propertiesComponent.getProperties("rj.yandex.speech.kit.port", Integer.class);
 
     }
 

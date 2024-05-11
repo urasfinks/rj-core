@@ -5,10 +5,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.item.Expiration;
+import ru.jamsys.core.component.manager.item.Expiration;
+import ru.jamsys.core.component.manager.ExpirationManager;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.statistic.time.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.util.ExpirationKeepAliveResult;
 import ru.jamsys.core.util.Util;
 

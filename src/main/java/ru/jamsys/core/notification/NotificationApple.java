@@ -4,7 +4,7 @@ import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.resource.PropertiesManager;
+import ru.jamsys.core.component.resource.PropertiesComponent;
 import ru.jamsys.core.component.resource.VirtualFileSystem;
 import ru.jamsys.core.resource.http.Http2ClientImpl;
 import ru.jamsys.core.resource.http.HttpClient;
@@ -56,20 +56,20 @@ public class NotificationApple implements Notification {
     @Setter
     private int readTimeout;
 
-    public NotificationApple(VirtualFileSystem virtualFileSystem, PropertiesManager propertiesManager) {
+    public NotificationApple(VirtualFileSystem virtualFileSystem, PropertiesComponent propertiesComponent) {
 
         this.virtualFileSystem = virtualFileSystem;
 
-        this.url = propertiesManager.getProperties("rj.notification.apple.url", String.class);
-        this.storage = propertiesManager.getProperties("rj.notification.apple.storage", String.class);
-        this.virtualPath = propertiesManager.getProperties("rj.notification.apple.virtual.path", String.class);
-        this.securityAlias = propertiesManager.getProperties("rj.notification.apple.security.alias", String.class);
-        this.topic = propertiesManager.getProperties("rj.notification.apple.topic", String.class);
-        this.priority = propertiesManager.getProperties("rj.notification.apple.priority", String.class);
-        this.expiration = propertiesManager.getProperties("rj.notification.apple.expiration", String.class);
-        this.pushType = propertiesManager.getProperties("rj.notification.apple.pushType", String.class);
-        this.connectTimeoutMs = propertiesManager.getProperties("rj.notification.apple.connectTimeoutMs", Integer.class);
-        this.readTimeout = propertiesManager.getProperties("rj.notification.apple.readTimeoutMs", Integer.class);
+        this.url = propertiesComponent.getProperties("rj.notification.apple.url", String.class);
+        this.storage = propertiesComponent.getProperties("rj.notification.apple.storage", String.class);
+        this.virtualPath = propertiesComponent.getProperties("rj.notification.apple.virtual.path", String.class);
+        this.securityAlias = propertiesComponent.getProperties("rj.notification.apple.security.alias", String.class);
+        this.topic = propertiesComponent.getProperties("rj.notification.apple.topic", String.class);
+        this.priority = propertiesComponent.getProperties("rj.notification.apple.priority", String.class);
+        this.expiration = propertiesComponent.getProperties("rj.notification.apple.expiration", String.class);
+        this.pushType = propertiesComponent.getProperties("rj.notification.apple.pushType", String.class);
+        this.connectTimeoutMs = propertiesComponent.getProperties("rj.notification.apple.connectTimeoutMs", Integer.class);
+        this.readTimeout = propertiesComponent.getProperties("rj.notification.apple.readTimeoutMs", Integer.class);
 
     }
 
@@ -133,8 +133,8 @@ public class NotificationApple implements Notification {
     @Override
     public NotificationApple getInstance() {
         VirtualFileSystem virtualFileSystem = App.context.getBean(VirtualFileSystem.class);
-        PropertiesManager propertiesManager = App.context.getBean(PropertiesManager.class);
-        return new NotificationApple(virtualFileSystem, propertiesManager);
+        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        return new NotificationApple(virtualFileSystem, propertiesComponent);
     }
 
 }

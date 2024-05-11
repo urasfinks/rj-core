@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.api.ClassFinder;
-import ru.jamsys.core.component.api.RateLimitManager;
+import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.RunnableComponent;
 import ru.jamsys.core.extension.RunnableInterface;
 

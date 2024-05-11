@@ -4,7 +4,7 @@ import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.resource.PropertiesManager;
+import ru.jamsys.core.component.resource.PropertiesComponent;
 import ru.jamsys.core.component.Security;
 import ru.jamsys.core.resource.http.HttpClientImpl;
 import ru.jamsys.core.resource.http.HttpResponseEnvelope;
@@ -36,15 +36,15 @@ public class NotificationTelegram implements Notification {
     @Setter
     private int readTimeout;
 
-    public NotificationTelegram(Security security, PropertiesManager propertiesManager) {
+    public NotificationTelegram(Security security, PropertiesComponent propertiesComponent) {
 
         this.security = security;
 
-        this.url = propertiesManager.getProperties("rj.notification.telegram.url", String.class);
-        this.idChat = propertiesManager.getProperties("rj.notification.telegram.idChat", String.class);
-        this.securityAlias = propertiesManager.getProperties("rj.notification.telegram.security.alias", String.class);
-        this.connectTimeoutMs = propertiesManager.getProperties("rj.notification.telegram.connectTimeoutMs", Integer.class);
-        this.readTimeout = propertiesManager.getProperties("rj.notification.telegram.readTimeoutMs", Integer.class);
+        this.url = propertiesComponent.getProperties("rj.notification.telegram.url", String.class);
+        this.idChat = propertiesComponent.getProperties("rj.notification.telegram.idChat", String.class);
+        this.securityAlias = propertiesComponent.getProperties("rj.notification.telegram.security.alias", String.class);
+        this.connectTimeoutMs = propertiesComponent.getProperties("rj.notification.telegram.connectTimeoutMs", Integer.class);
+        this.readTimeout = propertiesComponent.getProperties("rj.notification.telegram.readTimeoutMs", Integer.class);
 
     }
 
@@ -102,8 +102,8 @@ public class NotificationTelegram implements Notification {
     @Override
     public Notification getInstance() {
         Security security = App.context.getBean(Security.class);
-        PropertiesManager propertiesManager = App.context.getBean(PropertiesManager.class);
-        return new NotificationTelegram(security, propertiesManager);
+        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        return new NotificationTelegram(security, propertiesComponent);
     }
 
 }

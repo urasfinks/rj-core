@@ -2,7 +2,7 @@ package ru.jamsys.core.component.resource;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.AbstractManager;
+import ru.jamsys.core.component.manager.AbstractManager;
 import ru.jamsys.core.resource.virtual.file.system.File;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})

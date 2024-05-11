@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.StatisticsCollectorMap;
 import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
-import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.resource.PropertiesManager;
+import ru.jamsys.core.component.resource.PropertiesComponent;
 import ru.jamsys.core.component.Security;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.extension.Closable;
@@ -26,10 +26,10 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Closab
 
     public JdbcPool(String name, int min) {
         super(name, min, ConnectionEnvelope.class);
-        PropertiesManager propertiesManager = App.context.getBean(PropertiesManager.class);
-        this.uri = propertiesManager.getProperties("rj.jdbc.uri", String.class);
-        this.user = propertiesManager.getProperties("rj.jdbc.user", String.class);
-        this.securityAlias = propertiesManager.getProperties("rj.jdbc.security.alias", String.class);
+        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        this.uri = propertiesComponent.getProperties("rj.jdbc.uri", String.class);
+        this.user = propertiesComponent.getProperties("rj.jdbc.user", String.class);
+        this.securityAlias = propertiesComponent.getProperties("rj.jdbc.security.alias", String.class);
     }
 
     @SuppressWarnings("unused")

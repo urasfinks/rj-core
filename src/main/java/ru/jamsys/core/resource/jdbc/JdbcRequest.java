@@ -1,7 +1,7 @@
 package ru.jamsys.core.resource.jdbc;
 
 import lombok.Getter;
-import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import ru.jamsys.core.template.jdbc.JdbcTemplate;
 import ru.jamsys.core.template.jdbc.Template;
 

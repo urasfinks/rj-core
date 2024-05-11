@@ -4,7 +4,7 @@ import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.resource.PropertiesManager;
+import ru.jamsys.core.component.resource.PropertiesComponent;
 import ru.jamsys.core.extension.RunnableComponent;
 import ru.jamsys.core.util.*;
 
@@ -55,11 +55,11 @@ public class Security implements RunnableComponent {
 
     private KeyStore.PasswordProtection keyStorePP;
 
-    public Security(PropertiesManager propertiesManager, ExceptionHandler exceptionHandler) {
-        this.pathStorage = propertiesManager.getProperties("rj.security.path.storage", String.class);
-        this.pathSignature = propertiesManager.getProperties("rj.security.path.signature", String.class);
-        this.pathInitAlias = propertiesManager.getProperties("rj.security.path.init", String.class);
-        this.pathInitSecurityKeyJava = propertiesManager.getProperties("rj.security.path.java", String.class);
+    public Security(PropertiesComponent propertiesComponent, ExceptionHandler exceptionHandler) {
+        this.pathStorage = propertiesComponent.getProperties("rj.security.path.storage", String.class);
+        this.pathSignature = propertiesComponent.getProperties("rj.security.path.signature", String.class);
+        this.pathInitAlias = propertiesComponent.getProperties("rj.security.path.init", String.class);
+        this.pathInitSecurityKeyJava = propertiesComponent.getProperties("rj.security.path.java", String.class);
         this.exceptionHandler = exceptionHandler;
     }
 

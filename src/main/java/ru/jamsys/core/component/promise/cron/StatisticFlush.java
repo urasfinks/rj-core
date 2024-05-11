@@ -2,7 +2,7 @@ package ru.jamsys.core.component.promise.cron;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.api.BrokerManager;
+import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.api.ClassFinder;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.ClassNameImpl;
@@ -13,7 +13,7 @@ import ru.jamsys.core.promise.PromiseImpl;
 import ru.jamsys.core.promise.PromiseTaskType;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.StatisticSec;
-import ru.jamsys.core.statistic.time.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.template.cron.release.Cron1s;
 import ru.jamsys.core.util.Util;
 import ru.jamsys.core.util.UtilRisc;

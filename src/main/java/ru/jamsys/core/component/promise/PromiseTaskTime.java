@@ -3,13 +3,13 @@ package ru.jamsys.core.component.promise;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.api.ExpirationManager;
-import ru.jamsys.core.component.item.Expiration;
+import ru.jamsys.core.component.manager.ExpirationManager;
+import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.statistic.AvgMetric;
-import ru.jamsys.core.statistic.time.TimeEnvelopeNano;
-import ru.jamsys.core.statistic.time.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.statistic.expiration.TimeEnvelopeNano;
+import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.util.UtilRisc;
 
 import java.util.HashMap;
@@ -25,6 +25,10 @@ public class PromiseTaskTime implements KeepAliveComponent {
 
     private final Expiration<PromiseTask> retryDelay;
 
+    ConcurrentLinkedDeque<TimeEnvelopeNano<String>> queue = new ConcurrentLinkedDeque<>();
+
+    Map<String, Map<String, Object>> statistic = new HashMap<>();
+
     public PromiseTaskTime(ApplicationContext applicationContext) {
         @SuppressWarnings("unchecked")
         ExpirationManager<PromiseTask> expirationManager = applicationContext.getBean(ExpirationManager.class);
@@ -39,9 +43,6 @@ public class PromiseTaskTime implements KeepAliveComponent {
     public void addRetryDelay(PromiseTask promiseTask) {
         retryDelay.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getRetryDelayMs()));
     }
-
-    ConcurrentLinkedDeque<TimeEnvelopeNano<String>> queue = new ConcurrentLinkedDeque<>();
-    Map<String, Map<String, Object>> statistic = new HashMap<>();
 
     public TimeEnvelopeNano<String> add(String index) {
         TimeEnvelopeNano<String> timeEnvelopeMs = new TimeEnvelopeNano<>(index);

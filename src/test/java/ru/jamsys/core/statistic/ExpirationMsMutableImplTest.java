@@ -2,11 +2,11 @@ package ru.jamsys.core.statistic;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.statistic.time.immutable.ExpirationMsImmutable;
-import ru.jamsys.core.statistic.time.immutable.ExpirationMsImmutableImpl;
-import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutable;
-import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableEnvelope;
-import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
+import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableEnvelope;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 class ExpirationMsMutableImplTest {
 

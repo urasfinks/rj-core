@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.Security;
-import ru.jamsys.core.component.resource.PropertiesManager;
+import ru.jamsys.core.component.resource.PropertiesComponent;
 import ru.jamsys.core.resource.http.HttpResponseEnvelope;
 import ru.jamsys.core.util.JsonEnvelope;
 import ru.jamsys.core.util.UtilJson;
@@ -34,9 +34,9 @@ public class ReCaptcha {
     private final Security security;
     private String securityAlias;
 
-    public ReCaptcha(Security security, PropertiesManager propertiesManager) {
+    public ReCaptcha(Security security, PropertiesComponent propertiesComponent) {
         this.security = security;
-        this.securityAlias = propertiesManager.getProperties("rj.reCaptcha.security.alias", String.class);
+        this.securityAlias = propertiesComponent.getProperties("rj.reCaptcha.security.alias", String.class);
     }
 
     @SuppressWarnings("unused")

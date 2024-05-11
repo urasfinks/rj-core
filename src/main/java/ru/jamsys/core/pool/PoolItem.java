@@ -2,8 +2,8 @@ package ru.jamsys.core.pool;
 
 import lombok.Getter;
 import ru.jamsys.core.extension.Pollable;
-import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutable;
-import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 @Getter
 @SuppressWarnings({"unused", "UnusedReturnValue"})

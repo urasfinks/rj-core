@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.resource.PropertiesManager;
+import ru.jamsys.core.component.resource.PropertiesComponent;
 import ru.jamsys.core.resource.http.Http2ClientImpl;
 import ru.jamsys.core.resource.http.HttpClient;
 import ru.jamsys.core.resource.http.HttpResponseEnvelope;
@@ -39,13 +39,13 @@ public class NotificationAndroid implements Notification {
     @Setter
     private int readTimeout;
 
-    public NotificationAndroid(PropertiesManager propertiesManager) {
-        this.url = propertiesManager.getProperties("rj.notification.android.url", String.class);
-        this.messagingScope = new String[]{propertiesManager.getProperties("rj.notification.android.messaging.scope", String.class)};
-        this.storageCredentials = propertiesManager.getProperties("rj.notification.android.storage.credentials", String.class);
-        this.applicationName = propertiesManager.getProperties("rj.notification.android.application.name", String.class);
-        this.connectTimeoutMs = propertiesManager.getProperties("rj.notification.android.connectTimeoutMs", Integer.class);
-        this.readTimeout = propertiesManager.getProperties("rj.notification.android.readTimeoutMs", Integer.class);
+    public NotificationAndroid(PropertiesComponent propertiesComponent) {
+        this.url = propertiesComponent.getProperties("rj.notification.android.url", String.class);
+        this.messagingScope = new String[]{propertiesComponent.getProperties("rj.notification.android.messaging.scope", String.class)};
+        this.storageCredentials = propertiesComponent.getProperties("rj.notification.android.storage.credentials", String.class);
+        this.applicationName = propertiesComponent.getProperties("rj.notification.android.application.name", String.class);
+        this.connectTimeoutMs = propertiesComponent.getProperties("rj.notification.android.connectTimeoutMs", Integer.class);
+        this.readTimeout = propertiesComponent.getProperties("rj.notification.android.readTimeoutMs", Integer.class);
     }
 
     private String getAccessToken() throws IOException {
@@ -122,8 +122,8 @@ public class NotificationAndroid implements Notification {
 
     @Override
     public Notification getInstance() {
-        PropertiesManager propertiesManager = App.context.getBean(PropertiesManager.class);
-        return new NotificationAndroid(propertiesManager);
+        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        return new NotificationAndroid(propertiesComponent);
     }
 
 }
