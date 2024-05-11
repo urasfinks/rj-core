@@ -1,9 +1,9 @@
 package ru.jamsys.core.component;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringApplication;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.api.BrokerManager;
 import ru.jamsys.core.component.item.Broker;
@@ -18,10 +18,12 @@ class BrokerTest {
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{};
-        if (App.context == null) {
-            App.context = SpringApplication.run(App.class, args);
-        }
-        //App.main(args);
+        App.main(args);
+    }
+
+    @AfterAll
+    static void shutdown() {
+        App.shutdown();
     }
 
     @Test

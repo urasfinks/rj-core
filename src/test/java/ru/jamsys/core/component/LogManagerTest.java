@@ -1,5 +1,6 @@
 package ru.jamsys.core.component;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,11 @@ class LogManagerTest {
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         App.main(args);
+    }
 
+    @AfterAll
+    static void shutdown() {
+        App.shutdown();
     }
 
     @Test

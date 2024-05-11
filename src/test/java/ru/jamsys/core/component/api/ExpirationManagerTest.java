@@ -1,9 +1,9 @@
 package ru.jamsys.core.component.api;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringApplication;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.item.Expiration;
 import ru.jamsys.core.statistic.AvgMetric;
@@ -22,8 +22,12 @@ class ExpirationManagerTest {
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{};
-        //App.main(args);
-        App.context = SpringApplication.run(App.class, args);
+        App.main(args);
+    }
+
+    @AfterAll
+    static void shutdown() {
+        App.shutdown();
     }
 
     public static class XItem {

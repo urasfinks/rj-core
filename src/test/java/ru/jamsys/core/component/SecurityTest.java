@@ -1,5 +1,6 @@
 package ru.jamsys.core.component;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,11 @@ class SecurityTest {
     static void beforeAll() {
         String[] args = new String[]{};
         App.main(args);
+    }
+
+    @AfterAll
+    static void shutdown() {
+        App.shutdown();
     }
 
     @Test
@@ -32,4 +38,5 @@ class SecurityTest {
         Assertions.assertEquals("[test2]", security.getAvailableAliases().toString(), "#4");
         UtilFile.removeIfExist("unit-test.jks");
     }
+
 }

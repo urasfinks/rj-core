@@ -23,6 +23,11 @@ class PromiseImplTest {
         App.main(args);
     }
 
+    @AfterAll
+    static void shutdown() {
+        App.shutdown();
+    }
+
     @Test
     void test1() {
         PromiseImpl wf = new PromiseImpl("test");
@@ -248,11 +253,6 @@ class PromiseImplTest {
             yandexSpeechPromise.setFilePath("target/result2.wav");
         })).run().await(10000);
         System.out.println(wf.getLog());
-    }
-
-    @AfterAll
-    static void shutdown() {
-        App.shutdown();
     }
 
 }

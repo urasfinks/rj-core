@@ -1,5 +1,6 @@
 package ru.jamsys.core.component;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
@@ -15,10 +16,16 @@ class ReCaptchaTest {
         App.main(args);
     }
 
+    @AfterAll
+    static void shutdown() {
+        App.shutdown();
+    }
+
     @Test
     void isCaptchaValid() {
         ReCaptcha reCaptcha = App.context.getBean(ReCaptcha.class);
         HttpResponseEnvelope captchaValid = reCaptcha.isValid("1234");
         System.out.println(captchaValid.isStatus());
     }
+
 }

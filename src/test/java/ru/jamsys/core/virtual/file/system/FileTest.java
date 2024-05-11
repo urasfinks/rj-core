@@ -1,5 +1,6 @@
 package ru.jamsys.core.virtual.file.system;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,11 @@ class FileTest {
     static void beforeAll() {
         String[] args = new String[]{};
         App.main(args);
+    }
+
+    @AfterAll
+    static void shutdown() {
+        App.shutdown();
     }
 
     @Test

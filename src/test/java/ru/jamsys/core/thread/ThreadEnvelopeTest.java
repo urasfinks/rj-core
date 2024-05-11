@@ -1,5 +1,6 @@
 package ru.jamsys.core.thread;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,11 @@ class ThreadEnvelopeTest {
         if (App.context == null) {
             App.context = SpringApplication.run(App.class, args);
         }
+    }
+
+    @AfterAll
+    static void shutdown() {
+        App.context = null;
     }
 
     @Test
