@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 @Getter
 public abstract class AbstractPromiseApi<T> implements PromiseApi<T> {
 
-    private PromiseTaskType promiseTaskType = PromiseTaskType.IO;
+    protected PromiseTaskType promiseTaskType = PromiseTaskType.IO;
 
     private Promise promise;
 
