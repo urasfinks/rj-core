@@ -275,7 +275,6 @@ class PromiseImplTest {
     }
 
     @SuppressWarnings("unused")
-    @Test
     void promiseTelegram() {
         Promise wf = new PromiseImpl("test");
         wf.api("request", new NotificationTelegramPromise().setup((NotificationTelegramPromise telegramPromise) -> {
