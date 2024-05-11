@@ -3,11 +3,11 @@ package ru.jamsys.core.component.item;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.Closable;
-import ru.jamsys.core.statistic.time.immutable.DisposableExpiredMsImmutableEnvelope;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.statistic.Statistic;
+import ru.jamsys.core.statistic.time.immutable.DisposableExpiredMsImmutableEnvelope;
 import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableEnvelope;
 import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutable;
 import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
@@ -124,7 +124,7 @@ public class Expired<V>
     }
 
     @Override
-    public DisposableExpiredMsImmutableEnvelope<V> add(ExpiredMsImmutableEnvelope<V> obj) throws Exception {
+    public DisposableExpiredMsImmutableEnvelope<V> add(ExpiredMsImmutableEnvelope<V> obj) {
         DisposableExpiredMsImmutableEnvelope<V> convert = DisposableExpiredMsImmutableEnvelope.convert(obj);
         long timeMsExpiredFloor = Util.zeroLastNDigits(convert.getExpiredMs(), 3);
         bucket.computeIfAbsent(timeMsExpiredFloor, _ -> new ConcurrentLinkedQueue<>())

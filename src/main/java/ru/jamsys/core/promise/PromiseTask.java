@@ -5,7 +5,6 @@ import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.promise.PromiseTaskTime;
-import ru.jamsys.core.component.promise.cron.PromiseTaskRetry;
 import ru.jamsys.core.component.resource.RealThreadManager;
 import ru.jamsys.core.component.resource.VirtualThreadManager;
 import ru.jamsys.core.statistic.time.TimeEnvelopeNano;
@@ -120,7 +119,7 @@ public class PromiseTask implements Runnable {
             if (retryCount > 0) {
                 retryCount--;
                 promise.getExceptionTrace().add(new Trace<>(index, th));
-                App.context.getBean(PromiseTaskRetry.class).add(this);
+                App.context.getBean(PromiseTaskTime.class).addRetryDelay(this);
             } else {
                 promise.complete(this, th);
             }
