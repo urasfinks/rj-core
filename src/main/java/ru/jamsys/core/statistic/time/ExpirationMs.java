@@ -2,7 +2,7 @@ package ru.jamsys.core.statistic.time;
 
 import ru.jamsys.core.util.Util;
 
-public interface ExpiredMs {
+public interface ExpirationMs {
 
     default long getExpiredMs() {
         return getLastActivityMs() + getKeepAliveOnInactivityMs();

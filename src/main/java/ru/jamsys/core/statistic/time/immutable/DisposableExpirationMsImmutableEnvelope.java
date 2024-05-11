@@ -11,15 +11,15 @@ import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public class DisposableExpiredMsImmutableEnvelope<T> extends ExpiredMsImmutableEnvelope<T> {
+public class DisposableExpirationMsImmutableEnvelope<T> extends ExpirationMsImmutableEnvelope<T> {
 
     AtomicBoolean usage = new AtomicBoolean(false);
 
-    public DisposableExpiredMsImmutableEnvelope(T value, long keepAliveOnInactivityMs) {
+    public DisposableExpirationMsImmutableEnvelope(T value, long keepAliveOnInactivityMs) {
         super(value, keepAliveOnInactivityMs);
     }
 
-    public DisposableExpiredMsImmutableEnvelope(T value, long keepAliveOnInactivityMs, long lastActivityMs) {
+    public DisposableExpirationMsImmutableEnvelope(T value, long keepAliveOnInactivityMs, long lastActivityMs) {
         super(value, keepAliveOnInactivityMs, lastActivityMs);
     }
 
@@ -30,8 +30,8 @@ public class DisposableExpiredMsImmutableEnvelope<T> extends ExpiredMsImmutableE
         return null;
     }
 
-    public static <T> DisposableExpiredMsImmutableEnvelope<T> convert(ExpiredMsImmutableEnvelope<T> input) {
-        return new DisposableExpiredMsImmutableEnvelope<>(input.getValue(), input.getKeepAliveOnInactivityMs(), input.getLastActivityMs());
+    public static <T> DisposableExpirationMsImmutableEnvelope<T> convert(ExpirationMsImmutableEnvelope<T> input) {
+        return new DisposableExpirationMsImmutableEnvelope<>(input.getValue(), input.getKeepAliveOnInactivityMs(), input.getLastActivityMs());
     }
 
 }

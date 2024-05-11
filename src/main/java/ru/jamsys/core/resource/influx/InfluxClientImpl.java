@@ -75,7 +75,9 @@ public class InfluxClientImpl implements InfluxClient, RunnableComponent {
 
     @Override
     public void shutdown() {
-        client.close();
+        if (client != null) {
+            client.close();
+        }
     }
 
 }

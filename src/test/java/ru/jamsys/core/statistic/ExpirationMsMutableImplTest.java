@@ -2,18 +2,18 @@ package ru.jamsys.core.statistic;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutable;
-import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableImpl;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutable;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
+import ru.jamsys.core.statistic.time.immutable.ExpirationMsImmutable;
+import ru.jamsys.core.statistic.time.immutable.ExpirationMsImmutableImpl;
+import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutable;
+import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableEnvelope;
+import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableImpl;
 
-class ExpiredMsMutableImplTest {
+class ExpirationMsMutableImplTest {
 
     @Test
     void test() {
         long curTime = 1709734264056L; //2024-03-06T17:11:04.056
-        ExpiredMsMutable timeControl = new ExpiredMsMutableImpl();
+        ExpirationMsMutable timeControl = new ExpirationMsMutableImpl();
         timeControl.setKeepAliveOnInactivityMs(5_000);
         timeControl.setLastActivityMs(curTime);
 
@@ -37,18 +37,18 @@ class ExpiredMsMutableImplTest {
 
     @Test
     void testExpired(){
-        ExpiredMsMutableEnvelope<String> expiredMsMutableEnvelope = new ExpiredMsMutableEnvelope<>("Hello world");
-        expiredMsMutableEnvelope.setKeepAliveOnInactivityMs(6_000);
-        Assertions.assertFalse(expiredMsMutableEnvelope.isExpired());
+        ExpirationMsMutableEnvelope<String> expirationMsMutableEnvelope = new ExpirationMsMutableEnvelope<>("Hello world");
+        expirationMsMutableEnvelope.setKeepAliveOnInactivityMs(6_000);
+        Assertions.assertFalse(expirationMsMutableEnvelope.isExpired());
     }
 
     @Test
     void testInstanceOf(){
-        ExpiredMsImmutableImpl timeControllerMsImmutable = new ExpiredMsImmutableImpl(6_000);
-        ExpiredMsMutableImpl timeControllerMsMutable = new ExpiredMsMutableImpl();
+        ExpirationMsImmutableImpl timeControllerMsImmutable = new ExpirationMsImmutableImpl(6_000);
+        ExpirationMsMutableImpl timeControllerMsMutable = new ExpirationMsMutableImpl();
         // Что бы случайно не накосячить в наследовании интерфейсов, сейчас это невозможно, но легко можно сделать обратное
-        Assertions.assertFalse(timeControllerMsImmutable instanceof ExpiredMsMutable);
-        Assertions.assertFalse(timeControllerMsMutable instanceof ExpiredMsImmutable);
+        Assertions.assertFalse(timeControllerMsImmutable instanceof ExpirationMsMutable);
+        Assertions.assertFalse(timeControllerMsMutable instanceof ExpirationMsImmutable);
 
     }
 }

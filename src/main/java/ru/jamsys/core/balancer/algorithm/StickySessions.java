@@ -2,7 +2,7 @@ package ru.jamsys.core.balancer.algorithm;
 
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.balancer.BalancerItem;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
+import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableEnvelope;
 import ru.jamsys.core.util.Util;
 import ru.jamsys.core.util.UtilRisc;
 
@@ -18,7 +18,7 @@ public class StickySessions implements BalancerAlgorithm {
 
     List<BalancerItem> list = new ArrayList<>();
 
-    Map<String, ExpiredMsMutableEnvelope<BalancerItem>> map = new ConcurrentHashMap<>();
+    Map<String, ExpirationMsMutableEnvelope<BalancerItem>> map = new ConcurrentHashMap<>();
 
     @Override
     public void update(List<BalancerItem> list) {
@@ -38,7 +38,7 @@ public class StickySessions implements BalancerAlgorithm {
     }
 
     private void remove(BalancerItem balancerItem) {
-        UtilRisc.forEach(null, map, (String key, ExpiredMsMutableEnvelope<BalancerItem> timer) -> {
+        UtilRisc.forEach(null, map, (String key, ExpirationMsMutableEnvelope<BalancerItem> timer) -> {
             if (timer.getValue().equals(balancerItem)) {
                 map.remove(key);
             }
@@ -49,18 +49,18 @@ public class StickySessions implements BalancerAlgorithm {
     public BalancerItem get(@Nullable String index) {
         map.computeIfAbsent(index, _ -> {
             BalancerItem balancerItem = list.get(Util.stringToInt(index, 0, list.size()));
-            ExpiredMsMutableEnvelope<BalancerItem> balancerItemExpiredMsMutableEnvelope = new ExpiredMsMutableEnvelope<>(balancerItem);
-            balancerItemExpiredMsMutableEnvelope.setKeepAliveOnInactivityMin(5);
-            return balancerItemExpiredMsMutableEnvelope;
+            ExpirationMsMutableEnvelope<BalancerItem> balancerItemExpirationMsMutableEnvelope = new ExpirationMsMutableEnvelope<>(balancerItem);
+            balancerItemExpirationMsMutableEnvelope.setKeepAliveOnInactivityMin(5);
+            return balancerItemExpirationMsMutableEnvelope;
         });
-        ExpiredMsMutableEnvelope<BalancerItem> balancerItemExpiredMsMutableEnvelope = map.get(index);
-        balancerItemExpiredMsMutableEnvelope.active();
-        return balancerItemExpiredMsMutableEnvelope.getValue();
+        ExpirationMsMutableEnvelope<BalancerItem> balancerItemExpirationMsMutableEnvelope = map.get(index);
+        balancerItemExpirationMsMutableEnvelope.active();
+        return balancerItemExpirationMsMutableEnvelope.getValue();
     }
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        UtilRisc.forEach(isThreadRun, map, (String key, ExpiredMsMutableEnvelope<BalancerItem> expiredMsMutableEnvelope) -> {
+        UtilRisc.forEach(isThreadRun, map, (String key, ExpirationMsMutableEnvelope<BalancerItem> expiredMsMutableEnvelope) -> {
             if (expiredMsMutableEnvelope.isExpired()) {
                 map.remove(key);
             }

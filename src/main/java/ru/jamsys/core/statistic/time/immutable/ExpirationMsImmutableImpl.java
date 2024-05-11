@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Getter
-public class ExpiredMsImmutableImpl implements ExpiredMsImmutable {
+public class ExpirationMsImmutableImpl implements ExpirationMsImmutable {
 
     private final long keepAliveOnInactivityMs; // Время жизни если нет активности
 
@@ -14,12 +14,12 @@ public class ExpiredMsImmutableImpl implements ExpiredMsImmutable {
     @Setter
     private Long stopTimeMs = null;
 
-    public ExpiredMsImmutableImpl(long keepAliveOnInactivityMs, long lastActivityMs) {
+    public ExpirationMsImmutableImpl(long keepAliveOnInactivityMs, long lastActivityMs) {
         this.keepAliveOnInactivityMs = keepAliveOnInactivityMs;
         this.lastActivityMs = lastActivityMs;
     }
 
-    public ExpiredMsImmutableImpl(long keepAliveOnInactivityMs) {
+    public ExpirationMsImmutableImpl(long keepAliveOnInactivityMs) {
         this.keepAliveOnInactivityMs = keepAliveOnInactivityMs;
         this.lastActivityMs = System.currentTimeMillis();
     }

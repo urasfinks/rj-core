@@ -3,11 +3,11 @@ package ru.jamsys.core.statistic.time.mutable;
 import lombok.Getter;
 
 @Getter
-public class ExpiredMsMutableEnvelope<T> extends ExpiredMsMutableImpl {
+public class ExpirationMsMutableEnvelope<T> extends ExpirationMsMutableImpl {
 
     final T value;
 
-    public ExpiredMsMutableEnvelope(T value) {
+    public ExpirationMsMutableEnvelope(T value) {
         this.value = value;
     }
 

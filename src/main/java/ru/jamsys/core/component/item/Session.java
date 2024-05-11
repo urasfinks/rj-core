@@ -6,8 +6,8 @@ import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
+import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableEnvelope;
 import ru.jamsys.core.util.UtilRisc;
 
 import java.util.ArrayList;
@@ -22,10 +22,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Getter
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class Session<K, TEO>
-        extends ExpiredMsMutableImpl
-        implements StatisticsFlush, KeepAlive, Closable, AddToMap<K, ExpiredMsMutableEnvelope<TEO>> {
+        extends ExpirationMsMutableImpl
+        implements StatisticsFlush, KeepAlive, Closable, AddToMap<K, ExpirationMsMutableEnvelope<TEO>> {
 
-    final Map<K, ExpiredMsMutableEnvelope<TEO>> map = new ConcurrentHashMap<>();
+    final Map<K, ExpirationMsMutableEnvelope<TEO>> map = new ConcurrentHashMap<>();
 
     private final String index;
 
@@ -34,27 +34,27 @@ public class Session<K, TEO>
     }
 
     @Override
-    public void add(K key, ExpiredMsMutableEnvelope<TEO> value) {
+    public void add(K key, ExpirationMsMutableEnvelope<TEO> value) {
         map.computeIfAbsent(key, _ -> value).active();
     }
 
-    public ExpiredMsMutableEnvelope<TEO> add(K key, TEO value, long curTime, long timeoutMs) {
-        ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope = new ExpiredMsMutableEnvelope<>(value);
-        expiredMsMutableEnvelope.setKeepAliveOnInactivityMs(timeoutMs);
+    public ExpirationMsMutableEnvelope<TEO> add(K key, TEO value, long curTime, long timeoutMs) {
+        ExpirationMsMutableEnvelope<TEO> expirationMsMutableEnvelope = new ExpirationMsMutableEnvelope<>(value);
+        expirationMsMutableEnvelope.setKeepAliveOnInactivityMs(timeoutMs);
         // Что бы не переопределить активность
-        map.computeIfAbsent(key, _ -> expiredMsMutableEnvelope).setLastActivityMs(curTime);
-        return expiredMsMutableEnvelope;
+        map.computeIfAbsent(key, _ -> expirationMsMutableEnvelope).setLastActivityMs(curTime);
+        return expirationMsMutableEnvelope;
     }
 
-    public ExpiredMsMutableEnvelope<TEO> add(K key, TEO value, long timeoutMs) {
+    public ExpirationMsMutableEnvelope<TEO> add(K key, TEO value, long timeoutMs) {
         return add(key, value, System.currentTimeMillis(), timeoutMs);
     }
 
     public TEO get(K key) {
-        ExpiredMsMutableEnvelope<TEO> expiredMsMutableEnvelope = map.get(key);
-        if (expiredMsMutableEnvelope != null) {
-            expiredMsMutableEnvelope.active();
-            return expiredMsMutableEnvelope.getValue();
+        ExpirationMsMutableEnvelope<TEO> expirationMsMutableEnvelope = map.get(key);
+        if (expirationMsMutableEnvelope != null) {
+            expirationMsMutableEnvelope.active();
+            return expirationMsMutableEnvelope.getValue();
         }
         return null;
     }
@@ -70,7 +70,7 @@ public class Session<K, TEO>
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        UtilRisc.forEach(isThreadRun, map, (K key, ExpiredMsMutableEnvelope<TEO> value) -> {
+        UtilRisc.forEach(isThreadRun, map, (K key, ExpirationMsMutableEnvelope<TEO> value) -> {
             if (value.isExpired()) {
                 map.remove(key);
             }

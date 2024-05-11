@@ -2,7 +2,7 @@ package ru.jamsys.core.component.promise.cron;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.api.ExpiredManager;
+import ru.jamsys.core.component.api.ExpirationManager;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
@@ -14,18 +14,18 @@ import ru.jamsys.core.template.cron.release.Cron1s;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
-public class KeepAliveExpiredManager implements Cron1s, PromiseGenerator, ClassName {
+public class KeepAliveExpirationManager implements Cron1s, PromiseGenerator, ClassName {
 
-    private final ExpiredManager<?> expiredManager;
+    private final ExpirationManager<?> expirationManager;
 
-    public KeepAliveExpiredManager(ApplicationContext applicationContext) {
-        expiredManager = applicationContext.getBean(ExpiredManager.class);
+    public KeepAliveExpirationManager(ApplicationContext applicationContext) {
+        expirationManager = applicationContext.getBean(ExpirationManager.class);
     }
 
     @Override
     public Promise generate() {
         return new PromiseImpl(getClass().getName())
-                .append(this.getClass().getName(), PromiseTaskType.IO, expiredManager::keepAlive);
+                .append(this.getClass().getName(), PromiseTaskType.IO, expirationManager::keepAlive);
 
     }
 

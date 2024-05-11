@@ -3,14 +3,14 @@ package ru.jamsys.core.component;
 import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.StatisticsFlush;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutable;
+import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutable;
 
 //MO - MapObject
 //MOI - MapObjectItem
 
 // Коркас менаджера, у которого есть Map дочерних объектов типа Map
 public abstract class AbstractManagerMapItem<
-        MO extends AddToMap<String, MOI> & Closable & ExpiredMsMutable & StatisticsFlush,
+        MO extends AddToMap<String, MOI> & Closable & ExpirationMsMutable & StatisticsFlush,
         MOI
         > extends AbstractManager<MO> {
 

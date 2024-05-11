@@ -2,14 +2,14 @@ package ru.jamsys.core.component;
 
 import lombok.Setter;
 import ru.jamsys.core.extension.*;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutable;
+import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutable;
 import ru.jamsys.core.util.UtilRisc;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class AbstractManager<MO extends Closable & ExpiredMsMutable & StatisticsFlush>
+public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable & StatisticsFlush>
         implements
         StatisticsCollectorMap<MO>,
         KeepAlive,

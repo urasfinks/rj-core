@@ -142,8 +142,8 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     public void await(long timeoutMs) {
-        long expired = System.currentTimeMillis() + timeoutMs;
-        while (inProgress() && expired >= System.currentTimeMillis()) {
+        long expiredTime = System.currentTimeMillis() + timeoutMs;
+        while (inProgress() && expiredTime >= System.currentTimeMillis()) {
             Thread.onSpinWait();
         }
     }

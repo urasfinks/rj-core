@@ -13,7 +13,7 @@ import ru.jamsys.core.promise.PromiseImpl;
 import ru.jamsys.core.promise.PromiseTaskType;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.StatisticSec;
-import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableEnvelope;
+import ru.jamsys.core.statistic.time.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.template.cron.release.Cron1s;
 import ru.jamsys.core.util.Util;
 import ru.jamsys.core.util.UtilRisc;
@@ -72,7 +72,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
                     });
                     if (!statisticSec.getList().isEmpty()) {
                         try {
-                            broker.add(brokerIndex, new ExpiredMsImmutableEnvelope<>(statisticSec, 6_000));
+                            broker.add(brokerIndex, new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
                         } catch (Exception e) {
                             exceptionHandler.handler(e);
                         }

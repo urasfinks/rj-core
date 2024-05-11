@@ -14,7 +14,7 @@ import ru.jamsys.core.promise.PromiseImpl;
 import ru.jamsys.core.promise.PromiseTaskType;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.StatisticSec;
-import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableEnvelope;
+import ru.jamsys.core.statistic.time.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.template.cron.release.Cron5s;
 
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
                     Broker<StatisticSec> queue = broker.get(ClassNameImpl.getClassNameStatic(StatisticSec.class, null));
                     List<Point> listPoints = new ArrayList<>();
                     while (!queue.isEmpty() && isThreadRun.get()) {
-                        ExpiredMsImmutableEnvelope<StatisticSec> statisticSec = queue.pollFirst();
+                        ExpirationMsImmutableEnvelope<StatisticSec> statisticSec = queue.pollFirst();
                         if (statisticSec != null) {
                             List<Statistic> list = statisticSec.getValue().getList();
                             for (Statistic statistic : list) {

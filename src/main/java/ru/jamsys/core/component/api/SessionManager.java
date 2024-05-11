@@ -6,7 +6,7 @@ import ru.jamsys.core.component.AbstractManagerMapItem;
 import ru.jamsys.core.component.item.Session;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableEnvelope;
+import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableEnvelope;
 
 // MO - MapObject
 // MOI - MapObjectItem
@@ -18,7 +18,7 @@ public class SessionManager<MOI>
         extends
         AbstractManagerMapItem<
                 Session<String, MOI>,
-                ExpiredMsMutableEnvelope<MOI>
+                ExpirationMsMutableEnvelope<MOI>
                 >
         implements
         KeepAliveComponent,

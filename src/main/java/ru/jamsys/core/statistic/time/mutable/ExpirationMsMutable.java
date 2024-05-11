@@ -1,10 +1,10 @@
 package ru.jamsys.core.statistic.time.mutable;
 
 
-import ru.jamsys.core.statistic.time.ExpiredMs;
+import ru.jamsys.core.statistic.time.ExpirationMs;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface ExpiredMsMutable extends ExpiredMs {
+public interface ExpirationMsMutable extends ExpirationMs {
 
     // Установить время последней активности
     default void active() {

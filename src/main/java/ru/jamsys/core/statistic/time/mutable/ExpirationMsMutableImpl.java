@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class ExpiredMsMutableImpl implements ExpiredMsMutable {
+public class ExpirationMsMutableImpl implements ExpirationMsMutable {
 
     private long keepAliveOnInactivityMs = 6_000; // Время жизни если нет активности
 

@@ -7,11 +7,11 @@ import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.statistic.time.immutable.DisposableExpiredMsImmutableEnvelope;
-import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableEnvelope;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutable;
-import ru.jamsys.core.statistic.time.mutable.ExpiredMsMutableImpl;
-import ru.jamsys.core.util.ControlExpiredKeepAliveResult;
+import ru.jamsys.core.statistic.time.immutable.DisposableExpirationMsImmutableEnvelope;
+import ru.jamsys.core.statistic.time.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutable;
+import ru.jamsys.core.statistic.time.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.util.ExpirationKeepAliveResult;
 import ru.jamsys.core.util.Util;
 import ru.jamsys.core.util.UtilRisc;
 
@@ -33,27 +33,27 @@ import java.util.function.Consumer;
 // DisposableExpiredMsImmutableEnvelope в своей логике, дабы избежать конфликтов
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public class Expired<V>
-        extends ExpiredMsMutableImpl
+public class Expiration<V>
+        extends ExpirationMsMutableImpl
         implements
         AddToList<
-                ExpiredMsImmutableEnvelope<V>,
-                DisposableExpiredMsImmutableEnvelope<V>
+                ExpirationMsImmutableEnvelope<V>,
+                DisposableExpirationMsImmutableEnvelope<V>
                 >,
         Closable,
         KeepAlive,
         StatisticsFlush,
-        ExpiredMsMutable {
+        ExpirationMsMutable {
 
-    private final ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<DisposableExpiredMsImmutableEnvelope<V>>> bucket = new ConcurrentSkipListMap<>();
+    private final ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>>> bucket = new ConcurrentSkipListMap<>();
 
     @Getter
     private final String index;
 
     @Setter
-    private Consumer<ExpiredMsImmutableEnvelope<V>> onExpired;
+    private Consumer<ExpirationMsImmutableEnvelope<V>> onExpired;
 
-    public Expired(String index) {
+    public Expiration(String index) {
         this.index = index;
     }
 
@@ -67,23 +67,23 @@ public class Expired<V>
         return result;
     }
 
-    public ControlExpiredKeepAliveResult keepAlive(AtomicBoolean isThreadRun, long curTimeMs) {
-        ControlExpiredKeepAliveResult keepAliveResult = new ControlExpiredKeepAliveResult();
-        UtilRisc.forEach(isThreadRun, bucket, (Long time, ConcurrentLinkedQueue<DisposableExpiredMsImmutableEnvelope<V>> queue) -> {
+    public ExpirationKeepAliveResult keepAlive(AtomicBoolean isThreadRun, long curTimeMs) {
+        ExpirationKeepAliveResult keepAliveResult = new ExpirationKeepAliveResult();
+        UtilRisc.forEach(isThreadRun, bucket, (Long time, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>> queue) -> {
             if (time > curTimeMs) {
                 return false;
             }
             keepAliveResult.getReadBucket().add(time);
-            UtilRisc.forEach(isThreadRun, queue, (DisposableExpiredMsImmutableEnvelope<V> disposableExpiredMsImmutableEnvelope) -> {
-                if (disposableExpiredMsImmutableEnvelope.isExpired()) {
-                    V v = disposableExpiredMsImmutableEnvelope.concurrentUse();
+            UtilRisc.forEach(isThreadRun, queue, (DisposableExpirationMsImmutableEnvelope<V> disposableExpirationMsImmutableEnvelope) -> {
+                if (disposableExpirationMsImmutableEnvelope.isExpired()) {
+                    V v = disposableExpirationMsImmutableEnvelope.concurrentUse();
                     if (v != null) {
-                        onExpired.accept(disposableExpiredMsImmutableEnvelope);
+                        onExpired.accept(disposableExpirationMsImmutableEnvelope);
                     }
-                    queue.remove(disposableExpiredMsImmutableEnvelope);
+                    queue.remove(disposableExpirationMsImmutableEnvelope);
                     keepAliveResult.getCountRemove().incrementAndGet();
-                } else if (disposableExpiredMsImmutableEnvelope.isStop()) {
-                    queue.remove(disposableExpiredMsImmutableEnvelope);
+                } else if (disposableExpirationMsImmutableEnvelope.isStop()) {
+                    queue.remove(disposableExpirationMsImmutableEnvelope);
                     keepAliveResult.getCountRemove().incrementAndGet();
                 }
             });
@@ -108,7 +108,7 @@ public class Expired<V>
         UtilRisc.forEach(
                 isThreadRun,
                 bucket,
-                (Long key, ConcurrentLinkedQueue<DisposableExpiredMsImmutableEnvelope<V>> queue)
+                (Long key, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>> queue)
                         -> count.addAndGet(queue.size())
         );
         result.add(new Statistic(parentTags, parentFields)
@@ -124,8 +124,8 @@ public class Expired<V>
     }
 
     @Override
-    public DisposableExpiredMsImmutableEnvelope<V> add(ExpiredMsImmutableEnvelope<V> obj) {
-        DisposableExpiredMsImmutableEnvelope<V> convert = DisposableExpiredMsImmutableEnvelope.convert(obj);
+    public DisposableExpirationMsImmutableEnvelope<V> add(ExpirationMsImmutableEnvelope<V> obj) {
+        DisposableExpirationMsImmutableEnvelope<V> convert = DisposableExpirationMsImmutableEnvelope.convert(obj);
         long timeMsExpiredFloor = Util.zeroLastNDigits(convert.getExpiredMs(), 3);
         bucket.computeIfAbsent(timeMsExpiredFloor, _ -> new ConcurrentLinkedQueue<>())
                 .add(convert);

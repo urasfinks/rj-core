@@ -5,18 +5,18 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.item.Expired;
+import ru.jamsys.core.component.item.Expiration;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableEnvelope;
-import ru.jamsys.core.util.ControlExpiredKeepAliveResult;
+import ru.jamsys.core.statistic.time.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.util.ExpirationKeepAliveResult;
 import ru.jamsys.core.util.Util;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class ExpiredManagerTest {
+class ExpirationManagerTest {
     AtomicBoolean isThreadRun = new AtomicBoolean(true);
 
     @BeforeAll
@@ -31,17 +31,17 @@ class ExpiredManagerTest {
     }
 
     @Test
-    void testStop() throws Exception {
+    void testStop() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         @SuppressWarnings("unchecked")
-        ExpiredManager<XItem> expiredManager = App.context.getBean(ExpiredManager.class);
-        Expired<XItem> test = expiredManager.get("test");
+        ExpirationManager<XItem> expirationManager = App.context.getBean(ExpirationManager.class);
+        Expiration<XItem> test = expirationManager.get("test");
         AtomicInteger counterExpired = new AtomicInteger(0);
         test.setOnExpired(_ -> counterExpired.incrementAndGet());
-        ExpiredMsImmutableEnvelope<XItem> add = test.add(new ExpiredMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
+        ExpirationMsImmutableEnvelope<XItem> add = test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
         //Стопаем задачу, что не выполнилсмя onExpired
         add.stop();
-        ControlExpiredKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + 1001);
+        ExpirationKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + 1001);
         Assertions.assertEquals(1, keepAliveResult.getCountRemove().get());
 
         Assertions.assertEquals(0, counterExpired.get());
@@ -52,13 +52,13 @@ class ExpiredManagerTest {
     }
 
     @Test
-    void checkSize() throws Exception {
+    void checkSize() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         @SuppressWarnings("unchecked")
-        ExpiredManager<XItem> expiredManager = App.context.getBean(ExpiredManager.class);
-        Expired<XItem> test = expiredManager.get("test");
+        ExpirationManager<XItem> expirationManager = App.context.getBean(ExpirationManager.class);
+        Expiration<XItem> test = expirationManager.get("test");
         test.setOnExpired(System.out::println);
-        test.add(new ExpiredMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
+        test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
 
 
         //Проверяем что пока 1 корзина
@@ -67,13 +67,13 @@ class ExpiredManagerTest {
 
         //2024-03-06T17:11:04.056 + 500 => 11:04.556 + 1000 => 11:05.556 => 11:05.000
 
-        test.add(new ExpiredMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + 500));
+        test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + 500));
         Assertions.assertEquals("2024-03-06T17:11:05.000", Util.msToDataFormat(test.getBucketKey().getFirst()));
         //Проверяем что корзина не добавилась
         Assertions.assertEquals("[1709734265000]", test.getBucketKey().toString());
 //
         for (int i = 2; i < 10; i++) {
-            test.add(new ExpiredMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + (500 * i)));
+            test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + (500 * i)));
         }
 
         Assertions.assertEquals("[1709734265000, 1709734266000, 1709734267000, 1709734268000, 1709734269000]", test.getBucketKey().toString());
@@ -82,13 +82,13 @@ class ExpiredManagerTest {
         Assertions.assertEquals("{ItemSize=10, BucketSize=5}", statistics.getFields().toString());
 
         for (int i = 10; i < 100; i++) {
-            test.add(new ExpiredMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + (500 * i)));
+            test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + (500 * i)));
         }
 
         statistics = test.flushAndGetStatistic(null, null, null).getFirst();
         Assertions.assertEquals("{ItemSize=100, BucketSize=50}", statistics.getFields().toString());
 
-        ControlExpiredKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, curTimeMs);
+        ExpirationKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, curTimeMs);
         // Никаких обработок пачек не должно быть, так как
         Assertions.assertEquals("[]", keepAliveResult.getReadBucket().toString());
         Assertions.assertEquals(0, keepAliveResult.getCountRemove().get());
@@ -125,11 +125,11 @@ class ExpiredManagerTest {
 
     Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
         @SuppressWarnings("unchecked")
-        ExpiredManager<XItem> expiredManager = App.context.getBean(ExpiredManager.class);
-        Expired<XItem> test = expiredManager.get("test");
+        ExpirationManager<XItem> expirationManager = App.context.getBean(ExpirationManager.class);
+        Expiration<XItem> test = expirationManager.get("test");
 
         AvgMetric avgMetric = new AvgMetric();
-        test.setOnExpired((ExpiredMsImmutableEnvelope<XItem> env) -> {
+        test.setOnExpired((ExpirationMsImmutableEnvelope<XItem> env) -> {
             if (env.getExpiryRemainingMs() > 0) {
                 Assertions.fail("ALARM");
             } else {
@@ -143,7 +143,7 @@ class ExpiredManagerTest {
         new Thread(() -> {
             while (isRun2.get()) {
                 long cur = System.currentTimeMillis();
-                ControlExpiredKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, cur);
+                ExpirationKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, cur);
                 System.out.println(keepAliveResult);
                 Util.sleepMs(sleepKeepAlive);
             }
@@ -156,7 +156,7 @@ class ExpiredManagerTest {
                 while (isRun.get()) {
                     for (int j = 0; j < 1000; j++) {
                         try {
-                            test.add(new ExpiredMsImmutableEnvelope<>(new XItem(), timeoutMs));
+                            test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), timeoutMs));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

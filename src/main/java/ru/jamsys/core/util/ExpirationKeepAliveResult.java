@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 @ToString
-public class ControlExpiredKeepAliveResult {
+public class ExpirationKeepAliveResult {
 
     List<Long> readBucket = new ArrayList<>();
     AtomicInteger countRemove = new AtomicInteger(0);

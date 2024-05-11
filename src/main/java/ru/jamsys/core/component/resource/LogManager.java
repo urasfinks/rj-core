@@ -15,7 +15,7 @@ import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
-import ru.jamsys.core.statistic.time.immutable.ExpiredMsImmutableEnvelope;
+import ru.jamsys.core.statistic.time.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.util.UtilByte;
 import ru.jamsys.core.util.UtilFile;
 
@@ -109,14 +109,14 @@ public class LogManager implements ClassName {
         RateLimitItem maxSize = rateLimit.get(RateLimitName.FILE_LOG_SIZE.getName());
         AtomicInteger writeByte = new AtomicInteger();
         Exception exception = null;
-        List<ExpiredMsImmutableEnvelope<Log>> insuranceRestore = new ArrayList<>();
+        List<ExpirationMsImmutableEnvelope<Log>> insuranceRestore = new ArrayList<>();
         try (FileOutputStream fos = new FileOutputStream(dir + "/" + path + ".start.bin")) {
             while (!logBroker.isEmpty()) {
-                ExpiredMsImmutableEnvelope<Log> itemExpiredMsMutableEnvelope = logBroker.pollFirst();
+                ExpirationMsImmutableEnvelope<Log> itemExpirationMsMutableEnvelope = logBroker.pollFirst();
                 // Запоминаем что считали, что бы если что-то произойдёт с FS - мы ба восстановили в очереди
-                insuranceRestore.add(itemExpiredMsMutableEnvelope);
+                insuranceRestore.add(itemExpirationMsMutableEnvelope);
 
-                Log item = itemExpiredMsMutableEnvelope.getValue();
+                Log item = itemExpirationMsMutableEnvelope.getValue();
                 // Запись кол-ва заголовков
                 writeByte.addAndGet(2);
                 fos.write(UtilByte.shortToBytes((short) item.header.size()));
@@ -145,7 +145,7 @@ public class LogManager implements ClassName {
                 // Может быть получится хоть что-то восстановить из него, но с другой стороны
                 // я хотел удалять файлы .start.bin при старте приложения, так как они поломанные
                 // может стоит пересмотреть первичную позицию
-                for (ExpiredMsImmutableEnvelope<Log> restore : insuranceRestore) {
+                for (ExpirationMsImmutableEnvelope<Log> restore : insuranceRestore) {
                     logBroker.add(restore);
                 }
                 UtilFile.remove(dir + "/" + path + ".start.bin");
