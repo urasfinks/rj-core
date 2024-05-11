@@ -16,6 +16,20 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+/**
+ * Пример использования
+ *
+ * <p>
+ * <pre> {@code
+ *Promise wf = new PromiseImpl("test");
+ *wf.api("sound", new YandexSpeechPromise().setup((YandexSpeechPromise yandexSpeechPromise) -> {
+ *    yandexSpeechPromise.setText("Привет страна");
+ *    yandexSpeechPromise.setFilePath("target/result2.wav");
+ *})).run().await(10000);
+ *System.out.println(wf.getLog());
+ * }</pre>
+ */
+
 @Getter
 @Setter
 public class
