@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.promise.api.HttpClientPromise;
+import ru.jamsys.core.component.promise.api.NotificationTelegramPromise;
 import ru.jamsys.core.component.promise.api.YandexSpeechPromise;
 import ru.jamsys.core.util.Util;
 
@@ -269,6 +270,17 @@ class PromiseImplTest {
                     .setPostData("Hello world".getBytes(StandardCharsets.UTF_8));
         }).beforeExecute((HttpClientPromise httpClientPromise) -> {
             httpClientPromise.getHttpClient().setUrl("http://yandex.ru");
+        })).run().await(10000);
+        System.out.println(wf.getLog());
+    }
+
+    @SuppressWarnings("unused")
+    @Test
+    void promiseTelegram() {
+        Promise wf = new PromiseImpl("test");
+        wf.api("request", new NotificationTelegramPromise().setup((NotificationTelegramPromise telegramPromise) -> {
+            telegramPromise.setTitle("Привет");
+            telegramPromise.setData("Страна");
         })).run().await(10000);
         System.out.println(wf.getLog());
     }
