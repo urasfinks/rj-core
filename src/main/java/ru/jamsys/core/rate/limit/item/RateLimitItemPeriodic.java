@@ -79,9 +79,9 @@ public class RateLimitItemPeriodic implements RateLimitItem {
             Calendar now = Calendar.getInstance();
             now.setTimeInMillis(curTime);
             period.addValue(now, 1);
-            long timeInMillis = now.getTimeInMillis();
-            nextTimeFlush.set(timeInMillis);
-            nextTimeFlushFormat = Util.msToDataFormat(timeInMillis);
+            long timeInMs = now.getTimeInMillis();
+            nextTimeFlush.set(timeInMs);
+            nextTimeFlushFormat = Util.msToDataFormat(timeInMs);
             statistic.addField("tpu", tpu.getAndSet(0));
             statistic.addField("flushed", true);
         } else {

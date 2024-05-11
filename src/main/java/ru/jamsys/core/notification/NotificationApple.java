@@ -91,8 +91,8 @@ public class NotificationApple implements Notification {
         if (httpResponseEnvelope.isStatus()) {
             httpClient = new Http2ClientImpl();
             httpClient.setUrl(url + device);
-            httpClient.setConnectTimeoutMillis(connectTimeoutMs);
-            httpClient.setReadTimeoutMillis(readTimeout);
+            httpClient.setConnectTimeoutMs(connectTimeoutMs);
+            httpClient.setReadTimeoutMs(readTimeout);
 
             Map<String, Object> root = new LinkedHashMap<>();
             Map<String, Object> aps = new LinkedHashMap<>();

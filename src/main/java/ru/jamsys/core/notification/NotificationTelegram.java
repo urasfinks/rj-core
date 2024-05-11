@@ -67,8 +67,8 @@ public class NotificationTelegram implements Notification {
 
                 HttpClientImpl httpClient = new HttpClientImpl();
                 httpClient.setUrl(urlString);
-                httpClient.setConnectTimeoutMillis(connectTimeoutMs);
-                httpClient.setReadTimeoutMillis(readTimeout);
+                httpClient.setConnectTimeoutMs(connectTimeoutMs);
+                httpClient.setReadTimeoutMs(readTimeout);
                 httpClient.exec();
 
                 httpClient.getHttpResponseEnvelope(httpResponseEnvelope);

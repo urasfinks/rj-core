@@ -2,7 +2,6 @@ package ru.jamsys.core.resource.http;
 
 import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
@@ -22,28 +21,23 @@ import java.util.Map;
 
 @Data
 public class Http2ClientImpl implements HttpClient {
+
     @Getter
-    @Setter
     private String SslContextType = "TLS";
 
     @Getter
-    @Setter
     private Proxy proxy = null;
 
     @Getter
-    @Setter
-    private int connectTimeoutMillis = 10000;
+    private int connectTimeoutMs = 10000;
 
     @Getter
-    @Setter
-    private int readTimeoutMillis = 10000;
+    private int readTimeoutMs = 10000;
 
     @Getter
-    @Setter
     public boolean disableHostnameVerification = false;
 
     @Getter
-    @Setter
     public String method = null;
     private final Map<String, String> headersRequest = new HashMap<>();
 
@@ -53,12 +47,10 @@ public class Http2ClientImpl implements HttpClient {
     private FileViewKeyStoreSslContext sslContext = null;
 
     @Getter
-    @Setter
     @ToString.Exclude
     private byte[] postData = null;
 
     @Getter
-    @Setter
     private String url = null;
 
     @Getter
@@ -72,8 +64,57 @@ public class Http2ClientImpl implements HttpClient {
     private Exception exception = null;
 
     @Override
-    public void setRequestHeader(String name, String value) {
+    public HttpClient setUrl(String url) {
+        this.url = url;
+        return this;
+    }
+
+    @Override
+    public HttpClient setRequestHeader(String name, String value) {
         headersRequest.put(name, value);
+        return this;
+    }
+
+    @Override
+    public HttpClient setPostData(byte[] postData) {
+        this.postData = postData;
+        return this;
+    }
+
+    @Override
+    public HttpClient setMethod(String method) {
+        this.method = method;
+        return this;
+    }
+
+    @Override
+    public HttpClient setDisableHostnameVerification(boolean disableHostnameVerification) {
+        this.disableHostnameVerification = disableHostnameVerification;
+        return this;
+    }
+
+    @Override
+    public HttpClient setConnectTimeoutMs(int connectTimeoutMs){
+        this.connectTimeoutMs = connectTimeoutMs;
+        return this;
+    }
+
+    @Override
+    public HttpClient setReadTimeoutMs(int readTimeoutMs){
+        this.readTimeoutMs = readTimeoutMs;
+        return this;
+    }
+
+    @Override
+    public HttpClient setProxy(Proxy proxy){
+        this.proxy = proxy;
+        return this;
+    }
+
+    @Override
+    public HttpClient setSslContextType(String sslContextType){
+        this.SslContextType = sslContextType;
+        return this;
     }
 
     @Override
@@ -99,7 +140,7 @@ public class Http2ClientImpl implements HttpClient {
                 case PUT -> requestBuilder.PUT(HttpRequest.BodyPublishers.ofByteArray(postData));
                 case DELETE -> requestBuilder.DELETE();
             }
-            requestBuilder.timeout(Duration.ofMillis(connectTimeoutMillis + readTimeoutMillis));
+            requestBuilder.timeout(Duration.ofMillis(connectTimeoutMs + readTimeoutMs));
             try (java.net.http.HttpClient hc = clientBuilder.build()) {
                 HttpResponse<byte[]> responses = hc.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray());
                 status = responses.statusCode(); // Return the status code, if it is 200, it means the sending is successful
@@ -119,8 +160,9 @@ public class Http2ClientImpl implements HttpClient {
     }
 
     @Override
-    public void setKeyStore(File keyStore, Object... props) throws Exception {
+    public HttpClient setKeyStore(File keyStore, Object... props) throws Exception {
         sslContext = keyStore.getView(FileViewKeyStoreSslContext.class, props);
+        return this;
     }
 
     @SuppressWarnings("unused")

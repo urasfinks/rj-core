@@ -22,28 +22,23 @@ import java.util.Map;
 public class HttpClientImpl implements HttpClient {
 
     @Getter
-    @Setter
     private String SslContextType = "TLS";
 
     @Getter
-    @Setter
     private Proxy proxy = null;
 
     @Getter
-    @Setter
-    private int connectTimeoutMillis = 10000;
+    private int connectTimeoutMs = 10000;
 
     @Getter
-    @Setter
-    private int readTimeoutMillis = 10000;
+    private int readTimeoutMs = 10000;
 
     @Getter
-    @Setter
     public boolean disableHostnameVerification = true;
 
     @Getter
-    @Setter
     public String method = null;
+
     private final Map<String, String> headersRequest = new HashMap<>();
 
     @Getter
@@ -52,12 +47,10 @@ public class HttpClientImpl implements HttpClient {
     private FileViewKeyStoreSslSocketFactory socketFactory;
 
     @Getter
-    @Setter
     @ToString.Exclude
     private byte[] postData = null;
 
     @Getter
-    @Setter
     private String url = null;
 
     @Getter
@@ -70,8 +63,57 @@ public class HttpClientImpl implements HttpClient {
     @Getter
     private Exception exception = null;
 
-    public void setRequestHeader(String name, String value) {
+    @Override
+    public HttpClient setUrl(String url) {
+        this.url = url;
+        return this;
+    }
+
+    @Override
+    public HttpClient setPostData(byte[] postData) {
+        this.postData = postData;
+        return this;
+    }
+
+    @Override
+    public HttpClient setMethod(String method) {
+        this.method = method;
+        return this;
+    }
+
+    @Override
+    public HttpClient setDisableHostnameVerification(boolean disableHostnameVerification) {
+        this.disableHostnameVerification = disableHostnameVerification;
+        return this;
+    }
+
+    @Override
+    public HttpClient setConnectTimeoutMs(int connectTimeoutMs){
+        this.connectTimeoutMs = connectTimeoutMs;
+        return this;
+    }
+
+    @Override
+    public HttpClient setReadTimeoutMs(int readTimeoutMs){
+        this.readTimeoutMs = readTimeoutMs;
+        return this;
+    }
+
+    @Override
+    public HttpClient setProxy(Proxy proxy){
+        this.proxy = proxy;
+        return this;
+    }
+
+    @Override
+    public HttpClient setSslContextType(String sslContextType){
+        this.SslContextType = sslContextType;
+        return this;
+    }
+
+    public HttpClient setRequestHeader(String name, String value) {
         headersRequest.put(name, value);
+        return this;
     }
 
     @SuppressWarnings("unused")
@@ -85,8 +127,8 @@ public class HttpClientImpl implements HttpClient {
             }
 
             httpURLConnection.setDoOutput(true);
-            httpURLConnection.setConnectTimeout(connectTimeoutMillis);
-            httpURLConnection.setReadTimeout(readTimeoutMillis);
+            httpURLConnection.setConnectTimeout(connectTimeoutMs);
+            httpURLConnection.setReadTimeout(readTimeoutMs);
             httpURLConnection.setUseCaches(false);
 
             for (Map.Entry<String, String> x : headersRequest.entrySet()) {
@@ -165,8 +207,9 @@ public class HttpClientImpl implements HttpClient {
     }
 
     @Override
-    public void setKeyStore(File keyStore, Object... props) throws Exception {
+    public HttpClient setKeyStore(File keyStore, Object... props) throws Exception {
         socketFactory = keyStore.getView(FileViewKeyStoreSslSocketFactory.class, props);
+        return this;
     }
 
     @SuppressWarnings("unused")

@@ -71,8 +71,8 @@ public class NotificationAndroid implements Notification {
         if (httpResponseEnvelope.isStatus()) {
             httpClient = new Http2ClientImpl();
             httpClient.setUrl(url);
-            httpClient.setConnectTimeoutMillis(connectTimeoutMs);
-            httpClient.setReadTimeoutMillis(readTimeout);
+            httpClient.setConnectTimeoutMs(connectTimeoutMs);
+            httpClient.setReadTimeoutMs(readTimeout);
             httpClient.setRequestHeader("Content-type", "application/json");
 
             try {

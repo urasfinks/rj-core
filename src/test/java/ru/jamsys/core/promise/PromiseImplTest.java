@@ -5,9 +5,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.promise.api.HttpClientPromise;
 import ru.jamsys.core.component.promise.api.YandexSpeechPromise;
 import ru.jamsys.core.util.Util;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -251,6 +253,22 @@ class PromiseImplTest {
         wf.api("sound", new YandexSpeechPromise().setup((YandexSpeechPromise yandexSpeechPromise) -> {
             yandexSpeechPromise.setText("Привет страна");
             yandexSpeechPromise.setFilePath("target/result2.wav");
+        })).run().await(10000);
+        System.out.println(wf.getLog());
+    }
+
+    @SuppressWarnings("unused")
+    void promiseHttp() {
+        Promise wf = new PromiseImpl("test");
+        wf.api("request", new HttpClientPromise().setup((HttpClientPromise httpClientPromise) -> {
+            httpClientPromise.getHttpClient()
+                    .setConnectTimeoutMs(1000)
+                    .setReadTimeoutMs(1000)
+                    .setRequestHeader("x", "Y")
+                    .setBasicAuth("user", "password", "utf-8")
+                    .setPostData("Hello world".getBytes(StandardCharsets.UTF_8));
+        }).beforeExecute((HttpClientPromise httpClientPromise) -> {
+            httpClientPromise.getHttpClient().setUrl("http://yandex.ru");
         })).run().await(10000);
         System.out.println(wf.getLog());
     }
