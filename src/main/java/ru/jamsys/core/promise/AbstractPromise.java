@@ -31,7 +31,9 @@ public abstract class AbstractPromise extends ExpiredMsMutableImpl implements Pr
 
     protected boolean log = false;
 
-    protected AtomicBoolean waiters = new AtomicBoolean(false);
+    // Первый поток, который зашёл одновременно с выполнением основного loop будет пробовать ждать 5мс
+    // Что бы перехватить инициативу крутить основной loop
+    protected AtomicBoolean firstConcurrentCompletionWait = new AtomicBoolean(false);
 
     @JsonProperty
     @Getter

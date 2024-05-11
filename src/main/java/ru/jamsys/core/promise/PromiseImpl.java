@@ -48,16 +48,15 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             if (isStartLoop.compareAndSet(false, true)) {
                 loop();
                 isStartLoop.set(false);
-            } else if (waiters.compareAndSet(false, true)) {
-                long start = System.currentTimeMillis();
-                long expiredTimeMs = start + 5;
+            } else if (firstConcurrentCompletionWait.compareAndSet(false, true)) {
+                long expiredTimeMs = System.currentTimeMillis() + 5;
                 while (isStartLoop.get()) {
                     if (System.currentTimeMillis() > expiredTimeMs) {
                         break;
                     }
                     Thread.onSpinWait();
                 }
-                waiters.set(false);
+                firstConcurrentCompletionWait.set(false);
                 if (!isStartLoop.get()) {
                     complete();
                 }
