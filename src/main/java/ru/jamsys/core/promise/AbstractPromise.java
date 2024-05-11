@@ -13,7 +13,6 @@ import ru.jamsys.core.util.UtilJson;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
@@ -32,8 +31,7 @@ public abstract class AbstractPromise extends ExpiredMsMutableImpl implements Pr
 
     protected boolean log = false;
 
-    // Флаг, который говорит, что было конкурентное исполнение
-    protected final AtomicInteger countConcurrentComplete = new AtomicInteger(0);
+    protected AtomicBoolean waiters = new AtomicBoolean(false);
 
     @JsonProperty
     @Getter

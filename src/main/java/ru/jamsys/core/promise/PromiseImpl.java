@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class PromiseImpl extends AbstractPromiseBuilder {
 
-    public static ConcurrentLinkedDeque<Promise> queueSuperPosition = new ConcurrentLinkedDeque<>();
+    public static ConcurrentLinkedDeque<Promise> queueMultipleComplete = new ConcurrentLinkedDeque<>();
 
     public PromiseImpl(String index) {
         setIndex(index);
@@ -48,29 +48,23 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             if (isStartLoop.compareAndSet(false, true)) {
                 loop();
                 isStartLoop.set(false);
-                // Если накидали в параллель задач, возьмем инициативу повторного проворота
-                if (countConcurrentComplete.get() > 0) {
-                    countConcurrentComplete.decrementAndGet();
-                    complete();
-                }
-            } else {
-                countConcurrentComplete.incrementAndGet();
-                // Обработка частного случая не атомарной операции isStartLoop.set(false);
-                if (!isStartLoop.get()) {
-                    // Вернём добавленный инкремент, что бы сократить кол-во операций
-                    // Это должно быть именно так - сначала добавить инкремент, что бы дать возможность текущему loop
-                    // выполнить дополнительную работу и только в том случае, если там уже вышли и высвободили флаг
-                    // запускать собственный loop с декрементацией счётчика
-                    countConcurrentComplete.decrementAndGet();
-                    complete();
-                } else {
-                    if (!queueSuperPosition.contains(this)) {
-                        queueSuperPosition.add(this);
+            } else if (waiters.compareAndSet(false, true)) {
+                long start = System.currentTimeMillis();
+                long expiredTimeMs = start + 5;
+                while (isStartLoop.get()) {
+                    if (System.currentTimeMillis() > expiredTimeMs) {
+                        break;
                     }
+                    Thread.onSpinWait();
                 }
+                waiters.set(false);
+                if (!isStartLoop.get()) {
+                    complete();
+                }
+            } else if (!queueMultipleComplete.contains(this)) {
+                queueMultipleComplete.add(this);
             }
         }
-
     }
 
     private boolean isNextLoop() {
@@ -99,22 +93,24 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             if (firstTask.type.isRunnable()) { //Так мы откинули WAIT
                 listRunningTasks.add(firstTask);
             }
-            if (firstTask.type.isRollback(this)) {
-                listPendingTasks.addFirst(firstTask);
-                break;
+            if (firstTask.type == PromiseTaskType.WAIT) {
+                if (isRunningTaskNotComplete()) {
+                    listPendingTasks.addFirst(firstTask);
+                    break;
+                }
             }
             Thread.onSpinWait();
         }
         if (isRun.get()) {
             if (isException.get()) {
                 isRun.set(false);
-                queueSuperPosition.remove(this);
+                queueMultipleComplete.remove(this);
                 if (onError != null) {
                     onError.accept(exception);
                 }
             } else if (!inProgress()) {
                 isRun.set(false);
-                queueSuperPosition.remove(this);
+                queueMultipleComplete.remove(this);
                 if (onComplete != null) {
                     onComplete.run();
                 }

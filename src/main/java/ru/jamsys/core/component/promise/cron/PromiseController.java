@@ -22,14 +22,14 @@ public class PromiseController implements Cron1s, PromiseGenerator {
         return new PromiseImpl(getClass().getName())
                 .append(this.getClass().getName(), PromiseTaskType.IO, (AtomicBoolean isThreadRun) -> {
                     int count = 0;
-                    while (!PromiseImpl.queueSuperPosition.isEmpty() && isThreadRun.get()) {
-                        Promise promise = PromiseImpl.queueSuperPosition.pollFirst();
+                    while (!PromiseImpl.queueMultipleComplete.isEmpty() && isThreadRun.get()) {
+                        Promise promise = PromiseImpl.queueMultipleComplete.pollFirst();
                         assert promise != null;
                         promise.complete();
                         count++;
                     }
                     if (count > 0) {
-                        App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("SuperPosition: " + count));
+                        App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Multiple complete: " + count));
                     }
                 });
     }
