@@ -42,7 +42,7 @@ public class NotificationTelegramPromise extends AbstractPromiseApi<Notification
     @Override
     public Consumer<AtomicBoolean> getExecutor() {
         if (data.isEmpty()) {
-            throw new RuntimeException("Customize Toolbar... is empty");
+            throw new RuntimeException("data is empty");
         }
         if (idChat == null) {
             setResult(telegramClient.notify(title, data));

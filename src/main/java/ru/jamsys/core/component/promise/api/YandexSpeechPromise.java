@@ -70,7 +70,7 @@ YandexSpeechPromise extends AbstractPromiseApi<YandexSpeechPromise> {
     @Override
     public void extend(Promise promise) {
         super.extend(promise);
-        asyncPromiseTask = new PromiseTask(getClass().getName() + "::asyncWait", promise, PromiseTaskType.ASYNC);
+        asyncPromiseTask = new PromiseTask(getClass().getName(), promise, PromiseTaskType.EXTERNAL_WAIT);
         promise.append(asyncPromiseTask);
     }
 
@@ -93,8 +93,8 @@ YandexSpeechPromise extends AbstractPromiseApi<YandexSpeechPromise> {
                     text,
                     new File(filePath),
                     settings,
-                    () -> asyncPromiseTask.complete(),
-                    (Throwable t) -> asyncPromiseTask.error(t)
+                    () -> asyncPromiseTask.externalComplete(),
+                    (Throwable t) -> asyncPromiseTask.externalError(t)
             );
         } catch (Exception e) {
             throw new RuntimeException(e);

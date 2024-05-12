@@ -113,8 +113,6 @@ class PromiseImplTest {
         //System.out.println("start size: " + wf.getListPendingTasks().size());
         wf.run();
         wf.await(5000);
-        //System.out.println("time: " + (System.currentTimeMillis() - start));
-        //System.out.println("fin size: " + wf.getListPendingTasks().size());
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
 
     }
@@ -230,9 +228,8 @@ class PromiseImplTest {
 
     @Test
     void testAsync() {
-        Promise wf = new PromiseImpl("test");
-        wf.setIndex("Async");
-        PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskType.ASYNC);
+        Promise wf = new PromiseImpl("Async");
+        PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskType.EXTERNAL_WAIT);
         wf.append(promiseTask);
         wf.run().await(1000);
 
@@ -240,12 +237,29 @@ class PromiseImplTest {
         Assertions.assertEquals(0, wf.getExceptionTrace().size());
         Assertions.assertFalse(wf.isCompleted());
 
-        promiseTask.complete();
+        promiseTask.externalComplete();
         Assertions.assertTrue(wf.isCompleted());
         Assertions.assertEquals(2, wf.getTrace().size());
 
         System.out.println(wf.getLog());
+    }
 
+    @Test
+    void testAsyncNoWait() {
+        Promise wf = new PromiseImpl("AsyncNoWait");
+        PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskType.EXTERNAL_NO_WAIT);
+        wf.append(promiseTask);
+        wf.run().await(1000);
+
+        Assertions.assertEquals(1, wf.getTrace().size());
+        Assertions.assertEquals(0, wf.getExceptionTrace().size());
+        Assertions.assertTrue(wf.isCompleted());
+
+        promiseTask.externalError(new RuntimeException("ERROR"));
+        Assertions.assertTrue(wf.isCompleted());
+        Assertions.assertEquals(1, wf.getTrace().size());
+
+        System.out.println(wf.getLog());
     }
 
     @SuppressWarnings("unused")
@@ -261,16 +275,17 @@ class PromiseImplTest {
     @SuppressWarnings("unused")
     void promiseHttp() {
         Promise wf = new PromiseImpl("test");
-        wf.api("request", new HttpClientPromise().setup((HttpClientPromise httpClientPromise) -> {
-            httpClientPromise.getHttpClient()
-                    .setConnectTimeoutMs(1000)
-                    .setReadTimeoutMs(1000)
-                    .setRequestHeader("x", "Y")
-                    .setBasicAuth("user", "password", "utf-8")
-                    .setPostData("Hello world".getBytes(StandardCharsets.UTF_8));
-        }).beforeExecute((HttpClientPromise httpClientPromise) -> {
-            httpClientPromise.getHttpClient().setUrl("http://yandex.ru");
-        })).run().await(10000);
+        wf.api("request", new HttpClientPromise()
+                .setup((HttpClientPromise httpClientPromise) ->
+                        httpClientPromise.getHttpClient()
+                                .setConnectTimeoutMs(1000)
+                                .setReadTimeoutMs(1000)
+                                .setRequestHeader("x", "Y")
+                                .setBasicAuth("user", "password", "utf-8")
+                                .setPostData("Hello world".getBytes(StandardCharsets.UTF_8)))
+                .beforeExecute((HttpClientPromise httpClientPromise) ->
+                        httpClientPromise.getHttpClient().setUrl("http://yandex.ru"))
+        ).run().await(10000);
         System.out.println(wf.getLog());
     }
 

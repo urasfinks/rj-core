@@ -37,8 +37,11 @@ public class PromiseTask implements Runnable {
     @Getter
     private int retryDelayMs = 0;
 
-    @Getter
     private final String index;
+
+    public String getIndex() {
+        return index + "::" + type.getName();
+    }
 
     // Багу поймал, когда задача на JOIN выполняется в родительском потоке
     // Там нет передачи isThreadRun, только в случаях [IO, COMPUTE] Setter вызывается
@@ -50,21 +53,25 @@ public class PromiseTask implements Runnable {
             case IO -> App.context.getBean(VirtualThreadComponent.class).submit(this);
             case COMPUTE -> App.context.getBean(RealThreadComponent.class).submit(this);
             case JOIN -> run();
-            case ASYNC -> promise.getTrace().add(new Trace<>(index + "::async.start", TraceTimer.getInstanceZero()));
+            case EXTERNAL_WAIT, EXTERNAL_NO_WAIT ->
+                    promise.getTrace().add(new Trace<>(getIndex() + ".start", TraceTimer.getInstanceZero()));
         }
     }
 
-    public void complete() {
-        if (type == PromiseTaskType.ASYNC) {
-            promise.getTrace().add(new Trace<>(index + "::async.stop", TraceTimer.getInstanceZero()));
-            promise.complete(this);
+    public void externalComplete() {
+        switch (type) {
+            case EXTERNAL_WAIT -> {
+                promise.getTrace().add(new Trace<>(getIndex() + ".complete", TraceTimer.getInstanceZero()));
+                promise.complete(this);
+            }
+            case EXTERNAL_NO_WAIT -> promise.getTrace().add(new Trace<>(getIndex() + ".complete", TraceTimer.getInstanceZero()));
         }
     }
 
-    public void error(Throwable th) {
-        if (type == PromiseTaskType.ASYNC) {
-            promise.getTrace().add(new Trace<>(index + "::async.stop", TraceTimer.getInstanceZero()));
-            promise.complete(this, th);
+    public void externalError(Throwable th) {
+        switch (type) {
+            case EXTERNAL_WAIT -> promise.complete(this, th);
+            case EXTERNAL_NO_WAIT -> promise.getExceptionTrace().add(new Trace<>(getIndex() + ".error", th));
         }
     }
 

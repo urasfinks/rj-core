@@ -107,7 +107,7 @@ public abstract class AbstractPromise extends ExpirationMsMutableImpl implements
 
     @JsonProperty
     public long getDiffTimeMs() { //Сократил, что бы время InitTime было ровно над временем ExprTime
-        return getExpiryRemainingMs();
+        return getInactivityTimeMs();
     }
 
 }

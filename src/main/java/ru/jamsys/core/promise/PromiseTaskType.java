@@ -19,8 +19,11 @@ public enum PromiseTaskType implements EnumName {
     //Запускаем эту задачу в RealThread
     COMPUTE(true),
 
-    // Асинхронная задача, complete будет вызван сторонними средствами
-    ASYNC(true);
+    // Внешняя задача, complete будет вызван сторонними средствами
+    EXTERNAL_WAIT(true),
+
+    // Результат задачи не интересен, ошибка или успешное выполнение не повлияет на жизненный цикл обещания
+    EXTERNAL_NO_WAIT(false);
 
     private final boolean isRunnable;
 
