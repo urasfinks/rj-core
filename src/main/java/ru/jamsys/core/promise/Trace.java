@@ -1,14 +1,16 @@
 package ru.jamsys.core.promise;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
+import lombok.Setter;
 import ru.jamsys.core.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-@JsonPropertyOrder({"index", "timeAdd", "value"})
+@JsonPropertyOrder({"index", "type", "timeAdd", "value"})
 public class Trace<K, V> {
 
     final long timeAdd = System.currentTimeMillis();
@@ -16,7 +18,12 @@ public class Trace<K, V> {
     @Getter
     final private K index;
 
-    final private V value;
+    @Setter
+    private V value;
+
+    @JsonProperty
+    @SuppressWarnings("FieldCanBeLocal")
+    final private PromiseTaskType type;
 
     public String getTimeAdd() {
         return Util.msToDataFormat(timeAdd);
@@ -38,9 +45,10 @@ public class Trace<K, V> {
         return value;
     }
 
-    public Trace(K index, V value) {
+    public Trace(K index, V value, PromiseTaskType type) {
         this.index = index;
         this.value = value;
+        this.type = type;
     }
 
 }

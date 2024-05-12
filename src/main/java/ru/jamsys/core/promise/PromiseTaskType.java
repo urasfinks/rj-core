@@ -23,12 +23,17 @@ public enum PromiseTaskType implements EnumName {
     EXTERNAL_WAIT(true),
 
     // Результат задачи не интересен, ошибка или успешное выполнение не повлияет на жизненный цикл обещания
-    EXTERNAL_NO_WAIT(false);
+    // Запуск будет осуществлён в VirtualThread
+    ASYNC_NO_WAIT_IO(false),
 
-    private final boolean isRunnable;
+    // Результат задачи не интересен, ошибка или успешное выполнение не повлияет на жизненный цикл обещания
+    // Запуск будет осуществлён в RealThread
+    ASYNC_NO_WAIT_COMPUTE(false);
 
-    PromiseTaskType(boolean isRunnable) {
-        this.isRunnable = isRunnable;
+    private final boolean isRunningTask;
+
+    PromiseTaskType(boolean isRunningTask) {
+        this.isRunningTask = isRunningTask;
     }
 
 }

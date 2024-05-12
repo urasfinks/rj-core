@@ -98,6 +98,6 @@ public interface Promise extends ExpirationMsImmutable {
 
     boolean isException();
 
-    void expired();
+    void timeOut(String cause);
 
 }

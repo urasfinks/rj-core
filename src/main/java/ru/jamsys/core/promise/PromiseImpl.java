@@ -22,19 +22,19 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     @Override
-    public void expired() {
-        setError("Expired", new RuntimeException("Expired"));
+    public void timeOut(String cause) {
+        setError("TimeOut cause: "+cause, getExpiredException(), null);
         complete();
     }
 
-    private void setError(String indexTask, Throwable exception) {
+    private void setError(String indexTask, Throwable exception, PromiseTaskType type) {
         this.exception = exception;
-        this.exceptionTrace.add(new Trace<>(indexTask, exception));
+        this.exceptionTrace.add(new Trace<>(indexTask, exception, type));
         isException.set(true);
     }
 
     public void complete(@NonNull PromiseTask task, @NonNull Throwable exception) {
-        setError(task.getIndex(), exception);
+        setError(task.getIndex(), exception, task.getType());
         complete();
     }
 
@@ -85,7 +85,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             return false;
         }
         if (isExpired()) {
-            setError(getClass() + ".isNextLoop()", getExpiredException());
+            setError("TimeOut.onNextLoop()", getExpiredException(), null);
             return false;
         }
         return true;
@@ -103,7 +103,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             PromiseTask firstTask = listPendingTasks.pollFirst();
             assert firstTask != null;
             firstTask.start();
-            if (firstTask.type.isRunnable()) { //Так мы откинули WAIT
+            if (firstTask.type.isRunningTask()) { //Так мы откинули WAIT
                 listRunningTasks.add(firstTask);
             }
             if (firstTask.type == PromiseTaskType.WAIT) {

@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.ExpirationManager;
 import ru.jamsys.core.component.manager.item.Expiration;
+import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
@@ -22,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
-public class PromiseTaskTime implements KeepAliveComponent {
+public class PromiseTaskTime implements KeepAliveComponent, ClassName {
 
     public static final String nameExpirationManagerRetry = "PromiseTaskRetry";
 
@@ -53,7 +54,7 @@ public class PromiseTaskTime implements KeepAliveComponent {
     }
 
     private void onPromiseTaskExpired(ExpirationMsImmutableEnvelope<Promise> env) {
-        env.getValue().expired();
+        env.getValue().timeOut(getClassName("onPromiseTaskExpired"));
     }
 
     public DisposableExpirationMsImmutableEnvelope<PromiseTask> addRetryDelay(PromiseTask promiseTask) {

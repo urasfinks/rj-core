@@ -224,7 +224,7 @@ class PromiseImplTest {
     }
 
     @Test
-    void testAsync() {
+    void testExternalWait() {
         Promise wf = new PromiseImpl("Async",6_000L);
         PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskType.EXTERNAL_WAIT);
         wf.append(promiseTask);
@@ -244,19 +244,19 @@ class PromiseImplTest {
     @Test
     void testAsyncNoWait() {
         Promise wf = new PromiseImpl("AsyncNoWait",6_000L);
-        PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskType.EXTERNAL_NO_WAIT);
+        AtomicInteger c = new AtomicInteger(0);
+        PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskType.ASYNC_NO_WAIT_IO, (AtomicBoolean _) -> {
+            c.incrementAndGet();
+            throw new RuntimeException("ERROR");
+        });
         wf.append(promiseTask);
         wf.run().await(1000);
-
-        Assertions.assertEquals(1, wf.getTrace().size());
-        Assertions.assertEquals(0, wf.getExceptionTrace().size());
-        Assertions.assertTrue(wf.isCompleted());
-
-        promiseTask.externalError(new RuntimeException("ERROR"));
-        Assertions.assertTrue(wf.isCompleted());
-        Assertions.assertEquals(1, wf.getTrace().size());
-
         System.out.println(wf.getLog());
+
+        Assertions.assertEquals(1, c.get());
+        Assertions.assertEquals(1, wf.getTrace().size());
+        Assertions.assertTrue(wf.isCompleted());
+        Assertions.assertEquals(1, wf.getTrace().size());
     }
 
     @Test
@@ -274,7 +274,7 @@ class PromiseImplTest {
         Assertions.assertTrue(wf.isCompleted());
         Assertions.assertTrue(wf.isException());
         Assertions.assertEquals(1, counter.get());
-        Assertions.assertEquals("Expired", wf.getExceptionTrace().getFirst().getIndex());
+        Assertions.assertEquals("TimeOut cause: PromiseTaskTime::onPromiseTaskExpired", wf.getExceptionTrace().getFirst().getIndex());
 
     }
 

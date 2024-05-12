@@ -10,6 +10,7 @@ import ru.jamsys.core.component.resource.VirtualThreadComponent;
 import ru.jamsys.core.statistic.expiration.TimeEnvelopeNano;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -21,6 +22,7 @@ public class PromiseTask implements Runnable {
     @Getter
     volatile private boolean complete;
 
+    @Getter
     final PromiseTaskType type;
 
     // Может порождать дополнительные PromiseTask после выполнения
@@ -37,6 +39,7 @@ public class PromiseTask implements Runnable {
     @Getter
     private int retryDelayMs = 0;
 
+    @Getter
     private final String index;
 
     // Багу поймал, когда задача на JOIN выполняется в родительском потоке
@@ -44,24 +47,16 @@ public class PromiseTask implements Runnable {
     @Setter
     AtomicBoolean isThreadRun = new AtomicBoolean(true);
 
-    public String getIndex() {
-        return index + "::" + type.getName();
-    }
-
     public void externalComplete() {
-        switch (type) {
-            case EXTERNAL_WAIT -> {
-                promise.getTrace().add(new Trace<>(getIndex() + ".complete", TraceTimer.getInstanceZero()));
-                promise.complete(this);
-            }
-            case EXTERNAL_NO_WAIT -> promise.getTrace().add(new Trace<>(getIndex() + ".complete", TraceTimer.getInstanceZero()));
+        if (Objects.requireNonNull(type) == PromiseTaskType.EXTERNAL_WAIT) {
+            promise.getTrace().add(new Trace<>(getIndex() + ".complete", TraceTimer.getInstanceZero(), type));
+            promise.complete(this);
         }
     }
 
     public void externalError(Throwable th) {
-        switch (type) {
-            case EXTERNAL_WAIT -> promise.complete(this, th);
-            case EXTERNAL_NO_WAIT -> promise.getExceptionTrace().add(new Trace<>(getIndex() + ".error", th));
+        if (Objects.requireNonNull(type) == PromiseTaskType.EXTERNAL_WAIT) {
+            promise.complete(this, th);
         }
     }
 
@@ -102,11 +97,11 @@ public class PromiseTask implements Runnable {
     // execute on another thread
     public void start() {
         switch (type) {
-            case IO -> App.context.getBean(VirtualThreadComponent.class).submit(this);
-            case COMPUTE -> App.context.getBean(RealThreadComponent.class).submit(this);
+            case IO, ASYNC_NO_WAIT_IO -> App.context.getBean(VirtualThreadComponent.class).submit(this);
+            case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.context.getBean(RealThreadComponent.class).submit(this);
             case JOIN -> run();
-            case EXTERNAL_WAIT, EXTERNAL_NO_WAIT ->
-                    promise.getTrace().add(new Trace<>(getIndex() + ".start", TraceTimer.getInstanceZero()));
+            case EXTERNAL_WAIT ->
+                    promise.getTrace().add(new Trace<>(getIndex() + ".start", TraceTimer.getInstanceZero(), type));
         }
     }
 
@@ -115,6 +110,8 @@ public class PromiseTask implements Runnable {
     public void run() {
         long startTime = System.currentTimeMillis();
         TimeEnvelopeNano<String> timer = App.context.getBean(PromiseTaskTime.class).add(index);
+        Trace<String, TraceTimer> trace = new Trace<>(getIndex(), null, type);
+        promise.getTrace().add(trace);
         long timeStart = System.nanoTime();
         try {
             if (supplier != null) {
@@ -127,15 +124,17 @@ public class PromiseTask implements Runnable {
             App.context.getBean(ExceptionHandler.class).handler(th);
             if (retryCount > 0) {
                 retryCount--;
-                promise.getExceptionTrace().add(new Trace<>(index, th));
+                promise.getExceptionTrace().add(new Trace<>(index, th, type));
                 App.context.getBean(PromiseTaskTime.class).addRetryDelay(this);
             } else {
-                promise.complete(this, th);
+                switch (type){
+                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> promise.getExceptionTrace().add(new Trace<>(index, th, type));
+                    default -> promise.complete(this, th);
+                }
             }
         }
         timer.stop();
-        TraceTimer traceTimer = new TraceTimer(startTime, System.currentTimeMillis(), timer.getOffsetLastActivityNano());
-        promise.getTrace().add(new Trace<>(index, traceTimer));
+        trace.setValue(new TraceTimer(startTime, System.currentTimeMillis(), timer.getOffsetLastActivityNano()));
     }
 
 }
