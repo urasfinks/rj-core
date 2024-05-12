@@ -139,8 +139,8 @@ class PromiseImplTest {
                     throw new RuntimeException("Hello world");
                 })
                 .getLastAppendedTask().setRetryCount(1, 1000).getPromise()
-                .onError((Throwable _) -> error.incrementAndGet())
-                .onComplete(complete::incrementAndGet)
+                .onError(PromiseTaskType.JOIN, _ -> error.incrementAndGet())
+                .onComplete(PromiseTaskType.JOIN, _ -> complete.incrementAndGet())
                 .run()
                 .await(3000);
         System.out.println(wf.getLog());
@@ -170,8 +170,8 @@ class PromiseImplTest {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .onError((Throwable _) -> error.incrementAndGet())
-                .onComplete(complete::incrementAndGet)
+                .onError(PromiseTaskType.JOIN, _ -> error.incrementAndGet())
+                .onComplete(PromiseTaskType.JOIN, _ -> complete.incrementAndGet())
                 .run()
                 .await(2000);
         Assertions.assertEquals(1, error.get());
@@ -199,8 +199,8 @@ class PromiseImplTest {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .onError((Throwable _) -> error.incrementAndGet())
-                .onComplete(complete::incrementAndGet)
+                .onError(PromiseTaskType.JOIN, _ -> error.incrementAndGet())
+                .onComplete(PromiseTaskType.JOIN, _ -> complete.incrementAndGet())
                 .run()
                 .await(2000);
         System.out.println(wf.getLog());
@@ -266,7 +266,7 @@ class PromiseImplTest {
         wf
                 .append("longTimeout", PromiseTaskType.IO, _ -> {
                     Util.sleepMs(2000);
-                }).onError(_ -> counter.incrementAndGet())
+                }).onError(PromiseTaskType.JOIN, _ -> counter.incrementAndGet())
                 .run().await(2000);
 
         System.out.println(wf.getLog());

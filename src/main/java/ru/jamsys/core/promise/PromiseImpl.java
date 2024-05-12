@@ -119,13 +119,13 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 isRun.set(false);
                 queueMultipleComplete.remove(this);
                 if (onError != null) {
-                    onError.accept(exception);
+                    onError.start();
                 }
             } else if (!inProgress()) {
                 isRun.set(false);
                 queueMultipleComplete.remove(this);
                 if (onComplete != null) {
-                    onComplete.run();
+                    onComplete.start();
                 }
             }
         }

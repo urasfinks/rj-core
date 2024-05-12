@@ -3,7 +3,6 @@ package ru.jamsys.core.promise;
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.promise.api.PromiseApi;
-import ru.jamsys.core.extension.Procedure;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
 
 import java.util.List;
@@ -11,6 +10,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+// Цепочка обещаний
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface Promise extends ExpirationMsImmutable {
@@ -31,31 +32,51 @@ public interface Promise extends ExpirationMsImmutable {
 
     boolean inProgress();
 
+    // Синхронное ожидание выполнения Promise
     void await(long timeoutMs);
 
+    // Запускаем цепочку задач от текущего потока
     Promise run();
 
     Promise setRqUid(String rqUid);
 
     Promise setLog(boolean log);
 
-    Promise onComplete(Procedure onComplete);
+    // Добавление задачи, которая выполнится после успешного завершения цепочки Promise
+    Promise onComplete(PromiseTask onComplete);
 
-    Promise onError(Consumer<Throwable> onError);
+    default Promise onComplete(PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn) {
+        return onComplete(new PromiseTask("onComplete", this, promiseTaskType, fn));
+    }
+
+    // Добавление задачи, которая выполнится после фатального завершения цепочки Promise
+    Promise onError(PromiseTask onError);
+
+    default Promise onError(PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn) {
+        return onError(new PromiseTask("onError", this, promiseTaskType, fn));
+    }
 
     Promise append(PromiseTask task);
 
-    Promise append(String index, PromiseTaskType promiseTaskType, Function<AtomicBoolean, List<PromiseTask>> fn);
+    default Promise append(String index, PromiseTaskType promiseTaskType, Function<AtomicBoolean, List<PromiseTask>> fn) {
+        return append(new PromiseTask(index, this, promiseTaskType, fn));
+    }
+
+    default Promise append(String index, PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn) {
+        return append(new PromiseTask(index, this, promiseTaskType, fn));
+    }
 
     Promise then(PromiseTask task);
 
-    Promise then(String index, PromiseTaskType promiseTaskType, Function<AtomicBoolean, List<PromiseTask>> fn);
+    default Promise then(String index, PromiseTaskType promiseTaskType, Function<AtomicBoolean, List<PromiseTask>> fn) {
+        return then(new PromiseTask(index, this, promiseTaskType, fn));
+    }
+
+    default Promise then(String index, PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn) {
+        return then(new PromiseTask(index, this, promiseTaskType, fn));
+    }
 
     Promise waits();
-
-    Promise append(String index, PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn);
-
-    Promise then(String index, PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn);
 
     PromiseTask getLastAppendedTask();
 
@@ -70,6 +91,8 @@ public interface Promise extends ExpirationMsImmutable {
     Map<String, Object> getProperty();
 
     <R> R getProp(String key, Class<R> cls);
+
+    <R> R setProp(String key, R obj);
 
     boolean isCompleted();
 

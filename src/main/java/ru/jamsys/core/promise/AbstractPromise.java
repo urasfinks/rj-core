@@ -7,14 +7,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.component.api.ClassFinder;
-import ru.jamsys.core.extension.Procedure;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
 import ru.jamsys.core.util.UtilJson;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @JsonPropertyOrder({"rqUid", "index", "addTime", "expTime", "diffTimeMs", "exception", "completed", "trace", "exceptionTrace", "property"})
@@ -38,7 +37,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     @JsonProperty
     @Getter
-    private final Map<String, Object> property = new HashMap<>();
+    private final Map<String, Object> property = new ConcurrentHashMap<>();
 
     protected volatile Throwable exception = null;
 
@@ -62,10 +61,10 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     protected final Deque<PromiseTask> listPendingTasks = new LinkedList<>();
 
     // Вызовется если все задачи пройдут успешно
-    protected Procedure onComplete = null;
+    protected PromiseTask onComplete = null;
 
     // Вызовется если произошло исключение
-    protected Consumer<Throwable> onError = null;
+    protected PromiseTask onError = null;
 
     @JsonProperty("exceptionTrace")
     @Getter
@@ -81,6 +80,13 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     public AbstractPromise(long keepAliveOnInactivityMs) {
         super(keepAliveOnInactivityMs);
+    }
+
+    @Override
+    public <R> R setProp(String key, R obj) {
+        @SuppressWarnings("unchecked")
+        R result = (R) property.computeIfAbsent(key, s -> obj);
+        return result;
     }
 
     public <R> R getProp(String key, Class<R> cls) {

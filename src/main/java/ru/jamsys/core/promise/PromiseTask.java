@@ -24,7 +24,7 @@ public class PromiseTask implements Runnable {
     final PromiseTaskType type;
 
     // Может порождать дополнительные PromiseTask после выполнения
-    // Которые встают в голову стека и будут выполнятся без ожидания
+    // Которые встают в голову стека и будут выполняться без ожидания
     private Function<AtomicBoolean, List<PromiseTask>> supplier;
 
     private Consumer<AtomicBoolean> procedure;
@@ -39,23 +39,13 @@ public class PromiseTask implements Runnable {
 
     private final String index;
 
-    public String getIndex() {
-        return index + "::" + type.getName();
-    }
-
     // Багу поймал, когда задача на JOIN выполняется в родительском потоке
     // Там нет передачи isThreadRun, только в случаях [IO, COMPUTE] Setter вызывается
     @Setter
     AtomicBoolean isThreadRun = new AtomicBoolean(true);
 
-    public void start() {
-        switch (type) {
-            case IO -> App.context.getBean(VirtualThreadComponent.class).submit(this);
-            case COMPUTE -> App.context.getBean(RealThreadComponent.class).submit(this);
-            case JOIN -> run();
-            case EXTERNAL_WAIT, EXTERNAL_NO_WAIT ->
-                    promise.getTrace().add(new Trace<>(getIndex() + ".start", TraceTimer.getInstanceZero()));
-        }
+    public String getIndex() {
+        return index + "::" + type.getName();
     }
 
     public void externalComplete() {
@@ -109,6 +99,18 @@ public class PromiseTask implements Runnable {
         return this;
     }
 
+    // execute on another thread
+    public void start() {
+        switch (type) {
+            case IO -> App.context.getBean(VirtualThreadComponent.class).submit(this);
+            case COMPUTE -> App.context.getBean(RealThreadComponent.class).submit(this);
+            case JOIN -> run();
+            case EXTERNAL_WAIT, EXTERNAL_NO_WAIT ->
+                    promise.getTrace().add(new Trace<>(getIndex() + ".start", TraceTimer.getInstanceZero()));
+        }
+    }
+
+    // execute current thread
     @Override
     public void run() {
         long startTime = System.currentTimeMillis();
@@ -135,4 +137,5 @@ public class PromiseTask implements Runnable {
         TraceTimer traceTimer = new TraceTimer(startTime, System.currentTimeMillis(), timer.getOffsetLastActivityNano());
         promise.getTrace().add(new Trace<>(index, traceTimer));
     }
+
 }
