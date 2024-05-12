@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
@@ -14,10 +15,10 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 @Lazy
 public class BrokerManager<MOI>
         extends AbstractManagerListItem<
-                        Broker<MOI>,
+        Broker<MOI>,
         ExpirationMsImmutableEnvelope<MOI>,
-        ExpirationMsImmutableEnvelope<MOI>
-                                >
+        DisposableExpirationMsImmutableEnvelope<MOI>
+        >
         implements StatisticsFlushComponent, KeepAliveComponent {
 
     private final ApplicationContext applicationContext;

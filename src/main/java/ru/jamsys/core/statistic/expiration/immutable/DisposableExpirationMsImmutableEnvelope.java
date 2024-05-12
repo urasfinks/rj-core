@@ -7,7 +7,6 @@ package ru.jamsys.core.statistic.expiration.immutable;
 // Таким образом мы решаем синхронизацию двух процессов, если мы объект посчитали протухшим и выполнили onExpired
 // что бы второй процесс уже не смог получить данные обёртки
 
-import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
@@ -23,11 +22,16 @@ public class DisposableExpirationMsImmutableEnvelope<T> extends ExpirationMsImmu
         super(value, keepAliveOnInactivityMs, lastActivityMs);
     }
 
-    public @Nullable T concurrentUse() {
+    @Override
+    public T getValue() {
         if (usage.compareAndSet(false, true)) {
-            return getValue();
+            return super.getValue();
         }
         return null;
+    }
+
+    public ExpirationMsImmutableEnvelope<T> revert() {
+        return new ExpirationMsImmutableEnvelope<>(super.getValue(), getKeepAliveOnInactivityMs(), getLastActivityMs());
     }
 
     public static <T> DisposableExpirationMsImmutableEnvelope<T> convert(ExpirationMsImmutableEnvelope<T> input) {

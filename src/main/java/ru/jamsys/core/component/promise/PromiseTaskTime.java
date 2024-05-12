@@ -25,10 +25,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Lazy
 public class PromiseTaskTime implements KeepAliveComponent, ClassName {
 
-    public static final String nameExpirationManagerRetry = "PromiseTaskRetry";
-
-    public static final String nameExpirationManagerExpired = "PromiseTaskExpired";
-
     private final Expiration<PromiseTask> retryDelay;
 
     private final Expiration<Promise> expiredDelay;
@@ -40,21 +36,25 @@ public class PromiseTaskTime implements KeepAliveComponent, ClassName {
     public PromiseTaskTime(ApplicationContext applicationContext) {
         @SuppressWarnings("unchecked")
         ExpirationManager<PromiseTask> expirationManager = applicationContext.getBean(ExpirationManager.class);
-        retryDelay = expirationManager.get(nameExpirationManagerRetry);
-        retryDelay.setOnExpired(this::onPromiseTaskRetry);
+        retryDelay = expirationManager.get("PromiseTaskRetry").setOnExpired(this::onPromiseTaskRetry);
 
         @SuppressWarnings("unchecked")
         ExpirationManager<Promise> expirationManager2 = applicationContext.getBean(ExpirationManager.class);
-        expiredDelay = expirationManager2.get(nameExpirationManagerExpired);
-        expiredDelay.setOnExpired(this::onPromiseTaskExpired);
+        expiredDelay = expirationManager2.get("PromiseTaskExpired").setOnExpired(this::onPromiseTaskExpired);
     }
 
-    private void onPromiseTaskRetry(ExpirationMsImmutableEnvelope<PromiseTask> env) {
-        env.getValue().start();
+    private void onPromiseTaskRetry(DisposableExpirationMsImmutableEnvelope<PromiseTask> env) {
+        PromiseTask promiseTask = env.getValue();
+        if (promiseTask != null) {
+            promiseTask.start();
+        }
     }
 
-    private void onPromiseTaskExpired(ExpirationMsImmutableEnvelope<Promise> env) {
-        env.getValue().timeOut(getClassName("onPromiseTaskExpired"));
+    private void onPromiseTaskExpired(DisposableExpirationMsImmutableEnvelope<Promise> env) {
+        Promise promise = env.getValue();
+        if (promise != null) {
+            promise.timeOut(getClassName("onPromiseTaskExpired"));
+        }
     }
 
     public DisposableExpirationMsImmutableEnvelope<PromiseTask> addRetryDelay(PromiseTask promiseTask) {

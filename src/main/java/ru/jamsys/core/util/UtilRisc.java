@@ -23,11 +23,15 @@ public class UtilRisc {
         forEach(isRun, collection, consumer, false);
     }
 
+    @SuppressWarnings("ConstantConditions")
     public static <T> void forEach(AtomicBoolean isRun, Collection<T> collection, Function<T, Boolean> consumer, boolean reverse) {
-        T[] toArray = getEmptyType();
         if (collection != null && !collection.isEmpty()) {
             try {
-                T[] objects = collection.toArray(toArray);
+                T[] objects = collection.toArray(getEmptyType());
+                // Наткнулся на неатомарность: Index 0 out of bounds for length 0
+                if (objects.length == 0) {
+                    return;
+                }
                 int index = reverse ? objects.length - 1 : 0;
                 int inc = reverse ? -1 : 1;
                 while (true) {
@@ -58,11 +62,15 @@ public class UtilRisc {
         forEach(isRun, collection, consumer, false);
     }
 
+    @SuppressWarnings("ConstantConditions")
     public static <T> void forEach(AtomicBoolean isRun, Collection<T> collection, Consumer<T> consumer, boolean reverse) {
-        T[] toArray = getEmptyType();
         if (collection != null && !collection.isEmpty()) {
             try {
-                T[] objects = collection.toArray(toArray);
+                T[] objects = collection.toArray(getEmptyType());
+                // Наткнулся на неатомарность: Index 0 out of bounds for length 0
+                if (objects.length == 0) {
+                    return;
+                }
                 int index = reverse ? objects.length - 1 : 0;
                 int inc = reverse ? -1 : 1;
                 while (true) {
@@ -88,10 +96,9 @@ public class UtilRisc {
     }
 
     public static <K, V> void forEach(AtomicBoolean isRun, Map<K, V> map, BiFunction<K, V, Boolean> consumer) {
-        K[] toArray = getEmptyType();
         if (map != null && !map.isEmpty()) {
             try {
-                K[] objects = map.keySet().toArray(toArray);
+                K[] objects = map.keySet().toArray(getEmptyType());
                 for (K key : objects) {
                     if (isRun == null || isRun.get()) {
                         try {
@@ -115,10 +122,9 @@ public class UtilRisc {
     }
 
     public static <K, V> void forEach(AtomicBoolean isRun, Map<K, V> map, BiConsumer<K, V> consumer) {
-        K[] toArray = getEmptyType();
         if (map != null && !map.isEmpty()) {
             try {
-                K[] objects = map.keySet().toArray(toArray);
+                K[] objects = map.keySet().toArray(getEmptyType());
                 for (K key : objects) {
                     if (isRun == null || isRun.get()) {
                         try {

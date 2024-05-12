@@ -75,7 +75,7 @@ public class LogComponent implements ClassName {
             Broker<Log> logBroker = brokerManager.get(getClassName(indexBroker));
             // Если будет больше логов в 1 секунду, чем длина очереди - мы начнём более раннии логи терять
             // Я пока не знаю, хорошо это или плохо - надо тестировать
-            logBroker.setSizeQueue(5_000);
+            logBroker.setMaxSizeQueue(5_000);
             map.put(indexBroker, logBroker);
         }
         if (log.header.size() < Short.MAX_VALUE) {

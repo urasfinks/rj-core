@@ -9,6 +9,7 @@ import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.component.manager.ExpirationManager;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
+import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.util.ExpirationKeepAliveResult;
 import ru.jamsys.core.util.Util;
@@ -134,7 +135,7 @@ class ExpirationManagerTest {
         Expiration<XItem> test = expirationManager.get("test");
 
         AvgMetric avgMetric = new AvgMetric();
-        test.setOnExpired((ExpirationMsImmutableEnvelope<XItem> env) -> {
+        test.setOnExpired((DisposableExpirationMsImmutableEnvelope<XItem> env) -> {
             if (env.getExpiryRemainingMs() > 0) {
                 Assertions.fail("ALARM");
             } else {

@@ -7,11 +7,14 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.manager.item.Broker;
+import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.util.Util;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class BrokerTest {
 
@@ -33,8 +36,8 @@ class BrokerTest {
         Broker<XTest> b = broker.get(XTest.class.getName());
 
         b.setCyclical(false);
-        b.setSizeQueue(10);
-        b.setSizeQueueTail(3);
+        b.setMaxSizeQueue(10);
+        b.setMaxSizeQueueTail(3);
 
         for (int i = 0; i < 10; i++) {
             b.add(new XTest(i), 6_000L);
@@ -75,8 +78,8 @@ class BrokerTest {
         Broker<XTest> b = broker.get(XTest.class.getName());
 
         b.setCyclical(true);
-        b.setSizeQueue(10);
-        b.setSizeQueueTail(3);
+        b.setMaxSizeQueue(10);
+        b.setMaxSizeQueueTail(3);
 
         for (int i = 0; i < 10; i++) {
             b.add(new XTest(i), 6_000L);
@@ -128,7 +131,7 @@ class BrokerTest {
         BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
         Broker<XTest> queue = broker.get(ExpirationMsMutable.class.getName());
         XTest obj = new XTest(1);
-        ExpirationMsImmutableEnvelope<XTest> o1 = queue.add(obj, 6_000L);
+        DisposableExpirationMsImmutableEnvelope<XTest> o1 = queue.add(obj, 6_000L);
         List<XTest> cloneQueue = queue.getCloneQueue(null);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.getFirst().hashCode(), "#1");
         queue.remove(o1);
@@ -144,8 +147,8 @@ class BrokerTest {
         Broker<XTest> queue = broker.get(XTest.class.getName());
         XTest obj = new XTest(1);
         XTest obj2 = new XTest(2);
-        ExpirationMsImmutableEnvelope<XTest> o1 = queue.add(obj, 6_000L);
-        ExpirationMsImmutableEnvelope<XTest> o2 = queue.add(obj2, 6_000L);
+        DisposableExpirationMsImmutableEnvelope<XTest> o1 = queue.add(obj, 6_000L);
+        DisposableExpirationMsImmutableEnvelope<XTest> o2 = queue.add(obj2, 6_000L);
         List<XTest> cloneQueue = queue.getCloneQueue(isRun);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
         Assertions.assertEquals(obj2.hashCode(), cloneQueue.get(1).hashCode(), "#2");
@@ -178,12 +181,35 @@ class BrokerTest {
         queue.reset();
     }
 
+    @Test
+    void testExpired() {
+        @SuppressWarnings("unchecked")
+        BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
+        Broker<XTest> queue = broker.get(XTest.class.getName());
+        AtomicInteger counter = new AtomicInteger(0);
+        queue.setOnExpired(_ -> counter.incrementAndGet());
+        XTest obj = new XTest(1);
+        try {
+            queue.add(obj, 1_000L);
+        } catch (Exception e) {
+            Assertions.fail();
+        }
+        Assertions.assertEquals(0, counter.get());
+        Util.sleepMs(1001);
+        queue.keepAlive(null);
+        queue.keepAlive(null);
+        Assertions.assertEquals(1, counter.get());
+    }
+
     static class XTest {
         final int x;
 
         XTest(int x) {
             this.x = x;
         }
+
+        @SuppressWarnings("unused")
+        void x(){}
 
         @Override
         public String toString() {

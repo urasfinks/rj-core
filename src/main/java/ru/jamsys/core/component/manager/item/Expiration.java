@@ -1,7 +1,6 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
-import lombok.Setter;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.StatisticsFlush;
@@ -50,8 +49,12 @@ public class Expiration<V>
     @Getter
     private final String index;
 
-    @Setter
-    private Consumer<ExpirationMsImmutableEnvelope<V>> onExpired;
+    private Consumer<DisposableExpirationMsImmutableEnvelope<V>> onExpired;
+
+    public Expiration<V> setOnExpired(Consumer<DisposableExpirationMsImmutableEnvelope<V>> onExpired){
+        this.onExpired = onExpired;
+        return this;
+    }
 
     public Expiration(String index) {
         this.index = index;
@@ -74,16 +77,13 @@ public class Expiration<V>
                 return false;
             }
             keepAliveResult.getReadBucket().add(time);
-            UtilRisc.forEach(isThreadRun, queue, (DisposableExpirationMsImmutableEnvelope<V> disposableExpirationMsImmutableEnvelope) -> {
-                if (disposableExpirationMsImmutableEnvelope.isExpired()) {
-                    V v = disposableExpirationMsImmutableEnvelope.concurrentUse();
-                    if (v != null) {
-                        onExpired.accept(disposableExpirationMsImmutableEnvelope);
-                    }
-                    queue.remove(disposableExpirationMsImmutableEnvelope);
+            UtilRisc.forEach(isThreadRun, queue, (DisposableExpirationMsImmutableEnvelope<V> envelope) -> {
+                if (envelope.isExpired()) {
+                    onExpired.accept(envelope);
+                    queue.remove(envelope);
                     keepAliveResult.getCountRemove().incrementAndGet();
-                } else if (disposableExpirationMsImmutableEnvelope.isStop()) {
-                    queue.remove(disposableExpirationMsImmutableEnvelope);
+                } else if (envelope.isStop()) {
+                    queue.remove(envelope);
                     keepAliveResult.getCountRemove().incrementAndGet();
                 }
             });
