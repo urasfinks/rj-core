@@ -4,7 +4,7 @@ import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.promise.api.PromiseApi;
 import ru.jamsys.core.extension.Procedure;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
 
 import java.util.List;
 import java.util.Map;
@@ -13,13 +13,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface Promise extends ExpirationMsMutable {
+public interface Promise extends ExpirationMsImmutable {
 
     String getIndex();
 
     void setIndex(String index);
-
-    void setTimeOut(long ms);
 
     String getRqUid();
 

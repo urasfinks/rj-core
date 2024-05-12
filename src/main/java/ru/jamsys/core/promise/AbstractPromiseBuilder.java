@@ -11,6 +11,14 @@ import java.util.function.Function;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public abstract class AbstractPromiseBuilder extends AbstractPromise {
 
+    public AbstractPromiseBuilder(long keepAliveOnInactivityMs, long lastActivityMs) {
+        super(keepAliveOnInactivityMs, lastActivityMs);
+    }
+
+    public AbstractPromiseBuilder(long keepAliveOnInactivityMs) {
+        super(keepAliveOnInactivityMs);
+    }
+
     public Promise setRqUid(String rqUid) {
         this.rqUid = rqUid;
         return this;

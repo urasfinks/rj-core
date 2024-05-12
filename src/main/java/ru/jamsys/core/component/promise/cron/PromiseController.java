@@ -19,7 +19,7 @@ public class PromiseController implements Cron1s, PromiseGenerator {
 
     @Override
     public Promise generate() {
-        return new PromiseImpl(getClass().getName())
+        return new PromiseImpl(getClass().getName(),6_000L)
                 .append(this.getClass().getName(), PromiseTaskType.IO, (AtomicBoolean isThreadRun) -> {
                     int count = 0;
                     while (!PromiseImpl.queueMultipleComplete.isEmpty() && isThreadRun.get()) {

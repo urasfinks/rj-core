@@ -33,7 +33,7 @@ class PromiseImplTest {
 
     @Test
     void test1() {
-        PromiseImpl wf = new PromiseImpl("test");
+        PromiseImpl wf = new PromiseImpl("test", 6_000L);
         wf
                 .append("test", PromiseTaskType.IO, (AtomicBoolean _) -> {
                     Util.sleepMs(1000);
@@ -59,7 +59,7 @@ class PromiseImplTest {
 
     @Test
     void test2() {
-        PromiseImpl wf = new PromiseImpl("test");
+        PromiseImpl wf = new PromiseImpl("test",6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
@@ -73,7 +73,7 @@ class PromiseImplTest {
 
     @Test
     void test3() {
-        PromiseImpl wf = new PromiseImpl("test");
+        PromiseImpl wf = new PromiseImpl("test",6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 1000; i++) {
@@ -87,7 +87,7 @@ class PromiseImplTest {
 
     @Test
     void test4() {
-        PromiseImpl wf = new PromiseImpl("test");
+        PromiseImpl wf = new PromiseImpl("test",6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
@@ -102,7 +102,7 @@ class PromiseImplTest {
 
     @Test
     void test5() {
-        PromiseImpl wf = new PromiseImpl("test");
+        PromiseImpl wf = new PromiseImpl("test",6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 1000; i++) {
@@ -129,7 +129,7 @@ class PromiseImplTest {
 
     @Test
     void test7() {
-        Promise wf = new PromiseImpl("test");
+        Promise wf = new PromiseImpl("test",6_000L);
         AtomicInteger retry = new AtomicInteger(0);
         AtomicInteger error = new AtomicInteger(0);
         AtomicInteger complete = new AtomicInteger(0);
@@ -156,8 +156,7 @@ class PromiseImplTest {
         AtomicInteger complete = new AtomicInteger(0);
         AtomicInteger exec = new AtomicInteger(0);
 
-        Promise wf = new PromiseImpl("test");
-        wf.setTimeOut(1_500);
+        Promise wf = new PromiseImpl("test", 1_500L);
         wf
                 .append("1", PromiseTaskType.JOIN, (AtomicBoolean _) -> {
                     exec.incrementAndGet();
@@ -186,8 +185,7 @@ class PromiseImplTest {
         AtomicInteger complete = new AtomicInteger(0);
         AtomicInteger exec = new AtomicInteger(0);
 
-        Promise wf = new PromiseImpl("test");
-        wf.setTimeOut(1_500);
+        Promise wf = new PromiseImpl("test",1_500L);
         wf
                 .append("1", PromiseTaskType.IO, (AtomicBoolean _) -> {
                     exec.incrementAndGet();
@@ -213,8 +211,7 @@ class PromiseImplTest {
 
     @Test
     void toLog() {
-        Promise wf = new PromiseImpl("test");
-        wf.setTimeOut(1_500);
+        Promise wf = new PromiseImpl("test",1_500L);
         wf
                 .append("1", PromiseTaskType.IO, (AtomicBoolean _) -> System.out.println(1))
                 .append("2", PromiseTaskType.IO, (AtomicBoolean _) -> System.out.println(2))
@@ -228,7 +225,7 @@ class PromiseImplTest {
 
     @Test
     void testAsync() {
-        Promise wf = new PromiseImpl("Async");
+        Promise wf = new PromiseImpl("Async",6_000L);
         PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskType.EXTERNAL_WAIT);
         wf.append(promiseTask);
         wf.run().await(1000);
@@ -246,7 +243,7 @@ class PromiseImplTest {
 
     @Test
     void testAsyncNoWait() {
-        Promise wf = new PromiseImpl("AsyncNoWait");
+        Promise wf = new PromiseImpl("AsyncNoWait",6_000L);
         PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskType.EXTERNAL_NO_WAIT);
         wf.append(promiseTask);
         wf.run().await(1000);
@@ -264,7 +261,7 @@ class PromiseImplTest {
 
     @SuppressWarnings("unused")
     void promiseYandexSpeechKit() {
-        Promise wf = new PromiseImpl("test");
+        Promise wf = new PromiseImpl("test",6_000L);
         wf.api("sound", new YandexSpeechPromise().setup((YandexSpeechPromise yandexSpeechPromise) -> {
             yandexSpeechPromise.setText("Привет страна");
             yandexSpeechPromise.setFilePath("target/result2.wav");
@@ -274,7 +271,7 @@ class PromiseImplTest {
 
     @SuppressWarnings("unused")
     void promiseHttp() {
-        Promise wf = new PromiseImpl("test");
+        Promise wf = new PromiseImpl("test",6_000L);
         wf.api("request", new HttpClientPromise()
                 .setup((HttpClientPromise httpClientPromise) ->
                         httpClientPromise.getHttpClient()
@@ -291,7 +288,7 @@ class PromiseImplTest {
 
     @SuppressWarnings("unused")
     void promiseTelegram() {
-        Promise wf = new PromiseImpl("test");
+        Promise wf = new PromiseImpl("test",6_000L);
         wf.api("request", new NotificationTelegramPromise().setup((NotificationTelegramPromise telegramPromise) -> {
             telegramPromise.setTitle("Привет");
             telegramPromise.setData("Страна");

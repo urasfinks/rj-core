@@ -34,13 +34,13 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
 
     @Override
     public Promise generate() {
-        Promise promise = new PromiseImpl(getClassName());
+        Promise promise = new PromiseImpl(getClassName(),6_000L);
         return promise;
     }
 
     public Promise generateOld() {
         //TODO: replace ::collector IO -> COMPUTE (в текущий момент нет реализации COMPUTE)
-        Promise promise = new PromiseImpl(getClass().getName());
+        Promise promise = new PromiseImpl(getClass().getName(),6_000L);
         promise.append(getClassName("collector"), PromiseTaskType.IO, (AtomicBoolean isThreadRun) -> {
                     Broker<StatisticSec> queue = broker.get(ClassNameImpl.getClassNameStatic(StatisticSec.class, null));
                     List<Point> listPoints = new ArrayList<>();

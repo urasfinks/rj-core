@@ -11,7 +11,13 @@ public class PromiseImpl extends AbstractPromiseBuilder {
 
     public static ConcurrentLinkedDeque<Promise> queueMultipleComplete = new ConcurrentLinkedDeque<>();
 
-    public PromiseImpl(String index) {
+    public PromiseImpl(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
+        super(keepAliveOnInactivityMs, lastActivityMs);
+        setIndex(index);
+    }
+
+    public PromiseImpl(String index, long keepAliveOnInactivityMs) {
+        super(keepAliveOnInactivityMs);
         setIndex(index);
     }
 
@@ -63,6 +69,8 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             } else if (!queueMultipleComplete.contains(this)) {
                 queueMultipleComplete.add(this);
             }
+        } else {
+            //TODO: тут наверное надо повторно откинуть лог, допустим сюда могут исполненные задачи, но время закончилось
         }
     }
 

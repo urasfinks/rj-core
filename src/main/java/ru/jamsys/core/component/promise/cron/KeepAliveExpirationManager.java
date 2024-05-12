@@ -24,7 +24,7 @@ public class KeepAliveExpirationManager implements Cron1s, PromiseGenerator, Cla
 
     @Override
     public Promise generate() {
-        return new PromiseImpl(getClass().getName())
+        return new PromiseImpl(getClass().getName(),6_000L)
                 .append(this.getClass().getName(), PromiseTaskType.IO, expirationManager::keepAlive);
 
     }

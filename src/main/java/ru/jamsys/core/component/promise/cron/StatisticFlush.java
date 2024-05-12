@@ -53,7 +53,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
 
     @Override
     public Promise generate() {
-        return new PromiseImpl(getClass().getName())
+        return new PromiseImpl(getClass().getName(),6_000L)
                 .append(this.getClass().getName(), PromiseTaskType.IO, (AtomicBoolean isThreadRun) -> {
                     StatisticSec statisticSec = new StatisticSec();
                     UtilRisc.forEach(isThreadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.Procedure;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
 import ru.jamsys.core.util.UtilJson;
 
 import java.util.*;
@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @JsonPropertyOrder({"rqUid", "index", "addTime", "expTime", "diffTimeMs", "exception", "completed", "trace", "exceptionTrace", "property"})
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
-public abstract class AbstractPromise extends ExpirationMsMutableImpl implements Promise {
+public abstract class AbstractPromise extends ExpirationMsImmutableImpl implements Promise {
 
     @JsonProperty
     @Setter
@@ -74,9 +74,12 @@ public abstract class AbstractPromise extends ExpirationMsMutableImpl implements
     @Getter
     protected List<Trace<String, TraceTimer>> trace = new ArrayList<>();
 
-    @Override
-    public void setTimeOut(long ms) {
-        setKeepAliveOnInactivityMs(ms);
+    public AbstractPromise(long keepAliveOnInactivityMs, long lastActivityMs) {
+        super(keepAliveOnInactivityMs, lastActivityMs);
+    }
+
+    public AbstractPromise(long keepAliveOnInactivityMs) {
+        super(keepAliveOnInactivityMs);
     }
 
     @JsonIgnore
