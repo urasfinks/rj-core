@@ -264,9 +264,9 @@ class PromiseImplTest {
         Promise wf = new PromiseImpl("Expiration", 1_000L);
         AtomicInteger counter = new AtomicInteger(0);
         wf
-                .append("longTimeout", PromiseTaskType.IO, atomicBoolean -> {
+                .append("longTimeout", PromiseTaskType.IO, _ -> {
                     Util.sleepMs(2000);
-                }).onError(throwable -> counter.incrementAndGet())
+                }).onError(_ -> counter.incrementAndGet())
                 .run().await(2000);
 
         System.out.println(wf.getLog());
@@ -274,7 +274,7 @@ class PromiseImplTest {
         Assertions.assertTrue(wf.isCompleted());
         Assertions.assertTrue(wf.isException());
         Assertions.assertEquals(1, counter.get());
-        Assertions.assertEquals("Expired", wf.getExceptionTrace().get(0).getIndex());
+        Assertions.assertEquals("Expired", wf.getExceptionTrace().getFirst().getIndex());
 
     }
 
