@@ -34,7 +34,7 @@ public class Security implements RunnableComponent {
     private String pathStorage;
 
     @Setter
-    private String pathSignature;
+    private String pathPublicKey;
 
     @Setter
     private String pathInitAlias;
@@ -57,7 +57,7 @@ public class Security implements RunnableComponent {
 
     public Security(PropertiesComponent propertiesComponent, ExceptionHandler exceptionHandler) {
         this.pathStorage = propertiesComponent.getProperties("rj.security.path.storage", String.class);
-        this.pathSignature = propertiesComponent.getProperties("rj.security.path.signature", String.class);
+        this.pathPublicKey = propertiesComponent.getProperties("rj.security.path.public.key", String.class);
         this.pathInitAlias = propertiesComponent.getProperties("rj.security.path.init", String.class);
         this.pathInitSecurityKeyJava = propertiesComponent.getProperties("rj.security.path.java", String.class);
         this.exceptionHandler = exceptionHandler;
@@ -122,7 +122,7 @@ public class Security implements RunnableComponent {
             if (password != null && !password.trim().isEmpty()) {
                 KeyPair keyPair = UtilRsa.genPair();
                 byte[] token = UtilRsa.encrypt(keyPair, password.getBytes(StandardCharsets.UTF_8));
-                UtilFile.writeBytes(pathSignature, token, FileWriteOptions.CREATE_OR_REPLACE);
+                UtilFile.writeBytes(pathPublicKey, token, FileWriteOptions.CREATE_OR_REPLACE);
                 String privateKey = UtilBase64.base64Encode(keyPair.getPrivate().getEncoded(), true);
                 System.err.println("== INIT SECURITY ===========================");
                 byte[] securityKeyJava = UtilFileResource.get("SecurityKey.java").readAllBytes();
@@ -152,11 +152,11 @@ public class Security implements RunnableComponent {
         try {
             bytesPasswordKeyStore = UtilRsa.decrypt(UtilRsa.getPrivateKey(bytesPrivateKey), token);
         } catch (Exception e) {
-            UtilFile.removeIfExist(pathSignature);
-            throw new RuntimeException("Decrypt token exception. File: [" + pathSignature + "] removed, please restart application", e);
+            UtilFile.removeIfExist(pathPublicKey);
+            throw new RuntimeException("Decrypt token exception. File: [" + pathPublicKey + "] removed, please restart application", e);
         }
         if (bytesPasswordKeyStore == null || bytesPasswordKeyStore.length == 0) {
-            throw new RuntimeException("Decrypt Token empty. Change/remove token file: [" + pathSignature + "]");
+            throw new RuntimeException("Decrypt Token empty. Change/remove token file: [" + pathPublicKey + "]");
         }
         return bytesPasswordKeyStore;
     }
@@ -201,7 +201,7 @@ public class Security implements RunnableComponent {
 
     public void loadKeyStorage(char[] password) throws Exception {
         if (password == null || password.length == 0) {
-            throw new RuntimeException("Password is empty; Change/remove token file: [" + pathSignature + "]");
+            throw new RuntimeException("Password is empty; Change/remove token file: [" + pathPublicKey + "]");
         }
         hashPassword = new String(Util.getHash(UtilByte.charsToBytes(password), hashPasswordType), StandardCharsets.UTF_8);
         keyStorePP = new KeyStore.PasswordProtection(password);
@@ -306,16 +306,16 @@ public class Security implements RunnableComponent {
 
     @Override
     public void run() {
-        byte[] signature = UtilFile.readBytes(pathSignature, null);
+        byte[] publicKey = UtilFile.readBytes(pathPublicKey, null);
 
         Util.logConsole("Security Check privateKey: " + (privateKey != null && privateKey.length > 0));
-        Util.logConsole("Security Check signature: " + (signature != null && signature.length > 0));
+        Util.logConsole("Security Check publicKey: " + (publicKey != null && publicKey.length > 0));
 
-        if (signature != null && signature.length > 0 && privateKey != null && privateKey.length > 0) {
+        if (publicKey != null && publicKey.length > 0 && privateKey != null && privateKey.length > 0) {
             // У нас всё установлено можем просто работать
-            byte[] passwordKeyStore = decryptStoragePassword(signature);
+            byte[] passwordKeyStore = decryptStoragePassword(publicKey);
             if (passwordKeyStore.length == 0) {
-                throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + pathSignature + "]");
+                throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + pathPublicKey + "]");
             }
             try {
                 loadKeyStorage(UtilByte.bytesToChars(passwordKeyStore));
