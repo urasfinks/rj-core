@@ -1,5 +1,7 @@
 package ru.jamsys.core.promise;
 
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.promise.PromiseTaskTime;
 import ru.jamsys.core.component.promise.api.PromiseApi;
 import ru.jamsys.core.extension.Procedure;
 
@@ -80,6 +82,9 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
 
     public Promise run() {
         complete();
+        if (onError != null) {
+            App.context.getBean(PromiseTaskTime.class).addExpiration(this);
+        }
         return this;
     }
 

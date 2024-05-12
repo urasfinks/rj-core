@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
+import ru.jamsys.core.component.api.ClassFinder;
 import ru.jamsys.core.extension.Procedure;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
 import ru.jamsys.core.util.UtilJson;
@@ -82,6 +83,16 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
         super(keepAliveOnInactivityMs);
     }
 
+    public <R> R getProp(String key, Class<R> cls) {
+        Object o = property.get(key);
+        if (o != null && ClassFinder.instanceOf(o.getClass(), cls)) {
+            @SuppressWarnings("unchecked")
+            R r = (R) o;
+            return r;
+        }
+        return null;
+    }
+
     @JsonIgnore
     @Override
     public String getLog() {
@@ -89,11 +100,13 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     }
 
     @JsonProperty
+    @Override
     public boolean isCompleted() {
         return !inProgress();
     }
 
     @JsonProperty
+    @Override
     public boolean isException() {
         return isException.get();
     }

@@ -125,11 +125,14 @@ public class Expiration<V>
 
     @Override
     public DisposableExpirationMsImmutableEnvelope<V> add(ExpirationMsImmutableEnvelope<V> obj) {
-        DisposableExpirationMsImmutableEnvelope<V> convert = DisposableExpirationMsImmutableEnvelope.convert(obj);
-        long timeMsExpiredFloor = Util.zeroLastNDigits(convert.getExpiredMs(), 3);
+        return add(DisposableExpirationMsImmutableEnvelope.convert(obj));
+    }
+
+    public DisposableExpirationMsImmutableEnvelope<V> add(DisposableExpirationMsImmutableEnvelope<V> obj) {
+        long timeMsExpiredFloor = Util.zeroLastNDigits(obj.getExpiredMs(), 3);
         bucket.computeIfAbsent(timeMsExpiredFloor, _ -> new ConcurrentLinkedQueue<>())
-                .add(convert);
-        return convert;
+                .add(obj);
+        return obj;
     }
 
 }

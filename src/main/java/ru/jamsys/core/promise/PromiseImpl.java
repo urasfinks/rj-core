@@ -21,6 +21,12 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         setIndex(index);
     }
 
+    @Override
+    public void expired() {
+        setError("Expired", new RuntimeException("Expired"));
+        complete();
+    }
+
     private void setError(String indexTask, Throwable exception) {
         this.exception = exception;
         this.exceptionTrace.add(new Trace<>(indexTask, exception));

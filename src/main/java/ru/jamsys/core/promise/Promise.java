@@ -69,6 +69,12 @@ public interface Promise extends ExpirationMsImmutable {
 
     Map<String, Object> getProperty();
 
+    <R> R getProp(String key, Class<R> cls);
+
     boolean isCompleted();
+
+    boolean isException();
+
+    void expired();
 
 }

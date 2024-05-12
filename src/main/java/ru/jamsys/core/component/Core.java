@@ -25,7 +25,7 @@ public class Core implements RunnableInterface {
     @Override
     public void run() {
         classFinder.findByInstance(RunnableComponent.class).forEach((Class<RunnableComponent> runnableComponentClass) -> {
-            if (!classFinder.instanceOf(this.getClass(), runnableComponentClass)) {
+            if (!ClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
                 applicationContext.getBean(runnableComponentClass).run();
             }
         });
@@ -45,7 +45,7 @@ public class Core implements RunnableInterface {
     @Override
     public void shutdown() {
         classFinder.findByInstance(RunnableComponent.class).forEach((Class<RunnableComponent> runnableComponentClass) -> {
-            if (!classFinder.instanceOf(this.getClass(), runnableComponentClass)) {
+            if (!ClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
                 applicationContext.getBean(runnableComponentClass).shutdown();
             }
         });

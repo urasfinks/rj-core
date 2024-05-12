@@ -6,9 +6,11 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.ExpirationManager;
 import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.extension.KeepAliveComponent;
+import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.expiration.TimeEnvelopeNano;
+import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.util.UtilRisc;
 
@@ -17,13 +19,18 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
 public class PromiseTaskTime implements KeepAliveComponent {
 
-    public static String nameExpirationManager = "PromiseTaskRetry";
+    public static final String nameExpirationManagerRetry = "PromiseTaskRetry";
+
+    public static final String nameExpirationManagerExpired = "PromiseTaskExpired";
 
     private final Expiration<PromiseTask> retryDelay;
+
+    private final Expiration<Promise> expiredDelay;
 
     ConcurrentLinkedDeque<TimeEnvelopeNano<String>> queue = new ConcurrentLinkedDeque<>();
 
@@ -32,16 +39,29 @@ public class PromiseTaskTime implements KeepAliveComponent {
     public PromiseTaskTime(ApplicationContext applicationContext) {
         @SuppressWarnings("unchecked")
         ExpirationManager<PromiseTask> expirationManager = applicationContext.getBean(ExpirationManager.class);
-        retryDelay = expirationManager.get(nameExpirationManager);
+        retryDelay = expirationManager.get(nameExpirationManagerRetry);
         retryDelay.setOnExpired(this::onPromiseTaskRetry);
+
+        @SuppressWarnings("unchecked")
+        ExpirationManager<Promise> expirationManager2 = applicationContext.getBean(ExpirationManager.class);
+        expiredDelay = expirationManager2.get(nameExpirationManagerExpired);
+        expiredDelay.setOnExpired(this::onPromiseTaskExpired);
     }
 
     private void onPromiseTaskRetry(ExpirationMsImmutableEnvelope<PromiseTask> env) {
         env.getValue().start();
     }
 
-    public void addRetryDelay(PromiseTask promiseTask) {
-        retryDelay.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getRetryDelayMs()));
+    private void onPromiseTaskExpired(ExpirationMsImmutableEnvelope<Promise> env) {
+        env.getValue().expired();
+    }
+
+    public DisposableExpirationMsImmutableEnvelope<PromiseTask> addRetryDelay(PromiseTask promiseTask) {
+        return retryDelay.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getRetryDelayMs()));
+    }
+
+    public DisposableExpirationMsImmutableEnvelope<Promise> addExpiration(Promise promise) {
+        return expiredDelay.add(new DisposableExpirationMsImmutableEnvelope<>(promise, promise.getKeepAliveOnInactivityMs()));
     }
 
     public TimeEnvelopeNano<String> add(String index) {

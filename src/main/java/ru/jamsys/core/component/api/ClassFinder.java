@@ -119,7 +119,7 @@ public class ClassFinder {
     }
 
 
-    public boolean instanceOf(Class<?> cls, Class<?> interfaceRef) {
+    public static boolean instanceOf(Class<?> cls, Class<?> interfaceRef) {
         return interfaceRef.isAssignableFrom(cls); //!cls.equals(interfaceRef) &&
     }
 

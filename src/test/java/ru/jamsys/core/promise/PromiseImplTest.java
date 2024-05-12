@@ -259,6 +259,25 @@ class PromiseImplTest {
         System.out.println(wf.getLog());
     }
 
+    @Test
+    void testExpiration() {
+        Promise wf = new PromiseImpl("Expiration", 1_000L);
+        AtomicInteger counter = new AtomicInteger(0);
+        wf
+                .append("longTimeout", PromiseTaskType.IO, atomicBoolean -> {
+                    Util.sleepMs(2000);
+                }).onError(throwable -> counter.incrementAndGet())
+                .run().await(2000);
+
+        System.out.println(wf.getLog());
+
+        Assertions.assertTrue(wf.isCompleted());
+        Assertions.assertTrue(wf.isException());
+        Assertions.assertEquals(1, counter.get());
+        Assertions.assertEquals("Expired", wf.getExceptionTrace().get(0).getIndex());
+
+    }
+
     @SuppressWarnings("unused")
     void promiseYandexSpeechKit() {
         Promise wf = new PromiseImpl("test",6_000L);
