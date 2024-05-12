@@ -187,7 +187,7 @@ class BrokerTest {
         BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
         Broker<XTest> queue = broker.get(XTest.class.getName());
         AtomicInteger counter = new AtomicInteger(0);
-        queue.setOnExpired(_ -> counter.incrementAndGet());
+        queue.setOnDrop(_ -> counter.incrementAndGet());
         XTest obj = new XTest(1);
         try {
             queue.add(obj, 1_000L);

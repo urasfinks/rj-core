@@ -79,7 +79,7 @@ public class Broker<TEO>
 
     final String index;
 
-    private Consumer<TEO> onExpired = null;
+    private Consumer<TEO> onDrop = null;
 
     public Broker(String index, ApplicationContext applicationContext) {
         this.index = index;
@@ -146,7 +146,7 @@ public class Broker<TEO>
             if (!rliQueueSize.check(queue.size() + 1)) {
                 // Он конечно протух не по своей воле, но что делать...
                 // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
-                onExpired(queue.removeFirst());
+                onDrop(queue.removeFirst());
             }
         } else {
             if (!rliQueueSize.check(queue.size())) {
@@ -180,7 +180,7 @@ public class Broker<TEO>
             }
             statistic(result);
             if (result.isExpired()) {
-                onExpired(result);
+                onDrop(result);
                 Thread.onSpinWait();
                 continue;
             }
@@ -220,18 +220,19 @@ public class Broker<TEO>
         UtilRisc.forEach(isThreadRun, queue, (DisposableExpirationMsImmutableEnvelope<TEO> envelope) -> {
             if (envelope.isExpired()) {
                 queue.remove(envelope);
-                onExpired(envelope);
+                onDrop(envelope);
             }
         });
     }
 
-    public void onExpired(DisposableExpirationMsImmutableEnvelope<TEO> envelope) {
-        if (onExpired == null) {
+    //Обработка выпадающих сообщений
+    public void onDrop(DisposableExpirationMsImmutableEnvelope<TEO> envelope) {
+        if (envelope == null || onDrop == null) {
             return;
         }
         TEO value = envelope.getValue();
         if (value != null) {
-            onExpired.accept(value);
+            onDrop.accept(value);
         }
     }
 
