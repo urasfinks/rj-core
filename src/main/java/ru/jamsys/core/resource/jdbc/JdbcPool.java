@@ -13,6 +13,7 @@ import ru.jamsys.core.template.jdbc.StatementControl;
 
 import java.sql.DriverManager;
 
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Closable {
 
     @Getter
@@ -32,7 +33,6 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Closab
         this.securityAlias = propertiesComponent.getProperties("rj.jdbc.security.alias", String.class);
     }
 
-    @SuppressWarnings("unused")
     public void setProperty(String uri, String user, Security security, String securityAlias) {
         this.uri = uri;
         this.user = user;
