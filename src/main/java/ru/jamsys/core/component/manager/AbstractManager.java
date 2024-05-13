@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable & StatisticsFlush>
         implements
         StatisticsCollectorMap<MO>,
@@ -41,7 +42,6 @@ public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable 
         );
     }
 
-    @SuppressWarnings("unused")
     public MO get(String key) {
         return map.computeIfAbsent(key, _ -> build(key));
     }
@@ -51,12 +51,10 @@ public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable 
     }
 
     //Используйте только для тестирования
-    @SuppressWarnings("unused")
     public void clear() {
         map.clear();
     }
 
-    @SuppressWarnings("unused")
     public boolean containsKey(String key) {
         return map.containsKey(key);
     }
