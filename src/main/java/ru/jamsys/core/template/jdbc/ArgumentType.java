@@ -57,6 +57,7 @@ public enum ArgumentType implements EnumName {
     }
 
     String compileDynamicFragment(Object obj, String information) {
+        // Не конкурентная проверка
         if (dynamicType.containsKey(this)) {
             try {
                 return dynamicType.get(this).apply(obj);
@@ -68,6 +69,7 @@ public enum ArgumentType implements EnumName {
     }
 
     boolean isDynamicFragment() {
+        // Не конкурентная проверка
         return dynamicType.containsKey(this);
     }
 }

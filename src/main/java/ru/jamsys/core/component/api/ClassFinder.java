@@ -37,6 +37,7 @@ public class ClassFinder {
         availableClass.forEach((Class<?> cls) -> {
             String simpleName = cls.getSimpleName();
             if (!simpleName.isEmpty()) {
+                // Не конкурентная проверка
                 if (!countDuplicateSimpleName.containsKey(simpleName)) {
                     countDuplicateSimpleName.put(simpleName, 0);
                 }

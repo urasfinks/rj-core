@@ -76,6 +76,7 @@ public class PromiseTaskTime implements KeepAliveComponent, ClassName {
         Map<String, AvgMetric> tmp = new HashMap<>();
         UtilRisc.forEach(isThreadRun, queue, (TimeEnvelopeNano<String> timeEnvelope) -> {
             String index = timeEnvelope.getValue();
+            // Не конкурентная проверка
             if (!tmp.containsKey(index)) {
                 tmp.put(index, new AvgMetric());
             }

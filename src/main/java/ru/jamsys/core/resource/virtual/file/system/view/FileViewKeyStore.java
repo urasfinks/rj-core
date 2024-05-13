@@ -40,10 +40,10 @@ public class FileViewKeyStore implements FileView {
     public void set(File file) {
         this.file = file;
         security = App.context.getBean(Security.class);
-        typeKeyStorage = file.getProp(prop.TYPE.name(), "JCEKS");
-        securityKey = file.getProp(prop.SECURITY_KEY.name(), file.getAbsolutePath());
-        if (file.isProp(prop.TRUST_MANAGER.name())) {
-            trustManager = file.getProp(prop.TRUST_MANAGER.name(), null);
+        typeKeyStorage = file.getProperty(prop.TYPE.name(), String.class, "JCEKS");
+        securityKey = file.getProperty(prop.SECURITY_KEY.name(), String.class, file.getAbsolutePath());
+        if (file.isProperty(prop.TRUST_MANAGER.name())) {
+            trustManager = file.getProperty(prop.TRUST_MANAGER.name(), CustomTrustManager.class, null);
         }
     }
 

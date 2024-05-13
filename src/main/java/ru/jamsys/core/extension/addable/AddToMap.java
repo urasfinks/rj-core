@@ -9,9 +9,7 @@ public interface AddToMap<K, V> {
 
     default void add(K key, V value) {
         Map<K, V> map = getMap();
-        if (!map.containsKey(key)) {
-            map.put(key, value);
-        }
+        map.computeIfAbsent(key, _ -> value);
     }
 
 }

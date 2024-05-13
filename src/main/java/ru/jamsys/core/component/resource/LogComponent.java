@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
@@ -33,13 +34,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class LogComponent implements ClassName {
 
-    public final Map<String, Broker<Log>> map = new HashMap<>();
+    public final ConcurrentHashMap<String, Broker<Log>> map = new ConcurrentHashMap<>();
 
     private final BrokerManager<Log> brokerManager;
 
     private final RateLimit rateLimit;
 
-    private final Map<String, AtomicInteger> indexFile = new HashMap<>();
+    private final Map<String, AtomicInteger> indexFile = new ConcurrentHashMap<>();
 
     private final String logFolder;
 
@@ -71,16 +72,13 @@ public class LogComponent implements ClassName {
     // Все файлы на момент старта с типом start в 3-ей секции имени файла будут удалены
     // При достижении индекса до N будет происходить перезапись с 0
     public void append(String indexBroker, Log log) throws Exception {
-        if (!map.containsKey(indexBroker)) {
+        map.computeIfAbsent(indexBroker, s -> {
             Broker<Log> logBroker = brokerManager.get(getClassName(indexBroker));
             // Если будет больше логов в 1 секунду, чем длина очереди - мы начнём более раннии логи терять
             // Я пока не знаю, хорошо это или плохо - надо тестировать
             logBroker.setMaxSizeQueue(5_000);
-            map.put(indexBroker, logBroker);
-        }
-        if (log.header.size() < Short.MAX_VALUE) {
-            map.get(indexBroker).add(log, 6_000L);
-        }
+            return logBroker;
+        }).add(log, 6_000L);
     }
 
     public List<Map<String, Integer>> writeToFs(String indexBroker) {
@@ -90,13 +88,12 @@ public class LogComponent implements ClassName {
         int maxCountLoop = (int) rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName()).getMax();
         int counter = 1;
         while (!logBroker.isEmpty()) {
-            if (!indexFile.containsKey(indexBroker)) {
-                indexFile.put(indexBroker, new AtomicInteger(1));
+            AtomicInteger atomicInteger = indexFile.computeIfAbsent(indexBroker, _
+                    -> new AtomicInteger(1));
+            if (!maxIndex.check(atomicInteger.get())) {
+                atomicInteger.set(1);
             }
-            if (!maxIndex.check(indexFile.get(indexBroker).get())) {
-                indexFile.get(indexBroker).set(1);
-            }
-            String path = indexBroker + "." + indexFile.get(indexBroker).getAndIncrement();
+            String path = indexBroker + "." + atomicInteger.getAndIncrement();
             result.add(write(logFolder, path, logBroker));
             if (counter++ > maxCountLoop) {
                 break;

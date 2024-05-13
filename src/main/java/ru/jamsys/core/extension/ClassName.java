@@ -33,6 +33,7 @@ public interface ClassName {
     default String getClassName(Class<?> cls, String index, ApplicationContext applicationContext) {
         ClassFinder classFinder = applicationContext.getBean(ClassFinder.class);
         String clsName = cls.getName();
+        //  Не конкурентная проверка
         if (classFinder.getUniqueClassName().containsKey(cls)) {
             clsName = classFinder.getUniqueClassName().get(cls);
         }

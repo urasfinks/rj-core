@@ -24,13 +24,16 @@ public class UtilJson {
         String[] split = selector.split("\\.");
         Map<String, Object> target = obj;
         for (int i = 0; i < split.length; i++) {
+            // Должна быть не конкурентная проверка
             if (!target.containsKey(split[i])) {
                 return null;
             }
             if (i == split.length - 1) {
                 return target.get(split[i]);
             } else {
-                target = (Map<String, Object>) target.get(split[i]);
+                @SuppressWarnings("unchecked")
+                Map<String, Object> x = (Map<String, Object>) target.get(split[i]);
+                target = x;
             }
         }
         return null;

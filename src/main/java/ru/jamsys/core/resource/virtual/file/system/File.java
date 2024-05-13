@@ -2,9 +2,10 @@ package ru.jamsys.core.resource.virtual.file.system;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.extension.SupplierThrowing;
-import ru.jamsys.core.resource.virtual.file.system.view.FileView;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.*;
+import ru.jamsys.core.resource.virtual.file.system.view.FileView;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import ru.jamsys.core.util.UtilBase64;
@@ -12,10 +13,11 @@ import ru.jamsys.core.util.UtilBase64;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings("unused")
-public class File extends ExpirationMsMutableImpl implements Closable, StatisticsFlush, KeepAlive {
+@SuppressWarnings({"unused", "UnusedReturnValue"})
+public class File extends ExpirationMsMutableImpl implements Closable, StatisticsFlush, KeepAlive, Property<String> {
 
     @Getter
     protected String folder; //Абсолютный путь виртуальной папки
@@ -31,59 +33,41 @@ public class File extends ExpirationMsMutableImpl implements Closable, Statistic
 
     private volatile byte[] fileData;
 
-    Map<Class<? extends FileView>, FileView> view = new HashMap<>();
+    Map<Class<? extends FileView>, FileView> view = new ConcurrentHashMap<>();
 
-    Map<String, Object> prop = new HashMap<>();
-
-    public boolean isProp(String key) {
-        return prop.containsKey(key);
-    }
-
-    public void setProp(String key, Object value) {
-        prop.put(key, value);
-    }
-
-    @SuppressWarnings({"unused", "unchecked"})
-    public <T> T getProp(String key, T def) {
-        return prop.containsKey(key) ? (T) prop.get(key) : def;
-    }
-
-    @SuppressWarnings({"unused", "unchecked"})
-    public <T> T getProp(String key) {
-        return (T) prop.get(key);
-    }
+    @Getter
+    Map<String, Object> mapProperty = new ConcurrentHashMap<>();
 
     @Getter
     private String absolutePath = null;
 
-    private void setView(Class<? extends FileView> t) throws Exception {
-        FileView e = t.getDeclaredConstructor().newInstance();
-        e.set(this);
-        view.putIfAbsent(t, e);
+    private <T extends FileView> FileView setView(Class<T> cls) {
+        return view.computeIfAbsent(cls, _ -> {
+            try {
+                FileView e = cls.getDeclaredConstructor().newInstance();
+                e.set(this);
+                init();
+                return e;
+            } catch (Throwable ex) {
+                App.context.getBean(ExceptionHandler.class).handler(ex);
+            }
+            return null;
+        });
     }
 
-    @SuppressWarnings({"unused", "unchecked"})
-    public <T extends FileView> T getView(Class<T> t) throws Exception {
-        if (!view.containsKey(t)) {
-            setView(t);
-        }
-        init();
-        return (T) view.get(t);
+    public <T extends FileView> T getView(Class<T> cls) {
+        @SuppressWarnings("unchecked")
+        T fileView = (T) setView(cls);
+        return fileView;
     }
 
-    @SuppressWarnings({"unchecked", "unused"})
-    public <T extends FileView> T getView(Class<T> t, Object... props) throws Exception {
+    public <T extends FileView> T getView(Class<T> cls, Object... props) {
         for (int i = 0; i < props.length; i += 2) {
-            setProp(props[i].toString(), props[i + 1]);
+            setProperty(props[i].toString(), props[i + 1]);
         }
-        if (!view.containsKey(t)) {
-            setView(t);
-        }
-        init();
-        return (T) view.get(t);
+        return getView(cls);
     }
 
-    @SuppressWarnings("unused")
     public File(String path, SupplierThrowing<byte[]> loader) {
         init(path, loader);
     }
@@ -121,11 +105,6 @@ public class File extends ExpirationMsMutableImpl implements Closable, Statistic
         }
     }
 
-    @SuppressWarnings("unused")
-    public void reset() {
-        fileData = null;
-    }
-
     private void init() throws Exception {
         if (fileData == null) {
             fileData = loader.get();
@@ -143,7 +122,6 @@ public class File extends ExpirationMsMutableImpl implements Closable, Statistic
         return fileData;
     }
 
-    @SuppressWarnings("unused")
     public String getString(String charset) throws Exception {
         return new String(getBytes(), charset);
     }
@@ -152,12 +130,10 @@ public class File extends ExpirationMsMutableImpl implements Closable, Statistic
         return new ByteArrayInputStream(getBytes());
     }
 
-    @SuppressWarnings("unused")
     public String getBase64() throws Exception {
         return UtilBase64.base64Encode(getBytes(), true);
     }
 
-    @SuppressWarnings("unused")
     public void save(byte[] data) throws Exception {
         if (saver == null) {
             throw new Exception("Consumer saver not found. File: " + getAbsolutePath());
@@ -165,6 +141,10 @@ public class File extends ExpirationMsMutableImpl implements Closable, Statistic
         fileData = data;
         saver.accept(data);
         //reload(); //Сохранение не должно вызывать перезагрузку, так как в памяти должны быть внесены изменения, это только для Supplier загрузчика
+    }
+
+    public void reset() {
+        fileData = null;
     }
 
     @Override

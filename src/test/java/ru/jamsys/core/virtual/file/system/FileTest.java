@@ -73,7 +73,7 @@ class FileTest {
 
         File file = new File("/test.p12", FileLoaderFactory.createKeyStore("one.jks", "test"));
         file.setSaver(FileSaverFactory.writeFile("one.jks"));
-        file.setProp("securityKey", "test");
+        file.setProperty("securityKey", "test");
         UtilFile.remove("one.jks");
         UtilFile.removeIfExist("unit-test.jks");
     }
