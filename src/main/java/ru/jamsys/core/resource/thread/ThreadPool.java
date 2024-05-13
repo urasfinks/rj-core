@@ -6,7 +6,7 @@ import ru.jamsys.core.extension.Closable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Closable {
 
     AtomicInteger counter = new AtomicInteger(1);
@@ -39,7 +39,6 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Closable
         return false;
     }
 
-    @SuppressWarnings("unused")
     public void wakeUp() {
         if (!isRun.get()) {
             return;

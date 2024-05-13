@@ -97,8 +97,8 @@ public class PromiseTask implements Runnable {
     // execute on another thread
     public void start() {
         switch (type) {
-            case IO, ASYNC_NO_WAIT_IO -> App.context.getBean(VirtualThreadComponent.class).submit(this);
-            case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.context.getBean(RealThreadComponent.class).submit(this);
+            case IO, ASYNC_NO_WAIT_IO -> App.context.getBean(VirtualThreadComponent.class).write(this);
+            case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.context.getBean(RealThreadComponent.class).write(this);
             case JOIN -> run();
             case EXTERNAL_WAIT ->
                     promise.getTrace().add(new Trace<>(getIndex() + ".start", TraceTimer.getInstanceZero(), type));

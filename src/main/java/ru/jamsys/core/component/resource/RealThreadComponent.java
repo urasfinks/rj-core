@@ -7,10 +7,11 @@ import ru.jamsys.core.promise.PromiseTask;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
-public class RealThreadComponent {
+public class RealThreadComponent implements ResourceOutput<PromiseTask> {
 
-    public void submit(PromiseTask task) {
-
+    @Override
+    public boolean write(PromiseTask data) {
+        return false;
     }
 
 }

@@ -6,11 +6,10 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.Pool;
 import ru.jamsys.core.pool.PoolItem;
-import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.RateLimit;
+import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.util.Util;
 
@@ -45,25 +44,6 @@ public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements ClassNam
 
     private final StringBuilder info = new StringBuilder();
 
-    public boolean isInit() {
-        return isInit.get();
-    }
-
-    @SuppressWarnings("StringBufferReplaceableByString")
-    public String getMomentumStatistic() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("isInit: ").append(isInit.get()).append("; ");
-        sb.append("isRun: ").append(isRun.get()).append("; ");
-        sb.append("isWhile: ").append(isWhile.get()).append("; ");
-        sb.append("inPark: ").append(inPark.get()).append("; ");
-        sb.append("isShutdown: ").append(isShutdown.get()).append("; ");
-        return sb.toString();
-    }
-
-    public boolean isNotInterrupted() {
-        return !thread.isInterrupted();
-    }
-
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, Function<ThreadEnvelope, Boolean> fn) {
         super(pool);
         RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClassName(pool.getName()));
@@ -80,7 +60,6 @@ public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements ClassNam
         this.name = name;
 
         thread = new Thread(() -> {
-            AbstractPool.context.set(pool);
             while (isWhile.get() && isNotInterrupted()) {
                 active();
                 if (!rateLimit.check(null)) {
@@ -94,12 +73,20 @@ public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements ClassNam
                 } catch (Exception e) {
                     App.context.getBean(ExceptionHandler.class).handler(e);
                 }
-                //Конце итерации цикла всегда pause()
+                //Конец итерации цикла всегда pause()
                 pause();
             }
             isRun.set(false);
         });
         thread.setName(name);
+    }
+
+    public boolean isInit() {
+        return isInit.get();
+    }
+
+    public boolean isNotInterrupted() {
+        return !thread.isInterrupted();
     }
 
     private void raiseUp(String cause, String action) {
@@ -111,7 +98,6 @@ public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements ClassNam
         );
     }
 
-    @SuppressWarnings("UnusedReturnValue")
     private boolean pause() {
         if (!isInit.get()) {
             raiseUp("Thread not initialize", "pause()");
@@ -170,7 +156,6 @@ public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements ClassNam
         return false;
     }
 
-    @SuppressWarnings("deprecation")
     private void doShutdown() {
         info
                 .append("[")
@@ -226,6 +211,17 @@ public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements ClassNam
         }
         pool.remove(this);
         isRun.set(false);
+    }
+
+    @SuppressWarnings("StringBufferReplaceableByString")
+    public String getMomentumStatistic() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("isInit: ").append(isInit.get()).append("; ");
+        sb.append("isRun: ").append(isRun.get()).append("; ");
+        sb.append("isWhile: ").append(isWhile.get()).append("; ");
+        sb.append("inPark: ").append(inPark.get()).append("; ");
+        sb.append("isShutdown: ").append(isShutdown.get()).append("; ");
+        return sb.toString();
     }
 
 }

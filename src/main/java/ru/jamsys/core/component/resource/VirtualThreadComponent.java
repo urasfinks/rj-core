@@ -18,14 +18,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
-public class VirtualThreadComponent {
+public class VirtualThreadComponent implements ResourceOutput<PromiseTask> {
 
     private final ExecutorService executorService = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("v-thread-", 0).factory());
     private final AtomicBoolean isThreadRun = new AtomicBoolean(true);
 
-    public void submit(PromiseTask task) {
+    @Override
+    public boolean write(PromiseTask task) {
         task.setIsThreadRun(isThreadRun);
         executorService.submit(task);
+        return true;
     }
-
 }
