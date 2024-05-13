@@ -5,6 +5,7 @@ import ru.jamsys.core.extension.*;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.util.UtilRisc;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,13 +51,8 @@ public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable 
         map.computeIfAbsent(key, _ -> object);
     }
 
-    //Используйте только для тестирования
-    public void clear() {
-        map.clear();
-    }
-
-    public boolean containsKey(String key) {
-        return map.containsKey(key);
+    public Map<String, MO> getTestMap() {
+        return new HashMap<>(map);
     }
 
 }

@@ -27,11 +27,10 @@ class ThreadEnvelopeTest {
 
     @BeforeAll
     static void beforeAll() {
-        String[] args = new String[]{};
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         if (App.context == null) {
-            App.context = SpringApplication.run(App.class, args);
+            App.context = SpringApplication.run(App.class);
         }
     }
 
@@ -429,12 +428,13 @@ class ThreadEnvelopeTest {
 
     @Test
     public void checkInitialize2() {
+        //Так предыдущие тесты уже насоздавали там данные
+        App.context = SpringApplication.run(App.class);
 
         RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
-        rateLimitManager.clear(); //Так предыдущие тесты уже насоздавали там данные
 
-        Assertions.assertFalse(rateLimitManager.containsKey(ClassNameImpl.getClassNameStatic(ThreadPool.class, namePool)));
-        Assertions.assertFalse(rateLimitManager.containsKey(ClassNameImpl.getClassNameStatic(ThreadEnvelope.class, namePool)));
+        Assertions.assertFalse(rateLimitManager.getTestMap().containsKey(ClassNameImpl.getClassNameStatic(ThreadPool.class, namePool)));
+        Assertions.assertFalse(rateLimitManager.getTestMap().containsKey(ClassNameImpl.getClassNameStatic(ThreadEnvelope.class, namePool)));
 
         ThreadPool threadPool = new ThreadPool(
                 namePool,
@@ -449,8 +449,8 @@ class ThreadEnvelopeTest {
         threadPool.getRateLimit().get(RateLimitName.POOL_SIZE.getName()).setMax(10);
 
         //Проверяем, что RateLimitItem создались в конструкторе ThreadPool
-        Assertions.assertTrue(rateLimitManager.containsKey(threadPool.getClassName(namePool)));
-        Assertions.assertTrue(rateLimitManager.containsKey(threadPool.getClassName(namePool)));
+        Assertions.assertTrue(rateLimitManager.getTestMap().containsKey(threadPool.getClassName(namePool)));
+        Assertions.assertTrue(rateLimitManager.getTestMap().containsKey(threadPool.getClassName(namePool)));
 
         //Проверяем статус новых RateLimitItem - что они не активны, до тех пор пока не стартанёт pool
         RateLimit rateLimitPool = threadPool.getRateLimit();
