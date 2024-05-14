@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.component.manager.ExpirationManager;
+import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
@@ -192,31 +192,31 @@ class ExpirationManagerTest {
 
         Map<String, Object> stat = multiThread(100, 500);
         double timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 100);
+        Assertions.assertTrue(timeAvg <= 100, timeAvg+"");
 
         stat = multiThread(100, 1000);
         timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 100);
+        Assertions.assertTrue(timeAvg <= 100, timeAvg+"");
 
         stat = multiThread(200, 600);
         timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 200);
+        Assertions.assertTrue(timeAvg <= 200, timeAvg+"");
 
         stat = multiThread(600, 600);
         timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 600);
+        Assertions.assertTrue(timeAvg <= 600, timeAvg+"");
 
         stat = multiThread(1200, 600);
         timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 1200);
+        Assertions.assertTrue(timeAvg <= 1200, timeAvg+"");
 
         stat = multiThread(2400, 600);
         timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 2400);
+        Assertions.assertTrue(timeAvg <= 2400, timeAvg+"");
 
         stat = multiThread(4800, 600);
         timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 4800);
+        Assertions.assertTrue(timeAvg <= 4800, timeAvg+"");
 
     }
 

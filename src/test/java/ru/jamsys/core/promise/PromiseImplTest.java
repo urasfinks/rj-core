@@ -243,8 +243,15 @@ class PromiseImplTest {
 
     @Test
     void testAsyncNoWait() {
+
+        // Наболюдал картину "ERROR" залогировалось в консоле
+        // Но проверка Assertions.assertEquals(1, c.get()); не прошла
+        // c.get() = 0 без малейшего понятия как такое могло получится
+        // добавил final c + c.incrementAndGet() уже равно не 1 а 2
+        // Буду наблюдать дальше
+
         Promise wf = new PromiseImpl("AsyncNoWait",6_000L);
-        AtomicInteger c = new AtomicInteger(0);
+        final AtomicInteger c = new AtomicInteger(0);
         PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskType.ASYNC_NO_WAIT_IO, (AtomicBoolean _) -> {
             c.incrementAndGet();
             throw new RuntimeException("ERROR");
@@ -253,7 +260,7 @@ class PromiseImplTest {
         wf.run().await(1000);
         System.out.println(wf.getLog());
 
-        Assertions.assertEquals(1, c.get());
+        Assertions.assertEquals(2, c.incrementAndGet());
         Assertions.assertEquals(1, wf.getTrace().size());
         Assertions.assertTrue(wf.isCompleted());
         Assertions.assertEquals(1, wf.getTrace().size());

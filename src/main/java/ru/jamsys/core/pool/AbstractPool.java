@@ -8,8 +8,8 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.*;
-import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.RateLimit;
+import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.Statistic;
@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -39,11 +41,12 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
 
     protected final ConcurrentLinkedDeque<T> parkQueue = new ConcurrentLinkedDeque<>();
 
-    protected final ConcurrentLinkedDeque<T> removeQueue = new ConcurrentLinkedDeque<>();
+    protected final ConcurrentLinkedQueue<T> removeQueue = new ConcurrentLinkedQueue<>();
 
-    protected final ConcurrentLinkedDeque<T> exceptionQueue = new ConcurrentLinkedDeque<>();
+    protected final ConcurrentLinkedQueue<T> exceptionQueue = new ConcurrentLinkedQueue<>();
 
-    protected final ConcurrentLinkedDeque<T> itemQueue = new ConcurrentLinkedDeque<>();
+    // Общая очередь, где находятся все объекты
+    protected final ConcurrentLinkedQueue<T> itemQueue = new ConcurrentLinkedQueue<>();
 
     protected final AtomicBoolean isRun = new AtomicBoolean(false);
 
@@ -70,6 +73,8 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
     private final AtomicBoolean dynamicPollSize = new AtomicBoolean(false);
 
     private final RateLimitItem rliPoolSize;
+
+    private final Semaphore lockAddToPark = new Semaphore(1);
 
     public AbstractPool(String name, int min, Class<T> cls) {
         this.name = name;
@@ -112,17 +117,14 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
         }
     }
 
-    @SuppressWarnings("StringBufferReplaceableByString")
     public String getMomentumStatistic() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("item: ").append(itemQueue.size()).append("; ");
-        sb.append("park: ").append(parkQueue.size()).append("; ");
-        sb.append("remove: ").append(removeQueue.size()).append("; ");
-        sb.append("isRun: ").append(isRun.get()).append("; ");
-        sb.append("min: ").append(min).append("; ");
-        sb.append("max: ").append(rliPoolSize.getMax()).append("; ");
         //sb.append("timePark0: ").append(getTimeWhenParkIsEmpty()).append("; ");
-        return sb.toString();
+        return "item: " + itemQueue.size() + "; " +
+                "park: " + parkQueue.size() + "; " +
+                "remove: " + removeQueue.size() + "; " +
+                "isRun: " + isRun.get() + "; " +
+                "min: " + min + "; " +
+                "max: " + rliPoolSize.getMax() + "; ";
     }
 
     public boolean isAmI() {
@@ -166,10 +168,7 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
         // Но вообще понятие ресурсов статично и они не живут собственной жизнью
         // поэтому после createPoolItem мы кладём их в parkQueue, что бы их могли взять желающие
         // И для потоков тут получается первичный дубль
-        if (!parkQueue.contains(poolItem)) {
-            parkQueue.addLast(poolItem);
-            checkPark();
-        }
+        addParkIfNotContains(poolItem);
     }
 
     @Override
@@ -206,13 +205,24 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
         return null;
     }
 
+    private void addParkIfNotContains(T poolItem) {
+        try {
+            lockAddToPark.acquire();
+        } catch (Exception _) {
+        }
+        if (!parkQueue.contains(poolItem)) {
+            parkQueue.addLast(poolItem);
+            checkPark();
+        }
+        lockAddToPark.release();
+    }
+
     private boolean add() {
         if (isRun.get() && rliPoolSize.check(itemQueue.size())) {
             if (!removeQueue.isEmpty()) {
-                T poolItem = removeQueue.pollLast();
+                T poolItem = removeQueue.poll();
                 if (poolItem != null) {
-                    parkQueue.add(poolItem);
-                    checkPark();
+                    addParkIfNotContains(poolItem);
                     return true;
                 }
             }
@@ -220,7 +230,7 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
             if (poolItem != null) {
                 //#1
                 itemQueue.add(poolItem);
-                //#2
+                //#2 блокировка не нужна, так как элемент только что был создан
                 parkQueue.add(poolItem);
                 checkPark();
                 return true;
@@ -293,14 +303,14 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
         }
         // Тут происходит непосредственно удаление
         while (!removeQueue.isEmpty()) {
-            T poolItem = removeQueue.pollLast();
+            T poolItem = removeQueue.poll();
             if (poolItem != null) {
                 removeAndClose(poolItem);
             }
         }
         //Удаление ошибочных
         while (!exceptionQueue.isEmpty()) {
-            T poolItem = exceptionQueue.pollLast();
+            T poolItem = exceptionQueue.poll();
             if (poolItem != null) {
                 removeAndClose(poolItem);
             }
