@@ -1,9 +1,11 @@
 package ru.jamsys.core.resource.jdbc;
 
 import ru.jamsys.core.App;
+import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
+import ru.jamsys.core.extension.Resource;
 import ru.jamsys.core.pool.Pool;
 import ru.jamsys.core.pool.PoolItem;
 import ru.jamsys.core.rate.limit.RateLimitName;
@@ -19,7 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConnectionEnvelope extends PoolItem<ConnectionEnvelope> implements ClassName {
+@SuppressWarnings({"unused", "UnusedReturnValue"})
+public class ConnectionResource extends PoolItem<ConnectionResource>
+        implements ClassName,
+        Resource<List<Map<String, Object>>, JdbcRequest> {
 
     final private Connection connection;
 
@@ -28,7 +33,7 @@ public class ConnectionEnvelope extends PoolItem<ConnectionEnvelope> implements 
     private final AtomicBoolean reusable = new AtomicBoolean(false);
 
     //JdbcPool потому что надо получить контроллер sql операторов (pool.getStatementControl())
-    public ConnectionEnvelope(Connection connection, Pool<ConnectionEnvelope> pool) {
+    public ConnectionResource(Connection connection, Pool<ConnectionResource> pool) {
         super(pool);
         this.connection = connection;
         rateLimit = App.context.getBean(RateLimitManager.class).get(getClassName(pool.getName()));
@@ -49,7 +54,6 @@ public class ConnectionEnvelope extends PoolItem<ConnectionEnvelope> implements 
     }
 
     // Использование данного функционала должно быть очень аккуратным
-    @SuppressWarnings("unused")
     public void startReusable() throws Exception {
         if (!rateLimit.check(null)) {
             stopReusable();
@@ -62,33 +66,33 @@ public class ConnectionEnvelope extends PoolItem<ConnectionEnvelope> implements 
         pool.complete(this, null);
     }
 
-    @SuppressWarnings("unused")
-    public List<Map<String, Object>> exec(JdbcRequest task) throws Exception {
+    @Override
+    public List<Map<String, Object>> execute(JdbcRequest arguments) {
         if (!rateLimit.check(null) && !reusable.get()) {
             // Если ресурс переиспользуемый - то это было сделано для того, что бы исполнить транзакцию состоящую
             // из нескольких запросов, и даже если tps закончились - надо, что бы транзакция завершилась commit
-            throw new Exception("RateLimit overflow");
+            throw new RuntimeException("RateLimit overflow");
         }
         active();
-        Template template = task.getTemplate();
+        Template template = arguments.getTemplate();
         if (template == null) {
             complete(null);
-            throw new Exception("TemplateEnum: " + task.getName() + " return null template");
+            throw new RuntimeException("TemplateEnum: " + arguments.getName() + " return null template");
         }
         try {
             List<Map<String, Object>> execute = execute(
                     connection,
                     template,
-                    task.getArgs(),
+                    arguments.getArgs(),
                     ((JdbcPool) pool).getStatementControl(),
-                    task.getDebug()
+                    arguments.getDebug()
             );
             complete(null);
             return execute;
         } catch (Exception e) {
             complete(e);
             App.context.getBean(ExceptionHandler.class).handler(e);
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 
@@ -177,13 +181,20 @@ public class ConnectionEnvelope extends PoolItem<ConnectionEnvelope> implements 
             Argument arg
     ) throws Exception {
         switch (arg.getDirection()) {
-            case IN -> statementControl.setInParam(conn, preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());
-            case OUT -> statementControl.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
+            case IN ->
+                    statementControl.setInParam(conn, preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());
+            case OUT ->
+                    statementControl.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
             case IN_OUT -> {
                 statementControl.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
                 statementControl.setInParam(conn, preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());
             }
         }
+    }
+
+    @Override
+    public int getWeight(BalancerAlgorithm balancerAlgorithm) {
+        return 0;
     }
 
 }

@@ -14,7 +14,7 @@ import ru.jamsys.core.template.jdbc.StatementControl;
 import java.sql.DriverManager;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Closable {
+public class JdbcPool extends AbstractPool<ConnectionResource> implements Closable {
 
     @Getter
     private final StatementControl statementControl = new DefaultStatementControl();
@@ -26,7 +26,7 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Closab
     private String securityAlias;
 
     public JdbcPool(String name, int min) {
-        super(name, min, ConnectionEnvelope.class);
+        super(name, min, ConnectionResource.class);
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
         this.uri = propertiesComponent.getProperties("rj.jdbc.uri", String.class);
         this.user = propertiesComponent.getProperties("rj.jdbc.user", String.class);
@@ -40,10 +40,10 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Closab
     }
 
     @Override
-    public ConnectionEnvelope createPoolItem() {
+    public ConnectionResource createPoolItem() {
         try {
             Security security = App.context.getBean(Security.class);
-            return new ConnectionEnvelope(
+            return new ConnectionResource(
                     DriverManager.getConnection(uri, user, new String(security.get(securityAlias))),
                     this
             );
@@ -54,8 +54,8 @@ public class JdbcPool extends AbstractPool<ConnectionEnvelope> implements Closab
     }
 
     @Override
-    public void closePoolItem(ConnectionEnvelope connectionEnvelope) {
-        connectionEnvelope.close();
+    public void closePoolItem(ConnectionResource connectionResource) {
+        connectionResource.close();
     }
 
     @Override

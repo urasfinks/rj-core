@@ -19,7 +19,7 @@ public class LeastConnections implements BalancerAlgorithm {
 
     @Override
     public BalancerItem get(String index) {
-        list.sort(Comparator.comparing(BalancerItem::getCountConnection));
+        list.sort(Comparator.comparing(balancerItem -> balancerItem.getWeight(this)));
         return list.getFirst();
     }
 

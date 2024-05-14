@@ -19,7 +19,7 @@ public class WeightedRoundRobin implements BalancerAlgorithm {
         TreeMap<Double, BalancerItem> pool = new TreeMap<>();
         double totalWeight = 0;
         for (BalancerItem resource : list.toArray(new BalancerItem[0])) {
-            int weight = resource.getWeight();
+            int weight = resource.getWeight(this);
             if (weight > 0) {
                 totalWeight += weight;
                 pool.put(totalWeight, resource);
@@ -41,4 +41,5 @@ public class WeightedRoundRobin implements BalancerAlgorithm {
     public void keepAlive(AtomicBoolean isThreadRun) {
 
     }
+
 }

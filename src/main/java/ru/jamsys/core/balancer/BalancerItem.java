@@ -1,11 +1,9 @@
 package ru.jamsys.core.balancer;
 
+import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
+
 public interface BalancerItem {
 
-    boolean isActive();
-
-    int getWeight();
-
-    int getCountConnection();
+    int getWeight(BalancerAlgorithm balancerAlgorithm); // 0 - эквивалентно отключению
 
 }
