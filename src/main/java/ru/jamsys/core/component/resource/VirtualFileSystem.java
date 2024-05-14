@@ -23,4 +23,9 @@ public class VirtualFileSystem extends AbstractManager<File> {
         put(file.getAbsolutePath(), file);
     }
 
+    // setCleanableMap(false) - можем себе позволить прихранивать объекты
+    @Override
+    public File get(String key) {
+        return super.get(key);
+    }
 }

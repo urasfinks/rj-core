@@ -7,7 +7,6 @@ public interface EnumName {
 
     String name();
 
-    @SuppressWarnings("unused")
     default String getName() {
         return Util.snakeToCamel(name());
     }

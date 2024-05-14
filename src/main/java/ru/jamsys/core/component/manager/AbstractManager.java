@@ -43,7 +43,12 @@ public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable 
         );
     }
 
-    public MO get(String key) {
+    // Скрытая реализация, потому что объекты могут выпадать из общей Map так как у них есть срок жизни
+    // Они унаследованы от ExpirationMsMutable, если реализация будет открытой, кто-то может прихранить ссылки на
+    // текущий брокер по ключу, а он в какой-то момент времени может быть удалён, а ссылка останется
+    // мы будем накладывать в некую очередь, которая уже будет не принадлежать менаджеру
+    // и обслуживаться тоже не будет [keepAlive, flushAndGetStatistic] так что - плохая эта затея
+    protected MO get(String key) {
         return map.computeIfAbsent(key, _ -> build(key));
     }
 

@@ -37,10 +37,25 @@ public class BrokerManager<MOI>
         return queue.pollLast();
     }
 
-    @SuppressWarnings("unused")
     public ExpirationMsImmutableEnvelope<MOI> pollFirst(String key) {
         Broker<MOI> queue = get(key);
         return queue.pollFirst();
+    }
+
+    public DisposableExpirationMsImmutableEnvelope<MOI> add(String key, MOI element, long curTime, long timeOut) throws Exception {
+        Broker<MOI> queue = get(key);
+        return queue.add(new ExpirationMsImmutableEnvelope<>(element, timeOut, curTime));
+    }
+
+    public DisposableExpirationMsImmutableEnvelope<MOI> add(String key, MOI element, long timeOut) throws Exception {
+        Broker<MOI> queue = get(key);
+        return queue.add(new ExpirationMsImmutableEnvelope<>(element, timeOut));
+    }
+
+
+    public DisposableExpirationMsImmutableEnvelope<MOI> add(String key, ExpirationMsImmutableEnvelope<MOI> envelope) throws Exception {
+        Broker<MOI> queue = get(key);
+        return queue.add(envelope);
     }
 
 }

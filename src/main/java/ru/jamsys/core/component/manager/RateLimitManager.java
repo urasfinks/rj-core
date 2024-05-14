@@ -28,4 +28,43 @@ public class RateLimitManager
         return new RateLimit(index);
     }
 
+    public boolean check(String keyRateLimit, String keyRateLimitItem, Integer limit) {
+        return get(keyRateLimit).get(keyRateLimitItem).check(limit);
+    }
+
+    public long getMax(String keyRateLimit, String keyRateLimitItem) {
+        return get(keyRateLimit).get(keyRateLimitItem).getMax();
+    }
+
+    public void setMax(String keyRateLimit, String keyRateLimitItem, Integer limit) {
+        get(keyRateLimit).get(keyRateLimitItem).setMax(limit);
+    }
+
+    //Используйте преимущественно для тестирования
+    public void reset(String keyRateLimit, String keyRateLimitItem) {
+        get(keyRateLimit).get(keyRateLimitItem).reset();
+    }
+
+    public void incrementMax(String keyRateLimit, String keyRateLimitItem) {
+        get(keyRateLimit).get(keyRateLimitItem).incrementMax();
+    }
+
+    public String getMomentumStatistic(String keyRateLimit, String keyRateLimitItem) {
+        return get(keyRateLimit).get(keyRateLimitItem).getMomentumStatistic();
+    }
+
+    public void setActive(String keyRateLimit, boolean active){
+        get(keyRateLimit).setActive(active);
+    }
+
+    public void reset(String keyRateLimit){
+        get(keyRateLimit).reset();
+    }
+
+    // setCleanableMap(false) - можем себе позволить прихранивать объекты
+    @Override
+    public RateLimit get(String key) {
+        return super.get(key);
+    }
+
 }

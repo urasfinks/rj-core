@@ -2,15 +2,17 @@ package ru.jamsys.core.resource.jdbc;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
+import ru.jamsys.core.balancer.algorithm.LeastConnections;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
+import ru.jamsys.core.extension.Pollable;
 import ru.jamsys.core.extension.Resource;
 import ru.jamsys.core.pool.Pool;
-import ru.jamsys.core.pool.PoolItem;
-import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.RateLimit;
+import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import ru.jamsys.core.template.jdbc.*;
 import ru.jamsys.core.util.Util;
 
@@ -22,8 +24,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public class ConnectionResource extends PoolItem<ConnectionResource>
-        implements ClassName,
+public class ConnectionResource extends ExpirationMsMutableImpl
+        implements ClassName, Pollable,
         Resource<List<Map<String, Object>>, JdbcRequest> {
 
     final private Connection connection;
@@ -32,12 +34,15 @@ public class ConnectionResource extends PoolItem<ConnectionResource>
 
     private final AtomicBoolean reusable = new AtomicBoolean(false);
 
+    private final Pool<ConnectionResource> pool;
+
     //JdbcPool потому что надо получить контроллер sql операторов (pool.getStatementControl())
     public ConnectionResource(Connection connection, Pool<ConnectionResource> pool) {
-        super(pool);
+        this.pool = pool;
         this.connection = connection;
-        rateLimit = App.context.getBean(RateLimitManager.class).get(getClassName(pool.getName()));
-        rateLimit.init(RateLimitName.POOL_ITEM_TPS.getName(), RateLimitItemInstance.TPS);
+        rateLimit = App.context.getBean(RateLimitManager.class)
+                .get(getClassName(pool.getName()))
+                .init(RateLimitName.POOL_ITEM_TPS.getName(), RateLimitItemInstance.TPS);
     }
 
     @Override
@@ -194,7 +199,11 @@ public class ConnectionResource extends PoolItem<ConnectionResource>
 
     @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
-        return 0;
+        //TODO RateLimit
+        if (balancerAlgorithm instanceof LeastConnections) {
+            return 1;
+        }
+        return (!isExpired() && connection != null) ? 1 : 0;
     }
 
 }

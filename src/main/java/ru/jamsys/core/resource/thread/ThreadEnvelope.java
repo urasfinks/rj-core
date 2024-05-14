@@ -6,11 +6,12 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
+import ru.jamsys.core.extension.Pollable;
 import ru.jamsys.core.pool.Pool;
-import ru.jamsys.core.pool.PoolItem;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import ru.jamsys.core.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,7 +25,7 @@ import java.util.function.Function;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @ToString(onlyExplicitlyIncluded = true)
-public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements ClassName {
+public class ThreadEnvelope extends ExpirationMsMutableImpl implements ClassName, Pollable {
 
     private final Thread thread;
 
@@ -44,8 +45,10 @@ public class ThreadEnvelope extends PoolItem<ThreadEnvelope> implements ClassNam
 
     private final StringBuilder info = new StringBuilder();
 
+    private final Pool<ThreadEnvelope> pool;
+
     public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, Function<ThreadEnvelope, Boolean> fn) {
-        super(pool);
+        this.pool = pool;
         RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClassName(pool.getName()));
         rateLimit.init(RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);
         info

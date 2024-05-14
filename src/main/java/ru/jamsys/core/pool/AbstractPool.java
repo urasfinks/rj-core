@@ -7,15 +7,13 @@ import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
-import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.ClassNameImpl;
-import ru.jamsys.core.extension.KeepAlive;
-import ru.jamsys.core.extension.RunnableInterface;
+import ru.jamsys.core.extension.*;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.Statistic;
+import ru.jamsys.core.statistic.expiration.ExpirationMs;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import ru.jamsys.core.util.Util;
 import ru.jamsys.core.util.UtilRisc;
@@ -30,7 +28,7 @@ import java.util.function.Function;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<T extends PoolItem<T>>
+public abstract class AbstractPool<T extends Pollable & ExpirationMs>
         extends ExpirationMsMutableImpl implements Pool<T>, RunnableInterface, KeepAlive, ClassName {
 
     public static ThreadLocal<Pool<?>> context = new ThreadLocal<>();
@@ -146,7 +144,6 @@ public abstract class AbstractPool<T extends PoolItem<T>>
         }
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void complete(T poolItem, Exception e) {
         if (poolItem == null) {
@@ -172,7 +169,6 @@ public abstract class AbstractPool<T extends PoolItem<T>>
         }
     }
 
-    @SuppressWarnings({"unused"})
     @Override
     public T getPoolItem() {
         if (!isRun.get()) {
@@ -188,7 +184,6 @@ public abstract class AbstractPool<T extends PoolItem<T>>
         return poolItem;
     }
 
-    @SuppressWarnings({"unused"})
     @Override
     public T getPoolItem(long timeOutMs, AtomicBoolean isThreadRun) {
         if (!isRun.get()) {
@@ -309,7 +304,6 @@ public abstract class AbstractPool<T extends PoolItem<T>>
         }
     }
 
-    @SuppressWarnings("UnusedReturnValue")
     public boolean addToRemove(T poolItem) {
         //Удалять ресурсы из вне можно только из паркинга, когда они отработали
         if (parkQueue.contains(poolItem)) {
@@ -352,7 +346,6 @@ public abstract class AbstractPool<T extends PoolItem<T>>
         }
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void run() {
         if (restartOperation.compareAndSet(false, true)) {

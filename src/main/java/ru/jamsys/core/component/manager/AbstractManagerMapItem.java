@@ -5,6 +5,8 @@ import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
+import java.util.function.Consumer;
+
 //MO - MapObject
 //MOI - MapObjectItem
 
@@ -16,6 +18,10 @@ public abstract class AbstractManagerMapItem<
 
     public void add(String key, String key2, MOI object) throws Exception {
         get(key).add(key2, object);
+    }
+
+    public void setup(String key, Consumer<MO> fn) {
+        fn.accept(get(key));
     }
 
 }

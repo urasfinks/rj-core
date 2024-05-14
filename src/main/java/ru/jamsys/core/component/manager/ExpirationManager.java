@@ -25,4 +25,9 @@ public class ExpirationManager<V>
         return new Expiration<>(index);
     }
 
+    // setCleanableMap(false) - можем себе позволить прихранивать объекты
+    @Override
+    public Expiration<V> get(String key) {
+        return super.get(key);
+    }
 }

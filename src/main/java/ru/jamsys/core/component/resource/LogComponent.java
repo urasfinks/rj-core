@@ -72,35 +72,35 @@ public class LogComponent implements ClassName {
     // Все файлы на момент старта с типом start в 3-ей секции имени файла будут удалены
     // При достижении индекса до N будет происходить перезапись с 0
     public void append(String indexBroker, Log log) throws Exception {
-        map.computeIfAbsent(indexBroker, s -> {
-            Broker<Log> logBroker = brokerManager.get(getClassName(indexBroker));
-            // Если будет больше логов в 1 секунду, чем длина очереди - мы начнём более раннии логи терять
-            // Я пока не знаю, хорошо это или плохо - надо тестировать
-            logBroker.setMaxSizeQueue(5_000);
-            return logBroker;
-        }).add(log, 6_000L);
+//        map.computeIfAbsent(indexBroker, s -> {
+//            Broker<Log> logBroker = brokerManager.get(getClassName(indexBroker));
+//            // Если будет больше логов в 1 секунду, чем длина очереди - мы начнём более раннии логи терять
+//            // Я пока не знаю, хорошо это или плохо - надо тестировать
+//            logBroker.setMaxSizeQueue(5_000);
+//            return logBroker;
+//        }).add(log, 6_000L);
     }
 
-    public List<Map<String, Integer>> writeToFs(String indexBroker) {
-        List<Map<String, Integer>> result = new ArrayList<>();
-        Broker<Log> logBroker = brokerManager.get(getClassName(indexBroker));
-        RateLimitItem maxIndex = rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName());
-        int maxCountLoop = (int) rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName()).getMax();
-        int counter = 1;
-        while (!logBroker.isEmpty()) {
-            AtomicInteger atomicInteger = indexFile.computeIfAbsent(indexBroker, _
-                    -> new AtomicInteger(1));
-            if (!maxIndex.check(atomicInteger.get())) {
-                atomicInteger.set(1);
-            }
-            String path = indexBroker + "." + atomicInteger.getAndIncrement();
-            result.add(write(logFolder, path, logBroker));
-            if (counter++ > maxCountLoop) {
-                break;
-            }
-        }
-        return result;
-    }
+//    public List<Map<String, Integer>> writeToFs(String indexBroker) {
+//        List<Map<String, Integer>> result = new ArrayList<>();
+//        Broker<Log> logBroker = brokerManager.get(getClassName(indexBroker));
+//        RateLimitItem maxIndex = rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName());
+//        int maxCountLoop = (int) rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName()).getMax();
+//        int counter = 1;
+//        while (!logBroker.isEmpty()) {
+//            AtomicInteger atomicInteger = indexFile.computeIfAbsent(indexBroker, _
+//                    -> new AtomicInteger(1));
+//            if (!maxIndex.check(atomicInteger.get())) {
+//                atomicInteger.set(1);
+//            }
+//            String path = indexBroker + "." + atomicInteger.getAndIncrement();
+//            result.add(write(logFolder, path, logBroker));
+//            if (counter++ > maxCountLoop) {
+//                break;
+//            }
+//        }
+//        return result;
+//    }
 
     private Map<String, Integer> write(String dir, String path, Broker<Log> logBroker) {
         RateLimitItem maxSize = rateLimit.get(RateLimitName.FILE_LOG_SIZE.getName());
