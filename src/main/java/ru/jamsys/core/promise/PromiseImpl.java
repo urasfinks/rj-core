@@ -2,14 +2,15 @@ package ru.jamsys.core.promise;
 
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
+import ru.jamsys.core.util.Util;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.Set;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class PromiseImpl extends AbstractPromiseBuilder {
 
-    public static ConcurrentLinkedDeque<Promise> queueMultipleComplete = new ConcurrentLinkedDeque<>();
+    public static Set<Promise> queueMultipleCompleteSet = Util.getConcurrentHashSet(Promise.class);
 
     public PromiseImpl(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
         super(keepAliveOnInactivityMs, lastActivityMs);
@@ -72,8 +73,8 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 if (!isStartLoop.get()) {
                     complete();
                 }
-            } else if (!queueMultipleComplete.contains(this)) {
-                queueMultipleComplete.add(this);
+            } else {
+                queueMultipleCompleteSet.add(this);
             }
         } else {
             //TODO: тут наверное надо повторно откинуть лог, допустим сюда могут исполненные задачи, но время закончилось
@@ -117,13 +118,13 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         if (isRun.get()) {
             if (isException.get()) {
                 isRun.set(false);
-                queueMultipleComplete.remove(this);
+                queueMultipleCompleteSet.remove(this);
                 if (onError != null) {
                     onError.start();
                 }
             } else if (!inProgress()) {
                 isRun.set(false);
-                queueMultipleComplete.remove(this);
+                queueMultipleCompleteSet.remove(this);
                 if (onComplete != null) {
                     onComplete.start();
                 }

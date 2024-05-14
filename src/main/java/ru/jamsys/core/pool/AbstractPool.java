@@ -80,6 +80,9 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
         rliPoolSize = rateLimit.get(RateLimitName.POOL_SIZE.getName());
 
         rateLimitPoolItem = rateLimitManager.get(ClassNameImpl.getClassNameStatic(cls, name));
+    }
+
+    public void subscribeOnComplete(){
 
     }
 

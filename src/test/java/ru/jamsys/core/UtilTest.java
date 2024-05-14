@@ -9,6 +9,7 @@ import ru.jamsys.core.util.UtilRisc;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class UtilTest {
@@ -58,4 +59,21 @@ class UtilTest {
         Assertions.assertEquals(2, counter.get());
         Assertions.assertEquals("test1xy", sb.toString());
     }
+
+
+    public static class X {
+
+    }
+
+    @SuppressWarnings("all")
+    @Test
+    void testSet() {
+        Set<X> set = Util.getConcurrentHashSet(X.class);
+        X x = new X();
+        set.add(x);
+        set.add(x);
+
+        Assertions.assertEquals(1, set.size());
+    }
+
 }

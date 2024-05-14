@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -362,6 +363,10 @@ public class Util {
         int sumReverse = Integer.parseInt(new StringBuilder(sum + "").reverse().toString());
         double result = min + Math.floor(Double.parseDouble("0." + sumReverse) * (max - min + 1));
         return (int) result;
+    }
+
+    public static  <T> Set<T> getConcurrentHashSet(Class<T> cls){
+        return ConcurrentHashMap.newKeySet();
     }
 
 }

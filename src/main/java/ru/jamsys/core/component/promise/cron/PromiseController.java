@@ -9,8 +9,10 @@ import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseImpl;
 import ru.jamsys.core.promise.PromiseTaskType;
 import ru.jamsys.core.template.cron.release.Cron1s;
+import ru.jamsys.core.util.UtilRisc;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
@@ -21,14 +23,14 @@ public class PromiseController implements Cron1s, PromiseGenerator {
     public Promise generate() {
         return new PromiseImpl(getClass().getName(),6_000L)
                 .append(this.getClass().getName(), PromiseTaskType.IO, (AtomicBoolean isThreadRun) -> {
-                    int count = 0;
-                    while (!PromiseImpl.queueMultipleComplete.isEmpty() && isThreadRun.get()) {
-                        Promise promise = PromiseImpl.queueMultipleComplete.pollFirst();
+                    AtomicInteger count = new AtomicInteger(0);
+                    UtilRisc.forEach(isThreadRun, PromiseImpl.queueMultipleCompleteSet, promise -> {
                         assert promise != null;
                         promise.complete();
-                        count++;
-                    }
-                    if (count > 0) {
+                        count.incrementAndGet();
+                    });
+
+                    if (count.get() > 0) {
                         App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Multiple complete: " + count));
                     }
                 });
