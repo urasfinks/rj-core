@@ -22,9 +22,11 @@ public class TemplateItem {
     }
 
     public void add(int x) {
+        // Не конкурентная проверка
         if (x >= timeUnit.getMin() && x <= timeUnit.getMax() && !list.contains(x)) {
             list.add(x);
         } else {
+            // Не конкурентная проверка
             if (!list.contains(x)) {
                 Util.printStackTrace(getClass().getName() + " unit value: " + x + " overflow between [" + timeUnit.getMin() + ", " + timeUnit.getMax() + "]");
             }

@@ -145,6 +145,7 @@ public class Cron {
                     timeVariant.set(templateMap.get(5).getTimeUnit(), dayOfWeek);
                     timeVariant.init();
 
+                    // Не конкурентная проверка
                     if (!listTimeVariant.contains(timeVariant)) {
                         listTimeVariant.add(timeVariant);
                     }

@@ -27,7 +27,7 @@ public class Parser {
         Dictionary curState = Dictionary.parse(ch);
         if (curState == Dictionary.DOLLAR && !isParse && lastState == Dictionary.ESCAPE) {
             String curSb = sb.toString();
-            if (!curSb.equals("")) {
+            if (!curSb.isEmpty()) {
                 sb = new StringBuilder();
                 sb.append(curSb, 0, curSb.length() - 1);
             }
@@ -75,6 +75,7 @@ public class Parser {
     }
 
     private boolean isMust(Dictionary dictionary) {
+        // Не конкурентная проверка
         return Arrays.asList(future).contains(dictionary);
     }
 

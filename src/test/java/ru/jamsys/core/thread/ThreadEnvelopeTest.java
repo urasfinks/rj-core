@@ -378,6 +378,7 @@ class ThreadEnvelopeTest {
         //Запускаем
         Assertions.assertTrue(threadEnvelope.run());
         //Проверяем, что вышли из паркинга (countOperation удалили вообще =) )
+        // Не конкурентная проверка
         Assertions.assertTrue(threadEnvelope.getMomentumStatistic().contains("inPark: false;"));
 
         //Ждём когда поток поработает
@@ -426,6 +427,7 @@ class ThreadEnvelopeTest {
         threadPool.shutdown();
     }
 
+    @SuppressWarnings("all")
     @Test
     public void checkInitialize2() {
         //Так предыдущие тесты уже насоздавали там данные

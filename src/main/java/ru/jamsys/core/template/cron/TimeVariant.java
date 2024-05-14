@@ -109,6 +109,7 @@ public class TimeVariant {
             if (vectorTimeUnit.equals(curTimeUnit)) {
                 break;
             }
+            // Не конкурентная проверка
             if (!listEmptyTimeUnit.contains(vectorTimeUnit)) {
                 if (debug) {
                     System.out.println(">r Unit." + vectorTimeUnit.getNameCache() + " continue because it is value template");

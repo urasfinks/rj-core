@@ -68,6 +68,7 @@ public class JdbcPool extends AbstractPool<ConnectionResource>
     public boolean checkExceptionOnComplete(Exception e) {
         if (e != null) {
             String msg = e.getMessage();
+            // Не конкурентная проверка
             return msg.contains("закрыто")
                     || msg.contains("close")
                     || msg.contains("Connection reset")
