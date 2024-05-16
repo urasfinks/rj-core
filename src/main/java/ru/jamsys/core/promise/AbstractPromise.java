@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.component.api.ClassFinder;
+import ru.jamsys.core.extension.Property;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
 import ru.jamsys.core.util.UtilJson;
 
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @JsonPropertyOrder({"rqUid", "index", "addTime", "expTime", "diffTimeMs", "exception", "completed", "trace", "exceptionTrace", "property"})
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
-public abstract class AbstractPromise extends ExpirationMsImmutableImpl implements Promise {
+public abstract class AbstractPromise extends ExpirationMsImmutableImpl implements Promise, Property<String> {
 
     @JsonProperty
     @Setter
@@ -37,7 +37,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     @JsonProperty
     @Getter
-    private final Map<String, Object> property = new ConcurrentHashMap<>();
+    private final Map<String, Object> mapProperty = new ConcurrentHashMap<>();
 
     protected volatile Throwable exception = null;
 
@@ -80,23 +80,6 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     public AbstractPromise(long keepAliveOnInactivityMs) {
         super(keepAliveOnInactivityMs);
-    }
-
-    @Override
-    public <R> R setProp(String key, R obj) {
-        @SuppressWarnings("unchecked")
-        R result = (R) property.computeIfAbsent(key, s -> obj);
-        return result;
-    }
-
-    public <R> R getProp(String key, Class<R> cls) {
-        Object o = property.get(key);
-        if (o != null && ClassFinder.instanceOf(o.getClass(), cls)) {
-            @SuppressWarnings("unchecked")
-            R r = (R) o;
-            return r;
-        }
-        return null;
     }
 
     @JsonIgnore

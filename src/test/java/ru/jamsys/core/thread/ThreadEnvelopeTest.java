@@ -128,6 +128,10 @@ class ThreadEnvelopeTest {
 //        threadPool.addToRemoveOnlyTest(threadEnvelope1);
 //        Assertions.assertEquals("item: 2; park: 0; remove: 1; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
+        threadPool.complete(threadEnvelope1, null);
+        Assertions.assertEquals("item: 2; park: 1; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
+        threadEnvelope1.setLastActivityMs(System.currentTimeMillis() - 100000);
+
         Util.sleepMs(1001);
         threadPool.keepAlive(null);
         //  Ожидаем увеличение ресурсов из удалённых, так как в парке нет свободных

@@ -6,7 +6,6 @@ import ru.jamsys.core.component.promise.api.PromiseApi;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -87,12 +86,6 @@ public interface Promise extends ExpirationMsImmutable {
     String getLog();
 
     Promise api(String index, PromiseApi<?> promiseApi);
-
-    Map<String, Object> getProperty();
-
-    <R> R getProp(String key, Class<R> cls);
-
-    <R> R setProp(String key, R obj);
 
     boolean isCompleted();
 
