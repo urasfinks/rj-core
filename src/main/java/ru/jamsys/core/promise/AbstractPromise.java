@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @JsonPropertyOrder({"rqUid", "index", "addTime", "expTime", "diffTimeMs", "exception", "completed", "trace", "exceptionTrace", "property"})
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
-public abstract class AbstractPromise extends ExpirationMsImmutableImpl implements Promise, Property<String> {
+public abstract class AbstractPromise extends ExpirationMsImmutableImpl implements Promise {
 
     @JsonProperty
     @Setter

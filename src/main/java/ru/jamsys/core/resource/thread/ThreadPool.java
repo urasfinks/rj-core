@@ -47,7 +47,7 @@ public class ThreadPool extends AbstractPool<ThreadEnvelope> implements Closable
         // Но бывает такое, что у пулов может быть min = 0
         // Pool keepAlive, тоже не запускается из-за того что при инициализации min = 0) - контролировать некому!)
         if (isEmpty()) {
-            addPoolItemIfEmpty();
+            addIfPoolEmpty();
         }
         ThreadEnvelope threadEnvelope = getPoolItem();
         if (threadEnvelope != null) {

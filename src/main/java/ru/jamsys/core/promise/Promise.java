@@ -3,6 +3,7 @@ package ru.jamsys.core.promise;
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.promise.api.PromiseApi;
+import ru.jamsys.core.extension.Property;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
 
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.function.Function;
 // Цепочка обещаний
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface Promise extends ExpirationMsImmutable {
+public interface Promise extends Property<String>, ExpirationMsImmutable {
 
     String getIndex();
 

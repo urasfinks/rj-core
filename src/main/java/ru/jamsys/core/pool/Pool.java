@@ -37,6 +37,6 @@ public interface Pool<T> extends StatisticsFlush {
 
     // Если min = 0, и в пуле никого нет, но есть внешний потребитель, которому нужны ресурсы в пуле
     // Добавляет ресурс в пустой пул
-    void addPoolItemIfEmpty();
+    void addIfPoolEmpty();
 
 }

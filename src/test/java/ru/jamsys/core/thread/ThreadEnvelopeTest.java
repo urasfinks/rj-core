@@ -56,7 +56,7 @@ class ThreadEnvelopeTest {
 
         Assertions.assertEquals("item: 0; park: 0; remove: 0; isRun: false; min: 0; max: 5; ", threadPool.getMomentumStatistic());
         threadPool.run();
-        threadPool.addPoolItemIfEmpty();
+        threadPool.addIfPoolEmpty();
         Assertions.assertEquals("item: 1; park: 1; remove: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
         ThreadEnvelope threadEnvelope1 = threadPool.getPoolItem();
         Assertions.assertEquals("TestPool-1", threadEnvelope1.getName());
@@ -107,43 +107,42 @@ class ThreadEnvelopeTest {
 
         Assertions.assertEquals("item: 1; park: 1; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
-        ThreadEnvelope threadEnvelope1 = threadPool.getPoolItem();
+        ThreadEnvelope r1 = threadPool.getPoolItem();
+        Assertions.assertEquals("item: 1; park: 0; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
+        threadPool.complete(r1, null);
+        Assertions.assertEquals("item: 1; park: 1; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
+
+        r1 = threadPool.getPoolItem();
         Assertions.assertEquals("item: 1; park: 0; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
         Util.sleepMs(1001);
         threadPool.keepAlive(null);
-
-        Assertions.assertEquals("item: 2; park: 1; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
-
-        threadPool.getPoolItem();
-
+        ThreadEnvelope r2 = threadPool.getPoolItem();
         Assertions.assertEquals("item: 2; park: 0; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
-//        // Проверка, что удалять не из паркинга нельзя
-//        threadPool.addToRemoveOnlyTest(threadEnvelope1);
-//        Assertions.assertEquals("item: 2; park: 0; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
-//
-//        threadPool.complete(threadEnvelope1, null);
-//        threadPool.addToRemoveOnlyTest(threadEnvelope1);
-//        Assertions.assertEquals("item: 2; park: 0; remove: 1; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
+        threadPool.complete(r1, null);
+        threadPool.complete(r2, null);
+        Assertions.assertEquals("item: 2; park: 2; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
-        threadPool.complete(threadEnvelope1, null);
-        Assertions.assertEquals("item: 2; park: 1; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
-        threadEnvelope1.setLastActivityMs(System.currentTimeMillis() - 100000);
+        r1 = threadPool.getPoolItem();
+        r2 = threadPool.getPoolItem();
+        Assertions.assertEquals("item: 2; park: 0; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
-        Util.sleepMs(1001);
-        threadPool.keepAlive(null);
-        //  Ожидаем увеличение ресурсов из удалённых, так как в парке нет свободных
+        threadPool.complete(r1, null);
         Assertions.assertEquals("item: 2; park: 1; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
-        //Зачистка происходит из парка, а в парке сейчас te1
-        threadEnvelope1.setKeepAliveOnInactivityMs(1); //По умолчанию сейча 6_000
-        Util.sleepMs(100);
+        r1.setLastActivityMs(System.currentTimeMillis() - 100000);
+        threadPool.keepAlive(null);
+        Assertions.assertEquals("item: 2; park: 0; remove: 1; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
         threadPool.keepAlive(null);
-        //Ожидаем срез под нож 1 ресурс
         Assertions.assertEquals("item: 1; park: 0; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
+
+        threadPool.complete(r1, null);
+        Assertions.assertEquals("item: 1; park: 0; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
+
+        threadPool.complete(r2, null);
 
         threadPool.shutdown();
     }
@@ -481,7 +480,7 @@ class ThreadEnvelopeTest {
         Assertions.assertEquals("item: 0; park: 0; remove: 0; isRun: true; min: 0; max: 10; ", threadPool.getMomentumStatistic());
 
         //На помощь приходит старт ресурсов для таких прикольных пулов
-        threadPool.addPoolItemIfEmpty();
+        threadPool.addIfPoolEmpty();
         Assertions.assertEquals("item: 1; park: 1; remove: 0; isRun: true; min: 0; max: 10; ", threadPool.getMomentumStatistic());
 
         ThreadEnvelope threadEnvelope = threadPool.getPoolItem();

@@ -138,20 +138,34 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMsMutable>
         }
     }
 
+    // Бассейн может поместить новые объекты для плаванья
     private boolean isSizePoolAllowsExtend() {
         return isRun.get() && rliPoolSize.check(itemQueue.size());
     }
 
+    // Увеличиваем кол-во объектов для плаванья
+    private void overclocking(int count) {
+        for (int i = 0; i < count; i++) {
+            if (!add()) {
+                break;
+            }
+        }
+    }
+
+    public void addIfPoolEmpty() {
+        if (min == 0 && itemQueue.isEmpty() && parkQueue.isEmpty()) {
+            add();
+        }
+    }
+
     private boolean add() {
         if (isSizePoolAllowsExtend()) {
-            if (!removeQueue.isEmpty()) {
-                T poolItem = removeQueue.poll();
-                if (poolItem != null) {
-                    addToPark(poolItem);
-                    return true;
-                }
+            T poolItem = removeQueue.poll();
+            if (poolItem != null) {
+                addToPark(poolItem);
+                return true;
             }
-            final T poolItem = createPoolItem();
+            poolItem = createPoolItem();
             if (poolItem != null) {
                 //#1
                 itemQueue.add(poolItem);
@@ -168,29 +182,25 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMsMutable>
         if (poolItem == null) {
             return;
         }
+        // Если произошло ручное удаление, и объект не является уже участником пула - завершаем
+        if (!itemQueue.contains(poolItem)) {
+            return;
+        }
+        // Если ошибка является критичной для пловца))) выбрасываем его нахер из пула
         if (checkExceptionOnComplete(e)) {
             exceptionQueue.add(poolItem);
             return;
         }
-        if (!isSizePoolAllowsExtend() && addToRemove(poolItem)) {
-            return;
-        }
-        // Если взять потоки как ресурсы, то после createPoolItem вызывается Thread.start, который после работы сам
-        // себя вносит в пул отработанных (parkQueue)
-        // Но вообще понятие ресурсов статично и они не живут собственной жизнью
-        // поэтому после createPoolItem мы кладём их в parkQueue, что бы их могли взять желающие
-        // И для потоков тут получается первичный дубль
-        if (poolItem.isExpired()) {
-            addToRemove(poolItem);
-        } else {
-            addToPark(poolItem);
-        }
+        //Объект, который возвращают в пул не может попасть на удаление, его как бы только что использовали! Алё?)
+        poolItem.active();
+        addToPark(poolItem);
     }
 
     private void addToPark(@NonNull T poolItem) {
         // Вставка poolItem в parkQueue должна быть только в этом месте
         // Я написал блокировку на вставку в паркинг, что бы сделать атомарной операцию contains и addLast
         // Только что бы избежать дублей в паркинге
+        // В обычной жизни конечно такое не должно произойти, но защищаемся всё равно
         lockAddToPark.lock();
         if (!parkQueue.contains(poolItem)) {
             parkQueue.addLast(poolItem);
@@ -199,7 +209,25 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMsMutable>
         lockAddToPark.unlock();
     }
 
+    // Это не явное удаление, а всего лишь маркировка, что в принципе объект может быть удалён
+    private boolean addToRemove(@NonNull T poolItem) {
+        // Добавлена блокировка, что бы избежать дублей в очереди на удаление
+        boolean result = false;
+        lockAddToRemove.lock();
+        if (itemQueue.size() > min) {
+            result = true;
+            // Что если объект уже был добавлен в очередь на удаление?
+            // Мы должны вернуть result = true по факту удаление состоялось
+            if (!removeQueue.contains(poolItem)) {
+                removeQueue.add(poolItem);
+            }
+        }
+        lockAddToRemove.unlock();
+        return result;
+    }
+
     // Бывают случаи когда что-то прекращает работать само собой и надо просто вырезать из пула ссылки
+    // Но ссылки могут быть
     public void remove(@NonNull T poolItem) {
         itemQueue.remove(poolItem);
         parkQueue.remove(poolItem);
@@ -213,34 +241,8 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMsMutable>
         closePoolItem(poolItem);
     }
 
-    private void overclocking(int count) {
-        for (int i = 0; i < count; i++) {
-            if (!add()) {
-                break;
-            }
-        }
-    }
-
-    public void addPoolItemIfEmpty() {
-        if (min == 0 && itemQueue.isEmpty() && parkQueue.isEmpty()) {
-            add();
-        }
-    }
-
-    // Это не явное удаление, а всего лишь маркировка, что в принципе ресурс может быть удалён
-    private boolean addToRemove(@NonNull T poolItem) {
-        // Добавлена блокировка, что бы избежать дублей в очереди на удаление
-        lockAddToRemove.lock();
-        if (itemQueue.size() > min && !removeQueue.contains(poolItem)) {
-            removeQueue.add(poolItem);
-            return true;
-        }
-        lockAddToRemove.unlock();
-        return false;
-    }
-
     // Не конкурентный вызов
-    private void removeNotActive() { //Проверка ждунов, что они давно не вызывались
+    private void removeInactive() {
         if (isRun.get()) {
             final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
@@ -310,7 +312,6 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMsMutable>
     }
 
     public String getMomentumStatistic() {
-        //sb.append("timePark0: ").append(getTimeWhenParkIsEmpty()).append("; ");
         return "item: " + itemQueue.size() + "; " +
                 "park: " + parkQueue.size() + "; " +
                 "remove: " + removeQueue.size() + "; " +
@@ -320,8 +321,6 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMsMutable>
     }
 
     // Этот метод нельзя вызывать под бизнес задачи, система сама должна это контролировать
-    // Если ресурса нет - ждите
-    // keepAlive работает на статистике от ресурсов. Если у пула min = 0, этот метод не поможет разогнать
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
         if (isRun.get()) {
@@ -329,10 +328,32 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMsMutable>
                 if (getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
                     overclocking(formulaAddCount.apply(1));
                 } else if (itemQueue.size() > min) { //Кол-во больше минимума
-                    removeNotActive();
+                    // закрываем с прошлого раза всех из отставки
+                    // так сделано специально, если на следующей итерации будет overclocking
+                    // что бы можно было достать кого-то из отставки
+                    closeRetired();
+                    // Готовим новых кандидатов на отставку
+                    removeInactive();
                 }
             } catch (Exception e) {
                 App.context.getBean(ExceptionHandler.class).handler(e);
+            }
+        }
+    }
+
+    // Закрываем кандидатов в отставке
+    private void closeRetired() {
+        while (!removeQueue.isEmpty()) {
+            T poolItem = removeQueue.poll();
+            if (poolItem != null) {
+                removeAndClose(poolItem);
+            }
+        }
+        //Удаление ошибочных
+        while (!exceptionQueue.isEmpty()) {
+            T poolItem = exceptionQueue.poll();
+            if (poolItem != null) {
+                removeAndClose(poolItem);
             }
         }
     }

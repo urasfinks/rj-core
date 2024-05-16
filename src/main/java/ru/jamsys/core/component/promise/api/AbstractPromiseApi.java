@@ -30,7 +30,7 @@ public abstract class AbstractPromiseApi<T> implements PromiseApi<T> {
 
     public void setResult(Object result) {
         if (propertyResult != null) {
-            promise.getProperty().put(propertyResult, result);
+            promise.setProperty(propertyResult, result);
         }
     }
 
