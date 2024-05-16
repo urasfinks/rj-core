@@ -21,19 +21,19 @@ import ru.jamsys.core.util.UtilRisc;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<T extends Pollable & ExpirationMs>
         extends ExpirationMsMutableImpl implements Pool<T>, RunnableInterface, KeepAlive, ClassName {
-
-    public static ThreadLocal<Pool<?>> context = new ThreadLocal<>();
 
     @Getter
     @ToString.Include
@@ -46,7 +46,7 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
     protected final ConcurrentLinkedQueue<T> exceptionQueue = new ConcurrentLinkedQueue<>();
 
     // Общая очередь, где находятся все объекты
-    protected final ConcurrentLinkedQueue<T> itemQueue = new ConcurrentLinkedQueue<>();
+    protected final Set<T> itemQueue = Util.getConcurrentHashSet();
 
     protected final AtomicBoolean isRun = new AtomicBoolean(false);
 
@@ -74,7 +74,9 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
 
     private final RateLimitItem rliPoolSize;
 
-    private final Semaphore lockAddToPark = new Semaphore(1);
+    private final Lock lockAddToPark = new ReentrantLock();
+
+    private final Lock lockAddToRemove = new ReentrantLock();
 
     public AbstractPool(String name, int min, Class<T> cls) {
         this.name = name;
@@ -107,7 +109,7 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
         }
     }
 
-    private void checkPark() {
+    private void updateStatistic() {
         if (parkQueue.isEmpty()) {
             if (timeWhenParkIsEmpty == -1) {
                 timeWhenParkIsEmpty = System.currentTimeMillis();
@@ -115,20 +117,6 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
         } else {
             timeWhenParkIsEmpty = -1;
         }
-    }
-
-    public String getMomentumStatistic() {
-        //sb.append("timePark0: ").append(getTimeWhenParkIsEmpty()).append("; ");
-        return "item: " + itemQueue.size() + "; " +
-                "park: " + parkQueue.size() + "; " +
-                "remove: " + removeQueue.size() + "; " +
-                "isRun: " + isRun.get() + "; " +
-                "min: " + min + "; " +
-                "max: " + rliPoolSize.getMax() + "; ";
-    }
-
-    public boolean isAmI() {
-        return this.equals(AbstractPool.context.get());
     }
 
     public boolean isEmpty() {
@@ -149,6 +137,31 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
         }
     }
 
+    private boolean isSizePoolAllowsExtend() {
+        return isRun.get() && rliPoolSize.check(itemQueue.size());
+    }
+
+    private boolean add() {
+        if (isSizePoolAllowsExtend()) {
+            if (!removeQueue.isEmpty()) {
+                T poolItem = removeQueue.poll();
+                if (poolItem != null) {
+                    addToPark(poolItem);
+                    return true;
+                }
+            }
+            final T poolItem = createPoolItem();
+            if (poolItem != null) {
+                //#1
+                itemQueue.add(poolItem);
+                //#2 блокировка не нужна, так как элемент только что был создан
+                addToPark(poolItem);
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void complete(T poolItem, Exception e) {
         if (poolItem == null) {
@@ -158,92 +171,34 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
             exceptionQueue.add(poolItem);
             return;
         }
-        if (!rliPoolSize.check(itemQueue.size()) || !isRun.get()) {
-            if (addToRemoveWithoutCheckParking(poolItem)) {
-                return;
-            }
+        if (!isSizePoolAllowsExtend() && addToRemove(poolItem)) {
+            return;
         }
         // Если взять потоки как ресурсы, то после createPoolItem вызывается Thread.start, который после работы сам
         // себя вносит в пул отработанных (parkQueue)
         // Но вообще понятие ресурсов статично и они не живут собственной жизнью
         // поэтому после createPoolItem мы кладём их в parkQueue, что бы их могли взять желающие
         // И для потоков тут получается первичный дубль
-        addParkIfNotContains(poolItem);
+        addToPark(poolItem);
     }
 
-    @Override
-    public T getPoolItem() {
-        if (!isRun.get()) {
-            return null;
-        }
-        tpsDequeue.incrementAndGet();
-        // Забираем с начала, что бы под нож улетели последние добавленные
-        T poolItem = parkQueue.pollFirst();
-        checkPark();
-        if (poolItem != null) {
-            poolItem.polled();
-        }
-        return poolItem;
-    }
-
-    @Override
-    public T getPoolItem(long timeOutMs, AtomicBoolean isThreadRun) {
-        if (!isRun.get()) {
-            return null;
-        }
-        tpsDequeue.incrementAndGet();
-        long finishTimeMs = System.currentTimeMillis() + timeOutMs;
-        while (isRun.get() && isThreadRun.get() && finishTimeMs > System.currentTimeMillis()) {
-            T poolItem = parkQueue.pollFirst();
-            checkPark();
-            if (poolItem != null) {
-                poolItem.polled();
-                return poolItem;
-            }
-            Util.sleepMs(100);
-        }
-        return null;
-    }
-
-    private void addParkIfNotContains(T poolItem) {
-        try {
-            lockAddToPark.acquire();
-        } catch (Exception _) {
-        }
+    private void addToPark(@NonNull T poolItem) {
+        // Вставка poolItem в parkQueue должна быть только в этом месте
+        // Я написал блокировку на вставку в паркинг, что бы сделать атомарной операцию contains и addLast
+        // Только что бы избежать дублей в паркинге
+        lockAddToPark.lock();
         if (!parkQueue.contains(poolItem)) {
             parkQueue.addLast(poolItem);
-            checkPark();
+            updateStatistic();
         }
-        lockAddToPark.release();
-    }
-
-    private boolean add() {
-        if (isRun.get() && rliPoolSize.check(itemQueue.size())) {
-            if (!removeQueue.isEmpty()) {
-                T poolItem = removeQueue.poll();
-                if (poolItem != null) {
-                    addParkIfNotContains(poolItem);
-                    return true;
-                }
-            }
-            final T poolItem = createPoolItem();
-            if (poolItem != null) {
-                //#1
-                itemQueue.add(poolItem);
-                //#2 блокировка не нужна, так как элемент только что был создан
-                parkQueue.add(poolItem);
-                checkPark();
-                return true;
-            }
-        }
-        return false;
+        lockAddToPark.unlock();
     }
 
     // Бывают случаи когда что-то прекращает работать само собой и надо просто вырезать из пула ссылки
     public void remove(@NonNull T poolItem) {
         itemQueue.remove(poolItem);
         parkQueue.remove(poolItem);
-        checkPark();
+        updateStatistic();
         removeQueue.remove(poolItem);
     }
 
@@ -254,11 +209,9 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
     }
 
     private void overclocking(int count) {
-        if (isRun.get() && rliPoolSize.check(itemQueue.size()) && count > 0) {
-            for (int i = 0; i < count; i++) {
-                if (!add()) {
-                    break;
-                }
+        for (int i = 0; i < count; i++) {
+            if (!add()) {
+                break;
             }
         }
     }
@@ -269,93 +222,42 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
         }
     }
 
-    // Этот метод нельзя вызывать под бизнес задачи, система сама должна это контролировать
-    // Если ресурса нет - ждите
-    // keepAlive работает на статистике от ресурсов. Если у пула min = 0, этот метод не поможет разогнать
-    @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
-        if (isRun.get()) {
-            try {
-                // Было изначально так: если на парковке никого нет - добавляем ресурс
-                // Из-за того, что задача сбора статистики вызывается в параллель с keepAlive
-                // Получается, что в паркинге нет никого и мы постоянно добавляем туда ресурс
-                // Добавленный ресурс ни кем не используется и попадает под нож, постоянно увеличивая счётчик ресурсов
-                // Поэтому добавили доп условие, что за промежуток времени не было complete со статусом isFinish = true
-                // Переход на tpoParkQueue оказался провальным, так как иногда задачи выполняются реже чем keepAlive
-                // Это приводит к тому, что tpoParkQueue может быть 0 без и аналогичная ситуация с паркингом при
-                // одновременном выполнении задачи и keepAlive, когда парк пустой и tpoParkQueue = 0 и мы опять
-                // идём в увеличении ресурсов.
-                // Сейчас буду проигрывать историю, когда буду считать время когда парк опустел до момента, когда в парк
-                // вернулись ресурсы
-                // Всё стало хорошо, НО иногда в парк могут возвращаться ресурсы, которые вышли по состоянию
-                // isOverflowIteration и по ним не надо считать сброс времени, что кол-во в парке стало больше 0 так как
-                // это вынужденная мера
-                // Вырезана все isFinish, так как целевое решение по контролю бесконечных задач
-                // должно решаться в RateLimit
-                if (getTimeWhenParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
-                    overclocking(formulaAddCount.apply(1));
-                } else if (itemQueue.size() > min) { //Кол-во больше минимума
-                    removeLazy();
-                }
-            } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
-            }
-        }
-        // Тут происходит непосредственно удаление
-        while (!removeQueue.isEmpty()) {
-            T poolItem = removeQueue.poll();
-            if (poolItem != null) {
-                removeAndClose(poolItem);
-            }
-        }
-        //Удаление ошибочных
-        while (!exceptionQueue.isEmpty()) {
-            T poolItem = exceptionQueue.poll();
-            if (poolItem != null) {
-                removeAndClose(poolItem);
-            }
-        }
-    }
-
-    public boolean addToRemove(T poolItem) {
-        //Удалять ресурсы из вне можно только из паркинга, когда они отработали
-        if (parkQueue.contains(poolItem)) {
-            parkQueue.remove(poolItem);
-            checkPark(); //Если сказали, что надо удалять, то наверное противится уже не стоит
-        } else {
-            return false;
-        }
-        return addToRemoveWithoutCheckParking(poolItem);
-    }
-
     // Это не явное удаление, а всего лишь маркировка, что в принципе ресурс может быть удалён
-    private boolean addToRemoveWithoutCheckParking(T poolItem) {
-        // Выведено в асинхрон через keepAlive, потому что если ресурс - поток, то когда он себя возвращает
-        // Механизм closePoolItem пытается завершить процесс, который ждёт выполнение этой команды
-        // Грубо это deadLock получается без асинхрона
+    private boolean addToRemove(@NonNull T poolItem) {
+        // Добавлена блокировка, что бы избежать дублей в очереди на удаление
+        lockAddToRemove.lock();
         if (itemQueue.size() > min && !removeQueue.contains(poolItem)) {
             removeQueue.add(poolItem);
             return true;
         }
+        lockAddToRemove.unlock();
         return false;
     }
 
+    // Не конкурентный вызов
     private void removeLazy() { //Проверка ждунов, что они давно не вызывались
         if (isRun.get()) {
             final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
-            //C конца будем пробегать
-            UtilRisc.forEach(null, parkQueue, (T poolItem) -> {
+            // ЧТо бы избежать расползание ссылок будем изымать и если всё "ок" добавлять обратно
+            int size = parkQueue.size();
+            while (!parkQueue.isEmpty() && size > 0) {
                 if (maxCounterRemove.get() == 0) {
                     return;
                 }
-                if (!poolItem.isExpired(curTimeMs)) {
-                    return;
+                T poolItem = parkQueue.pollFirst();
+                if (poolItem != null) {
+                    if (poolItem.isExpired(curTimeMs)) {
+                        updateStatistic();
+                        if (addToRemove(poolItem)) {
+                            maxCounterRemove.decrementAndGet();
+                        }
+                    } else {
+                        addToPark(poolItem);
+                    }
                 }
-                if (addToRemove(poolItem)) {
-                    maxCounterRemove.decrementAndGet();
-                }
-            }, true);
+                size--;
+            }
         }
     }
 
@@ -363,9 +265,7 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
     public void run() {
         if (restartOperation.compareAndSet(false, true)) {
             isRun.set(true);
-            for (int i = 0; i < min; i++) {
-                add();
-            }
+            overclocking(min);
             rateLimit.setActive(true);
             rateLimitPoolItem.setActive(true);
             restartOperation.set(false);
@@ -402,6 +302,100 @@ public abstract class AbstractPool<T extends Pollable & ExpirationMs>
                 .addField("remove", removeQueue.size())
         );
         return result;
+    }
+
+    public String getMomentumStatistic() {
+        //sb.append("timePark0: ").append(getTimeWhenParkIsEmpty()).append("; ");
+        return "item: " + itemQueue.size() + "; " +
+                "park: " + parkQueue.size() + "; " +
+                "remove: " + removeQueue.size() + "; " +
+                "isRun: " + isRun.get() + "; " +
+                "min: " + min + "; " +
+                "max: " + rliPoolSize.getMax() + "; ";
+    }
+
+    // Этот метод нельзя вызывать под бизнес задачи, система сама должна это контролировать
+    // Если ресурса нет - ждите
+    // keepAlive работает на статистике от ресурсов. Если у пула min = 0, этот метод не поможет разогнать
+    @Override
+    public void keepAlive(AtomicBoolean isThreadRun) {
+        if (isRun.get()) {
+            try {
+                // Было изначально так: если на парковке никого нет - добавляем ресурс
+                // Из-за того, что задача сбора статистики вызывается в параллель с keepAlive
+                // Получается, что в паркинге нет никого и мы постоянно добавляем туда ресурс
+                // Добавленный ресурс ни кем не используется и попадает под нож, постоянно увеличивая счётчик ресурсов
+                // Поэтому добавили доп условие, что за промежуток времени не было complete со статусом isFinish = true
+                // Переход на tpoParkQueue оказался провальным, так как иногда задачи выполняются реже чем keepAlive
+                // Это приводит к тому, что tpoParkQueue может быть 0 без и аналогичная ситуация с паркингом при
+                // одновременном выполнении задачи и keepAlive, когда парк пустой и tpoParkQueue = 0 и мы опять
+                // идём в увеличении ресурсов.
+                // Сейчас буду проигрывать историю, когда буду считать время когда парк опустел до момента, когда в парк
+                // вернулись ресурсы
+                // Всё стало хорошо, НО иногда в парк могут возвращаться ресурсы, которые вышли по состоянию
+                // isOverflowIteration и по ним не надо считать сброс времени, что кол-во в парке стало больше 0 так как
+                // это вынужденная мера
+                // Вырезана все isFinish, так как целевое решение по контролю бесконечных задач
+                // должно решаться в RateLimit
+                if (getTimeWhenParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
+                    overclocking(formulaAddCount.apply(1));
+                } else if (itemQueue.size() > min) { //Кол-во больше минимума
+                    removeLazy();
+                }
+            } catch (Exception e) {
+                App.context.getBean(ExceptionHandler.class).handler(e);
+            }
+        }
+        // Тут происходит непосредственно удаление
+        // Не используем UtilRisk, что бы если пойдёт одновременный процесс добавления из удалённых
+        // был шанс урвать из очереди хоть что-то для экономии создания новых poolItem
+        while (!removeQueue.isEmpty()) {
+            T poolItem = removeQueue.poll();
+            if (poolItem != null) {
+                removeAndClose(poolItem);
+            }
+        }
+        // Удаление ошибочных
+        // Чем хорош UtilRisk - если будет постоянное добавление в очередь, мы можем ту встрять на долго
+        // А так что было разгребли и ушли
+        UtilRisc.forEach(isThreadRun, exceptionQueue, poolItem -> {
+            exceptionQueue.remove(poolItem);
+            removeAndClose(poolItem);
+        });
+    }
+
+    @Override
+    public T getPoolItem() {
+        if (!isRun.get()) {
+            return null;
+        }
+        tpsDequeue.incrementAndGet();
+        // Забираем с начала, что бы под нож улетели последние добавленные
+        T poolItem = parkQueue.pollFirst();
+        if (poolItem != null) {
+            updateStatistic();
+            poolItem.polled();
+        }
+        return poolItem;
+    }
+
+    @Override
+    public T getPoolItem(long timeOutMs, AtomicBoolean isThreadRun) {
+        if (!isRun.get()) {
+            return null;
+        }
+        tpsDequeue.incrementAndGet();
+        long finishTimeMs = System.currentTimeMillis() + timeOutMs;
+        while (isRun.get() && isThreadRun.get() && finishTimeMs > System.currentTimeMillis()) {
+            T poolItem = parkQueue.pollFirst();
+            if (poolItem != null) {
+                updateStatistic();
+                poolItem.polled();
+                return poolItem;
+            }
+            Util.sleepMs(100);
+        }
+        return null;
     }
 
 }

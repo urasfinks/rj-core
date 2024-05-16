@@ -365,7 +365,7 @@ public class Util {
         return (int) result;
     }
 
-    public static  <T> Set<T> getConcurrentHashSet(Class<T> cls){
+    public static  <T> Set<T> getConcurrentHashSet(){
         return ConcurrentHashMap.newKeySet();
     }
 

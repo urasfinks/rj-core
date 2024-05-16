@@ -11,9 +11,11 @@ public interface Pool<T> extends StatisticsFlush {
     void complete(T ret, Exception e);
 
     // Получить ресурс без ожидания, если нет в park - вернём null
+    @Deprecated
     T getPoolItem();
 
     //Если в parkQueue нет ресурса, будем ждать timeOutMs
+    @Deprecated
     T getPoolItem(long timeOutMs, AtomicBoolean isThreadRun);
 
     // overclocking / onInitPool min resource / addPoolItemIfEmpty

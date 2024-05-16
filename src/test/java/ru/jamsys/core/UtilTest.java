@@ -68,7 +68,7 @@ class UtilTest {
     @SuppressWarnings("all")
     @Test
     void testSet() {
-        Set<X> set = Util.getConcurrentHashSet(X.class);
+        Set<X> set = Util.getConcurrentHashSet();
         X x = new X();
         set.add(x);
         set.add(x);

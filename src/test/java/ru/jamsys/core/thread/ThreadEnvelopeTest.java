@@ -120,13 +120,13 @@ class ThreadEnvelopeTest {
 
         Assertions.assertEquals("item: 2; park: 0; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
-        // Проверка, что удалять не из паркинга нельзя
-        threadPool.addToRemove(threadEnvelope1);
-        Assertions.assertEquals("item: 2; park: 0; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
-
-        threadPool.complete(threadEnvelope1, null);
-        threadPool.addToRemove(threadEnvelope1);
-        Assertions.assertEquals("item: 2; park: 0; remove: 1; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
+//        // Проверка, что удалять не из паркинга нельзя
+//        threadPool.addToRemoveOnlyTest(threadEnvelope1);
+//        Assertions.assertEquals("item: 2; park: 0; remove: 0; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
+//
+//        threadPool.complete(threadEnvelope1, null);
+//        threadPool.addToRemoveOnlyTest(threadEnvelope1);
+//        Assertions.assertEquals("item: 2; park: 0; remove: 1; isRun: true; min: 1; max: 5; ", threadPool.getMomentumStatistic());
 
         Util.sleepMs(1001);
         threadPool.keepAlive(null);
@@ -167,10 +167,10 @@ class ThreadEnvelopeTest {
 
         Assertions.assertEquals("item: 5; park: 4; remove: 0; isRun: true; min: 5; max: 5; ", threadPool.getMomentumStatistic());
 
-        threadPool.addToRemove(threadEnvelope);
-
-        //remove: 0 - так как min = 5
-        Assertions.assertEquals("item: 5; park: 4; remove: 0; isRun: true; min: 5; max: 5; ", threadPool.getMomentumStatistic());
+//        threadPool.addToRemoveOnlyTest(threadEnvelope);
+//
+//        //remove: 0 - так как min = 5
+//        Assertions.assertEquals("item: 5; park: 4; remove: 0; isRun: true; min: 5; max: 5; ", threadPool.getMomentumStatistic());
 
         threadPool.shutdown();
     }

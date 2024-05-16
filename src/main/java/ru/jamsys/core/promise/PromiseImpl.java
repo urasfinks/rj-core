@@ -10,7 +10,7 @@ import java.util.Set;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class PromiseImpl extends AbstractPromiseBuilder {
 
-    public static Set<Promise> queueMultipleCompleteSet = Util.getConcurrentHashSet(Promise.class);
+    public static Set<Promise> queueMultipleCompleteSet = Util.getConcurrentHashSet();
 
     public PromiseImpl(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
         super(keepAliveOnInactivityMs, lastActivityMs);
