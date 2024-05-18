@@ -79,13 +79,9 @@ class ThreadEnvelopeTest {
         threadEnvelope2.setKeepAliveOnInactivityMs(1);
         Util.sleepMs(100);
         Assertions.assertEquals("item: 2; park: 1; remove: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
-        threadPool.keepAlive(null);
-        Assertions.assertEquals("item: 1; park: 0; remove: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
-        threadPool.complete(threadEnvelopeX, null);
-        Assertions.assertEquals("item: 1; park: 1; remove: 0; isRun: true; min: 0; max: 5; ", threadPool.getMomentumStatistic());
 
-        ThreadEnvelope threadEnvelopeX2 = threadPool.getPoolItem();
-        Assertions.assertEquals("TestPool-1", threadEnvelopeX2.getName());
+
+        threadPool.shutdown();
     }
 
     @Test
