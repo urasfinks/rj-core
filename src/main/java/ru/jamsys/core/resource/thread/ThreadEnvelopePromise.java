@@ -1,32 +1,25 @@
 package ru.jamsys.core.resource.thread;
 
 import lombok.Getter;
-import lombok.ToString;
 import ru.jamsys.core.App;
+import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.Pollable;
-import ru.jamsys.core.pool.Pool;
+import ru.jamsys.core.extension.Completed;
+import ru.jamsys.core.extension.Resource;
+import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
+import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import ru.jamsys.core.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
-import java.util.function.Function;
 
-/*
- * После остановки поток нельзя переиспользовать
- * Нельзя будет его заново запустить - надо полностью пересоздавать объект
- * */
-
-@SuppressWarnings({"unused", "UnusedReturnValue"})
-@ToString(onlyExplicitlyIncluded = true)
-public class ThreadEnvelope extends ExpirationMsMutableImpl implements ClassName, Pollable {
-
+public class ThreadEnvelopePromise extends ExpirationMsMutableImpl implements ClassName, Completed, Resource<Void, Void> {
     private final Thread thread;
 
     @Getter
@@ -45,9 +38,9 @@ public class ThreadEnvelope extends ExpirationMsMutableImpl implements ClassName
 
     private final StringBuilder info = new StringBuilder();
 
-    private final Pool<ThreadEnvelope> pool;
+    private final ThreadPoolPromise pool;
 
-    public ThreadEnvelope(String name, Pool<ThreadEnvelope> pool, Function<ThreadEnvelope, Boolean> fn) {
+    public ThreadEnvelopePromise(String name, ThreadPoolPromise pool) {
         this.pool = pool;
         RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClassName(pool.getName()));
         rateLimit.init(RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);
@@ -69,14 +62,16 @@ public class ThreadEnvelope extends ExpirationMsMutableImpl implements ClassName
                     pause();
                     continue;
                 }
-                try {
-                    if (fn.apply(this)) {
-                        continue;
+                ExpirationMsImmutableEnvelope<PromiseTask> promiseTask = pool.getPromiseTask();
+                if (promiseTask != null) {
+                    try {
+                        promiseTask.getValue().run();
+                    } catch (Exception e) {
+                        App.context.getBean(ExceptionHandler.class).handler(e);
                     }
-                } catch (Exception e) {
-                    App.context.getBean(ExceptionHandler.class).handler(e);
+                    continue; // Если таска была - перепрыгиваем pause()
                 }
-                //Конец итерации цикла всегда pause()
+                //Конец итерации цикла -> всегда pause()
                 pause();
             }
             isRun.set(false);
@@ -122,9 +117,8 @@ public class ThreadEnvelope extends ExpirationMsMutableImpl implements ClassName
         if (isShutdown.get()) {
             raiseUp("Thread shutdown", "run()");
             return false;
-        }
-        //Что бы второй раз не получилось запустить поток после остановки проверим на isWhile
-        if (isInit.compareAndSet(false, true)) {
+        } else if (isInit.compareAndSet(false, true)) {
+            //Что бы второй раз не получилось запустить поток после остановки проверим на isWhile
             if (isRun.compareAndSet(false, true)) {
                 info
                         .append("[")
@@ -225,6 +219,16 @@ public class ThreadEnvelope extends ExpirationMsMutableImpl implements ClassName
         sb.append("inPark: ").append(inPark.get()).append("; ");
         sb.append("isShutdown: ").append(isShutdown.get()).append("; ");
         return sb.toString();
+    }
+
+    @Override
+    public int getWeight(BalancerAlgorithm balancerAlgorithm) {
+        return 0;
+    }
+
+    @Override
+    public Void execute(Void arguments) {
+        return null;
     }
 
 }

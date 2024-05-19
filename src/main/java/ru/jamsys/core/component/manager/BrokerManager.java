@@ -32,6 +32,18 @@ public class BrokerManager<MOI>
         return new Broker<>(index, applicationContext);
     }
 
+    public boolean isEmpty(String key) {
+        return get(key).isEmpty();
+    }
+
+    public int getOccupancyPercentage(String key) {
+        return get(key).getOccupancyPercentage();
+    }
+
+    public int size(String key) {
+        return get(key).size();
+    }
+
     public ExpirationMsImmutableEnvelope<MOI> pollLast(String key) {
         Broker<MOI> queue = get(key);
         return queue.pollLast();

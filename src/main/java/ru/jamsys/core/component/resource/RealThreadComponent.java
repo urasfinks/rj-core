@@ -9,7 +9,7 @@ import ru.jamsys.core.promise.PromiseTask;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
-public class RealThreadComponent implements Resource<Void, PromiseTask> {
+public class RealThreadComponent implements Resource<PromiseTask, Void> {
 
     @Override
     public Void execute(PromiseTask arguments) {
@@ -20,4 +20,5 @@ public class RealThreadComponent implements Resource<Void, PromiseTask> {
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 1;
     }
+
 }

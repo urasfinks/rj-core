@@ -10,8 +10,6 @@ import ru.jamsys.core.component.manager.item.CronPromise;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.RunnableComponent;
 import ru.jamsys.core.promise.PromiseGenerator;
-import ru.jamsys.core.resource.thread.ThreadEnvelope;
-import ru.jamsys.core.resource.thread.ThreadPool;
 import ru.jamsys.core.template.cron.Cron;
 import ru.jamsys.core.template.cron.release.CronTemplate;
 import ru.jamsys.core.util.Util;
@@ -25,8 +23,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Lazy
 public class CronComponent implements RunnableComponent, ClassName {
 
-    final private ThreadPool threadPool;
+    final private Thread threadPool;
     final private List<CronPromise> listItem = new ArrayList<>();
+    final private AtomicBoolean isWhile = new AtomicBoolean(true);
 
     public CronComponent(
             ExceptionHandler exceptionHandler,
@@ -35,34 +34,31 @@ public class CronComponent implements RunnableComponent, ClassName {
             ApplicationContext applicationContext
     ) {
         initList(classFinder, applicationContext, exceptionHandler);
-        this.threadPool = new ThreadPool(
-                getClassName(),
-                1,
-                (ThreadEnvelope threadEnvelope) -> {
-                    long nextStartMs = System.currentTimeMillis();
-                    AtomicBoolean isWhile = threadEnvelope.getIsWhile();
-                    while (isWhile.get() && threadEnvelope.isNotInterrupted()) {
-                        nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
-                        long curTimeMs = System.currentTimeMillis();
+        threadPool = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long nextStartMs = System.currentTimeMillis();
+                while (isWhile.get() && !threadPool.isInterrupted()) {
+                    nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
+                    long curTimeMs = System.currentTimeMillis();
 
-                        runCronTask(curTimeMs);
+                    runCronTask(curTimeMs);
 
-                        if (isWhile.get()) {
-                            long calcSleepMs = nextStartMs - System.currentTimeMillis();
-                            if (calcSleepMs > 0) {
-                                Util.sleepMs(calcSleepMs);
-                            } else {
-                                Util.sleepMs(1);//Что бы поймать Interrupt
-                                nextStartMs = System.currentTimeMillis();
-                            }
+                    if (isWhile.get()) {
+                        long calcSleepMs = nextStartMs - System.currentTimeMillis();
+                        if (calcSleepMs > 0) {
+                            Util.sleepMs(calcSleepMs);
                         } else {
-                            break;
+                            Util.sleepMs(1);//Что бы поймать Interrupt
+                            nextStartMs = System.currentTimeMillis();
                         }
+                    } else {
+                        break;
                     }
-                    Util.logConsole("STOP");
-                    return false;
                 }
-        );
+                Util.logConsole("STOP");
+            }
+        });
     }
 
     private void runCronTask(long curTimeMs) {
@@ -102,13 +98,14 @@ public class CronComponent implements RunnableComponent, ClassName {
 
     @Override
     public void run() {
-        threadPool.run();
-        threadPool.wakeUp();
+        threadPool.start();
+        //TODO: тут был wakeUp
     }
 
     @Override
     public void shutdown() {
-        threadPool.shutdown();
+        isWhile.set(false);
+        threadPool.interrupt();
     }
 
 }

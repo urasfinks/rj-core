@@ -15,6 +15,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+// RA - ResourceArguments
+// RR - ResourceResult
+// PI - PoolItem
+
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class PromiseTask implements Runnable {
 
@@ -114,12 +118,7 @@ public class PromiseTask implements Runnable {
         promise.getTrace().add(trace);
         long timeStart = System.nanoTime();
         try {
-            if (supplier != null) {
-                promise.complete(this, supplier.apply(isThreadRun));
-            } else if (procedure != null) {
-                procedure.accept(isThreadRun);
-                promise.complete(this);
-            }
+            executeBlock();
         } catch (Throwable th) {
             App.context.getBean(ExceptionHandler.class).handler(th);
             if (retryCount > 0) {
@@ -135,6 +134,15 @@ public class PromiseTask implements Runnable {
         }
         timer.stop();
         trace.setValue(new TraceTimer(startTime, System.currentTimeMillis(), timer.getOffsetLastActivityNano()));
+    }
+
+    protected void executeBlock() throws Throwable {
+        if (supplier != null) {
+            getPromise().complete(this, supplier.apply(isThreadRun));
+        } else if (procedure != null) {
+            procedure.accept(isThreadRun);
+            getPromise().complete(this);
+        }
     }
 
 }

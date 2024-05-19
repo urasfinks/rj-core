@@ -1,28 +1,23 @@
 package ru.jamsys.core.pool;
 
+import ru.jamsys.core.extension.Resource;
 import ru.jamsys.core.extension.StatisticsFlush;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+// RA - ResourceArguments
+// RR - ResourceResult
+// PI - PoolItem
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public interface Pool<T> extends StatisticsFlush {
+public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlush {
 
     //После работы с ресурсом его надо вернуть в пул
-    void complete(T ret, Exception e);
-
-    // Получить ресурс без ожидания, если нет в park - вернём null
-    @Deprecated
-    T getPoolItem();
-
-    //Если в parkQueue нет ресурса, будем ждать timeOutMs
-    @Deprecated
-    T getPoolItem(long timeOutMs, AtomicBoolean isThreadRun);
+    void complete(PI ret, Exception e);
 
     // overclocking / onInitPool min resource / addPoolItemIfEmpty
-    T createPoolItem();
+    PI createPoolItem();
 
     // Реализация закрытия ресурса
-    void closePoolItem(T poolItem);
+    void closePoolItem(PI poolItem);
 
     String getName();
 
@@ -30,13 +25,15 @@ public interface Pool<T> extends StatisticsFlush {
     boolean checkExceptionOnComplete(Exception e);
 
     // Ручное удаление ресурса из пула, желательно конечно лишний раз не использовать
-    void remove(T poolItem);
+    void remove(PI poolItem);
 
     // Ручное удаление ресурса из пула + вызов closePoolItem
-    void removeAndClose(T poolItem);
+    void removeAndClose(PI poolItem);
 
     // Если min = 0, и в пуле никого нет, но есть внешний потребитель, которому нужны ресурсы в пуле
     // Добавляет ресурс в пустой пул
     void addIfPoolEmpty();
+
+    void onParkUpdate();
 
 }

@@ -6,7 +6,7 @@ import ru.jamsys.core.balancer.algorithm.LeastConnections;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.Pollable;
+import ru.jamsys.core.extension.Completed;
 import ru.jamsys.core.extension.Resource;
 import ru.jamsys.core.pool.Pool;
 import ru.jamsys.core.rate.limit.RateLimit;
@@ -25,8 +25,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class ConnectionResource extends ExpirationMsMutableImpl
-        implements ClassName, Pollable,
-        Resource<List<Map<String, Object>>, JdbcRequest> {
+        implements ClassName, Completed,
+        Resource<JdbcRequest, List<Map<String, Object>>> {
 
     final private Connection connection;
 
@@ -34,10 +34,10 @@ public class ConnectionResource extends ExpirationMsMutableImpl
 
     private final AtomicBoolean reusable = new AtomicBoolean(false);
 
-    private final Pool<ConnectionResource> pool;
+    private final Pool<JdbcRequest, List<Map<String, Object>>, ConnectionResource> pool;
 
     //JdbcPool потому что надо получить контроллер sql операторов (pool.getStatementControl())
-    public ConnectionResource(Connection connection, Pool<ConnectionResource> pool) {
+    public ConnectionResource(Connection connection, Pool<JdbcRequest, List<Map<String, Object>>, ConnectionResource> pool) {
         this.pool = pool;
         this.connection = connection;
         rateLimit = App.context.getBean(RateLimitManager.class)
@@ -46,7 +46,7 @@ public class ConnectionResource extends ExpirationMsMutableImpl
     }
 
     @Override
-    public void polled() {
+    public void onComplete() {
         reusable.set(false);
     }
 

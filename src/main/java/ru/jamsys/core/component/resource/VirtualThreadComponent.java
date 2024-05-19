@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
-public class VirtualThreadComponent implements Resource<Void, PromiseTask> {
+public class VirtualThreadComponent implements Resource<PromiseTask, Void> {
 
     private final ExecutorService executorService = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("v-thread-", 0).factory());
     private final AtomicBoolean isThreadRun = new AtomicBoolean(true);

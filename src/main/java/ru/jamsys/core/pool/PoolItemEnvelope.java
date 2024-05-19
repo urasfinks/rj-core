@@ -1,0 +1,31 @@
+package ru.jamsys.core.pool;
+
+import lombok.Getter;
+import lombok.Setter;
+import ru.jamsys.core.extension.Resource;
+
+// RA - ResourceArguments
+// RR - ResourceResult
+// PI - PoolItem
+
+public class PoolItemEnvelope<RA, RR, PI extends Resource<RA, RR>> implements AutoCloseable {
+
+    final Pool<RA, RR, PI> pool;
+
+    @Getter
+    final PI item;
+
+    @Setter
+    private Exception e = null;
+
+    public PoolItemEnvelope(Pool<RA, RR, PI> pool, PI item) {
+        this.pool = pool;
+        this.item = item;
+    }
+
+    @Override
+    public void close() throws Exception {
+        this.pool.complete(this.item, e);
+    }
+
+}

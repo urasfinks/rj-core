@@ -322,4 +322,24 @@ class PromiseImplTest {
         System.out.println(wf.getLog());
     }
 
+    @Test
+    void promiseTaskWithPool() {
+
+//        ThreadPool threadPool = new ThreadPool(
+//                "wef",
+//                1,
+//                (ThreadEnvelope _) -> true
+//        );
+//
+//        JdbcPool jdbcPool = new JdbcPool("jdbc", 10);
+//
+//        Promise promise = new PromiseImpl("test", 6_000L);
+
+//        PromiseTaskWithPool<Void, Void, ThreadEnvelope> th = new PromiseTaskWithPool<>("th", promise, PromiseTaskType.IO, threadPool);
+//
+//        PromiseTaskWithPool<JdbcRequest, List<Map<String, Object>>, ConnectionResource> jdbc = new PromiseTaskWithPool<>("jdbc", promise, PromiseTaskType.IO, jdbcPool);
+
+
+    }
+
 }
