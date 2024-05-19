@@ -38,9 +38,9 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
 
     private final StringBuilder info = new StringBuilder();
 
-    private final ThreadPool pool;
+    private final ThreadPoolPromise pool;
 
-    public ThreadResource(String name, ThreadPool pool) {
+    public ThreadResource(String name, ThreadPoolPromise pool) {
         this.pool = pool;
         RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClassName(pool.getName()));
         rateLimit.init(RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);

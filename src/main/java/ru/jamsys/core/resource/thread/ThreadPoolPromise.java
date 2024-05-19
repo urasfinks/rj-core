@@ -8,14 +8,14 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> {
+public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadResource> {
 
     AtomicInteger counter = new AtomicInteger(1);
 
     private final BrokerManager<PromiseTask> brokerManager;
 
     @SuppressWarnings("all")
-    public ThreadPool(String name, int min) {
+    public ThreadPoolPromise(String name, int min) {
         super(name, min, ThreadResource.class);
         brokerManager = App.context.getBean(BrokerManager.class);
     }
