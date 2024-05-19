@@ -6,7 +6,7 @@ import ru.jamsys.core.balancer.algorithm.LeastConnections;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.Completed;
+import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.extension.Resource;
 import ru.jamsys.core.pool.Pool;
 import ru.jamsys.core.rate.limit.RateLimit;
@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class ConnectionResource extends ExpirationMsMutableImpl
-        implements ClassName, Completed,
+        implements ClassName, Completable,
         Resource<JdbcRequest, List<Map<String, Object>>> {
 
     final private Connection connection;

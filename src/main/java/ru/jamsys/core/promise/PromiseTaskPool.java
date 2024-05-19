@@ -2,7 +2,7 @@ package ru.jamsys.core.promise;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.extension.Completed;
+import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.extension.Resource;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
@@ -24,7 +24,7 @@ import java.util.function.Function;
 // и в конечном счёте run запустит executeBlock, где мы поработаем с ресурсом в рамках потока исполнения задачи
 // и вызовем supplier/procedure c подготовленным уже результатом исполнения
 
-public class PromiseTaskPool<RA, RR, PI extends Completed & ExpirationMsMutable & Resource<RA, RR>> extends PromiseTask {
+public class PromiseTaskPool<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>> extends PromiseTask {
 
     final AbstractPoolPromise<RA, RR, PI> pool;
 

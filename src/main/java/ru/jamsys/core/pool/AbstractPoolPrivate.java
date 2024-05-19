@@ -5,11 +5,11 @@ package ru.jamsys.core.pool;
 // Так как все объекты пула живут своей жизнью, они могут пойти поспать или вообще перестать работать
 // Для синхронизации с внешним миром - есть звоночек (это как вызов официанта ServiceBell) - что бы взбодрить пул
 
-import ru.jamsys.core.extension.Completed;
+import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.extension.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
-public abstract class AbstractPoolPrivate<RA, RR, PI extends Completed & ExpirationMsMutable & Resource<RA, RR>>
+public abstract class AbstractPoolPrivate<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>>
         extends AbstractPool<RA, RR, PI> {
 
     public AbstractPoolPrivate(String name, int min, Class<PI> cls) {

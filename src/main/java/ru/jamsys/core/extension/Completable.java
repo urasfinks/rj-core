@@ -1,6 +1,6 @@
 package ru.jamsys.core.extension;
 
-public interface Completed {
+public interface Completable {
 
     default void onComplete() {
     }

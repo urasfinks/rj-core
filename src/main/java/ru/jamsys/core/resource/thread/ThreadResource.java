@@ -6,7 +6,7 @@ import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.Completed;
+import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.extension.Resource;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
@@ -19,7 +19,7 @@ import ru.jamsys.core.util.Util;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 
-public class ThreadEnvelopePromise extends ExpirationMsMutableImpl implements ClassName, Completed, Resource<Void, Void> {
+public class ThreadResource extends ExpirationMsMutableImpl implements ClassName, Completable, Resource<Void, Void> {
     private final Thread thread;
 
     @Getter
@@ -38,9 +38,9 @@ public class ThreadEnvelopePromise extends ExpirationMsMutableImpl implements Cl
 
     private final StringBuilder info = new StringBuilder();
 
-    private final ThreadPoolPromise pool;
+    private final ThreadPool pool;
 
-    public ThreadEnvelopePromise(String name, ThreadPoolPromise pool) {
+    public ThreadResource(String name, ThreadPool pool) {
         this.pool = pool;
         RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClassName(pool.getName()));
         rateLimit.init(RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);
@@ -153,6 +153,7 @@ public class ThreadEnvelopePromise extends ExpirationMsMutableImpl implements Cl
         return false;
     }
 
+    @SuppressWarnings("all")
     private void doShutdown() {
         info
                 .append("[")

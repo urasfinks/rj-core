@@ -1,6 +1,6 @@
 package ru.jamsys.core.pool;
 
-import ru.jamsys.core.extension.Completed;
+import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.extension.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.util.Util;
@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // Я считаю, что эта реализация плохая, так как в ней есть ожидания
 // Я решил оставить эту реализацию только для тестирования, так как напрямую можно пощупать poolItem
 
-public abstract class AbstractPoolPublic<RA, RR, PI extends Completed & ExpirationMsMutable & Resource<RA, RR>>
+public abstract class AbstractPoolPublic<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>>
         extends AbstractPool<RA, RR, PI> {
 
     public AbstractPoolPublic(String name, int min, Class<PI> cls) {

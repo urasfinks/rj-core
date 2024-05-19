@@ -36,7 +36,7 @@ import java.util.function.Function;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<RA, RR, PI extends Completed & ExpirationMsMutable & Resource<RA, RR>>
+public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>>
         extends ExpirationMsMutableImpl
         implements Pool<RA, RR, PI>, RunnableInterface, KeepAlive, ClassName {
 
