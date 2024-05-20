@@ -21,7 +21,7 @@ public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadRes
     }
 
     public void addPromiseTask(PromiseTask promiseTask) throws Exception {
-        brokerManager.add(name, new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getPromise().getExpiryRemainingMs()));
+        brokerManager.add(getName(), new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getPromise().getExpiryRemainingMs()));
         addIfPoolEmpty();
         serviceBell();
     }

@@ -28,8 +28,7 @@ import java.util.function.Consumer;
 // Уменьшить лаг можно путём более частого вызова keepAlive
 // Мы не можем себе позволить постфактум менять timeout, так как в map заносится expiredTime из .getExpiredMs()
 // Возвращается одноразовая обёртка, для синхронизации данных в многопоточном режиме
-// Если не хотите выполнить код onExpired и какую либо бизнеслогику в одномоментном протухахании - используйте
-// DisposableExpiredMsImmutableEnvelope в своей логике, дабы избежать конфликтов
+// Для избежания выполнения одномоментного выполнения используется одноразовая обёртка (DisposableExpiredMsImmutableEnvelope)
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class Expiration<V>
