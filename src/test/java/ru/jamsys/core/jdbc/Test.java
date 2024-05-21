@@ -1,8 +1,8 @@
 package ru.jamsys.core.jdbc;
 
-import ru.jamsys.core.template.jdbc.JdbcTemplate;
-import ru.jamsys.core.template.jdbc.StatementType;
-import ru.jamsys.core.template.jdbc.Template;
+import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
+import ru.jamsys.core.flat.template.jdbc.StatementType;
+import ru.jamsys.core.flat.template.jdbc.Template;
 
 public enum Test implements JdbcTemplate {
 

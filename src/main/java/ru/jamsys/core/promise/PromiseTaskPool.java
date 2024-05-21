@@ -3,7 +3,7 @@ package ru.jamsys.core.promise;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.Completable;
-import ru.jamsys.core.extension.Resource;
+import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 

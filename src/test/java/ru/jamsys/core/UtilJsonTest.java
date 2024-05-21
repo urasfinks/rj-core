@@ -3,8 +3,8 @@ package ru.jamsys.core;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.util.UtilJson;
-import ru.jamsys.core.util.JsonEnvelope;
+import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.JsonEnvelope;
 
 import java.util.Map;
 

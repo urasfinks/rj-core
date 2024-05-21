@@ -3,9 +3,9 @@ package ru.jamsys.core.resource.virtual.file.system;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.Security;
 import ru.jamsys.core.extension.SupplierThrowing;
-import ru.jamsys.core.util.FileWriteOptions;
-import ru.jamsys.core.util.UtilBase64;
-import ru.jamsys.core.util.UtilFile;
+import ru.jamsys.core.flat.util.FileWriteOptions;
+import ru.jamsys.core.flat.util.UtilBase64;
+import ru.jamsys.core.flat.util.UtilFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

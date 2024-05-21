@@ -6,7 +6,7 @@ package ru.jamsys.core.pool;
 // Для синхронизации с внешним миром - есть звоночек (это как вызов официанта ServiceBell) - что бы взбодрить пул
 
 import ru.jamsys.core.extension.Completable;
-import ru.jamsys.core.extension.Resource;
+import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
 public abstract class AbstractPoolPrivate<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>>

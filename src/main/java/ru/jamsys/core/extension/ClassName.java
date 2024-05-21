@@ -2,7 +2,7 @@ package ru.jamsys.core.extension;
 
 import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.api.ClassFinder;
+import ru.jamsys.core.component.ClassFinder;
 
 public interface ClassName {
 

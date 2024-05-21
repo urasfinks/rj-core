@@ -6,11 +6,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.Security;
-import ru.jamsys.core.component.resource.VirtualFileSystem;
+import ru.jamsys.core.component.VirtualFileSystem;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.FileLoaderFactory;
 import ru.jamsys.core.resource.virtual.file.system.FileSaverFactory;
-import ru.jamsys.core.util.UtilFile;
+import ru.jamsys.core.flat.util.UtilFile;
 
 class FileTest {
     @BeforeAll

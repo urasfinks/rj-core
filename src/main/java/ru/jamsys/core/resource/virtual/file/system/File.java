@@ -8,7 +8,7 @@ import ru.jamsys.core.extension.*;
 import ru.jamsys.core.resource.virtual.file.system.view.FileView;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
-import ru.jamsys.core.util.UtilBase64;
+import ru.jamsys.core.flat.util.UtilBase64;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

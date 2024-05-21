@@ -4,8 +4,8 @@ import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.resource.PropertiesComponent;
-import ru.jamsys.core.extension.RunnableComponent;
+import ru.jamsys.core.extension.LifeCycleComponent;
+import ru.jamsys.core.flat.util.*;
 import ru.jamsys.core.util.*;
 
 
@@ -28,7 +28,7 @@ import java.util.Set;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
-public class Security implements RunnableComponent {
+public class Security implements LifeCycleComponent {
 
     @Setter
     private String pathStorage;

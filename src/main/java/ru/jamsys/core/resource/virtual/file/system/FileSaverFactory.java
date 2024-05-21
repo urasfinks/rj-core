@@ -2,8 +2,8 @@ package ru.jamsys.core.resource.virtual.file.system;
 
 
 import ru.jamsys.core.extension.ConsumerThrowing;
-import ru.jamsys.core.util.FileWriteOptions;
-import ru.jamsys.core.util.UtilFile;
+import ru.jamsys.core.flat.util.FileWriteOptions;
+import ru.jamsys.core.flat.util.UtilFile;
 
 @SuppressWarnings("unused")
 public class FileSaverFactory {

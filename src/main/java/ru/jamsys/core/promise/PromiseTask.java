@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.promise.PromiseTaskTime;
-import ru.jamsys.core.component.resource.RealThreadComponent;
-import ru.jamsys.core.component.resource.VirtualThreadComponent;
+import ru.jamsys.core.component.PromiseTaskTime;
+import ru.jamsys.core.component.RealThreadComponent;
+import ru.jamsys.core.component.VirtualThreadComponent;
 import ru.jamsys.core.statistic.expiration.TimeEnvelopeNano;
 
 import java.util.List;

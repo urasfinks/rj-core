@@ -1,6 +1,6 @@
 package ru.jamsys.core.statistic.expiration;
 
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.flat.util.Util;
 
 public interface ExpirationMs {
 

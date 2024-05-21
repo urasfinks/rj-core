@@ -1,7 +1,7 @@
 package ru.jamsys.core.statistic;
 
 import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.flat.util.Util;
 
 import java.util.Map;
 import java.util.SortedSet;

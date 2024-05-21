@@ -5,11 +5,11 @@ import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.Security;
-import ru.jamsys.core.component.resource.PropertiesComponent;
+import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.pool.AbstractPool;
-import ru.jamsys.core.template.jdbc.DefaultStatementControl;
-import ru.jamsys.core.template.jdbc.StatementControl;
+import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
+import ru.jamsys.core.flat.template.jdbc.StatementControl;
 
 import java.sql.DriverManager;
 import java.util.List;

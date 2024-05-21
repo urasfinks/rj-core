@@ -6,7 +6,7 @@ import lombok.Setter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import ru.jamsys.core.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilJson;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

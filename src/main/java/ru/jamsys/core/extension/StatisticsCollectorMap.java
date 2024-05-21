@@ -1,7 +1,7 @@
 package ru.jamsys.core.extension;
 
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.util.UtilRisc;
+import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

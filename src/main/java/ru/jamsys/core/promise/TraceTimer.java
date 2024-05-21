@@ -2,7 +2,7 @@ package ru.jamsys.core.promise;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.flat.util.Util;
 
 @JsonPropertyOrder({"start", "stop", "nano"})
 @Getter

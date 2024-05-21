@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.util.UtilFile;
+import ru.jamsys.core.flat.util.UtilFile;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 

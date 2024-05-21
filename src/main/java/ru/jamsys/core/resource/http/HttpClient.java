@@ -4,7 +4,7 @@ package ru.jamsys.core.resource.http;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.resource.virtual.file.system.File;
-import ru.jamsys.core.util.UtilBase64;
+import ru.jamsys.core.flat.util.UtilBase64;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;

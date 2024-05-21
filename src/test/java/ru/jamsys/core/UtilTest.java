@@ -3,8 +3,8 @@ package ru.jamsys.core;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.HashMapBuilder;
-import ru.jamsys.core.util.Util;
-import ru.jamsys.core.util.UtilRisc;
+import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.List;

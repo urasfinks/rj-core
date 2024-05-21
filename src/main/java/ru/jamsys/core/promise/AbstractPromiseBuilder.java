@@ -1,8 +1,8 @@
 package ru.jamsys.core.promise;
 
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.promise.PromiseTaskTime;
-import ru.jamsys.core.component.promise.api.PromiseApi;
+import ru.jamsys.core.component.PromiseTaskTime;
+import ru.jamsys.core.promise.resource.api.PromiseApi;
 
 // В бассейне купаются объекты)
 // Есть очередь смотрящих, которые приходят к бассейну и ждут, когда им на глаза попадётся объект
@@ -24,8 +24,8 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
         super(keepAliveOnInactivityMs);
     }
 
-    public Promise setRqUid(String rqUid) {
-        this.rqUid = rqUid;
+    public Promise setCorrelation(String rqUid) {
+        this.correlation = rqUid;
         return this;
     }
 

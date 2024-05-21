@@ -4,15 +4,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.api.ClassFinder;
 import ru.jamsys.core.component.manager.RateLimitManager;
-import ru.jamsys.core.extension.RunnableComponent;
-import ru.jamsys.core.extension.RunnableInterface;
+import ru.jamsys.core.extension.LifeCycleComponent;
+import ru.jamsys.core.extension.LifeCycleInterface;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
-public class Core implements RunnableInterface {
+public class Core implements LifeCycleInterface {
 
     private final ClassFinder classFinder;
     private final ApplicationContext applicationContext;
@@ -24,7 +23,7 @@ public class Core implements RunnableInterface {
 
     @Override
     public void run() {
-        classFinder.findByInstance(RunnableComponent.class).forEach((Class<RunnableComponent> runnableComponentClass) -> {
+        classFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
             if (!ClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
                 applicationContext.getBean(runnableComponentClass).run();
             }
@@ -44,7 +43,7 @@ public class Core implements RunnableInterface {
 
     @Override
     public void shutdown() {
-        classFinder.findByInstance(RunnableComponent.class).forEach((Class<RunnableComponent> runnableComponentClass) -> {
+        classFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
             if (!ClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
                 applicationContext.getBean(runnableComponentClass).shutdown();
             }

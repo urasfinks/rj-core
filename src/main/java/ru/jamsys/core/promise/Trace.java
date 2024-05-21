@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.flat.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;

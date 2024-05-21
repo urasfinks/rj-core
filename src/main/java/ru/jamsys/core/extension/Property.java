@@ -1,6 +1,6 @@
 package ru.jamsys.core.extension;
 
-import ru.jamsys.core.component.api.ClassFinder;
+import ru.jamsys.core.component.ClassFinder;
 
 import java.util.Map;
 

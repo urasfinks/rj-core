@@ -4,15 +4,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.api.ClassFinder;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.component.manager.item.CronPromise;
 import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.RunnableComponent;
+import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.promise.PromiseGenerator;
-import ru.jamsys.core.template.cron.Cron;
-import ru.jamsys.core.template.cron.release.CronTemplate;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.flat.template.cron.Cron;
+import ru.jamsys.core.flat.template.cron.release.CronTemplate;
+import ru.jamsys.core.flat.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
-public class CronComponent implements RunnableComponent, ClassName {
+public class CronComponent implements LifeCycleComponent, ClassName {
 
     final private Thread threadPool;
     final private List<CronPromise> listItem = new ArrayList<>();

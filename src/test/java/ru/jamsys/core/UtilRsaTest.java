@@ -2,9 +2,9 @@ package ru.jamsys.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.util.UtilBase64;
-import ru.jamsys.core.util.UtilByte;
-import ru.jamsys.core.util.UtilRsa;
+import ru.jamsys.core.flat.util.UtilBase64;
+import ru.jamsys.core.flat.util.UtilByte;
+import ru.jamsys.core.flat.util.UtilRsa;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;

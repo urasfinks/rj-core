@@ -10,15 +10,15 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.Security;
-import ru.jamsys.core.component.resource.PropertiesComponent;
-import ru.jamsys.core.extension.RunnableComponent;
+import ru.jamsys.core.component.PropertiesComponent;
+import ru.jamsys.core.extension.LifeCycleComponent;
 
 import java.util.List;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
-public class InfluxClientImpl implements InfluxClient, RunnableComponent {
+public class InfluxClientImpl implements InfluxClient, LifeCycleComponent {
 
     private InfluxDBClient client = null;
 

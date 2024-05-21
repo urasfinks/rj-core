@@ -1,7 +1,7 @@
 package ru.jamsys.core.rate.limit.item;
 
 import ru.jamsys.core.extension.EnumName;
-import ru.jamsys.core.template.cron.TimeUnit;
+import ru.jamsys.core.flat.template.cron.TimeUnit;
 
 public enum RateLimitItemInstance implements EnumName {
 

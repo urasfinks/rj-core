@@ -2,7 +2,7 @@ package ru.jamsys.core.promise;
 
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.component.promise.api.PromiseApi;
+import ru.jamsys.core.promise.resource.api.PromiseApi;
 import ru.jamsys.core.extension.Property;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
 
@@ -20,7 +20,7 @@ public interface Promise extends Property<String>, ExpirationMsImmutable {
 
     void setIndex(String index);
 
-    String getRqUid();
+    String getCorrelation();
 
     void complete(@NonNull PromiseTask task, @NonNull Throwable exception);
 
@@ -38,7 +38,7 @@ public interface Promise extends Property<String>, ExpirationMsImmutable {
     // Запускаем цепочку задач от текущего потока
     Promise run();
 
-    Promise setRqUid(String rqUid);
+    Promise setCorrelation(String rqUid);
 
     Promise setLog(boolean log);
 

@@ -2,7 +2,7 @@ package ru.jamsys.core.pool;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.extension.Resource;
+import ru.jamsys.core.resource.Resource;
 
 // RA - ResourceArguments
 // RR - ResourceResult

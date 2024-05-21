@@ -2,7 +2,7 @@ package ru.jamsys.core.promise;
 
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.flat.util.Util;
 
 import java.util.List;
 import java.util.Set;

@@ -12,11 +12,12 @@ import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
+import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
-import ru.jamsys.core.util.Util;
-import ru.jamsys.core.util.UtilRisc;
+import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ import java.util.function.Function;
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>>
         extends ExpirationMsMutableImpl
-        implements Pool<RA, RR, PI>, RunnableInterface, KeepAlive, ClassName {
+        implements Pool<RA, RR, PI>, LifeCycleInterface, KeepAlive, ClassName {
 
     @Getter
     @ToString.Include

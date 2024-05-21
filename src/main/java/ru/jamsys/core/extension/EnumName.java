@@ -1,6 +1,6 @@
 package ru.jamsys.core.extension;
 
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.flat.util.Util;
 
 @SuppressWarnings("unused")
 public interface EnumName {

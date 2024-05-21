@@ -9,7 +9,7 @@ import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.flat.util.Util;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;

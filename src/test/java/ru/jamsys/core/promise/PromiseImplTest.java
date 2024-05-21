@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.promise.api.HttpClientPromise;
-import ru.jamsys.core.component.promise.api.NotificationTelegramPromise;
-import ru.jamsys.core.component.promise.api.YandexSpeechPromise;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.promise.resource.api.HttpClientPromise;
+import ru.jamsys.core.promise.resource.api.NotificationTelegramPromise;
+import ru.jamsys.core.promise.resource.api.YandexSpeechPromise;
+import ru.jamsys.core.flat.util.Util;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

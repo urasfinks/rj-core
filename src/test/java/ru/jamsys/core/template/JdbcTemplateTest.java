@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.template.jdbc.CompiledSqlTemplate;
-import ru.jamsys.core.template.jdbc.StatementType;
-import ru.jamsys.core.template.jdbc.Template;
+import ru.jamsys.core.flat.template.jdbc.CompiledSqlTemplate;
+import ru.jamsys.core.flat.template.jdbc.StatementType;
+import ru.jamsys.core.flat.template.jdbc.Template;
 
 import java.util.HashMap;
 import java.util.List;

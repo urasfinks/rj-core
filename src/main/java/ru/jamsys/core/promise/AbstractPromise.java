@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.extension.Property;
+import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
-import ru.jamsys.core.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilJson;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @JsonPropertyOrder({"rqUid", "index", "addTime", "expTime", "diffTimeMs", "exception", "completed", "trace", "exceptionTrace", "property"})
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
-public abstract class AbstractPromise extends ExpirationMsImmutableImpl implements Promise {
+public abstract class AbstractPromise extends ExpirationMsImmutableImpl implements Promise, Correlation {
 
     @JsonProperty
     @Setter
@@ -27,7 +27,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     @JsonProperty
     @Getter
-    protected String rqUid = java.util.UUID.randomUUID().toString();
+    protected String correlation = java.util.UUID.randomUUID().toString();
 
     protected boolean log = false;
 

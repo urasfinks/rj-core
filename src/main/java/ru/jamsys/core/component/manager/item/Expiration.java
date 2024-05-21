@@ -10,9 +10,9 @@ import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmut
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
-import ru.jamsys.core.util.ExpirationKeepAliveResult;
-import ru.jamsys.core.util.Util;
-import ru.jamsys.core.util.UtilRisc;
+import ru.jamsys.core.flat.util.ExpirationKeepAliveResult;
+import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.List;

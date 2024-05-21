@@ -2,8 +2,8 @@ package ru.jamsys.core.template;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.template.cron.Cron;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.flat.template.cron.Cron;
+import ru.jamsys.core.flat.util.Util;
 
 class CronTest {
 

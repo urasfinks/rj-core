@@ -3,7 +3,7 @@ package ru.jamsys.core.promise;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.extension.Completable;
-import ru.jamsys.core.extension.Resource;
+import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;

@@ -1,9 +1,9 @@
 package ru.jamsys.core.pool;
 
 import ru.jamsys.core.extension.Completable;
-import ru.jamsys.core.extension.Resource;
+import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
-import ru.jamsys.core.util.Util;
+import ru.jamsys.core.flat.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

@@ -1,6 +1,6 @@
 package ru.jamsys.core.pool;
 
-import ru.jamsys.core.extension.Resource;
+import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.extension.StatisticsFlush;
 
 // RA - ResourceArguments

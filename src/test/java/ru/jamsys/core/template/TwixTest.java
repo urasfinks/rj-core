@@ -2,7 +2,7 @@ package ru.jamsys.core.template;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.template.twix.Template;
+import ru.jamsys.core.flat.template.twix.Template;
 
 import java.util.HashMap;
 import java.util.Map;

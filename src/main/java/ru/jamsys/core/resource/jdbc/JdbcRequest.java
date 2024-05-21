@@ -2,8 +2,8 @@ package ru.jamsys.core.resource.jdbc;
 
 import lombok.Getter;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
-import ru.jamsys.core.template.jdbc.JdbcTemplate;
-import ru.jamsys.core.template.jdbc.Template;
+import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
+import ru.jamsys.core.flat.template.jdbc.Template;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
