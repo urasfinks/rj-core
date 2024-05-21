@@ -145,8 +145,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     // Не все запущенные задачи имеют результат
-    public boolean isRunningTaskNotComplete() {
-        //Что бы не словить модификатор при вызове из другого потока, так как публичный метод
+    private boolean isRunningTaskNotComplete() {
         Object[] objects = listRunningTasks.toArray();
         for (Object t : objects) {
             PromiseTask tx = (PromiseTask) t;
