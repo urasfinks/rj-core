@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.Correlation;
+import ru.jamsys.core.extension.trace.Trace;
+import ru.jamsys.core.extension.trace.TraceTimer;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
 import ru.jamsys.core.flat.util.UtilJson;
 

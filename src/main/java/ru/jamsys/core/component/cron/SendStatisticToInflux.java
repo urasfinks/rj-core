@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseImpl;
-import ru.jamsys.core.promise.PromiseTaskType;
+import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.StatisticSec;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -40,7 +40,7 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
     public Promise generateOld() {
         //TODO: replace ::collector IO -> COMPUTE (в текущий момент нет реализации COMPUTE)
         Promise promise = new PromiseImpl(getClass().getName(), 6_000L);
-        promise.append(getClassName("collector"), PromiseTaskType.IO, (AtomicBoolean isThreadRun) -> {
+        promise.append(getClassName("collector"), PromiseTaskExecuteType.IO, (AtomicBoolean isThreadRun) -> {
                     brokerManager.setup(ClassNameImpl.getClassNameStatic(StatisticSec.class, null), queue -> {
                         List<Point> listPoints = new ArrayList<>();
                         while (!queue.isEmpty() && isThreadRun.get()) {

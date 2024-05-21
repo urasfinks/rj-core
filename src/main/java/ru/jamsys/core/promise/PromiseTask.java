@@ -7,6 +7,8 @@ import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PromiseTaskTime;
 import ru.jamsys.core.component.RealThreadComponent;
 import ru.jamsys.core.component.VirtualThreadComponent;
+import ru.jamsys.core.extension.trace.Trace;
+import ru.jamsys.core.extension.trace.TraceTimer;
 import ru.jamsys.core.statistic.expiration.TimeEnvelopeNano;
 
 import java.util.List;
@@ -27,7 +29,7 @@ public class PromiseTask implements Runnable {
     volatile private boolean complete;
 
     @Getter
-    final PromiseTaskType type;
+    final PromiseTaskExecuteType type;
 
     // Может порождать дополнительные PromiseTask после выполнения
     // Которые встают в голову стека и будут выполняться без ожидания
@@ -52,32 +54,32 @@ public class PromiseTask implements Runnable {
     AtomicBoolean isThreadRun = new AtomicBoolean(true);
 
     public void externalComplete() {
-        if (Objects.requireNonNull(type) == PromiseTaskType.EXTERNAL_WAIT) {
+        if (Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT) {
             promise.getTrace().add(new Trace<>(getIndex() + ".complete", TraceTimer.getInstanceZero(), type));
             promise.complete(this);
         }
     }
 
     public void externalError(Throwable th) {
-        if (Objects.requireNonNull(type) == PromiseTaskType.EXTERNAL_WAIT) {
+        if (Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT) {
             promise.complete(this, th);
         }
     }
 
-    public PromiseTask(String index, Promise promise, PromiseTaskType type) {
+    public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type) {
         this.index = index;
         this.promise = promise;
         this.type = type;
     }
 
-    public PromiseTask(String index, Promise promise, PromiseTaskType type, Function<AtomicBoolean, List<PromiseTask>> supplier) {
+    public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type, Function<AtomicBoolean, List<PromiseTask>> supplier) {
         this.index = index;
         this.promise = promise;
         this.type = type;
         this.supplier = supplier;
     }
 
-    public PromiseTask(String index, Promise promise, PromiseTaskType type, Consumer<AtomicBoolean> procedure) {
+    public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type, Consumer<AtomicBoolean> procedure) {
         this.index = index;
         this.promise = promise;
         this.type = type;
@@ -85,11 +87,11 @@ public class PromiseTask implements Runnable {
     }
 
     public PromiseTask setRetryCount(int count, int delayMs) {
-        if (type == PromiseTaskType.JOIN) {
+        if (type == PromiseTaskExecuteType.JOIN) {
             throw new RuntimeException(
                     this.getClass().getName()
                             + " with type: ["
-                            + PromiseTaskType.JOIN.getName()
+                            + PromiseTaskExecuteType.JOIN.getName()
                             + "] doesn't work with retries"
             );
         }

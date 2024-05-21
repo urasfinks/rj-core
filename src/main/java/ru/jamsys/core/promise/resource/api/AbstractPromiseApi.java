@@ -3,7 +3,7 @@ package ru.jamsys.core.promise.resource.api;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseTaskType;
+import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 @Getter
 public abstract class AbstractPromiseApi<T> implements PromiseApi<T> {
 
-    protected PromiseTaskType promiseTaskType = PromiseTaskType.IO;
+    protected PromiseTaskExecuteType promiseTaskExecuteType = PromiseTaskExecuteType.IO;
 
     private Promise promise;
 
@@ -55,7 +55,7 @@ public abstract class AbstractPromiseApi<T> implements PromiseApi<T> {
     @Override
     public void extend(Promise promise) {
         this.promise = promise;
-        promise.append(index, promiseTaskType, this::execute);
+        promise.append(index, promiseTaskExecuteType, this::execute);
     }
 
     private void execute(AtomicBoolean isThreadRun) {

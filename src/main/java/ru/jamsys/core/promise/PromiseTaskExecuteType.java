@@ -5,7 +5,7 @@ import ru.jamsys.core.extension.EnumName;
 
 @Getter
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public enum PromiseTaskType implements EnumName {
+public enum PromiseTaskExecuteType implements EnumName {
 
     // Ждём когда все предыдущие запущенные задачи будут исполнены
     WAIT(false),
@@ -32,7 +32,7 @@ public enum PromiseTaskType implements EnumName {
 
     private final boolean isRunningTask;
 
-    PromiseTaskType(boolean isRunningTask) {
+    PromiseTaskExecuteType(boolean isRunningTask) {
         this.isRunningTask = isRunningTask;
     }
 

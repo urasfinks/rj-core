@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseImpl;
-import ru.jamsys.core.promise.PromiseTaskType;
+import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 
 // Нам надо вызывать KeepAlive у ExpiredManager 1 раз в секунду, а не 1раз в 3сек
@@ -25,7 +25,7 @@ public class KeepAliveExpirationManager implements Cron1s, PromiseGenerator, Cla
     @Override
     public Promise generate() {
         return new PromiseImpl(getClass().getName(),6_000L)
-                .append(this.getClass().getName(), PromiseTaskType.IO, expirationManager::keepAlive);
+                .append(this.getClass().getName(), PromiseTaskExecuteType.IO, expirationManager::keepAlive);
 
     }
 

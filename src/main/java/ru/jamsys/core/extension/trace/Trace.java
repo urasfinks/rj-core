@@ -1,10 +1,11 @@
-package ru.jamsys.core.promise;
+package ru.jamsys.core.extension.trace;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class Trace<K, V> {
 
     @JsonProperty
     @SuppressWarnings("FieldCanBeLocal")
-    final private PromiseTaskType type;
+    final private PromiseTaskExecuteType type;
 
     public String getTimeAdd() {
         return Util.msToDataFormat(timeAdd);
@@ -45,7 +46,7 @@ public class Trace<K, V> {
         return value;
     }
 
-    public Trace(K index, V value, PromiseTaskType type) {
+    public Trace(K index, V value, PromiseTaskExecuteType type) {
         this.index = index;
         this.value = value;
         this.type = type;

@@ -7,7 +7,7 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
-import ru.jamsys.core.promise.PromiseTaskType;
+import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import ru.jamsys.core.flat.util.YandexSpeechClient;
 
 import java.io.File;
@@ -70,7 +70,7 @@ YandexSpeechPromise extends AbstractPromiseApi<YandexSpeechPromise> {
     @Override
     public void extend(Promise promise) {
         super.extend(promise);
-        asyncPromiseTask = new PromiseTask(getClass().getName(), promise, PromiseTaskType.EXTERNAL_WAIT);
+        asyncPromiseTask = new PromiseTask(getClass().getName(), promise, PromiseTaskExecuteType.EXTERNAL_WAIT);
         promise.append(asyncPromiseTask);
     }
 

@@ -2,6 +2,8 @@ package ru.jamsys.core.promise;
 
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
+import ru.jamsys.core.extension.trace.Trace;
+import ru.jamsys.core.extension.trace.TraceTimer;
 import ru.jamsys.core.promise.resource.api.PromiseApi;
 import ru.jamsys.core.extension.Property;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
@@ -45,35 +47,35 @@ public interface Promise extends Property<String>, ExpirationMsImmutable {
     // Добавление задачи, которая выполнится после успешного завершения цепочки Promise
     Promise onComplete(PromiseTask onComplete);
 
-    default Promise onComplete(PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn) {
-        return onComplete(new PromiseTask("onComplete", this, promiseTaskType, fn));
+    default Promise onComplete(PromiseTaskExecuteType promiseTaskExecuteType, Consumer<AtomicBoolean> fn) {
+        return onComplete(new PromiseTask("onComplete", this, promiseTaskExecuteType, fn));
     }
 
     // Добавление задачи, которая выполнится после фатального завершения цепочки Promise
     Promise onError(PromiseTask onError);
 
-    default Promise onError(PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn) {
-        return onError(new PromiseTask("onError", this, promiseTaskType, fn));
+    default Promise onError(PromiseTaskExecuteType promiseTaskExecuteType, Consumer<AtomicBoolean> fn) {
+        return onError(new PromiseTask("onError", this, promiseTaskExecuteType, fn));
     }
 
     Promise append(PromiseTask task);
 
-    default Promise append(String index, PromiseTaskType promiseTaskType, Function<AtomicBoolean, List<PromiseTask>> fn) {
-        return append(new PromiseTask(index, this, promiseTaskType, fn));
+    default Promise append(String index, PromiseTaskExecuteType promiseTaskExecuteType, Function<AtomicBoolean, List<PromiseTask>> fn) {
+        return append(new PromiseTask(index, this, promiseTaskExecuteType, fn));
     }
 
-    default Promise append(String index, PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn) {
-        return append(new PromiseTask(index, this, promiseTaskType, fn));
+    default Promise append(String index, PromiseTaskExecuteType promiseTaskExecuteType, Consumer<AtomicBoolean> fn) {
+        return append(new PromiseTask(index, this, promiseTaskExecuteType, fn));
     }
 
     Promise then(PromiseTask task);
 
-    default Promise then(String index, PromiseTaskType promiseTaskType, Function<AtomicBoolean, List<PromiseTask>> fn) {
-        return then(new PromiseTask(index, this, promiseTaskType, fn));
+    default Promise then(String index, PromiseTaskExecuteType promiseTaskExecuteType, Function<AtomicBoolean, List<PromiseTask>> fn) {
+        return then(new PromiseTask(index, this, promiseTaskExecuteType, fn));
     }
 
-    default Promise then(String index, PromiseTaskType promiseTaskType, Consumer<AtomicBoolean> fn) {
-        return then(new PromiseTask(index, this, promiseTaskType, fn));
+    default Promise then(String index, PromiseTaskExecuteType promiseTaskExecuteType, Consumer<AtomicBoolean> fn) {
+        return then(new PromiseTask(index, this, promiseTaskExecuteType, fn));
     }
 
     Promise waits();

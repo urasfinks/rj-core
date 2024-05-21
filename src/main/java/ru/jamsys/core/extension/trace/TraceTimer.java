@@ -1,4 +1,4 @@
-package ru.jamsys.core.promise;
+package ru.jamsys.core.extension.trace;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;

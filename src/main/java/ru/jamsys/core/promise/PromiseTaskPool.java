@@ -3,6 +3,7 @@ package ru.jamsys.core.promise;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.Completable;
+import ru.jamsys.core.resource.AbstractPoolResource;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
@@ -26,7 +27,7 @@ import java.util.function.Function;
 
 public class PromiseTaskPool<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>> extends PromiseTask {
 
-    final AbstractPoolPromise<RA, RR, PI> pool;
+    final AbstractPoolResource<RA, RR, PI> pool;
 
     @Getter
     @Setter
@@ -43,8 +44,8 @@ public class PromiseTaskPool<RA, RR, PI extends Completable & ExpirationMsMutabl
     public PromiseTaskPool(
             String index,
             Promise promise,
-            PromiseTaskType type,
-            AbstractPoolPromise<RA, RR, PI> pool,
+            PromiseTaskExecuteType type,
+            AbstractPoolResource<RA, RR, PI> pool,
             RA argument,
             BiFunction<AtomicBoolean, RR, List<PromiseTask>> supplier
     ) {
@@ -57,8 +58,8 @@ public class PromiseTaskPool<RA, RR, PI extends Completable & ExpirationMsMutabl
     public PromiseTaskPool(
             String index,
             Promise promise,
-            PromiseTaskType type,
-            AbstractPoolPromise<RA, RR, PI> pool,
+            PromiseTaskExecuteType type,
+            AbstractPoolResource<RA, RR, PI> pool,
             RA argument,
             BiConsumer<AtomicBoolean, RR> procedure
     ) {
@@ -71,8 +72,8 @@ public class PromiseTaskPool<RA, RR, PI extends Completable & ExpirationMsMutabl
     public PromiseTaskPool(
             String index,
             Promise promise,
-            PromiseTaskType type,
-            AbstractPoolPromise<RA, RR, PI> pool,
+            PromiseTaskExecuteType type,
+            AbstractPoolResource<RA, RR, PI> pool,
             Function<Promise, RA> argumentsFunction,
             BiConsumer<AtomicBoolean, RR> procedure
     ) {

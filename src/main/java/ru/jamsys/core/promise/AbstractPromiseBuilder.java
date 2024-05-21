@@ -51,13 +51,13 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
 
     public Promise then(PromiseTask task) {
         this
-                .append(new PromiseTask(PromiseTaskType.WAIT.getName(), this, PromiseTaskType.WAIT))
+                .append(new PromiseTask(PromiseTaskExecuteType.WAIT.getName(), this, PromiseTaskExecuteType.WAIT))
                 .append(task);
         return this;
     }
 
     public Promise waits() {
-        this.append(new PromiseTask(PromiseTaskType.WAIT.getName(), this, PromiseTaskType.WAIT));
+        this.append(new PromiseTask(PromiseTaskExecuteType.WAIT.getName(), this, PromiseTaskExecuteType.WAIT));
         return this;
     }
 

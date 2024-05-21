@@ -2,6 +2,7 @@ package ru.jamsys.core.promise;
 
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
+import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         complete();
     }
 
-    private void setError(String indexTask, Throwable exception, PromiseTaskType type) {
+    private void setError(String indexTask, Throwable exception, PromiseTaskExecuteType type) {
         this.exception = exception;
         this.exceptionTrace.add(new Trace<>(indexTask, exception, type));
         isException.set(true);
@@ -107,7 +108,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             if (firstTask.type.isRunningTask()) { //Так мы откинули WAIT
                 listRunningTasks.add(firstTask);
             }
-            if (firstTask.type == PromiseTaskType.WAIT) {
+            if (firstTask.type == PromiseTaskExecuteType.WAIT) {
                 if (isRunningTaskNotComplete()) {
                     listPendingTasks.addFirst(firstTask);
                     break;

@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.promise.resource.notification.NotificationTelegram;
-import ru.jamsys.core.promise.PromiseTaskType;
+import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -28,7 +28,7 @@ import java.util.function.Consumer;
 public class NotificationTelegramPromise extends AbstractPromiseApi<NotificationTelegramPromise> {
 
     public NotificationTelegramPromise() {
-        promiseTaskType = PromiseTaskType.IO;
+        promiseTaskExecuteType = PromiseTaskExecuteType.IO;
     }
 
     private String title = "";
