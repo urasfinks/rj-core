@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
-import ru.jamsys.core.component.Security;
+import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.resource.http.HttpResponseEnvelope;
 import ru.jamsys.core.flat.template.twix.Template;
 import ru.jamsys.core.flat.template.twix.TemplateItem;
@@ -22,7 +22,7 @@ import java.util.Map;
 @Lazy
 public class NotificationEmail implements Notification {
 
-    private final Security security;
+    private final SecurityComponent securityComponent;
 
     @Setter
     private String host;
@@ -56,9 +56,9 @@ public class NotificationEmail implements Notification {
 
     List<TemplateItem> parsedTemplate = null;
 
-    public NotificationEmail(Security security, PropertiesComponent propertiesComponent) {
+    public NotificationEmail(SecurityComponent securityComponent, PropertiesComponent propertiesComponent) {
 
-        this.security = security;
+        this.securityComponent = securityComponent;
 
 
         this.template = propertiesComponent.getProperties("rj.notification.email.template", String.class);
@@ -116,15 +116,15 @@ public class NotificationEmail implements Notification {
 
     @Override
     public Notification getInstance() {
-        Security security = App.context.getBean(Security.class);
+        SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
-        return new NotificationEmail(security, propertiesComponent);
+        return new NotificationEmail(securityComponent, propertiesComponent);
     }
 
     private void setting(HtmlEmail email) throws Exception {
         email.setHostName(host);
         email.setSmtpPort(port);
-        email.setAuthenticator(new DefaultAuthenticator(user, new String(security.get(securityAlias))));
+        email.setAuthenticator(new DefaultAuthenticator(user, new String(securityComponent.get(securityAlias))));
         email.setSSLOnConnect(ssl);
         email.setFrom(from);
         email.setCharset(charset);

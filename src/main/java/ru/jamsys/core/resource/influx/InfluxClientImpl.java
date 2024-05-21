@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.Security;
+import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.extension.LifeCycleComponent;
 
@@ -36,10 +36,10 @@ public class InfluxClientImpl implements InfluxClient, LifeCycleComponent {
     @Setter
     private String alias;
 
-    private final Security security;
+    private final SecurityComponent securityComponent;
 
-    public InfluxClientImpl(Security security, PropertiesComponent propertiesComponent) {
-        this.security = security;
+    public InfluxClientImpl(SecurityComponent securityComponent, PropertiesComponent propertiesComponent) {
+        this.securityComponent = securityComponent;
         this.host = propertiesComponent.getProperties("rj.influx.host", String.class);
         this.bucket = propertiesComponent.getProperties("rj.influx.bucket", String.class);
         this.org = propertiesComponent.getProperties("rj.influx.org", String.class);
@@ -51,7 +51,7 @@ public class InfluxClientImpl implements InfluxClient, LifeCycleComponent {
     }
 
     public static InfluxClient getNewInstance() {
-        return new InfluxClientImpl(App.context.getBean(Security.class), App.context.getBean(PropertiesComponent.class));
+        return new InfluxClientImpl(App.context.getBean(SecurityComponent.class), App.context.getBean(PropertiesComponent.class));
     }
 
     @Override
@@ -65,7 +65,7 @@ public class InfluxClientImpl implements InfluxClient, LifeCycleComponent {
     public void run() {
         try {
             if (client == null) {
-                client = InfluxDBClientFactory.create(host, security.get(alias));
+                client = InfluxDBClientFactory.create(host, securityComponent.get(alias));
                 writeApi = client.getWriteApiBlocking();
             }
         } catch (Exception e) {

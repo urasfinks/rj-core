@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
-import ru.jamsys.core.component.Security;
+import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.resource.http.HttpClientImpl;
 import ru.jamsys.core.resource.http.HttpResponseEnvelope;
 import ru.jamsys.core.flat.util.JsonEnvelope;
@@ -19,7 +19,7 @@ import java.util.Map;
 @Lazy
 public class NotificationTelegram implements Notification {
 
-    private final Security security;
+    private final SecurityComponent securityComponent;
 
     @Setter
     private String securityAlias;
@@ -36,9 +36,9 @@ public class NotificationTelegram implements Notification {
     @Setter
     private int readTimeout;
 
-    public NotificationTelegram(Security security, PropertiesComponent propertiesComponent) {
+    public NotificationTelegram(SecurityComponent securityComponent, PropertiesComponent propertiesComponent) {
 
-        this.security = security;
+        this.securityComponent = securityComponent;
 
         this.url = propertiesComponent.getProperties("rj.notification.telegram.url", String.class);
         this.idChat = propertiesComponent.getProperties("rj.notification.telegram.idChat", String.class);
@@ -63,7 +63,7 @@ public class NotificationTelegram implements Notification {
                 if (title != null && !title.trim().isEmpty()) {
                     bodyRequest = "*" + title + "*\r\n" + bodyRequest;
                 }
-                String urlString = String.format(url, new String(security.get(securityAlias)), idChat, URLEncoder.encode(bodyRequest, StandardCharsets.UTF_8));
+                String urlString = String.format(url, new String(securityComponent.get(securityAlias)), idChat, URLEncoder.encode(bodyRequest, StandardCharsets.UTF_8));
 
                 HttpClientImpl httpClient = new HttpClientImpl();
                 httpClient.setUrl(urlString);
@@ -101,9 +101,9 @@ public class NotificationTelegram implements Notification {
 
     @Override
     public Notification getInstance() {
-        Security security = App.context.getBean(Security.class);
+        SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
-        return new NotificationTelegram(security, propertiesComponent);
+        return new NotificationTelegram(securityComponent, propertiesComponent);
     }
 
 }

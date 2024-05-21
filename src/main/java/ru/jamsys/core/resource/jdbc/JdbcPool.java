@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.Security;
+import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.pool.AbstractPool;
@@ -36,7 +36,7 @@ public class JdbcPool extends AbstractPool<JdbcRequest, List<Map<String, Object>
         this.securityAlias = propertiesComponent.getProperties("rj.jdbc.security.alias", String.class);
     }
 
-    public void setProperty(String uri, String user, Security security, String securityAlias) {
+    public void setProperty(String uri, String user, SecurityComponent securityComponent, String securityAlias) {
         this.uri = uri;
         this.user = user;
         this.securityAlias = securityAlias;
@@ -45,9 +45,9 @@ public class JdbcPool extends AbstractPool<JdbcRequest, List<Map<String, Object>
     @Override
     public ConnectionResource createPoolItem() {
         try {
-            Security security = App.context.getBean(Security.class);
+            SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
             return new ConnectionResource(
-                    DriverManager.getConnection(uri, user, new String(security.get(securityAlias))),
+                    DriverManager.getConnection(uri, user, new String(securityComponent.get(securityAlias))),
                     this
             );
         } catch (Exception e) {

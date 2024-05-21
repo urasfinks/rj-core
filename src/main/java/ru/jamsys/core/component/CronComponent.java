@@ -29,10 +29,10 @@ public class CronComponent implements LifeCycleComponent, ClassName {
     public CronComponent(
             ExceptionHandler exceptionHandler,
             RateLimitManager rateLimitManager,
-            ClassFinder classFinder,
+            ClassFinderComponent classFinderComponent,
             ApplicationContext applicationContext
     ) {
-        initList(classFinder, applicationContext, exceptionHandler);
+        initList(classFinderComponent, applicationContext, exceptionHandler);
         threadPool = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -73,11 +73,11 @@ public class CronComponent implements LifeCycleComponent, ClassName {
     }
 
     private void initList(
-            ClassFinder classFinder,
+            ClassFinderComponent classFinderComponent,
             ApplicationContext applicationContext,
             ExceptionHandler exceptionHandler
     ) {
-        classFinder.findByInstance(CronTemplate.class).forEach((Class<CronTemplate> statisticsCollectorClass) -> {
+        classFinderComponent.findByInstance(CronTemplate.class).forEach((Class<CronTemplate> statisticsCollectorClass) -> {
             CronTemplate cronTemplate = applicationContext.getBean(statisticsCollectorClass);
             if (cronTemplate instanceof PromiseGenerator) {
                 listItem.add(

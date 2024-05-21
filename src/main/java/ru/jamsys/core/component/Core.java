@@ -13,18 +13,18 @@ import ru.jamsys.core.extension.LifeCycleInterface;
 @Lazy
 public class Core implements LifeCycleInterface {
 
-    private final ClassFinder classFinder;
+    private final ClassFinderComponent classFinderComponent;
     private final ApplicationContext applicationContext;
 
-    public Core(ApplicationContext applicationContext, ClassFinder classFinder) {
+    public Core(ApplicationContext applicationContext, ClassFinderComponent classFinderComponent) {
         this.applicationContext = applicationContext;
-        this.classFinder = classFinder;
+        this.classFinderComponent = classFinderComponent;
     }
 
     @Override
     public void run() {
-        classFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
-            if (!ClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
+        classFinderComponent.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
+            if (!ClassFinderComponent.instanceOf(this.getClass(), runnableComponentClass)) {
                 applicationContext.getBean(runnableComponentClass).run();
             }
         });
@@ -33,18 +33,12 @@ public class Core implements LifeCycleInterface {
 
     private void rateLimitInit() {
         RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
-//        rateLimitManager.initLimit(
-//                ThreadPool.class,
-//                "StatisticSecFlush",
-//                RateLimitType.POOL_SIZE,
-//                1
-//        );
     }
 
     @Override
     public void shutdown() {
-        classFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
-            if (!ClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
+        classFinderComponent.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
+            if (!ClassFinderComponent.instanceOf(this.getClass(), runnableComponentClass)) {
                 applicationContext.getBean(runnableComponentClass).shutdown();
             }
         });

@@ -13,7 +13,7 @@ import java.util.*;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
-public class ClassFinder {
+public class ClassFinderComponent {
 
     private final List<Class<?>> availableClass;
 
@@ -23,7 +23,7 @@ public class ClassFinder {
 
     private final ExceptionHandler exceptionHandler;
 
-    public ClassFinder(ExceptionHandler exceptionHandler) {
+    public ClassFinderComponent(ExceptionHandler exceptionHandler) {
         this.exceptionHandler = exceptionHandler;
         @SuppressWarnings("SameParameterValue")
         String pkg = "ru.jamsys";

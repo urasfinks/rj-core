@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
-import ru.jamsys.core.component.VirtualFileSystem;
+import ru.jamsys.core.component.VirtualFileSystemComponent;
 import ru.jamsys.core.resource.http.Http2ClientImpl;
 import ru.jamsys.core.resource.http.HttpClient;
 import ru.jamsys.core.resource.http.HttpResponseEnvelope;
@@ -46,7 +46,7 @@ public class NotificationApple implements Notification {
     @Setter
     private String pushType;
 
-    private final VirtualFileSystem virtualFileSystem;
+    private final VirtualFileSystemComponent virtualFileSystemComponent;
 
     private boolean init = false;
 
@@ -56,9 +56,9 @@ public class NotificationApple implements Notification {
     @Setter
     private int readTimeout;
 
-    public NotificationApple(VirtualFileSystem virtualFileSystem, PropertiesComponent propertiesComponent) {
+    public NotificationApple(VirtualFileSystemComponent virtualFileSystemComponent, PropertiesComponent propertiesComponent) {
 
-        this.virtualFileSystem = virtualFileSystem;
+        this.virtualFileSystemComponent = virtualFileSystemComponent;
 
         this.url = propertiesComponent.getProperties("rj.notification.apple.url", String.class);
         this.storage = propertiesComponent.getProperties("rj.notification.apple.storage", String.class);
@@ -81,7 +81,7 @@ public class NotificationApple implements Notification {
         }
         if (httpResponseEnvelope.isStatus()) {
             if (!init) {
-                virtualFileSystem.add(new File(virtualPath, FileLoaderFactory.fromFileSystem(storage)));
+                virtualFileSystemComponent.add(new File(virtualPath, FileLoaderFactory.fromFileSystem(storage)));
                 init = true;
             }
         }
@@ -113,7 +113,7 @@ public class NotificationApple implements Notification {
 
             try {
                 httpClient.setKeyStore(
-                        virtualFileSystem.get(virtualPath),
+                        virtualFileSystemComponent.get(virtualPath),
                         FileViewKeyStore.prop.SECURITY_KEY.name(), securityAlias,
                         FileViewKeyStore.prop.TYPE.name(), "PKCS12"
                 );
@@ -132,9 +132,9 @@ public class NotificationApple implements Notification {
 
     @Override
     public NotificationApple getInstance() {
-        VirtualFileSystem virtualFileSystem = App.context.getBean(VirtualFileSystem.class);
+        VirtualFileSystemComponent virtualFileSystemComponent = App.context.getBean(VirtualFileSystemComponent.class);
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
-        return new NotificationApple(virtualFileSystem, propertiesComponent);
+        return new NotificationApple(virtualFileSystemComponent, propertiesComponent);
     }
 
 }

@@ -2,7 +2,7 @@ package ru.jamsys.core.extension;
 
 import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ClassFinder;
+import ru.jamsys.core.component.ClassFinderComponent;
 
 public interface ClassName {
 
@@ -31,11 +31,11 @@ public interface ClassName {
     }
 
     default String getClassName(Class<?> cls, String index, ApplicationContext applicationContext) {
-        ClassFinder classFinder = applicationContext.getBean(ClassFinder.class);
+        ClassFinderComponent classFinderComponent = applicationContext.getBean(ClassFinderComponent.class);
         String clsName = cls.getName();
         //  Не конкурентная проверка
-        if (classFinder.getUniqueClassName().containsKey(cls)) {
-            clsName = classFinder.getUniqueClassName().get(cls);
+        if (classFinderComponent.getUniqueClassName().containsKey(cls)) {
+            clsName = classFinderComponent.getUniqueClassName().get(cls);
         }
         return index == null ? clsName : (clsName + "::" + index);
     }

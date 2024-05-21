@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.Security;
-import ru.jamsys.core.component.VirtualFileSystem;
+import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.component.VirtualFileSystemComponent;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.FileLoaderFactory;
 import ru.jamsys.core.resource.virtual.file.system.FileSaverFactory;
@@ -65,11 +65,11 @@ class FileTest {
 
     @Test
     public void testKeyStore() throws Exception {
-        Security security = App.context.getBean(Security.class);
-        security.setPathStorage("unit-test.jks");
+        SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
+        securityComponent.setPathStorage("unit-test.jks");
         char[] password = "12345".toCharArray();
-        security.loadKeyStorage(password);
-        security.add("test", "12345".toCharArray(), password);
+        securityComponent.loadKeyStorage(password);
+        securityComponent.add("test", "12345".toCharArray(), password);
 
         File file = new File("/test.p12", FileLoaderFactory.createKeyStore("one.jks", "test"));
         file.setSaver(FileSaverFactory.writeFile("one.jks"));
@@ -81,9 +81,9 @@ class FileTest {
     @Test
     void testComponent() {
         File file = new File("hello/world/1.txt", FileLoaderFactory.fromString("Hello world", "UTF-8"));
-        VirtualFileSystem virtualFileSystem = App.context.getBean(VirtualFileSystem.class);
-        virtualFileSystem.add(file);
-        File file1 = virtualFileSystem.get("/hello/world/1.txt");
+        VirtualFileSystemComponent virtualFileSystemComponent = App.context.getBean(VirtualFileSystemComponent.class);
+        virtualFileSystemComponent.add(file);
+        File file1 = virtualFileSystemComponent.get("/hello/world/1.txt");
 
         Assertions.assertEquals(file, file1, "Файлы не равны");
 

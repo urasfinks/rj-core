@@ -1,15 +1,15 @@
 package ru.jamsys.core;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.Security;
+import ru.jamsys.core.component.SecurityComponent;
 
 @SuppressWarnings("unused")
 @Component
 public class SecurityKey {
 
     @SuppressWarnings("unused")
-    public SecurityKey(Security security) {
-        security.setPrivateKey("""
+    public SecurityKey(SecurityComponent securityComponent) {
+        securityComponent.setPrivateKey("""
 {privateKey}
                 """.toCharArray());
     }

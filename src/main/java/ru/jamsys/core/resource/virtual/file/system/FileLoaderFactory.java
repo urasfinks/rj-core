@@ -1,7 +1,7 @@
 package ru.jamsys.core.resource.virtual.file.system;
 
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.Security;
+import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.SupplierThrowing;
 import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilBase64;
@@ -35,8 +35,8 @@ public class FileLoaderFactory {
 
     public static SupplierThrowing<byte[]> createKeyStore(String path, String securityKey) throws Exception {
         KeyStore ks = KeyStore.getInstance("JCEKS");
-        Security security = App.context.getBean(Security.class);
-        char[] pass = security.get(securityKey);
+        SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
+        char[] pass = securityComponent.get(securityKey);
         ks.load(null, pass);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ks.store(byteArrayOutputStream, pass);

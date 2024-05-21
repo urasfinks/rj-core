@@ -24,16 +24,16 @@ import java.util.Map;
 @Lazy
 @Getter
 @Setter
-public class ReCaptcha {
+public class ReCaptchaComponent {
     /**
      * Validates Google reCAPTCHA V2 or Invisible reCAPTCHA.
      */
 
-    private final Security security;
+    private final SecurityComponent securityComponent;
     private String securityAlias;
 
-    public ReCaptcha(Security security, PropertiesComponent propertiesComponent) {
-        this.security = security;
+    public ReCaptchaComponent(SecurityComponent securityComponent, PropertiesComponent propertiesComponent) {
+        this.securityComponent = securityComponent;
         this.securityAlias = propertiesComponent.getProperties("rj.reCaptcha.security.alias", String.class);
     }
 
@@ -50,14 +50,14 @@ public class ReCaptcha {
                 httpResponseEnvelope.addException("Ключ reCaptchaSecretKey не определён");
             }
             if (httpResponseEnvelope.isStatus()) {
-                char[] chars = security.get(securityAlias);
+                char[] chars = securityComponent.get(securityAlias);
                 if (chars == null) {
                     httpResponseEnvelope.addException("Приватное значение ключа reCaptchaSecretKey пустое");
                 }
             }
             if (httpResponseEnvelope.isStatus()) {
                 String url = "https://www.google.com/recaptcha/api/siteverify",
-                        params = "secret=" + new String(security.get(securityAlias)) + "&response=" + captchaValue;
+                        params = "secret=" + new String(securityComponent.get(securityAlias)) + "&response=" + captchaValue;
 
                 HttpURLConnection http = (HttpURLConnection) new URL(url).openConnection();
                 http.setDoOutput(true);

@@ -7,7 +7,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.resource.http.HttpResponseEnvelope;
 
 
-class ReCaptchaTest {
+class ReCaptchaComponentTest {
 
     @BeforeAll
     static void beforeAll() {
@@ -22,8 +22,8 @@ class ReCaptchaTest {
 
     @Test
     void isCaptchaValid() {
-        ReCaptcha reCaptcha = App.context.getBean(ReCaptcha.class);
-        HttpResponseEnvelope captchaValid = reCaptcha.isValid("1234");
+        ReCaptchaComponent reCaptchaComponent = App.context.getBean(ReCaptchaComponent.class);
+        HttpResponseEnvelope captchaValid = reCaptchaComponent.isValid("1234");
         System.out.println(captchaValid.isStatus());
     }
 

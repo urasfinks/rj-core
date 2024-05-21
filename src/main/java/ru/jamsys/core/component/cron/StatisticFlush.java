@@ -3,7 +3,7 @@ package ru.jamsys.core.component.cron;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.ClassFinder;
+import ru.jamsys.core.component.ClassFinderComponent;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
@@ -39,7 +39,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
     final ExceptionHandler exceptionHandler;
 
     public StatisticFlush(
-            ClassFinder classFinder,
+            ClassFinderComponent classFinderComponent,
             ApplicationContext applicationContext,
             BrokerManager<StatisticSec> broker,
             ExceptionHandler exceptionHandler
@@ -47,7 +47,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
         this.broker = broker;
         this.brokerIndex = ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext);
         this.exceptionHandler = exceptionHandler;
-        classFinder.findByInstance(StatisticsFlushComponent.class).forEach((Class<StatisticsFlushComponent> statisticsCollectorClass)
+        classFinderComponent.findByInstance(StatisticsFlushComponent.class).forEach((Class<StatisticsFlushComponent> statisticsCollectorClass)
                 -> list.add(applicationContext.getBean(statisticsCollectorClass)));
     }
 

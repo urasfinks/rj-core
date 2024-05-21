@@ -4,7 +4,7 @@ import lombok.Getter;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.Security;
+import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.view.KeyStore.CustomTrustManager;
 
@@ -24,7 +24,7 @@ public class FileViewKeyStore implements FileView {
 
     private String typeKeyStorage;
     private String securityKey;
-    private Security security;
+    private SecurityComponent securityComponent;
     private File file = null;
 
     @Getter
@@ -39,7 +39,7 @@ public class FileViewKeyStore implements FileView {
     @Override
     public void set(File file) {
         this.file = file;
-        security = App.context.getBean(Security.class);
+        securityComponent = App.context.getBean(SecurityComponent.class);
         typeKeyStorage = file.getProperty(prop.TYPE.name(), String.class, "JCEKS");
         securityKey = file.getProperty(prop.SECURITY_KEY.name(), String.class, file.getAbsolutePath());
         if (file.isProperty(prop.TRUST_MANAGER.name())) {
@@ -50,7 +50,7 @@ public class FileViewKeyStore implements FileView {
     @Override
     public void createCache() {
         try {
-            char[] pass = security.get(securityKey);
+            char[] pass = securityComponent.get(securityKey);
             try (InputStream stream = file.getInputStream()) {
                 keyStore = KeyStore.getInstance(typeKeyStorage);
                 keyStore.load(stream, pass);

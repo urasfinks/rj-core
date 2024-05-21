@@ -25,7 +25,7 @@ import java.util.Set;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
-public class Security implements LifeCycleComponent {
+public class SecurityComponent implements LifeCycleComponent {
 
     @Setter
     private String pathStorage;
@@ -52,7 +52,7 @@ public class Security implements LifeCycleComponent {
 
     private KeyStore.PasswordProtection keyStorePP;
 
-    public Security(PropertiesComponent propertiesComponent, ExceptionHandler exceptionHandler) {
+    public SecurityComponent(PropertiesComponent propertiesComponent, ExceptionHandler exceptionHandler) {
         this.pathStorage = propertiesComponent.getProperties("rj.security.path.storage", String.class);
         this.pathPublicKey = propertiesComponent.getProperties("rj.security.path.public.key", String.class);
         this.pathInitAlias = propertiesComponent.getProperties("rj.security.path.init", String.class);

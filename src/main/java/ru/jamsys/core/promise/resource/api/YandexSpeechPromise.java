@@ -3,7 +3,7 @@ package ru.jamsys.core.promise.resource.api;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.Security;
+import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
@@ -85,7 +85,7 @@ YandexSpeechPromise extends AbstractPromiseApi<YandexSpeechPromise> {
             YandexSpeechClient client = new YandexSpeechClient(
                     host,
                     port,
-                    new String(App.context.getBean(Security.class).get(securityAlias)),
+                    new String(App.context.getBean(SecurityComponent.class).get(securityAlias)),
                     getPromise().getExpiryRemainingMs()
 
             );

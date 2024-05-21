@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
-public class SystemStatistic implements StatisticsFlushComponent {
+public class SystemStatisticComponent implements StatisticsFlushComponent {
 
     public volatile double cpuUsage;
 
