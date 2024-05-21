@@ -157,10 +157,11 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
         }
     }
 
-    public void addIfPoolEmpty() {
+    public boolean addIfPoolEmpty() {
         if (min == 0 && itemQueue.isEmpty() && parkQueue.isEmpty()) {
-            add();
+            return add();
         }
+        return false;
     }
 
     private boolean add() {

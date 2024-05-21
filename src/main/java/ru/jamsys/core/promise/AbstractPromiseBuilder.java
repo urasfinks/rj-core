@@ -49,6 +49,11 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
         return this;
     }
 
+    public Promise append(PromiseTaskWithResource<?,?,?> task) {
+        listPendingTasks.add(task);
+        return this;
+    }
+
     public Promise then(PromiseTask task) {
         this
                 .append(new PromiseTask(PromiseTaskExecuteType.WAIT.getName(), this, PromiseTaskExecuteType.WAIT))

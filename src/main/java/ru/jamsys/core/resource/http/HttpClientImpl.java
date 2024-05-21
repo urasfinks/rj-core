@@ -2,7 +2,6 @@ package ru.jamsys.core.resource.http;
 
 import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.view.FileViewKeyStoreSslSocketFactory;
@@ -88,25 +87,25 @@ public class HttpClientImpl implements HttpClient {
     }
 
     @Override
-    public HttpClient setConnectTimeoutMs(int connectTimeoutMs){
+    public HttpClient setConnectTimeoutMs(int connectTimeoutMs) {
         this.connectTimeoutMs = connectTimeoutMs;
         return this;
     }
 
     @Override
-    public HttpClient setReadTimeoutMs(int readTimeoutMs){
+    public HttpClient setReadTimeoutMs(int readTimeoutMs) {
         this.readTimeoutMs = readTimeoutMs;
         return this;
     }
 
     @Override
-    public HttpClient setProxy(Proxy proxy){
+    public HttpClient setProxy(Proxy proxy) {
         this.proxy = proxy;
         return this;
     }
 
     @Override
-    public HttpClient setSslContextType(String sslContextType){
+    public HttpClient setSslContextType(String sslContextType) {
         this.SslContextType = sslContextType;
         return this;
     }
@@ -203,6 +202,9 @@ public class HttpClientImpl implements HttpClient {
 
     @SuppressWarnings("unused")
     public String getResponseString(String charset) throws UnsupportedEncodingException {
+        if (response == null) {
+            return null;
+        }
         return new String(response, charset);
     }
 

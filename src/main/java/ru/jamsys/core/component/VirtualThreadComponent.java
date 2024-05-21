@@ -35,6 +35,11 @@ public class VirtualThreadComponent implements Resource<PromiseTask, Void> {
     }
 
     @Override
+    public void close() {
+        executorService.shutdown();
+    }
+
+    @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         if (balancerAlgorithm instanceof LeastConnections) {
             return ((ThreadPoolExecutor) executorService).getActiveCount();

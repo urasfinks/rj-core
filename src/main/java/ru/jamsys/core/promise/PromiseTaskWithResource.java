@@ -3,9 +3,9 @@ package ru.jamsys.core.promise;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.Completable;
+import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.resource.AbstractPoolResource;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
 import java.util.List;
@@ -25,7 +25,7 @@ import java.util.function.Function;
 // и в конечном счёте run запустит executeBlock, где мы поработаем с ресурсом в рамках потока исполнения задачи
 // и вызовем supplier/procedure c подготовленным уже результатом исполнения
 
-public class PromiseTaskPool<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>> extends PromiseTask {
+public class PromiseTaskWithResource<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>> extends PromiseTask {
 
     final AbstractPoolResource<RA, RR, PI> pool;
 
@@ -41,7 +41,7 @@ public class PromiseTaskPool<RA, RR, PI extends Completable & ExpirationMsMutabl
 
     RA argument;
 
-    public PromiseTaskPool(
+    public PromiseTaskWithResource(
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
@@ -55,7 +55,7 @@ public class PromiseTaskPool<RA, RR, PI extends Completable & ExpirationMsMutabl
         this.supplier = supplier;
     }
 
-    public PromiseTaskPool(
+    public PromiseTaskWithResource(
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
@@ -69,7 +69,7 @@ public class PromiseTaskPool<RA, RR, PI extends Completable & ExpirationMsMutabl
         this.procedure = procedure;
     }
 
-    public PromiseTaskPool(
+    public PromiseTaskWithResource(
             String index,
             Promise promise,
             PromiseTaskExecuteType type,

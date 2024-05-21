@@ -17,6 +17,11 @@ public class RealThreadComponent implements Resource<PromiseTask, Void> {
     }
 
     @Override
+    public void close() {
+
+    }
+
+    @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 1;
     }

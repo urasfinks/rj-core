@@ -60,6 +60,8 @@ public interface Promise extends Property<String>, ExpirationMsImmutable {
 
     Promise append(PromiseTask task);
 
+    Promise append(PromiseTaskWithResource<?,?,?> task);
+
     default Promise append(String index, PromiseTaskExecuteType promiseTaskExecuteType, Function<AtomicBoolean, List<PromiseTask>> fn) {
         return append(new PromiseTask(index, this, promiseTaskExecuteType, fn));
     }

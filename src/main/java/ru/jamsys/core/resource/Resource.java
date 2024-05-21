@@ -8,4 +8,6 @@ public interface Resource<A, R> extends BalancerItem {
     // Агрументы сами преобразуем в то, что нам надо
     R execute(A arguments);
 
+    void close();
+
 }

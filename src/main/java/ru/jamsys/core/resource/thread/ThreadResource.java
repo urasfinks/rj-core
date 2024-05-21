@@ -232,4 +232,9 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
         return null;
     }
 
+    @Override
+    public void close() {
+        shutdown();
+    }
+
 }

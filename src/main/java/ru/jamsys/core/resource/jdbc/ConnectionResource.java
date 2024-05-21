@@ -50,6 +50,7 @@ public class ConnectionResource extends ExpirationMsMutableImpl
         reusable.set(false);
     }
 
+    @Override
     public void close() {
         try {
             connection.close();
