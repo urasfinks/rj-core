@@ -14,18 +14,18 @@ public class Template {
             parser.read(ch);
             if (parser.isTerminal()) {
                 String flush = parser.flush();
-                if (!flush.equals("")) {
+                if (!flush.isEmpty()) {
                     result.add(new TemplateItem(true, flush));
                 }
             } else if (parser.isFinish()) {
                 String flush = parser.flush();
-                if (!flush.equals("")) {
+                if (!flush.isEmpty()) {
                     result.add(new TemplateItem(false, flush));
                 }
             }
         }
         String flush = parser.flush();
-        if (!flush.equals("")) {
+        if (!flush.isEmpty()) {
             result.add(new TemplateItem(true, flush));
         } else if (parser.isParse()) {
             result.add(new TemplateItem(true, "$"));
@@ -71,7 +71,7 @@ public class Template {
     }
 
     private static void get(List<TemplateItem> tmp, List<TemplateItem> result) {
-        if (tmp.size() > 0) {
+        if (!tmp.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (TemplateItem item : tmp) {
                 sb.append(item.getValue());

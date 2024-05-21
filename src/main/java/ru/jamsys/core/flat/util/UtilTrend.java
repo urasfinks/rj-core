@@ -29,11 +29,11 @@ public class UtilTrend {
     }
 
     public static double getLinear(double[] line, double predict) {
-        return LinearTrendLine.main(line, predict);
+        return LinearTrendLine.get(line, predict);
     }
 
     public static double getLinear(double[] x, double[] y, double predict) {
-        return LinearTrendLine.main(x, y, predict);
+        return LinearTrendLine.get(x, y, predict);
     }
 
 }

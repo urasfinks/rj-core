@@ -6,9 +6,6 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.flat.util.*;
-import ru.jamsys.core.util.*;
-
-
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -299,7 +296,7 @@ public class Security implements LifeCycleComponent {
             } catch (Exception e) {
                 App.context.getBean(ExceptionHandler.class).handler(e);
             }
-        }else{
+        } else {
             Util.logConsole("file not exist");
         }
     }

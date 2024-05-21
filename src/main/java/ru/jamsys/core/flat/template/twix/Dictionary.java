@@ -1,7 +1,9 @@
 package ru.jamsys.core.flat.template.twix;
 
+import lombok.Getter;
 import ru.jamsys.core.extension.EnumName;
 
+@Getter
 public enum Dictionary implements EnumName {
 
     DOLLAR("$"),
@@ -11,10 +13,6 @@ public enum Dictionary implements EnumName {
     ANY("*");
 
     private final String alias;
-
-    public String getAlias() {
-        return alias;
-    }
 
     Dictionary(String alias) {
         this.alias = alias;
