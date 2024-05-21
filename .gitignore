@@ -34,9 +34,9 @@ build/
 
 # Project exclude paths
 /target/
-/securityComponent
-/securityComponent/
-/securityComponent/*
+/security
+/security/
+/security/*
 /src/main/java/ru/jamsys/core/SecurityKey.java
 /log/
 /LogManager/
