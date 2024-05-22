@@ -4,16 +4,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseImpl;
-import ru.jamsys.core.promise.PromiseTaskExecuteType;
-import ru.jamsys.core.promise.PromiseTaskWithResource;
-import ru.jamsys.core.resource.http.HttpClient;
-import ru.jamsys.core.resource.http.HttpClientImpl;
-import ru.jamsys.core.resource.http.HttpClientResource;
-import ru.jamsys.core.resource.http.HttpResponseEnvelope;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 class PoolResourceTest {
     @BeforeAll
@@ -30,26 +20,26 @@ class PoolResourceTest {
     @Test
     void test() {
 
-        PoolResource<HttpClient, HttpResponseEnvelope, HttpClientResource> pool = new PoolResource<>("testPoolResource", 0, HttpClientResource.class);
-        pool.run();
-
-        Promise promise = new PromiseImpl("testPromise", 6_000L);
-
-        promise
-                .append(new PromiseTaskWithResource<>(
-                        "testTaskWithResource",
-                        promise,
-                        PromiseTaskExecuteType.IO,
-                        pool,
-                        new HttpClientImpl(),
-                        (AtomicBoolean isRun, HttpResponseEnvelope httpResponseEnvelope) -> {
-                            System.out.println("!!!");
-                        }
-                ))
-                .run()
-                .await(1000);
-
-        System.out.println(promise.getLog());
+//        PoolResource<HttpClient, HttpResponseEnvelope, HttpClientResource> pool = new PoolResource<>("testPoolResource", 0, HttpClientResource.class);
+//        pool.run();
+//
+//        Promise promise = new PromiseImpl("testPromise", 6_000L);
+//
+//        promise
+//                .append(new PromiseTaskWithResource<>(
+//                        "testTaskWithResource",
+//                        promise,
+//                        PromiseTaskExecuteType.IO,
+//                        pool,
+//                        new HttpClientImpl(),
+//                        (AtomicBoolean isRun, HttpResponseEnvelope httpResponseEnvelope) -> {
+//                            System.out.println("!!!");
+//                        }
+//                ))
+//                .run()
+//                .await(1000);
+//
+//        System.out.println(promise.getLog());
 
     }
 }

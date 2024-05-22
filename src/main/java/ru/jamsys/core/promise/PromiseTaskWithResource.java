@@ -27,7 +27,7 @@ import java.util.function.Function;
 
 public class PromiseTaskWithResource<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>> extends PromiseTask {
 
-    final AbstractPoolResource<RA, RR, PI> pool;
+    final AbstractPoolResource<RA, RR, PI> pool = null;
 
     @Getter
     @Setter
@@ -39,36 +39,6 @@ public class PromiseTaskWithResource<RA, RR, PI extends Completable & Expiration
 
     private Function<Promise, RA> argumentsFunction;
 
-    RA argument;
-
-    public PromiseTaskWithResource(
-            String index,
-            Promise promise,
-            PromiseTaskExecuteType type,
-            AbstractPoolResource<RA, RR, PI> pool,
-            RA argument,
-            BiFunction<AtomicBoolean, RR, List<PromiseTask>> supplier
-    ) {
-        super(index, promise, type);
-        this.pool = pool;
-        this.argument = argument;
-        this.supplier = supplier;
-    }
-
-    public PromiseTaskWithResource(
-            String index,
-            Promise promise,
-            PromiseTaskExecuteType type,
-            AbstractPoolResource<RA, RR, PI> pool,
-            RA argument,
-            BiConsumer<AtomicBoolean, RR> procedure
-    ) {
-        super(index, promise, type);
-        this.pool = pool;
-        this.argument = argument;
-        this.procedure = procedure;
-    }
-
     public PromiseTaskWithResource(
             String index,
             Promise promise,
@@ -78,7 +48,20 @@ public class PromiseTaskWithResource<RA, RR, PI extends Completable & Expiration
             BiConsumer<AtomicBoolean, RR> procedure
     ) {
         super(index, promise, type);
-        this.pool = pool;
+        //this.pool = pool;
+        this.argumentsFunction = argumentsFunction;
+        this.procedure = procedure;
+    }
+
+    public PromiseTaskWithResource(
+            String index,
+            Promise promise,
+            PromiseTaskExecuteType type,
+            Class<PI> cls,
+            Function<Promise, RA> argumentsFunction,
+            BiConsumer<AtomicBoolean, RR> procedure
+    ) {
+        super(index, promise, type);
         this.argumentsFunction = argumentsFunction;
         this.procedure = procedure;
     }
@@ -98,9 +81,7 @@ public class PromiseTaskWithResource<RA, RR, PI extends Completable & Expiration
     @Override
     protected void executeBlock() throws Throwable {
         try (PoolItemEnvelope<RA, RR, PI> res = getPoolItemEnvelope()) {
-            if (argumentsFunction != null) {
-                argument = argumentsFunction.apply(getPromise());
-            }
+            RA argument = argumentsFunction.apply(getPromise());
             if (supplier != null) {
                 getPromise().complete(this, supplier.apply(isThreadRun, res.getItem().execute(argument)));
             } else if (procedure != null) {

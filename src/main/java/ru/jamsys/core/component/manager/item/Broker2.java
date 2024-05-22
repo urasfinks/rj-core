@@ -12,6 +12,7 @@ import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.addable.AddToList;
+import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
@@ -21,7 +22,6 @@ import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
-import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +49,7 @@ import java.util.function.Consumer;
 @Getter
 @Setter
 //@IgnoreClassFinder // не знаю почему он был исключён
-public class Broker<TEO>
+public class Broker2<TEO>
         extends ExpirationMsMutableImpl
         implements
         ClassName,
@@ -85,8 +85,12 @@ public class Broker<TEO>
 
     private Consumer<TEO> onDrop = null;
 
-    public Broker(String index, ApplicationContext applicationContext) {
+    final Class<TEO> classItem;
+
+    public Broker2(String index, ApplicationContext applicationContext, Class<TEO> cls) {
+
         this.index = index;
+        this.classItem = cls;
 
         rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(index, applicationContext))
                 .init(RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)
@@ -130,10 +134,12 @@ public class Broker<TEO>
     }
 
     public DisposableExpirationMsImmutableEnvelope<TEO> add(TEO element, long curTime, long timeOut) throws Exception {
+        System.out.println("e: " + element.getClass() + " r: " + classItem);
         return add(new ExpirationMsImmutableEnvelope<>(element, timeOut, curTime));
     }
 
     public DisposableExpirationMsImmutableEnvelope<TEO> add(TEO element, long timeOut) throws Exception {
+        System.out.println("e: " + element.getClass() + " r: " + classItem);
         return add(new ExpirationMsImmutableEnvelope<>(element, timeOut));
     }
 

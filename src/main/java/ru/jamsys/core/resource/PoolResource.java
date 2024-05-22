@@ -1,10 +1,11 @@
 package ru.jamsys.core.resource;
 
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
-public class PoolResource<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>> extends AbstractPoolResource<RA, RR, PI>{
+public class PoolResource<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>> extends AbstractPoolResource<RA, RR, PI> implements Closable {
 
     private final Class<PI> cls;
 
@@ -28,4 +29,8 @@ public class PoolResource<RA, RR, PI extends Completable & ExpirationMsMutable &
         return false;
     }
 
+    @Override
+    public void close() {
+        shutdown();
+    }
 }

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.m2.BrokerManager2;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -21,6 +22,16 @@ class BrokerTest {
     static void beforeAll() {
         String[] args = new String[]{};
         App.main(args);
+    }
+
+    @Test
+    void v2m2() throws Exception {
+        BrokerManager2 brokerManager2 = App.context.getBean(BrokerManager2.class);
+        XTest obj = new XTest(1);
+        DisposableExpirationMsImmutableEnvelope<XTest> test = brokerManager2.add("test", obj, 1_000);
+        DisposableExpirationMsImmutableEnvelope<String> add = brokerManager2.add("test", "wfe", 1_000);
+        System.out.println(brokerManager2.getTestMap().get("test").pollFirst().getValue());
+        System.out.println(brokerManager2.getTestMap().get("test").pollFirst().getValue());
     }
 
     @AfterAll
