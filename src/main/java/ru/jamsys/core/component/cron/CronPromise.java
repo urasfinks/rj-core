@@ -1,8 +1,8 @@
-package ru.jamsys.core.component.manager.item;
+package ru.jamsys.core.component.cron;
 
 import lombok.Getter;
-import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.flat.template.cron.Cron;
+import ru.jamsys.core.promise.PromiseGenerator;
 
 @Getter
 public class CronPromise {

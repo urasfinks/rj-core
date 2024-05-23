@@ -4,7 +4,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.item.CronPromise;
+import ru.jamsys.core.component.cron.CronPromise;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.flat.template.cron.Cron;
