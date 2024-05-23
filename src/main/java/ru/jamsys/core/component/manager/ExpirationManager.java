@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.item.Expiration;
 
 @Component
-public class ExpirationManager extends AbstractManager2<Expiration<?>> {
+public class ExpirationManager extends AbstractManager<Expiration<?>> {
 
     public <T> EnvelopManagerObject<Expiration<T>> get(String index, Class<T> classItem) {
         return new EnvelopManagerObject<>(index, classItem, this);

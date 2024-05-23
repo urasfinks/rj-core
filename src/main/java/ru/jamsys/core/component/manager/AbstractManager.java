@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public abstract class AbstractManager2<MO extends Closable & ExpirationMsMutable & StatisticsFlush>
+public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable & StatisticsFlush>
         implements
         StatisticsCollectorMap<MO>,
         KeepAlive,

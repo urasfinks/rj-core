@@ -11,20 +11,20 @@ public class EnvelopManagerObject<T extends CheckClassItem> extends ExpirationMs
 
     private final Class<?> classItem;
 
-    private final AbstractManager2<?> abstractManager2;
+    private final AbstractManager<?> abstractManager;
 
     private T cache;
 
-    public EnvelopManagerObject(String index, Class<?> classItem, AbstractManager2<?> abstractManager2) {
+    public EnvelopManagerObject(String index, Class<?> classItem, AbstractManager<?> abstractManager) {
         this.index = index;
         this.classItem = classItem;
-        this.abstractManager2 = abstractManager2;
+        this.abstractManager = abstractManager;
         setKeepAliveOnInactivityMs(1_000);
     }
 
     public T get() {
         if (cache == null || isExpired()) {
-            cache = abstractManager2.getMapItem(index, classItem);
+            cache = abstractManager.getMapItem(index, classItem);
             active();
         }
         return cache;

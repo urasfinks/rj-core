@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.item.Broker;
 
 @Component
-public class BrokerManager extends AbstractManager2<Broker<?>>{
+public class BrokerManager extends AbstractManager<Broker<?>> {
 
     private final ApplicationContext applicationContext;
 

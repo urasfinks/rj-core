@@ -7,7 +7,7 @@ import ru.jamsys.core.resource.virtual.file.system.File;
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
-public class VirtualFileSystemManager extends AbstractManager2<File> {
+public class VirtualFileSystemManager extends AbstractManager<File> {
 
     public VirtualFileSystemManager() {
         setCleanableMap(false);
