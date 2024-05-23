@@ -6,14 +6,14 @@ import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.addable.AddToList;
+import ru.jamsys.core.flat.util.ExpirationKeepAliveResult;
+import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
-import ru.jamsys.core.flat.util.ExpirationKeepAliveResult;
-import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -119,6 +119,9 @@ public class Expiration<V>
                 .addField("ItemSize", count.get())
                 .addField("BucketSize", bucket.size())
         );
+        if (!bucket.isEmpty()) {
+            active();
+        }
         return result;
     }
 

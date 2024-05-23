@@ -199,11 +199,6 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
             return;
         } else {
             Util.logConsole("do Thread " + thread.getName() + ".stop()", true);
-            try {
-                thread.stop(); //Ну как бы всё, извините, на этом мои полномочия всё
-            } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
-            }
             //TODO: удалить из менаджера контроля тасками, что бы не текло время по этой таске для корректного рассчёта
             // распределения тредов по задачам
         }

@@ -303,7 +303,11 @@ public class Util {
     }
 
     public static void printStackTrace(String label) {
-        Exception exception = new Exception(label);
+        Exception exception = new Exception(
+                Util.msToDataFormat(System.currentTimeMillis()) + "\r\n"
+                        + Thread.currentThread().getName() + "\r\n"
+                        + "Util.printStackTrace " + label + "\r\n"
+        );
         //App.context.getBean(ExceptionHandler.class).handler(exception);
         exception.printStackTrace();
     }

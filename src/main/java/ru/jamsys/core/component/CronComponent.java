@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Lazy
 public class CronComponent implements LifeCycleComponent, ClassName {
 
-    final private Thread threadPool;
+    final private Thread thread;
     final private List<CronPromise> listItem = new ArrayList<>();
     final private AtomicBoolean isWhile = new AtomicBoolean(true);
 
@@ -31,11 +31,11 @@ public class CronComponent implements LifeCycleComponent, ClassName {
             ApplicationContext applicationContext
     ) {
         initList(classFinderComponent, applicationContext, exceptionHandler);
-        threadPool = new Thread(new Runnable() {
+        thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 long nextStartMs = System.currentTimeMillis();
-                while (isWhile.get() && !threadPool.isInterrupted()) {
+                while (isWhile.get() && !thread.isInterrupted()) {
                     nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
                     long curTimeMs = System.currentTimeMillis();
 
@@ -56,6 +56,7 @@ public class CronComponent implements LifeCycleComponent, ClassName {
                 Util.logConsole("STOP");
             }
         });
+        thread.setName("CronComponent");
     }
 
     private void runCronTask(long curTimeMs) {
@@ -95,14 +96,13 @@ public class CronComponent implements LifeCycleComponent, ClassName {
 
     @Override
     public void run() {
-        threadPool.start();
-        //TODO: тут был wakeUp
+        thread.start();
     }
 
     @Override
     public void shutdown() {
         isWhile.set(false);
-        threadPool.interrupt();
+        thread.interrupt();
     }
 
 }

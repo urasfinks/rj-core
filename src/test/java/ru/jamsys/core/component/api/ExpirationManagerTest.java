@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.ExpirationManager;
+import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.flat.util.ExpirationKeepAliveResult;
 import ru.jamsys.core.flat.util.Util;
@@ -125,10 +125,9 @@ class ExpirationManagerTest {
 
     }
 
-
     Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
 
-        ManagerElement<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
+        final ManagerElement<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
 
         AvgMetric avgMetric = new AvgMetric();
         test.get().setOnExpired((DisposableExpirationMsImmutableEnvelope<XItem> env) -> {
@@ -142,29 +141,42 @@ class ExpirationManagerTest {
         AtomicBoolean isRun2 = new AtomicBoolean(true);
 
         //Сначала надо запустить keepAlive потому что старт потоков будет медленный и мы начнём терять секунды так как не запущенны
-        new Thread(() -> {
+
+        Thread ka = new Thread(() -> {
+            Thread.currentThread().setName("TMP KeepAlive");
             while (isRun2.get()) {
-                long cur = System.currentTimeMillis();
-                ExpirationKeepAliveResult keepAliveResult = test.get().keepAlive(isThreadRun, cur);
-                System.out.println(keepAliveResult);
-                Util.sleepMs(sleepKeepAlive);
+                try {
+                    long cur = System.currentTimeMillis();
+                    ExpirationKeepAliveResult keepAliveResult = test.get().keepAlive(isThreadRun, cur);
+                    System.out.println(keepAliveResult);
+                    Util.sleepMs(sleepKeepAlive);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-        }).start();
+        });
+        ka.start();
 
         for (int i = 0; i < 4; i++) {
             final int x = i;
             Util.sleepMs(333 * i); // Сделаем рассинхрон вставок по времени
             new Thread(() -> {
-                while (isRun.get()) {
-                    for (int j = 0; j < 1000; j++) {
-                        try {
-                            test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), timeoutMs));
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                Thread.currentThread().setName("IOSIF " + x);
+                try {
+                    while (isRun.get()) {
+                        for (int j = 0; j < 1000; j++) {
+                            try {
+                                test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), timeoutMs));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
+                        Util.sleepMs((100 * x) + 10);
                     }
-                    Util.sleepMs((100 * x) + 10);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+
             }).start();
         }
 
@@ -186,13 +198,16 @@ class ExpirationManagerTest {
     void runThreadAny() {
         //{AvgCount=5357983, Min=-276, Max=-1, Sum=-449148926, Avg=-83.82798638965447, MapSize=0, BucketSize=0}
 
-        Map<String, Object> stat = multiThread(100, 500);
-        double timeAvg = (double) stat.get("Avg");
+        Map<String, Object> stat;
+        double timeAvg;
+
+        stat = multiThread(100, 500);
+        timeAvg = (double) stat.get("Avg");
         Assertions.assertTrue(timeAvg <= 100, timeAvg+"");
 
         stat = multiThread(100, 1000);
         timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 100, timeAvg+"");
+        Assertions.assertTrue(timeAvg <= 100, timeAvg + "");
 
         stat = multiThread(200, 600);
         timeAvg = (double) stat.get("Avg");
