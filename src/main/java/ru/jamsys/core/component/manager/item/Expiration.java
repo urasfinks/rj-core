@@ -52,16 +52,12 @@ public class Expiration<V>
 
     private final Class<?> classItem;
 
-    private Consumer<DisposableExpirationMsImmutableEnvelope<V>> onExpired;
+    private final Consumer<DisposableExpirationMsImmutableEnvelope<?>> onExpired;
 
-    public Expiration<V> setOnExpired(Consumer<DisposableExpirationMsImmutableEnvelope<V>> onExpired) {
-        this.onExpired = onExpired;
-        return this;
-    }
-
-    public Expiration(String index, Class<?> classItem) {
+    public Expiration(String index, Class<?> classItem, Consumer<DisposableExpirationMsImmutableEnvelope<?>> onExpired) {
         this.index = index;
         this.classItem = classItem;
+        this.onExpired = onExpired;
     }
 
     public List<Long> getBucketKey() {

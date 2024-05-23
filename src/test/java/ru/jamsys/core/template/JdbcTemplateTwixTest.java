@@ -12,7 +12,7 @@ import ru.jamsys.core.flat.template.jdbc.Template;
 import java.util.HashMap;
 import java.util.List;
 
-class JdbcTemplateTest {
+class JdbcTemplateTwixTest {
 
     @BeforeAll
     static void beforeAll() {

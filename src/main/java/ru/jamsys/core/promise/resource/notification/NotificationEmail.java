@@ -9,8 +9,8 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.resource.http.HttpResponseEnvelope;
-import ru.jamsys.core.flat.template.twix.Template;
-import ru.jamsys.core.flat.template.twix.TemplateItem;
+import ru.jamsys.core.flat.template.twix.TemplateTwix;
+import ru.jamsys.core.flat.template.twix.TemplateItemTwix;
 import ru.jamsys.core.flat.util.UtilFileResource;
 
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class NotificationEmail implements Notification {
     @Setter
     private boolean ssl;
 
-    List<TemplateItem> parsedTemplate = null;
+    List<TemplateItemTwix> parsedTemplate = null;
 
     public NotificationEmail(SecurityComponent securityComponent, PropertiesComponent propertiesComponent) {
 
@@ -79,10 +79,10 @@ public class NotificationEmail implements Notification {
 
     public String compileTemplate(Map<String, String> args) throws IOException {
         if (parsedTemplate == null) {
-            parsedTemplate = Template.getParsedTemplate(UtilFileResource.getAsString(template));
+            parsedTemplate = TemplateTwix.getParsedTemplate(UtilFileResource.getAsString(template));
         }
         args.put("rj.notification.email.support.address", supportAddress);
-        return Template.template(parsedTemplate, args);
+        return TemplateTwix.template(parsedTemplate, args);
     }
 
     @Override

@@ -40,10 +40,10 @@ class ExpirationManagerTest {
     @Test
     void testStop() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        ManagerElement<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
-
         AtomicInteger counterExpired = new AtomicInteger(0);
-        test.get().setOnExpired(_ -> counterExpired.incrementAndGet());
+        ManagerElement<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class, _ -> counterExpired.incrementAndGet());
+
+
         ExpirationMsImmutableEnvelope<XItem> add = test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
         //Стопаем задачу, что не выполнилсмя onExpired
         add.stop();
@@ -59,8 +59,7 @@ class ExpirationManagerTest {
     @Test
     void checkSize() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        ManagerElement<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
-        test.get().setOnExpired(System.out::println);
+        ManagerElement<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class, System.out::println);
         test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
 
 
@@ -126,11 +125,8 @@ class ExpirationManagerTest {
     }
 
     Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
-
-        final ManagerElement<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
-
         AvgMetric avgMetric = new AvgMetric();
-        test.get().setOnExpired((DisposableExpirationMsImmutableEnvelope<XItem> env) -> {
+        final ManagerElement<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class, (DisposableExpirationMsImmutableEnvelope<XItem> env) -> {
             if (env.getExpiryRemainingMs() > 0) {
                 Assertions.fail("ALARM");
             } else {

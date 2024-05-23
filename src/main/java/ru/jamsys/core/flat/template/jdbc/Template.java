@@ -3,7 +3,8 @@ package ru.jamsys.core.flat.template.jdbc;
 import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.flat.template.twix.TemplateItem;
+import ru.jamsys.core.flat.template.twix.TemplateItemTwix;
+import ru.jamsys.core.flat.template.twix.TemplateTwix;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +20,7 @@ public class Template {
 
     private boolean dynamicArgument = false;
 
-    private List<TemplateItem> listTemplateItem;
+    private List<TemplateItemTwix> listTemplateItemTwix;
 
     private List<Argument> listArgument;
 
@@ -40,12 +41,12 @@ public class Template {
     }
 
     private void parse(String sql) {
-        listTemplateItem = ru.jamsys.core.flat.template.twix.Template.getParsedTemplate(sql);
+        listTemplateItemTwix = TemplateTwix.getParsedTemplate(sql);
         listArgument = new ArrayList<>();
-        for (TemplateItem templateItem : listTemplateItem) {
-            if (!templateItem.isStatic) {
+        for (TemplateItemTwix templateItemTwix : listTemplateItemTwix) {
+            if (!templateItemTwix.isStatic) {
                 Argument argument = new Argument();
-                argument.parseSqlKey(templateItem.value);
+                argument.parseSqlKey(templateItemTwix.value);
                 listArgument.add(argument);
                 if (argument.getType().isDynamicFragment()) {
                     dynamicArgument = true;
@@ -89,10 +90,10 @@ public class Template {
             }
         }
         if (cache == null && !dynamicArgument) {
-            cache = ru.jamsys.core.flat.template.twix.Template.template(listTemplateItem, templateArgs);
+            cache = TemplateTwix.template(listTemplateItemTwix, templateArgs);
         }
         if (dynamicArgument) {
-            compiledSqlTemplate.setSql(ru.jamsys.core.flat.template.twix.Template.template(listTemplateItem, templateArgs));
+            compiledSqlTemplate.setSql(TemplateTwix.template(listTemplateItemTwix, templateArgs));
         } else {
             compiledSqlTemplate.setSql(cache);
         }

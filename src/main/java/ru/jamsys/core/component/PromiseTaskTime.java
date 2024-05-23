@@ -3,8 +3,8 @@ package ru.jamsys.core.component;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.ExpirationManager;
+import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.KeepAliveComponent;
@@ -35,14 +35,9 @@ public class PromiseTaskTime implements KeepAliveComponent, ClassName {
     Map<String, Map<String, Object>> statistic = new HashMap<>();
 
     public PromiseTaskTime(ApplicationContext applicationContext) {
-
         ExpirationManager expirationManager = applicationContext.getBean(ExpirationManager.class);
-
-        promiseTaskRetry = expirationManager.get("PromiseTaskRetry", PromiseTask.class);
-        promiseTaskRetry.get().setOnExpired(this::onPromiseTaskRetry);
-
-        promiseTaskExpired = expirationManager.get("PromiseTaskExpired", Promise.class);
-        promiseTaskExpired.get().setOnExpired(this::onPromiseTaskExpired);
+        promiseTaskRetry = expirationManager.get("PromiseTaskRetry", PromiseTask.class, this::onPromiseTaskRetry);
+        promiseTaskExpired = expirationManager.get("PromiseTaskExpired", Promise.class, this::onPromiseTaskExpired);
     }
 
     private void onPromiseTaskRetry(DisposableExpirationMsImmutableEnvelope<PromiseTask> env) {

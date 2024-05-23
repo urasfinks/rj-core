@@ -19,7 +19,7 @@ public class Cron {
             TimeUnit.DAY_OF_WEEK
     );
 
-    private final Map<Integer, TemplateItem> templateMap = new LinkedHashMap<>();
+    private final Map<Integer, TemplateItemCron> templateMap = new LinkedHashMap<>();
 
     @Getter
     private final List<TimeVariant> listTimeVariant = new ArrayList<>();
@@ -31,7 +31,7 @@ public class Cron {
     public Cron(String template) {
         this.template = template;
         for (int i = 0; i < vector.size(); i++) {
-            templateMap.put(i, new TemplateItem(vector.get(i)));
+            templateMap.put(i, new TemplateItemCron(vector.get(i)));
         }
         parseTemplate();
         init();
@@ -44,11 +44,11 @@ public class Cron {
         }
     }
 
-    private void parseItem(String template, TemplateItem templateItem) {
+    private void parseItem(String template, TemplateItemCron templateItemCron) {
         if (template.indexOf(",") > 0) {
             String[] split = template.split(",");
             for (String s : split) {
-                parseItem(s, templateItem);
+                parseItem(s, templateItemCron);
             }
         } else {
             if (template.startsWith("*/")) {
@@ -56,12 +56,12 @@ public class Cron {
                 if (inc == 1) {
                     return;
                 }
-                int start = templateItem.getTimeUnit().getMin();
+                int start = templateItemCron.getTimeUnit().getMin();
                 int count = 0;
                 while (true) {
-                    templateItem.add(start);
+                    templateItemCron.add(start);
                     start += inc;
-                    if (start > templateItem.getTimeUnit().getMax()) {
+                    if (start > templateItemCron.getTimeUnit().getMax()) {
                         break;
                     }
                     count++;
@@ -74,10 +74,10 @@ public class Cron {
                 int start = Integer.parseInt(split[0]);
                 int end = Integer.parseInt(split[1]);
                 for (int i = start; i <= end; i++) {
-                    templateItem.add(i);
+                    templateItemCron.add(i);
                 }
             } else if (!"*".equals(template)) {
-                templateItem.add(Integer.parseInt(template));
+                templateItemCron.add(Integer.parseInt(template));
             }
         }
     }
@@ -121,10 +121,10 @@ public class Cron {
         List<TimeUnit> listEmptyTimeUnit = new ArrayList<>();
         List<List<Integer>> tmpList = new ArrayList<>();
         for (Integer index : templateMap.keySet()) {
-            TemplateItem templateItem = templateMap.get(index);
-            List<Integer> list = new ArrayList<>(templateItem.getList());
+            TemplateItemCron templateItemCron = templateMap.get(index);
+            List<Integer> list = new ArrayList<>(templateItemCron.getList());
             if (list.isEmpty()) {
-                listEmptyTimeUnit.add(templateItem.getTimeUnit());
+                listEmptyTimeUnit.add(templateItemCron.getTimeUnit());
                 list.add(null);
             }
             tmpList.add(list);
@@ -180,10 +180,10 @@ public class Cron {
 
     @Override
     public String toString() {
-        Map<String, TemplateItem> result = new LinkedHashMap<>();
+        Map<String, TemplateItemCron> result = new LinkedHashMap<>();
         for (Integer key : templateMap.keySet()) {
-            TemplateItem templateItem = templateMap.get(key);
-            result.put(templateItem.getName(), templateItem);
+            TemplateItemCron templateItemCron = templateMap.get(key);
+            result.put(templateItemCron.getName(), templateItemCron);
         }
         return "Template(" + result + ")";
     }

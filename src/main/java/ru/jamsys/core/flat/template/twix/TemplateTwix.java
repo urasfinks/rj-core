@@ -4,42 +4,42 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Template {
+public class TemplateTwix {
 
-    public static List<TemplateItem> getParsedTemplate(String template) {
+    public static List<TemplateItemTwix> getParsedTemplate(String template) {
         Parser parser = new Parser();
-        List<TemplateItem> result = new ArrayList<>();
+        List<TemplateItemTwix> result = new ArrayList<>();
         for (int i = 0; i < template.length(); i++) {
             String ch = template.substring(i, i + 1);
             parser.read(ch);
             if (parser.isTerminal()) {
                 String flush = parser.flush();
                 if (!flush.isEmpty()) {
-                    result.add(new TemplateItem(true, flush));
+                    result.add(new TemplateItemTwix(true, flush));
                 }
             } else if (parser.isFinish()) {
                 String flush = parser.flush();
                 if (!flush.isEmpty()) {
-                    result.add(new TemplateItem(false, flush));
+                    result.add(new TemplateItemTwix(false, flush));
                 }
             }
         }
         String flush = parser.flush();
         if (!flush.isEmpty()) {
-            result.add(new TemplateItem(true, flush));
+            result.add(new TemplateItemTwix(true, flush));
         } else if (parser.isParse()) {
-            result.add(new TemplateItem(true, "$"));
+            result.add(new TemplateItemTwix(true, "$"));
         }
         return merge(result);
     }
 
-    public static String template(List<TemplateItem> parsedTemplate, Map<String, String> args) {
+    public static String template(List<TemplateItemTwix> parsedTemplate, Map<String, String> args) {
         StringBuilder sb = new StringBuilder();
-        for (TemplateItem templateItem : parsedTemplate) {
-            if (templateItem.isStatic()) {
-                sb.append(templateItem.getValue());
+        for (TemplateItemTwix templateItemTwix : parsedTemplate) {
+            if (templateItemTwix.isStatic()) {
+                sb.append(templateItemTwix.getValue());
             } else {
-                sb.append(args.get(templateItem.getValue()));
+                sb.append(args.get(templateItemTwix.getValue()));
             }
         }
         return sb.toString();
@@ -49,34 +49,34 @@ public class Template {
         return template(getParsedTemplate(template), args);
     }
 
-    private static List<TemplateItem> merge(List<TemplateItem> input) {
-        List<TemplateItem> result = new ArrayList<>();
+    private static List<TemplateItemTwix> merge(List<TemplateItemTwix> input) {
+        List<TemplateItemTwix> result = new ArrayList<>();
         int index = 0;
-        List<TemplateItem> tmp = new ArrayList<>();
+        List<TemplateItemTwix> tmp = new ArrayList<>();
         while (true) {
             if (index > input.size() - 1) {
                 get(tmp, result);
                 break;
             }
-            TemplateItem templateItem = input.get(index++);
-            if (!templateItem.isStatic()) {
+            TemplateItemTwix templateItemTwix = input.get(index++);
+            if (!templateItemTwix.isStatic()) {
                 get(tmp, result);
                 tmp.clear();
-                result.add(templateItem);
+                result.add(templateItemTwix);
             } else {
-                tmp.add(templateItem);
+                tmp.add(templateItemTwix);
             }
         }
         return result;
     }
 
-    private static void get(List<TemplateItem> tmp, List<TemplateItem> result) {
+    private static void get(List<TemplateItemTwix> tmp, List<TemplateItemTwix> result) {
         if (!tmp.isEmpty()) {
             StringBuilder sb = new StringBuilder();
-            for (TemplateItem item : tmp) {
+            for (TemplateItemTwix item : tmp) {
                 sb.append(item.getValue());
             }
-            result.add(new TemplateItem(true, sb.toString()));
+            result.add(new TemplateItemTwix(true, sb.toString()));
         }
     }
 

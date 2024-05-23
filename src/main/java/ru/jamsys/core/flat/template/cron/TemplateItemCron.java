@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class TemplateItem {
+public class TemplateItemCron {
 
     final List<Integer> list = new ArrayList<>();
 
@@ -17,7 +17,7 @@ public class TemplateItem {
         return timeUnit.getNameCache();
     }
 
-    public TemplateItem(TimeUnit timeUnit) {
+    public TemplateItemCron(TimeUnit timeUnit) {
         this.timeUnit = timeUnit;
     }
 
