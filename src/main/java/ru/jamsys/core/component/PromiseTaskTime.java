@@ -36,12 +36,12 @@ public class PromiseTaskTime implements KeepAliveComponent, ClassName {
 
     public PromiseTaskTime(ApplicationContext applicationContext) {
 
-        ExpirationManager expirationManager21 = applicationContext.getBean(ExpirationManager.class);
+        ExpirationManager expirationManager = applicationContext.getBean(ExpirationManager.class);
 
-        promiseTaskRetry = expirationManager21.get("PromiseTaskRetry", PromiseTask.class);
+        promiseTaskRetry = expirationManager.get("PromiseTaskRetry", PromiseTask.class);
         promiseTaskRetry.get().setOnExpired(this::onPromiseTaskRetry);
 
-        promiseTaskExpired = expirationManager21.get("PromiseTaskExpired", Promise.class);
+        promiseTaskExpired = expirationManager.get("PromiseTaskExpired", Promise.class);
         promiseTaskExpired.get().setOnExpired(this::onPromiseTaskExpired);
     }
 
