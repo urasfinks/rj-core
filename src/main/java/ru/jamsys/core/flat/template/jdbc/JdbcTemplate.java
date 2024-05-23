@@ -5,6 +5,6 @@ import ru.jamsys.core.extension.EnumName;
 
 public interface JdbcTemplate extends EnumName {
 
-    Template getTemplate();
+    TemplateJdbc getTemplate();
 
 }

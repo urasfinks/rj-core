@@ -80,7 +80,7 @@ public class ConnectionResource extends ExpirationMsMutableImpl
             throw new RuntimeException("RateLimit overflow");
         }
         active();
-        Template template = arguments.getTemplate();
+        TemplateJdbc template = arguments.getTemplate();
         if (template == null) {
             complete(null);
             throw new RuntimeException("TemplateEnum: " + arguments.getName() + " return null template");
@@ -110,7 +110,7 @@ public class ConnectionResource extends ExpirationMsMutableImpl
 
     private static List<Map<String, Object>> execute(
             Connection conn,
-            Template template,
+            TemplateJdbc template,
             Map<String, Object> args,
             StatementControl statementControl,
             boolean debug

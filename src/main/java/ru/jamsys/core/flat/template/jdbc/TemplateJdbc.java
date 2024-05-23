@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Template {
+public class TemplateJdbc {
 
     private String cache;
 
@@ -24,7 +24,7 @@ public class Template {
 
     private List<Argument> listArgument;
 
-    public Template(String sql, StatementType statementType) {
+    public TemplateJdbc(String sql, StatementType statementType) {
         this.statementType = statementType;
         parse(sql);
     }

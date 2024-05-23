@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.flat.template.jdbc.CompiledSqlTemplate;
 import ru.jamsys.core.flat.template.jdbc.StatementType;
-import ru.jamsys.core.flat.template.jdbc.Template;
+import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +27,7 @@ class JdbcTemplateTwixTest {
 
     @Test
     void parseSql2() throws Exception {
-        Template template = new Template("""
+        TemplateJdbc template = new TemplateJdbc("""
                 SELECT
                     type_data AS key,
                     max(revision_data) AS max
@@ -77,7 +77,7 @@ class JdbcTemplateTwixTest {
 
     @Test
     void parseSql() {
-        Template template = new Template("select * from table where c1 = ${IN.name::VARCHAR} and c2 = ${IN.name::VARCHAR}", StatementType.SELECT_WITH_AUTO_COMMIT);
+        TemplateJdbc template = new TemplateJdbc("select * from table where c1 = ${IN.name::VARCHAR} and c2 = ${IN.name::VARCHAR}", StatementType.SELECT_WITH_AUTO_COMMIT);
         Assertions.assertEquals("select * from table where c1 = ? and c2 = ?", template.getSql(), "#1");
     }
 }

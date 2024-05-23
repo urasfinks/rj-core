@@ -3,7 +3,7 @@ package ru.jamsys.core.resource.jdbc;
 import lombok.Getter;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
-import ru.jamsys.core.flat.template.jdbc.Template;
+import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -41,7 +41,7 @@ public class JdbcRequest extends ExpirationMsMutableImpl {
         return this;
     }
 
-    public Template getTemplate() {
+    public TemplateJdbc getTemplate() {
         return jdbcTemplate.getTemplate();
     }
 
