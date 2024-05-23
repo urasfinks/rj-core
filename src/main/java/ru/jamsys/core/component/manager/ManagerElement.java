@@ -23,7 +23,7 @@ public class ManagerElement<T extends CheckClassItem> extends ExpirationMsMutabl
     }
 
     public T get() {
-        if (cache == null || isExpired()) {
+        if (cache == null || isExpiredWithoutStop()) {
             cache = abstractManager.getManagerElement(index, classItem);
             active();
         }

@@ -21,6 +21,16 @@ public interface ExpirationMs {
         return curTimeMs > (getLastActivityMs() + getKeepAliveOnInactivityMs());
     }
 
+    // Объект просрочен
+    default boolean isExpiredWithoutStop() {
+        return isExpired(System.currentTimeMillis());
+    }
+
+    // Объект просрочен без проверки остановки
+    default boolean isExpiredWithoutStop(long curTimeMs) {
+        return curTimeMs > (getLastActivityMs() + getKeepAliveOnInactivityMs());
+    }
+
     default TimeOutException getExpiredException() {
         return new TimeOutException(getLastActivityMs(), getKeepAliveOnInactivityMs());
     }
