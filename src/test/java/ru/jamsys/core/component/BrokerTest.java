@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.EnvelopManagerObject;
+import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
@@ -31,7 +31,7 @@ class BrokerTest {
 
     @Test
     void testLiner() throws Exception {
-        EnvelopManagerObject<Broker<XTest>> brokerManager = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class);
+        ManagerElement<Broker<XTest>> brokerManager = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class);
         brokerManager.accept(xTestBroker -> {
             xTestBroker.setCyclical(false);
             xTestBroker.setMaxSizeQueue(10);
@@ -76,7 +76,7 @@ class BrokerTest {
 
     @Test
     void testCyclic() {
-        EnvelopManagerObject<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
 
 
@@ -137,7 +137,7 @@ class BrokerTest {
 
     @Test
     void testReference() {
-        EnvelopManagerObject<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
         broker.accept(queue -> {
             XTest obj = new XTest(1);
@@ -159,7 +159,7 @@ class BrokerTest {
     void testReference2() {
         AtomicBoolean isRun = new AtomicBoolean(true);
 
-        EnvelopManagerObject<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
         broker.accept(queue -> {
             XTest obj = new XTest(1);
@@ -188,7 +188,7 @@ class BrokerTest {
 
     @Test
     void testMaxInputTps() {
-        EnvelopManagerObject<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
         broker.accept(queue -> {
             queue.setMaxTpsInput(1);
@@ -211,7 +211,7 @@ class BrokerTest {
 
     @Test
     void testExpired() {
-        EnvelopManagerObject<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
         broker.accept(queue -> {
             AtomicInteger counter = new AtomicInteger(0);

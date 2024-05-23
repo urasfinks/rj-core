@@ -2,7 +2,7 @@ package ru.jamsys.core.resource;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.EnvelopManagerObject;
+import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.pool.AbstractPool;
@@ -20,7 +20,7 @@ public abstract class AbstractPoolResource<RA, RR, PI extends Completable & Expi
 
     //private final BrokerManager2 brokerManager; //PromiseTaskWithResource<RA, RR, PI>
 
-    final private EnvelopManagerObject<Broker<PromiseTaskWithResource>> broker;
+    final private ManagerElement<Broker<PromiseTaskWithResource>> broker;
 
     @SuppressWarnings("all")
     public AbstractPoolResource(String name, int min, Class<PI> cls) {

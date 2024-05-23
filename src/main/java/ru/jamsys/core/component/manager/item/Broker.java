@@ -90,7 +90,6 @@ public class Broker<TEO>
         this.classItem = classItem;
 
         rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(index, applicationContext))
-                .get()
                 .init(RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(RateLimitName.BROKER_TAIL_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(RateLimitName.BROKER_TPS.getName(), RateLimitItemInstance.TPS);

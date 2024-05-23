@@ -3,8 +3,6 @@ package ru.jamsys.core.component;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
 
@@ -28,11 +26,6 @@ public class Core implements LifeCycleInterface {
                 applicationContext.getBean(runnableComponentClass).run();
             }
         });
-        rateLimitInit();
-    }
-
-    private void rateLimitInit() {
-        RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
     }
 
     @Override

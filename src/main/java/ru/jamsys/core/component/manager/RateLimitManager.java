@@ -6,8 +6,12 @@ import ru.jamsys.core.rate.limit.RateLimit;
 @Component
 public class RateLimitManager extends AbstractManager<RateLimit> {
 
-    public EnvelopManagerObject<RateLimit> get(String index) {
-        return new EnvelopManagerObject<>(index, Void.class, this);
+    public RateLimitManager() {
+        setCleanableMap(false);
+    }
+
+    public RateLimit get(String index) {
+        return getManagerElement(index, Void.class);
     }
 
     @Override

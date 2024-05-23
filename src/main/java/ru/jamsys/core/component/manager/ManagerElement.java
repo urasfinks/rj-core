@@ -5,7 +5,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.function.Consumer;
 
-public class EnvelopManagerObject<T extends CheckClassItem> extends ExpirationMsMutableImpl {
+public class ManagerElement<T extends CheckClassItem> extends ExpirationMsMutableImpl {
 
     private final String index;
 
@@ -15,7 +15,7 @@ public class EnvelopManagerObject<T extends CheckClassItem> extends ExpirationMs
 
     private T cache;
 
-    public EnvelopManagerObject(String index, Class<?> classItem, AbstractManager<?> abstractManager) {
+    public ManagerElement(String index, Class<?> classItem, AbstractManager<?> abstractManager) {
         this.index = index;
         this.classItem = classItem;
         this.abstractManager = abstractManager;
@@ -24,7 +24,7 @@ public class EnvelopManagerObject<T extends CheckClassItem> extends ExpirationMs
 
     public T get() {
         if (cache == null || isExpired()) {
-            cache = abstractManager.getMapItem(index, classItem);
+            cache = abstractManager.getManagerElement(index, classItem);
             active();
         }
         return cache;

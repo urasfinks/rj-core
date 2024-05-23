@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ClassFinderComponent;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.EnvelopManagerObject;
+import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class StatisticFlush implements Cron1s, PromiseGenerator {
 
-    final EnvelopManagerObject<Broker<StatisticSec>> brokerEnvelopManagerObject;
+    final ManagerElement<Broker<StatisticSec>> brokerManagerElement;
 
     List<StatisticsFlushComponent> list = new ArrayList<>();
 
@@ -44,7 +44,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
             BrokerManager broker,
             ExceptionHandler exceptionHandler
     ) {
-        brokerEnvelopManagerObject = broker.get(ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext), StatisticSec.class);
+        brokerManagerElement = broker.get(ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext), StatisticSec.class);
         this.exceptionHandler = exceptionHandler;
         classFinderComponent.findByInstance(StatisticsFlushComponent.class).forEach((Class<StatisticsFlushComponent> statisticsCollectorClass)
                 -> list.add(applicationContext.getBean(statisticsCollectorClass)));
@@ -72,7 +72,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
                     });
                     if (!statisticSec.getList().isEmpty()) {
                         try {
-                            brokerEnvelopManagerObject.get().add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
+                            brokerManagerElement.get().add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
                         } catch (Exception e) {
                             exceptionHandler.handler(e);
                         }

@@ -2,7 +2,7 @@ package ru.jamsys.core.resource.thread;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.EnvelopManagerObject;
+import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.PromiseTask;
@@ -14,21 +14,21 @@ public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadRes
 
     AtomicInteger counter = new AtomicInteger(1);
 
-    private final EnvelopManagerObject<Broker<PromiseTask>> brokerEnvelopManagerObject;
+    private final ManagerElement<Broker<PromiseTask>> brokerManagerElement;
 
     public ThreadPoolPromise(String name, int min) {
         super(name, min, ThreadResource.class);
-        this.brokerEnvelopManagerObject = App.context.getBean(BrokerManager.class).get(getName(), PromiseTask.class);
+        this.brokerManagerElement = App.context.getBean(BrokerManager.class).get(getName(), PromiseTask.class);
     }
 
     public void addPromiseTask(PromiseTask promiseTask) throws Exception {
-        brokerEnvelopManagerObject.get().add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getPromise().getExpiryRemainingMs()));
+        brokerManagerElement.get().add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getPromise().getExpiryRemainingMs()));
         addIfPoolEmpty();
         serviceBell();
     }
 
     public ExpirationMsImmutableEnvelope<PromiseTask> getPromiseTask() {
-        return brokerEnvelopManagerObject.get().pollLast();
+        return brokerManagerElement.get().pollLast();
     }
 
     @Override

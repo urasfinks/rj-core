@@ -1,6 +1,6 @@
 package ru.jamsys.core.component.manager;
 
-public interface ManagerItemBuilder<T> {
+public interface ManagerElementBuilder<T> {
 
     T build(String index, Class<?> classItem);
 

@@ -47,7 +47,6 @@ public class LogManager implements ClassName {
     ) {
 
         rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(applicationContext))
-                .get()
                 .init(RateLimitName.FILE_LOG_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(RateLimitName.FILE_LOG_INDEX.getName(), RateLimitItemInstance.MAX);
         int fileLogSizeMb = propertiesComponent.getProperties("rj.log.manager.file.log.size.mb", Integer.class);

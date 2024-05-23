@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.EnvelopManagerObject;
+import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.ExpirationManager;
 import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.flat.util.ExpirationKeepAliveResult;
@@ -40,7 +40,7 @@ class ExpirationManagerTest {
     @Test
     void testStop() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        EnvelopManagerObject<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
+        ManagerElement<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
 
         AtomicInteger counterExpired = new AtomicInteger(0);
         test.get().setOnExpired(_ -> counterExpired.incrementAndGet());
@@ -59,7 +59,7 @@ class ExpirationManagerTest {
     @Test
     void checkSize() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        EnvelopManagerObject<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
+        ManagerElement<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
         test.get().setOnExpired(System.out::println);
         test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
 
@@ -128,7 +128,7 @@ class ExpirationManagerTest {
 
     Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
 
-        EnvelopManagerObject<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
+        ManagerElement<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
 
         AvgMetric avgMetric = new AvgMetric();
         test.get().setOnExpired((DisposableExpirationMsImmutableEnvelope<XItem> env) -> {

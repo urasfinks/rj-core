@@ -13,8 +13,8 @@ public class BrokerManager extends AbstractManager<Broker<?>> {
         this.applicationContext = applicationContext;
     }
 
-    public <T> EnvelopManagerObject<Broker<T>> get(String index, Class<T> classItem) {
-        return new EnvelopManagerObject<>(index, classItem, this);
+    public <T> ManagerElement<Broker<T>> get(String index, Class<T> classItem) {
+        return new ManagerElement<>(index, classItem, this);
     }
 
     @Override

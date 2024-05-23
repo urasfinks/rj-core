@@ -3,7 +3,7 @@ package ru.jamsys.core.component;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.manager.EnvelopManagerObject;
+import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.ExpirationManager;
 import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.extension.ClassName;
@@ -26,9 +26,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Lazy
 public class PromiseTaskTime implements KeepAliveComponent, ClassName {
 
-    private final EnvelopManagerObject<Expiration<PromiseTask>> promiseTaskRetry;
+    private final ManagerElement<Expiration<PromiseTask>> promiseTaskRetry;
 
-    private final EnvelopManagerObject<Expiration<Promise>> promiseTaskExpired;
+    private final ManagerElement<Expiration<Promise>> promiseTaskExpired;
 
     ConcurrentLinkedDeque<TimeEnvelopeNano<String>> queue = new ConcurrentLinkedDeque<>();
 

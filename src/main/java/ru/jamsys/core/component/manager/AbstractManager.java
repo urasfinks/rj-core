@@ -15,7 +15,7 @@ public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable 
         implements
         StatisticsCollectorMap<MO>,
         KeepAlive,
-        ManagerItemBuilder<MO> {
+        ManagerElementBuilder<MO> {
 
     protected final Map<String, MO> map = new ConcurrentHashMap<>();
 
@@ -48,7 +48,7 @@ public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable 
     // текущий брокер по ключу, а он в какой-то момент времени может быть удалён, а ссылка останется
     // мы будем накладывать в некую очередь, которая уже будет не принадлежать менаджеру
     // и обслуживаться тоже не будет [keepAlive, flushAndGetStatistic] так что - плохая эта затея
-    protected <T extends CheckClassItem> T getMapItem(String key, Class<?> classItem) {
+    protected <T extends CheckClassItem> T getManagerElement(String key, Class<?> classItem) {
         @SuppressWarnings("unchecked")
         T o = (T) map.computeIfAbsent(key, _ -> build(key, classItem));
         if (o != null && o.checkClassItem(classItem)) {

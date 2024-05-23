@@ -42,7 +42,6 @@ public class ConnectionResource extends ExpirationMsMutableImpl
         this.connection = connection;
         rateLimit = App.context.getBean(RateLimitManager.class)
                 .get(getClassName(pool.getName()))
-                .get()
                 .init(RateLimitName.POOL_ITEM_TPS.getName(), RateLimitItemInstance.TPS);
     }
 

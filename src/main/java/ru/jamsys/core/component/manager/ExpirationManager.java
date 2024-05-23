@@ -6,8 +6,8 @@ import ru.jamsys.core.component.manager.item.Expiration;
 @Component
 public class ExpirationManager extends AbstractManager<Expiration<?>> {
 
-    public <T> EnvelopManagerObject<Expiration<T>> get(String index, Class<T> classItem) {
-        return new EnvelopManagerObject<>(index, classItem, this);
+    public <T> ManagerElement<Expiration<T>> get(String index, Class<T> classItem) {
+        return new ManagerElement<>(index, classItem, this);
     }
 
     @Override

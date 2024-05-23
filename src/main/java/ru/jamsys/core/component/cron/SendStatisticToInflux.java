@@ -5,7 +5,7 @@ import com.influxdb.client.write.Point;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.EnvelopManagerObject;
+import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
@@ -28,10 +28,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassName {
 
-    final EnvelopManagerObject<Broker<StatisticSec>> brokerEnvelopManagerObject;
+    final ManagerElement<Broker<StatisticSec>> brokerManagerElement;
 
     public SendStatisticToInflux(BrokerManager brokerManager, ApplicationContext applicationContext) {
-        brokerEnvelopManagerObject = brokerManager.get(ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext), StatisticSec.class);
+        brokerManagerElement = brokerManager.get(ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext), StatisticSec.class);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
         //TODO: replace ::collector IO -> COMPUTE (в текущий момент нет реализации COMPUTE)
         Promise promise = new PromiseImpl(getClass().getName(), 6_000L);
         promise.append(getClassName("collector"), PromiseTaskExecuteType.IO, (AtomicBoolean isThreadRun) -> {
-                    brokerEnvelopManagerObject.accept(queue -> {
+                    brokerManagerElement.accept(queue -> {
                         List<Point> listPoints = new ArrayList<>();
                         while (!queue.isEmpty() && isThreadRun.get()) {
                             ExpirationMsImmutableEnvelope<StatisticSec> statisticSec = queue.pollFirst();
