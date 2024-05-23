@@ -2,6 +2,8 @@ package ru.jamsys.core.resource;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.BrokerManager;
+import ru.jamsys.core.component.manager.EnvelopManagerObject;
+import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemEnvelope;
@@ -16,16 +18,19 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 public abstract class AbstractPoolResource<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>>
         extends AbstractPool<RA, RR, PI> {
 
-    private final BrokerManager<PromiseTaskWithResource<RA, RR, PI>> brokerManager;
+    //private final BrokerManager2 brokerManager; //PromiseTaskWithResource<RA, RR, PI>
+
+    final private EnvelopManagerObject<Broker<PromiseTaskWithResource>> broker;
 
     @SuppressWarnings("all")
     public AbstractPoolResource(String name, int min, Class<PI> cls) {
         super(name, min, cls);
-        brokerManager = App.context.getBean(BrokerManager.class);
+        broker = App.context.getBean(BrokerManager.class).get(getName(), PromiseTaskWithResource.class);
+
     }
 
     public void addPromiseTaskPool(PromiseTaskWithResource<RA, RR, PI> promiseTaskWithResource) throws Exception {
-        brokerManager.add(name, new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));
+        broker.get().add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));
         if (!addIfPoolEmpty()) {
             onParkUpdate();
         }
@@ -33,18 +38,15 @@ public abstract class AbstractPoolResource<RA, RR, PI extends Completable & Expi
 
     @Override
     public void onParkUpdate() {
-        if (!brokerManager.isEmpty(name) && !parkQueue.isEmpty()) {
+        if (!broker.get().isEmpty() && !parkQueue.isEmpty()) {
             PI poolItem = parkQueue.pollLast();
             if (poolItem != null) {
                 //Забираем с конца, что бы никаких штормов
-                ExpirationMsImmutableEnvelope<PromiseTaskWithResource<RA, RR, PI>> envelope = brokerManager.pollLast(name);
+                ExpirationMsImmutableEnvelope<PromiseTaskWithResource> envelope = broker.get().pollLast();
                 if (envelope != null) {
                     updateParkStatistic();
-                    PoolItemEnvelope<RA, RR, PI> poolItemEnvelope = new PoolItemEnvelope<>(this, poolItem);
-                    PromiseTaskWithResource<RA, RR, PI> value = envelope.getValue();
-                    value.start(poolItemEnvelope);
+                    envelope.getValue().start(new PoolItemEnvelope<>(this, poolItem));
                 } else {
-                    // Так уж получилось, что нет задач - вернём в пул (возможен конкурентный доступ)
                     complete(poolItem, null);
                 }
             }

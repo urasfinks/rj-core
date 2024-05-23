@@ -2,8 +2,8 @@ package ru.jamsys.core.component.manager;
 
 import lombok.Setter;
 import ru.jamsys.core.extension.*;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.flat.util.UtilRisc;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable & StatisticsFlush>
+public abstract class AbstractManager2<MO extends Closable & ExpirationMsMutable & StatisticsFlush>
         implements
         StatisticsCollectorMap<MO>,
         KeepAlive,
@@ -48,12 +48,13 @@ public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable 
     // текущий брокер по ключу, а он в какой-то момент времени может быть удалён, а ссылка останется
     // мы будем накладывать в некую очередь, которая уже будет не принадлежать менаджеру
     // и обслуживаться тоже не будет [keepAlive, flushAndGetStatistic] так что - плохая эта затея
-    protected MO get(String key) {
-        return map.computeIfAbsent(key, _ -> build(key));
-    }
-
-    public void put(String key, MO object) {
-        map.computeIfAbsent(key, _ -> object);
+    protected <T extends CheckClassItem> T getMapItem(String key, Class<?> classItem) {
+        @SuppressWarnings("unchecked")
+        T o = (T) map.computeIfAbsent(key, _ -> build(key, classItem));
+        if (o != null && o.checkClassItem(classItem)) {
+            return o;
+        }
+        return null;
     }
 
     public Map<String, MO> getTestMap() {

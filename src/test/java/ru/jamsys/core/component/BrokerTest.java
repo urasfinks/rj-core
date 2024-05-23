@@ -5,12 +5,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.m2.BrokerManager2;
 import ru.jamsys.core.component.manager.BrokerManager;
+import ru.jamsys.core.component.manager.EnvelopManagerObject;
+import ru.jamsys.core.component.manager.item.Broker;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
-import ru.jamsys.core.flat.util.Util;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,16 +24,6 @@ class BrokerTest {
         App.main(args);
     }
 
-    @Test
-    void v2m2() throws Exception {
-        BrokerManager2 brokerManager2 = App.context.getBean(BrokerManager2.class);
-        XTest obj = new XTest(1);
-        DisposableExpirationMsImmutableEnvelope<XTest> test = brokerManager2.add("test", obj, 1_000);
-        DisposableExpirationMsImmutableEnvelope<String> add = brokerManager2.add("test", "wfe", 1_000);
-        System.out.println(brokerManager2.getTestMap().get("test").pollFirst().getValue());
-        System.out.println(brokerManager2.getTestMap().get("test").pollFirst().getValue());
-    }
-
     @AfterAll
     static void shutdown() {
         App.shutdown();
@@ -41,9 +31,8 @@ class BrokerTest {
 
     @Test
     void testLiner() throws Exception {
-        @SuppressWarnings("unchecked")
-        BrokerManager<XTest> brokerManager = App.context.getBean(BrokerManager.class);
-        brokerManager.setup(XTest.class.getName(), xTestBroker -> {
+        EnvelopManagerObject<Broker<XTest>> brokerManager = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class);
+        brokerManager.accept(xTestBroker -> {
             xTestBroker.setCyclical(false);
             xTestBroker.setMaxSizeQueue(10);
             xTestBroker.setMaxSizeQueueTail(3);
@@ -51,10 +40,10 @@ class BrokerTest {
 
 
         for (int i = 0; i < 10; i++) {
-            brokerManager.add(XTest.class.getName(), new XTest(i), 6_000L);
+            brokerManager.get().add(new XTest(i), 6_000L);
         }
 
-        brokerManager.setup(XTest.class.getName(), b -> {
+        brokerManager.accept(b -> {
             Assertions.assertEquals(10, b.size(), "#1");
 
             ExpirationMsImmutableEnvelope<XTest> t = b.pollFirst();
@@ -87,10 +76,11 @@ class BrokerTest {
 
     @Test
     void testCyclic() {
-        @SuppressWarnings("unchecked")
-        BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
+        EnvelopManagerObject<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+                .get(XTest.class.getName(), XTest.class);
 
-        broker.setup(XTest.class.getName(), b -> {
+
+        broker.accept( b -> {
             b.setCyclical(true);
             b.setMaxSizeQueue(10);
             b.setMaxSizeQueueTail(3);
@@ -146,10 +136,10 @@ class BrokerTest {
     }
 
     @Test
-    void testReference() throws Exception {
-        @SuppressWarnings("unchecked")
-        BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
-        broker.setup(ExpirationMsMutable.class.getName(), queue -> {
+    void testReference() {
+        EnvelopManagerObject<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+                .get(XTest.class.getName(), XTest.class);
+        broker.accept(queue -> {
             XTest obj = new XTest(1);
             DisposableExpirationMsImmutableEnvelope<XTest> o1 = null;
             try {
@@ -166,11 +156,12 @@ class BrokerTest {
     }
 
     @Test
-    void testReference2() throws Exception {
+    void testReference2() {
         AtomicBoolean isRun = new AtomicBoolean(true);
-        @SuppressWarnings("unchecked")
-        BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
-        broker.setup(ExpirationMsMutable.class.getName(), queue -> {
+
+        EnvelopManagerObject<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+                .get(XTest.class.getName(), XTest.class);
+        broker.accept(queue -> {
             XTest obj = new XTest(1);
             XTest obj2 = new XTest(2);
             DisposableExpirationMsImmutableEnvelope<XTest> o1 = null;
@@ -197,9 +188,9 @@ class BrokerTest {
 
     @Test
     void testMaxInputTps() {
-        @SuppressWarnings("unchecked")
-        BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
-        broker.setup(ExpirationMsMutable.class.getName(), queue -> {
+        EnvelopManagerObject<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+                .get(XTest.class.getName(), XTest.class);
+        broker.accept(queue -> {
             queue.setMaxTpsInput(1);
             XTest obj = new XTest(1);
             try {
@@ -220,9 +211,9 @@ class BrokerTest {
 
     @Test
     void testExpired() {
-        @SuppressWarnings("unchecked")
-        BrokerManager<XTest> broker = App.context.getBean(BrokerManager.class);
-        broker.setup(ExpirationMsMutable.class.getName(), queue -> {
+        EnvelopManagerObject<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+                .get(XTest.class.getName(), XTest.class);
+        broker.accept(queue -> {
             AtomicInteger counter = new AtomicInteger(0);
             queue.setOnDrop(_ -> counter.incrementAndGet());
             XTest obj = new XTest(1);
@@ -256,6 +247,7 @@ class BrokerTest {
                     "x=" + x +
                     '}';
         }
+
     }
 
 }

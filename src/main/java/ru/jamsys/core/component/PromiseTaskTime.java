@@ -3,17 +3,18 @@ package ru.jamsys.core.component;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.component.manager.EnvelopManagerObject;
 import ru.jamsys.core.component.manager.ExpirationManager;
 import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.KeepAliveComponent;
+import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.expiration.TimeEnvelopeNano;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,22 +26,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Lazy
 public class PromiseTaskTime implements KeepAliveComponent, ClassName {
 
-    private final Expiration<PromiseTask> retryDelay;
+    private final EnvelopManagerObject<Expiration<PromiseTask>> promiseTaskRetry;
 
-    private final Expiration<Promise> expiredDelay;
+    private final EnvelopManagerObject<Expiration<Promise>> promiseTaskExpired;
 
     ConcurrentLinkedDeque<TimeEnvelopeNano<String>> queue = new ConcurrentLinkedDeque<>();
 
     Map<String, Map<String, Object>> statistic = new HashMap<>();
 
     public PromiseTaskTime(ApplicationContext applicationContext) {
-        @SuppressWarnings("unchecked")
-        ExpirationManager<PromiseTask> expirationManager = applicationContext.getBean(ExpirationManager.class);
-        retryDelay = expirationManager.get("PromiseTaskRetry").setOnExpired(this::onPromiseTaskRetry);
 
-        @SuppressWarnings("unchecked")
-        ExpirationManager<Promise> expirationManager2 = applicationContext.getBean(ExpirationManager.class);
-        expiredDelay = expirationManager2.get("PromiseTaskExpired").setOnExpired(this::onPromiseTaskExpired);
+        ExpirationManager expirationManager21 = applicationContext.getBean(ExpirationManager.class);
+
+        promiseTaskRetry = expirationManager21.get("PromiseTaskRetry", PromiseTask.class);
+        promiseTaskRetry.get().setOnExpired(this::onPromiseTaskRetry);
+
+        promiseTaskExpired = expirationManager21.get("PromiseTaskExpired", Promise.class);
+        promiseTaskExpired.get().setOnExpired(this::onPromiseTaskExpired);
     }
 
     private void onPromiseTaskRetry(DisposableExpirationMsImmutableEnvelope<PromiseTask> env) {
@@ -58,11 +60,11 @@ public class PromiseTaskTime implements KeepAliveComponent, ClassName {
     }
 
     public DisposableExpirationMsImmutableEnvelope<PromiseTask> addRetryDelay(PromiseTask promiseTask) {
-        return retryDelay.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getRetryDelayMs()));
+        return promiseTaskRetry.get().add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getRetryDelayMs()));
     }
 
     public DisposableExpirationMsImmutableEnvelope<Promise> addExpiration(Promise promise) {
-        return expiredDelay.add(new DisposableExpirationMsImmutableEnvelope<>(promise, promise.getKeepAliveOnInactivityMs()));
+        return promiseTaskExpired.get().add(new DisposableExpirationMsImmutableEnvelope<>(promise, promise.getKeepAliveOnInactivityMs()));
     }
 
     public TimeEnvelopeNano<String> add(String index) {

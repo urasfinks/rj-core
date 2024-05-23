@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.component.VirtualFileSystemComponent;
+import ru.jamsys.core.component.manager.VirtualFileSystemManager;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.FileLoaderFactory;
 import ru.jamsys.core.resource.virtual.file.system.FileSaverFactory;
@@ -81,9 +81,9 @@ class FileTest {
     @Test
     void testComponent() {
         File file = new File("hello/world/1.txt", FileLoaderFactory.fromString("Hello world", "UTF-8"));
-        VirtualFileSystemComponent virtualFileSystemComponent = App.context.getBean(VirtualFileSystemComponent.class);
-        virtualFileSystemComponent.add(file);
-        File file1 = virtualFileSystemComponent.get("/hello/world/1.txt");
+        VirtualFileSystemManager virtualFileSystemManager = App.context.getBean(VirtualFileSystemManager.class);
+        virtualFileSystemManager.add(file);
+        File file1 = virtualFileSystemManager.get("/hello/world/1.txt");
 
         Assertions.assertEquals(file, file1, "Файлы не равны");
 

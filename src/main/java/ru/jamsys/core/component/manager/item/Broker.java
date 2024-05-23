@@ -7,10 +7,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.RateLimitManager;
-import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.Closable;
-import ru.jamsys.core.extension.KeepAlive;
-import ru.jamsys.core.extension.StatisticsFlush;
+import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.RateLimitName;
@@ -56,6 +53,7 @@ public class Broker<TEO>
         StatisticsFlush,
         Closable,
         KeepAlive,
+        CheckClassItem,
         AddToList<
                 ExpirationMsImmutableEnvelope<TEO>,
                 DisposableExpirationMsImmutableEnvelope<TEO> // Должны вернуть, что бы из вне можно было сделать remove
@@ -85,10 +83,14 @@ public class Broker<TEO>
 
     private Consumer<TEO> onDrop = null;
 
-    public Broker(String index, ApplicationContext applicationContext) {
+    private Class<TEO> classItem;
+
+    public Broker(String index, ApplicationContext applicationContext, Class<TEO> classItem) {
         this.index = index;
+        this.classItem = classItem;
 
         rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(index, applicationContext))
+                .get()
                 .init(RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(RateLimitName.BROKER_TAIL_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(RateLimitName.BROKER_TPS.getName(), RateLimitItemInstance.TPS);
@@ -292,6 +294,11 @@ public class Broker<TEO>
         UtilRisc.forEach(isRun, queue, (DisposableExpirationMsImmutableEnvelope<TEO> envelope)
                 -> cloned.add(envelope.revert().getValue()));
         return cloned;
+    }
+
+    @Override
+    public boolean checkClassItem(Class<?> classItem) {
+        return this.classItem.equals(classItem);
     }
 
 }

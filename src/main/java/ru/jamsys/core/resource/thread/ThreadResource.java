@@ -2,9 +2,9 @@ package ru.jamsys.core.resource.thread;
 
 import lombok.Getter;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.resource.Resource;
@@ -42,7 +42,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
 
     public ThreadResource(String name, ThreadPoolPromise pool) {
         this.pool = pool;
-        RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClassName(pool.getName()));
+        RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClassName(pool.getName())).get();
         rateLimit.init(RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);
         info
                 .append("[")

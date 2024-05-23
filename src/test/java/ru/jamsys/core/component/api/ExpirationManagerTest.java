@@ -5,14 +5,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.EnvelopManagerObject;
 import ru.jamsys.core.component.manager.ExpirationManager;
 import ru.jamsys.core.component.manager.item.Expiration;
+import ru.jamsys.core.flat.util.ExpirationKeepAliveResult;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.flat.util.ExpirationKeepAliveResult;
-import ru.jamsys.core.flat.util.Util;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,103 +40,98 @@ class ExpirationManagerTest {
     @Test
     void testStop() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        @SuppressWarnings("unchecked")
-        ExpirationManager<XItem> expirationManager = App.context.getBean(ExpirationManager.class);
-        Expiration<XItem> test = expirationManager.get("test");
+        EnvelopManagerObject<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
+
         AtomicInteger counterExpired = new AtomicInteger(0);
-        test.setOnExpired(_ -> counterExpired.incrementAndGet());
-        ExpirationMsImmutableEnvelope<XItem> add = test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
+        test.get().setOnExpired(_ -> counterExpired.incrementAndGet());
+        ExpirationMsImmutableEnvelope<XItem> add = test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
         //Стопаем задачу, что не выполнилсмя onExpired
         add.stop();
-        ExpirationKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + 1001);
+        ExpirationKeepAliveResult keepAliveResult = test.get().keepAlive(isThreadRun, curTimeMs + 1001);
         Assertions.assertEquals(1, keepAliveResult.getCountRemove().get());
 
         Assertions.assertEquals(0, counterExpired.get());
 
-        Statistic statistics = test.flushAndGetStatistic(null, null, null).getFirst();
+        Statistic statistics = test.get().flushAndGetStatistic(null, null, null).getFirst();
         Assertions.assertEquals("{ItemSize=0, BucketSize=0}", statistics.getFields().toString());
-
     }
 
     @Test
     void checkSize() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        @SuppressWarnings("unchecked")
-        ExpirationManager<XItem> expirationManager = App.context.getBean(ExpirationManager.class);
-        Expiration<XItem> test = expirationManager.get("test");
-        test.setOnExpired(System.out::println);
-        test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
+        EnvelopManagerObject<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
+        test.get().setOnExpired(System.out::println);
+        test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
 
 
         //Проверяем что пока 1 корзина
-        Assertions.assertEquals("[1709734265000]", test.getBucketKey().toString());
-        Assertions.assertEquals("2024-03-06T17:11:05.000", Util.msToDataFormat(test.getBucketKey().getFirst()));
+        Assertions.assertEquals("[1709734265000]", test.get().getBucketKey().toString());
+        Assertions.assertEquals("2024-03-06T17:11:05.000", Util.msToDataFormat(test.get().getBucketKey().getFirst()));
 
         //2024-03-06T17:11:04.056 + 500 => 11:04.556 + 1000 => 11:05.556 => 11:05.000
 
-        test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + 500));
-        Assertions.assertEquals("2024-03-06T17:11:05.000", Util.msToDataFormat(test.getBucketKey().getFirst()));
+        test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + 500));
+        Assertions.assertEquals("2024-03-06T17:11:05.000", Util.msToDataFormat(test.get().getBucketKey().getFirst()));
         //Проверяем что корзина не добавилась
-        Assertions.assertEquals("[1709734265000]", test.getBucketKey().toString());
+        Assertions.assertEquals("[1709734265000]", test.get().getBucketKey().toString());
 //
         for (int i = 2; i < 10; i++) {
-            test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + (500 * i)));
+            test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + (500 * i)));
         }
 
-        Assertions.assertEquals("[1709734265000, 1709734266000, 1709734267000, 1709734268000, 1709734269000]", test.getBucketKey().toString());
+        Assertions.assertEquals("[1709734265000, 1709734266000, 1709734267000, 1709734268000, 1709734269000]", test.get().getBucketKey().toString());
 
-        Statistic statistics = test.flushAndGetStatistic(null, null, null).getFirst();
+        Statistic statistics = test.get().flushAndGetStatistic(null, null, null).getFirst();
         Assertions.assertEquals("{ItemSize=10, BucketSize=5}", statistics.getFields().toString());
 
         for (int i = 10; i < 100; i++) {
-            test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + (500 * i)));
+            test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + (500 * i)));
         }
 
-        statistics = test.flushAndGetStatistic(null, null, null).getFirst();
+        statistics = test.get().flushAndGetStatistic(null, null, null).getFirst();
         Assertions.assertEquals("{ItemSize=100, BucketSize=50}", statistics.getFields().toString());
 
-        ExpirationKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, curTimeMs);
+        ExpirationKeepAliveResult keepAliveResult = test.get().keepAlive(isThreadRun, curTimeMs);
         // Никаких обработок пачек не должно быть, так как
         Assertions.assertEquals("[]", keepAliveResult.getReadBucket().toString());
         Assertions.assertEquals(0, keepAliveResult.getCountRemove().get());
 
-        statistics = test.flushAndGetStatistic(null, null, null).getFirst();
+        statistics = test.get().flushAndGetStatistic(null, null, null).getFirst();
         Assertions.assertEquals("{ItemSize=100, BucketSize=50}", statistics.getFields().toString());
 
-        keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + 100);
+        keepAliveResult = test.get().keepAlive(isThreadRun, curTimeMs + 100);
         Assertions.assertEquals(0, keepAliveResult.getCountRemove().get());
         Assertions.assertEquals("[]", keepAliveResult.getReadBucket().toString());
-        statistics = test.flushAndGetStatistic(null, null, null).getFirst();
+        statistics = test.get().flushAndGetStatistic(null, null, null).getFirst();
         Assertions.assertEquals("{ItemSize=100, BucketSize=50}", statistics.getFields().toString());
 
         Assertions.assertEquals("2024-03-06T17:11:05.006", Util.msToDataFormat(curTimeMs + 950));
         Assertions.assertEquals("2024-03-06T17:11:05.000", Util.msToDataFormat(Util.zeroLastNDigits(curTimeMs + 950, 3)));
 
-        keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + 950);
+        keepAliveResult = test.get().keepAlive(isThreadRun, curTimeMs + 950);
         Assertions.assertEquals(2, keepAliveResult.getCountRemove().get());
         Assertions.assertEquals("[2024-03-06T17:11:05.000]", keepAliveResult.getReadBucketFormat().toString());
-        statistics = test.flushAndGetStatistic(null, null, null).getFirst();
+        statistics = test.get().flushAndGetStatistic(null, null, null).getFirst();
         Assertions.assertEquals("{ItemSize=98, BucketSize=49}", statistics.getFields().toString());
 
-        keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + (500 * 10));
+        keepAliveResult = test.get().keepAlive(isThreadRun, curTimeMs + (500 * 10));
         // 8 потому что 2 уже были удалены до этого
         Assertions.assertEquals(8, keepAliveResult.getCountRemove().get());
         // Это значит пробежка была от 2024-03-06T17:11:05.000 до 2024-03-06T17:11:05.999
 
         Assertions.assertEquals("[2024-03-06T17:11:06.000, 2024-03-06T17:11:07.000, 2024-03-06T17:11:08.000, 2024-03-06T17:11:09.000]", keepAliveResult.getReadBucketFormat().toString());
-        statistics = test.flushAndGetStatistic(null, null, null).getFirst();
+        statistics = test.get().flushAndGetStatistic(null, null, null).getFirst();
         Assertions.assertEquals("{ItemSize=90, BucketSize=45}", statistics.getFields().toString());
 
     }
 
 
     Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
-        @SuppressWarnings("unchecked")
-        ExpirationManager<XItem> expirationManager = App.context.getBean(ExpirationManager.class);
-        Expiration<XItem> test = expirationManager.get("test");
+
+        EnvelopManagerObject<Expiration<XItem>> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class);
 
         AvgMetric avgMetric = new AvgMetric();
-        test.setOnExpired((DisposableExpirationMsImmutableEnvelope<XItem> env) -> {
+        test.get().setOnExpired((DisposableExpirationMsImmutableEnvelope<XItem> env) -> {
             if (env.getExpiryRemainingMs() > 0) {
                 Assertions.fail("ALARM");
             } else {
@@ -149,7 +145,7 @@ class ExpirationManagerTest {
         new Thread(() -> {
             while (isRun2.get()) {
                 long cur = System.currentTimeMillis();
-                ExpirationKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, cur);
+                ExpirationKeepAliveResult keepAliveResult = test.get().keepAlive(isThreadRun, cur);
                 System.out.println(keepAliveResult);
                 Util.sleepMs(sleepKeepAlive);
             }
@@ -162,7 +158,7 @@ class ExpirationManagerTest {
                 while (isRun.get()) {
                     for (int j = 0; j < 1000; j++) {
                         try {
-                            test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), timeoutMs));
+                            test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), timeoutMs));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -178,7 +174,7 @@ class ExpirationManagerTest {
         Util.sleepMs(timeoutMs + sleepKeepAlive);
         isRun2.set(false);
         Map<String, Object> flush = avgMetric.flush("");
-        Map<String, Object> fields = test.flushAndGetStatistic(null, null, null).getFirst().getFields();
+        Map<String, Object> fields = test.get().flushAndGetStatistic(null, null, null).getFirst().getFields();
         flush.putAll(fields);
         System.out.println(flush);
         Assertions.assertEquals(0, flush.get("ItemSize"));

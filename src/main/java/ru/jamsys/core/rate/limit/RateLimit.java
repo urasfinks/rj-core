@@ -2,6 +2,7 @@ package ru.jamsys.core.rate.limit;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.StatisticsCollectorMap;
 import ru.jamsys.core.extension.addable.AddToMap;
@@ -16,7 +17,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @SuppressWarnings("unused")
 public class RateLimit
         extends ExpirationMsMutableImpl
-        implements StatisticsCollectorMap<RateLimitItem>, Closable, AddToMap<String, RateLimitItem> {
+        implements
+        StatisticsCollectorMap<RateLimitItem>,
+        Closable,
+        CheckClassItem,
+        AddToMap<String, RateLimitItem>
+{
 
     final Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
 
@@ -24,6 +30,7 @@ public class RateLimit
     private volatile boolean active = false;
 
     private final String index;
+
 
     public RateLimit(String index) {
         this.index = index;
@@ -73,4 +80,8 @@ public class RateLimit
         return this;
     }
 
+    @Override
+    public boolean checkClassItem(Class<?> classItem) {
+        return true;
+    }
 }

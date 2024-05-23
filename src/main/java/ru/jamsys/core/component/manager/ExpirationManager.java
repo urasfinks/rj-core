@@ -2,32 +2,17 @@ package ru.jamsys.core.component.manager;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.item.Expiration;
-import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
-
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
-public class ExpirationManager<V>
-        extends AbstractManagerListItem<
-        Expiration<V>,
-        ExpirationMsImmutableEnvelope<V>,
-        DisposableExpirationMsImmutableEnvelope<V>
-        > implements StatisticsFlushComponent{
+public class ExpirationManager extends AbstractManager2<Expiration<?>> {
 
-    public ExpirationManager() {
-        setCleanableMap(false);
+    public <T> EnvelopManagerObject<Expiration<T>> get(String index, Class<T> classItem) {
+        return new EnvelopManagerObject<>(index, classItem, this);
     }
 
     @Override
-    public Expiration<V> build(String index) {
-        return new Expiration<>(index);
+    public Expiration<?> build(String index, Class<?> classItem) {
+        return new Expiration<>(index, classItem);
     }
 
-    // setCleanableMap(false) - можем себе позволить прихранивать объекты
-    @Override
-    public Expiration<V> get(String key) {
-        return super.get(key);
-    }
 }

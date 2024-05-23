@@ -2,11 +2,16 @@ package ru.jamsys.core.component.cron;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.ClassFinderComponent;
 import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.component.manager.BrokerManager;
+import ru.jamsys.core.component.manager.EnvelopManagerObject;
+import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.flat.template.cron.release.Cron1s;
+import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseImpl;
@@ -14,9 +19,6 @@ import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.StatisticSec;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.flat.template.cron.release.Cron1s;
-import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -28,32 +30,30 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class StatisticFlush implements Cron1s, PromiseGenerator {
 
-    final BrokerManager<StatisticSec> broker;
+    final EnvelopManagerObject<Broker<StatisticSec>> brokerEnvelopManagerObject;
 
     List<StatisticsFlushComponent> list = new ArrayList<>();
 
     String ip = Util.getIp();
-
-    final String brokerIndex;
 
     final ExceptionHandler exceptionHandler;
 
     public StatisticFlush(
             ClassFinderComponent classFinderComponent,
             ApplicationContext applicationContext,
-            BrokerManager<StatisticSec> broker,
+            BrokerManager broker,
             ExceptionHandler exceptionHandler
     ) {
-        this.broker = broker;
-        this.brokerIndex = ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext);
+        brokerEnvelopManagerObject = broker.get(ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext), StatisticSec.class);
         this.exceptionHandler = exceptionHandler;
         classFinderComponent.findByInstance(StatisticsFlushComponent.class).forEach((Class<StatisticsFlushComponent> statisticsCollectorClass)
                 -> list.add(applicationContext.getBean(statisticsCollectorClass)));
+
     }
 
     @Override
     public Promise generate() {
-        return new PromiseImpl(getClass().getName(),6_000L)
+        return new PromiseImpl(getClass().getName(), 6_000L)
                 .append(this.getClass().getName(), PromiseTaskExecuteType.IO, (AtomicBoolean isThreadRun) -> {
                     StatisticSec statisticSec = new StatisticSec();
                     UtilRisc.forEach(isThreadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
@@ -72,7 +72,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
                     });
                     if (!statisticSec.getList().isEmpty()) {
                         try {
-                            broker.add(brokerIndex, new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
+                            brokerEnvelopManagerObject.get().add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
                         } catch (Exception e) {
                             exceptionHandler.handler(e);
                         }

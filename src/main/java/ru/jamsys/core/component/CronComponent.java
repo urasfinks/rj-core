@@ -4,14 +4,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.component.manager.item.CronPromise;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.LifeCycleComponent;
-import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.CronTemplate;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.promise.PromiseGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,6 @@ public class CronComponent implements LifeCycleComponent, ClassName {
 
     public CronComponent(
             ExceptionHandler exceptionHandler,
-            RateLimitManager rateLimitManager,
             ClassFinderComponent classFinderComponent,
             ApplicationContext applicationContext
     ) {

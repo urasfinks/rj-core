@@ -10,13 +10,13 @@ import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.HashMapBuilder;
+import ru.jamsys.core.flat.util.UtilByte;
+import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.flat.util.UtilByte;
-import ru.jamsys.core.flat.util.UtilFile;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,8 +35,6 @@ public class LogManager implements ClassName {
 
     public final ConcurrentHashMap<String, Broker<Log>> map = new ConcurrentHashMap<>();
 
-    private final BrokerManager<Log> brokerManager;
-
     private final RateLimit rateLimit;
 
     private final Map<String, AtomicInteger> indexFile = new ConcurrentHashMap<>();
@@ -44,12 +42,12 @@ public class LogManager implements ClassName {
     private final String logFolder;
 
     public LogManager(
-            BrokerManager<Log> brokerManager,
             ApplicationContext applicationContext,
             PropertiesComponent propertiesComponent
     ) {
-        this.brokerManager = brokerManager;
+
         rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(applicationContext))
+                .get()
                 .init(RateLimitName.FILE_LOG_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(RateLimitName.FILE_LOG_INDEX.getName(), RateLimitItemInstance.MAX);
         int fileLogSizeMb = propertiesComponent.getProperties("rj.log.manager.file.log.size.mb", Integer.class);

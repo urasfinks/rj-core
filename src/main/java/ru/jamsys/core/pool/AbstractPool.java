@@ -92,10 +92,11 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
 
         RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
         rateLimit = rateLimitManager.get(name)
+                .get()
                 .init(RateLimitName.POOL_SIZE.getName(), RateLimitItemInstance.MAX);
         rliPoolSize = rateLimit.get(RateLimitName.POOL_SIZE.getName());
 
-        rateLimitPoolItem = rateLimitManager.get(ClassNameImpl.getClassNameStatic(cls, name));
+        rateLimitPoolItem = rateLimitManager.get(ClassNameImpl.getClassNameStatic(cls, name)).get();
     }
 
     public void setDynamicPollSize(boolean dynamic) {

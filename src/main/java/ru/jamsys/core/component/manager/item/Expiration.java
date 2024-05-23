@@ -1,6 +1,7 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
+import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.StatisticsFlush;
@@ -41,6 +42,7 @@ public class Expiration<V>
         Closable,
         KeepAlive,
         StatisticsFlush,
+        CheckClassItem,
         ExpirationMsMutable {
 
     private final ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>>> bucket = new ConcurrentSkipListMap<>();
@@ -48,15 +50,18 @@ public class Expiration<V>
     @Getter
     private final String index;
 
+    private final Class<?> classItem;
+
     private Consumer<DisposableExpirationMsImmutableEnvelope<V>> onExpired;
 
-    public Expiration<V> setOnExpired(Consumer<DisposableExpirationMsImmutableEnvelope<V>> onExpired){
+    public Expiration<V> setOnExpired(Consumer<DisposableExpirationMsImmutableEnvelope<V>> onExpired) {
         this.onExpired = onExpired;
         return this;
     }
 
-    public Expiration(String index) {
+    public Expiration(String index, Class<?> classItem) {
         this.index = index;
+        this.classItem = classItem;
     }
 
     public List<Long> getBucketKey() {
@@ -134,4 +139,8 @@ public class Expiration<V>
         return obj;
     }
 
+    @Override
+    public boolean checkClassItem(Class<?> classItem) {
+        return this.classItem.equals(classItem);
+    }
 }

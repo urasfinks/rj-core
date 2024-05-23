@@ -1,10 +1,10 @@
 package ru.jamsys.core.resource.jdbc;
 
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.balancer.algorithm.LeastConnections;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.resource.Resource;
@@ -42,6 +42,7 @@ public class ConnectionResource extends ExpirationMsMutableImpl
         this.connection = connection;
         rateLimit = App.context.getBean(RateLimitManager.class)
                 .get(getClassName(pool.getName()))
+                .get()
                 .init(RateLimitName.POOL_ITEM_TPS.getName(), RateLimitItemInstance.TPS);
     }
 
