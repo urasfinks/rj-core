@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
 public class Core implements LifeCycleInterface {

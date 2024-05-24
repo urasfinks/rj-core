@@ -8,7 +8,6 @@ import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class WeightedRoundRobin implements BalancerAlgorithm {
 
     TreeMap<Double, BalancerItem> map = new TreeMap<>();

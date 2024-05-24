@@ -3,7 +3,6 @@ package ru.jamsys.core.statistic.expiration.immutable;
 import lombok.Getter;
 import lombok.Setter;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Getter
 public class ExpirationMsImmutableImpl implements ExpirationMsImmutable {
 

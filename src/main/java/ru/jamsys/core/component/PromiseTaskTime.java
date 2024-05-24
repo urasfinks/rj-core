@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
 public class PromiseTaskTime implements KeepAliveComponent, ClassName {

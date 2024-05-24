@@ -12,7 +12,6 @@ import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
 // Нам надо вызывать KeepAlive у ExpiredManager 1 раз в секунду, а не 1раз в 3сек
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 public class KeepAliveExpirationManager implements Cron1s, PromiseGenerator, ClassName {
 

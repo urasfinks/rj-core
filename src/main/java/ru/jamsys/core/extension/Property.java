@@ -4,7 +4,6 @@ import ru.jamsys.core.component.ClassFinderComponent;
 
 import java.util.Map;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface Property<Key> {
 
     Map<Key, Object> getMapProperty();

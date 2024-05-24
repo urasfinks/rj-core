@@ -8,7 +8,6 @@ import java.util.LongSummaryStatistics;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @ToString
 public class AvgMetric {
 

@@ -15,7 +15,6 @@ import java.sql.DriverManager;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class JdbcPool extends AbstractPool<JdbcRequest, List<Map<String, Object>>, ConnectionResource>
         implements Closable {
 

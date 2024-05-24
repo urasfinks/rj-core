@@ -6,7 +6,6 @@ import ru.jamsys.core.extension.KeepAlive;
 
 import java.util.List;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface BalancerAlgorithm extends KeepAlive {
 
     void update(List<BalancerItem> list);

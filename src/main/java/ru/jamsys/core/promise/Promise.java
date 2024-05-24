@@ -15,7 +15,6 @@ import java.util.function.Function;
 
 // Цепочка обещаний
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface Promise extends Property<String>, ExpirationMsImmutable {
 
     String getIndex();

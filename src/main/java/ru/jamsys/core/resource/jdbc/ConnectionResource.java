@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class ConnectionResource extends ExpirationMsMutableImpl
         implements ClassName, Completable,
         Resource<JdbcRequest, List<Map<String, Object>>> {

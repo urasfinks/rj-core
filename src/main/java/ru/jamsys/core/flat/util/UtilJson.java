@@ -13,7 +13,6 @@ import ru.jamsys.core.component.ExceptionHandler;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class UtilJson {
 
     static ObjectMapper objectMapper = new ObjectMapper();

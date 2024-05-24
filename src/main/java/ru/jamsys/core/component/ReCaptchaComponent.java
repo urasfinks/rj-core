@@ -19,7 +19,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 //TODO: переделать на httpClient
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
 @Getter

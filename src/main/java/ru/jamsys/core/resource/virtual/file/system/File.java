@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class File extends ExpirationMsMutableImpl implements Closable, StatisticsFlush, KeepAlive, Property<String> {
 
     @Getter

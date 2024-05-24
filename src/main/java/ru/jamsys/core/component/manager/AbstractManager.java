@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable & StatisticsFlush>
         implements
         StatisticsCollectorMap<MO>,

@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class RateLimitItemMax implements RateLimitItem {
 
     private final AtomicInteger max = new AtomicInteger(-1);

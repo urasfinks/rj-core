@@ -15,7 +15,6 @@ import ru.jamsys.core.extension.LifeCycleComponent;
 
 import java.util.List;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
 public class InfluxClientImpl implements InfluxClient, LifeCycleComponent {

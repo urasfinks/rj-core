@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
 public class ExceptionHandler {

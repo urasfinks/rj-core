@@ -13,7 +13,6 @@ import ru.jamsys.core.promise.resource.api.PromiseApi;
 // Если за объектом давно никто не наблюдал, мы не понимаем на сколько он норм или нет и выбрасываем его нахер из басика
 // Но бывает условие, что минимум в басике должно плавать N объектов, и их не в праве никто выгнать
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public abstract class AbstractPromiseBuilder extends AbstractPromise {
 
     public AbstractPromiseBuilder(long keepAliveOnInactivityMs, long lastActivityMs) {

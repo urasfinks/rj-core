@@ -11,7 +11,6 @@ import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @JsonPropertyOrder({"index", "type", "timeAdd", "value", "class"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Trace<K, V> {

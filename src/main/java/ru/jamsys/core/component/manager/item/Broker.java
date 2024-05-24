@@ -40,7 +40,6 @@ import java.util.function.Consumer;
 //Время срабатывания onExpired = 3 секунды
 
 //TODO: сделать TEO наследуемым от getIndex (RqUID)
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Scope("prototype")
 @Getter

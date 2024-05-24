@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
 public class PropertiesComponent {

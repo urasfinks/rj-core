@@ -3,7 +3,6 @@ package ru.jamsys.core.statistic.expiration.mutable;
 
 import ru.jamsys.core.statistic.expiration.ExpirationMs;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface ExpirationMsMutable extends ExpirationMs {
 
     // Установить время последней активности

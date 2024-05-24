@@ -5,7 +5,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class UtilByte {
 
     public static void reverseBytes(byte[] array) {

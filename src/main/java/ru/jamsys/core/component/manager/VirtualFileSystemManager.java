@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.resource.virtual.file.system.File;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
 public class VirtualFileSystemManager extends AbstractManager<File> {

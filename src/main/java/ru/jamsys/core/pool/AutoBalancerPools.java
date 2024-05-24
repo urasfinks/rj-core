@@ -6,9 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public abstract class AutoBalancerPools {
-
 
     public static Map<String, Long> getMaxCountPoolItemByTime(Map<String, Long> map, long count) {
         Map<String, Long> result = new HashMap<>();

@@ -8,7 +8,6 @@ import ru.jamsys.core.flat.util.Util;
 import java.util.List;
 import java.util.Set;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class PromiseImpl extends AbstractPromiseBuilder {
 
     public static Set<Promise> queueMultipleCompleteSet = Util.getConcurrentHashSet();

@@ -21,7 +21,6 @@ import java.util.function.Function;
 // RR - ResourceResult
 // PI - PoolItem
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class PromiseTask implements Runnable {
 
     @Setter

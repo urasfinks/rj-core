@@ -14,7 +14,6 @@ import ru.jamsys.core.flat.util.UtilRisc;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
 public class PromiseController implements Cron1s, PromiseGenerator {

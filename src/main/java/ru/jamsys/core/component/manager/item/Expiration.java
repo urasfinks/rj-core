@@ -31,7 +31,6 @@ import java.util.function.Consumer;
 // Возвращается одноразовая обёртка, для синхронизации данных в многопоточном режиме
 // Для избежания выполнения одномоментного выполнения используется одноразовая обёртка (DisposableExpiredMsImmutableEnvelope)
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class Expiration<V>
         extends ExpirationMsMutableImpl
         implements

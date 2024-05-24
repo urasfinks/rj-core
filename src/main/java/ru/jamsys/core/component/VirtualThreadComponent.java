@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * }</pre>
  */
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 public class VirtualThreadComponent implements Resource<PromiseTask, Void> {
 

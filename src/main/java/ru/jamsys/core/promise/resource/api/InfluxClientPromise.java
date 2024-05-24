@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class InfluxClientPromise extends AbstractPromiseApi<InfluxClientPromise> {
 
     private final InfluxClient influxClient = InfluxClientImpl.getComponent();

@@ -3,7 +3,6 @@ package ru.jamsys.core.flat.util;
 import ru.jamsys.core.flat.trend.LinearTrendLine;
 import ru.jamsys.core.flat.trend.PolyTrendLine;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class UtilTrend {
 
     public static double getPoly(int degree, double[] line) {

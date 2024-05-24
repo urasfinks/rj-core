@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface HttpClient {
 
     HttpClient setSslContextType(String sslContextType);

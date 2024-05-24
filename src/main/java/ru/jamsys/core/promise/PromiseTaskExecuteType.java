@@ -4,7 +4,6 @@ import lombok.Getter;
 import ru.jamsys.core.extension.EnumName;
 
 @Getter
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public enum PromiseTaskExecuteType implements EnumName {
 
     // Ждём когда все предыдущие запущенные задачи будут исполнены

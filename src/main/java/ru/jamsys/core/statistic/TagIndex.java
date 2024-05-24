@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface TagIndex extends ClassName {
 
     Map<String, String> getTag();

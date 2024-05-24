@@ -6,7 +6,6 @@ import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.promise.PromiseTask;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Component
 @Lazy
 public class RealThreadComponent implements Resource<PromiseTask, Void> {

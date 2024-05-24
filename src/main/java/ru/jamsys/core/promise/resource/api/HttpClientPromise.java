@@ -27,7 +27,6 @@ import java.util.function.Consumer;
  * }</pre>
  */
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Getter
 public class HttpClientPromise extends AbstractPromiseApi<HttpClientPromise> {
 

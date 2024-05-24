@@ -2,7 +2,6 @@ package ru.jamsys.core.extension;
 
 import org.springframework.context.ApplicationContext;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class ClassNameImpl implements ClassName {
 
     public static String getClassNameStatic(Class<?> cls) {

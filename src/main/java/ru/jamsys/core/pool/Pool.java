@@ -7,7 +7,6 @@ import ru.jamsys.core.extension.StatisticsFlush;
 // RR - ResourceResult
 // PI - PoolItem
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlush {
 
     //После работы с ресурсом его надо вернуть в пул

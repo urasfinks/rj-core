@@ -1,7 +1,6 @@
 package ru.jamsys.core.statistic.expiration;
 
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface TimeControllerNano {
 
     // Установить время последней активности

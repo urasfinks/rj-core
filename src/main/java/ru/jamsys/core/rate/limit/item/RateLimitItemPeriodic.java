@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class RateLimitItemPeriodic implements RateLimitItem {
 
     private final AtomicInteger tpu = new AtomicInteger(0);

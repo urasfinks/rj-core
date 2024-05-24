@@ -29,7 +29,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class Util {
 
     static final String defaultCharset = "UTF-8";

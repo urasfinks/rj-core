@@ -9,7 +9,6 @@ package ru.jamsys.core.statistic.expiration.immutable;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class DisposableExpirationMsImmutableEnvelope<T> extends ExpirationMsImmutableEnvelope<T> {
 
     AtomicBoolean usage = new AtomicBoolean(false);
