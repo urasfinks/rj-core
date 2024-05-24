@@ -2,12 +2,9 @@ package ru.jamsys.core.extension;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.Assert;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class PropertyTest {
 
@@ -22,7 +19,7 @@ class PropertyTest {
     }
 
     @Test
-    void test(){
+    void test() { 
         P p = new P();
 
         Assertions.assertEquals("y", p.setProperty("x", "y"));
