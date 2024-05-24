@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension.trace;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
@@ -11,7 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-@JsonPropertyOrder({"index", "type", "timeAdd", "value"})
+@JsonPropertyOrder({"index", "type", "timeAdd", "value", "class"})
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Trace<K, V> {
 
     final long timeAdd = System.currentTimeMillis();
@@ -22,6 +24,16 @@ public class Trace<K, V> {
     @Setter
     private V value;
 
+    final Class<?> cls;
+
+    @JsonProperty("class")
+    String getCls() {
+        if (cls != null) {
+            return cls.getSimpleName();
+        }
+        return null;
+    }
+
     @JsonProperty
     @SuppressWarnings("FieldCanBeLocal")
     final private PromiseTaskExecuteType type;
@@ -31,7 +43,7 @@ public class Trace<K, V> {
     }
 
     public Object getValue() {
-        if (value instanceof Throwable) {
+        if (value != null && value instanceof Throwable) {
             StackTraceElement[] elements = ((Throwable) value).getStackTrace();
             List<String> result = new ArrayList<>();
             result.add(value.getClass().getName() + " " + ((Throwable) value).getMessage());
@@ -46,10 +58,11 @@ public class Trace<K, V> {
         return value;
     }
 
-    public Trace(K index, V value, PromiseTaskExecuteType type) {
+    public Trace(K index, V value, PromiseTaskExecuteType type, Class<?> cls) {
         this.index = index;
         this.value = value;
         this.type = type;
+        this.cls = cls;
     }
 
 }

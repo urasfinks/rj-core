@@ -88,6 +88,7 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
 
     public AbstractPool(String name, int min, Class<PI> cls) {
         this.name = getClassName(name);
+        //TODO: min увести в RateLimit
         this.min = min;
 
         RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);

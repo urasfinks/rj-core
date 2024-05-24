@@ -35,25 +35,30 @@ public class CronComponent implements LifeCycleComponent, ClassName {
             @Override
             public void run() {
                 long nextStartMs = System.currentTimeMillis();
-                while (isWhile.get() && !thread.isInterrupted()) {
-                    nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
-                    long curTimeMs = System.currentTimeMillis();
+                try {
+                    while (isWhile.get() && !thread.isInterrupted()) {
+                        nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
+                        long curTimeMs = System.currentTimeMillis();
 
-                    runCronTask(curTimeMs);
+                        runCronTask(curTimeMs);
 
-                    if (isWhile.get()) {
-                        long calcSleepMs = nextStartMs - System.currentTimeMillis();
-                        if (calcSleepMs > 0) {
-                            Util.sleepMs(calcSleepMs);
+                        if (isWhile.get()) {
+                            long calcSleepMs = nextStartMs - System.currentTimeMillis();
+                            if (calcSleepMs > 0) {
+                                Thread.sleep(calcSleepMs);
+                            } else {
+                                Thread.sleep(1);//Что бы поймать Interrupt
+                                nextStartMs = System.currentTimeMillis();
+                            }
                         } else {
-                            Util.sleepMs(1);//Что бы поймать Interrupt
-                            nextStartMs = System.currentTimeMillis();
+                            break;
                         }
-                    } else {
-                        break;
                     }
+                } catch (InterruptedException ie) {
+                    Util.logConsole("STOP");
+                } catch (Exception e) {
+                    App.context.getBean(ExceptionHandler.class).handler(e);
                 }
-                Util.logConsole("STOP");
             }
         });
         thread.setName("CronComponent");

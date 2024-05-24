@@ -55,7 +55,7 @@ public class PromiseTask implements Runnable {
 
     public void externalComplete() {
         if (Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT) {
-            promise.getTrace().add(new Trace<>(getIndex() + ".complete", TraceTimer.getInstanceZero(), type));
+            promise.getTrace().add(new Trace<>(getIndex() + ".complete", null, type, this.getClass()));
             promise.complete(this);
         }
     }
@@ -107,7 +107,7 @@ public class PromiseTask implements Runnable {
             case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.context.getBean(RealThreadComponent.class).execute(this);
             case JOIN -> run();
             case EXTERNAL_WAIT ->
-                    promise.getTrace().add(new Trace<>(getIndex() + ".start", TraceTimer.getInstanceZero(), type));
+                    promise.getTrace().add(new Trace<>(getIndex() + ".start", null, type, this.getClass()));
         }
     }
 
@@ -116,7 +116,7 @@ public class PromiseTask implements Runnable {
     public void run() {
         long startTime = System.currentTimeMillis();
         TimeEnvelopeNano<String> timer = App.context.getBean(PromiseTaskTime.class).add(index);
-        Trace<String, TraceTimer> trace = new Trace<>(getIndex(), null, type);
+        Trace<String, TraceTimer> trace = new Trace<>(getIndex(), null, type, this.getClass());
         promise.getTrace().add(trace);
         long timeStart = System.nanoTime();
         try {
@@ -125,11 +125,12 @@ public class PromiseTask implements Runnable {
             App.context.getBean(ExceptionHandler.class).handler(th);
             if (retryCount > 0) {
                 retryCount--;
-                promise.getExceptionTrace().add(new Trace<>(index, th, type));
+                promise.getExceptionTrace().add(new Trace<>(index, th, type, this.getClass()));
                 App.context.getBean(PromiseTaskTime.class).addRetryDelay(this);
             } else {
-                switch (type){
-                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> promise.getExceptionTrace().add(new Trace<>(index, th, type));
+                switch (type) {
+                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE ->
+                            promise.getExceptionTrace().add(new Trace<>(index, th, type, this.getClass()));
                     default -> promise.complete(this, th);
                 }
             }

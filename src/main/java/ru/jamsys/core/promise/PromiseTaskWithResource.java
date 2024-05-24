@@ -2,9 +2,13 @@ package ru.jamsys.core.promise;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.component.manager.PoolResourceManager;
 import ru.jamsys.core.extension.Completable;
+import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.pool.PoolItemEnvelope;
-import ru.jamsys.core.resource.AbstractPoolResource;
+import ru.jamsys.core.resource.PoolResource;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
@@ -18,7 +22,7 @@ import java.util.function.Function;
 // RR - ResourceResult
 // PI - PoolItem
 
-// Переопределён старт задачи. Если раньше старт приводил к передачи задачи в Thread на исполнение
+// Переопределён старт задачи. Если раньше старт приводил к передачи задачи в Thread на исполнение,
 // То сейчас страт задачи, регистрирует в пуле потребность получения ресурса
 // Когда ресурс в пуле высвобождается, пул вызывает start(poolItem) текущей задачи, передавая ссылку на себя ресурс
 // Далее по стандартной траектории вызывается super.start(), который запустит run задачи в отдельном потоке
@@ -27,7 +31,7 @@ import java.util.function.Function;
 
 public class PromiseTaskWithResource<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>> extends PromiseTask {
 
-    final AbstractPoolResource<RA, RR, PI> pool = null;
+    final ManagerElement<PoolResource<RA, RR, PI>> poolResourceManagerElement;
 
     @Getter
     @Setter
@@ -37,42 +41,47 @@ public class PromiseTaskWithResource<RA, RR, PI extends Completable & Expiration
 
     private BiConsumer<AtomicBoolean, RR> procedure;
 
-    private Function<Promise, RA> argumentsFunction;
+    private final Function<Promise, RA> argumentsFunction;
 
     public PromiseTaskWithResource(
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
-            AbstractPoolResource<RA, RR, PI> pool,
+            Class<PI> classResource,
             Function<Promise, RA> argumentsFunction,
             BiConsumer<AtomicBoolean, RR> procedure
     ) {
         super(index, promise, type);
-        //this.pool = pool;
-        this.argumentsFunction = argumentsFunction;
         this.procedure = procedure;
+        this.argumentsFunction = argumentsFunction;
+        @SuppressWarnings("all")
+        PoolResourceManager<RA, RR, PI> poolResourceManager = App.context.getBean(PoolResourceManager.class);
+        poolResourceManagerElement = poolResourceManager.get(index, classResource);
     }
 
     public PromiseTaskWithResource(
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
-            Class<PI> cls,
+            Class<PI> classResource,
             Function<Promise, RA> argumentsFunction,
-            BiConsumer<AtomicBoolean, RR> procedure
+            BiFunction<AtomicBoolean, RR, List<PromiseTask>> supplier
     ) {
         super(index, promise, type);
+        this.supplier = supplier;
         this.argumentsFunction = argumentsFunction;
-        this.procedure = procedure;
+        @SuppressWarnings("all")
+        PoolResourceManager<RA, RR, PI> poolResourceManager = App.context.getBean(PoolResourceManager.class);
+        poolResourceManagerElement = poolResourceManager.get(index, classResource);
     }
 
     // Этот блок вызывается из Promise.loop() и подразумевает запуск ::run из внешнего потока
     // Мы его переопределили, добавляя задачу в Pool, а вот уже когда освободится ресурс в пуле
-    // Пул сам вызовет start с передачей туда ресурс, там то мы и вызовем ::run из внешнего потока
+    // Пул сам вызовет start с передачей туда ресурса, там то мы и вызовем ::run из внешнего потока
     @Override
     public void start() {
         try {
-            pool.addPromiseTaskPool(this);
+            poolResourceManagerElement.get().addPromiseTaskPool(this);
         } catch (Exception e) {
             getPromise().complete(this, e);
         }
@@ -94,6 +103,7 @@ public class PromiseTaskWithResource<RA, RR, PI extends Completable & Expiration
     // Пул вызывает этот метод
     public void start(PoolItemEnvelope<RA, RR, PI> poolItem) {
         setPoolItemEnvelope(poolItem);
+        getPromise().getTrace().add(new Trace<>(getIndex() + ".PoolItemEnvelope-Received", null, null, null));
         super.start();
     }
 

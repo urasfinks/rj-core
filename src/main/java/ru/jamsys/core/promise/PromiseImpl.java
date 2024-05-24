@@ -31,7 +31,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
 
     private void setError(String indexTask, Throwable exception, PromiseTaskExecuteType type) {
         this.exception = exception;
-        this.exceptionTrace.add(new Trace<>(indexTask, exception, type));
+        this.exceptionTrace.add(new Trace<>(indexTask, exception, type, null));
         isException.set(true);
     }
 
