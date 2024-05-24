@@ -14,7 +14,7 @@ public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadRes
 
     AtomicInteger counter = new AtomicInteger(1);
 
-    private final ManagerElement<Broker<PromiseTask>> brokerManagerElement;
+    private final ManagerElement<Broker<PromiseTask>, Void> brokerManagerElement;
 
     public ThreadPoolPromise(String name, int min) {
         super(name, min, ThreadResource.class);

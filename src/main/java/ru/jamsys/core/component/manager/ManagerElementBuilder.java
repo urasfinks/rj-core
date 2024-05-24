@@ -1,7 +1,10 @@
 package ru.jamsys.core.component.manager;
 
-public interface ManagerElementBuilder<T> {
+// E - element
+// CA - CustomArgument
 
-    T build(String index, Class<?> classItem);
+public interface ManagerElementBuilder<E, CA> {
+
+    E build(String index, Class<?> classItem, CA customArgument);
 
 }

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.item.Broker;
 
 @Component
-public class BrokerManager extends AbstractManager<Broker<?>> {
+public class BrokerManager extends AbstractManager<Broker<?>, Void> {
 
     private final ApplicationContext applicationContext;
 
@@ -13,12 +13,12 @@ public class BrokerManager extends AbstractManager<Broker<?>> {
         this.applicationContext = applicationContext;
     }
 
-    public <T> ManagerElement<Broker<T>> get(String index, Class<T> classItem) {
-        return new ManagerElement<>(index, classItem, this);
+    public <T> ManagerElement<Broker<T>, Void> get(String index, Class<T> classItem) {
+        return new ManagerElement<>(index, classItem, this, null);
     }
 
     @Override
-    public Broker<?> build(String index, Class<?> classItem) {
+    public Broker<?> build(String index, Class<?> classItem, Void customArgument) {
         return new Broker<>(index, applicationContext, classItem);
     }
 

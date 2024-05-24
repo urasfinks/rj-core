@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class StatisticFlush implements Cron1s, PromiseGenerator {
 
-    final ManagerElement<Broker<StatisticSec>> brokerManagerElement;
+    final ManagerElement<Broker<StatisticSec>, Void> brokerManagerElement;
 
     List<StatisticsFlushComponent> list = new ArrayList<>();
 

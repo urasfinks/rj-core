@@ -10,12 +10,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable & StatisticsFlush>
+public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable & StatisticsFlush, CA>
         implements
         StatisticsCollectorMap<MO>,
         KeepAlive,
         StatisticsFlushComponent,
-        ManagerElementBuilder<MO> {
+        ManagerElementBuilder<MO, CA> {
 
     protected final Map<String, MO> map = new ConcurrentHashMap<>();
 
@@ -48,9 +48,9 @@ public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable 
     // текущий брокер по ключу, а он в какой-то момент времени может быть удалён, а ссылка останется
     // мы будем накладывать в некую очередь, которая уже будет не принадлежать менаджеру
     // и обслуживаться тоже не будет [keepAlive, flushAndGetStatistic] так что - плохая эта затея
-    protected <T extends CheckClassItem> T getManagerElement(String key, Class<?> classItem) {
+    protected <T extends CheckClassItem> T getManagerElement(String key, Class<?> classItem, CA customArgument) {
         @SuppressWarnings("unchecked")
-        T o = (T) map.computeIfAbsent(key, _ -> build(key, classItem));
+        T o = (T) map.computeIfAbsent(key, _ -> build(key, classItem, customArgument));
         if (o != null && o.checkClassItem(classItem)) {
             return o;
         }

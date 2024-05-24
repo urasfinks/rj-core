@@ -20,14 +20,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 @Component
 @Lazy
 public class PromiseTaskTime implements KeepAliveComponent, ClassName {
 
-    private final ManagerElement<Expiration<PromiseTask>> promiseTaskRetry;
+    private final ManagerElement<Expiration<PromiseTask>, Consumer<DisposableExpirationMsImmutableEnvelope<PromiseTask>>> promiseTaskRetry;
 
-    private final ManagerElement<Expiration<Promise>> promiseTaskExpired;
+    private final ManagerElement<Expiration<Promise>, Consumer<DisposableExpirationMsImmutableEnvelope<Promise>>> promiseTaskExpired;
 
     ConcurrentLinkedDeque<TimeEnvelopeNano<String>> queue = new ConcurrentLinkedDeque<>();
 

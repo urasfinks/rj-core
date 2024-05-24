@@ -31,7 +31,7 @@ class BrokerTest {
 
     @Test
     void testLiner() throws Exception {
-        ManagerElement<Broker<XTest>> brokerManager = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class);
+        ManagerElement<Broker<XTest>, Void> brokerManager = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class);
         brokerManager.accept(xTestBroker -> {
             xTestBroker.setCyclical(false);
             xTestBroker.setMaxSizeQueue(10);
@@ -76,7 +76,7 @@ class BrokerTest {
 
     @Test
     void testCyclic() {
-        ManagerElement<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>, Void> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
 
 
@@ -137,7 +137,7 @@ class BrokerTest {
 
     @Test
     void testReference() {
-        ManagerElement<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>, Void> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
         broker.accept(queue -> {
             XTest obj = new XTest(1);
@@ -159,7 +159,7 @@ class BrokerTest {
     void testReference2() {
         AtomicBoolean isRun = new AtomicBoolean(true);
 
-        ManagerElement<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>, Void> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
         broker.accept(queue -> {
             XTest obj = new XTest(1);
@@ -188,7 +188,7 @@ class BrokerTest {
 
     @Test
     void testMaxInputTps() {
-        ManagerElement<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>, Void> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
         broker.accept(queue -> {
             queue.setMaxTpsInput(1);
@@ -211,7 +211,7 @@ class BrokerTest {
 
     @Test
     void testExpired() {
-        ManagerElement<Broker<XTest>> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>, Void> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
         broker.accept(queue -> {
             AtomicInteger counter = new AtomicInteger(0);

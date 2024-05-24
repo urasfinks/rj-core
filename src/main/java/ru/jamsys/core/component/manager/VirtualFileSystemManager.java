@@ -6,7 +6,7 @@ import ru.jamsys.core.resource.virtual.file.system.File;
 
 @Component
 @Lazy
-public class VirtualFileSystemManager extends AbstractManager<File> {
+public class VirtualFileSystemManager extends AbstractManager<File, Void> {
 
     public VirtualFileSystemManager() {
         setCleanableMap(false);
@@ -22,7 +22,7 @@ public class VirtualFileSystemManager extends AbstractManager<File> {
     }
 
     @Override
-    public File build(String index, Class<?> classItem) {
+    public File build(String index, Class<?> classItem, Void customArgument) {
         return null;
     }
 

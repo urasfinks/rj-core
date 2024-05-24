@@ -31,7 +31,7 @@ import java.util.function.Function;
 
 public class PromiseTaskWithResource<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>> extends PromiseTask {
 
-    final ManagerElement<PoolResource<RA, RR, PI>> poolResourceManagerElement;
+    final ManagerElement<PoolResource<RA, RR, PI>, Class<PI>> poolResourceManagerElement;
 
     @Getter
     @Setter

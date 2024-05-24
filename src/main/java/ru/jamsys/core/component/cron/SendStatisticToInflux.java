@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassName {
 
-    final ManagerElement<Broker<StatisticSec>> brokerManagerElement;
+    final ManagerElement<Broker<StatisticSec>, Void> brokerManagerElement;
 
     public SendStatisticToInflux(BrokerManager brokerManager, ApplicationContext applicationContext) {
         brokerManagerElement = brokerManager.get(ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext), StatisticSec.class);

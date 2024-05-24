@@ -20,7 +20,7 @@ public abstract class AbstractPoolResource<RA, RR, PI extends Completable & Expi
 
     //private final BrokerManager2 brokerManager; //PromiseTaskWithResource<RA, RR, PI>
 
-    final private ManagerElement<Broker<PromiseTaskWithResource>> broker;
+    final private ManagerElement<Broker<PromiseTaskWithResource>, Void> broker;
 
     @SuppressWarnings("all")
     public AbstractPoolResource(String name, int min, Class<PI> cls) {
