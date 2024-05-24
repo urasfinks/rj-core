@@ -2,6 +2,7 @@ package ru.jamsys.core.promise;
 
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
+import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.extension.trace.TraceTimer;
 import ru.jamsys.core.promise.resource.api.PromiseApi;
@@ -15,13 +16,11 @@ import java.util.function.Function;
 
 // Цепочка обещаний
 
-public interface Promise extends Property<String>, ExpirationMsImmutable {
+public interface Promise extends Property<String>, ExpirationMsImmutable, Correlation {
 
     String getIndex();
 
     void setIndex(String index);
-
-    String getCorrelation();
 
     void complete(@NonNull PromiseTask task, @NonNull Throwable exception);
 
@@ -38,8 +37,6 @@ public interface Promise extends Property<String>, ExpirationMsImmutable {
 
     // Запускаем цепочку задач от текущего потока
     Promise run();
-
-    Promise setCorrelation(String rqUid);
 
     Promise setLog(boolean log);
 

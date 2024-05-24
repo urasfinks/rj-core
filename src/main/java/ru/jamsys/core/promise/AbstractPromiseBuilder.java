@@ -23,11 +23,6 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
         super(keepAliveOnInactivityMs);
     }
 
-    public Promise setCorrelation(String rqUid) {
-        this.correlation = rqUid;
-        return this;
-    }
-
     public Promise setLog(boolean log) {
         this.log = log;
         return this;

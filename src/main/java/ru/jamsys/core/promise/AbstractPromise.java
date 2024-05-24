@@ -26,7 +26,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     @Getter
     private String index;
 
-    @JsonProperty
+    @Setter
     @Getter
     protected String correlation = java.util.UUID.randomUUID().toString();
 

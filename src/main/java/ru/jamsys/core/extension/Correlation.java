@@ -4,4 +4,6 @@ public interface Correlation {
 
     String getCorrelation();
 
+    void setCorrelation(String correlation);
+
 }
