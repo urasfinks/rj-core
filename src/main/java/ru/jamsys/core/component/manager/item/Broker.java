@@ -94,10 +94,10 @@ public class Broker<TEO>
                 .init(RateLimitName.BROKER_TPS.getName(), RateLimitItemInstance.TPS);
 
         rliQueueSize = rateLimit.get(RateLimitName.BROKER_SIZE.getName());
-        rliQueueSize.setMax(3000);
+        rliQueueSize.set(3000);
 
         rliTailSize = rateLimit.get(RateLimitName.BROKER_TAIL_SIZE.getName());
-        rliTailSize.setMax(5);
+        rliTailSize.set(5);
 
         rliTps = rateLimit.get(RateLimitName.BROKER_TPS.getName());
         rateLimit.setActive(true);
@@ -112,15 +112,15 @@ public class Broker<TEO>
     }
 
     public void setMaxSizeQueue(int newSize) {
-        rliQueueSize.setMax(newSize);
+        rliQueueSize.set(newSize);
     }
 
     public void setMaxSizeQueueTail(int newSize) {
-        rliTailSize.setMax(newSize);
+        rliTailSize.set(newSize);
     }
 
     public void setMaxTpsInput(int maxTpsInput) {
-        rliTps.setMax(maxTpsInput);
+        rliTps.set(maxTpsInput);
     }
 
     private void statistic(ExpirationMsImmutableEnvelope<TEO> envelope) {
@@ -144,7 +144,7 @@ public class Broker<TEO>
         }
         DisposableExpirationMsImmutableEnvelope<TEO> convert = DisposableExpirationMsImmutableEnvelope.convert(envelope);
         if (!rliTps.check(null)) {
-            throw new Exception(getExceptionInformation("RateLimitTps", convert));
+            throw new Exception(getExceptionInformation("RateLimitTps", envelope));
         }
         if (cyclical) {
             if (!rliQueueSize.check(queue.size() + 1)) {
@@ -154,11 +154,11 @@ public class Broker<TEO>
             }
         } else {
             if (!rliQueueSize.check(queue.size())) {
-                throw new Exception(getExceptionInformation("RateLimitSize", convert));
+                throw new Exception(getExceptionInformation("RateLimitSize", envelope));
             }
         }
         if (convert.isExpired()) {
-            throw new Exception(getExceptionInformation("Expired", convert));
+            throw new Exception(getExceptionInformation("Expired", envelope));
         }
         queue.add(convert);
         tail.add(envelope);
@@ -212,8 +212,8 @@ public class Broker<TEO>
     String getExceptionInformation(String cause, ExpirationMsImmutableEnvelope<TEO> envelope) {
         StringBuilder sb = new StringBuilder()
                 .append("Cause: ").append(cause).append("; ")
-                .append("Max tps: ").append(rliTps.getMax()).append("; ")
-                .append("Limit size: ").append(rliQueueSize.getMax()).append("; ")
+                .append("Max tps: ").append(rliTps.get()).append("; ")
+                .append("Limit size: ").append(rliQueueSize.get()).append("; ")
                 .append("Class add: ").append(envelope.getValue().getClass().getName()).append("; ")
                 .append("Object add: ").append(envelope.getValue().toString()).append("; ");
         return sb.toString();
@@ -244,7 +244,7 @@ public class Broker<TEO>
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x
-        return queue.size() * 100 / (int) rliQueueSize.getMax();
+        return queue.size() * 100 / (int) rliQueueSize.get();
     }
 
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
@@ -274,8 +274,8 @@ public class Broker<TEO>
         tpsDequeue.set(0);
         cyclical = true;
         rateLimit.reset();
-        rliTailSize.setMax(5);
-        rliQueueSize.setMax(3000);
+        rliTailSize.set(5);
+        rliQueueSize.set(3000);
     }
 
     // Отладочная

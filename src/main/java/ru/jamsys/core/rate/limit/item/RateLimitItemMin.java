@@ -8,54 +8,54 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// Всё сводится к тому, что бы значение не превысило порог
+// Всё сводится к тому, что бы значение не опустилось меньше минимума
 
-public class RateLimitItemMax implements RateLimitItem {
+public class RateLimitItemMin implements RateLimitItem {
 
-    private final AtomicInteger max = new AtomicInteger(999999);
+    private final AtomicInteger min = new AtomicInteger(0);
 
     @Override
     public boolean check(Integer limit) {
         if (limit == null) {
             return false;
         }
-        return this.max.get() >= limit;
+        return this.min.get() <= limit;
     }
 
     @Override
     public void set(Integer limit) {
-        this.max.set(limit);
+        this.min.set(limit);
     }
 
     @Override
     public long get() {
-        return max.get();
+        return min.get();
     }
 
     @Override
     public void reset() {
-        max.set(999999);
+        min.set(0);
     }
 
     @Override
     public void inc() {
-        max.incrementAndGet();
+        min.incrementAndGet();
     }
 
     @Override
     public void dec() {
-        max.decrementAndGet();
+        min.decrementAndGet();
     }
 
     @Override
     public String getMomentumStatistic() {
-        return "{max: " + max.get() + "}";
+        return "{min: " + min.get() + "}";
     }
 
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         List<Statistic> result = new ArrayList<>();
-        result.add(new Statistic(parentTags, parentFields).addField("max", max.get()));
+        result.add(new Statistic(parentTags, parentFields).addField("min", min.get()));
         return result;
     }
 

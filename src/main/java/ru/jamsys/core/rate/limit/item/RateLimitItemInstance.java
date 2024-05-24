@@ -5,6 +5,7 @@ import ru.jamsys.core.flat.template.cron.TimeUnit;
 
 public enum RateLimitItemInstance implements EnumName {
 
+    MIN,
     TPS,
     TPM,
     TPH,
@@ -14,6 +15,7 @@ public enum RateLimitItemInstance implements EnumName {
 
     public RateLimitItem create() {
         return switch (this) {
+            case MIN -> new RateLimitItemMin();
             case TPS -> new RateLimitItemTps();
             case TPM -> new RateLimitItemPeriodic(TimeUnit.MINUTE);
             case TPH -> new RateLimitItemPeriodic(TimeUnit.HOUR_OF_DAY);

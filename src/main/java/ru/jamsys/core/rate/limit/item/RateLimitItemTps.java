@@ -13,28 +13,27 @@ public class RateLimitItemTps implements RateLimitItem {
 
     private final AtomicInteger tps = new AtomicInteger(0);
 
-    private final AtomicInteger max = new AtomicInteger(-1);
+    private final AtomicInteger max = new AtomicInteger(999999);
 
     @Override
     public boolean check(@Nullable Integer limit) {
-        int curTps = tps.incrementAndGet();
-        return max.get() < 0 || (max.get() > 0 && curTps <= max.get()); // -1 = infinity; 0 = reject
+        return tps.incrementAndGet() <= max.get();
     }
 
     @Override
-    public void setMax(Integer limit) {
+    public void set(Integer limit) {
         this.max.set(limit);
     }
 
     @Override
-    public long getMax() {
+    public long get() {
         return max.get();
     }
 
     @Override
     public void reset() {
         tps.set(0);
-        max.set(-1);
+        max.set(999999);
     }
 
     @Override
@@ -48,8 +47,13 @@ public class RateLimitItemTps implements RateLimitItem {
     }
 
     @Override
-    public void incrementMax() {
+    public void inc() {
         max.incrementAndGet();
+    }
+
+    @Override
+    public void dec() {
+        max.decrementAndGet();
     }
 
     @Override

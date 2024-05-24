@@ -49,9 +49,9 @@ public class LogManager implements ClassName {
                 .init(RateLimitName.FILE_LOG_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(RateLimitName.FILE_LOG_INDEX.getName(), RateLimitItemInstance.MAX);
         int fileLogSizeMb = propertiesComponent.getProperties("rj.log.manager.file.log.size.mb", Integer.class);
-        rateLimit.get(RateLimitName.FILE_LOG_SIZE.getName()).setMax(fileLogSizeMb * 1_024 * 1_024);
+        rateLimit.get(RateLimitName.FILE_LOG_SIZE.getName()).set(fileLogSizeMb * 1_024 * 1_024);
         int fileLogIndex = propertiesComponent.getProperties("rj.log.manager.file.log.index", Integer.class);
-        rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName()).setMax(fileLogIndex);
+        rateLimit.get(RateLimitName.FILE_LOG_INDEX.getName()).set(fileLogIndex);
 
         this.logFolder = propertiesComponent.getProperties("rj.log.manager.folder", String.class);
     }

@@ -6,13 +6,15 @@ public interface RateLimitItem extends StatisticsFlush {
 
     boolean check(Integer limit);
 
-    void setMax(Integer limit);
+    void set(Integer limit);
 
-    long getMax();
+    long get();
 
     void reset(); //Используйте преимущественно для тестирования
 
-    void incrementMax();
+    void inc();
+
+    void dec();
 
     String getMomentumStatistic();
 

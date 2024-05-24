@@ -132,10 +132,10 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
     public void setMaxSlowRiseAndFastFall(int max) {
         if (dynamicPollSize.get()) {
             if (max >= min) {
-                if (max > rliPoolSize.getMax()) { //Медленно поднимаем
-                    rliPoolSize.incrementMax();
+                if (max > rliPoolSize.get()) { //Медленно поднимаем
+                    rliPoolSize.inc();
                 } else { //Но очень быстро опускаем
-                    rliPoolSize.setMax(max);
+                    rliPoolSize.set(max);
                 }
             } else {
                 Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < Pool.min = " + min, true);
@@ -319,7 +319,7 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
         }
         result.add(new Statistic(parentTags, parentFields)
                 .addField("tpsComplete", tpsCompleteFlush)
-                .addField("min", min).addField("max", rliPoolSize.getMax())
+                .addField("min", min).addField("max", rliPoolSize.get())
                 .addField("item", itemQueue.size())
                 .addField("park", parkQueue.size())
                 .addField("remove", removeQueue.size())
@@ -333,7 +333,7 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
                 "remove: " + removeQueue.size() + "; " +
                 "isRun: " + isRun.get() + "; " +
                 "min: " + min + "; " +
-                "max: " + rliPoolSize.getMax() + "; ";
+                "max: " + rliPoolSize.get() + "; ";
     }
 
     // Этот метод нельзя вызывать под бизнес задачи, система сама должна это контролировать

@@ -18,7 +18,7 @@ public class RateLimitItemPeriodic implements RateLimitItem {
 
     private final AtomicInteger tpu = new AtomicInteger(0);
 
-    private final AtomicInteger max = new AtomicInteger(-1);
+    private final AtomicInteger max = new AtomicInteger(999999);
 
     private final TimeUnit period;
 
@@ -36,24 +36,23 @@ public class RateLimitItemPeriodic implements RateLimitItem {
 
     @Override
     public boolean check(@Nullable Integer limit) {
-        int curTpu = tpu.incrementAndGet();
-        return max.get() < 0 || (max.get() > 0 && curTpu <= max.get()); // -1 = infinity; 0 = reject
+        return tpu.incrementAndGet() <= max.get(); // -1 = infinity; 0 = reject
     }
 
     @Override
-    public void setMax(Integer limit) {
+    public void set(Integer limit) {
         this.max.set(limit);
     }
 
     @Override
-    public long getMax() {
+    public long get() {
         return max.get();
     }
 
     @Override
     public void reset() {
         tpu.set(0);
-        max.set(-1);
+        max.set(999999);
         nextTimeFlush.set(0);
         nextTimeFlushFormat = "";
     }
@@ -91,8 +90,13 @@ public class RateLimitItemPeriodic implements RateLimitItem {
     }
 
     @Override
-    public void incrementMax() {
+    public void inc() {
         max.incrementAndGet();
+    }
+
+    @Override
+    public void dec() {
+        max.decrementAndGet();
     }
 
     @Override

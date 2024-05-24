@@ -144,8 +144,8 @@ class BrokerTest {
             DisposableExpirationMsImmutableEnvelope<XTest> o1 = null;
             try {
                 o1 = queue.add(obj, 6_000L);
-            } catch (Exception _) {
-
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             List<XTest> cloneQueue = queue.getCloneQueue(null);
             Assertions.assertEquals(obj.hashCode(), cloneQueue.getFirst().hashCode(), "#1");
