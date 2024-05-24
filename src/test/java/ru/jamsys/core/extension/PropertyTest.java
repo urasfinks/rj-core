@@ -19,7 +19,7 @@ class PropertyTest {
     }
 
     @Test
-    void test() { 
+    void test() {
         P p = new P();
 
         Assertions.assertEquals("y", p.setProperty("x", "y"));

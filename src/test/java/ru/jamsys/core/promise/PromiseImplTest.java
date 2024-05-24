@@ -9,6 +9,9 @@ import ru.jamsys.core.promise.resource.api.HttpClientPromise;
 import ru.jamsys.core.promise.resource.api.NotificationTelegramPromise;
 import ru.jamsys.core.promise.resource.api.YandexSpeechPromise;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.resource.http.HttpClientImpl;
+import ru.jamsys.core.resource.http.HttpClientResource;
+import ru.jamsys.core.resource.http.HttpResponseEnvelope;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -325,20 +328,19 @@ class PromiseImplTest {
     @Test
     void promiseTaskWithPool() {
 
-//        ThreadPool threadPool = new ThreadPool(
-//                "wef",
-//                1,
-//                (ThreadEnvelope _) -> true
-//        );
-//
-//        JdbcPool jdbcPool = new JdbcPool("jdbc", 10);
-//
-//        Promise promise = new PromiseImpl("test", 6_000L);
-
-//        PromiseTaskWithPool<Void, Void, ThreadEnvelope> th = new PromiseTaskWithPool<>("th", promise, PromiseTaskType.IO, threadPool);
-//
-//        PromiseTaskWithPool<JdbcRequest, List<Map<String, Object>>, ConnectionResource> jdbc = new PromiseTaskWithPool<>("jdbc", promise, PromiseTaskType.IO, jdbcPool);
-
+        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        promise
+                .append(new PromiseTaskWithResource<>(
+                        "testTaskWithResource",
+                        promise,
+                        PromiseTaskExecuteType.IO,
+                        HttpClientResource.class,
+                        (Promise _) -> new HttpClientImpl(),
+                        (AtomicBoolean _, HttpResponseEnvelope _) -> System.out.println("!!!")
+                ))
+                .run()
+                .await(1000);
+        System.out.println(promise.getLog());
 
     }
 
