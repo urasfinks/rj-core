@@ -25,6 +25,7 @@ public class CronComponent implements LifeCycleComponent, ClassName {
     final private List<CronPromise> listItem = new ArrayList<>();
     final private AtomicBoolean isWhile = new AtomicBoolean(true);
 
+    @SuppressWarnings("all")
     public CronComponent(
             ExceptionHandler exceptionHandler,
             ClassFinderComponent classFinderComponent,
