@@ -61,8 +61,6 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
     @Getter
     protected final RateLimit rateLimitPoolItem;
 
-    private final int min; //Минимальное кол-во ресурсов
-
     private final AtomicBoolean restartOperation = new AtomicBoolean(false);
 
     @Setter
@@ -79,21 +77,22 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
 
     private final AtomicBoolean dynamicPollSize = new AtomicBoolean(false);
 
-    private final RateLimitItem rliPoolSize;
+    private final RateLimitItem rliPoolSizeMax;
+    private final RateLimitItem rliPoolSizeMin;
 
     private final Lock lockAddToPark = new ReentrantLock();
 
     private final Lock lockAddToRemove = new ReentrantLock();
 
-    public AbstractPool(String name, int min, Class<PI> cls) {
+    public AbstractPool(String name, Class<PI> cls) {
         this.name = getClassName(name);
-        //TODO: min увести в RateLimit
-        this.min = min;
 
         RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
         rateLimit = rateLimitManager.get(name)
-                .init(RateLimitName.POOL_SIZE.getName(), RateLimitItemInstance.MAX);
-        rliPoolSize = rateLimit.get(RateLimitName.POOL_SIZE.getName());
+                .init(RateLimitName.POOL_SIZE_MAX.getName(), RateLimitItemInstance.MAX)
+                .init(RateLimitName.POOL_SIZE_MIN.getName(), RateLimitItemInstance.MIN);
+        rliPoolSizeMax = rateLimit.get(RateLimitName.POOL_SIZE_MAX.getName());
+        rliPoolSizeMin = rateLimit.get(RateLimitName.POOL_SIZE_MIN.getName());
 
         rateLimitPoolItem = rateLimitManager.get(ClassNameImpl.getClassNameStatic(cls, name));
     }
@@ -131,25 +130,25 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
 
     public void setMaxSlowRiseAndFastFall(int max) {
         if (dynamicPollSize.get()) {
-            if (max >= min) {
-                if (max > rliPoolSize.get()) { //Медленно поднимаем
-                    rliPoolSize.inc();
+            if (rliPoolSizeMin.check(max)) {
+                if (max > rliPoolSizeMax.get()) { //Медленно поднимаем
+                    rliPoolSizeMax.inc();
                 } else { //Но очень быстро опускаем
-                    rliPoolSize.set(max);
+                    rliPoolSizeMax.set(max);
                 }
             } else {
-                Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < Pool.min = " + min, true);
+                Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < Pool.min = " + rliPoolSizeMin.get(), true);
             }
         }
     }
 
     // Бассейн может поместить новые объекты для плаванья
     private boolean isSizePoolAllowsExtend() {
-        return isRun.get() && rliPoolSize.check(itemQueue.size());
+        return isRun.get() && rliPoolSizeMax.check(itemQueue.size());
     }
 
     // Увеличиваем кол-во объектов для плаванья
-    private void overclocking(int count) {
+    private void overclocking(long count) {
         for (int i = 0; i < count; i++) {
             if (!add()) {
                 break;
@@ -158,7 +157,7 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
     }
 
     public boolean addIfPoolEmpty() {
-        if (min == 0 && itemQueue.isEmpty() && parkQueue.isEmpty()) {
+        if (rliPoolSizeMin.get() == 0 && itemQueue.isEmpty() && parkQueue.isEmpty()) {
             return add();
         }
         return false;
@@ -228,7 +227,7 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
         // Добавлена блокировка, что бы избежать дублей в очереди на удаление
         boolean result = false;
         lockAddToRemove.lock();
-        if (itemQueue.size() > min) {
+        if (rliPoolSizeMin.check(itemQueue.size())) {
             result = true;
             // Что если объект уже был добавлен в очередь на удаление?
             // Мы должны вернуть result = true по факту удаление состоялось
@@ -288,7 +287,7 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
     public void run() {
         if (restartOperation.compareAndSet(false, true)) {
             isRun.set(true);
-            overclocking(min);
+            overclocking(rliPoolSizeMin.get());
             rateLimit.setActive(true);
             rateLimitPoolItem.setActive(true);
             restartOperation.set(false);
@@ -319,7 +318,8 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
         }
         result.add(new Statistic(parentTags, parentFields)
                 .addField("tpsComplete", tpsCompleteFlush)
-                .addField("min", min).addField("max", rliPoolSize.get())
+                .addField("min", rliPoolSizeMin.get())
+                .addField("max", rliPoolSizeMax.get())
                 .addField("item", itemQueue.size())
                 .addField("park", parkQueue.size())
                 .addField("remove", removeQueue.size())
@@ -332,8 +332,8 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
                 "park: " + parkQueue.size() + "; " +
                 "remove: " + removeQueue.size() + "; " +
                 "isRun: " + isRun.get() + "; " +
-                "min: " + min + "; " +
-                "max: " + rliPoolSize.get() + "; ";
+                "min: " + rliPoolSizeMin.get() + "; " +
+                "max: " + rliPoolSizeMax.get() + "; ";
     }
 
     // Этот метод нельзя вызывать под бизнес задачи, система сама должна это контролировать
@@ -344,7 +344,7 @@ public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMs
                 // Если паркинг был пуст уже больше секунды начнём увеличивать
                 if (getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
                     overclocking(formulaAddCount.apply(1));
-                } else if (itemQueue.size() > min) { //Кол-во больше минимума
+                } else if (rliPoolSizeMin.check(itemQueue.size())) { //Кол-во больше минимума
                     // закрываем с прошлого раза всех из отставки
                     // так сделано специально, если на следующей итерации будет overclocking
                     // что бы можно было достать кого-то из отставки

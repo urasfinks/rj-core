@@ -16,8 +16,8 @@ public class PoolResource<
 
     private final Class<PI> cls;
 
-    public PoolResource(String name, int min, Class<PI> cls) {
-        super(name, min, cls);
+    public PoolResource(String name, Class<PI> cls) {
+        super(name, cls);
         this.cls = cls;
     }
 

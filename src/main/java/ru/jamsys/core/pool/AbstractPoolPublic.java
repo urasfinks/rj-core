@@ -13,8 +13,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractPoolPublic<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>>
         extends AbstractPool<RA, RR, PI> {
 
-    public AbstractPoolPublic(String name, int min, Class<PI> cls) {
-        super(name, min, cls);
+    public AbstractPoolPublic(String name, Class<PI> cls) {
+        super(name, cls);
     }
 
     public PI getPoolItem() {

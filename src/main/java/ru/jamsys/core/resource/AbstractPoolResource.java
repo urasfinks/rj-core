@@ -23,8 +23,8 @@ public abstract class AbstractPoolResource<RA, RR, PI extends Completable & Expi
     final private ManagerElement<Broker<PromiseTaskWithResource>, Void> broker;
 
     @SuppressWarnings("all")
-    public AbstractPoolResource(String name, int min, Class<PI> cls) {
-        super(name, min, cls);
+    public AbstractPoolResource(String name, Class<PI> cls) {
+        super(name, cls);
         broker = App.context.getBean(BrokerManager.class).get(getName(), PromiseTaskWithResource.class);
 
     }

@@ -23,7 +23,7 @@ public class PoolResourceManager<
 
     @Override
     public PoolResource<?, ?, ?> build(String index, Class<?> classItem, Class<PI> customArgument) {
-        PoolResource<RA, RR, PI> poolResource = new PoolResource<>(index, 0, customArgument);
+        PoolResource<RA, RR, PI> poolResource = new PoolResource<>(index, customArgument);
         poolResource.run();
         return poolResource;
     }

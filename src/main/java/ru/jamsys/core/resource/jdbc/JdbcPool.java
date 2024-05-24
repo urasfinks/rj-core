@@ -27,15 +27,15 @@ public class JdbcPool extends AbstractPool<JdbcRequest, List<Map<String, Object>
     @Setter
     private String securityAlias;
 
-    public JdbcPool(String name, int min) {
-        super(name, min, ConnectionResource.class);
+    public JdbcPool(String name) {
+        super(name, ConnectionResource.class);
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
         this.uri = propertiesComponent.getProperties("rj.jdbc.uri", String.class);
         this.user = propertiesComponent.getProperties("rj.jdbc.user", String.class);
         this.securityAlias = propertiesComponent.getProperties("rj.jdbc.security.alias", String.class);
     }
 
-    public void setProperty(String uri, String user, SecurityComponent securityComponent, String securityAlias) {
+    public void setProperty(String uri, String user, String securityAlias) {
         this.uri = uri;
         this.user = user;
         this.securityAlias = securityAlias;
