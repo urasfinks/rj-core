@@ -5,9 +5,9 @@ import lombok.Getter;
 @Getter
 public class PoolResourceCustomArgument<T, RC> {
 
-    private Class<T> cls;
+    private final Class<T> cls;
 
-    private RC resourceConstructor;
+    private final RC resourceConstructor;
 
     public PoolResourceCustomArgument(Class<T> cls, RC resourceConstructor) {
         this.cls = cls;
