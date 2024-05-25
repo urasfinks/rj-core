@@ -160,6 +160,9 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         while (inProgress() && expiredTime >= System.currentTimeMillis()) {
             Thread.onSpinWait();
         }
+        if (inProgress()) {
+            Util.printStackTrace("await timeout");
+        }
     }
 
 }

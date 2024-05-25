@@ -1,10 +1,10 @@
 package ru.jamsys.core.component;
 
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.promise.PromiseTask;
+import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.balancer.algorithm.LeastConnections;
-import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.promise.PromiseTask;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class VirtualThreadComponent implements Resource<Void, PromiseTask, Void> {
 
     private final ExecutorService executorService = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("v-thread-", 0).factory());
+
     private final AtomicBoolean isThreadRun = new AtomicBoolean(true);
 
     @Override

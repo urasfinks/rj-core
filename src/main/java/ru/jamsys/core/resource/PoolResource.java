@@ -1,6 +1,7 @@
 package ru.jamsys.core.resource;
 
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.PoolResourceCustomArgument;
 import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.Completable;
@@ -15,16 +16,18 @@ public class PoolResource<
         extends AbstractPoolResource<RC, RA, RR, PI>
         implements Closable, CheckClassItem {
 
-    private final Class<PI> cls;
+    private final PoolResourceCustomArgument<PI, RC> cls;
 
-    public PoolResource(String name, Class<PI> cls) {
-        super(name, cls);
+    public PoolResource(String name, PoolResourceCustomArgument<PI, RC> cls) {
+        super(name, cls.getCls());
         this.cls = cls;
     }
 
     @Override
     public PI createPoolItem() {
-        return App.context.getBean(cls);
+        PI newPoolItem = App.context.getBean(cls.getCls());
+        newPoolItem.constructor(cls.getResourceConstructor());
+        return newPoolItem;
     }
 
     @Override

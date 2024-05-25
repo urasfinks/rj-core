@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.component.manager.PoolResourceCustomArgument;
 import ru.jamsys.core.component.manager.PoolResourceManager;
 import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.extension.trace.Trace;
@@ -31,7 +32,7 @@ import java.util.function.Function;
 
 public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>> extends PromiseTask {
 
-    final ManagerElement<PoolResource<RC, RA, RR, PI>, Class<PI>> poolResourceManagerElement;
+    final ManagerElement<PoolResource<RC, RA, RR, PI>, PoolResourceCustomArgument<PI, RC>> poolResourceManagerElement;
 
     @Getter
     @Setter
@@ -47,7 +48,8 @@ public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & Expira
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
-            Class<PI> classResource,
+            Class<PI> cls,
+            RC constructor,
             Function<Promise, RA> argumentsFunction,
             BiConsumer<AtomicBoolean, RR> procedure
     ) {
@@ -56,14 +58,31 @@ public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & Expira
         this.argumentsFunction = argumentsFunction;
         @SuppressWarnings("all")
         PoolResourceManager<RC, RA, RR, PI> poolResourceManager = App.context.getBean(PoolResourceManager.class);
-        poolResourceManagerElement = poolResourceManager.get(index, classResource);
+        poolResourceManagerElement = poolResourceManager.get(index, new PoolResourceCustomArgument<>(cls, constructor));
     }
 
     public PromiseTaskWithResource(
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
-            Class<PI> classResource,
+            Class<PI> cls,
+            RC constructor,
+            Function<Promise, RA> argumentsFunction,
+            BiFunction<AtomicBoolean, RR, List<PromiseTask>> supplier
+    ) {
+        super(index, promise, type);
+        this.supplier = supplier;
+        this.argumentsFunction = argumentsFunction;
+        @SuppressWarnings("all")
+        PoolResourceManager<RC, RA, RR, PI> poolResourceManager = App.context.getBean(PoolResourceManager.class);
+        poolResourceManagerElement = poolResourceManager.get(index, new PoolResourceCustomArgument<>(cls, constructor));
+    }
+
+    public PromiseTaskWithResource(
+            String index,
+            Promise promise,
+            PromiseTaskExecuteType type,
+            PoolResourceCustomArgument<PI, RC>  classResource,
             Function<Promise, RA> argumentsFunction,
             BiFunction<AtomicBoolean, RR, List<PromiseTask>> supplier
     ) {

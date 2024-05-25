@@ -9,9 +9,7 @@ import ru.jamsys.core.promise.resource.api.HttpClientPromise;
 import ru.jamsys.core.promise.resource.api.NotificationTelegramPromise;
 import ru.jamsys.core.promise.resource.api.YandexSpeechPromise;
 import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.resource.http.HttpClientImpl;
-import ru.jamsys.core.resource.http.HttpClientResource;
-import ru.jamsys.core.resource.http.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -330,12 +328,9 @@ class PromiseImplTest {
 
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .append(new PromiseTaskWithResource<>(
+                .append(PromiseResourceFactory.getHttpTask(
                         "testTaskWithResource",
                         promise,
-                        PromiseTaskExecuteType.IO,
-                        HttpClientResource.class,
-                        (Promise _) -> new HttpClientImpl(),
                         (AtomicBoolean _, HttpResponseEnvelope _) -> System.out.println("!!!")
                 ))
                 .run()
