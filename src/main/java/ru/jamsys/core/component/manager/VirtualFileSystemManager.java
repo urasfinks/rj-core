@@ -23,7 +23,7 @@ public class VirtualFileSystemManager extends AbstractManager<File, Void> {
     }
 
     @Override
-    public File build(String index, Class<?> classItem, Void customArgument) {
+    public File build(String index, Class<?> classItem, Void builderArgument) {
         return null;
     }
 

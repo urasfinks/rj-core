@@ -16,7 +16,7 @@ public class RateLimitManager extends AbstractManager<RateLimit, Void> {
     }
 
     @Override
-    public RateLimit build(String index, Class<?> classItem, Void customArgument) {
+    public RateLimit build(String index, Class<?> classItem, Void builderArgument) {
         return new RateLimit(index);
     }
 

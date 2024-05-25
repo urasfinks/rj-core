@@ -20,7 +20,7 @@ public class BrokerManager extends AbstractManager<Broker<?>, Void> {
     }
 
     @Override
-    public Broker<?> build(String index, Class<?> classItem, Void customArgument) {
+    public Broker<?> build(String index, Class<?> classItem, Void builderArgument) {
         return new Broker<>(index, applicationContext, classItem);
     }
 

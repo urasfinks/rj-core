@@ -25,8 +25,12 @@ public class ExpirationManager extends AbstractManager<Expiration<?>, Consumer<D
     }
 
     @Override
-    public Expiration<?> build(String index, Class<?> classItem, Consumer<DisposableExpirationMsImmutableEnvelope<?>> customArgument) {
-        return new Expiration<>(index, classItem, customArgument);
+    public Expiration<?> build(
+            String index,
+            Class<?> classItem,
+            Consumer<DisposableExpirationMsImmutableEnvelope<?>> builderArgument
+    ) {
+        return new Expiration<>(index, classItem, builderArgument);
     }
 
 }

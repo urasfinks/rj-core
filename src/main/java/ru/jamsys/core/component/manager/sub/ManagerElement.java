@@ -7,25 +7,25 @@ import java.util.function.Consumer;
 
 // C  - Collection
 // CE - CollectionElement
-// CA - CustomArgument
+// BA - BuilderArgument
 
-public class ManagerElement<C extends CheckClassItem, CA> extends ExpirationMsMutableImpl {
+public class ManagerElement<C extends CheckClassItem, BA> extends ExpirationMsMutableImpl {
 
     private final String index;
 
     private final Class<?> classItem;
 
-    private final AbstractManager<?, CA> abstractManager;
+    private final AbstractManager<?, BA> abstractManager;
 
-    private final CA customArgument;
+    private final BA customArgument;
 
     private C cache;
 
     public ManagerElement(
             String index,
             Class<?> classItem,
-            AbstractManager<?, CA> abstractManager,
-            CA customArgument
+            AbstractManager<?, BA> abstractManager,
+            BA customArgument
     ) {
         this.index = index;
         this.classItem = classItem;

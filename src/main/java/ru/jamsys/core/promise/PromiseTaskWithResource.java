@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.ManagerElement;
-import ru.jamsys.core.component.manager.sub.PoolResourceCustomArgument;
+import ru.jamsys.core.component.manager.sub.PoolResourceArgument;
 import ru.jamsys.core.component.manager.PoolResourceManagerForPromiseTask;
 import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.extension.trace.Trace;
@@ -32,7 +32,7 @@ import java.util.function.Function;
 
 public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>> extends PromiseTask {
 
-    final ManagerElement<PoolResourceForPromiseTask<RC, RA, RR, PI>, PoolResourceCustomArgument<PI, RC>> poolResourceManagerElement;
+    final ManagerElement<PoolResourceForPromiseTask<RC, RA, RR, PI>, PoolResourceArgument<PI, RC>> poolResourceManagerElement;
 
     @Getter
     @Setter
@@ -58,7 +58,7 @@ public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & Expira
         this.argumentsFunction = argumentsFunction;
         @SuppressWarnings("all")
         PoolResourceManagerForPromiseTask<RC, RA, RR, PI> poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
-        poolResourceManagerElement = poolResourceManagerForPromiseTask.get(index, new PoolResourceCustomArgument<>(cls, constructor));
+        poolResourceManagerElement = poolResourceManagerForPromiseTask.get(index, new PoolResourceArgument<>(cls, constructor));
     }
 
     public PromiseTaskWithResource(
@@ -75,14 +75,14 @@ public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & Expira
         this.argumentsFunction = argumentsFunction;
         @SuppressWarnings("all")
         PoolResourceManagerForPromiseTask<RC, RA, RR, PI> poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
-        poolResourceManagerElement = poolResourceManagerForPromiseTask.get(index, new PoolResourceCustomArgument<>(cls, constructor));
+        poolResourceManagerElement = poolResourceManagerForPromiseTask.get(index, new PoolResourceArgument<>(cls, constructor));
     }
 
     public PromiseTaskWithResource(
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
-            PoolResourceCustomArgument<PI, RC>  classResource,
+            PoolResourceArgument<PI, RC> classResource,
             Function<Promise, RA> argumentsFunction,
             BiFunction<AtomicBoolean, RR, List<PromiseTask>> supplier
     ) {
