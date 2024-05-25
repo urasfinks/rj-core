@@ -15,6 +15,10 @@ public class PropertiesComponent {
         this.applicationContext = applicationContext;
     }
 
+    public <T> T getProperties(String namespace, String key, Class<T> cls) {
+        return getProperties(namespace + "." + key, cls);
+    }
+
     public <T> T getProperties(String key, Class<T> cls) {
         Environment environment = applicationContext.getEnvironment();
         T result = environment.getProperty(key, cls);

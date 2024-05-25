@@ -28,21 +28,21 @@ public class PoolResourceForPromiseTask<
         extends AbstractPool<RC, RA, RR, PI>
         implements Closable, CheckClassItem {
 
-    private final PoolResourceArgument<PI, RC> cls;
+    private final PoolResourceArgument<PI, RC> argument;
 
     final private ManagerElement<Broker<PromiseTaskWithResource>, Void> broker;
 
-    public PoolResourceForPromiseTask(String name, PoolResourceArgument<PI, RC> cls) {
-        super(name, cls.getCls());
-        this.cls = cls;
+    public PoolResourceForPromiseTask(String name, PoolResourceArgument<PI, RC> argument) {
+        super(name, argument.getClassPoolItem());
+        this.argument = argument;
         broker = App.context.getBean(BrokerManager.class).get(getName(), PromiseTaskWithResource.class);
     }
 
     @Override
     public PI createPoolItem() {
-        PI newPoolItem = App.context.getBean(cls.getCls());
+        PI newPoolItem = App.context.getBean(argument.getClassPoolItem());
         try {
-            newPoolItem.constructor(cls.getResourceConstructor());
+            newPoolItem.constructor(argument.getResourceConstructor());
             return newPoolItem;
         } catch (Throwable e) {
             App.context.getBean(ExceptionHandler.class).handler(e);
@@ -56,8 +56,8 @@ public class PoolResourceForPromiseTask<
     }
 
     @Override
-    public boolean checkExceptionOnComplete(Exception e) {
-        return false;
+    public boolean checkCriticalOfExceptionOnComplete(Exception e) {
+        return argument.getCheckExceptionOnComplete().apply(e);
     }
 
     @Override

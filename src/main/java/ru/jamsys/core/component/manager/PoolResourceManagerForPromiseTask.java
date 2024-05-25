@@ -26,7 +26,7 @@ public class PoolResourceManagerForPromiseTask<
                 PoolResourceForPromiseTask<RC, RA, RR, PI>,
             PoolResourceArgument<PI, RC>
                 > get(String index, PoolResourceArgument<PI, RC> argument) {
-        return new ManagerElement<>(index, argument.getCls(), this, argument);
+        return new ManagerElement<>(index, argument.getClassPoolItem(), this, argument);
     }
 
     @Override

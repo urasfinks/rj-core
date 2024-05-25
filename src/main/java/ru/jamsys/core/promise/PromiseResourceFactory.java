@@ -18,8 +18,7 @@ public class PromiseResourceFactory {
                 index,
                 promise,
                 PromiseTaskExecuteType.IO,
-                HttpClientResource.class,
-                new HttpPoolSetting("wef"),
+                HttpPoolSetting.setting,
                 (Promise _) -> new HttpClientImpl(),
                 procedure
         );
@@ -34,8 +33,7 @@ public class PromiseResourceFactory {
                 index,
                 promise,
                 PromiseTaskExecuteType.IO,
-                HttpClientResource.class,
-                new HttpPoolSetting("wfe"),
+                HttpPoolSetting.setting,
                 (Promise _) -> new HttpClientImpl(),
                 supplier
         );

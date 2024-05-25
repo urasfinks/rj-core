@@ -42,7 +42,7 @@ public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadRes
     }
 
     @Override
-    public boolean checkExceptionOnComplete(Exception e) {
+    public boolean checkCriticalOfExceptionOnComplete(Exception e) {
         return false;
     }
 

@@ -48,8 +48,7 @@ public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & Expira
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
-            Class<PI> cls,
-            RC constructor,
+            PoolResourceArgument<PI, RC> poolArgument,
             Function<Promise, RA> argumentsFunction,
             BiConsumer<AtomicBoolean, RR> procedure
     ) {
@@ -58,15 +57,14 @@ public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & Expira
         this.argumentsFunction = argumentsFunction;
         @SuppressWarnings("all")
         PoolResourceManagerForPromiseTask<RC, RA, RR, PI> poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
-        poolResourceManagerElement = poolResourceManagerForPromiseTask.get(index, new PoolResourceArgument<>(cls, constructor));
+        poolResourceManagerElement = poolResourceManagerForPromiseTask.get(index, poolArgument);
     }
 
     public PromiseTaskWithResource(
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
-            Class<PI> cls,
-            RC constructor,
+            PoolResourceArgument<PI, RC> poolArgument,
             Function<Promise, RA> argumentsFunction,
             BiFunction<AtomicBoolean, RR, List<PromiseTask>> supplier
     ) {
@@ -75,24 +73,10 @@ public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & Expira
         this.argumentsFunction = argumentsFunction;
         @SuppressWarnings("all")
         PoolResourceManagerForPromiseTask<RC, RA, RR, PI> poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
-        poolResourceManagerElement = poolResourceManagerForPromiseTask.get(index, new PoolResourceArgument<>(cls, constructor));
+        poolResourceManagerElement = poolResourceManagerForPromiseTask.get(index, poolArgument);
     }
 
-    public PromiseTaskWithResource(
-            String index,
-            Promise promise,
-            PromiseTaskExecuteType type,
-            PoolResourceArgument<PI, RC> classResource,
-            Function<Promise, RA> argumentsFunction,
-            BiFunction<AtomicBoolean, RR, List<PromiseTask>> supplier
-    ) {
-        super(index, promise, type);
-        this.supplier = supplier;
-        this.argumentsFunction = argumentsFunction;
-        @SuppressWarnings("all")
-        PoolResourceManagerForPromiseTask<RC, RA, RR, PI> poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
-        poolResourceManagerElement = poolResourceManagerForPromiseTask.get(index, classResource);
-    }
+
 
     // Этот блок вызывается из Promise.loop() и подразумевает запуск ::run из внешнего потока
     // Мы его переопределили, добавляя задачу в Pool, а вот уже когда освободится ресурс в пуле
@@ -106,12 +90,16 @@ public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & Expira
         }
     }
 
+    @Getter
+    private PI resource = null;
+
     @Override
     protected void executeBlock() throws Throwable {
         try (PoolItemEnvelope<RC, RA, RR, PI> res = getPoolItemEnvelope()) {
+            resource  = res.getItem();
             RA argument = argumentsFunction.apply(getPromise());
             if (supplier != null) {
-                getPromise().complete(this, supplier.apply(isThreadRun, res.getItem().execute(argument)));
+                getPromise().complete(this, supplier.apply(isThreadRun, resource.execute(argument)));
             } else if (procedure != null) {
                 procedure.accept(isThreadRun, res.getItem().execute(argument));
                 getPromise().complete(this);

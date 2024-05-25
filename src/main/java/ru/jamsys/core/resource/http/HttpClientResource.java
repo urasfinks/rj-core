@@ -13,7 +13,7 @@ public class HttpClientResource extends ExpirationMsMutableImpl implements Compl
 
     @Override
     public void constructor(HttpPoolSetting constructor) {
-        System.out.println(constructor.url);
+        System.out.println(constructor);
     }
 
     @Override

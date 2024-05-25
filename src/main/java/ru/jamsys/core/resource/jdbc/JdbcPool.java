@@ -61,7 +61,7 @@ public class JdbcPool extends AbstractPool<Void, JdbcRequest, List<Map<String, O
     }
 
     @Override
-    public boolean checkExceptionOnComplete(Exception e) {
+    public boolean checkCriticalOfExceptionOnComplete(Exception e) {
         if (e != null) {
             String msg = e.getMessage();
             // Не конкурентная проверка

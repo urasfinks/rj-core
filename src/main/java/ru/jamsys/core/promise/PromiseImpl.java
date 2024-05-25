@@ -156,12 +156,25 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     public void await(long timeoutMs) {
-        long expiredTime = System.currentTimeMillis() + timeoutMs;
+        long start = System.currentTimeMillis();
+        long expiredTime = start + timeoutMs;
         while (inProgress() && expiredTime >= System.currentTimeMillis()) {
             Thread.onSpinWait();
         }
         if (inProgress()) {
-            Util.printStackTrace("await timeout");
+            Util.printStackTrace(
+                    "await timeout start: " + Util.msToDataFormat(start)
+                            + " now: " + Util.msToDataFormat(System.currentTimeMillis())
+                            + " listPendingTasks.isEmpty(): " + listPendingTasks.isEmpty() + "; "
+                            + "isException.get(): " + isException.get() + ";"
+                            + "; ");
+            Object[] objects = listRunningTasks.toArray();
+            for (Object t : objects) {
+                PromiseTask tx = (PromiseTask) t;
+                if (!tx.isComplete()) {
+                    System.out.println("NOT COMPLETE");
+                }
+            }
         }
     }
 

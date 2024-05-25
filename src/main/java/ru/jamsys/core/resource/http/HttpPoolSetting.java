@@ -1,9 +1,12 @@
 package ru.jamsys.core.resource.http;
 
-public class HttpPoolSetting {
-    public String url;
+import ru.jamsys.core.component.manager.sub.PoolResourceArgument;
 
-    public HttpPoolSetting(String url) {
-        this.url = url;
-    }
+public class HttpPoolSetting {
+
+    public static PoolResourceArgument<
+            HttpClientResource,
+            HttpPoolSetting
+            > setting = new PoolResourceArgument<>(HttpClientResource.class, null, _ -> false);
+
 }
