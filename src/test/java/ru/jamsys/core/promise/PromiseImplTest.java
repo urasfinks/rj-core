@@ -60,7 +60,7 @@ class PromiseImplTest {
 
     @Test
     void test2() {
-        PromiseImpl wf = new PromiseImpl("test",6_000L);
+        PromiseImpl wf = new PromiseImpl("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
@@ -74,21 +74,24 @@ class PromiseImplTest {
 
     @Test
     void test3() {
-        PromiseImpl wf = new PromiseImpl("test",6_000L);
+        PromiseImpl wf = new PromiseImpl("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
+
         for (int i = 0; i < 1000; i++) {
             final int x = i;
             wf.then("test", PromiseTaskExecuteType.JOIN, (AtomicBoolean _) -> deque.add(x));
             dequeRes.add(i);
         }
-        wf.run();
+        wf.run().await(1100);
+        System.out.println("test3 isTerminated: " + wf.isTerminated() + "; any: " + wf.getAny());
+        System.out.println(wf.getLog());
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
     }
 
     @Test
     void test4() {
-        PromiseImpl wf = new PromiseImpl("test",6_000L);
+        PromiseImpl wf = new PromiseImpl("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
@@ -103,7 +106,7 @@ class PromiseImplTest {
 
     @Test
     void test5() {
-        PromiseImpl wf = new PromiseImpl("test",6_000L);
+        PromiseImpl wf = new PromiseImpl("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 1000; i++) {
@@ -130,7 +133,7 @@ class PromiseImplTest {
 
     @Test
     void test7() {
-        Promise wf = new PromiseImpl("test",6_000L);
+        Promise wf = new PromiseImpl("test", 6_000L);
         AtomicInteger retry = new AtomicInteger(0);
         AtomicInteger error = new AtomicInteger(0);
         AtomicInteger complete = new AtomicInteger(0);
@@ -186,7 +189,7 @@ class PromiseImplTest {
         AtomicInteger complete = new AtomicInteger(0);
         AtomicInteger exec = new AtomicInteger(0);
 
-        Promise wf = new PromiseImpl("test",1_500L);
+        Promise wf = new PromiseImpl("test", 1_500L);
         wf
                 .append("1", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> {
                     exec.incrementAndGet();
@@ -212,7 +215,7 @@ class PromiseImplTest {
 
     @Test
     void toLog() {
-        Promise wf = new PromiseImpl("test",1_500L);
+        Promise wf = new PromiseImpl("test", 1_500L);
         wf
                 .append("1", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> System.out.println(1))
                 .append("2", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> System.out.println(2))
@@ -226,17 +229,17 @@ class PromiseImplTest {
 
     @Test
     void testExternalWait() {
-        Promise wf = new PromiseImpl("Async",6_000L);
+        Promise wf = new PromiseImpl("Async", 6_000L);
         PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskExecuteType.EXTERNAL_WAIT);
         wf.append(promiseTask);
         wf.run().await(1000);
 
         Assertions.assertEquals(1, wf.getTrace().size());
         Assertions.assertEquals(0, wf.getExceptionTrace().size());
-        Assertions.assertFalse(wf.isCompleted());
+        Assertions.assertFalse(wf.isTerminated());
 
         promiseTask.externalComplete();
-        Assertions.assertTrue(wf.isCompleted());
+        Assertions.assertTrue(wf.isTerminated());
         Assertions.assertEquals(2, wf.getTrace().size());
 
         System.out.println(wf.getLog());
@@ -251,7 +254,7 @@ class PromiseImplTest {
         // добавил final c + c.incrementAndGet() уже равно не 1 а 2
         // Буду наблюдать дальше
 
-        Promise wf = new PromiseImpl("AsyncNoWait",6_000L);
+        Promise wf = new PromiseImpl("AsyncNoWait", 6_000L);
         final AtomicInteger c = new AtomicInteger(0);
         PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskExecuteType.ASYNC_NO_WAIT_IO, (AtomicBoolean _) -> {
             c.incrementAndGet();
@@ -263,7 +266,7 @@ class PromiseImplTest {
 
         Assertions.assertEquals(2, c.incrementAndGet());
         Assertions.assertEquals(1, wf.getTrace().size());
-        Assertions.assertTrue(wf.isCompleted());
+        Assertions.assertTrue(wf.isTerminated());
         Assertions.assertEquals(1, wf.getTrace().size());
     }
 
@@ -279,7 +282,7 @@ class PromiseImplTest {
 
         System.out.println(wf.getLog());
 
-        Assertions.assertTrue(wf.isCompleted());
+        Assertions.assertTrue(wf.isTerminated());
         Assertions.assertTrue(wf.isException());
         Assertions.assertEquals(1, counter.get());
         Assertions.assertEquals("TimeOut cause: PromiseTaskTime::onPromiseTaskExpired", wf.getExceptionTrace().getFirst().getIndex());
@@ -288,7 +291,7 @@ class PromiseImplTest {
 
     @SuppressWarnings("unused")
     void promiseYandexSpeechKit() {
-        Promise wf = new PromiseImpl("test",6_000L);
+        Promise wf = new PromiseImpl("test", 6_000L);
         wf.api("sound", new YandexSpeechPromise().setup((YandexSpeechPromise yandexSpeechPromise) -> {
             yandexSpeechPromise.setText("Привет страна");
             yandexSpeechPromise.setFilePath("target/result2.wav");
@@ -298,7 +301,7 @@ class PromiseImplTest {
 
     @SuppressWarnings("unused")
     void promiseHttp() {
-        Promise wf = new PromiseImpl("test",6_000L);
+        Promise wf = new PromiseImpl("test", 6_000L);
         wf.api("request", new HttpClientPromise()
                 .setup((HttpClientPromise httpClientPromise) ->
                         httpClientPromise.getHttpClient()
@@ -315,7 +318,7 @@ class PromiseImplTest {
 
     @SuppressWarnings("unused")
     void promiseTelegram() {
-        Promise wf = new PromiseImpl("test",6_000L);
+        Promise wf = new PromiseImpl("test", 6_000L);
         wf.api("request", new NotificationTelegramPromise().setup((NotificationTelegramPromise telegramPromise) -> {
             telegramPromise.setTitle("Привет");
             telegramPromise.setData("Страна");

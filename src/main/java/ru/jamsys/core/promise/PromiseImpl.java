@@ -24,7 +24,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
 
     @Override
     public void timeOut(String cause) {
-        setError("TimeOut cause: "+cause, getExpiredException(), null);
+        setError("TimeOut cause: " + cause, getExpiredException(), null);
         complete();
     }
 
@@ -41,14 +41,25 @@ public class PromiseImpl extends AbstractPromiseBuilder {
 
     public void complete(@Nullable PromiseTask task) {
         if (task != null) {
-            task.setComplete(true);
+//            int before = setRunningTasks.size();
+
+            setRunningTasks.remove(task);
+            countCompleteTask.incrementAndGet();
+//            if (getIndex().equals("test")) {
+//                System.out.println("REMOVE1: " + task + "; sizeBefore: " + before + " sizeAfter: " + setRunningTasks.size());
+//            }
         }
-        complete();
+        //complete();
     }
 
     public void complete(@Nullable PromiseTask task, List<PromiseTask> toHead) {
         if (task != null) {
-            task.setComplete(true);
+            int before = setRunningTasks.size();
+            setRunningTasks.remove(task);
+            countCompleteTask.incrementAndGet();
+//            if (getIndex().equals("test")) {
+//                System.out.println("REMOVE2: " + task + "; sizeBefore: " + before + " sizeAfter: " + setRunningTasks.size());
+//            }
         }
         if (toHead != null) {
             this.toHead.add(toHead);
@@ -57,6 +68,9 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     public void complete() {
+//        if (getIndex().equals("test")) {
+//            Util.printStackTrace("loop " + getIndex() + "; isRun: " + isRun.get());
+//        }
         if (isRun.get()) {
             if (isStartLoop.compareAndSet(false, true)) {
                 loop();
@@ -97,18 +111,32 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             List<PromiseTask> promiseTasks = toHead.pollLast();
             assert promiseTasks != null;
             for (int i = promiseTasks.size() - 1; i >= 0; i--) {
-                listPendingTasks.addFirst(promiseTasks.get(i));
+                PromiseTask promiseTask = promiseTasks.get(i);
+                listPendingTasks.addFirst(promiseTask);
+                if (promiseTask.type.isRunningTask()) {
+                    countRunnableTask.incrementAndGet();
+                }
             }
         }
+        // Запускаем задачи из pending
         while (!listPendingTasks.isEmpty() && isNextLoop()) {
             PromiseTask firstTask = listPendingTasks.pollFirst();
             assert firstTask != null;
-            firstTask.start();
+//            if (getIndex().equals("test")) {
+//                System.out.println("start task:" + firstTask.getIndex());
+//            }
             if (firstTask.type.isRunningTask()) { //Так мы откинули WAIT
-                listRunningTasks.add(firstTask);
+                setRunningTasks.add(firstTask);
             }
+            firstTask.start();
+//            if (getIndex().equals("test")) {
+//                System.out.println("finish start task:" + firstTask.getIndex());
+//            }
             if (firstTask.type == PromiseTaskExecuteType.WAIT) {
-                if (isRunningTaskNotComplete()) {
+                if (!setRunningTasks.isEmpty()) {
+//                    if (getIndex().equals("test")) {
+//                        System.out.println("reinsert wait because setRunningTasks.size() = " + setRunningTasks);
+//                    }
                     listPendingTasks.addFirst(firstTask);
                     break;
                 }
@@ -122,7 +150,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 if (onError != null) {
                     onError.start();
                 }
-            } else if (!inProgress()) {
+            } else if (isTerminated()) {
                 isRun.set(false);
                 queueMultipleCompleteSet.remove(this);
                 if (onComplete != null) {
@@ -132,50 +160,25 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         }
     }
 
-    // Список задач не пуст или запущенные задачи ещё не выполнены
-    public boolean inProgress() {
-        if (isException.get()) {
-            return false;
-        }
-        if (!listPendingTasks.isEmpty()) {
-            return true;
-        }
-        return isRunningTaskNotComplete();
-    }
-
-    // Не все запущенные задачи имеют результат
-    private boolean isRunningTaskNotComplete() {
-        Object[] objects = listRunningTasks.toArray();
-        for (Object t : objects) {
-            PromiseTask tx = (PromiseTask) t;
-            if (!tx.isComplete()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void await(long timeoutMs) {
         long start = System.currentTimeMillis();
         long expiredTime = start + timeoutMs;
-        while (inProgress() && expiredTime >= System.currentTimeMillis()) {
+        while (!isTerminated() && expiredTime >= System.currentTimeMillis()) {
             Thread.onSpinWait();
         }
-        if (inProgress()) {
+        if (!isTerminated()) {
             Util.printStackTrace(
                     "await timeout start: " + Util.msToDataFormat(start)
-                            + " now: " + Util.msToDataFormat(System.currentTimeMillis())
-                            + " listPendingTasks.isEmpty(): " + listPendingTasks.isEmpty() + "; "
-                            + "isException.get(): " + isException.get() + ";"
-                            + "; ");
-            Object[] objects = listRunningTasks.toArray();
-            for (Object t : objects) {
-                PromiseTask tx = (PromiseTask) t;
-                if (!tx.isComplete()) {
-                    System.out.println("NOT COMPLETE");
-                }
-            }
+                            + " now: " + Util.msToDataFormat(System.currentTimeMillis()) + ";\r\n"
+                            + getAny());
         }
+    }
+
+    public String getAny() {
+        return " isTerminated: " + isTerminated() + ";\n"
+                + " countRunnableTask: " + countRunnableTask.get() + ";\n"
+                + " countCompleteTask: " + countCompleteTask.get() + ";\n"
+                + " isException.get(): " + isException.get() + ";";
     }
 
 }

@@ -23,10 +23,6 @@ import java.util.function.Function;
 
 public class PromiseTask implements Runnable {
 
-    @Setter
-    @Getter
-    volatile private boolean complete;
-
     @Getter
     final PromiseTaskExecuteType type;
 
@@ -117,7 +113,6 @@ public class PromiseTask implements Runnable {
         TimeEnvelopeNano<String> timer = App.context.getBean(PromiseTaskTime.class).add(index);
         Trace<String, TraceTimer> trace = new Trace<>(getIndex(), null, type, this.getClass());
         promise.getTrace().add(trace);
-        long timeStart = System.nanoTime();
         try {
             executeBlock();
         } catch (Throwable th) {
@@ -147,4 +142,10 @@ public class PromiseTask implements Runnable {
         }
     }
 
+    @Override
+    public String toString() {
+        return "PromiseTask[" + hashCode() + "]{" +
+                "index='" + index + '\'' +
+                '}';
+    }
 }

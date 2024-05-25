@@ -9,13 +9,15 @@ import lombok.Setter;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.extension.trace.TraceTimer;
-import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @JsonPropertyOrder({"correlation", "index", "addTime", "expTime", "diffTimeMs", "exception", "completed", "trace", "exceptionTrace", "property"})
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
@@ -36,6 +38,11 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     // Что бы перехватить инициативу крутить основной loop
     protected AtomicBoolean firstConcurrentCompletionWait = new AtomicBoolean(false);
 
+    // Кол-во задач, которые должны быть исполнены
+    protected AtomicInteger countRunnableTask = new AtomicInteger(0);
+
+    protected AtomicInteger countCompleteTask = new AtomicInteger(0);
+
     @JsonProperty
     @Getter
     private final Map<String, Object> mapProperty = new ConcurrentHashMap<>();
@@ -49,7 +56,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     protected final AtomicBoolean isStartLoop = new AtomicBoolean(false);
 
     // Запущенные задачи, наличие результата, говорит о том, что задача выполнена
-    protected final List<PromiseTask> listRunningTasks = new ArrayList<>();
+    protected final Set<PromiseTask> setRunningTasks = Util.getConcurrentHashSet();
 
     // Так как задачи могут исполняться в разных потоках, и в момент исполнения могут приходить результаты исполнений
     // будем вставлять в конкурентную очередь, что бы не потерять результат
@@ -59,7 +66,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     // Выполненная задача может в голову вставить ещё задач
     // Все действия со стеком происходят в эксклюзивной блокировке
     @Getter
-    protected final Deque<PromiseTask> listPendingTasks = new LinkedList<>();
+    protected final Deque<PromiseTask> listPendingTasks = new ConcurrentLinkedDeque<>();
 
     // Вызовется если все задачи пройдут успешно
     protected PromiseTask onComplete = null;
@@ -91,8 +98,10 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     @JsonProperty
     @Override
-    public boolean isCompleted() {
-        return !inProgress();
+    public boolean isTerminated() {
+        return isException.get() || (
+                setRunningTasks.isEmpty() && countCompleteTask.get() == countRunnableTask.get()
+        );
     }
 
     @JsonProperty

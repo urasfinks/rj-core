@@ -40,11 +40,17 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
 
     public Promise append(PromiseTask task) {
         listPendingTasks.add(task);
+        if (task.type.isRunningTask()) {
+            countRunnableTask.incrementAndGet();
+        }
         return this;
     }
 
     public Promise append(PromiseTaskWithResource<?, ?, ?, ?> task) {
         listPendingTasks.add(task);
+        if (task.type.isRunningTask()) {
+            countRunnableTask.incrementAndGet();
+        }
         return this;
     }
 

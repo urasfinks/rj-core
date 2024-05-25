@@ -30,8 +30,6 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     void complete();
 
-    boolean inProgress();
-
     // Синхронное ожидание выполнения Promise
     void await(long timeoutMs);
 
@@ -88,7 +86,7 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     Promise api(String index, PromiseApi<?> promiseApi);
 
-    boolean isCompleted();
+    boolean isTerminated();
 
     boolean isException();
 
