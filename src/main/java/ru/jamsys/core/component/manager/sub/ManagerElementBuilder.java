@@ -1,4 +1,4 @@
-package ru.jamsys.core.component.manager;
+package ru.jamsys.core.component.manager.sub;
 
 // E - element
 // CA - CustomArgument

@@ -35,6 +35,8 @@ import java.util.function.Function;
 // RR - ResourceResult
 // PI - PoolItem
 
+//TODO: Добавить контроль TPS
+
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<RC, RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>>
         extends ExpirationMsMutableImpl

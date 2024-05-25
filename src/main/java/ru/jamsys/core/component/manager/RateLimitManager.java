@@ -1,6 +1,7 @@
 package ru.jamsys.core.component.manager;
 
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.rate.limit.RateLimit;
 
 @Component

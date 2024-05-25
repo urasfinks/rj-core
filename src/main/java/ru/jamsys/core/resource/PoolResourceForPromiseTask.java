@@ -1,24 +1,25 @@
 package ru.jamsys.core.resource;
 
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.PoolResourceCustomArgument;
+import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.component.manager.sub.PoolResourceCustomArgument;
 import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
-public class PoolResource<
+public class PoolResourceForPromiseTask<
         RC,
         RA,
         RR,
         PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>
         >
-        extends AbstractPoolResource<RC, RA, RR, PI>
+        extends AbstractPoolResourceForPromiseTask<RC, RA, RR, PI>
         implements Closable, CheckClassItem {
 
     private final PoolResourceCustomArgument<PI, RC> cls;
 
-    public PoolResource(String name, PoolResourceCustomArgument<PI, RC> cls) {
+    public PoolResourceForPromiseTask(String name, PoolResourceCustomArgument<PI, RC> cls) {
         super(name, cls.getCls());
         this.cls = cls;
     }
@@ -26,8 +27,13 @@ public class PoolResource<
     @Override
     public PI createPoolItem() {
         PI newPoolItem = App.context.getBean(cls.getCls());
-        newPoolItem.constructor(cls.getResourceConstructor());
-        return newPoolItem;
+        try {
+            newPoolItem.constructor(cls.getResourceConstructor());
+            return newPoolItem;
+        } catch (Throwable e) {
+            App.context.getBean(ExceptionHandler.class).handler(e);
+        }
+        return null;
     }
 
     @Override

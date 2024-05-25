@@ -5,7 +5,7 @@ import com.influxdb.client.write.Point;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;

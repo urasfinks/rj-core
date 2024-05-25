@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ExpirationManager;
-import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.flat.util.ExpirationKeepAliveResult;
 import ru.jamsys.core.flat.util.Util;

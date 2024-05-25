@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.flat.util.*;
+
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -237,17 +238,21 @@ public class SecurityComponent implements LifeCycleComponent {
         return keyStore != null;
     }
 
-    public char[] get(String key) throws Exception {
-        if (keyStore != null) {
-            KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) keyStore.getEntry(key, keyStorePP);
-            if (ske != null) {
-                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
-                PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(ske.getSecretKey(), PBEKeySpec.class);
-                return keySpec.getPassword();
+    public char[] get(String key) {
+        try {
+            if (keyStore != null) {
+                KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) keyStore.getEntry(key, keyStorePP);
+                if (ske != null) {
+                    SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
+                    PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(ske.getSecretKey(), PBEKeySpec.class);
+                    return keySpec.getPassword();
+                }
+                return null;
+            } else {
+                throw new RuntimeException("Security компонент не инициализирован");
             }
-            return null;
-        } else {
-            throw new Exception("Security компонент не инициализирован");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

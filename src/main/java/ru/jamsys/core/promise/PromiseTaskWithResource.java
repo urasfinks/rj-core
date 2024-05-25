@@ -3,13 +3,13 @@ package ru.jamsys.core.promise;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.ManagerElement;
-import ru.jamsys.core.component.manager.PoolResourceCustomArgument;
-import ru.jamsys.core.component.manager.PoolResourceManager;
+import ru.jamsys.core.component.manager.sub.ManagerElement;
+import ru.jamsys.core.component.manager.sub.PoolResourceCustomArgument;
+import ru.jamsys.core.component.manager.PoolResourceManagerForPromiseTask;
 import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.pool.PoolItemEnvelope;
-import ru.jamsys.core.resource.PoolResource;
+import ru.jamsys.core.resource.PoolResourceForPromiseTask;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
@@ -32,7 +32,7 @@ import java.util.function.Function;
 
 public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>> extends PromiseTask {
 
-    final ManagerElement<PoolResource<RC, RA, RR, PI>, PoolResourceCustomArgument<PI, RC>> poolResourceManagerElement;
+    final ManagerElement<PoolResourceForPromiseTask<RC, RA, RR, PI>, PoolResourceCustomArgument<PI, RC>> poolResourceManagerElement;
 
     @Getter
     @Setter
@@ -57,8 +57,8 @@ public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & Expira
         this.procedure = procedure;
         this.argumentsFunction = argumentsFunction;
         @SuppressWarnings("all")
-        PoolResourceManager<RC, RA, RR, PI> poolResourceManager = App.context.getBean(PoolResourceManager.class);
-        poolResourceManagerElement = poolResourceManager.get(index, new PoolResourceCustomArgument<>(cls, constructor));
+        PoolResourceManagerForPromiseTask<RC, RA, RR, PI> poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
+        poolResourceManagerElement = poolResourceManagerForPromiseTask.get(index, new PoolResourceCustomArgument<>(cls, constructor));
     }
 
     public PromiseTaskWithResource(
@@ -74,8 +74,8 @@ public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & Expira
         this.supplier = supplier;
         this.argumentsFunction = argumentsFunction;
         @SuppressWarnings("all")
-        PoolResourceManager<RC, RA, RR, PI> poolResourceManager = App.context.getBean(PoolResourceManager.class);
-        poolResourceManagerElement = poolResourceManager.get(index, new PoolResourceCustomArgument<>(cls, constructor));
+        PoolResourceManagerForPromiseTask<RC, RA, RR, PI> poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
+        poolResourceManagerElement = poolResourceManagerForPromiseTask.get(index, new PoolResourceCustomArgument<>(cls, constructor));
     }
 
     public PromiseTaskWithResource(
@@ -90,8 +90,8 @@ public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & Expira
         this.supplier = supplier;
         this.argumentsFunction = argumentsFunction;
         @SuppressWarnings("all")
-        PoolResourceManager<RC, RA, RR, PI> poolResourceManager = App.context.getBean(PoolResourceManager.class);
-        poolResourceManagerElement = poolResourceManager.get(index, classResource);
+        PoolResourceManagerForPromiseTask<RC, RA, RR, PI> poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
+        poolResourceManagerElement = poolResourceManagerForPromiseTask.get(index, classResource);
     }
 
     // Этот блок вызывается из Promise.loop() и подразумевает запуск ::run из внешнего потока

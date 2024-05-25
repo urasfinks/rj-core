@@ -1,4 +1,4 @@
-package ru.jamsys.core.component.manager;
+package ru.jamsys.core.component.manager.sub;
 
 import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;

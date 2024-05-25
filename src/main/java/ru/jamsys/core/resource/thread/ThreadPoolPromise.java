@@ -2,7 +2,7 @@ package ru.jamsys.core.resource.thread;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.PromiseTask;

@@ -2,6 +2,7 @@ package ru.jamsys.core.component.manager;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.resource.virtual.file.system.File;
 
 @Component

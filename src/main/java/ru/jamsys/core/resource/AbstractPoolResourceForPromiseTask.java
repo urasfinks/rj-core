@@ -2,7 +2,7 @@ package ru.jamsys.core.resource;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.pool.AbstractPool;
@@ -15,7 +15,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 // В потоке исполнения задачи - совершается действие с освободившимся объектом и на вход подаётся результат
 // Аргументы для действия над ресурсом задаются либо при инициализации задачи, либо непосредственно перед запуском
 
-public abstract class AbstractPoolResource<RC, RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>>
+public abstract class AbstractPoolResourceForPromiseTask<RC, RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>>
         extends AbstractPool<RC, RA, RR, PI> {
 
     //private final BrokerManager2 brokerManager; //PromiseTaskWithResource<RA, RR, PI>
@@ -23,10 +23,9 @@ public abstract class AbstractPoolResource<RC, RA, RR, PI extends Completable & 
     final private ManagerElement<Broker<PromiseTaskWithResource>, Void> broker;
 
     @SuppressWarnings("all")
-    public AbstractPoolResource(String name, Class<PI> cls) {
+    public AbstractPoolResourceForPromiseTask(String name, Class<PI> cls) {
         super(name, cls);
         broker = App.context.getBean(BrokerManager.class).get(getName(), PromiseTaskWithResource.class);
-
     }
 
     public void addPromiseTaskPool(PromiseTaskWithResource<RC, RA, RR, PI> promiseTaskWithResource) throws Exception {

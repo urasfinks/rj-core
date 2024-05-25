@@ -5,7 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 
-class PoolResourceTest {
+class PoolResourceForPromiseTaskTest {
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{};
