@@ -8,7 +8,12 @@ import ru.jamsys.core.promise.PromiseTask;
 
 @Component
 @Lazy
-public class RealThreadComponent implements Resource<PromiseTask, Void> {
+public class RealThreadComponent implements Resource<Void, PromiseTask, Void> {
+
+    @Override
+    public void constructor(Void constructor) {
+
+    }
 
     @Override
     public Void execute(PromiseTask arguments) {

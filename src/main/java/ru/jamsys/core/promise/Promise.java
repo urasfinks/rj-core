@@ -3,10 +3,10 @@ package ru.jamsys.core.promise;
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.extension.Correlation;
+import ru.jamsys.core.extension.Property;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.extension.trace.TraceTimer;
 import ru.jamsys.core.promise.resource.api.PromiseApi;
-import ru.jamsys.core.extension.Property;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
 
 import java.util.List;
@@ -56,7 +56,7 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     Promise append(PromiseTask task);
 
-    Promise append(PromiseTaskWithResource<?,?,?> task);
+    Promise append(PromiseTaskWithResource<?, ?, ?, ?> task);
 
     default Promise append(String index, PromiseTaskExecuteType promiseTaskExecuteType, Function<AtomicBoolean, List<PromiseTask>> fn) {
         return append(new PromiseTask(index, this, promiseTaskExecuteType, fn));

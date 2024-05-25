@@ -9,8 +9,8 @@ import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
-public abstract class AbstractPoolPrivate<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>>
-        extends AbstractPool<RA, RR, PI> {
+public abstract class AbstractPoolPrivate<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<Void, RA, RR>>
+        extends AbstractPool<Void, RA, RR, PI> {
 
     public AbstractPoolPrivate(String name, Class<PI> cls) {
         super(name, cls);

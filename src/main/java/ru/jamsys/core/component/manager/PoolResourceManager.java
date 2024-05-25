@@ -12,18 +12,19 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
 @Component
 public class PoolResourceManager<
+        RC,
         RA,
         RR,
-        PI extends Completable & ExpirationMsMutable & Resource<RA, RR>
-        > extends AbstractManager<PoolResource<?, ?, ?>, Class<PI>> {
+        PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>
+        > extends AbstractManager<PoolResource<?, ?, ?, ?>, Class<PI>> {
 
-    public ManagerElement<PoolResource<RA, RR, PI>, Class<PI>> get(String index, Class<PI> classItem) {
+    public ManagerElement<PoolResource<RC, RA, RR, PI>, Class<PI>> get(String index, Class<PI> classItem) {
         return new ManagerElement<>(index, classItem, this, classItem);
     }
 
     @Override
-    public PoolResource<?, ?, ?> build(String index, Class<?> classItem, Class<PI> customArgument) {
-        PoolResource<RA, RR, PI> poolResource = new PoolResource<>(index, customArgument);
+    public PoolResource<?, ?, ?, ?> build(String index, Class<?> classItem, Class<PI> customArgument) {
+        PoolResource<RC, RA, RR, PI> poolResource = new PoolResource<>(index, customArgument);
         poolResource.run();
         return poolResource;
     }

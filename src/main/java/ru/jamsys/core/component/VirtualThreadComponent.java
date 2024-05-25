@@ -21,10 +21,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 
 @Component
-public class VirtualThreadComponent implements Resource<PromiseTask, Void> {
+public class VirtualThreadComponent implements Resource<Void, PromiseTask, Void> {
 
     private final ExecutorService executorService = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("v-thread-", 0).factory());
     private final AtomicBoolean isThreadRun = new AtomicBoolean(true);
+
+    @Override
+    public void constructor(Void constructor) {
+
+    }
 
     @Override
     public Void execute(PromiseTask arguments) {

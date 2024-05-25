@@ -7,11 +7,12 @@ import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
 public class PoolResource<
+        RC,
         RA,
         RR,
-        PI extends Completable & ExpirationMsMutable & Resource<RA, RR>
+        PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>
         >
-        extends AbstractPoolResource<RA, RR, PI>
+        extends AbstractPoolResource<RC, RA, RR, PI>
         implements Closable, CheckClassItem {
 
     private final Class<PI> cls;

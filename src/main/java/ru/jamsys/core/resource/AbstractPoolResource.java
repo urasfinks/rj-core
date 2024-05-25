@@ -15,8 +15,8 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 // В потоке исполнения задачи - совершается действие с освободившимся объектом и на вход подаётся результат
 // Аргументы для действия над ресурсом задаются либо при инициализации задачи, либо непосредственно перед запуском
 
-public abstract class AbstractPoolResource<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>>
-        extends AbstractPool<RA, RR, PI> {
+public abstract class AbstractPoolResource<RC, RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>>
+        extends AbstractPool<RC, RA, RR, PI> {
 
     //private final BrokerManager2 brokerManager; //PromiseTaskWithResource<RA, RR, PI>
 
@@ -29,7 +29,7 @@ public abstract class AbstractPoolResource<RA, RR, PI extends Completable & Expi
 
     }
 
-    public void addPromiseTaskPool(PromiseTaskWithResource<RA, RR, PI> promiseTaskWithResource) throws Exception {
+    public void addPromiseTaskPool(PromiseTaskWithResource<RC, RA, RR, PI> promiseTaskWithResource) throws Exception {
         broker.get().add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));
         if (!addIfPoolEmpty()) {
             onParkUpdate();

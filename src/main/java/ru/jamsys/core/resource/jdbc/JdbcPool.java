@@ -15,7 +15,7 @@ import java.sql.DriverManager;
 import java.util.List;
 import java.util.Map;
 
-public class JdbcPool extends AbstractPool<JdbcRequest, List<Map<String, Object>>, ConnectionResource>
+public class JdbcPool extends AbstractPool<Void, JdbcRequest, List<Map<String, Object>>, ConnectionResource>
         implements Closable {
 
     @Getter

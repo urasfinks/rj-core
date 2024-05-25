@@ -19,7 +19,7 @@ import ru.jamsys.core.flat.util.Util;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 
-public class ThreadResource extends ExpirationMsMutableImpl implements ClassName, Completable, Resource<Void, Void> {
+public class ThreadResource extends ExpirationMsMutableImpl implements ClassName, Completable, Resource<Void, Void, Void> {
     private final Thread thread;
 
     @Getter
@@ -220,6 +220,11 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
     @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 0;
+    }
+
+    @Override
+    public void constructor(Void constructor) {
+
     }
 
     @Override

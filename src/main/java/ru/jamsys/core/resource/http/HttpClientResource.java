@@ -9,7 +9,12 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 @Component
 @Scope("prototype")
-public class HttpClientResource extends ExpirationMsMutableImpl implements Completable,  Resource<HttpClient, HttpResponseEnvelope> {
+public class HttpClientResource extends ExpirationMsMutableImpl implements Completable,  Resource<HttpPoolSetting, HttpClient, HttpResponseEnvelope> {
+
+    @Override
+    public void constructor(HttpPoolSetting constructor) {
+        System.out.println(constructor.url);
+    }
 
     @Override
     public HttpResponseEnvelope execute(HttpClient arguments) {

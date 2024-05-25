@@ -29,13 +29,13 @@ import java.util.function.Function;
 // и в конечном счёте run запустит executeBlock, где мы поработаем с ресурсом в рамках потока исполнения задачи
 // и вызовем supplier/procedure c подготовленным уже результатом исполнения
 
-public class PromiseTaskWithResource<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>> extends PromiseTask {
+public class PromiseTaskWithResource<RC, RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>> extends PromiseTask {
 
-    final ManagerElement<PoolResource<RA, RR, PI>, Class<PI>> poolResourceManagerElement;
+    final ManagerElement<PoolResource<RC, RA, RR, PI>, Class<PI>> poolResourceManagerElement;
 
     @Getter
     @Setter
-    private PoolItemEnvelope<RA, RR, PI> poolItemEnvelope;
+    private PoolItemEnvelope<RC, RA, RR, PI> poolItemEnvelope;
 
     private BiFunction<AtomicBoolean, RR, List<PromiseTask>> supplier;
 
@@ -55,7 +55,7 @@ public class PromiseTaskWithResource<RA, RR, PI extends Completable & Expiration
         this.procedure = procedure;
         this.argumentsFunction = argumentsFunction;
         @SuppressWarnings("all")
-        PoolResourceManager<RA, RR, PI> poolResourceManager = App.context.getBean(PoolResourceManager.class);
+        PoolResourceManager<RC, RA, RR, PI> poolResourceManager = App.context.getBean(PoolResourceManager.class);
         poolResourceManagerElement = poolResourceManager.get(index, classResource);
     }
 
@@ -71,7 +71,7 @@ public class PromiseTaskWithResource<RA, RR, PI extends Completable & Expiration
         this.supplier = supplier;
         this.argumentsFunction = argumentsFunction;
         @SuppressWarnings("all")
-        PoolResourceManager<RA, RR, PI> poolResourceManager = App.context.getBean(PoolResourceManager.class);
+        PoolResourceManager<RC, RA, RR, PI> poolResourceManager = App.context.getBean(PoolResourceManager.class);
         poolResourceManagerElement = poolResourceManager.get(index, classResource);
     }
 
@@ -89,7 +89,7 @@ public class PromiseTaskWithResource<RA, RR, PI extends Completable & Expiration
 
     @Override
     protected void executeBlock() throws Throwable {
-        try (PoolItemEnvelope<RA, RR, PI> res = getPoolItemEnvelope()) {
+        try (PoolItemEnvelope<RC, RA, RR, PI> res = getPoolItemEnvelope()) {
             RA argument = argumentsFunction.apply(getPromise());
             if (supplier != null) {
                 getPromise().complete(this, supplier.apply(isThreadRun, res.getItem().execute(argument)));
@@ -101,7 +101,7 @@ public class PromiseTaskWithResource<RA, RR, PI extends Completable & Expiration
     }
 
     // Пул вызывает этот метод
-    public void start(PoolItemEnvelope<RA, RR, PI> poolItem) {
+    public void start(PoolItemEnvelope<RC, RA, RR, PI> poolItem) {
         setPoolItemEnvelope(poolItem);
         getPromise().getTrace().add(new Trace<>(getIndex() + ".PoolItemEnvelope-Received", null, null, null));
         super.start();

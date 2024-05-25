@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// CA - CustomArgument
+// RC - ResourceConstructor
+
 public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable & StatisticsFlush, CA>
         implements
         StatisticsCollectorMap<MO>,

@@ -36,9 +36,9 @@ import java.util.function.Function;
 // PI - PoolItem
 
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RA, RR>>
+public abstract class AbstractPool<RC, RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>>
         extends ExpirationMsMutableImpl
-        implements Pool<RA, RR, PI>, LifeCycleInterface, KeepAlive, ClassName {
+        implements Pool<RC, RA, RR, PI>, LifeCycleInterface, KeepAlive, ClassName {
 
     @Getter
     @ToString.Include

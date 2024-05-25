@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConnectionResource extends ExpirationMsMutableImpl
         implements ClassName, Completable,
-        Resource<JdbcRequest, List<Map<String, Object>>> {
+        Resource<Void, JdbcRequest, List<Map<String, Object>>> {
 
     final private Connection connection;
 
@@ -33,10 +33,10 @@ public class ConnectionResource extends ExpirationMsMutableImpl
 
     private final AtomicBoolean reusable = new AtomicBoolean(false);
 
-    private final Pool<JdbcRequest, List<Map<String, Object>>, ConnectionResource> pool;
+    private final Pool<Void, JdbcRequest, List<Map<String, Object>>, ConnectionResource> pool;
 
     //JdbcPool потому что надо получить контроллер sql операторов (pool.getStatementControl())
-    public ConnectionResource(Connection connection, Pool<JdbcRequest, List<Map<String, Object>>, ConnectionResource> pool) {
+    public ConnectionResource(Connection connection, Pool<Void, JdbcRequest, List<Map<String, Object>>, ConnectionResource> pool) {
         this.pool = pool;
         this.connection = connection;
         rateLimit = App.context.getBean(RateLimitManager.class)
@@ -69,6 +69,11 @@ public class ConnectionResource extends ExpirationMsMutableImpl
 
     public void stopReusable() {
         pool.complete(this, null);
+    }
+
+    @Override
+    public void constructor(Void constructor) {
+
     }
 
     @Override
