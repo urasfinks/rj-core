@@ -142,10 +142,4 @@ public class PromiseTask implements Runnable {
         }
     }
 
-    @Override
-    public String toString() {
-        return "PromiseTask[" + hashCode() + "]{" +
-                "index='" + index + '\'' +
-                '}';
-    }
 }
