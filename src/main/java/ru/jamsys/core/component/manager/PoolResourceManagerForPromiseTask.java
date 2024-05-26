@@ -23,7 +23,7 @@ public class PoolResourceManagerForPromiseTask<
         > extends AbstractManager<PoolResourceForPromiseTask<?, ?, ?, ?>, PoolResourceArgument<PI, RC>> {
 
     public ManagerElement<
-                PoolResourceForPromiseTask<RC, RA, RR, PI>,
+            PoolResourceForPromiseTask<RC, RA, RR, PI>,
             PoolResourceArgument<PI, RC>
                 > get(String index, PoolResourceArgument<PI, RC> argument) {
         return new ManagerElement<>(index, argument.getClassPoolItem(), this, argument);
