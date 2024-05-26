@@ -9,10 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-public class JdbcRequest extends ExpirationMsMutableImpl {
-
-    @Getter
-    final String poolName;
+public class JdbcRequest {
 
     @Getter
     final JdbcTemplate jdbcTemplate;
@@ -24,9 +21,7 @@ public class JdbcRequest extends ExpirationMsMutableImpl {
 
     private final String nameCache;
 
-    public JdbcRequest(String poolName, JdbcTemplate jdbcTemplate, int maxTimeExecute) {
-        setKeepAliveOnInactivityMs(maxTimeExecute);
-        this.poolName = poolName;
+    public JdbcRequest(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
         this.nameCache = jdbcTemplate.getName();
     }
