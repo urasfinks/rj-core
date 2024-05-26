@@ -2,7 +2,6 @@ package ru.jamsys.core.notification;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.promise.resource.notification.*;
 import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
