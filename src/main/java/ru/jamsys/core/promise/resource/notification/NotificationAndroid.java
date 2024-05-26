@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
-import ru.jamsys.core.resource.http.Http2ClientImpl;
-import ru.jamsys.core.resource.http.HttpClient;
-import ru.jamsys.core.resource.http.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.client.Http2ClientImpl;
+import ru.jamsys.core.resource.http.client.HttpClient;
+import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
 import ru.jamsys.core.flat.util.UtilJson;
 
 import java.io.FileInputStream;

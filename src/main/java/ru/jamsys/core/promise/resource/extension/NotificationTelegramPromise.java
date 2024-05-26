@@ -1,4 +1,4 @@
-package ru.jamsys.core.promise.resource.api;
+package ru.jamsys.core.promise.resource.extension;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 
 @Getter
 @Setter
-public class NotificationTelegramPromise extends AbstractPromiseApi<NotificationTelegramPromise> {
+public class NotificationTelegramPromise extends AbstractPromiseExtension<NotificationTelegramPromise> {
 
     public NotificationTelegramPromise() {
         promiseTaskExecuteType = PromiseTaskExecuteType.IO;

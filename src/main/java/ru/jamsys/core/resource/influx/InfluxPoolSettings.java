@@ -8,9 +8,9 @@ public class InfluxPoolSettings {
     public final String namespaceProperties;
 
     public static PoolResourceArgument<
-            InfluxClientResource,
+            InfluxResource,
             InfluxPoolSettings
-            > setting = new PoolResourceArgument<>(InfluxClientResource.class, new InfluxPoolSettings(), _ -> false);
+            > setting = new PoolResourceArgument<>(InfluxResource.class, new InfluxPoolSettings(), _ -> false);
 
     public InfluxPoolSettings(String namespaceProperties) {
         this.namespaceProperties = namespaceProperties;

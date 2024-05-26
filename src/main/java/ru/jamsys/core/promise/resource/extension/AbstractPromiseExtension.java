@@ -1,4 +1,4 @@
-package ru.jamsys.core.promise.resource.api;
+package ru.jamsys.core.promise.resource.extension;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 
 @Setter
 @Getter
-public abstract class AbstractPromiseApi<T> implements PromiseApi<T> {
+public abstract class AbstractPromiseExtension<T> implements PromiseExtension<T> {
 
     protected PromiseTaskExecuteType promiseTaskExecuteType = PromiseTaskExecuteType.IO;
 
@@ -35,7 +35,7 @@ public abstract class AbstractPromiseApi<T> implements PromiseApi<T> {
     }
 
     @Override
-    public PromiseApi<T> beforeExecute(Consumer<T> beforeExecute) {
+    public PromiseExtension<T> beforeExecute(Consumer<T> beforeExecute) {
         this.beforeExecute = beforeExecute;
         return this;
     }
@@ -47,8 +47,8 @@ public abstract class AbstractPromiseApi<T> implements PromiseApi<T> {
     }
 
     @Override
-    public PromiseApi<T> setup(Consumer<T> promiseApi) {
-        promiseApi.accept(get());
+    public PromiseExtension<T> setup(Consumer<T> promiseExtension) {
+        promiseExtension.accept(get());
         return this;
     }
 

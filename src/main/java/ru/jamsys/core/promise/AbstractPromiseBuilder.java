@@ -2,7 +2,7 @@ package ru.jamsys.core.promise;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PromiseTaskTime;
-import ru.jamsys.core.promise.resource.api.PromiseApi;
+import ru.jamsys.core.promise.resource.extension.PromiseExtension;
 
 // В бассейне купаются объекты)
 // Есть очередь смотрящих, которые приходят к бассейну и ждут, когда им на глаза попадётся объект
@@ -81,9 +81,9 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
     }
 
     @Override
-    public Promise api(String index, PromiseApi<?> promiseApi) {
-        promiseApi.setIndex(index);
-        promiseApi.extend(this);
+    public Promise extension(String index, PromiseExtension<?> promiseExtension) {
+        promiseExtension.setIndex(index);
+        promiseExtension.extend(this);
         return this;
     }
 

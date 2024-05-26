@@ -14,11 +14,11 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.List;
 
-public class InfluxClientResource extends ExpirationMsMutableImpl implements Completable, Resource<InfluxPoolSettings, List<Point>, Void> {
+public class InfluxResource extends ExpirationMsMutableImpl implements Completable, Resource<InfluxPoolSettings, List<Point>, Void> {
 
     private InfluxDBClient client = null;
 
-    private WriteApiBlocking writeApi;
+    private WriteApiBlocking writer;
 
     String org;
 
@@ -35,13 +35,13 @@ public class InfluxClientResource extends ExpirationMsMutableImpl implements Com
         String alias = propertiesComponent.getProperties(constructor.namespaceProperties, "influx.security.alias", String.class);
 
         client = InfluxDBClientFactory.create(host, securityComponent.get(alias));
-        writeApi = client.getWriteApiBlocking();
+        writer = client.getWriteApiBlocking();
     }
 
     @Override
     public Void execute(List<Point> arguments) throws Throwable {
-        if (writeApi != null && !arguments.isEmpty()) {
-            writeApi.writePoints(bucket, org, arguments);
+        if (writer != null && !arguments.isEmpty()) {
+            writer.writePoints(bucket, org, arguments);
         }
         return null;
     }

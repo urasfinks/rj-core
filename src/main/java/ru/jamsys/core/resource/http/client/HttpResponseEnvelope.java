@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.http;
+package ru.jamsys.core.resource.http.client;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;

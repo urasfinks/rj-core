@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.resource.http.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
 import ru.jamsys.core.flat.template.twix.TemplateTwix;
 import ru.jamsys.core.flat.template.twix.TemplateItemTwix;
 import ru.jamsys.core.flat.util.UtilFileResource;

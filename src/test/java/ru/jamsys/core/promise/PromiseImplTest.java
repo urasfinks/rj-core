@@ -5,11 +5,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.promise.resource.api.NotificationTelegramPromise;
-import ru.jamsys.core.promise.resource.api.YandexSpeechPromise;
+import ru.jamsys.core.promise.resource.extension.NotificationTelegramPromise;
+import ru.jamsys.core.promise.resource.extension.YandexSpeechPromise;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.http.*;
-import ru.jamsys.core.resource.jdbc.ConnectionResource;
+import ru.jamsys.core.resource.jdbc.JdbcResource;
 import ru.jamsys.core.resource.jdbc.JdbcPoolSettings;
 
 import java.util.ArrayList;
@@ -292,34 +292,17 @@ class PromiseImplTest {
     @SuppressWarnings("unused")
     void promiseYandexSpeechKit() {
         Promise wf = new PromiseImpl("test", 6_000L);
-        wf.api("sound", new YandexSpeechPromise().setup((YandexSpeechPromise yandexSpeechPromise) -> {
+        wf.extension("sound", new YandexSpeechPromise().setup((YandexSpeechPromise yandexSpeechPromise) -> {
             yandexSpeechPromise.setText("Привет страна");
             yandexSpeechPromise.setFilePath("target/result2.wav");
         })).run().await(10000);
         System.out.println(wf.getLog());
     }
 
-//    @SuppressWarnings("unused")
-//    void promiseHttp() {
-//        Promise wf = new PromiseImpl("test", 6_000L);
-//        wf.api("request", new HttpClientPromise()
-//                .setup((HttpClientPromise httpClientPromise) ->
-//                        httpClientPromise.getHttpClient()
-//                                .setConnectTimeoutMs(1000)
-//                                .setReadTimeoutMs(1000)
-//                                .setRequestHeader("x", "Y")
-//                                .setBasicAuth("user", "password", "utf-8")
-//                                .setPostData("Hello world".getBytes(StandardCharsets.UTF_8)))
-//                .beforeExecute((HttpClientPromise httpClientPromise) ->
-//                        httpClientPromise.getHttpClient().setUrl("http://yandex.ru"))
-//        ).run().await(10000);
-//        System.out.println(wf.getLog());
-//    }
-
     @SuppressWarnings("unused")
     void promiseTelegram() {
         Promise wf = new PromiseImpl("test", 6_000L);
-        wf.api("request", new NotificationTelegramPromise().setup((NotificationTelegramPromise telegramPromise) -> {
+        wf.extension("request", new NotificationTelegramPromise().setup((NotificationTelegramPromise telegramPromise) -> {
             telegramPromise.setTitle("Привет");
             telegramPromise.setData("Страна");
         })).run().await(10000);
@@ -330,12 +313,12 @@ class PromiseImplTest {
 
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("http", PromiseTaskExecuteType.IO, HttpClientResource.class, HttpPoolSettings.setting, (_, _) -> {
+                .appendWithResource("http", PromiseTaskExecuteType.IO, HttpResource.class, HttpPoolSettings.setting, (_, _) -> {
                     //HttpResponseEnvelope execute = httpClientResource.execute(new Http2ClientImpl());
                     System.out.println("!!!");
                 })
-                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, ConnectionResource.class, JdbcPoolSettings.setting, (_, connectionResource) -> {
-                    System.out.println(connectionResource);
+                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, JdbcResource.class, JdbcPoolSettings.setting, (_, jdbcResource) -> {
+                    System.out.println(jdbcResource);
                 })
                 .run()
                 .await(2000);

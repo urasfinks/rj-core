@@ -5,8 +5,8 @@ import ru.jamsys.core.component.manager.sub.PoolResourceArgument;
 public class HttpPoolSettings {
 
     public static PoolResourceArgument<
-            HttpClientResource,
+            HttpResource,
             HttpPoolSettings
-            > setting = new PoolResourceArgument<>(HttpClientResource.class, null, _ -> false);
+            > setting = new PoolResourceArgument<>(HttpResource.class, null, _ -> false);
 
 }

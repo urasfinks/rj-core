@@ -5,11 +5,13 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
+import ru.jamsys.core.resource.http.client.HttpClient;
+import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 @Component
 @Scope("prototype")
-public class HttpClientResource extends ExpirationMsMutableImpl implements Completable,  Resource<HttpPoolSettings, HttpClient, HttpResponseEnvelope> {
+public class HttpResource extends ExpirationMsMutableImpl implements Completable,  Resource<HttpPoolSettings, HttpClient, HttpResponseEnvelope> {
 
     @Override
     public void constructor(HttpPoolSettings constructor) {

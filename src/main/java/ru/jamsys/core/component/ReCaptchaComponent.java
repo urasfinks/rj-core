@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.resource.http.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
 import ru.jamsys.core.flat.util.JsonEnvelope;
 import ru.jamsys.core.flat.util.UtilJson;
 

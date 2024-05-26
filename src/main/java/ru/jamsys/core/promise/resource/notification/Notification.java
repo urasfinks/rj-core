@@ -1,6 +1,6 @@
 package ru.jamsys.core.promise.resource.notification;
 
-import ru.jamsys.core.resource.http.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
 
 public interface Notification {
 

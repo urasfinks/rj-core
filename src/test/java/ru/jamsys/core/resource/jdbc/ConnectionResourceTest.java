@@ -27,10 +27,10 @@ class ConnectionResourceTest {
 
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, ConnectionResource.class, JdbcPoolSettings.setting, (_, connectionResource) -> {
+                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, JdbcResource.class, JdbcPoolSettings.setting, (_, jdbcResource) -> {
                     JdbcRequest jdbcRequest = new JdbcRequest(TestJdbcTemplate.TEST);
                     try {
-                        List<Map<String, Object>> execute = connectionResource.execute(jdbcRequest);
+                        List<Map<String, Object>> execute = jdbcResource.execute(jdbcRequest);
                         promise.setProperty("req1", execute);
                         //System.out.println(execute);
                     } catch (Throwable e) {

@@ -1,4 +1,4 @@
-package ru.jamsys.core.promise.resource.api;
+package ru.jamsys.core.promise.resource.extension;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -33,7 +33,7 @@ import java.util.function.Consumer;
 @Getter
 @Setter
 public class
-YandexSpeechPromise extends AbstractPromiseApi<YandexSpeechPromise> {
+YandexSpeechPromise extends AbstractPromiseExtension<YandexSpeechPromise> {
 
     private final Map<String, Object> settings = new HashMap<>();
 
