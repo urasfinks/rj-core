@@ -14,7 +14,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.List;
 
-public class InfluxResource extends ExpirationMsMutableImpl implements Completable, Resource<InfluxPoolSettings, List<Point>, Void> {
+public class InfluxResource extends ExpirationMsMutableImpl implements Completable, Resource<InfluxResourceConstructor, List<Point>, Void> {
 
     private InfluxDBClient client = null;
 
@@ -25,7 +25,7 @@ public class InfluxResource extends ExpirationMsMutableImpl implements Completab
     String bucket;
 
     @Override
-    public void constructor(InfluxPoolSettings constructor) {
+    public void constructor(InfluxResourceConstructor constructor) {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
         SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
 

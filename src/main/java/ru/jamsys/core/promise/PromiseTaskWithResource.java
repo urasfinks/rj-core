@@ -5,9 +5,10 @@ import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.PoolResourceManagerForPromiseTask;
 import ru.jamsys.core.component.manager.sub.ManagerElement;
-import ru.jamsys.core.component.manager.sub.PoolResourceArgument;
+import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.pool.PoolItemEnvelope;
+import ru.jamsys.core.resource.DefaultPoolResourceArgument;
 import ru.jamsys.core.resource.PoolResourceForPromiseTask;
 import ru.jamsys.core.resource.Resource;
 
@@ -26,7 +27,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
 
     private BiConsumer<AtomicBoolean, T> procedure;
 
-    private final ManagerElement<PoolResourceForPromiseTask<?, ?, ?, ?>, PoolResourceArgument<?, ?>> managerElement;
+    private final ManagerElement<PoolResourceForPromiseTask<?, ?, ?, ?>, PoolSettings<?, ?>> managerElement;
 
     @SuppressWarnings("all")
     private final Class<T> classResource;
@@ -36,7 +37,6 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
-            PoolResourceArgument<T, ?> poolArgument,
             BiConsumer<AtomicBoolean, T> procedure,
             Class<T> classResource
     ) {
@@ -44,7 +44,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
         this.procedure = procedure;
         this.classResource = classResource;
         PoolResourceManagerForPromiseTask poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
-        managerElement = poolResourceManagerForPromiseTask.get(index, poolArgument);
+        managerElement = poolResourceManagerForPromiseTask.get(index, DefaultPoolResourceArgument.get(classResource));
     }
 
     @SuppressWarnings("all")
@@ -52,7 +52,6 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
-            PoolResourceArgument<T, ?> poolArgument,
             BiFunction<AtomicBoolean, T, List<PromiseTask>> supplier,
             Class<T> classResource
     ) {
@@ -60,7 +59,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
         this.supplier = supplier;
         this.classResource = classResource;
         PoolResourceManagerForPromiseTask poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
-        managerElement = poolResourceManagerForPromiseTask.get(index, poolArgument);
+        managerElement = poolResourceManagerForPromiseTask.get(index, DefaultPoolResourceArgument.get(classResource));
     }
 
     // Этот блок вызывается из Promise.loop() и подразумевает запуск ::run из внешнего потока

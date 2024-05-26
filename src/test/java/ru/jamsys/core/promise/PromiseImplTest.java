@@ -10,7 +10,6 @@ import ru.jamsys.core.promise.resource.extension.YandexSpeechPromise;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.http.*;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
-import ru.jamsys.core.resource.jdbc.JdbcPoolSettings;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -312,11 +311,11 @@ class PromiseImplTest {
     void promiseTaskWithPool() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("http", PromiseTaskExecuteType.IO, HttpResource.class, HttpPoolSettings.setting, (_, _) -> {
+                .appendWithResource("http", PromiseTaskExecuteType.IO, HttpResource.class, (_, _) -> {
                     //HttpResponseEnvelope execute = httpClientResource.execute(new Http2ClientImpl());
                     System.out.println("!!!");
                 })
-                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, JdbcResource.class, JdbcPoolSettings.setting, (_, jdbcResource) -> {
+                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, JdbcResource.class, (_, jdbcResource) -> {
                     System.out.println(jdbcResource);
                 })
                 .run()

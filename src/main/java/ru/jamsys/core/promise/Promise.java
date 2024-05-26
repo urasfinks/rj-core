@@ -2,7 +2,6 @@ package ru.jamsys.core.promise;
 
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.component.manager.sub.PoolResourceArgument;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.Property;
 import ru.jamsys.core.extension.trace.Trace;
@@ -73,14 +72,12 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
             String index,
             PromiseTaskExecuteType promiseTaskExecuteType,
             Class<T> clasResource,
-            PoolResourceArgument<T, ?> poolArgument,
             BiConsumer<AtomicBoolean, T> procedure
     ) {
         return append(new PromiseTaskWithResource<>(
                 index,
                 this,
                 promiseTaskExecuteType,
-                poolArgument,
                 procedure,
                 clasResource
         ));
@@ -90,14 +87,12 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
             String index,
             PromiseTaskExecuteType promiseTaskExecuteType,
             Class<T> clasResource,
-            PoolResourceArgument<T, ?> poolArgument,
             BiFunction<AtomicBoolean, T, List<PromiseTask>> supplier
     ) {
         return append(new PromiseTaskWithResource<>(
                 index,
                 this,
                 promiseTaskExecuteType,
-                poolArgument,
                 supplier,
                 clasResource
         ));

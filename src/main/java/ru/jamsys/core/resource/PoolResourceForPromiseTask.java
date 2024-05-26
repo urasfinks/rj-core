@@ -5,7 +5,7 @@ import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.sub.ManagerElement;
-import ru.jamsys.core.component.manager.sub.PoolResourceArgument;
+import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.Completable;
@@ -28,12 +28,12 @@ public class PoolResourceForPromiseTask<
         extends AbstractPool<RC, RA, RR, PI>
         implements Closable, CheckClassItem {
 
-    private final PoolResourceArgument<PI, RC> argument;
+    private final PoolSettings<PI, RC> argument;
 
     @SuppressWarnings("all")
     final private ManagerElement<Broker<PromiseTaskWithResource>, Void> broker;
 
-    public PoolResourceForPromiseTask(String name, PoolResourceArgument<PI, RC> argument) {
+    public PoolResourceForPromiseTask(String name, PoolSettings<PI, RC> argument) {
         super(name, argument.getClassPoolItem());
         this.argument = argument;
         broker = App.context.getBean(BrokerManager.class).get(getName(), PromiseTaskWithResource.class);

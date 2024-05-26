@@ -3,7 +3,7 @@ package ru.jamsys.core.component.manager;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.component.manager.sub.ManagerElement;
-import ru.jamsys.core.component.manager.sub.PoolResourceArgument;
+import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.resource.PoolResourceForPromiseTask;
 import ru.jamsys.core.resource.Resource;
@@ -20,12 +20,12 @@ public class PoolResourceManagerForPromiseTask<
         RA,
         RR,
         PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>
-        > extends AbstractManager<PoolResourceForPromiseTask<?, ?, ?, ?>, PoolResourceArgument<PI, RC>> {
+        > extends AbstractManager<PoolResourceForPromiseTask<?, ?, ?, ?>, PoolSettings<PI, RC>> {
 
     public ManagerElement<
             PoolResourceForPromiseTask<RC, RA, RR, PI>,
-            PoolResourceArgument<PI, RC>
-                > get(String index, PoolResourceArgument<PI, RC> argument) {
+            PoolSettings<PI, RC>
+                > get(String index, PoolSettings<PI, RC> argument) {
         return new ManagerElement<>(index, argument.getClassPoolItem(), this, argument);
     }
 
@@ -33,7 +33,7 @@ public class PoolResourceManagerForPromiseTask<
     public PoolResourceForPromiseTask<?, ?, ?, ?> build(
             String index,
             Class<?> classItem,
-            PoolResourceArgument<PI, RC> builderArgument
+            PoolSettings<PI, RC> builderArgument
     ) {
         PoolResourceForPromiseTask<RC, RA, RR, PI> poolResourceForPromiseTask = new PoolResourceForPromiseTask<>(index, builderArgument);
         poolResourceForPromiseTask.run();

@@ -22,7 +22,6 @@ class NotificationTest {
     }
 
     @SuppressWarnings("unused")
-    @Test
     void telegramSend() {
         Notification notificationTelegram = App.context.getBean(NotificationTelegram.class);
         HttpResponseEnvelope notify = notificationTelegram.notify("Hello", "world", "290029195");

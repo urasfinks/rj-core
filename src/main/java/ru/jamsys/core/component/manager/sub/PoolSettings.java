@@ -6,7 +6,7 @@ import ru.jamsys.core.resource.Resource;
 import java.util.function.Function;
 
 @Getter
-public class PoolResourceArgument<T extends Resource<?, ?, ?>, RC> {
+public class PoolSettings<T extends Resource<?, ?, ?>, RC> {
 
     private final Class<T> classPoolItem;
 
@@ -14,7 +14,7 @@ public class PoolResourceArgument<T extends Resource<?, ?, ?>, RC> {
 
     private final Function<Exception, Boolean> checkExceptionOnComplete;
 
-    public PoolResourceArgument(
+    public PoolSettings(
             Class<T> classPoolItem,
             RC resourceConstructor,
             Function<Exception, Boolean> checkExceptionOnComplete

@@ -24,7 +24,7 @@ public class JdbcResource
         extends ExpirationMsMutableImpl
         implements
         Completable,
-        Resource<JdbcPoolSettings, JdbcRequest, List<Map<String, Object>>>,
+        Resource<JdbcResourceConstructor, JdbcRequest, List<Map<String, Object>>>,
         JdbcExecute {
 
     private StatementControl statementControl;
@@ -32,7 +32,7 @@ public class JdbcResource
     private Connection connection;
 
     @Override
-    public void constructor(JdbcPoolSettings constructor) throws Exception {
+    public void constructor(JdbcResourceConstructor constructor) throws Exception {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
         SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
 
@@ -41,7 +41,7 @@ public class JdbcResource
         String securityAlias = propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.security.alias", String.class);
 
         this.connection = DriverManager.getConnection(uri, user, new String(securityComponent.get(securityAlias)));
-        this.statementControl = constructor.statementControl;
+        this.statementControl = constructor.getStatementControl();
     }
 
     @Override
