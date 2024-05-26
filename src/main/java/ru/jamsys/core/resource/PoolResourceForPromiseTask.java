@@ -71,7 +71,7 @@ public class PoolResourceForPromiseTask<
         return true;
     }
 
-    public void addPromiseTaskPool(PromiseTaskWithResource<?> promiseTaskWithResource) throws Exception {
+    public void addPromiseTaskPool(PromiseTaskWithResource<?> promiseTaskWithResource) {
         broker.get().add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));
         if (!addIfPoolEmpty()) {
             onParkUpdate();

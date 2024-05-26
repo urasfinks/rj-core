@@ -162,11 +162,7 @@ class ExpirationManagerTest {
                 try {
                     while (isRun.get()) {
                         for (int j = 0; j < 1000; j++) {
-                            try {
-                                test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), timeoutMs));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            test.get().add(new ExpirationMsImmutableEnvelope<>(new XItem(), timeoutMs));
                         }
                         Util.sleepMs((100 * x) + 10);
                     }

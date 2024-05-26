@@ -6,12 +6,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.item.Broker;
+import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,20 +31,21 @@ class BrokerTest {
     }
 
     @Test
-    void testLiner() throws Exception {
+    void testLiner() {
         ManagerElement<Broker<XTest>, Void> brokerManager = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class);
         brokerManager.accept(xTestBroker -> {
-            xTestBroker.setCyclical(false);
             xTestBroker.setMaxSizeQueue(10);
             xTestBroker.setMaxSizeQueueTail(3);
         });
-
 
         for (int i = 0; i < 10; i++) {
             brokerManager.get().add(new XTest(i), 6_000L);
         }
 
         brokerManager.accept(b -> {
+            List<XTest> droped = new ArrayList<>();
+            b.setOnDrop(droped::add);
+
             Assertions.assertEquals(10, b.size(), "#1");
 
             ExpirationMsImmutableEnvelope<XTest> t = b.pollFirst();
@@ -59,15 +61,15 @@ class BrokerTest {
                 b.add(new XTest(12), 6_000L);
                 b.add(new XTest(13), 6_000L);
                 b.add(new XTest(14), 6_000L);
-                Assertions.fail("#6");
             } catch (Exception e) {
                 Assertions.assertTrue(true, "#7");
             }
             List<XTest> tail = b.getTail(null);
-            Assertions.assertEquals("[XTest{x=11}, XTest{x=12}, XTest{x=13}]", tail.toString(), "#8");
+            Assertions.assertEquals("[XTest{x=12}, XTest{x=13}, XTest{x=14}]", tail.toString(), "#8");
+            Assertions.assertEquals("[XTest{x=1}, XTest{x=2}]", droped.toString(), "#8");
 
             List<XTest> cloneQueue = b.getCloneQueue(null);
-            Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}]", cloneQueue.toString(), "#9");
+            Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", cloneQueue.toString(), "#9");
             b.reset();
             Assertions.assertEquals("[]", b.getCloneQueue(null).toString(), "#10");
         });
@@ -81,16 +83,11 @@ class BrokerTest {
 
 
         broker.accept( b -> {
-            b.setCyclical(true);
             b.setMaxSizeQueue(10);
             b.setMaxSizeQueueTail(3);
 
             for (int i = 0; i < 10; i++) {
-                try {
-                    b.add(new XTest(i), 6_000L);
-                } catch (Exception _) {
-
-                }
+                b.add(new XTest(i), 6_000L);
             }
 
             Assertions.assertEquals("[XTest{x=0}, XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=9}]", b.getCloneQueue(null).toString());
@@ -111,19 +108,15 @@ class BrokerTest {
             Assertions.assertEquals(9, t2.getValue().x);
             Assertions.assertEquals(8, b.size());
 
-            try {
-                b.add(new XTest(11), 6_000L);
-                Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}]", b.getCloneQueue(null).toString());
-                b.add(new XTest(12), 6_000L);
-                Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}]", b.getCloneQueue(null).toString());
-                b.add(new XTest(13), 6_000L);
-                Assertions.assertEquals("[XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}]", b.getCloneQueue(null).toString());
-                b.add(new XTest(14), 6_000L);
-                Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", b.getCloneQueue(null).toString());
-                Assertions.assertTrue(true, "#6");
-            } catch (Exception e) {
-                Assertions.fail("#7");
-            }
+            b.add(new XTest(11), 6_000L);
+            Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}]", b.getCloneQueue(null).toString());
+            b.add(new XTest(12), 6_000L);
+            Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}]", b.getCloneQueue(null).toString());
+            b.add(new XTest(13), 6_000L);
+            Assertions.assertEquals("[XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}]", b.getCloneQueue(null).toString());
+            b.add(new XTest(14), 6_000L);
+            Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", b.getCloneQueue(null).toString());
+            Assertions.assertTrue(true, "#6");
 
             List<XTest> tail = b.getTail(null);
             Assertions.assertEquals("[XTest{x=12}, XTest{x=13}, XTest{x=14}]", tail.toString(), "#8");
@@ -142,11 +135,9 @@ class BrokerTest {
         broker.accept(queue -> {
             XTest obj = new XTest(1);
             DisposableExpirationMsImmutableEnvelope<XTest> o1 = null;
-            try {
-                o1 = queue.add(obj, 6_000L);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
+            o1 = queue.add(obj, 6_000L);
+
             List<XTest> cloneQueue = queue.getCloneQueue(null);
             Assertions.assertEquals(obj.hashCode(), cloneQueue.getFirst().hashCode(), "#1");
             queue.remove(o1);
@@ -171,10 +162,8 @@ class BrokerTest {
 
             }
             DisposableExpirationMsImmutableEnvelope<XTest> o2 = null;
-            try {
-                o2 = queue.add(obj2, 6_000L);
-            } catch (Exception _) {
-            }
+            o2 = queue.add(obj2, 6_000L);
+
             List<XTest> cloneQueue = queue.getCloneQueue(isRun);
             Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
             Assertions.assertEquals(obj2.hashCode(), cloneQueue.get(1).hashCode(), "#2");
@@ -187,29 +176,6 @@ class BrokerTest {
     }
 
     @Test
-    void testMaxInputTps() {
-        ManagerElement<Broker<XTest>, Void> broker = App.context.getBean(BrokerManager.class)
-                .get(XTest.class.getName(), XTest.class);
-        broker.accept(queue -> {
-            queue.setMaxTpsInput(1);
-            XTest obj = new XTest(1);
-            try {
-                queue.add(obj, 6_000L);
-            } catch (Exception e) {
-                Assertions.fail();
-            }
-            try {
-                queue.add(obj, 6_000L);
-                Assertions.fail();
-            } catch (Exception e) {
-                Assertions.assertTrue(true);
-            }
-
-            queue.reset();
-        });
-    }
-
-    @Test
     void testExpired() {
         ManagerElement<Broker<XTest>, Void> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
@@ -217,11 +183,8 @@ class BrokerTest {
             AtomicInteger counter = new AtomicInteger(0);
             queue.setOnDrop(_ -> counter.incrementAndGet());
             XTest obj = new XTest(1);
-            try {
-                queue.add(obj, 1_000L);
-            } catch (Exception e) {
-                Assertions.fail();
-            }
+            queue.add(obj, 1_000L);
+
             Assertions.assertEquals(0, counter.get());
             Util.sleepMs(1001);
             queue.keepAlive(null);

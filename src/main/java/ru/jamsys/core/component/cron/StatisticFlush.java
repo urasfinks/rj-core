@@ -70,11 +70,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
                         }
                     });
                     if (!statisticSec.getList().isEmpty()) {
-                        try {
-                            brokerManagerElement.get().add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
-                        } catch (Exception e) {
-                            exceptionHandler.handler(e);
-                        }
+                        brokerManagerElement.get().add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
                     }
                 });
     }

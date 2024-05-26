@@ -68,15 +68,11 @@ public class Broker<TEO>
 
     private final AvgMetric timeInQueue = new AvgMetric();
 
-    private boolean cyclical = true;
-
     final RateLimit rateLimit;
 
     final RateLimitItem rliQueueSize;
 
     final RateLimitItem rliTailSize;
-
-    final RateLimitItem rliTps;
 
     final String index;
 
@@ -90,8 +86,7 @@ public class Broker<TEO>
 
         rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(index, applicationContext))
                 .init(RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)
-                .init(RateLimitName.BROKER_TAIL_SIZE.getName(), RateLimitItemInstance.MAX)
-                .init(RateLimitName.BROKER_TPS.getName(), RateLimitItemInstance.TPS);
+                .init(RateLimitName.BROKER_TAIL_SIZE.getName(), RateLimitItemInstance.MAX);
 
         rliQueueSize = rateLimit.get(RateLimitName.BROKER_SIZE.getName());
         rliQueueSize.set(3000);
@@ -99,7 +94,6 @@ public class Broker<TEO>
         rliTailSize = rateLimit.get(RateLimitName.BROKER_TAIL_SIZE.getName());
         rliTailSize.set(5);
 
-        rliTps = rateLimit.get(RateLimitName.BROKER_TPS.getName());
         rateLimit.setActive(true);
     }
 
@@ -119,51 +113,35 @@ public class Broker<TEO>
         rliTailSize.set(newSize);
     }
 
-    public void setMaxTpsInput(int maxTpsInput) {
-        rliTps.set(maxTpsInput);
-    }
-
     private void statistic(ExpirationMsImmutableEnvelope<TEO> envelope) {
         //#1, что бы видеть реальное кол-во опросов изъятия
         tpsDequeue.incrementAndGet();
         timeInQueue.add(envelope.getInactivityTimeMs());
     }
 
-    public DisposableExpirationMsImmutableEnvelope<TEO> add(TEO element, long curTime, long timeOut) throws Exception {
+    public DisposableExpirationMsImmutableEnvelope<TEO> add(TEO element, long curTime, long timeOut) {
         return add(new ExpirationMsImmutableEnvelope<>(element, timeOut, curTime));
     }
 
-    public DisposableExpirationMsImmutableEnvelope<TEO> add(TEO element, long timeOut) throws Exception {
+    public DisposableExpirationMsImmutableEnvelope<TEO> add(TEO element, long timeOut) {
         return add(new ExpirationMsImmutableEnvelope<>(element, timeOut));
     }
 
     @Override
-    public DisposableExpirationMsImmutableEnvelope<TEO> add(ExpirationMsImmutableEnvelope<TEO> envelope) throws Exception {
-        if (envelope == null) {
-            throw new Exception("Element null");
+    public DisposableExpirationMsImmutableEnvelope<TEO> add(ExpirationMsImmutableEnvelope<TEO> envelope) {
+        if (envelope == null || envelope.isExpired()) {
+            return null;
         }
         DisposableExpirationMsImmutableEnvelope<TEO> convert = DisposableExpirationMsImmutableEnvelope.convert(envelope);
-        if (!rliTps.check(null)) {
-            throw new Exception(getExceptionInformation("RateLimitTps", envelope));
-        }
-        if (cyclical) {
-            if (!rliQueueSize.check(queue.size() + 1)) {
-                // Он конечно протух не по своей воле, но что делать...
-                // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
-                onDrop(queue.removeFirst());
-            }
-        } else {
-            if (!rliQueueSize.check(queue.size())) {
-                throw new Exception(getExceptionInformation("RateLimitSize", envelope));
-            }
-        }
-        if (convert.isExpired()) {
-            throw new Exception(getExceptionInformation("Expired", envelope));
+        if (!rliQueueSize.check(queue.size() + 1)) {
+            // Он конечно протух не по своей воле, но что делать...
+            // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
+            onDrop(queue.removeFirst());
         }
         queue.add(convert);
         tail.add(envelope);
         if (!rliTailSize.check(tail.size())) {
-            tail.pollFirst();
+            tail.pollFirst(); // с начала изымаем
         }
         return convert;
     }
@@ -212,7 +190,6 @@ public class Broker<TEO>
     String getExceptionInformation(String cause, ExpirationMsImmutableEnvelope<TEO> envelope) {
         StringBuilder sb = new StringBuilder()
                 .append("Cause: ").append(cause).append("; ")
-                .append("Max tps: ").append(rliTps.get()).append("; ")
                 .append("Limit size: ").append(rliQueueSize.get()).append("; ")
                 .append("Class add: ").append(envelope.getValue().getClass().getName()).append("; ")
                 .append("Object add: ").append(envelope.getValue().toString()).append("; ");
@@ -272,7 +249,6 @@ public class Broker<TEO>
         queue.clear();
         tail.clear();
         tpsDequeue.set(0);
-        cyclical = true;
         rateLimit.reset();
         rliTailSize.set(5);
         rliQueueSize.set(3000);

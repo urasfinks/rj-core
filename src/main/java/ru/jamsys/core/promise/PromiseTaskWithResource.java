@@ -69,11 +69,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
     @Override
     public void start() {
         getPromise().getTrace().add(new Trace<>(getIndex() + ".Pool-Subscribe", null, null, null));
-        try {
-            managerElement.get().addPromiseTaskPool(this);
-        } catch (Exception e) {
-            getPromise().complete(this, e);
-        }
+        managerElement.get().addPromiseTaskPool(this);
     }
 
     @Override
