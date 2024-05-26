@@ -20,7 +20,7 @@ import java.util.Map;
 
 @Component
 @Scope("prototype")
-public class ConnectionResource2
+public class ConnectionResource
         extends ExpirationMsMutableImpl
         implements
         Completable,

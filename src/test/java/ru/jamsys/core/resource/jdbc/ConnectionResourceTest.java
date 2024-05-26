@@ -10,7 +10,7 @@ import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import java.util.List;
 import java.util.Map;
 
-class ConnectionResource2Test {
+class ConnectionResourceTest {
 
     @BeforeAll
     static void beforeAll() {
@@ -27,10 +27,10 @@ class ConnectionResource2Test {
 
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, ConnectionResource2.class, JdbcPoolSettings.setting, (_, connectionResource2) -> {
+                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, ConnectionResource.class, JdbcPoolSettings.setting, (_, connectionResource) -> {
                     JdbcRequest jdbcRequest = new JdbcRequest(TestJdbcTemplate.TEST);
                     try {
-                        List<Map<String, Object>> execute = connectionResource2.execute(jdbcRequest);
+                        List<Map<String, Object>> execute = connectionResource.execute(jdbcRequest);
                         promise.setProperty("req1", execute);
                         //System.out.println(execute);
                     } catch (Throwable e) {

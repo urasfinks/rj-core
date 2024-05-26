@@ -12,9 +12,9 @@ public class JdbcPoolSettings {
     public final StatementControl statementControl = new DefaultStatementControl();
 
     public static PoolResourceArgument<
-            ConnectionResource2,
+            ConnectionResource,
             JdbcPoolSettings
-            > setting = new PoolResourceArgument<>(ConnectionResource2.class, new JdbcPoolSettings(), e -> {
+            > setting = new PoolResourceArgument<>(ConnectionResource.class, new JdbcPoolSettings(), e -> {
         if (e != null) {
             String msg = e.getMessage();
             // Не конкурентная проверка
