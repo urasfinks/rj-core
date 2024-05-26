@@ -14,6 +14,7 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -79,7 +80,25 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
                 this,
                 promiseTaskExecuteType,
                 poolArgument,
-                procedure
+                procedure,
+                clasResource
+        ));
+    }
+
+    default <T extends Resource<?, ?, ?>> Promise appendWithResource(
+            String index,
+            PromiseTaskExecuteType promiseTaskExecuteType,
+            Class<T> clasResource,
+            PoolResourceArgument<T, ?> poolArgument,
+            BiFunction<AtomicBoolean, T, List<PromiseTask>> supplier
+    ) {
+        return append(new PromiseTaskWithResource<>(
+                index,
+                this,
+                promiseTaskExecuteType,
+                poolArgument,
+                supplier,
+                clasResource
         ));
     }
 

@@ -26,17 +26,39 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
 
     private BiConsumer<AtomicBoolean, T> procedure;
 
-    ManagerElement<PoolResourceForPromiseTask<?, ?, ?, ?>, PoolResourceArgument<?, ?>> managerElement;
+    private final ManagerElement<PoolResourceForPromiseTask<?, ?, ?, ?>, PoolResourceArgument<?, ?>> managerElement;
 
+    @SuppressWarnings("all")
+    private final Class<T> classResource;
+
+    @SuppressWarnings("all")
     public PromiseTaskWithResource(
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
             PoolResourceArgument<T, ?> poolArgument,
-            BiConsumer<AtomicBoolean, T> procedure
+            BiConsumer<AtomicBoolean, T> procedure,
+            Class<T> classResource
     ) {
         super(index, promise, type);
         this.procedure = procedure;
+        this.classResource = classResource;
+        PoolResourceManagerForPromiseTask poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
+        managerElement = poolResourceManagerForPromiseTask.get(index, poolArgument);
+    }
+
+    @SuppressWarnings("all")
+    public PromiseTaskWithResource(
+            String index,
+            Promise promise,
+            PromiseTaskExecuteType type,
+            PoolResourceArgument<T, ?> poolArgument,
+            BiFunction<AtomicBoolean, T, List<PromiseTask>> supplier,
+            Class<T> classResource
+    ) {
+        super(index, promise, type);
+        this.supplier = supplier;
+        this.classResource = classResource;
         PoolResourceManagerForPromiseTask poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
         managerElement = poolResourceManagerForPromiseTask.get(index, poolArgument);
     }
