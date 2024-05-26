@@ -10,6 +10,8 @@ import ru.jamsys.core.promise.resource.api.NotificationTelegramPromise;
 import ru.jamsys.core.promise.resource.api.YandexSpeechPromise;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.http.*;
+import ru.jamsys.core.resource.jdbc.ConnectionResource2;
+import ru.jamsys.core.resource.jdbc.JdbcPoolSetting;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -331,12 +333,15 @@ class PromiseImplTest {
 
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("wfe", PromiseTaskExecuteType.IO, HttpClientResource.class, HttpPoolSetting.setting, (_, _) -> {
+                .appendWithResource("http", PromiseTaskExecuteType.IO, HttpClientResource.class, HttpPoolSetting.setting, (_, _) -> {
                     //HttpResponseEnvelope execute = httpClientResource.execute(new Http2ClientImpl());
                     System.out.println("!!!");
                 })
+                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, ConnectionResource2.class, JdbcPoolSetting.setting, (_, connectionResource2) -> {
+                    System.out.println(connectionResource2);
+                })
                 .run()
-                .await(1000);
+                .await(2000);
         System.out.println(promise.getLog());
 
     }

@@ -14,7 +14,7 @@ public class JdbcPoolSetting {
     public static PoolResourceArgument<
             ConnectionResource2,
             JdbcPoolSetting
-            > setting = new PoolResourceArgument<>(ConnectionResource2.class, null, e -> {
+            > setting = new PoolResourceArgument<>(ConnectionResource2.class, new JdbcPoolSetting(), e -> {
         if (e != null) {
             String msg = e.getMessage();
             // Не конкурентная проверка

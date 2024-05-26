@@ -11,6 +11,7 @@ import ru.jamsys.core.promise.resource.api.PromiseApi;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
@@ -118,7 +119,7 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     List<Trace<String, Throwable>> getExceptionTrace();
 
-    List<Trace<String, TraceTimer>> getTrace();
+    Collection<Trace<String, TraceTimer>> getTrace();
 
     String getLog();
 

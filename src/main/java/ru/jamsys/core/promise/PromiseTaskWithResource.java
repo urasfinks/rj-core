@@ -68,6 +68,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
     // Пул сам вызовет start с передачей туда ресурса, там то мы и вызовем ::run из внешнего потока
     @Override
     public void start() {
+        getPromise().getTrace().add(new Trace<>(getIndex() + ".Pool-Subscribe", null, null, null));
         try {
             managerElement.get().addPromiseTaskPool(this);
         } catch (Exception e) {
@@ -90,7 +91,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
     // Пул вызывает этот метод
     public void start(PoolItemEnvelope<?, ?, ?, T> poolItem) {
         setPoolItemEnvelope(poolItem);
-        getPromise().getTrace().add(new Trace<>(getIndex() + ".PoolItemEnvelope-Received", null, null, null));
+        getPromise().getTrace().add(new Trace<>(getIndex() + ".Pool-Received", null, null, null));
         super.start();
     }
 

@@ -16,6 +16,7 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -80,7 +81,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     @JsonProperty
     @Getter
-    protected List<Trace<String, TraceTimer>> trace = new ArrayList<>();
+    protected Collection<Trace<String, TraceTimer>> trace = new ConcurrentLinkedQueue<>();
 
     public AbstractPromise(long keepAliveOnInactivityMs, long lastActivityMs) {
         super(keepAliveOnInactivityMs, lastActivityMs);
