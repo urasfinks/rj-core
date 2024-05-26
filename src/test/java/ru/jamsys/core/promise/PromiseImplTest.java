@@ -310,7 +310,6 @@ class PromiseImplTest {
     }
 
     void promiseTaskWithPool() {
-
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
                 .appendWithResource("http", PromiseTaskExecuteType.IO, HttpResource.class, HttpPoolSettings.setting, (_, _) -> {

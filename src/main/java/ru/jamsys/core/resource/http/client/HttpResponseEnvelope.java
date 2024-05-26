@@ -70,7 +70,6 @@ public class HttpResponseEnvelope {
     }
 
     public String getStringError(Exception e) {
-        e.printStackTrace();
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
