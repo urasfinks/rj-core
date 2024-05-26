@@ -30,6 +30,7 @@ public class PoolResourceForPromiseTask<
 
     private final PoolResourceArgument<PI, RC> argument;
 
+    @SuppressWarnings("all")
     final private ManagerElement<Broker<PromiseTaskWithResource>, Void> broker;
 
     public PoolResourceForPromiseTask(String name, PoolResourceArgument<PI, RC> argument) {
@@ -70,13 +71,14 @@ public class PoolResourceForPromiseTask<
         return true;
     }
 
-    public void addPromiseTaskPool(PromiseTaskWithResource promiseTaskWithResource) throws Exception {
+    public void addPromiseTaskPool(PromiseTaskWithResource<?> promiseTaskWithResource) throws Exception {
         broker.get().add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));
         if (!addIfPoolEmpty()) {
             onParkUpdate();
         }
     }
 
+    @SuppressWarnings("all")
     @Override
     public void onParkUpdate() {
         if (!broker.get().isEmpty() && !parkQueue.isEmpty()) {
