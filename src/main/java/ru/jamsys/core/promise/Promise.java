@@ -113,7 +113,7 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
         return then(new PromiseTask(index, this, promiseTaskExecuteType, fn));
     }
 
-    Promise waits();
+    Promise appendWait();
 
     PromiseTask getLastAppendedTask();
 

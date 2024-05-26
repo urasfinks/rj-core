@@ -63,7 +63,7 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
                         promise.setProperty("preparePoint", listPoints);
                     });
                 })
-                .waits();
+                .appendWait();
 //                .api(getClassName("sendToInflux"), new InfluxClientPromise().beforeExecute((InfluxClientPromise influxClientPromise) -> {
 //                    @SuppressWarnings("unchecked")
 //                    List<Point> list = (List<Point>) promise.getProperty("preparePoint", List.class);

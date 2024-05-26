@@ -25,7 +25,7 @@ public class InfluxClientResource extends ExpirationMsMutableImpl implements Com
     String bucket;
 
     @Override
-    public void constructor(InfluxPoolSettings constructor) throws Throwable {
+    public void constructor(InfluxPoolSettings constructor) {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
         SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
 
