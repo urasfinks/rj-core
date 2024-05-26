@@ -31,10 +31,7 @@ public class NotificationTelegram implements Notification {
     private String idChat;
 
     @Setter
-    private int connectTimeoutMs;
-
-    @Setter
-    private int readTimeout;
+    private int timeoutMs;
 
     public NotificationTelegram(SecurityComponent securityComponent, PropertiesComponent propertiesComponent) {
 
@@ -43,9 +40,7 @@ public class NotificationTelegram implements Notification {
         this.url = propertiesComponent.getProperties("default.notification.telegram.url", String.class);
         this.idChat = propertiesComponent.getProperties("default.notification.telegram.idChat", String.class);
         this.securityAlias = propertiesComponent.getProperties("default.notification.telegram.security.alias", String.class);
-        this.connectTimeoutMs = propertiesComponent.getProperties("default.notification.telegram.connectTimeoutMs", Integer.class);
-        this.readTimeout = propertiesComponent.getProperties("default.notification.telegram.readTimeoutMs", Integer.class);
-
+        this.timeoutMs = propertiesComponent.getProperties("default.notification.telegram.timeoutMs", Integer.class);
     }
 
     @Override
@@ -67,8 +62,7 @@ public class NotificationTelegram implements Notification {
 
                 HttpClientImpl httpClient = new HttpClientImpl();
                 httpClient.setUrl(urlString);
-                httpClient.setConnectTimeoutMs(connectTimeoutMs);
-                httpClient.setReadTimeoutMs(readTimeout);
+                httpClient.setTimeoutMs(timeoutMs);
                 httpClient.exec();
 
                 httpClient.getHttpResponseEnvelope(httpResponseEnvelope);

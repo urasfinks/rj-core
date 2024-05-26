@@ -20,15 +20,13 @@ public interface HttpClient {
 
     HttpClient setProxy(Proxy proxy);
 
-    HttpClient setConnectTimeoutMs(int connectTimeoutMs);
-
-    HttpClient setReadTimeoutMs(int readTimeoutMs);
+    HttpClient setTimeoutMs(int connectTimeoutMs);
 
     HttpClient setDisableHostnameVerification(boolean disableHostnameVerification);
 
-    HttpClient setMethod(String method);
+    HttpClient setMethod(HttpMethodEnum method);
 
-    HttpClient setKeyStore(File keyStore, Object... props) throws Exception;
+    HttpClient setKeyStore(File keyStore, Object... props);
 
     HttpClient setRequestHeader(String name, String value);
 
@@ -52,13 +50,11 @@ public interface HttpClient {
 
     Proxy getProxy();
 
-    int getConnectTimeoutMs();
-
-    int getReadTimeoutMs();
+    int getTimeoutMs();
 
     boolean isDisableHostnameVerification();
 
-    String getMethod();
+    HttpMethodEnum getMethod();
 
     Map<String, List<String>> getHeaderResponse();
 

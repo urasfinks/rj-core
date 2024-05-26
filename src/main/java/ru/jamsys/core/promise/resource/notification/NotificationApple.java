@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.manager.VirtualFileSystemManager;
-import ru.jamsys.core.resource.http.client.Http2ClientImpl;
+import ru.jamsys.core.resource.http.client.HttpClientImpl;
 import ru.jamsys.core.resource.http.client.HttpClient;
 import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -51,10 +51,7 @@ public class NotificationApple implements Notification {
     private boolean init = false;
 
     @Setter
-    private int connectTimeoutMs;
-
-    @Setter
-    private int readTimeout;
+    private int timeoutMs;
 
     public NotificationApple(VirtualFileSystemManager virtualFileSystemManager, PropertiesComponent propertiesComponent) {
 
@@ -68,9 +65,7 @@ public class NotificationApple implements Notification {
         this.priority = propertiesComponent.getProperties("default.notification.apple.priority", String.class);
         this.expiration = propertiesComponent.getProperties("default.notification.apple.expiration", String.class);
         this.pushType = propertiesComponent.getProperties("default.notification.apple.pushType", String.class);
-        this.connectTimeoutMs = propertiesComponent.getProperties("default.notification.apple.connectTimeoutMs", Integer.class);
-        this.readTimeout = propertiesComponent.getProperties("default.notification.apple.readTimeoutMs", Integer.class);
-
+        this.timeoutMs = propertiesComponent.getProperties("default.notification.apple.timeoutMs", Integer.class);
     }
 
     @Override
@@ -89,10 +84,9 @@ public class NotificationApple implements Notification {
         HttpClient httpClient = null;
 
         if (httpResponseEnvelope.isStatus()) {
-            httpClient = new Http2ClientImpl();
+            httpClient = new HttpClientImpl();
             httpClient.setUrl(url + device);
-            httpClient.setConnectTimeoutMs(connectTimeoutMs);
-            httpClient.setReadTimeoutMs(readTimeout);
+            httpClient.setTimeoutMs(timeoutMs);
 
             Map<String, Object> root = new LinkedHashMap<>();
             Map<String, Object> aps = new LinkedHashMap<>();

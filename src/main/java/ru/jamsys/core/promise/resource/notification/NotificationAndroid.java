@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
-import ru.jamsys.core.resource.http.client.Http2ClientImpl;
-import ru.jamsys.core.resource.http.client.HttpClient;
-import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
 import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.resource.http.client.HttpClient;
+import ru.jamsys.core.resource.http.client.HttpClientImpl;
+import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,18 +34,14 @@ public class NotificationAndroid implements Notification {
     private final String[] messagingScope;
 
     @Setter
-    private int connectTimeoutMs;
-
-    @Setter
-    private int readTimeout;
+    private int timeoutMs;
 
     public NotificationAndroid(PropertiesComponent propertiesComponent) {
         this.url = propertiesComponent.getProperties("default.notification.android.url", String.class);
         this.messagingScope = new String[]{propertiesComponent.getProperties("default.notification.android.messaging.scope", String.class)};
         this.storageCredentials = propertiesComponent.getProperties("default.notification.android.storage.credentials", String.class);
         this.applicationName = propertiesComponent.getProperties("default.notification.android.application.name", String.class);
-        this.connectTimeoutMs = propertiesComponent.getProperties("default.notification.android.connectTimeoutMs", Integer.class);
-        this.readTimeout = propertiesComponent.getProperties("default.notification.android.readTimeoutMs", Integer.class);
+        this.timeoutMs = propertiesComponent.getProperties("default.notification.android.timeoutMs", Integer.class);
     }
 
     private String getAccessToken() throws IOException {
@@ -69,10 +65,9 @@ public class NotificationAndroid implements Notification {
         String postData = null;
 
         if (httpResponseEnvelope.isStatus()) {
-            httpClient = new Http2ClientImpl();
+            httpClient = new HttpClientImpl();
             httpClient.setUrl(url);
-            httpClient.setConnectTimeoutMs(connectTimeoutMs);
-            httpClient.setReadTimeoutMs(readTimeout);
+            httpClient.setTimeoutMs(timeoutMs);
             httpClient.setRequestHeader("Content-type", "application/json");
 
             try {

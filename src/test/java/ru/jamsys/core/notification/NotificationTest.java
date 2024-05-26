@@ -2,6 +2,7 @@ package ru.jamsys.core.notification;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.promise.resource.notification.*;
 import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
@@ -21,6 +22,7 @@ class NotificationTest {
     }
 
     @SuppressWarnings("unused")
+    @Test
     void telegramSend() {
         Notification notificationTelegram = App.context.getBean(NotificationTelegram.class);
         HttpResponseEnvelope notify = notificationTelegram.notify("Hello", "world", "290029195");
