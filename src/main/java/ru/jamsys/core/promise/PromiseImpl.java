@@ -12,6 +12,8 @@ public class PromiseImpl extends AbstractPromiseBuilder {
 
     public static Set<Promise> queueMultipleCompleteSet = Util.getConcurrentHashSet();
 
+    private volatile Thread loopThread;
+
     public PromiseImpl(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
         super(keepAliveOnInactivityMs, lastActivityMs);
         setIndex(index);
@@ -41,25 +43,16 @@ public class PromiseImpl extends AbstractPromiseBuilder {
 
     public void complete(@Nullable PromiseTask task) {
         if (task != null) {
-//            int before = setRunningTasks.size();
-
             setRunningTasks.remove(task);
             countCompleteTask.incrementAndGet();
-//            if (getIndex().equals("test")) {
-//                System.out.println("REMOVE1: " + task + "; sizeBefore: " + before + " sizeAfter: " + setRunningTasks.size());
-//            }
         }
-        //complete();
+        complete();
     }
 
     public void complete(@Nullable PromiseTask task, List<PromiseTask> toHead) {
         if (task != null) {
-            int before = setRunningTasks.size();
             setRunningTasks.remove(task);
             countCompleteTask.incrementAndGet();
-//            if (getIndex().equals("test")) {
-//                System.out.println("REMOVE2: " + task + "; sizeBefore: " + before + " sizeAfter: " + setRunningTasks.size());
-//            }
         }
         if (toHead != null) {
             this.toHead.add(toHead);
@@ -68,14 +61,11 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     public void complete() {
-//        if (getIndex().equals("test")) {
-//            Util.printStackTrace("loop " + getIndex() + "; isRun: " + isRun.get());
-//        }
         if (isRun.get()) {
             if (isStartLoop.compareAndSet(false, true)) {
                 loop();
                 isStartLoop.set(false);
-            } else if (firstConcurrentCompletionWait.compareAndSet(false, true)) {
+            } else if (!Thread.currentThread().equals(loopThread) && firstConcurrentCompletionWait.compareAndSet(false, true)) {
                 long expiredTimeMs = System.currentTimeMillis() + 5;
                 while (isStartLoop.get()) {
                     if (System.currentTimeMillis() > expiredTimeMs) {
@@ -107,6 +97,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     private void loop() {
+        loopThread = Thread.currentThread();
         while (!toHead.isEmpty() && isNextLoop()) {
             List<PromiseTask> promiseTasks = toHead.pollLast();
             assert promiseTasks != null;
@@ -122,21 +113,12 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         while (!listPendingTasks.isEmpty() && isNextLoop()) {
             PromiseTask firstTask = listPendingTasks.pollFirst();
             assert firstTask != null;
-//            if (getIndex().equals("test")) {
-//                System.out.println("start task:" + firstTask.getIndex());
-//            }
             if (firstTask.type.isRunningTask()) { //Так мы откинули WAIT
                 setRunningTasks.add(firstTask);
             }
             firstTask.start();
-//            if (getIndex().equals("test")) {
-//                System.out.println("finish start task:" + firstTask.getIndex());
-//            }
             if (firstTask.type == PromiseTaskExecuteType.WAIT) {
                 if (!setRunningTasks.isEmpty()) {
-//                    if (getIndex().equals("test")) {
-//                        System.out.println("reinsert wait because setRunningTasks.size() = " + setRunningTasks);
-//                    }
                     listPendingTasks.addFirst(firstTask);
                     break;
                 }
