@@ -134,9 +134,7 @@ class BrokerTest {
                 .get(XTest.class.getName(), XTest.class);
         broker.accept(queue -> {
             XTest obj = new XTest(1);
-            DisposableExpirationMsImmutableEnvelope<XTest> o1 = null;
-
-            o1 = queue.add(obj, 6_000L);
+            DisposableExpirationMsImmutableEnvelope<XTest> o1 = queue.add(obj, 6_000L);
 
             List<XTest> cloneQueue = queue.getCloneQueue(null);
             Assertions.assertEquals(obj.hashCode(), cloneQueue.getFirst().hashCode(), "#1");
@@ -161,8 +159,7 @@ class BrokerTest {
             } catch (Exception _) {
 
             }
-            DisposableExpirationMsImmutableEnvelope<XTest> o2 = null;
-            o2 = queue.add(obj2, 6_000L);
+            DisposableExpirationMsImmutableEnvelope<XTest> o2 = queue.add(obj2, 6_000L);
 
             List<XTest> cloneQueue = queue.getCloneQueue(isRun);
             Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
