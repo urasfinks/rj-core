@@ -40,11 +40,11 @@ public class NotificationTelegram implements Notification {
 
         this.securityComponent = securityComponent;
 
-        this.url = propertiesComponent.getProperties("rj.notification.telegram.url", String.class);
-        this.idChat = propertiesComponent.getProperties("rj.notification.telegram.idChat", String.class);
-        this.securityAlias = propertiesComponent.getProperties("rj.notification.telegram.security.alias", String.class);
-        this.connectTimeoutMs = propertiesComponent.getProperties("rj.notification.telegram.connectTimeoutMs", Integer.class);
-        this.readTimeout = propertiesComponent.getProperties("rj.notification.telegram.readTimeoutMs", Integer.class);
+        this.url = propertiesComponent.getProperties("default.notification.telegram.url", String.class);
+        this.idChat = propertiesComponent.getProperties("default.notification.telegram.idChat", String.class);
+        this.securityAlias = propertiesComponent.getProperties("default.notification.telegram.security.alias", String.class);
+        this.connectTimeoutMs = propertiesComponent.getProperties("default.notification.telegram.connectTimeoutMs", Integer.class);
+        this.readTimeout = propertiesComponent.getProperties("default.notification.telegram.readTimeoutMs", Integer.class);
 
     }
 

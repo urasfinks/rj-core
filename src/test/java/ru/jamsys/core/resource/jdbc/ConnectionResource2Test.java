@@ -27,7 +27,7 @@ class ConnectionResource2Test {
 
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, ConnectionResource2.class, JdbcPoolSetting.setting, (_, connectionResource2) -> {
+                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, ConnectionResource2.class, JdbcPoolSettings.setting, (_, connectionResource2) -> {
                     JdbcRequest jdbcRequest = new JdbcRequest(TestJdbcTemplate.TEST);
                     try {
                         List<Map<String, Object>> execute = connectionResource2.execute(jdbcRequest);

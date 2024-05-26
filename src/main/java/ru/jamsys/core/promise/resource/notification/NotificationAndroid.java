@@ -40,12 +40,12 @@ public class NotificationAndroid implements Notification {
     private int readTimeout;
 
     public NotificationAndroid(PropertiesComponent propertiesComponent) {
-        this.url = propertiesComponent.getProperties("rj.notification.android.url", String.class);
-        this.messagingScope = new String[]{propertiesComponent.getProperties("rj.notification.android.messaging.scope", String.class)};
-        this.storageCredentials = propertiesComponent.getProperties("rj.notification.android.storage.credentials", String.class);
-        this.applicationName = propertiesComponent.getProperties("rj.notification.android.application.name", String.class);
-        this.connectTimeoutMs = propertiesComponent.getProperties("rj.notification.android.connectTimeoutMs", Integer.class);
-        this.readTimeout = propertiesComponent.getProperties("rj.notification.android.readTimeoutMs", Integer.class);
+        this.url = propertiesComponent.getProperties("default.notification.android.url", String.class);
+        this.messagingScope = new String[]{propertiesComponent.getProperties("default.notification.android.messaging.scope", String.class)};
+        this.storageCredentials = propertiesComponent.getProperties("default.notification.android.storage.credentials", String.class);
+        this.applicationName = propertiesComponent.getProperties("default.notification.android.application.name", String.class);
+        this.connectTimeoutMs = propertiesComponent.getProperties("default.notification.android.connectTimeoutMs", Integer.class);
+        this.readTimeout = propertiesComponent.getProperties("default.notification.android.readTimeoutMs", Integer.class);
     }
 
     private String getAccessToken() throws IOException {

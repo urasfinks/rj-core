@@ -14,7 +14,6 @@ import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseImpl;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
-import ru.jamsys.core.promise.resource.api.InfluxClientPromise;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.StatisticSec;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -64,12 +63,12 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
                         promise.setProperty("preparePoint", listPoints);
                     });
                 })
-                .waits()
-                .api(getClassName("sendToInflux"), new InfluxClientPromise().beforeExecute((InfluxClientPromise influxClientPromise) -> {
-                    @SuppressWarnings("unchecked")
-                    List<Point> list = (List<Point>) promise.getProperty("preparePoint", List.class);
-                    influxClientPromise.getList().addAll(list);
-                }));
+                .waits();
+//                .api(getClassName("sendToInflux"), new InfluxClientPromise().beforeExecute((InfluxClientPromise influxClientPromise) -> {
+//                    @SuppressWarnings("unchecked")
+//                    List<Point> list = (List<Point>) promise.getProperty("preparePoint", List.class);
+//                    influxClientPromise.getList().addAll(list);
+//                }));
         return promise;
     }
 }

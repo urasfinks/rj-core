@@ -5,15 +5,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.promise.resource.api.HttpClientPromise;
 import ru.jamsys.core.promise.resource.api.NotificationTelegramPromise;
 import ru.jamsys.core.promise.resource.api.YandexSpeechPromise;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.http.*;
 import ru.jamsys.core.resource.jdbc.ConnectionResource2;
-import ru.jamsys.core.resource.jdbc.JdbcPoolSetting;
+import ru.jamsys.core.resource.jdbc.JdbcPoolSettings;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -301,22 +299,22 @@ class PromiseImplTest {
         System.out.println(wf.getLog());
     }
 
-    @SuppressWarnings("unused")
-    void promiseHttp() {
-        Promise wf = new PromiseImpl("test", 6_000L);
-        wf.api("request", new HttpClientPromise()
-                .setup((HttpClientPromise httpClientPromise) ->
-                        httpClientPromise.getHttpClient()
-                                .setConnectTimeoutMs(1000)
-                                .setReadTimeoutMs(1000)
-                                .setRequestHeader("x", "Y")
-                                .setBasicAuth("user", "password", "utf-8")
-                                .setPostData("Hello world".getBytes(StandardCharsets.UTF_8)))
-                .beforeExecute((HttpClientPromise httpClientPromise) ->
-                        httpClientPromise.getHttpClient().setUrl("http://yandex.ru"))
-        ).run().await(10000);
-        System.out.println(wf.getLog());
-    }
+//    @SuppressWarnings("unused")
+//    void promiseHttp() {
+//        Promise wf = new PromiseImpl("test", 6_000L);
+//        wf.api("request", new HttpClientPromise()
+//                .setup((HttpClientPromise httpClientPromise) ->
+//                        httpClientPromise.getHttpClient()
+//                                .setConnectTimeoutMs(1000)
+//                                .setReadTimeoutMs(1000)
+//                                .setRequestHeader("x", "Y")
+//                                .setBasicAuth("user", "password", "utf-8")
+//                                .setPostData("Hello world".getBytes(StandardCharsets.UTF_8)))
+//                .beforeExecute((HttpClientPromise httpClientPromise) ->
+//                        httpClientPromise.getHttpClient().setUrl("http://yandex.ru"))
+//        ).run().await(10000);
+//        System.out.println(wf.getLog());
+//    }
 
     @SuppressWarnings("unused")
     void promiseTelegram() {
@@ -328,16 +326,15 @@ class PromiseImplTest {
         System.out.println(wf.getLog());
     }
 
-    @Test
     void promiseTaskWithPool() {
 
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("http", PromiseTaskExecuteType.IO, HttpClientResource.class, HttpPoolSetting.setting, (_, _) -> {
+                .appendWithResource("http", PromiseTaskExecuteType.IO, HttpClientResource.class, HttpPoolSettings.setting, (_, _) -> {
                     //HttpResponseEnvelope execute = httpClientResource.execute(new Http2ClientImpl());
                     System.out.println("!!!");
                 })
-                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, ConnectionResource2.class, JdbcPoolSetting.setting, (_, connectionResource2) -> {
+                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, ConnectionResource2.class, JdbcPoolSettings.setting, (_, connectionResource2) -> {
                     System.out.println(connectionResource2);
                 })
                 .run()

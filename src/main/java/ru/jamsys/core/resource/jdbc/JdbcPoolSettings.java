@@ -4,7 +4,7 @@ import ru.jamsys.core.component.manager.sub.PoolResourceArgument;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 
-public class JdbcPoolSetting {
+public class JdbcPoolSettings {
 
     // пространство из *.properties
     public final String namespaceProperties;
@@ -13,8 +13,8 @@ public class JdbcPoolSetting {
 
     public static PoolResourceArgument<
             ConnectionResource2,
-            JdbcPoolSetting
-            > setting = new PoolResourceArgument<>(ConnectionResource2.class, new JdbcPoolSetting(), e -> {
+            JdbcPoolSettings
+            > setting = new PoolResourceArgument<>(ConnectionResource2.class, new JdbcPoolSettings(), e -> {
         if (e != null) {
             String msg = e.getMessage();
             // Не конкурентная проверка
@@ -26,12 +26,12 @@ public class JdbcPoolSetting {
         return false;
     });
 
-    public JdbcPoolSetting(String namespaceProperties) {
+    public JdbcPoolSettings(String namespaceProperties) {
         this.namespaceProperties = namespaceProperties;
     }
 
-    public JdbcPoolSetting() {
-        this.namespaceProperties = "rj";
+    public JdbcPoolSettings() {
+        this.namespaceProperties = "default";
     }
 
 }

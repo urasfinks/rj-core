@@ -60,16 +60,16 @@ public class NotificationApple implements Notification {
 
         this.virtualFileSystemManager = virtualFileSystemManager;
 
-        this.url = propertiesComponent.getProperties("rj.notification.apple.url", String.class);
-        this.storage = propertiesComponent.getProperties("rj.notification.apple.storage", String.class);
-        this.virtualPath = propertiesComponent.getProperties("rj.notification.apple.virtual.path", String.class);
-        this.securityAlias = propertiesComponent.getProperties("rj.notification.apple.security.alias", String.class);
-        this.topic = propertiesComponent.getProperties("rj.notification.apple.topic", String.class);
-        this.priority = propertiesComponent.getProperties("rj.notification.apple.priority", String.class);
-        this.expiration = propertiesComponent.getProperties("rj.notification.apple.expiration", String.class);
-        this.pushType = propertiesComponent.getProperties("rj.notification.apple.pushType", String.class);
-        this.connectTimeoutMs = propertiesComponent.getProperties("rj.notification.apple.connectTimeoutMs", Integer.class);
-        this.readTimeout = propertiesComponent.getProperties("rj.notification.apple.readTimeoutMs", Integer.class);
+        this.url = propertiesComponent.getProperties("default.notification.apple.url", String.class);
+        this.storage = propertiesComponent.getProperties("default.notification.apple.storage", String.class);
+        this.virtualPath = propertiesComponent.getProperties("default.notification.apple.virtual.path", String.class);
+        this.securityAlias = propertiesComponent.getProperties("default.notification.apple.security.alias", String.class);
+        this.topic = propertiesComponent.getProperties("default.notification.apple.topic", String.class);
+        this.priority = propertiesComponent.getProperties("default.notification.apple.priority", String.class);
+        this.expiration = propertiesComponent.getProperties("default.notification.apple.expiration", String.class);
+        this.pushType = propertiesComponent.getProperties("default.notification.apple.pushType", String.class);
+        this.connectTimeoutMs = propertiesComponent.getProperties("default.notification.apple.connectTimeoutMs", Integer.class);
+        this.readTimeout = propertiesComponent.getProperties("default.notification.apple.readTimeoutMs", Integer.class);
 
     }
 

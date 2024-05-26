@@ -61,19 +61,19 @@ public class NotificationEmail implements Notification {
         this.securityComponent = securityComponent;
 
 
-        this.template = propertiesComponent.getProperties("rj.notification.email.template", String.class);
-        this.supportAddress = propertiesComponent.getProperties("rj.notification.email.support.address", String.class);
+        this.template = propertiesComponent.getProperties("default.notification.email.template", String.class);
+        this.supportAddress = propertiesComponent.getProperties("default.notification.email.support.address", String.class);
 
-        this.host = propertiesComponent.getProperties("rj.notification.email.host", String.class);
-        this.user = propertiesComponent.getProperties("rj.notification.email.user", String.class);
-        this.from = propertiesComponent.getProperties("rj.notification.email.from", String.class);
-        this.charset = propertiesComponent.getProperties("rj.notification.email.charset", String.class);
-        this.securityAlias = propertiesComponent.getProperties("rj.notification.email.security.alias", String.class);
+        this.host = propertiesComponent.getProperties("default.notification.email.host", String.class);
+        this.user = propertiesComponent.getProperties("default.notification.email.user", String.class);
+        this.from = propertiesComponent.getProperties("default.notification.email.from", String.class);
+        this.charset = propertiesComponent.getProperties("default.notification.email.charset", String.class);
+        this.securityAlias = propertiesComponent.getProperties("default.notification.email.security.alias", String.class);
 
-        this.port = propertiesComponent.getProperties("rj.notification.email.port", Integer.class);
-        this.connectTimeoutMs = propertiesComponent.getProperties("rj.notification.email.connectTimeoutMs", Integer.class);
+        this.port = propertiesComponent.getProperties("default.notification.email.port", Integer.class);
+        this.connectTimeoutMs = propertiesComponent.getProperties("default.notification.email.connectTimeoutMs", Integer.class);
 
-        this.ssl = propertiesComponent.getProperties("rj.notification.email.ssl", Boolean.class);
+        this.ssl = propertiesComponent.getProperties("default.notification.email.ssl", Boolean.class);
 
     }
 
@@ -81,7 +81,7 @@ public class NotificationEmail implements Notification {
         if (parsedTemplate == null) {
             parsedTemplate = TemplateTwix.getParsedTemplate(UtilFileResource.getAsString(template));
         }
-        args.put("rj.notification.email.support.address", supportAddress);
+        args.put("default.notification.email.support.address", supportAddress);
         return TemplateTwix.template(parsedTemplate, args);
     }
 

@@ -39,10 +39,10 @@ public class InfluxClientImpl implements InfluxClient, LifeCycleComponent {
 
     public InfluxClientImpl(SecurityComponent securityComponent, PropertiesComponent propertiesComponent) {
         this.securityComponent = securityComponent;
-        this.host = propertiesComponent.getProperties("rj.influx.host", String.class);
-        this.bucket = propertiesComponent.getProperties("rj.influx.bucket", String.class);
-        this.org = propertiesComponent.getProperties("rj.influx.org", String.class);
-        this.alias = propertiesComponent.getProperties("rj.influx.security.alias", String.class);
+        this.host = propertiesComponent.getProperties("default.influx.host", String.class);
+        this.bucket = propertiesComponent.getProperties("default.influx.bucket", String.class);
+        this.org = propertiesComponent.getProperties("default.influx.org", String.class);
+        this.alias = propertiesComponent.getProperties("default.influx.security.alias", String.class);
     }
 
     public static InfluxClient getComponent() {
