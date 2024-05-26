@@ -331,7 +331,7 @@ class PromiseImplTest {
 
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("wfe", PromiseTaskExecuteType.IO, HttpClientResource.class, HttpPoolSetting.setting, (_, httpClientResource) -> {
+                .appendWithResource("wfe", PromiseTaskExecuteType.IO, HttpClientResource.class, HttpPoolSetting.setting, (_, _) -> {
                     //HttpResponseEnvelope execute = httpClientResource.execute(new Http2ClientImpl());
                     System.out.println("!!!");
                 })
