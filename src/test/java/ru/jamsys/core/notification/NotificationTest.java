@@ -10,7 +10,6 @@ import ru.jamsys.core.promise.PromiseImpl;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import ru.jamsys.core.promise.resource.notification.Notification;
 import ru.jamsys.core.promise.resource.notification.NotificationAndroid;
-import ru.jamsys.core.promise.resource.notification.NotificationApple;
 import ru.jamsys.core.promise.resource.notification.NotificationEmail;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.resource.http.notification.apple.AppleRequest;
@@ -45,21 +44,8 @@ class NotificationTest {
         System.out.println(promise.getLog());
     }
 
-    @SuppressWarnings("unused")
-    void appleSend() {
-        try {
-            Notification notificationApple = App.context.getBean(NotificationApple.class);
-            HashMap<String, Object> data = new HashMap<>();
-            data.put("x1", 1);
-            HttpResponse helloKitty = notificationApple.notify("Hello Kitty", data, "e81156eeb16246fd0498c53f55f870dfc5892806dde0a6e073cbf586e761382c");
-            System.out.println(helloKitty);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     @Test
-    void appleSend2() {
+    void appleSend() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
                 .appendWithResource("http", PromiseTaskExecuteType.IO, AppleResource.class, (_, appleResource) -> {
