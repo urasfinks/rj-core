@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.http.notification;
+package ru.jamsys.core.resource.http.notification.telegram;
 
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 

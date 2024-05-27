@@ -2,9 +2,21 @@ package ru.jamsys.core.notification;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.promise.resource.notification.*;
+import ru.jamsys.core.extension.HashMapBuilder;
+import ru.jamsys.core.promise.Promise;
+import ru.jamsys.core.promise.PromiseImpl;
+import ru.jamsys.core.promise.PromiseTaskExecuteType;
+import ru.jamsys.core.promise.resource.notification.Notification;
+import ru.jamsys.core.promise.resource.notification.NotificationAndroid;
+import ru.jamsys.core.promise.resource.notification.NotificationApple;
+import ru.jamsys.core.promise.resource.notification.NotificationEmail;
 import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.notification.apple.AppleRequest;
+import ru.jamsys.core.resource.http.notification.apple.AppleResource;
+import ru.jamsys.core.resource.http.notification.telegram.TelegramRequest;
+import ru.jamsys.core.resource.http.notification.telegram.TelegramResource;
 
 import java.util.HashMap;
 
@@ -21,10 +33,17 @@ class NotificationTest {
     }
 
     @SuppressWarnings("unused")
+    @Test
     void telegramSend() {
-        Notification notificationTelegram = App.context.getBean(NotificationTelegram.class);
-        HttpResponseEnvelope notify = notificationTelegram.notify("Hello", "world", "290029195");
-        System.out.println(notify);
+        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        promise
+                .appendWithResource("http", PromiseTaskExecuteType.IO, TelegramResource.class, (isThreadRun, telegramResource) -> {
+                    HttpResponseEnvelope execute = telegramResource.execute(new TelegramRequest("Привет", "Мир"));
+                    System.out.println(execute);
+                })
+                .run()
+                .await(2000);
+        System.out.println(promise.getLog());
     }
 
     @SuppressWarnings("unused")
@@ -38,6 +57,20 @@ class NotificationTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    void appleSend2() {
+        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        promise
+                .appendWithResource("http", PromiseTaskExecuteType.IO, AppleResource.class, (_, appleResource) -> {
+                    HashMapBuilder<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 1);
+                    HttpResponseEnvelope execute = appleResource.execute(new AppleRequest("Привет", data, "e81156eeb16246fd0498c53f55f870dfc5892806dde0a6e073cbf586e761382c"));
+                    System.out.println(execute);
+                })
+                .run()
+                .await(2000);
+        System.out.println(promise.getLog());
     }
 
 

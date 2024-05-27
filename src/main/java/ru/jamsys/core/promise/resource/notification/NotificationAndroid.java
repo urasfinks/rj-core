@@ -88,7 +88,7 @@ public class NotificationAndroid implements Notification {
             httpClient.exec();
         }
         if (httpResponseEnvelope.isStatus()) {
-            httpClient.getHttpResponseEnvelope(httpResponseEnvelope);
+            httpClient.getHttpResponseEnvelope();
         }
         return httpResponseEnvelope;
     }

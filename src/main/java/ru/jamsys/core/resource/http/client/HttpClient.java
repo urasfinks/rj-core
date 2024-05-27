@@ -2,9 +2,8 @@ package ru.jamsys.core.resource.http.client;
 
 
 import org.springframework.http.HttpStatus;
-import org.springframework.lang.Nullable;
-import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.flat.util.UtilBase64;
+import ru.jamsys.core.resource.virtual.file.system.File;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
@@ -21,8 +20,6 @@ public interface HttpClient {
     HttpClient setProxy(Proxy proxy);
 
     HttpClient setTimeoutMs(int connectTimeoutMs);
-
-    HttpClient setDisableHostnameVerification(boolean disableHostnameVerification);
 
     HttpClient setMethod(HttpMethodEnum method);
 
@@ -52,8 +49,6 @@ public interface HttpClient {
 
     int getTimeoutMs();
 
-    boolean isDisableHostnameVerification();
-
     HttpMethodEnum getMethod();
 
     Map<String, List<String>> getHeaderResponse();
@@ -72,12 +67,12 @@ public interface HttpClient {
 
     String getResponseString(String charset) throws UnsupportedEncodingException;
 
-    default HttpResponseEnvelope getHttpResponseEnvelope(@Nullable HttpResponseEnvelope httpResponseEnvelope) {
-        return getHttpResponseEnvelope(httpResponseEnvelope, StandardCharsets.UTF_8, false);
+    default HttpResponseEnvelope getHttpResponseEnvelope() {
+        return getHttpResponseEnvelope(StandardCharsets.UTF_8, false);
     }
 
-    default HttpResponseEnvelope getHttpResponseEnvelope(@Nullable HttpResponseEnvelope httpResponseEnvelope, Charset standardCharsets, boolean forwardResponse) {
-        HttpResponseEnvelope responseEnvelope = httpResponseEnvelope != null ? httpResponseEnvelope : new HttpResponseEnvelope();
+    default HttpResponseEnvelope getHttpResponseEnvelope(Charset standardCharsets, boolean forwardResponse) {
+        HttpResponseEnvelope responseEnvelope = new HttpResponseEnvelope();
         if (getException() != null) {
             responseEnvelope.addException(getException());
         }

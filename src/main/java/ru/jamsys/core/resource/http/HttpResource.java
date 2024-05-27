@@ -21,7 +21,7 @@ public class HttpResource extends ExpirationMsMutableImpl implements Completable
     @Override
     public HttpResponseEnvelope execute(HttpClient arguments) {
         arguments.exec();
-        return arguments.getHttpResponseEnvelope(null);
+        return arguments.getHttpResponseEnvelope();
     }
 
     @Override

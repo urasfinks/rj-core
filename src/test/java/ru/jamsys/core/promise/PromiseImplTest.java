@@ -5,10 +5,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.promise.resource.extension.NotificationTelegramPromise;
-import ru.jamsys.core.promise.resource.extension.YandexSpeechPromise;
 import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.resource.http.*;
+import ru.jamsys.core.promise.resource.extension.YandexSpeechPromise;
+import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
 
 import java.util.ArrayList;
@@ -298,16 +297,6 @@ class PromiseImplTest {
         System.out.println(wf.getLog());
     }
 
-    @SuppressWarnings("unused")
-    void promiseTelegram() {
-        Promise wf = new PromiseImpl("test", 6_000L);
-        wf.extension("request", new NotificationTelegramPromise().setup((NotificationTelegramPromise telegramPromise) -> {
-            telegramPromise.setTitle("Привет");
-            telegramPromise.setData("Страна");
-        })).run().await(10000);
-        System.out.println(wf.getLog());
-    }
-
     void promiseTaskWithPool() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
@@ -321,7 +310,6 @@ class PromiseImplTest {
                 .run()
                 .await(2000);
         System.out.println(promise.getLog());
-
     }
 
 }

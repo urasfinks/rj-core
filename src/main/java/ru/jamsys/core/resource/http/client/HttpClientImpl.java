@@ -8,13 +8,14 @@ import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.view.FileViewKeyStoreSslContext;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.Proxy;
-import java.net.URI;
+import java.net.*;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,15 +26,11 @@ public class HttpClientImpl implements HttpClient {
     @Getter
     private String SslContextType = "TLS";
 
-    //TODO: надо использовать в реализации
     @Getter
     private Proxy proxy = null;
 
     @Getter
     private int timeoutMs = 10000;
-
-    @Getter
-    public boolean disableHostnameVerification = false;
 
     @Getter
     public HttpMethodEnum method = null;
@@ -87,13 +84,6 @@ public class HttpClientImpl implements HttpClient {
     }
 
     @Override
-    public HttpClient setDisableHostnameVerification(boolean disableHostnameVerification) {
-        //TODO: надо использовать в реализации
-        this.disableHostnameVerification = disableHostnameVerification;
-        return this;
-    }
-
-    @Override
     public HttpClient setTimeoutMs(int connectTimeoutMs) {
         this.timeoutMs = connectTimeoutMs;
         return this;
@@ -115,8 +105,23 @@ public class HttpClientImpl implements HttpClient {
     public void exec() {
         try {
             java.net.http.HttpClient.Builder clientBuilder = java.net.http.HttpClient.newBuilder();
+
             if (sslContext != null) {
                 clientBuilder.sslContext(sslContext.getSslContext(SslContextType));
+            }
+
+            if (proxy != null) {
+                clientBuilder.proxy(new ProxySelector() {
+
+                    @Override
+                    public List<Proxy> select(URI uri) {
+                        return Collections.singletonList(proxy);
+                    }
+
+                    @Override
+                    public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {}
+
+                });
             }
 
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
@@ -134,8 +139,13 @@ public class HttpClientImpl implements HttpClient {
                 case DELETE -> requestBuilder.DELETE();
             }
             requestBuilder.timeout(Duration.ofMillis(timeoutMs));
-            try (java.net.http.HttpClient hc = clientBuilder.build()) {
-                HttpResponse<byte[]> responses = hc.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray());
+            try (java.net.http.HttpClient httpClient = clientBuilder.build()) {
+
+                if (proxy != null) {
+
+
+                }
+                HttpResponse<byte[]> responses = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray());
                 status = responses.statusCode(); // Return the status code, if it is 200, it means the sending is successful
                 response = responses.body();
                 this.headerResponse = responses.headers().map();
