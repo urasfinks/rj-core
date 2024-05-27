@@ -297,14 +297,15 @@ class PromiseImplTest {
         System.out.println(wf.getLog());
     }
 
+    @SuppressWarnings("unused")
     void promiseTaskWithPool() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("http", PromiseTaskExecuteType.IO, HttpResource.class, (_, _) -> {
+                .appendWithResource("http", HttpResource.class, (_, _) -> {
                     //HttpResponseEnvelope execute = httpClientResource.execute(new Http2ClientImpl());
                     System.out.println("!!!");
                 })
-                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, JdbcResource.class, (_, jdbcResource) -> {
+                .appendWithResource("jdbc", JdbcResource.class, (_, jdbcResource) -> {
                     System.out.println(jdbcResource);
                 })
                 .run()

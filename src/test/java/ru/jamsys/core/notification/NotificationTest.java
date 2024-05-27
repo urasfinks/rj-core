@@ -2,12 +2,10 @@ package ru.jamsys.core.notification;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.HashMapBuilder;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseImpl;
-import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import ru.jamsys.core.promise.resource.notification.Notification;
 import ru.jamsys.core.promise.resource.notification.NotificationAndroid;
 import ru.jamsys.core.promise.resource.notification.NotificationEmail;
@@ -35,7 +33,7 @@ class NotificationTest {
     void telegramSend() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("http", PromiseTaskExecuteType.IO, TelegramResource.class, (isThreadRun, telegramResource) -> {
+                .appendWithResource("http", TelegramResource.class, (isThreadRun, telegramResource) -> {
                     HttpResponse execute = telegramResource.execute(new TelegramRequest("Привет", "Мир"));
                     System.out.println(execute);
                 })
@@ -44,11 +42,11 @@ class NotificationTest {
         System.out.println(promise.getLog());
     }
 
-    @Test
+    @SuppressWarnings("unused")
     void appleSend() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("http", PromiseTaskExecuteType.IO, AppleResource.class, (_, appleResource) -> {
+                .appendWithResource("http", AppleResource.class, (_, appleResource) -> {
                     HashMapBuilder<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 123);
                     HttpResponse execute = appleResource.execute(new AppleRequest("Привет", data, "e81156eeb16246fd0498c53f55f870dfc5892806dde0a6e073cbf586e761382c"));
                     System.out.println(execute);

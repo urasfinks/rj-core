@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeAll;
 import ru.jamsys.core.App;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseImpl;
-import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,7 @@ class ConnectionResourceTest {
 
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("jdbc", PromiseTaskExecuteType.IO, JdbcResource.class, (_, jdbcResource) -> {
+                .appendWithResource("jdbc", JdbcResource.class, (_, jdbcResource) -> {
                     JdbcRequest jdbcRequest = new JdbcRequest(TestJdbcTemplate.TEST);
                     try {
                         List<Map<String, Object>> execute = jdbcResource.execute(jdbcRequest);

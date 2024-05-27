@@ -36,11 +36,10 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
     public PromiseTaskWithResource(
             String index,
             Promise promise,
-            PromiseTaskExecuteType type,
             BiConsumer<AtomicBoolean, T> procedure,
             Class<T> classResource
     ) {
-        super(index, promise, type);
+        super(index, promise, PromiseTaskExecuteType.IO);
         this.procedure = procedure;
         this.classResource = classResource;
         PoolResourceManagerForPromiseTask poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
@@ -51,11 +50,10 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
     public PromiseTaskWithResource(
             String index,
             Promise promise,
-            PromiseTaskExecuteType type,
             BiFunction<AtomicBoolean, T, List<PromiseTask>> supplier,
             Class<T> classResource
     ) {
-        super(index, promise, type);
+        super(index, promise, PromiseTaskExecuteType.IO);
         this.supplier = supplier;
         this.classResource = classResource;
         PoolResourceManagerForPromiseTask poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);

@@ -70,14 +70,12 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     default <T extends Resource<?, ?, ?>> Promise appendWithResource(
             String index,
-            PromiseTaskExecuteType promiseTaskExecuteType,
             Class<T> clasResource,
             BiConsumer<AtomicBoolean, T> procedure
     ) {
         return append(new PromiseTaskWithResource<>(
                 index,
                 this,
-                promiseTaskExecuteType,
                 procedure,
                 clasResource
         ));
@@ -85,14 +83,12 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     default <T extends Resource<?, ?, ?>> Promise appendWithResource(
             String index,
-            PromiseTaskExecuteType promiseTaskExecuteType,
             Class<T> clasResource,
             BiFunction<AtomicBoolean, T, List<PromiseTask>> supplier
     ) {
         return append(new PromiseTaskWithResource<>(
                 index,
                 this,
-                promiseTaskExecuteType,
                 supplier,
                 clasResource
         ));
