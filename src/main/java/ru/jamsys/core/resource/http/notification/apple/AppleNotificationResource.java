@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
-public class AppleResource extends ExpirationMsMutableImpl implements Completable, Resource<AppleResourceConstructor, AppleRequest, HttpResponse> {
+public class AppleNotificationResource extends ExpirationMsMutableImpl implements Completable, Resource<AppleNotificationResourceConstructor, AppleNotificationRequest, HttpResponse> {
 
     @Setter
     private String storage;
@@ -54,7 +54,7 @@ public class AppleResource extends ExpirationMsMutableImpl implements Completabl
     private int timeoutMs;
 
     @Override
-    public void constructor(AppleResourceConstructor constructor) throws Throwable {
+    public void constructor(AppleNotificationResourceConstructor constructor) throws Throwable {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
 
         this.url = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.url", String.class);
@@ -73,7 +73,7 @@ public class AppleResource extends ExpirationMsMutableImpl implements Completabl
     }
 
     @Override
-    public HttpResponse execute(AppleRequest arguments) {
+    public HttpResponse execute(AppleNotificationRequest arguments) {
 
         HttpClient httpClient = new HttpClientImpl();
         httpClient.setUrl(url + arguments.getDevice());

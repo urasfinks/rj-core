@@ -16,7 +16,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class TelegramResource extends ExpirationMsMutableImpl implements Completable, Resource<TelegramResourceConstructor, TelegramRequest, HttpResponse> {
+public class TelegramNotificationResource extends ExpirationMsMutableImpl implements Completable, Resource<TelegramNotificationResourceConstructor, TelegramNotificationRequest, HttpResponse> {
 
     @Setter
     private String securityAlias;
@@ -33,7 +33,7 @@ public class TelegramResource extends ExpirationMsMutableImpl implements Complet
     private SecurityComponent securityComponent;
 
     @Override
-    public void constructor(TelegramResourceConstructor constructor) throws Throwable {
+    public void constructor(TelegramNotificationResourceConstructor constructor) throws Throwable {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
         securityComponent = App.context.getBean(SecurityComponent.class);
 
@@ -44,7 +44,7 @@ public class TelegramResource extends ExpirationMsMutableImpl implements Complet
     }
 
     @Override
-    public HttpResponse execute(TelegramRequest arguments) {
+    public HttpResponse execute(TelegramNotificationRequest arguments) {
         String bodyRequest = arguments.getData();
         String title = arguments.getTitle();
         if (title != null && !title.trim().isEmpty()) {

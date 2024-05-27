@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.util.Map;
 
 @Getter
-public class AppleRequest {
+public class AppleNotificationRequest {
 
     private String title;
 
@@ -13,7 +13,7 @@ public class AppleRequest {
 
     private String device;
 
-    public AppleRequest(String title, Map<String, Object> data, String device) {
+    public AppleNotificationRequest(String title, Map<String, Object> data, String device) {
         this.title = title;
         this.data = data;
         this.device = device;

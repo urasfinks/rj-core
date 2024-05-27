@@ -4,10 +4,10 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.resource.http.HttpResource;
-import ru.jamsys.core.resource.http.notification.apple.AppleResource;
-import ru.jamsys.core.resource.http.notification.apple.AppleResourceConstructor;
-import ru.jamsys.core.resource.http.notification.telegram.TelegramResource;
-import ru.jamsys.core.resource.http.notification.telegram.TelegramResourceConstructor;
+import ru.jamsys.core.resource.http.notification.apple.AppleNotificationResource;
+import ru.jamsys.core.resource.http.notification.apple.AppleNotificationResourceConstructor;
+import ru.jamsys.core.resource.http.notification.telegram.TelegramNotificationResource;
+import ru.jamsys.core.resource.http.notification.telegram.TelegramNotificationResourceConstructor;
 import ru.jamsys.core.resource.influx.InfluxResource;
 import ru.jamsys.core.resource.influx.InfluxResourceConstructor;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
@@ -27,8 +27,8 @@ public class DefaultPoolResourceArgument<R extends Resource<?, ?, RC>, RC> {
 
     @SuppressWarnings("all")
     public DefaultPoolResourceArgument() {
-        map.put((Class<R>) AppleResource.class, (PoolSettings<R, RC>) new PoolSettings<>(AppleResource.class, new AppleResourceConstructor(), _ -> false));
-        map.put((Class<R>) TelegramResource.class, (PoolSettings<R, RC>) new PoolSettings<>(TelegramResource.class, new TelegramResourceConstructor(), _ -> false));
+        map.put((Class<R>) AppleNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(AppleNotificationResource.class, new AppleNotificationResourceConstructor(), _ -> false));
+        map.put((Class<R>) TelegramNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(TelegramNotificationResource.class, new TelegramNotificationResourceConstructor(), _ -> false));
         map.put((Class<R>) HttpResource.class, (PoolSettings<R, RC>) new PoolSettings<>(HttpResource.class, null, _ -> false));
         map.put((Class<R>) InfluxResource.class, (PoolSettings<R, RC>) new PoolSettings<>(InfluxResource.class, new InfluxResourceConstructor(), _ -> false));
         map.put((Class<R>) JdbcResource.class, (PoolSettings<R, RC>) new PoolSettings<>(JdbcResource.class, new JdbcResourceConstructor(), e -> {

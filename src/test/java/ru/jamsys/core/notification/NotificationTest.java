@@ -10,10 +10,10 @@ import ru.jamsys.core.promise.resource.notification.Notification;
 import ru.jamsys.core.promise.resource.notification.NotificationAndroid;
 import ru.jamsys.core.promise.resource.notification.NotificationEmail;
 import ru.jamsys.core.resource.http.client.HttpResponse;
-import ru.jamsys.core.resource.http.notification.apple.AppleRequest;
-import ru.jamsys.core.resource.http.notification.apple.AppleResource;
-import ru.jamsys.core.resource.http.notification.telegram.TelegramRequest;
-import ru.jamsys.core.resource.http.notification.telegram.TelegramResource;
+import ru.jamsys.core.resource.http.notification.apple.AppleNotificationRequest;
+import ru.jamsys.core.resource.http.notification.apple.AppleNotificationResource;
+import ru.jamsys.core.resource.http.notification.telegram.TelegramNotificationRequest;
+import ru.jamsys.core.resource.http.notification.telegram.TelegramNotificationResource;
 
 import java.util.HashMap;
 
@@ -33,8 +33,8 @@ class NotificationTest {
     void telegramSend() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("http", TelegramResource.class, (isThreadRun, telegramResource) -> {
-                    HttpResponse execute = telegramResource.execute(new TelegramRequest("Привет", "Мир"));
+                .appendWithResource("http", TelegramNotificationResource.class, (isThreadRun, telegramNotificationResource) -> {
+                    HttpResponse execute = telegramNotificationResource.execute(new TelegramNotificationRequest("Привет", "Мир"));
                     System.out.println(execute);
                 })
                 .run()
@@ -46,9 +46,9 @@ class NotificationTest {
     void appleSend() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("http", AppleResource.class, (_, appleResource) -> {
+                .appendWithResource("http", AppleNotificationResource.class, (_, appleNotificationResource) -> {
                     HashMapBuilder<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 123);
-                    HttpResponse execute = appleResource.execute(new AppleRequest("Привет", data, "e81156eeb16246fd0498c53f55f870dfc5892806dde0a6e073cbf586e761382c"));
+                    HttpResponse execute = appleNotificationResource.execute(new AppleNotificationRequest("Привет", data, "e81156eeb16246fd0498c53f55f870dfc5892806dde0a6e073cbf586e761382c"));
                     System.out.println(execute);
                 })
                 .run()
