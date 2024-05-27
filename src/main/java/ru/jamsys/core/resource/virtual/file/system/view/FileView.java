@@ -3,6 +3,11 @@ package ru.jamsys.core.resource.virtual.file.system.view;
 import ru.jamsys.core.resource.virtual.file.system.File;
 
 public interface FileView {
-    void set(File file); //Это вместо кнструктора, тут не надо создавать кеш, оставте это для createCache
-    void createCache(); //Что-то произошло с данными, надо пересобрать кеш
+
+    // Это вместо конструктора, тут не надо создавать кеш, оставьте это для createCache
+    void set(File file);
+
+    // Создать кеш
+    void createCache();
+
 }

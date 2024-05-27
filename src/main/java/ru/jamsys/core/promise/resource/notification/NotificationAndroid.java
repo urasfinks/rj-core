@@ -9,7 +9,7 @@ import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.http.client.HttpClient;
 import ru.jamsys.core.resource.http.client.HttpClientImpl;
-import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.client.HttpResponse;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -54,17 +54,17 @@ public class NotificationAndroid implements Notification {
     }
 
     @Override
-    public HttpResponseEnvelope notify(String title, Object data, String token) {
-        HttpResponseEnvelope httpResponseEnvelope = new HttpResponseEnvelope();
+    public HttpResponse notify(String title, Object data, String token) {
+        HttpResponse httpResponse = new HttpResponse();
 
-        if (httpResponseEnvelope.isStatus() && token == null) {
-            httpResponseEnvelope.addException("token is null");
+        if (httpResponse.isStatus() && token == null) {
+            httpResponse.addException("token is null");
         }
 
         HttpClient httpClient = null;
         String postData = null;
 
-        if (httpResponseEnvelope.isStatus()) {
+        if (httpResponse.isStatus()) {
             httpClient = new HttpClientImpl();
             httpClient.setUrl(url);
             httpClient.setTimeoutMs(timeoutMs);
@@ -73,24 +73,24 @@ public class NotificationAndroid implements Notification {
             try {
                 httpClient.setRequestHeader("Authorization", "Bearer " + getAccessToken());
             } catch (Exception e) {
-                httpResponseEnvelope.addException(e);
+                httpResponse.addException(e);
             }
         }
 
-        if (httpResponseEnvelope.isStatus()) {
+        if (httpResponse.isStatus()) {
             postData = createPostData(title, data, token);
             if (postData == null || postData.trim().isEmpty()) {
-                httpResponseEnvelope.addException("postData is empty");
+                httpResponse.addException("postData is empty");
             }
         }
-        if (httpResponseEnvelope.isStatus() && postData != null) {
+        if (httpResponse.isStatus() && postData != null) {
             httpClient.setPostData(postData.getBytes(StandardCharsets.UTF_8));
             httpClient.exec();
         }
-        if (httpResponseEnvelope.isStatus()) {
+        if (httpResponse.isStatus()) {
             httpClient.getHttpResponseEnvelope();
         }
-        return httpResponseEnvelope;
+        return httpResponse;
     }
 
     private String createPostData(String title, Object data, String token) {

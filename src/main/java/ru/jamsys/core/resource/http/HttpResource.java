@@ -6,12 +6,12 @@ import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.http.client.HttpClient;
-import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 @Component
 @Scope("prototype")
-public class HttpResource extends ExpirationMsMutableImpl implements Completable,  Resource<HttpConstructor, HttpClient, HttpResponseEnvelope> {
+public class HttpResource extends ExpirationMsMutableImpl implements Completable,  Resource<HttpConstructor, HttpClient, HttpResponse> {
 
     @Override
     public void constructor(HttpConstructor constructor) {
@@ -19,7 +19,7 @@ public class HttpResource extends ExpirationMsMutableImpl implements Completable
     }
 
     @Override
-    public HttpResponseEnvelope execute(HttpClient arguments) {
+    public HttpResponse execute(HttpClient arguments) {
         arguments.exec();
         return arguments.getHttpResponseEnvelope();
     }

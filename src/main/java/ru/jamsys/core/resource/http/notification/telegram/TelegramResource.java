@@ -9,14 +9,14 @@ import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.http.client.HttpClientImpl;
-import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class TelegramResource extends ExpirationMsMutableImpl implements Completable, Resource<TelegramResourceConstructor, TelegramRequest, HttpResponseEnvelope> {
+public class TelegramResource extends ExpirationMsMutableImpl implements Completable, Resource<TelegramResourceConstructor, TelegramRequest, HttpResponse> {
 
     @Setter
     private String securityAlias;
@@ -44,7 +44,7 @@ public class TelegramResource extends ExpirationMsMutableImpl implements Complet
     }
 
     @Override
-    public HttpResponseEnvelope execute(TelegramRequest arguments) {
+    public HttpResponse execute(TelegramRequest arguments) {
         String bodyRequest = arguments.getData();
         String title = arguments.getTitle();
         if (title != null && !title.trim().isEmpty()) {

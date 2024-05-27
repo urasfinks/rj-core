@@ -7,7 +7,7 @@ import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PromiseTaskTime;
 import ru.jamsys.core.component.RealThreadComponent;
 import ru.jamsys.core.component.VirtualThreadComponent;
-import ru.jamsys.core.extension.trace.Trace;
+import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.extension.trace.TraceTimer;
 import ru.jamsys.core.statistic.expiration.TimeEnvelopeNano;
 
@@ -50,7 +50,7 @@ public class PromiseTask implements Runnable {
 
     public void externalComplete() {
         if (Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT) {
-            promise.getTrace().add(new Trace<>(getIndex() + ".complete", null, type, this.getClass()));
+            promise.getTrace().add(new TracePromise<>(getIndex() + ".complete", null, type, this.getClass()));
             promise.complete(this);
         }
     }
@@ -102,7 +102,7 @@ public class PromiseTask implements Runnable {
             case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.context.getBean(RealThreadComponent.class).execute(this);
             case JOIN -> run();
             case EXTERNAL_WAIT ->
-                    promise.getTrace().add(new Trace<>(getIndex() + ".start", null, type, this.getClass()));
+                    promise.getTrace().add(new TracePromise<>(getIndex() + ".start", null, type, this.getClass()));
         }
     }
 
@@ -111,7 +111,7 @@ public class PromiseTask implements Runnable {
     public void run() {
         long startTime = System.currentTimeMillis();
         TimeEnvelopeNano<String> timer = App.context.getBean(PromiseTaskTime.class).add(index);
-        Trace<String, TraceTimer> trace = new Trace<>(getIndex(), null, type, this.getClass());
+        TracePromise<String, TraceTimer> trace = new TracePromise<>(getIndex(), null, type, this.getClass());
         promise.getTrace().add(trace);
         try {
             executeBlock();
@@ -119,12 +119,12 @@ public class PromiseTask implements Runnable {
             App.context.getBean(ExceptionHandler.class).handler(th);
             if (retryCount > 0) {
                 retryCount--;
-                promise.getExceptionTrace().add(new Trace<>(index, th, type, this.getClass()));
+                promise.getExceptionTrace().add(new TracePromise<>(index, th, type, this.getClass()));
                 App.context.getBean(PromiseTaskTime.class).addRetryDelay(this);
             } else {
                 switch (type) {
                     case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE ->
-                            promise.getExceptionTrace().add(new Trace<>(index, th, type, this.getClass()));
+                            promise.getExceptionTrace().add(new TracePromise<>(index, th, type, this.getClass()));
                     default -> promise.complete(this, th);
                 }
             }

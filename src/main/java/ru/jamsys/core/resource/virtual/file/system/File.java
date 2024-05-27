@@ -5,14 +5,17 @@ import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.*;
+import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.resource.virtual.file.system.view.FileView;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
-import ru.jamsys.core.flat.util.UtilBase64;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -43,18 +46,19 @@ public class File extends ExpirationMsMutableImpl implements Closable, Statistic
     private <T extends FileView> FileView setView(Class<T> cls) {
         return view.computeIfAbsent(cls, _ -> {
             try {
-                FileView e = cls.getDeclaredConstructor().newInstance();
-                e.set(this);
-                init();
-                return e;
-            } catch (Throwable ex) {
-                App.context.getBean(ExceptionHandler.class).handler(ex);
+                FileView fileView = cls.getDeclaredConstructor().newInstance();
+                fileView.set(this);
+                fileView.createCache();
+                return fileView;
+            } catch (Throwable th) {
+                App.context.getBean(ExceptionHandler.class).handler(th);
             }
             return null;
         });
     }
 
     public <T extends FileView> T getView(Class<T> cls) {
+        init();
         @SuppressWarnings("unchecked")
         T fileView = (T) setView(cls);
         return fileView;
@@ -82,6 +86,17 @@ public class File extends ExpirationMsMutableImpl implements Closable, Statistic
         parsePath(path);
     }
 
+    private void init() {
+        try {
+            if (fileData == null) {
+                fileData = loader.get();
+            }
+            active();
+        } catch (Throwable th) {
+            App.context.getBean(ExceptionHandler.class).handler(th);
+        }
+    }
+
     private void parsePath(String path) {
         ArrayList<String> items = new ArrayList<>(Arrays.asList(path.trim().split("/")));
         while (true) {
@@ -102,18 +117,6 @@ public class File extends ExpirationMsMutableImpl implements Closable, Statistic
         } else {
             this.absolutePath = folder + "/" + fileName + "." + extension;
         }
-    }
-
-    private void init() throws Exception {
-        if (fileData == null) {
-            fileData = loader.get();
-            Set<Class<? extends FileView>> classes = view.keySet();
-            for (Class<? extends FileView> c : classes) {
-                view.get(c).createCache();
-            }
-
-        }
-        active();
     }
 
     public byte[] getBytes() throws Exception {
@@ -144,6 +147,7 @@ public class File extends ExpirationMsMutableImpl implements Closable, Statistic
 
     public void reset() {
         fileData = null;
+        view.clear();
     }
 
     @Override

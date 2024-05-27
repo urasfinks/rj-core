@@ -4,7 +4,7 @@ import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.Property;
-import ru.jamsys.core.extension.trace.Trace;
+import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.extension.trace.TraceTimer;
 import ru.jamsys.core.promise.resource.extension.PromiseExtension;
 import ru.jamsys.core.resource.Resource;
@@ -112,9 +112,9 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     PromiseTask getLastAppendedTask();
 
-    List<Trace<String, Throwable>> getExceptionTrace();
+    List<TracePromise<String, Throwable>> getExceptionTrace();
 
-    Collection<Trace<String, TraceTimer>> getTrace();
+    Collection<TracePromise<String, TraceTimer>> getTrace();
 
     String getLog();
 

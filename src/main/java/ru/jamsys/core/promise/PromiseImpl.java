@@ -2,7 +2,7 @@ package ru.jamsys.core.promise;
 
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.extension.trace.Trace;
+import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.flat.util.Util;
 
 import java.util.List;
@@ -32,7 +32,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
 
     private void setError(String indexTask, Throwable exception, PromiseTaskExecuteType type) {
         this.exception = exception;
-        this.exceptionTrace.add(new Trace<>(indexTask, exception, type, null));
+        this.exceptionTrace.add(new TracePromise<>(indexTask, exception, type, null));
         isException.set(true);
     }
 

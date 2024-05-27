@@ -8,7 +8,7 @@ import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.manager.VirtualFileSystemManager;
 import ru.jamsys.core.resource.http.client.HttpClientImpl;
 import ru.jamsys.core.resource.http.client.HttpClient;
-import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.FileLoaderFactory;
@@ -69,12 +69,12 @@ public class NotificationApple implements Notification {
     }
 
     @Override
-    public HttpResponseEnvelope notify(String title, Object data, String device) {
-        HttpResponseEnvelope httpResponseEnvelope = new HttpResponseEnvelope();
-        if (httpResponseEnvelope.isStatus() && device == null) {
-            httpResponseEnvelope.addException("device is null");
+    public HttpResponse notify(String title, Object data, String device) {
+        HttpResponse httpResponse = new HttpResponse();
+        if (httpResponse.isStatus() && device == null) {
+            httpResponse.addException("device is null");
         }
-        if (httpResponseEnvelope.isStatus()) {
+        if (httpResponse.isStatus()) {
             if (!init) {
                 virtualFileSystemManager.add(new File(virtualPath, FileLoaderFactory.fromFileSystem(storage)));
                 init = true;
@@ -83,7 +83,7 @@ public class NotificationApple implements Notification {
 
         HttpClient httpClient = null;
 
-        if (httpResponseEnvelope.isStatus()) {
+        if (httpResponse.isStatus()) {
             httpClient = new HttpClientImpl();
             httpClient.setUrl(url + device);
             httpClient.setTimeoutMs(timeoutMs);
@@ -112,16 +112,16 @@ public class NotificationApple implements Notification {
                         FileViewKeyStore.prop.TYPE.name(), "PKCS12"
                 );
             } catch (Exception e) {
-                httpResponseEnvelope.addException(e);
+                httpResponse.addException(e);
             }
         }
-        if (httpResponseEnvelope.isStatus()) {
+        if (httpResponse.isStatus()) {
             httpClient.exec();
         }
-        if (httpResponseEnvelope.isStatus()) {
+        if (httpResponse.isStatus()) {
             httpClient.getHttpResponseEnvelope();
         }
-        return httpResponseEnvelope;
+        return httpResponse;
     }
 
     @Override

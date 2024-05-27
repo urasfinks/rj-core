@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.flat.util.JsonEnvelope;
 import ru.jamsys.core.flat.util.UtilJson;
 
@@ -37,24 +37,24 @@ public class ReCaptchaComponent {
     }
 
     @SuppressWarnings("unused")
-    public HttpResponseEnvelope isValid(String captchaValue) {
+    public HttpResponse isValid(String captchaValue) {
         return isValid(captchaValue, null);
     }
 
-    public HttpResponseEnvelope isValid(String captchaValue, @Nullable HttpResponseEnvelope refJRet) {
+    public HttpResponse isValid(String captchaValue, @Nullable HttpResponse refJRet) {
         //TODO: переписать на HttpClient
-        HttpResponseEnvelope httpResponseEnvelope = refJRet != null ? refJRet : new HttpResponseEnvelope();
+        HttpResponse httpResponse = refJRet != null ? refJRet : new HttpResponse();
         try {
-            if (httpResponseEnvelope.isStatus() && securityAlias.isEmpty()) {
-                httpResponseEnvelope.addException("Ключ reCaptchaSecretKey не определён");
+            if (httpResponse.isStatus() && securityAlias.isEmpty()) {
+                httpResponse.addException("Ключ reCaptchaSecretKey не определён");
             }
-            if (httpResponseEnvelope.isStatus()) {
+            if (httpResponse.isStatus()) {
                 char[] chars = securityComponent.get(securityAlias);
                 if (chars == null) {
-                    httpResponseEnvelope.addException("Приватное значение ключа reCaptchaSecretKey пустое");
+                    httpResponse.addException("Приватное значение ключа reCaptchaSecretKey пустое");
                 }
             }
-            if (httpResponseEnvelope.isStatus()) {
+            if (httpResponse.isStatus()) {
                 String url = "https://www.google.com/recaptcha/api/siteverify",
                         params = "secret=" + new String(securityComponent.get(securityAlias)) + "&response=" + captchaValue;
 
@@ -81,18 +81,18 @@ public class ReCaptchaComponent {
                 String response = sb.toString();
                 JsonEnvelope<Map<Object, Object>> mapWrapJsonToObject = UtilJson.toMap(response);
                 if (mapWrapJsonToObject.getException() != null) {
-                    httpResponseEnvelope.addException(mapWrapJsonToObject.getException());
+                    httpResponse.addException(mapWrapJsonToObject.getException());
                 }
-                httpResponseEnvelope.addData("reCaptchaResponse", mapWrapJsonToObject.getObject());
+                httpResponse.setBody(mapWrapJsonToObject.getObject().toString());
                 Boolean success = (Boolean) mapWrapJsonToObject.getObject().get("success");
                 if (success == null || !success) {
-                    httpResponseEnvelope.addException("reCaptcha не пройдена");
+                    httpResponse.addException("reCaptcha не пройдена");
                 }
             }
         } catch (Exception e) {
-            httpResponseEnvelope.addException(e);
+            httpResponse.addException(e);
         }
-        return httpResponseEnvelope;
+        return httpResponse;
     }
 
 }

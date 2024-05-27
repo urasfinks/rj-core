@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.flat.template.twix.TemplateTwix;
 import ru.jamsys.core.flat.template.twix.TemplateItemTwix;
 import ru.jamsys.core.flat.util.UtilFileResource;
@@ -86,19 +86,19 @@ public class NotificationEmail implements Notification {
     }
 
     @Override
-    public HttpResponseEnvelope notify(String title, Object data, String to) {
+    public HttpResponse notify(String title, Object data, String to) {
         return notify(title, null, data.toString(), to);
     }
 
-    public HttpResponseEnvelope notify(String title, String data, String dataHtml, String to) {
-        HttpResponseEnvelope httpResponseEnvelope = new HttpResponseEnvelope();
+    public HttpResponse notify(String title, String data, String dataHtml, String to) {
+        HttpResponse httpResponse = new HttpResponse();
         HtmlEmail email = new HtmlEmail();
         try {
             setting(email);
         } catch (Exception e) {
-            httpResponseEnvelope.addException(e);
+            httpResponse.addException(e);
         }
-        if (httpResponseEnvelope.isStatus()) {
+        if (httpResponse.isStatus()) {
             try {
                 email.addTo(to);
                 email.setSubject(title);
@@ -108,10 +108,10 @@ public class NotificationEmail implements Notification {
                 email.setHtmlMsg(dataHtml);
                 email.send();
             } catch (Exception e) {
-                httpResponseEnvelope.addException(e);
+                httpResponse.addException(e);
             }
         }
-        return httpResponseEnvelope;
+        return httpResponse;
     }
 
     @Override

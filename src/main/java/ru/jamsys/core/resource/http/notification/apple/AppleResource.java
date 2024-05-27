@@ -11,7 +11,7 @@ import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.http.client.HttpClient;
 import ru.jamsys.core.resource.http.client.HttpClientImpl;
-import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.FileLoaderFactory;
 import ru.jamsys.core.resource.virtual.file.system.view.FileViewKeyStore;
@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
-public class AppleResource extends ExpirationMsMutableImpl implements Completable, Resource<AppleResourceConstructor, AppleRequest, HttpResponseEnvelope> {
+public class AppleResource extends ExpirationMsMutableImpl implements Completable, Resource<AppleResourceConstructor, AppleRequest, HttpResponse> {
 
     @Setter
     private String storage;
@@ -73,7 +73,7 @@ public class AppleResource extends ExpirationMsMutableImpl implements Completabl
     }
 
     @Override
-    public HttpResponseEnvelope execute(AppleRequest arguments) {
+    public HttpResponse execute(AppleRequest arguments) {
 
         HttpClient httpClient = new HttpClientImpl();
         httpClient.setUrl(url + arguments.getDevice());
@@ -88,7 +88,6 @@ public class AppleResource extends ExpirationMsMutableImpl implements Completabl
         String postData = UtilJson.toString(root, "{}");
         if (postData != null) {
             httpClient.setPostData(postData.getBytes(StandardCharsets.UTF_8));
-            httpClient.exec();
         }
 
         httpClient.setRequestHeader("apns-push-type", pushType);

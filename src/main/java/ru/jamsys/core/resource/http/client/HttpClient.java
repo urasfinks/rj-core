@@ -67,35 +67,34 @@ public interface HttpClient {
 
     String getResponseString(String charset) throws UnsupportedEncodingException;
 
-    default HttpResponseEnvelope getHttpResponseEnvelope() {
-        return getHttpResponseEnvelope(StandardCharsets.UTF_8, false);
+    default HttpResponse getHttpResponseEnvelope() {
+        return getHttpResponseEnvelope(StandardCharsets.UTF_8);
     }
 
-    default HttpResponseEnvelope getHttpResponseEnvelope(Charset standardCharsets, boolean forwardResponse) {
-        HttpResponseEnvelope responseEnvelope = new HttpResponseEnvelope();
+    default HttpResponse getHttpResponseEnvelope(Charset standardCharsets) {
+        HttpResponse responseEnvelope = new HttpResponse();
         if (getException() != null) {
             responseEnvelope.addException(getException());
         }
         int status = getStatus();
         if (status == -1) {
-            responseEnvelope.setHttpStatus(HttpStatus.EXPECTATION_FAILED);
+            responseEnvelope.addException("Запроса не было");
         } else {
             responseEnvelope.setHttpStatus(HttpStatus.valueOf(status));
         }
-        try {
-            if (forwardResponse) {
-                responseEnvelope.setRawBody(getResponseString(standardCharsets.toString()));
+        if (responseEnvelope.isStatus()) {
+            try {
+                responseEnvelope.setBody(getResponseString(standardCharsets.toString()));
                 Map<String, List<String>> headerResponse = getHeaderResponse();
-                for (String key : headerResponse.keySet()) {
-                    List<String> strings = headerResponse.get(key);
-                    responseEnvelope.addHeader(key, String.join(";", strings));
+                if (headerResponse != null) {
+                    for (String key : headerResponse.keySet()) {
+                        List<String> strings = headerResponse.get(key);
+                        responseEnvelope.addHeader(key, String.join(";", strings));
+                    }
                 }
-            } else {
-                responseEnvelope.addData("httpResponseBody", getResponseString(standardCharsets.toString()));
-                responseEnvelope.addData("httpResponseHeader", getHeaderResponse());
+            } catch (Exception e) {
+                responseEnvelope.addException(e);
             }
-        } catch (Exception e) {
-            responseEnvelope.addException(e);
         }
         return responseEnvelope;
     }

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.resource.http.client.HttpResponseEnvelope;
+import ru.jamsys.core.resource.http.client.HttpResponse;
 
 
 class ReCaptchaComponentTest {
@@ -23,7 +23,7 @@ class ReCaptchaComponentTest {
     @Test
     void isCaptchaValid() {
         ReCaptchaComponent reCaptchaComponent = App.context.getBean(ReCaptchaComponent.class);
-        HttpResponseEnvelope captchaValid = reCaptchaComponent.isValid("1234");
+        HttpResponse captchaValid = reCaptchaComponent.isValid("1234");
         System.out.println(captchaValid.isStatus());
     }
 

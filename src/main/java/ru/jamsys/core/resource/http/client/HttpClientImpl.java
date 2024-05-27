@@ -10,7 +10,10 @@ import ru.jamsys.core.resource.virtual.file.system.view.FileViewKeyStoreSslConte
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.*;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +27,7 @@ import java.util.Map;
 public class HttpClientImpl implements HttpClient {
 
     @Getter
-    private String SslContextType = "TLS";
+    private String sslContextType = "TLS";
 
     @Getter
     private Proxy proxy = null;
@@ -97,7 +100,7 @@ public class HttpClientImpl implements HttpClient {
 
     @Override
     public HttpClient setSslContextType(String sslContextType) {
-        this.SslContextType = sslContextType;
+        this.sslContextType = sslContextType;
         return this;
     }
 
@@ -107,7 +110,7 @@ public class HttpClientImpl implements HttpClient {
             java.net.http.HttpClient.Builder clientBuilder = java.net.http.HttpClient.newBuilder();
 
             if (sslContext != null) {
-                clientBuilder.sslContext(sslContext.getSslContext(SslContextType));
+                clientBuilder.sslContext(sslContext.getSslContext(sslContextType));
             }
 
             if (proxy != null) {
@@ -140,11 +143,6 @@ public class HttpClientImpl implements HttpClient {
             }
             requestBuilder.timeout(Duration.ofMillis(timeoutMs));
             try (java.net.http.HttpClient httpClient = clientBuilder.build()) {
-
-                if (proxy != null) {
-
-
-                }
                 HttpResponse<byte[]> responses = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray());
                 status = responses.statusCode(); // Return the status code, if it is 200, it means the sending is successful
                 response = responses.body();
@@ -159,6 +157,9 @@ public class HttpClientImpl implements HttpClient {
 
     @Override
     public String getResponseString(String charset) throws UnsupportedEncodingException {
+        if (response == null) {
+            return "";
+        }
         return new String(response, charset);
     }
 
