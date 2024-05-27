@@ -5,9 +5,9 @@ import lombok.Getter;
 @Getter
 public class TelegramNotificationRequest {
 
-    private String title;
+    private final String title;
 
-    private String data;
+    private final String data;
 
     public TelegramNotificationRequest(String title, String data) {
         this.title = title;
