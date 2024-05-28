@@ -57,7 +57,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
         this.supplier = supplier;
         this.classResource = classResource;
         PoolResourceManagerForPromiseTask poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
-        managerElement = poolResourceManagerForPromiseTask.get(index, DefaultPoolResourceArgument.get(classResource));
+        managerElement = poolResourceManagerForPromiseTask.get(getIndex(), DefaultPoolResourceArgument.get(classResource));
     }
 
     // Этот блок вызывается из Promise.loop() и подразумевает запуск ::run из внешнего потока

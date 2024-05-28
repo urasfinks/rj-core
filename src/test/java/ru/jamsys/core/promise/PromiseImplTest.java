@@ -302,17 +302,15 @@ class PromiseImplTest {
     void yandexTest() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("http", YandexSpeechNotificationResource.class, (_, yandexSpeechNotificationResource) -> {
+                .appendWithResource("synthesize", YandexSpeechNotificationResource.class, (_, yandexSpeechNotificationResource) -> {
                     yandexSpeechNotificationResource.execute(new YandexSpeechNotificationRequest(
                             promise,
                             "target/result3.wav",
                             "Саня всё в порядке"
                     ));
-                }).then("complete", PromiseTaskExecuteType.IO, (_) -> {
-                    Util.logConsole("complete");
                 })
                 .run()
-                .await(5000);
+                .await(3000);
         System.out.println(promise.getLog());
     }
 

@@ -2,6 +2,7 @@ package ru.jamsys.core.resource.http.notification.yandex.speech;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
@@ -30,7 +31,11 @@ public class YandexSpeechNotificationRequest {
         this.text = text;
         this.promise = promise;
         this.filePath = filePath;
-        asyncPromiseTask = new PromiseTask(getClass().getName(), promise, PromiseTaskExecuteType.EXTERNAL_WAIT);
+        asyncPromiseTask = new PromiseTask(
+                ClassNameImpl.getClassNameStatic(getClass()),
+                promise,
+                PromiseTaskExecuteType.EXTERNAL_WAIT
+        );
         promise.append(asyncPromiseTask);
     }
 
