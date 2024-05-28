@@ -8,6 +8,8 @@ import ru.jamsys.core.resource.http.notification.apple.AppleNotificationResource
 import ru.jamsys.core.resource.http.notification.apple.AppleNotificationResourceConstructor;
 import ru.jamsys.core.resource.http.notification.telegram.TelegramNotificationResource;
 import ru.jamsys.core.resource.http.notification.telegram.TelegramNotificationResourceConstructor;
+import ru.jamsys.core.resource.http.notification.yandex.speech.YandexSpeechNotificationResource;
+import ru.jamsys.core.resource.http.notification.yandex.speech.YandexSpeechNotificationResourceConstructor;
 import ru.jamsys.core.resource.influx.InfluxResource;
 import ru.jamsys.core.resource.influx.InfluxResourceConstructor;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
@@ -27,21 +29,45 @@ public class DefaultPoolResourceArgument<R extends Resource<?, ?, RC>, RC> {
 
     @SuppressWarnings("all")
     public DefaultPoolResourceArgument() {
-        map.put((Class<R>) AppleNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(AppleNotificationResource.class, new AppleNotificationResourceConstructor(), _ -> false));
-        map.put((Class<R>) TelegramNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(TelegramNotificationResource.class, new TelegramNotificationResourceConstructor(), _ -> false));
-        map.put((Class<R>) HttpResource.class, (PoolSettings<R, RC>) new PoolSettings<>(HttpResource.class, null, _ -> false));
-        map.put((Class<R>) InfluxResource.class, (PoolSettings<R, RC>) new PoolSettings<>(InfluxResource.class, new InfluxResourceConstructor(), _ -> false));
-        map.put((Class<R>) JdbcResource.class, (PoolSettings<R, RC>) new PoolSettings<>(JdbcResource.class, new JdbcResourceConstructor(), e -> {
-            if (e != null) {
-                String msg = e.getMessage();
-                // Не конкурентная проверка
-                return msg.contains("закрыто")
-                        || msg.contains("close")
-                        || msg.contains("Connection reset")
-                        || msg.contains("Ошибка ввода/вывода при отправке бэкенду");
-            }
-            return false;
-        }));
+        map.put((Class<R>) YandexSpeechNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                YandexSpeechNotificationResource.class,
+                new YandexSpeechNotificationResourceConstructor(),
+                _ -> false
+        ));
+        map.put((Class<R>) AppleNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                AppleNotificationResource.class,
+                new AppleNotificationResourceConstructor(),
+                _ -> false
+        ));
+        map.put((Class<R>) TelegramNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                TelegramNotificationResource.class,
+                new TelegramNotificationResourceConstructor(),
+                _ -> false
+        ));
+        map.put((Class<R>) HttpResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                HttpResource.class,
+                null,
+                _ -> false
+        ));
+        map.put((Class<R>) InfluxResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                InfluxResource.class,
+                new InfluxResourceConstructor(),
+                _ -> false
+        ));
+        map.put((Class<R>) JdbcResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                JdbcResource.class,
+                new JdbcResourceConstructor(),
+                e -> {
+                    if (e != null) {
+                        String msg = e.getMessage();
+                        // Не конкурентная проверка
+                        return msg.contains("закрыто")
+                                || msg.contains("close")
+                                || msg.contains("Connection reset")
+                                || msg.contains("Ошибка ввода/вывода при отправке бэкенду");
+                    }
+                    return false;
+                }));
     }
 
     @SuppressWarnings("all")

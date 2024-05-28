@@ -5,7 +5,10 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.Procedure;
+import ru.jamsys.core.resource.http.notification.yandex.speech.YandexSpeechNotificationRequest;
 import speechkit.common.v3.Common;
 import syandex.cloud.api.ai.tts.v3.Tts;
 import yandex.cloud.api.ai.tts.v3.SynthesizerGrpc;
@@ -17,7 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -28,10 +30,10 @@ public class YandexSpeechClient {
 
     public final ManagedChannel channel;
 
-    public YandexSpeechClient(String host, int port, String apikey, long timeOutMs) {
+    public YandexSpeechClient(String host, int port, String apikey) {
         channel = ManagedChannelBuilder
                 .forAddress(host, port)
-                .keepAliveTimeout(timeOutMs, TimeUnit.MILLISECONDS)
+                //.keepAliveTimeout(timeOutMs, TimeUnit.MILLISECONDS)
                 .build();
 
         Metadata headers = new Metadata();
@@ -39,16 +41,20 @@ public class YandexSpeechClient {
         headers.put(Metadata.Key.of("x-client-request-id", Metadata.ASCII_STRING_MARSHALLER), UUID.randomUUID().toString());
 
         client = SynthesizerGrpc.newStub(channel)
-                .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers))
-                .withDeadlineAfter(timeOutMs, TimeUnit.MILLISECONDS);
+                .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers));
+        //.withDeadlineAfter(timeOutMs, TimeUnit.MILLISECONDS);
     }
 
-    public void shutdown() throws Throwable {
-        channel.shutdown();
-        channel.awaitTermination(5000, TimeUnit.MILLISECONDS);
+    public void shutdown() {
+        try {
+            channel.shutdown();
+            channel.awaitTermination(5000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            App.context.getBean(ExceptionHandler.class).handler(e);
+        }
     }
 
-    public void synthesize(String text, File output, Map<String, Object> defSettings, Procedure onComplete, Consumer<Throwable> onError) {
+    public void synthesize(String text, File output, YandexSpeechNotificationRequest settings, Procedure onComplete, Consumer<Throwable> onError) {
         Tts.UtteranceSynthesisRequest request = Tts.UtteranceSynthesisRequest
                 .newBuilder()
                 .setText(text)
@@ -58,9 +64,9 @@ public class YandexSpeechClient {
                                 .newBuilder()
                                 .setContainerAudioType(Common.ContainerAudio.ContainerAudioType.WAV)
                                 .build()))
-                .addHints(Tts.Hints.newBuilder().setSpeed((double) defSettings.get("speed")))
-                .addHints(Tts.Hints.newBuilder().setVoice((String) defSettings.get("voice")))
-                .addHints(Tts.Hints.newBuilder().setRole((String) defSettings.get("role")))
+                .addHints(Tts.Hints.newBuilder().setSpeed(settings.getSpeed()))
+                .addHints(Tts.Hints.newBuilder().setVoice(settings.getVoice()))
+                .addHints(Tts.Hints.newBuilder().setRole(settings.getRole()))
                 .setLoudnessNormalizationType(Tts.UtteranceSynthesisRequest.LoudnessNormalizationType.LUFS)
                 .build();
 

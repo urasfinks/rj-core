@@ -6,8 +6,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.promise.resource.extension.YandexSpeechPromise;
 import ru.jamsys.core.resource.http.HttpResource;
+import ru.jamsys.core.resource.http.notification.yandex.speech.YandexSpeechNotificationRequest;
+import ru.jamsys.core.resource.http.notification.yandex.speech.YandexSpeechNotificationResource;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
 
 import java.util.ArrayList;
@@ -287,14 +288,32 @@ class PromiseImplTest {
 
     }
 
-    @SuppressWarnings("unused")
-    void promiseYandexSpeechKit() {
-        Promise wf = new PromiseImpl("test", 6_000L);
-        wf.extension("sound", new YandexSpeechPromise().setup((YandexSpeechPromise yandexSpeechPromise) -> {
-            yandexSpeechPromise.setText("Привет страна");
-            yandexSpeechPromise.setFilePath("target/result2.wav");
-        })).run().await(10000);
-        System.out.println(wf.getLog());
+//    @SuppressWarnings("unused")
+//    void promiseYandexSpeechKit() {
+//        Promise wf = new PromiseImpl("test", 6_000L);
+//        wf.extension("sound", new YandexSpeechPromise().setup((YandexSpeechPromise yandexSpeechPromise) -> {
+//            yandexSpeechPromise.setText("Привет страна");
+//            yandexSpeechPromise.setFilePath("target/result2.wav");
+//        })).run().await(10000);
+//        System.out.println(wf.getLog());
+//    }
+
+    @Test
+    void yandexTest() {
+        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        promise
+                .appendWithResource("http", YandexSpeechNotificationResource.class, (_, yandexSpeechNotificationResource) -> {
+                    yandexSpeechNotificationResource.execute(new YandexSpeechNotificationRequest(
+                            promise,
+                            "target/result3.wav",
+                            "Саня всё в порядке"
+                    ));
+                }).then("complete", PromiseTaskExecuteType.IO, (_) -> {
+                    Util.logConsole("complete");
+                })
+                .run()
+                .await(5000);
+        System.out.println(promise.getLog());
     }
 
     @SuppressWarnings("unused")
