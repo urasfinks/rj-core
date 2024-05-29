@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.http.HttpResource;
-import ru.jamsys.core.resource.http.notification.yandex.speech.YandexSpeechNotificationRequest;
-import ru.jamsys.core.resource.http.notification.yandex.speech.YandexSpeechNotificationResource;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
 
 import java.util.ArrayList;
