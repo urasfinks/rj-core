@@ -35,6 +35,10 @@ import java.util.function.Function;
 // RR - ResourceResult
 // PI - PoolItem
 
+// Отработанные плавцы добавляются в парк в конец очереди
+// На работу плавцы отправляются из парка с конца очереди
+// Таким образом в парке в начале очереди будут тушиться пловцы без работы до их кончины
+
 //TODO: Добавить контроль TPS
 
 @ToString(onlyExplicitlyIncluded = true)
@@ -206,7 +210,7 @@ public abstract class AbstractPool<RC, RA, RR, PI extends Completable & Expirati
     }
 
     private void addToPark(@NonNull PI poolItem) {
-        // Вставка poolItem в parkQueue должна быть только в этом месте
+        // Вставка poolItem в parkQueue должна быть только в этом месте (+ системный addToParkReturnBeforeCheckInactivity)
         // Я написал блокировку на вставку в паркинг, что бы сделать атомарной операцию contains и addLast
         // Только что бы избежать дублей в паркинге
         // В обычной жизни конечно такое не должно произойти, но защищаемся всё равно
@@ -216,12 +220,28 @@ public abstract class AbstractPool<RC, RA, RR, PI extends Completable & Expirati
             parkQueue.addLast(poolItem);
             updateParkStatistic();
             addable = true;
+        } else {
+            App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Этот код не должен был случиться! Проверить логику!"));
         }
         lockAddToPark.unlock();
         // После разблокировки только начинаем заниматься грязной работой)
         if (addable) {
             onParkUpdate();
         }
+    }
+
+    private void addToParkReturnBeforeCheckInactivity(@NonNull List<PI> poolItems) {
+        // Не использовать этот метод вообще в личных целях
+        lockAddToPark.lock();
+        for (PI poolItem : poolItems) {
+            if (!parkQueue.contains(poolItem)) {
+                parkQueue.addLast(poolItem);
+                updateParkStatistic();
+            } else {
+                App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Этот код не должен был случиться! Проверить логику!"));
+            }
+        }
+        lockAddToPark.unlock();
     }
 
     // Это не явное удаление, а всего лишь маркировка, что в принципе объект может быть удалён
@@ -263,9 +283,10 @@ public abstract class AbstractPool<RC, RA, RR, PI extends Completable & Expirati
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
             // ЧТо бы избежать расползание ссылок будем изымать и если всё "ок" добавлять обратно
             int size = parkQueue.size();
+            List<PI> returns = new ArrayList<>();
             while (!parkQueue.isEmpty() && size > 0) {
                 if (maxCounterRemove.get() == 0) {
-                    return;
+                    break; // return нельзя, так как надо вернуть активных
                 }
                 // В начале должен быть отстойник, так как активные возвращаются в конец
                 // Новые задачи подбирают ресурсы с конца
@@ -277,10 +298,26 @@ public abstract class AbstractPool<RC, RA, RR, PI extends Completable & Expirati
                             maxCounterRemove.decrementAndGet();
                         }
                     } else {
-                        addToPark(poolItem);
+                        // Мы не можем воспользоваться стандартной функцией возвращения пловца
+                        // Так как он поместиться в конец очереди, а мы его как бы из отстойника только что взяли
+                        //addToPark(poolItem);
+                        returns.add(poolItem);
+                        // Так как мы изымаем пловцов с начала паркинга и мы уже встретили не протухшего
+                        // Дальнейшее перебираение считаю не уместным
+                        break;
                     }
                 }
                 size--;
+            }
+            if (!returns.isEmpty()) {
+                // вставка будет в начало паркинга по элементно
+                // Поэтому, что бы вставить как есть мы реверснём список
+                // park = [1,2,3,4,5,6] poolFirst + add -> [1,2,3] -> park = [4,5,6]
+                // [1,2,3].reversed() -> [3,2,1]; park.addFirst(E) ->
+                //      1. [3,4,5,6]
+                //      2. [2,3,4,5,6]
+                //      3. [1,2,3,4,5,6]
+                addToParkReturnBeforeCheckInactivity(returns.reversed());
             }
         }
     }

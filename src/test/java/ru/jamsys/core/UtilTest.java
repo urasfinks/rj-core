@@ -76,4 +76,14 @@ class UtilTest {
         Assertions.assertEquals(1, set.size());
     }
 
+    @Test
+    void listReversed(){
+        List<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        Assertions.assertEquals("[3, 2, 1]", list.reversed().toString());
+
+    }
+
 }

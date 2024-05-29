@@ -22,7 +22,7 @@ public abstract class AbstractPoolPublic<RC, RA, RR, PI extends Completable & Ex
             return null;
         }
         // Забираем с начала, что бы под нож улетели последние добавленные
-        PI poolItem = parkQueue.pollFirst();
+        PI poolItem = parkQueue.pollLast();
         if (poolItem != null) {
             updateParkStatistic();
             poolItem.onComplete();
@@ -36,7 +36,7 @@ public abstract class AbstractPoolPublic<RC, RA, RR, PI extends Completable & Ex
         }
         long finishTimeMs = System.currentTimeMillis() + timeOutMs;
         while (isRun.get() && isThreadRun.get() && finishTimeMs > System.currentTimeMillis()) {
-            PI poolItem = parkQueue.pollFirst();
+            PI poolItem = parkQueue.pollLast();
             if (poolItem != null) {
                 updateParkStatistic();
                 return poolItem;
