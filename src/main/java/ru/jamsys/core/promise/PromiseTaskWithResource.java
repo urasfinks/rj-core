@@ -6,16 +6,14 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.PoolResourceManagerForPromiseTask;
 import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
+import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.resource.DefaultPoolResourceArgument;
 import ru.jamsys.core.resource.PoolResourceForPromiseTask;
 import ru.jamsys.core.resource.Resource;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 
 public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends PromiseTask {
 
@@ -23,9 +21,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
     @Setter
     private PoolItemEnvelope<?, ?, ?, T> poolItemEnvelope;
 
-    private BiFunction<AtomicBoolean, T, List<PromiseTask>> supplier;
-
-    private BiConsumer<AtomicBoolean, T> procedure;
+    private final TriConsumer<AtomicBoolean, Promise, T> procedure;
 
     private final ManagerElement<PoolResourceForPromiseTask<?, ?, ?, ?>, PoolSettings<?, ?>> managerElement;
 
@@ -36,7 +32,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
     public PromiseTaskWithResource(
             String index,
             Promise promise,
-            BiConsumer<AtomicBoolean, T> procedure,
+            TriConsumer<AtomicBoolean, Promise, T> procedure,
             Class<T> classResource
     ) {
         super(index, promise, PromiseTaskExecuteType.IO);
@@ -44,20 +40,6 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
         this.classResource = classResource;
         PoolResourceManagerForPromiseTask poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
         managerElement = poolResourceManagerForPromiseTask.get(index, DefaultPoolResourceArgument.get(classResource));
-    }
-
-    @SuppressWarnings("all")
-    public PromiseTaskWithResource(
-            String index,
-            Promise promise,
-            BiFunction<AtomicBoolean, T, List<PromiseTask>> supplier,
-            Class<T> classResource
-    ) {
-        super(index, promise, PromiseTaskExecuteType.IO);
-        this.supplier = supplier;
-        this.classResource = classResource;
-        PoolResourceManagerForPromiseTask poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
-        managerElement = poolResourceManagerForPromiseTask.get(getIndex(), DefaultPoolResourceArgument.get(classResource));
     }
 
     // Этот блок вызывается из Promise.loop() и подразумевает запуск ::run из внешнего потока
@@ -72,12 +54,8 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
     @Override
     protected void executeBlock() throws Throwable {
         try (PoolItemEnvelope<?, ?, ?, T> res = getPoolItemEnvelope()) {
-            if (supplier != null) {
-                getPromise().complete(this, supplier.apply(isThreadRun, res.getItem()));
-            } else if (procedure != null) {
-                procedure.accept(isThreadRun, res.getItem());
-                getPromise().complete(this);
-            }
+            procedure.accept(isThreadRun, getPromise(), res.getItem());
+            getPromise().complete(this);
         }
     }
 

@@ -49,17 +49,6 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         complete();
     }
 
-    public void complete(@Nullable PromiseTask task, List<PromiseTask> toHead) {
-        if (task != null) {
-            setRunningTasks.remove(task);
-            countCompleteTask.incrementAndGet();
-        }
-        if (toHead != null) {
-            this.toHead.add(toHead);
-        }
-        complete();
-    }
-
     public void complete() {
         if (isRun.get()) {
             if (isStartLoop.compareAndSet(false, true)) {

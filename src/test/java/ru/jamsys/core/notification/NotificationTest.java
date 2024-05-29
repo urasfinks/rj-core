@@ -33,7 +33,7 @@ class NotificationTest {
     void telegramSend() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("http", TelegramNotificationResource.class, (isThreadRun, telegramNotificationResource) -> {
+                .appendWithResource("http", TelegramNotificationResource.class, (isThreadRun, _, telegramNotificationResource) -> {
                     HttpResponse execute = telegramNotificationResource.execute(new TelegramNotificationRequest("Привет", "Мир"));
                     System.out.println(execute);
                 })
@@ -46,7 +46,7 @@ class NotificationTest {
     void appleSend() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("http", AppleNotificationResource.class, (_, appleNotificationResource) -> {
+                .appendWithResource("http", AppleNotificationResource.class, (_, _, appleNotificationResource) -> {
                     HashMapBuilder<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 123);
                     HttpResponse execute = appleNotificationResource.execute(new AppleNotificationRequest("Привет", data, "e81156eeb16246fd0498c53f55f870dfc5892806dde0a6e073cbf586e761382c"));
                     System.out.println(execute);

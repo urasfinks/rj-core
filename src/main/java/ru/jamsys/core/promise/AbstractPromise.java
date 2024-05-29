@@ -97,6 +97,10 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
         return UtilJson.toStringPretty(this, "{}");
     }
 
+    public void addToHead(List<PromiseTask> append) {
+        toHead.add(append);
+    }
+
     @JsonProperty
     @Override
     public boolean isTerminated() {

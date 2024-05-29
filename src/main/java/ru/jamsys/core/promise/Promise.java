@@ -4,6 +4,7 @@ import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.Property;
+import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.extension.trace.TraceTimer;
 import ru.jamsys.core.promise.resource.extension.PromiseExtension;
@@ -14,9 +15,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 // Цепочка обещаний
 
@@ -29,8 +27,6 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
     void complete(@NonNull PromiseTask task, @NonNull Throwable exception);
 
     void complete(@Nullable PromiseTask task);
-
-    void complete(@Nullable PromiseTask task, List<PromiseTask> toHead);
 
     void complete();
 
@@ -45,33 +41,31 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
     // Добавление задачи, которая выполнится после успешного завершения цепочки Promise
     Promise onComplete(PromiseTask onComplete);
 
-    default Promise onComplete(PromiseTaskExecuteType promiseTaskExecuteType, Consumer<AtomicBoolean> fn) {
+    default Promise onComplete(PromiseTaskExecuteType promiseTaskExecuteType, BiConsumer<AtomicBoolean, Promise> fn) {
         return onComplete(new PromiseTask("onComplete", this, promiseTaskExecuteType, fn));
     }
 
     // Добавление задачи, которая выполнится после фатального завершения цепочки Promise
     Promise onError(PromiseTask onError);
 
-    default Promise onError(PromiseTaskExecuteType promiseTaskExecuteType, Consumer<AtomicBoolean> fn) {
+    default Promise onError(PromiseTaskExecuteType promiseTaskExecuteType, BiConsumer<AtomicBoolean, Promise> fn) {
         return onError(new PromiseTask("onError", this, promiseTaskExecuteType, fn));
     }
+
+    void addToHead(List<PromiseTask> append);
 
     Promise append(PromiseTask task);
 
     Promise append(PromiseTaskWithResource<?> task);
 
-    default Promise append(String index, PromiseTaskExecuteType promiseTaskExecuteType, Function<AtomicBoolean, List<PromiseTask>> fn) {
-        return append(new PromiseTask(index, this, promiseTaskExecuteType, fn));
-    }
-
-    default Promise append(String index, PromiseTaskExecuteType promiseTaskExecuteType, Consumer<AtomicBoolean> fn) {
+    default Promise append(String index, PromiseTaskExecuteType promiseTaskExecuteType, BiConsumer<AtomicBoolean, Promise> fn) {
         return append(new PromiseTask(index, this, promiseTaskExecuteType, fn));
     }
 
     default <T extends Resource<?, ?, ?>> Promise appendWithResource(
             String index,
             Class<T> clasResource,
-            BiConsumer<AtomicBoolean, T> procedure
+            TriConsumer<AtomicBoolean, Promise, T> procedure
     ) {
         return append(new PromiseTaskWithResource<>(
                 index,
@@ -81,26 +75,9 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
         ));
     }
 
-    default <T extends Resource<?, ?, ?>> Promise appendWithResource(
-            String index,
-            Class<T> clasResource,
-            BiFunction<AtomicBoolean, T, List<PromiseTask>> supplier
-    ) {
-        return append(new PromiseTaskWithResource<>(
-                index,
-                this,
-                supplier,
-                clasResource
-        ));
-    }
-
     Promise then(PromiseTask task);
 
-    default Promise then(String index, PromiseTaskExecuteType promiseTaskExecuteType, Function<AtomicBoolean, List<PromiseTask>> fn) {
-        return then(new PromiseTask(index, this, promiseTaskExecuteType, fn));
-    }
-
-    default Promise then(String index, PromiseTaskExecuteType promiseTaskExecuteType, Consumer<AtomicBoolean> fn) {
+    default Promise then(String index, PromiseTaskExecuteType promiseTaskExecuteType, BiConsumer<AtomicBoolean, Promise> fn) {
         return then(new PromiseTask(index, this, promiseTaskExecuteType, fn));
     }
 

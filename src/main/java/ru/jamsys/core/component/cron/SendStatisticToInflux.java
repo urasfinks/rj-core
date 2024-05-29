@@ -41,7 +41,7 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
     public Promise generateOld() {
         //TODO: replace ::collector IO -> COMPUTE (в текущий момент нет реализации COMPUTE)
         Promise promise = new PromiseImpl(getClass().getName(), 6_000L);
-        promise.append(getClassName("collector"), PromiseTaskExecuteType.IO, (AtomicBoolean isThreadRun) -> {
+        promise.append(getClassName("collector"), PromiseTaskExecuteType.IO, (AtomicBoolean isThreadRun, Promise _) -> {
                     brokerManagerElement.accept(queue -> {
                         List<Point> listPoints = new ArrayList<>();
                         while (!queue.isEmpty() && isThreadRun.get()) {

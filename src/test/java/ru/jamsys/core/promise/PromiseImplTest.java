@@ -13,7 +13,6 @@ import ru.jamsys.core.resource.jdbc.JdbcResource;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class PromiseImplTest {
@@ -35,24 +34,23 @@ class PromiseImplTest {
     void test1() {
         PromiseImpl wf = new PromiseImpl("test", 6_000L);
         wf
-                .append("test", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> {
+                .append("test", PromiseTaskExecuteType.IO, (_, promise) -> {
                     Util.sleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H1");
                     ArrayList<PromiseTask> objects = new ArrayList<>();
-                    objects.add(new PromiseTask("test2", wf, PromiseTaskExecuteType.JOIN, (AtomicBoolean _) -> System.out.println(Thread.currentThread().getName() + " EXTRA")));
-                    return objects;
+                    objects.add(new PromiseTask("test2", wf, PromiseTaskExecuteType.JOIN, (_, _) -> System.out.println(Thread.currentThread().getName() + " EXTRA")));
+                    promise.addToHead(objects);
                 })
-                .append("test", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> {
+                .append("test", PromiseTaskExecuteType.IO, (_, _) -> {
                     Util.sleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H2");
 
                 })
-                .then("test", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> {
+                .then("test", PromiseTaskExecuteType.IO, (_, _) -> {
                     Util.sleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H3");
-                    return null;
                 })
-                .then("test", PromiseTaskExecuteType.JOIN, (AtomicBoolean _) -> System.out.println(Thread.currentThread().getName() + " FINISH"))
+                .then("test", PromiseTaskExecuteType.JOIN, (_, _) -> System.out.println(Thread.currentThread().getName() + " FINISH"))
                 .run()
                 .await(4000);
     }
@@ -64,7 +62,7 @@ class PromiseImplTest {
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
             final int x = i;
-            wf.then("test", PromiseTaskExecuteType.JOIN, (AtomicBoolean _) -> deque.add(x));
+            wf.then("test", PromiseTaskExecuteType.JOIN, (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
         wf.run();
@@ -79,7 +77,7 @@ class PromiseImplTest {
 
         for (int i = 0; i < 1000; i++) {
             final int x = i;
-            wf.then("test", PromiseTaskExecuteType.JOIN, (AtomicBoolean _) -> deque.add(x));
+            wf.then("test", PromiseTaskExecuteType.JOIN, (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
         wf.run().await(1100);
@@ -95,7 +93,7 @@ class PromiseImplTest {
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
             final int x = i;
-            wf.then("test", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> deque.add(x));
+            wf.then("test", PromiseTaskExecuteType.IO, (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
         wf.run();
@@ -110,7 +108,7 @@ class PromiseImplTest {
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 1000; i++) {
             final int x = i;
-            wf.then("test", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> deque.add(x));
+            wf.then("test", PromiseTaskExecuteType.IO, (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
         //System.out.println("start size: " + wf.getListPendingTasks().size());
@@ -137,13 +135,13 @@ class PromiseImplTest {
         AtomicInteger error = new AtomicInteger(0);
         AtomicInteger complete = new AtomicInteger(0);
         wf
-                .append("test", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> {
+                .append("test", PromiseTaskExecuteType.IO, (_, _) -> {
                     retry.incrementAndGet();
                     throw new RuntimeException("Hello world");
                 })
                 .getLastAppendedTask().setRetryCount(1, 1000).getPromise()
-                .onError(PromiseTaskExecuteType.JOIN, _ -> error.incrementAndGet())
-                .onComplete(PromiseTaskExecuteType.JOIN, _ -> complete.incrementAndGet())
+                .onError(PromiseTaskExecuteType.JOIN, (_, _) -> error.incrementAndGet())
+                .onComplete(PromiseTaskExecuteType.JOIN, (_, _) -> complete.incrementAndGet())
                 .run()
                 .await(3000);
         System.out.println(wf.getLog());
@@ -161,20 +159,20 @@ class PromiseImplTest {
 
         Promise wf = new PromiseImpl("test", 1_500L);
         wf
-                .append("1", PromiseTaskExecuteType.JOIN, (AtomicBoolean _) -> {
+                .append("1", PromiseTaskExecuteType.JOIN, (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .then("2", PromiseTaskExecuteType.JOIN, (AtomicBoolean _) -> {
+                .then("2", PromiseTaskExecuteType.JOIN, (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .then("3", PromiseTaskExecuteType.JOIN, (AtomicBoolean _) -> {
+                .then("3", PromiseTaskExecuteType.JOIN, (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .onError(PromiseTaskExecuteType.JOIN, _ -> error.incrementAndGet())
-                .onComplete(PromiseTaskExecuteType.JOIN, _ -> complete.incrementAndGet())
+                .onError(PromiseTaskExecuteType.JOIN, (_, _) -> error.incrementAndGet())
+                .onComplete(PromiseTaskExecuteType.JOIN, (_, _) -> complete.incrementAndGet())
                 .run()
                 .await(2000);
         Assertions.assertEquals(1, error.get());
@@ -190,20 +188,20 @@ class PromiseImplTest {
 
         Promise wf = new PromiseImpl("test", 1_500L);
         wf
-                .append("1", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> {
+                .append("1", PromiseTaskExecuteType.IO, (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .append("2", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> {
+                .append("2", PromiseTaskExecuteType.IO, (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1500);
                 })
-                .then("3", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> {
+                .then("3", PromiseTaskExecuteType.IO, (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .onError(PromiseTaskExecuteType.JOIN, _ -> error.incrementAndGet())
-                .onComplete(PromiseTaskExecuteType.JOIN, _ -> complete.incrementAndGet())
+                .onError(PromiseTaskExecuteType.JOIN, (_, _) -> error.incrementAndGet())
+                .onComplete(PromiseTaskExecuteType.JOIN, (_, _) -> complete.incrementAndGet())
                 .run()
                 .await(2000);
         System.out.println(wf.getLog());
@@ -216,9 +214,9 @@ class PromiseImplTest {
     void toLog() {
         Promise wf = new PromiseImpl("test", 1_500L);
         wf
-                .append("1", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> System.out.println(1))
-                .append("2", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> System.out.println(2))
-                .then("3", PromiseTaskExecuteType.IO, (AtomicBoolean _) -> {
+                .append("1", PromiseTaskExecuteType.IO, (_, _) -> System.out.println(1))
+                .append("2", PromiseTaskExecuteType.IO, (_, _) -> System.out.println(2))
+                .then("3", PromiseTaskExecuteType.IO, (_, _) -> {
                     throw new RuntimeException("Test");
                 })
                 .run()
@@ -255,7 +253,7 @@ class PromiseImplTest {
 
         Promise wf = new PromiseImpl("AsyncNoWait", 6_000L);
         final AtomicInteger c = new AtomicInteger(0);
-        PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskExecuteType.ASYNC_NO_WAIT_IO, (AtomicBoolean _) -> {
+        PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskExecuteType.ASYNC_NO_WAIT_IO, (_, _) -> {
             c.incrementAndGet();
             throw new RuntimeException("ERROR");
         });
@@ -274,9 +272,9 @@ class PromiseImplTest {
         Promise wf = new PromiseImpl("Expiration", 1_000L);
         AtomicInteger counter = new AtomicInteger(0);
         wf
-                .append("longTimeout", PromiseTaskExecuteType.IO, _ -> {
+                .append("longTimeout", PromiseTaskExecuteType.IO, (_, _) -> {
                     Util.sleepMs(2000);
-                }).onError(PromiseTaskExecuteType.JOIN, _ -> counter.incrementAndGet())
+                }).onError(PromiseTaskExecuteType.JOIN, (_, _) -> counter.incrementAndGet())
                 .run().await(2000);
 
         System.out.println(wf.getLog());
@@ -298,11 +296,10 @@ class PromiseImplTest {
 //        System.out.println(wf.getLog());
 //    }
 
-    @Test
     void yandexTest() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("synthesize", YandexSpeechNotificationResource.class, (_, yandexSpeechNotificationResource) -> {
+                .appendWithResource("synthesize", YandexSpeechNotificationResource.class, (_, _, yandexSpeechNotificationResource) -> {
                     yandexSpeechNotificationResource.execute(new YandexSpeechNotificationRequest(
                             promise,
                             "target/result3.wav",
@@ -318,11 +315,11 @@ class PromiseImplTest {
     void promiseTaskWithPool() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("http", HttpResource.class, (_, _) -> {
+                .appendWithResource("http", HttpResource.class, (_, _, _) -> {
                     //HttpResponseEnvelope execute = httpClientResource.execute(new Http2ClientImpl());
                     System.out.println("!!!");
                 })
-                .appendWithResource("jdbc", JdbcResource.class, (_, jdbcResource) -> {
+                .appendWithResource("jdbc", JdbcResource.class, (_, _, jdbcResource) -> {
                     System.out.println(jdbcResource);
                 })
                 .run()

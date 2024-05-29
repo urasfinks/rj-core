@@ -20,19 +20,11 @@ public abstract class AbstractPromiseExtension<T> implements PromiseExtension<T>
 
     protected PromiseTaskExecuteType promiseTaskExecuteType = PromiseTaskExecuteType.IO;
 
-    private Promise promise;
-
     private String index;
 
     private String propertyResult = null;
 
     private Consumer<T> beforeExecute = null;
-
-    public void setResult(Object result) {
-        if (propertyResult != null) {
-            promise.setProperty(propertyResult, result);
-        }
-    }
 
     @Override
     public PromiseExtension<T> beforeExecute(Consumer<T> beforeExecute) {
@@ -54,11 +46,10 @@ public abstract class AbstractPromiseExtension<T> implements PromiseExtension<T>
 
     @Override
     public void extend(Promise promise) {
-        this.promise = promise;
         promise.append(index, promiseTaskExecuteType, this::execute);
     }
 
-    private void execute(AtomicBoolean isThreadRun) {
+    private void execute(AtomicBoolean isThreadRun, Promise promise1) {
         if (beforeExecute != null) {
             beforeExecute.accept(get());
         }

@@ -11,11 +11,9 @@ import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.extension.trace.TraceTimer;
 import ru.jamsys.core.statistic.expiration.TimeEnvelopeNano;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 // RA - ResourceArguments
 // RR - ResourceResult
@@ -26,11 +24,7 @@ public class PromiseTask implements Runnable {
     @Getter
     final PromiseTaskExecuteType type;
 
-    // Может порождать дополнительные PromiseTask после выполнения
-    // Которые встают в голову стека и будут выполняться без ожидания
-    private Function<AtomicBoolean, List<PromiseTask>> supplier;
-
-    private Consumer<AtomicBoolean> procedure;
+    private BiConsumer<AtomicBoolean, Promise> procedure;
 
     @Getter
     private final Promise promise;
@@ -67,14 +61,7 @@ public class PromiseTask implements Runnable {
         this.type = type;
     }
 
-    public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type, Function<AtomicBoolean, List<PromiseTask>> supplier) {
-        this.index = index;
-        this.promise = promise;
-        this.type = type;
-        this.supplier = supplier;
-    }
-
-    public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type, Consumer<AtomicBoolean> procedure) {
+    public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type, BiConsumer<AtomicBoolean, Promise> procedure) {
         this.index = index;
         this.promise = promise;
         this.type = type;
@@ -134,12 +121,8 @@ public class PromiseTask implements Runnable {
     }
 
     protected void executeBlock() throws Throwable {
-        if (supplier != null) {
-            getPromise().complete(this, supplier.apply(isThreadRun));
-        } else if (procedure != null) {
-            procedure.accept(isThreadRun);
+            procedure.accept(isThreadRun, getPromise());
             getPromise().complete(this);
-        }
     }
 
 }
