@@ -14,6 +14,8 @@ import ru.jamsys.core.resource.http.notification.apple.AppleNotificationRequest;
 import ru.jamsys.core.resource.http.notification.apple.AppleNotificationResource;
 import ru.jamsys.core.resource.http.notification.telegram.TelegramNotificationRequest;
 import ru.jamsys.core.resource.http.notification.telegram.TelegramNotificationResource;
+import ru.jamsys.core.resource.http.notification.yandex.speech.YandexSpeechNotificationRequest;
+import ru.jamsys.core.resource.http.notification.yandex.speech.YandexSpeechNotificationResource;
 
 import java.util.HashMap;
 
@@ -68,6 +70,22 @@ class NotificationTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @SuppressWarnings("unused")
+    void yandexTest() {
+        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        promise
+                .appendWithResource("synthesize", YandexSpeechNotificationResource.class, (_, _, yandexSpeechNotificationResource) -> {
+                    yandexSpeechNotificationResource.execute(new YandexSpeechNotificationRequest(
+                            promise,
+                            "target/result3.wav",
+                            "Саня всё в порядке"
+                    ));
+                })
+                .run()
+                .await(3000);
+        System.out.println(promise.getLog());
     }
 
     @SuppressWarnings("unused")

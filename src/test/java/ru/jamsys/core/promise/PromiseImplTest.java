@@ -286,31 +286,6 @@ class PromiseImplTest {
 
     }
 
-//    @SuppressWarnings("unused")
-//    void promiseYandexSpeechKit() {
-//        Promise wf = new PromiseImpl("test", 6_000L);
-//        wf.extension("sound", new YandexSpeechPromise().setup((YandexSpeechPromise yandexSpeechPromise) -> {
-//            yandexSpeechPromise.setText("Привет страна");
-//            yandexSpeechPromise.setFilePath("target/result2.wav");
-//        })).run().await(10000);
-//        System.out.println(wf.getLog());
-//    }
-
-    void yandexTest() {
-        Promise promise = new PromiseImpl("testPromise", 6_000L);
-        promise
-                .appendWithResource("synthesize", YandexSpeechNotificationResource.class, (_, _, yandexSpeechNotificationResource) -> {
-                    yandexSpeechNotificationResource.execute(new YandexSpeechNotificationRequest(
-                            promise,
-                            "target/result3.wav",
-                            "Саня всё в порядке"
-                    ));
-                })
-                .run()
-                .await(3000);
-        System.out.println(promise.getLog());
-    }
-
     @SuppressWarnings("unused")
     void promiseTaskWithPool() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
