@@ -7,6 +7,9 @@ import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 public class YandexSpeechNotificationRequest {
 
@@ -31,12 +34,15 @@ public class YandexSpeechNotificationRequest {
         this.text = text;
         this.promise = promise;
         this.filePath = filePath;
+        List<PromiseTask> add = new ArrayList<>();
         asyncPromiseTask = new PromiseTask(
                 ClassNameImpl.getClassNameStatic(getClass()),
                 promise,
                 PromiseTaskExecuteType.EXTERNAL_WAIT
         );
-        promise.append(asyncPromiseTask);
+        add.add(asyncPromiseTask);
+        add.add(new PromiseTask(PromiseTaskExecuteType.WAIT.getName(), getPromise(), PromiseTaskExecuteType.WAIT));
+        promise.addToHead(add);
     }
 
 }

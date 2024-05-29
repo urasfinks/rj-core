@@ -125,4 +125,10 @@ public class PromiseTask implements Runnable {
             getPromise().complete(this);
     }
 
+    @Override
+    public String toString() {
+        return "PromiseTask{" +
+                getIndex() +
+                '}';
+    }
 }

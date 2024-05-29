@@ -2,7 +2,6 @@ package ru.jamsys.core.promise;
 
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.flat.util.Util;
 
 import java.util.List;
@@ -28,12 +27,6 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     public void timeOut(String cause) {
         setError("TimeOut cause: " + cause, getExpiredException(), null);
         complete();
-    }
-
-    private void setError(String indexTask, Throwable exception, PromiseTaskExecuteType type) {
-        this.exception = exception;
-        this.exceptionTrace.add(new TracePromise<>(indexTask, exception, type, null));
-        isException.set(true);
     }
 
     public void complete(@NonNull PromiseTask task, @NonNull Throwable exception) {
@@ -89,6 +82,11 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         loopThread = Thread.currentThread();
         while (!toHead.isEmpty() && isNextLoop()) {
             List<PromiseTask> promiseTasks = toHead.pollLast();
+            //listPendingTasks = [4,5]  [x1,x2]
+            // -> 1. x2;
+            // listPendingTasks = [x2, 4, 5]
+            // -> 2. x1
+            // listPendingTasks = [x1, x2, 4, 5]
             assert promiseTasks != null;
             for (int i = promiseTasks.size() - 1; i >= 0; i--) {
                 PromiseTask promiseTask = promiseTasks.get(i);
@@ -137,6 +135,8 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         while (!isTerminated() && expiredTime >= System.currentTimeMillis()) {
             Thread.onSpinWait();
         }
+        System.out.println(isTerminated());
+        System.out.println(listPendingTasks);
         if (!isTerminated()) {
             Util.printStackTrace(
                     "await timeout start: " + Util.msToDataFormat(start)

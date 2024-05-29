@@ -1,7 +1,9 @@
 package ru.jamsys.core.notification;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.HashMapBuilder;
 import ru.jamsys.core.promise.Promise;
@@ -73,18 +75,21 @@ class NotificationTest {
     }
 
     @SuppressWarnings("unused")
+    @Test
     void yandexTest() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
-                .appendWithResource("synthesize", YandexSpeechNotificationResource.class, (_, _, yandexSpeechNotificationResource) -> {
+                .appendWithResource("synthesize", YandexSpeechNotificationResource.class, (_, p1, yandexSpeechNotificationResource) -> {
                     yandexSpeechNotificationResource.execute(new YandexSpeechNotificationRequest(
-                            promise,
+                            p1,
                             "target/result3.wav",
-                            "Саня всё в порядке"
+                            "Саня всё в порядке, всё в порядке Саня!"
                     ));
                 })
                 .run()
                 .await(3000);
+        System.out.println(promise.getLog());
+        Assertions.assertFalse(promise.isException());
         System.out.println(promise.getLog());
     }
 

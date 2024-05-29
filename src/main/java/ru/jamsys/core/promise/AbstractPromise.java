@@ -50,7 +50,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     protected volatile Throwable exception = null;
 
-    protected final AtomicBoolean isRun = new AtomicBoolean(true);
+    protected final AtomicBoolean isRun = new AtomicBoolean(false);
 
     protected final AtomicBoolean isException = new AtomicBoolean(false);
 
@@ -105,7 +105,10 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     @Override
     public boolean isTerminated() {
         return isException.get() || (
-                setRunningTasks.isEmpty() && countCompleteTask.get() == countRunnableTask.get()
+                setRunningTasks.isEmpty() // Список задач в запущенном режиме пуст
+                && countCompleteTask.get() == countRunnableTask.get() // кол-во ожидаемых задач = кол-ву исполненных задач
+                && listPendingTasks.isEmpty() // Список задач в запуск пуст
+                && !isStartLoop.get() // Обработчик задача не запущен
         );
     }
 
@@ -128,6 +131,12 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     @JsonProperty
     public long getDiffTimeMs() { //Сократил, что бы время InitTime было ровно над временем ExprTime
         return getInactivityTimeMs();
+    }
+
+    protected void setError(String indexTask, Throwable exception, PromiseTaskExecuteType type) {
+        this.exception = exception;
+        this.exceptionTrace.add(new TracePromise<>(indexTask, exception, type, null));
+        isException.set(true);
     }
 
 }

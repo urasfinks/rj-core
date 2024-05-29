@@ -10,6 +10,7 @@ import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -294,6 +295,38 @@ class PromiseImplTest {
                 })
                 .appendWithResource("jdbc", JdbcResource.class, (_, _, jdbcResource) -> {
                     System.out.println(jdbcResource);
+                })
+                .run()
+                .await(2000);
+        System.out.println(promise.getLog());
+    }
+
+    @Test
+    void appendBeforeRun() {
+        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        promise.append("test", PromiseTaskExecuteType.IO, (atomicBoolean, promise1) -> {
+            promise1.append("hey", PromiseTaskExecuteType.IO, (atomicBoolean1, promise2) -> {
+            });
+        });
+        promise.run().await(1000);
+        System.out.println(promise.getLog());
+        Assertions.assertTrue(promise.isException());
+    }
+
+    @Test
+    void waitBeforeExternalTask() {
+        Promise promise = new PromiseImpl("testPromise", 1_000L);
+        promise
+                .append("st", PromiseTaskExecuteType.IO, (_, promise1) -> {
+                    PromiseTask asyncPromiseTask = new PromiseTask(
+                            "async",
+                            promise1,
+                            PromiseTaskExecuteType.EXTERNAL_WAIT
+                    );
+                    List<PromiseTask> add = new ArrayList<>();
+                    add.add(asyncPromiseTask);
+                    add.add(new PromiseTask(PromiseTaskExecuteType.WAIT.getName(), promise1, PromiseTaskExecuteType.WAIT));
+                    promise1.addToHead(add);
                 })
                 .run()
                 .await(2000);

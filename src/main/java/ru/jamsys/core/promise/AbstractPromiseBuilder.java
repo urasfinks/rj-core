@@ -23,11 +23,6 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
         super(keepAliveOnInactivityMs);
     }
 
-    public Promise setLog(boolean log) {
-        this.log = log;
-        return this;
-    }
-
     public Promise onComplete(PromiseTask onComplete) {
         this.onComplete = onComplete;
         return this;
@@ -39,14 +34,9 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
     }
 
     public Promise append(PromiseTask task) {
-        listPendingTasks.add(task);
-        if (task.type.isRunningTask()) {
-            countRunnableTask.incrementAndGet();
+        if (isRun.get()) {
+            throw new RuntimeException("Promise.append() before run(); index: " + task.getIndex());
         }
-        return this;
-    }
-
-    public Promise append(PromiseTaskWithResource<?> task) {
         listPendingTasks.add(task);
         if (task.type.isRunningTask()) {
             countRunnableTask.incrementAndGet();
@@ -69,6 +59,7 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
     //-- Builder Producer
 
     public Promise run() {
+        isRun.set(true);
         complete();
         if (onError != null) {
             App.context.getBean(PromiseTaskTime.class).addExpiration(this);

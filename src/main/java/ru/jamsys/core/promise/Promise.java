@@ -36,8 +36,6 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
     // Запускаем цепочку задач от текущего потока
     Promise run();
 
-    Promise setLog(boolean log);
-
     // Добавление задачи, которая выполнится после успешного завершения цепочки Promise
     Promise onComplete(PromiseTask onComplete);
 
@@ -52,11 +50,10 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
         return onError(new PromiseTask("onError", this, promiseTaskExecuteType, fn));
     }
 
+    // Если в цепочку надо внедрить дополнительные задачи в runTime исполнения
     void addToHead(List<PromiseTask> append);
 
     Promise append(PromiseTask task);
-
-    Promise append(PromiseTaskWithResource<?> task);
 
     default Promise append(String index, PromiseTaskExecuteType promiseTaskExecuteType, BiConsumer<AtomicBoolean, Promise> fn) {
         return append(new PromiseTask(index, this, promiseTaskExecuteType, fn));
