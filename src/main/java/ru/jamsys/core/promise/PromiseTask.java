@@ -5,8 +5,8 @@ import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PromiseTaskTime;
-import ru.jamsys.core.component.RealThreadComponent;
-import ru.jamsys.core.component.VirtualThreadComponent;
+import ru.jamsys.core.component.ThreadRealComponent;
+import ru.jamsys.core.component.ThreadVirtualComponent;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.extension.trace.TraceTimer;
 import ru.jamsys.core.statistic.expiration.TimeEnvelopeNano;
@@ -85,8 +85,8 @@ public class PromiseTask implements Runnable {
     // execute on another thread
     public void start() {
         switch (type) {
-            case IO, ASYNC_NO_WAIT_IO -> App.context.getBean(VirtualThreadComponent.class).execute(this);
-            case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.context.getBean(RealThreadComponent.class).execute(this);
+            case IO, ASYNC_NO_WAIT_IO -> App.context.getBean(ThreadVirtualComponent.class).execute(this);
+            case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.context.getBean(ThreadRealComponent.class).execute(this);
             case JOIN -> run();
             case EXTERNAL_WAIT ->
                     promise.getTrace().add(new TracePromise<>(getIndex() + ".start", null, type, this.getClass()));
