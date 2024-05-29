@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.flat.util.YandexSpeechClient;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
@@ -13,7 +12,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import java.io.File;
 
 @Component
-public class YandexSpeechNotificationResource extends ExpirationMsMutableImpl implements Completable, Resource<YandexSpeechNotificationResourceConstructor, YandexSpeechNotificationRequest, Void> {
+public class YandexSpeechNotificationResource extends ExpirationMsMutableImpl implements Resource<YandexSpeechNotificationResourceConstructor, YandexSpeechNotificationRequest, Void> {
 
     YandexSpeechClient client = null;
 

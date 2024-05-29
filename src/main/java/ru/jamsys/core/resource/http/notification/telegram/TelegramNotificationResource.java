@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.http.client.HttpClientImpl;
@@ -16,7 +15,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class TelegramNotificationResource extends ExpirationMsMutableImpl implements Completable, Resource<TelegramNotificationResourceConstructor, TelegramNotificationRequest, HttpResponse> {
+public class TelegramNotificationResource extends ExpirationMsMutableImpl implements Resource<TelegramNotificationResourceConstructor, TelegramNotificationRequest, HttpResponse> {
 
     @Setter
     private String securityAlias;

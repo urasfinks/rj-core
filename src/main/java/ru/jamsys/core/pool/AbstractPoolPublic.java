@@ -1,16 +1,15 @@
 package ru.jamsys.core.pool;
 
-import ru.jamsys.core.extension.Completable;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
-import ru.jamsys.core.flat.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 // Я считаю, что эта реализация плохая, так как в ней есть ожидания
 // Я решил оставить эту реализацию только для тестирования, так как напрямую можно пощупать poolItem
 
-public abstract class AbstractPoolPublic<RC, RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>>
+public abstract class AbstractPoolPublic<RC, RA, RR, PI extends ExpirationMsMutable & Resource<RC, RA, RR>>
         extends AbstractPool<RC, RA, RR, PI> {
 
     public AbstractPoolPublic(String name, Class<PI> cls) {
@@ -25,7 +24,6 @@ public abstract class AbstractPoolPublic<RC, RA, RR, PI extends Completable & Ex
         PI poolItem = parkQueue.pollLast();
         if (poolItem != null) {
             updateParkStatistic();
-            poolItem.onComplete();
         }
         return poolItem;
     }

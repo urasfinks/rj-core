@@ -8,7 +8,6 @@ import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.Closable;
-import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.promise.PromiseTaskWithResource;
@@ -23,7 +22,7 @@ public class PoolResourceForPromiseTask<
         RC,
         RA,
         RR,
-        PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>
+        PI extends ExpirationMsMutable & Resource<RC, RA, RR>
         >
         extends AbstractPool<RC, RA, RR, PI>
         implements Closable, CheckClassItem {

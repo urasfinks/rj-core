@@ -6,7 +6,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
 import ru.jamsys.core.resource.Resource;
@@ -23,7 +22,6 @@ import java.util.Map;
 public class JdbcResource
         extends ExpirationMsMutableImpl
         implements
-        Completable,
         Resource<JdbcResourceConstructor, JdbcRequest, List<Map<String, Object>>>,
         JdbcExecute {
 

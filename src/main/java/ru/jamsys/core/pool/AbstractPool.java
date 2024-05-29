@@ -42,7 +42,7 @@ import java.util.function.Function;
 //TODO: Добавить контроль TPS
 
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<RC, RA, RR, PI extends Completable & ExpirationMsMutable & Resource<RC, RA, RR>>
+public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & Resource<RC, RA, RR>>
         extends ExpirationMsMutableImpl
         implements Pool<RC, RA, RR, PI>, LifeCycleInterface, KeepAlive, ClassName {
 
@@ -204,7 +204,6 @@ public abstract class AbstractPool<RC, RA, RR, PI extends Completable & Expirati
         }
         //Объект, который возвращают в пул не может попасть на удаление, его как бы только что использовали! Алё?)
         poolItem.active();
-        poolItem.onComplete();
         addToPark(poolItem);
         tpsComplete.incrementAndGet();
     }

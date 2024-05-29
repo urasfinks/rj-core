@@ -5,7 +5,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
@@ -19,7 +18,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 
-public class ThreadResource extends ExpirationMsMutableImpl implements ClassName, Completable, Resource<Void, Void, Void> {
+public class ThreadResource extends ExpirationMsMutableImpl implements ClassName, Resource<Void, Void, Void> {
 
     private final Thread thread;
 

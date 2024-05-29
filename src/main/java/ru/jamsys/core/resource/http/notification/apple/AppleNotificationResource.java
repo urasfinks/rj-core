@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.manager.VirtualFileSystemManager;
-import ru.jamsys.core.extension.Completable;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
@@ -22,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
-public class AppleNotificationResource extends ExpirationMsMutableImpl implements Completable, Resource<AppleNotificationResourceConstructor, AppleNotificationRequest, HttpResponse> {
+public class AppleNotificationResource extends ExpirationMsMutableImpl implements Resource<AppleNotificationResourceConstructor, AppleNotificationRequest, HttpResponse> {
 
     @Setter
     private String storage;
