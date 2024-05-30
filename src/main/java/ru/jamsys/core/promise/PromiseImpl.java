@@ -2,6 +2,7 @@ package ru.jamsys.core.promise;
 
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
+import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.flat.util.Util;
 
 import java.util.List;
@@ -37,7 +38,6 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     public void complete(@Nullable PromiseTask task) {
         if (task != null) {
             setRunningTasks.remove(task);
-            countCompleteTask.incrementAndGet();
         }
         complete();
     }
@@ -79,38 +79,56 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     private void loop() {
+        if (isWait.get()) {
+            if (setRunningTasks.isEmpty()) {
+                isWait.set(false);
+                getTrace().add(new TracePromise<>("ResumeWait in loop", null, null, null));
+            } else {
+                return;
+            }
+        }
         loopThread = Thread.currentThread();
         while (!toHead.isEmpty() && isNextLoop()) {
             List<PromiseTask> promiseTasks = toHead.pollLast();
-            //listPendingTasks = [4,5]  [x1,x2]
-            // -> 1. x2;
-            // listPendingTasks = [x2, 4, 5]
-            // -> 2. x1
-            // listPendingTasks = [x1, x2, 4, 5]
-            assert promiseTasks != null;
-            for (int i = promiseTasks.size() - 1; i >= 0; i--) {
-                PromiseTask promiseTask = promiseTasks.get(i);
-                listPendingTasks.addFirst(promiseTask);
-                if (promiseTask.type.isRunningTask()) {
-                    countRunnableTask.incrementAndGet();
+            if (promiseTasks != null) {
+                //listPendingTasks = [4,5]  [x1,x2]
+                // -> 1. x2;
+                // listPendingTasks = [x2, 4, 5]
+                // -> 2. x1
+                // listPendingTasks = [x1, x2, 4, 5]
+                for (int i = promiseTasks.size() - 1; i >= 0; i--) {
+                    PromiseTask promiseTask = promiseTasks.get(i);
+                    listPendingTasks.addFirst(promiseTask);
                 }
             }
         }
         // Запускаем задачи из pending
         while (!listPendingTasks.isEmpty() && isNextLoop()) {
-            PromiseTask firstTask = listPendingTasks.pollFirst();
-            assert firstTask != null;
-            if (firstTask.type.isRunningTask()) { //Так мы откинули WAIT
-                setRunningTasks.add(firstTask);
-            }
-            firstTask.start();
-            if (firstTask.type == PromiseTaskExecuteType.WAIT) {
-                if (!setRunningTasks.isEmpty()) {
-                    listPendingTasks.addFirst(firstTask);
+            if (isWait.get()) {
+                if (setRunningTasks.isEmpty()) {
+                    isWait.set(false);
+                    getTrace().add(new TracePromise<>("ResumeWait in while", null, null, null));
+                } else {
                     break;
                 }
             }
-            Thread.onSpinWait();
+            PromiseTask firstTask = listPendingTasks.peekFirst();
+            if (firstTask != null) {
+                switch (firstTask.type) {
+                    case WAIT -> {
+                        isWait.set(true);
+                        getTrace().add(new TracePromise<>("StartWait", null, null, null));
+                    }
+                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> firstTask.start();
+                    default -> {
+                        setRunningTasks.add(firstTask);
+                        firstTask.start();
+                    }
+                }
+                listPendingTasks.remove(firstTask);
+            } else {
+                setError("listPendingTasks.peekFirst() return null value", null, null);
+            }
         }
         if (isRun.get()) {
             if (isException.get()) {
@@ -119,7 +137,11 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 if (onError != null) {
                     onError.start();
                 }
-            } else if (isTerminated()) {
+            } else if (
+                    !isWait.get() // Мы не ждём
+                            && setRunningTasks.isEmpty() // Список запущенных задач пуст
+                            && listPendingTasks.isEmpty() //  Список задач в работу пуст
+            ) {
                 isRun.set(false);
                 queueMultipleCompleteSet.remove(this);
                 if (onComplete != null) {
@@ -135,21 +157,12 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         while (!isTerminated() && expiredTime >= System.currentTimeMillis()) {
             Thread.onSpinWait();
         }
-        System.out.println(isTerminated());
-        System.out.println(listPendingTasks);
         if (!isTerminated()) {
             Util.printStackTrace(
                     "await timeout start: " + Util.msToDataFormat(start)
                             + " now: " + Util.msToDataFormat(System.currentTimeMillis()) + ";\r\n"
-                            + getAny());
+                            + "Promise not terminated");
         }
-    }
-
-    public String getAny() {
-        return " isTerminated: " + isTerminated() + ";\n"
-                + " countRunnableTask: " + countRunnableTask.get() + ";\n"
-                + " countCompleteTask: " + countCompleteTask.get() + ";\n"
-                + " isException.get(): " + isException.get() + ";";
     }
 
 }

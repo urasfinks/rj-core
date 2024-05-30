@@ -18,7 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @JsonPropertyOrder({"correlation", "index", "addTime", "expTime", "diffTimeMs", "exception", "completed", "trace", "exceptionTrace", "property"})
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
@@ -33,16 +32,9 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     @Getter
     protected String correlation = java.util.UUID.randomUUID().toString();
 
-    protected boolean log = false;
-
     // Первый поток, который зашёл одновременно с выполнением основного loop будет пробовать ждать 5мс
     // Что бы перехватить инициативу крутить основной loop
     protected AtomicBoolean firstConcurrentCompletionWait = new AtomicBoolean(false);
-
-    // Кол-во задач, которые должны быть исполнены
-    protected AtomicInteger countRunnableTask = new AtomicInteger(0);
-
-    protected AtomicInteger countCompleteTask = new AtomicInteger(0);
 
     @JsonProperty
     @Getter
@@ -51,6 +43,8 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     protected volatile Throwable exception = null;
 
     protected final AtomicBoolean isRun = new AtomicBoolean(false);
+
+    protected final AtomicBoolean isWait = new AtomicBoolean(false);
 
     protected final AtomicBoolean isException = new AtomicBoolean(false);
 
@@ -104,12 +98,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     @JsonProperty
     @Override
     public boolean isTerminated() {
-        return isException.get() || (
-                setRunningTasks.isEmpty() // Список задач в запущенном режиме пуст
-                && countCompleteTask.get() == countRunnableTask.get() // кол-во ожидаемых задач = кол-ву исполненных задач
-                && listPendingTasks.isEmpty() // Список задач в запуск пуст
-                && !isStartLoop.get() // Обработчик задача не запущен
-        );
+        return isException.get() || !isRun.get();
     }
 
     @JsonProperty

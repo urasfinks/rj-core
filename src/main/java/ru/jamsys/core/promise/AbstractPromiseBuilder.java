@@ -34,13 +34,13 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
     }
 
     public Promise append(PromiseTask task) {
+        if (task == null) {
+            throw new RuntimeException("Promise.append() task is null");
+        }
         if (isRun.get()) {
             throw new RuntimeException("Promise.append() before run(); index: " + task.getIndex());
         }
         listPendingTasks.add(task);
-        if (task.type.isRunningTask()) {
-            countRunnableTask.incrementAndGet();
-        }
         return this;
     }
 

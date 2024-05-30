@@ -80,7 +80,7 @@ class PromiseImplTest {
             dequeRes.add(i);
         }
         wf.run().await(1100);
-        System.out.println("test3 isTerminated: " + wf.isTerminated() + "; any: " + wf.getAny());
+        System.out.println("test3 isTerminated: " + wf.isTerminated());
         System.out.println(wf.getLog());
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
     }
@@ -271,10 +271,9 @@ class PromiseImplTest {
         Promise wf = new PromiseImpl("Expiration", 1_000L);
         AtomicInteger counter = new AtomicInteger(0);
         wf
-                .append("longTimeout", PromiseTaskExecuteType.IO, (_, _) -> {
-                    Util.sleepMs(2000);
-                }).onError(PromiseTaskExecuteType.JOIN, (_, _) -> counter.incrementAndGet())
-                .run().await(2000);
+                .append("longTimeout", PromiseTaskExecuteType.IO, (_, _)
+                        -> Util.sleepMs(2000)).onError(PromiseTaskExecuteType.JOIN, (_, _) -> counter.incrementAndGet())
+                .run().await(2010);
 
         System.out.println(wf.getLog());
 
@@ -293,9 +292,8 @@ class PromiseImplTest {
                     //HttpResponseEnvelope execute = httpClientResource.execute(new Http2ClientImpl());
                     System.out.println("!!!");
                 })
-                .appendWithResource("jdbc", JdbcResource.class, (_, _, jdbcResource) -> {
-                    System.out.println(jdbcResource);
-                })
+                .appendWithResource("jdbc", JdbcResource.class, (_, _, jdbcResource)
+                        -> System.out.println(jdbcResource))
                 .run()
                 .await(2000);
         System.out.println(promise.getLog());
@@ -304,10 +302,9 @@ class PromiseImplTest {
     @Test
     void appendBeforeRun() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
-        promise.append("test", PromiseTaskExecuteType.IO, (atomicBoolean, promise1) -> {
-            promise1.append("hey", PromiseTaskExecuteType.IO, (atomicBoolean1, promise2) -> {
-            });
-        });
+        promise.append("test", PromiseTaskExecuteType.IO, (_, promise1)
+                -> promise1.append("hey", PromiseTaskExecuteType.IO, (_, _) -> {
+        }));
         promise.run().await(1000);
         System.out.println(promise.getLog());
         Assertions.assertTrue(promise.isException());
@@ -330,7 +327,11 @@ class PromiseImplTest {
                 })
                 .run()
                 .await(2000);
+
         System.out.println(promise.getLog());
+        Assertions.assertFalse(promise.isException());
+        Assertions.assertFalse(promise.isTerminated());
+
     }
 
 }
