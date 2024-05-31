@@ -4,16 +4,20 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.resource.http.HttpResource;
-import ru.jamsys.core.resource.notification.apple.AppleNotificationResource;
-import ru.jamsys.core.resource.notification.apple.AppleNotificationResourceConstructor;
-import ru.jamsys.core.resource.notification.telegram.TelegramNotificationResource;
-import ru.jamsys.core.resource.notification.telegram.TelegramNotificationResourceConstructor;
-import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationResource;
-import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationResourceConstructor;
 import ru.jamsys.core.resource.influx.InfluxResource;
 import ru.jamsys.core.resource.influx.InfluxResourceConstructor;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
 import ru.jamsys.core.resource.jdbc.JdbcResourceConstructor;
+import ru.jamsys.core.resource.notification.android.AndroidNotificationResource;
+import ru.jamsys.core.resource.notification.android.AndroidNotificationResourceConstructor;
+import ru.jamsys.core.resource.notification.apple.AppleNotificationResource;
+import ru.jamsys.core.resource.notification.apple.AppleNotificationResourceConstructor;
+import ru.jamsys.core.resource.notification.email.EmailNotificationResource;
+import ru.jamsys.core.resource.notification.email.EmailNotificationResourceConstructor;
+import ru.jamsys.core.resource.notification.telegram.TelegramNotificationResource;
+import ru.jamsys.core.resource.notification.telegram.TelegramNotificationResourceConstructor;
+import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationResource;
+import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationResourceConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +33,16 @@ public class DefaultPoolResourceArgument<R extends Resource<?, ?, RC>, RC> {
 
     @SuppressWarnings("all")
     public DefaultPoolResourceArgument() {
+        map.put((Class<R>) EmailNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                EmailNotificationResource.class,
+                new EmailNotificationResourceConstructor(),
+                _ -> false
+        ));
+        map.put((Class<R>) AndroidNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                AndroidNotificationResource.class,
+                new AndroidNotificationResourceConstructor(),
+                _ -> false
+        ));
         map.put((Class<R>) YandexSpeechNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
                 YandexSpeechNotificationResource.class,
                 new YandexSpeechNotificationResourceConstructor(),

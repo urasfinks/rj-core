@@ -10,12 +10,13 @@ import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseImpl;
 import ru.jamsys.core.promise.resource.notification.Notification;
 import ru.jamsys.core.promise.resource.notification.NotificationAndroid;
-import ru.jamsys.core.promise.resource.notification.NotificationEmail;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.resource.notification.android.AndroidNotificationRequest;
 import ru.jamsys.core.resource.notification.android.AndroidNotificationResource;
 import ru.jamsys.core.resource.notification.apple.AppleNotificationRequest;
 import ru.jamsys.core.resource.notification.apple.AppleNotificationResource;
+import ru.jamsys.core.resource.notification.email.EmailNotificationResource;
+import ru.jamsys.core.resource.notification.email.EmailTemplateNotificationRequest;
 import ru.jamsys.core.resource.notification.telegram.TelegramNotificationRequest;
 import ru.jamsys.core.resource.notification.telegram.TelegramNotificationResource;
 import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationRequest;
@@ -101,7 +102,6 @@ class NotificationTest {
         promise
                 .appendWithResource("push", AndroidNotificationResource.class, (atomicBoolean, promise1, androidNotificationResource) -> {
                     HashMap<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 1);
-
                     androidNotificationResource.execute(new AndroidNotificationRequest("Hello", data, "fyP9dxiISLW9OLJfsb73kT:APA91bGSXWN4hR9_OdXEi3THPTNs-RAsMjASA9_XXXMpq5yjkUQAG8CUvucSopPb9xcffQgyMG5K-yoA0p5JS3DyMVVTw618a566zQdvVS_a9Tmr_ktHlI5ZY5aQ60HjkhWWzI6AwsdB"));
                 })
                 .run()
@@ -111,19 +111,24 @@ class NotificationTest {
         System.out.println(promise.getLog());
     }
 
-    @SuppressWarnings("unused")
-    void emailSend() {
-        try {
-            NotificationEmail notificationEmail = App.context.getBean(NotificationEmail.class);
-            HashMap<String, String> data = new HashMap<>();
-            data.put("code", "321");
-            HttpResponse helloKitty = notificationEmail.notify(
-                    "Hello Kitty",
-                    notificationEmail.compileTemplate(data),
-                    "urasfinks@yandex.ru");
-            System.out.println(helloKitty);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Test
+    void emailSend2() {
+        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        promise
+                .appendWithResource("email", EmailNotificationResource.class, (_, _, emailNotificationResource) -> {
+                    HashMap<String, String> data = new HashMapBuilder<String, String>().append("code", "999");
+                    emailNotificationResource.execute(new EmailTemplateNotificationRequest(
+                            "Title",
+                            "data",
+                            "template/email.html",
+                            data,
+                            "urasfinks@yandex.ru"
+                    ));
+                })
+                .run()
+                .await(3000);
+        System.out.println(promise.getLog());
+        Assertions.assertFalse(promise.isException());
+        System.out.println(promise.getLog());
     }
 }

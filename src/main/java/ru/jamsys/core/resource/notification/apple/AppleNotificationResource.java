@@ -1,6 +1,5 @@
 package ru.jamsys.core.resource.notification.apple;
 
-import lombok.Setter;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
@@ -25,33 +24,22 @@ public class AppleNotificationResource
         extends ExpirationMsMutableImpl
         implements Resource<AppleNotificationResourceConstructor, AppleNotificationRequest, HttpResponse> {
 
-    @Setter
-    private String storage;
-
-    @Setter
     private String virtualPath;
 
-    @Setter
     private String securityAlias;
 
-    @Setter
     private String url;
 
-    @Setter
     private String topic;
 
-    @Setter
     private String priority;
 
-    @Setter
     private String expiration;
 
-    @Setter
     private String pushType;
 
     private VirtualFileSystemManager virtualFileSystemManager;
 
-    @Setter
     private int timeoutMs;
 
     @Override
@@ -59,7 +47,6 @@ public class AppleNotificationResource
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
 
         this.url = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.url", String.class);
-        this.storage = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.storage", String.class);
         this.virtualPath = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.virtual.path", String.class);
         this.securityAlias = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.security.alias", String.class);
         this.topic = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.topic", String.class);
@@ -67,6 +54,8 @@ public class AppleNotificationResource
         this.expiration = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.expiration", String.class);
         this.pushType = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.pushType", String.class);
         this.timeoutMs = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.timeoutMs", Integer.class);
+
+        String storage = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.storage", String.class);
 
         virtualFileSystemManager = App.context.getBean(VirtualFileSystemManager.class);
         virtualFileSystemManager.add(new File(virtualPath, FileLoaderFactory.fromFileSystem(storage)));

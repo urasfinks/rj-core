@@ -50,18 +50,12 @@ public class AndroidNotificationResource
     }
 
     @Override
-    public HttpResponse execute(AndroidNotificationRequest arguments) throws Exception {
+    public HttpResponse execute(AndroidNotificationRequest arguments) {
         HttpClient httpClient = new HttpClientImpl();
         httpClient.setUrl(url);
         httpClient.setTimeoutMs(timeoutMs);
         httpClient.setRequestHeader("Content-type", "application/json");
-
-        try {
-            httpClient.setRequestHeader("Authorization", "Bearer " + accessToken);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
+        httpClient.setRequestHeader("Authorization", "Bearer " + accessToken);
         String postData = createPostData(arguments.getTitle(), arguments.getData(), arguments.getToken());
 
         httpClient.setPostData(postData.getBytes(StandardCharsets.UTF_8));
@@ -71,7 +65,7 @@ public class AndroidNotificationResource
 
     }
 
-    private String createPostData(String title, Object data, String token) {
+    private String createPostData(String title, Map<String, Object> data, String token) {
         Map<String, Object> root = new LinkedHashMap<>();
         Map<String, Object> message = new LinkedHashMap<>();
         Map<String, Object> notification = new LinkedHashMap<>();
