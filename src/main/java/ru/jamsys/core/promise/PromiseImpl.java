@@ -141,6 +141,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     !isWait.get() // Мы не ждём
                             && setRunningTasks.isEmpty() // Список запущенных задач пуст
                             && listPendingTasks.isEmpty() //  Список задач в работу пуст
+                            && toHead.isEmpty() // Список добавленных в runTime задача пуст
             ) {
                 isRun.set(false);
                 queueMultipleCompleteSet.remove(this);
