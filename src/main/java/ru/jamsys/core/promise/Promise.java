@@ -7,7 +7,6 @@ import ru.jamsys.core.extension.Property;
 import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.extension.trace.TraceTimer;
-import ru.jamsys.core.promise.resource.extension.PromiseExtension;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
 
@@ -87,8 +86,6 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
     Collection<TracePromise<String, TraceTimer>> getTrace();
 
     String getLog();
-
-    Promise extension(String index, PromiseExtension<?> promiseExtension);
 
     boolean isTerminated();
 

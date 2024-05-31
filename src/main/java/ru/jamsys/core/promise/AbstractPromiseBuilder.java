@@ -2,7 +2,6 @@ package ru.jamsys.core.promise;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PromiseTaskTime;
-import ru.jamsys.core.promise.resource.extension.PromiseExtension;
 
 // В бассейне купаются объекты)
 // Есть очередь смотрящих, которые приходят к бассейну и ждут, когда им на глаза попадётся объект
@@ -69,13 +68,6 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
 
     public PromiseTask getLastAppendedTask() {
         return listPendingTasks.peekLast();
-    }
-
-    @Override
-    public Promise extension(String index, PromiseExtension<?> promiseExtension) {
-        promiseExtension.setIndex(index);
-        promiseExtension.extend(this);
-        return this;
     }
 
 }

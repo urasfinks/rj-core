@@ -3,13 +3,10 @@ package ru.jamsys.core.notification;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.HashMapBuilder;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseImpl;
-import ru.jamsys.core.promise.resource.notification.Notification;
-import ru.jamsys.core.promise.resource.notification.NotificationAndroid;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.resource.notification.android.AndroidNotificationRequest;
 import ru.jamsys.core.resource.notification.android.AndroidNotificationResource;
@@ -63,20 +60,6 @@ class NotificationTest {
         System.out.println(promise.getLog());
     }
 
-
-    @SuppressWarnings("unused")
-    void androidSend() {
-        try {
-            Notification notificationAndroid = App.context.getBean(NotificationAndroid.class);
-            HashMap<String, Object> data = new HashMap<>();
-            data.put("x1", 1);
-            HttpResponse helloKitty = notificationAndroid.notify("Hello Kitty", data, "fyP9dxiISLW9OLJfsb73kT:APA91bGSXWN4hR9_OdXEi3THPTNs-RAsMjASA9_XXXMpq5yjkUQAG8CUvucSopPb9xcffQgyMG5K-yoA0p5JS3DyMVVTw618a566zQdvVS_a9Tmr_ktHlI5ZY5aQ60HjkhWWzI6AwsdB");
-            System.out.println(helloKitty);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     @SuppressWarnings("unused")
     void yandexTest() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
@@ -96,13 +79,12 @@ class NotificationTest {
     }
 
     @SuppressWarnings("unused")
-    @Test
     void androidTest() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
                 .appendWithResource("push", AndroidNotificationResource.class, (atomicBoolean, promise1, androidNotificationResource) -> {
                     HashMap<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 1);
-                    androidNotificationResource.execute(new AndroidNotificationRequest("Hello", data, "fyP9dxiISLW9OLJfsb73kT:APA91bGSXWN4hR9_OdXEi3THPTNs-RAsMjASA9_XXXMpq5yjkUQAG8CUvucSopPb9xcffQgyMG5K-yoA0p5JS3DyMVVTw618a566zQdvVS_a9Tmr_ktHlI5ZY5aQ60HjkhWWzI6AwsdB"));
+                    androidNotificationResource.execute(new AndroidNotificationRequest("Приветики", data, "fyP9dxiISLW9OLJfsb73kT:APA91bGSXWN4hR9_OdXEi3THPTNs-RAsMjASA9_XXXMpq5yjkUQAG8CUvucSopPb9xcffQgyMG5K-yoA0p5JS3DyMVVTw618a566zQdvVS_a9Tmr_ktHlI5ZY5aQ60HjkhWWzI6AwsdB"));
                 })
                 .run()
                 .await(3000);
@@ -111,8 +93,8 @@ class NotificationTest {
         System.out.println(promise.getLog());
     }
 
-    @Test
-    void emailSend2() {
+    @SuppressWarnings("unused")
+    void emailSend() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
                 .appendWithResource("email", EmailNotificationResource.class, (_, _, emailNotificationResource) -> {
