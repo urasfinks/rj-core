@@ -12,12 +12,14 @@ import ru.jamsys.core.promise.resource.notification.Notification;
 import ru.jamsys.core.promise.resource.notification.NotificationAndroid;
 import ru.jamsys.core.promise.resource.notification.NotificationEmail;
 import ru.jamsys.core.resource.http.client.HttpResponse;
-import ru.jamsys.core.resource.http.notification.apple.AppleNotificationRequest;
-import ru.jamsys.core.resource.http.notification.apple.AppleNotificationResource;
-import ru.jamsys.core.resource.http.notification.telegram.TelegramNotificationRequest;
-import ru.jamsys.core.resource.http.notification.telegram.TelegramNotificationResource;
-import ru.jamsys.core.resource.http.notification.yandex.speech.YandexSpeechNotificationRequest;
-import ru.jamsys.core.resource.http.notification.yandex.speech.YandexSpeechNotificationResource;
+import ru.jamsys.core.resource.notification.android.AndroidNotificationRequest;
+import ru.jamsys.core.resource.notification.android.AndroidNotificationResource;
+import ru.jamsys.core.resource.notification.apple.AppleNotificationRequest;
+import ru.jamsys.core.resource.notification.apple.AppleNotificationResource;
+import ru.jamsys.core.resource.notification.telegram.TelegramNotificationRequest;
+import ru.jamsys.core.resource.notification.telegram.TelegramNotificationResource;
+import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationRequest;
+import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationResource;
 
 import java.util.HashMap;
 
@@ -75,7 +77,6 @@ class NotificationTest {
     }
 
     @SuppressWarnings("unused")
-    @Test
     void yandexTest() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
         promise
@@ -85,6 +86,23 @@ class NotificationTest {
                             "target/result3.wav",
                             "Саня всё в порядке, всё в порядке Саня!"
                     ));
+                })
+                .run()
+                .await(3000);
+        System.out.println(promise.getLog());
+        Assertions.assertFalse(promise.isException());
+        System.out.println(promise.getLog());
+    }
+
+    @SuppressWarnings("unused")
+    @Test
+    void androidTest() {
+        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        promise
+                .appendWithResource("push", AndroidNotificationResource.class, (atomicBoolean, promise1, androidNotificationResource) -> {
+                    HashMap<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 1);
+
+                    androidNotificationResource.execute(new AndroidNotificationRequest("Hello", data, "fyP9dxiISLW9OLJfsb73kT:APA91bGSXWN4hR9_OdXEi3THPTNs-RAsMjASA9_XXXMpq5yjkUQAG8CUvucSopPb9xcffQgyMG5K-yoA0p5JS3DyMVVTw618a566zQdvVS_a9Tmr_ktHlI5ZY5aQ60HjkhWWzI6AwsdB"));
                 })
                 .run()
                 .await(3000);

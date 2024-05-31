@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.http.notification.yandex.speech;
+package ru.jamsys.core.resource.notification.yandex.speech;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;

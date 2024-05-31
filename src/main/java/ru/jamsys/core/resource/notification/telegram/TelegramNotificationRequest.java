@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.http.notification.telegram;
+package ru.jamsys.core.resource.notification.telegram;
 
 import lombok.Getter;
 

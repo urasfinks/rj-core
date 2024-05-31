@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.http.notification.apple;
+package ru.jamsys.core.resource.notification.apple;
 
 import lombok.Setter;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
-public class AppleNotificationResource extends ExpirationMsMutableImpl implements Resource<AppleNotificationResourceConstructor, AppleNotificationRequest, HttpResponse> {
+public class AppleNotificationResource
+        extends ExpirationMsMutableImpl
+        implements Resource<AppleNotificationResourceConstructor, AppleNotificationRequest, HttpResponse> {
 
     @Setter
     private String storage;

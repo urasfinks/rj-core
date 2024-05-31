@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.http.notification.apple;
+package ru.jamsys.core.resource.notification.apple;
 
 import lombok.Getter;
 
@@ -18,4 +18,5 @@ public class AppleNotificationRequest {
         this.data = data;
         this.device = device;
     }
+
 }

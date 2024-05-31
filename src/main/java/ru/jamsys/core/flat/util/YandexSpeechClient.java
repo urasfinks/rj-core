@@ -8,7 +8,7 @@ import io.grpc.stub.StreamObserver;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.Procedure;
-import ru.jamsys.core.resource.http.notification.yandex.speech.YandexSpeechNotificationRequest;
+import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationRequest;
 import speechkit.common.v3.Common;
 import syandex.cloud.api.ai.tts.v3.Tts;
 import yandex.cloud.api.ai.tts.v3.SynthesizerGrpc;
