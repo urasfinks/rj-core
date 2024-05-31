@@ -54,8 +54,9 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     Promise append(PromiseTask task);
 
-    default Promise append(String index, PromiseTaskExecuteType promiseTaskExecuteType, BiConsumer<AtomicBoolean, Promise> fn) {
-        return append(new PromiseTask(index, this, promiseTaskExecuteType, fn));
+    default Promise append(String index, BiConsumer<AtomicBoolean, Promise> fn) {
+        //TODO: IO -> COMPUTED
+        return append(new PromiseTask(index, this, PromiseTaskExecuteType.IO, fn));
     }
 
     default <T extends Resource<?, ?, ?>> Promise appendWithResource(
@@ -73,8 +74,13 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     Promise then(PromiseTask task);
 
-    default Promise then(String index, PromiseTaskExecuteType promiseTaskExecuteType, BiConsumer<AtomicBoolean, Promise> fn) {
-        return then(new PromiseTask(index, this, promiseTaskExecuteType, fn));
+    default Promise then(String index, BiConsumer<AtomicBoolean, Promise> fn) {
+        //TODO: IO -> COMPUTED
+        return then(new PromiseTask(index, this, PromiseTaskExecuteType.IO, fn));
+    }
+
+    default Promise join(String index, BiConsumer<AtomicBoolean, Promise> fn) {
+        return append(new PromiseTask(index, this, PromiseTaskExecuteType.JOIN, fn));
     }
 
     Promise appendWait();

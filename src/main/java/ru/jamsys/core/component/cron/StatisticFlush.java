@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ClassFinderComponent;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.item.Broker;
+import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
@@ -15,7 +15,6 @@ import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseImpl;
-import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.StatisticSec;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -53,7 +52,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
     @Override
     public Promise generate() {
         return new PromiseImpl(getClass().getName(), 6_000L)
-                .append(this.getClass().getName(), PromiseTaskExecuteType.IO, (AtomicBoolean isThreadRun, Promise _) -> {
+                .append(this.getClass().getName(), (AtomicBoolean isThreadRun, Promise _) -> {
                     StatisticSec statisticSec = new StatisticSec();
                     UtilRisc.forEach(isThreadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
                         Map<String, String> parentTags = new LinkedHashMap<>();

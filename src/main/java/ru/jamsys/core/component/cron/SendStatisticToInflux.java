@@ -5,15 +5,14 @@ import com.influxdb.client.write.Point;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.item.Broker;
+import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseImpl;
-import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.StatisticSec;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -39,9 +38,8 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
     }
 
     public Promise generateOld() {
-        //TODO: replace ::collector IO -> COMPUTE (в текущий момент нет реализации COMPUTE)
         Promise promise = new PromiseImpl(getClass().getName(), 6_000L);
-        promise.append(getClassName("collector"), PromiseTaskExecuteType.IO, (AtomicBoolean isThreadRun, Promise _) -> {
+        promise.append(getClassName("collector"), (AtomicBoolean isThreadRun, Promise _) -> {
                     brokerManagerElement.accept(queue -> {
                         List<Point> listPoints = new ArrayList<>();
                         while (!queue.isEmpty() && isThreadRun.get()) {

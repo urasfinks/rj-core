@@ -33,23 +33,23 @@ class PromiseImplTest {
     void test1() {
         PromiseImpl wf = new PromiseImpl("test", 6_000L);
         wf
-                .append("test", PromiseTaskExecuteType.IO, (_, promise) -> {
+                .append("test", (_, promise) -> {
                     Util.sleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H1");
                     ArrayList<PromiseTask> objects = new ArrayList<>();
                     objects.add(new PromiseTask("test2", wf, PromiseTaskExecuteType.JOIN, (_, _) -> System.out.println(Thread.currentThread().getName() + " EXTRA")));
                     promise.addToHead(objects);
                 })
-                .append("test", PromiseTaskExecuteType.IO, (_, _) -> {
+                .append("test", (_, _) -> {
                     Util.sleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H2");
 
                 })
-                .then("test", PromiseTaskExecuteType.IO, (_, _) -> {
+                .then("test", (_, _) -> {
                     Util.sleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H3");
                 })
-                .then("test", PromiseTaskExecuteType.JOIN, (_, _) -> System.out.println(Thread.currentThread().getName() + " FINISH"))
+                .join("test", (_, _) -> System.out.println(Thread.currentThread().getName() + " FINISH"))
                 .run()
                 .await(4000);
     }
@@ -61,7 +61,7 @@ class PromiseImplTest {
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
             final int x = i;
-            wf.then("test", PromiseTaskExecuteType.JOIN, (_, _) -> deque.add(x));
+            wf.join("test", (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
         wf.run();
@@ -76,7 +76,7 @@ class PromiseImplTest {
 
         for (int i = 0; i < 1000; i++) {
             final int x = i;
-            wf.then("test", PromiseTaskExecuteType.JOIN, (_, _) -> deque.add(x));
+            wf.join("test", (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
         wf.run().await(1100);
@@ -92,7 +92,7 @@ class PromiseImplTest {
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
             final int x = i;
-            wf.then("test", PromiseTaskExecuteType.IO, (_, _) -> deque.add(x));
+            wf.then("test", (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
         wf.run();
@@ -107,7 +107,7 @@ class PromiseImplTest {
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 1000; i++) {
             final int x = i;
-            wf.then("test", PromiseTaskExecuteType.IO, (_, _) -> deque.add(x));
+            wf.then("test", (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
         //System.out.println("start size: " + wf.getListPendingTasks().size());
@@ -134,7 +134,7 @@ class PromiseImplTest {
         AtomicInteger error = new AtomicInteger(0);
         AtomicInteger complete = new AtomicInteger(0);
         wf
-                .append("test", PromiseTaskExecuteType.IO, (_, _) -> {
+                .append("test", (_, _) -> {
                     retry.incrementAndGet();
                     throw new RuntimeException("Hello world");
                 })
@@ -158,15 +158,15 @@ class PromiseImplTest {
 
         Promise wf = new PromiseImpl("test", 1_500L);
         wf
-                .append("1", PromiseTaskExecuteType.JOIN, (_, _) -> {
+                .join("1", (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .then("2", PromiseTaskExecuteType.JOIN, (_, _) -> {
+                .join("2", (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .then("3", PromiseTaskExecuteType.JOIN, (_, _) -> {
+                .join("3", (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
@@ -187,15 +187,15 @@ class PromiseImplTest {
 
         Promise wf = new PromiseImpl("test", 1_500L);
         wf
-                .append("1", PromiseTaskExecuteType.IO, (_, _) -> {
+                .append("1", (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .append("2", PromiseTaskExecuteType.IO, (_, _) -> {
+                .append("2", (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1500);
                 })
-                .then("3", PromiseTaskExecuteType.IO, (_, _) -> {
+                .then("3", (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
@@ -213,9 +213,9 @@ class PromiseImplTest {
     void toLog() {
         Promise wf = new PromiseImpl("test", 1_500L);
         wf
-                .append("1", PromiseTaskExecuteType.IO, (_, _) -> System.out.println(1))
-                .append("2", PromiseTaskExecuteType.IO, (_, _) -> System.out.println(2))
-                .then("3", PromiseTaskExecuteType.IO, (_, _) -> {
+                .append("1", (_, _) -> System.out.println(1))
+                .append("2", (_, _) -> System.out.println(2))
+                .then("3", (_, _) -> {
                     throw new RuntimeException("Test");
                 })
                 .run()
@@ -271,7 +271,7 @@ class PromiseImplTest {
         Promise wf = new PromiseImpl("Expiration", 1_000L);
         AtomicInteger counter = new AtomicInteger(0);
         wf
-                .append("longTimeout", PromiseTaskExecuteType.IO, (_, _)
+                .append("longTimeout", (_, _)
                         -> Util.sleepMs(2000)).onError(PromiseTaskExecuteType.JOIN, (_, _) -> counter.incrementAndGet())
                 .run().await(2010);
 
@@ -302,8 +302,8 @@ class PromiseImplTest {
     @Test
     void appendBeforeRun() {
         Promise promise = new PromiseImpl("testPromise", 6_000L);
-        promise.append("test", PromiseTaskExecuteType.IO, (_, promise1)
-                -> promise1.append("hey", PromiseTaskExecuteType.IO, (_, _) -> {
+        promise.append("test", (_, promise1)
+                -> promise1.append("hey", (_, _) -> {
         }));
         promise.run().await(1000);
         System.out.println(promise.getLog());
@@ -314,7 +314,7 @@ class PromiseImplTest {
     void waitBeforeExternalTask() {
         Promise promise = new PromiseImpl("testPromise", 1_000L);
         promise
-                .append("st", PromiseTaskExecuteType.IO, (_, promise1) -> {
+                .append("st", (_, promise1) -> {
                     PromiseTask asyncPromiseTask = new PromiseTask(
                             "async",
                             promise1,
