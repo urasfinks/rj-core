@@ -38,15 +38,15 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
     // Добавление задачи, которая выполнится после успешного завершения цепочки Promise
     Promise onComplete(PromiseTask onComplete);
 
-    default Promise onComplete(PromiseTaskExecuteType promiseTaskExecuteType, BiConsumer<AtomicBoolean, Promise> fn) {
-        return onComplete(new PromiseTask("onComplete", this, promiseTaskExecuteType, fn));
+    default Promise onComplete(BiConsumer<AtomicBoolean, Promise> fn) {
+        return onComplete(new PromiseTask("onComplete", this, PromiseTaskExecuteType.JOIN, fn));
     }
 
     // Добавление задачи, которая выполнится после фатального завершения цепочки Promise
     Promise onError(PromiseTask onError);
 
-    default Promise onError(PromiseTaskExecuteType promiseTaskExecuteType, BiConsumer<AtomicBoolean, Promise> fn) {
-        return onError(new PromiseTask("onError", this, promiseTaskExecuteType, fn));
+    default Promise onError(BiConsumer<AtomicBoolean, Promise> fn) {
+        return onError(new PromiseTask("onError", this, PromiseTaskExecuteType.JOIN, fn));
     }
 
     // Если в цепочку надо внедрить дополнительные задачи в runTime исполнения

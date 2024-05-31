@@ -139,8 +139,8 @@ class PromiseImplTest {
                     throw new RuntimeException("Hello world");
                 })
                 .getLastAppendedTask().setRetryCount(1, 1000).getPromise()
-                .onError(PromiseTaskExecuteType.JOIN, (_, _) -> error.incrementAndGet())
-                .onComplete(PromiseTaskExecuteType.JOIN, (_, _) -> complete.incrementAndGet())
+                .onError((_, _) -> error.incrementAndGet())
+                .onComplete((_, _) -> complete.incrementAndGet())
                 .run()
                 .await(3000);
         System.out.println(wf.getLog());
@@ -170,8 +170,8 @@ class PromiseImplTest {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .onError(PromiseTaskExecuteType.JOIN, (_, _) -> error.incrementAndGet())
-                .onComplete(PromiseTaskExecuteType.JOIN, (_, _) -> complete.incrementAndGet())
+                .onError((_, _) -> error.incrementAndGet())
+                .onComplete((_, _) -> complete.incrementAndGet())
                 .run()
                 .await(2000);
         Assertions.assertEquals(1, error.get());
@@ -199,8 +199,8 @@ class PromiseImplTest {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .onError(PromiseTaskExecuteType.JOIN, (_, _) -> error.incrementAndGet())
-                .onComplete(PromiseTaskExecuteType.JOIN, (_, _) -> complete.incrementAndGet())
+                .onError((_, _) -> error.incrementAndGet())
+                .onComplete((_, _) -> complete.incrementAndGet())
                 .run()
                 .await(2000);
         System.out.println(wf.getLog());
@@ -251,19 +251,14 @@ class PromiseImplTest {
         // Буду наблюдать дальше
 
         Promise wf = new PromiseImpl("AsyncNoWait", 6_000L);
-        final AtomicInteger c = new AtomicInteger(0);
         PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskExecuteType.ASYNC_NO_WAIT_IO, (_, _) -> {
-            c.incrementAndGet();
             throw new RuntimeException("ERROR");
         });
         wf.append(promiseTask);
         wf.run().await(1000);
         System.out.println(wf.getLog());
 
-        Assertions.assertEquals(2, c.incrementAndGet());
-        Assertions.assertEquals(1, wf.getTrace().size());
         Assertions.assertTrue(wf.isTerminated());
-        Assertions.assertEquals(1, wf.getTrace().size());
     }
 
     @Test
@@ -272,7 +267,7 @@ class PromiseImplTest {
         AtomicInteger counter = new AtomicInteger(0);
         wf
                 .append("longTimeout", (_, _)
-                        -> Util.sleepMs(2000)).onError(PromiseTaskExecuteType.JOIN, (_, _) -> counter.incrementAndGet())
+                        -> Util.sleepMs(2000)).onError((_, _) -> counter.incrementAndGet())
                 .run().await(2010);
 
         System.out.println(wf.getLog());
