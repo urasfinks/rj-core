@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 @Component
-public class LogManager implements ClassName {
+public class FSLogManager implements ClassName {
 
     public final ConcurrentHashMap<String, Broker<Log>> map = new ConcurrentHashMap<>();
 
@@ -40,7 +40,7 @@ public class LogManager implements ClassName {
 
     private final String logFolder;
 
-    public LogManager(
+    public FSLogManager(
             ApplicationContext applicationContext,
             PropertiesComponent propertiesComponent
     ) {

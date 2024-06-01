@@ -1,13 +1,20 @@
 package ru.jamsys.core.component;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.item.Log;
+import ru.jamsys.core.component.manager.item.LogWriter;
+import ru.jamsys.core.flat.util.UtilFile;
+import ru.jamsys.core.rate.limit.RateLimitName;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 //TODO: добавить тесты когда нет директории LogManager
-class LogManagerTest {
+class FSLogManagerTest {
 
     @BeforeAll
     static void beforeAll() {
@@ -71,5 +78,37 @@ class LogManagerTest {
 //        Assertions.assertEquals(20971526, log.getFirst().get("LogManager/log.1.stop.bin"));
 //
 //        UtilFile.removeAllFilesInFolder("LogManager");
+    }
+
+    @Test
+    void checkOverMaxFileWrite() {
+        UtilFile.removeAllFilesInFolder("LogManager");
+        LogWriter test = new LogWriter("default");
+        test.setMaxFileSizeByte(1);
+        test.setMaxFileCount(2);
+        test.append(new Log("LogData1").addHeader("key", "value"));
+        test.append(new Log("LogData2").addHeader("key", "value"));
+        test.append(new Log("LogData3").addHeader("key", "value"));
+        test.keepAlive(new AtomicBoolean(true));
+        // Потому что за одну итерацию мы не записываем больше файлов чем максимальное кол-во
+        Assertions.assertEquals(1, test.size());
+    }
+
+    @Test
+    void checkTime() {
+        UtilFile.removeAllFilesInFolder("LogManager");
+        long start = System.currentTimeMillis();
+        LogWriter test = new LogWriter("default");
+        test.getBroker().get().getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(9999999);
+        long start2 = System.currentTimeMillis();
+        for (int i = 0; i < 1000000; i++) {
+            test.append(new Log("LogData" + i).addHeader("key", "value"));
+        }
+        System.out.println("add time: " + (System.currentTimeMillis() - start2));
+        long start3 = System.currentTimeMillis();
+        test.keepAlive(new AtomicBoolean(true));
+        System.out.println("write time: " + (System.currentTimeMillis() - start3));
+        // Потому что за одну итерацию мы не записываем больше файлов чем максимальное кол-во
+        System.out.println("all time: " + (System.currentTimeMillis() - start));
     }
 }

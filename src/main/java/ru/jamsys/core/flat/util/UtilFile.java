@@ -12,7 +12,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class UtilFile {
 
@@ -77,13 +76,22 @@ public class UtilFile {
 
     public static void listFilesForFolder(final File folder, List<String> list) {
         if (folder != null) {
-            for (final File fileEntry : Objects.requireNonNull(folder.listFiles())) {
-                if (fileEntry.isDirectory()) {
-                    listFilesForFolder(fileEntry, list);
-                } else {
-                    list.add(fileEntry.getAbsolutePath());
+            if (folder.isDirectory()) {
+                File[] files = folder.listFiles();
+                if (files != null) {
+                    for (final File fileEntry : files) {
+                        if (fileEntry.isDirectory()) {
+                            listFilesForFolder(fileEntry, list);
+                        } else {
+                            list.add(fileEntry.getAbsolutePath());
+                        }
+                    }
                 }
+            } else {
+                throw new RuntimeException("Path [" + folder.getAbsolutePath() + "] is not directory");
             }
+        } else {
+            throw new RuntimeException("File is null");
         }
     }
 

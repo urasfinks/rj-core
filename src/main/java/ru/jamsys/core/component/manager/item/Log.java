@@ -8,21 +8,16 @@ import java.util.Map;
 @ToString
 public class Log {
 
-    public Map<String, String> header;
+    public Map<String, String> header = new HashMap<>();
     public String data;
 
     public Log(Map<String, String> header, String data) {
-        this.header = header;
+        this.header.putAll(header);
         this.data = data;
     }
 
     public Log(String data) {
-        this.header = new HashMap<>();
         this.data = data;
-    }
-
-    public Log() {
-        this.header = new HashMap<>();
     }
 
     public Log setData(String data) {

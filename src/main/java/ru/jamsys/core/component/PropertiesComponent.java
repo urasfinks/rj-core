@@ -23,7 +23,7 @@ public class PropertiesComponent {
         Environment environment = applicationContext.getEnvironment();
         T result = environment.getProperty(key, cls);
         if (result == null) {
-            applicationContext.getBean(ExceptionHandler.class).handler(new RuntimeException("Required key '" + key + "' not found"));
+            throw new RuntimeException("Required key '" + key + "' not found");
         }
         return result;
     }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
+import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
@@ -18,7 +19,6 @@ import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
-import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +60,8 @@ public class Broker<TEO>
 
     private final ConcurrentLinkedDeque<DisposableExpirationMsImmutableEnvelope<TEO>> queue = new ConcurrentLinkedDeque<>();
 
+    private final AtomicInteger queueSize = new AtomicInteger(0);
+
     //Последний сообщения проходящие через очередь
     private final ConcurrentLinkedDeque<ExpirationMsImmutableEnvelope<TEO>> tail = new ConcurrentLinkedDeque<>();
 
@@ -68,6 +70,7 @@ public class Broker<TEO>
 
     private final AvgMetric timeInQueue = new AvgMetric();
 
+    @Getter
     final RateLimit rateLimit;
 
     final RateLimitItem rliQueueSize;
@@ -98,7 +101,7 @@ public class Broker<TEO>
     }
 
     public int size() {
-        return queue.size();
+        return queueSize.get();
     }
 
     public boolean isEmpty() {
@@ -133,12 +136,18 @@ public class Broker<TEO>
             return null;
         }
         DisposableExpirationMsImmutableEnvelope<TEO> convert = DisposableExpirationMsImmutableEnvelope.convert(envelope);
-        if (!rliQueueSize.check(queue.size() + 1)) {
+        // Проблема с производительностью
+        // Мы не можем использовать queue.size() для расчёта переполнения
+        // пример: вставка 100к записей занимаем 35сек
+        if (!rliQueueSize.check(queueSize.get() + 1)) {
             // Он конечно протух не по своей воле, но что делать...
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
-            onDrop(queue.removeFirst());
+            DisposableExpirationMsImmutableEnvelope<TEO> teoDisposableExpirationMsImmutableEnvelope = queue.removeFirst();
+            queueSize.decrementAndGet();
+            onDrop(teoDisposableExpirationMsImmutableEnvelope);
         }
         queue.add(convert);
+        queueSize.incrementAndGet();
         tail.add(envelope);
         if (!rliTailSize.check(tail.size())) {
             tail.pollFirst(); // с начала изымаем
@@ -160,6 +169,7 @@ public class Broker<TEO>
             if (result == null) {
                 return null;
             }
+            queueSize.decrementAndGet();
             statistic(result);
             if (result.isExpired()) {
                 onDrop(result);
@@ -181,6 +191,7 @@ public class Broker<TEO>
         if (envelope != null) {
             statistic(envelope);
             queue.remove(envelope);
+            queueSize.decrementAndGet();
             // Делаем так, что бы он больше не достался никому
             envelope.getValue();
         }
@@ -201,6 +212,7 @@ public class Broker<TEO>
         UtilRisc.forEach(isThreadRun, queue, (DisposableExpirationMsImmutableEnvelope<TEO> envelope) -> {
             if (envelope.isExpired()) {
                 queue.remove(envelope);
+                queueSize.decrementAndGet();
                 onDrop(envelope);
             }
         });
@@ -221,13 +233,13 @@ public class Broker<TEO>
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x
-        return queue.size() * 100 / (int) rliQueueSize.get();
+        return queueSize.get() * 100 / (int) rliQueueSize.get();
     }
 
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         List<Statistic> result = new ArrayList<>();
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
-        int sizeFlush = queue.size();
+        int sizeFlush = queueSize.get();
         if (sizeFlush > 0 || tpsDequeueFlush > 0) {
             active();
         }
@@ -247,6 +259,7 @@ public class Broker<TEO>
     // Рекомендуется использовать только для тестов
     public void reset() {
         queue.clear();
+        queueSize.set(0);
         tail.clear();
         tpsDequeue.set(0);
         rateLimit.reset();
