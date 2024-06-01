@@ -96,9 +96,23 @@ public class UtilFile {
     }
 
     public static List<String> getFilesRecursive(String path) {
+        return getFilesRecursive(path, true);
+    }
+
+    public static List<String> getFilesRecursive(String path, boolean absolutePath) {
         List<String> result = new ArrayList<>();
-        listFilesForFolder(new File(path), result);
-        return result;
+        File file = new File(path);
+        listFilesForFolder(file, result);
+        if (absolutePath) {
+            return ListSort.sort(result);
+        } else {
+            List<String> result2 = new ArrayList<>();
+            int offset = file.getAbsolutePath().length();
+            for (String p : result) {
+                result2.add(p.substring(offset));
+            }
+            return ListSort.sort(result2);
+        }
     }
 
     public static String getFileName(String path) {

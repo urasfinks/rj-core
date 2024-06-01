@@ -7,9 +7,12 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.component.manager.item.LogWriter;
+import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.rate.limit.RateLimitName;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -26,58 +29,8 @@ class FSLogManagerTest {
 
     @AfterAll
     static void shutdown() {
+        UtilFile.removeAllFilesInFolder("LogManager");
         App.shutdown();
-    }
-
-    @Test
-    void test() throws Exception {
-//        LogComponent logComponent = App.context.getBean(LogComponent.class);
-//
-//        logComponent.append("log", new Log().setData("Hello world"));
-//        logComponent.append("log", new Log().setData("Hello world"));
-//        logComponent.append("log", new Log().setData("Hello world"));
-//
-//        logComponent.getRateLimit().get(RateLimitName.FILE_LOG_SIZE.getName()).setMax(20);
-//        logComponent.getRateLimit().get(RateLimitName.FILE_LOG_INDEX.getName()).setMax(1);
-//
-//        List<Map<String, Integer>> log = logComponent.writeToFs("log");
-//        Assertions.assertEquals(2, log.size());
-//        Assertions.assertEquals("LogManager/log.1.stop.bin", log.get(0).keySet().toArray()[0]);
-//        Assertions.assertEquals("LogManager/log.1.stop.bin", log.get(1).keySet().toArray()[0]);
-//        Assertions.assertEquals(34, log.get(0).get("LogManager/log.1.stop.bin"));
-//        Assertions.assertEquals(17, log.get(1).get("LogManager/log.1.stop.bin"));
-//
-//        UtilFile.removeAllFilesInFolder("LogManager");
-
-    }
-
-    @Test
-    void testSize() throws Exception {
-//        LogComponent logComponent = App.context.getBean(LogComponent.class);
-//        logComponent.getRateLimit().get(RateLimitName.FILE_LOG_SIZE.getName()).setMax(20);
-//        logComponent.getRateLimit().get(RateLimitName.FILE_LOG_INDEX.getName()).setMax(1);
-//        List<Map<String, Integer>> log;
-//
-//        logComponent.append("log", new Log().setData("Hello world"));
-//        log = logComponent.writeToFs("log");
-//        Assertions.assertEquals(17, log.getFirst().get("LogManager/log.1.stop.bin"));
-//
-//        logComponent.append("log", new Log().setData("Hello world").addHeader("test", "12345"));
-//        log = logComponent.writeToFs("log");
-//        Assertions.assertEquals(30, log.getFirst().get("LogManager/log.1.stop.bin"));
-//
-//        UtilFile.removeAllFilesInFolder("LogManager");
-    }
-
-    @Test
-    void bigWrite() throws Exception {
-//        LogComponent logComponent = App.context.getBean(LogComponent.class);
-//
-//        logComponent.append("log", new Log().setData("a".repeat(20 * 1024 * 1024)));
-//        List<Map<String, Integer>> log = logComponent.writeToFs("log");
-//        Assertions.assertEquals(20971526, log.getFirst().get("LogManager/log.1.stop.bin"));
-//
-//        UtilFile.removeAllFilesInFolder("LogManager");
     }
 
     @Test
@@ -91,7 +44,58 @@ class FSLogManagerTest {
         test.append(new Log("LogData3").addHeader("key", "value"));
         test.keepAlive(new AtomicBoolean(true));
         // Потому что за одну итерацию мы не записываем больше файлов чем максимальное кол-во
+        // Ничего личного, просто такие правила
         Assertions.assertEquals(1, test.size());
+
+        Assertions.assertEquals("[/default.0.bin, /default.1.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+
+        // Должна произойти перезапись 0 файла
+        test.keepAlive(new AtomicBoolean(true));
+        Assertions.assertEquals(0, test.size());
+        Assertions.assertEquals("[/default.0.bin, /default.1.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+    }
+
+    @Test
+    void checkNameLog() {
+        UtilFile.removeAllFilesInFolder("LogManager");
+        LogWriter test = new LogWriter("default");
+        test.setMaxFileCount(100);
+        test.append(new Log("LogData1").addHeader("key", "value"));
+        test.append(new Log("LogData2").addHeader("key", "value"));
+        test.append(new Log("LogData3").addHeader("key", "value"));
+        test.keepAlive(new AtomicBoolean(true));
+
+        Assertions.assertEquals("[/default.000.proc.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+        test.shutdown();
+        Assertions.assertEquals("[/default.000.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+    }
+
+    @Test
+    void checkRestoreExceptionShutdown() throws IOException {
+        UtilFile.removeAllFilesInFolder("LogManager");
+
+        UtilFile.writeBytes("LogManager/default.000.bin", "hello1".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
+        UtilFile.writeBytes("LogManager/default.001.bin", "hello2".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
+        UtilFile.writeBytes("LogManager/default.002.proc.bin", "hello3".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
+
+        // Файлы для негативных проверок
+        UtilFile.writeBytes("LogManager/test.003.proc.bin", "hello3".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
+        UtilFile.writeBytes("LogManager/test.004.bin", "hello3".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
+
+        Assertions.assertEquals("[/default.000.bin, /default.001.bin, /default.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+
+        LogWriter test = new LogWriter("default");
+
+        Assertions.assertEquals("[/default.000.bin, /default.001.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+
+        Assertions.assertEquals(2, test.getIndexFile());
+
+        test.append(new Log("LogData1").addHeader("key", "value"));
+        test.keepAlive(new AtomicBoolean(true));
+        Assertions.assertEquals("[/default.000.bin, /default.001.bin, /default.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+
+        test.shutdown();
+        Assertions.assertEquals("[/default.000.bin, /default.001.bin, /default.002.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
     }
 
     @Test
@@ -111,4 +115,5 @@ class FSLogManagerTest {
         // Потому что за одну итерацию мы не записываем больше файлов чем максимальное кол-во
         System.out.println("all time: " + (System.currentTimeMillis() - start));
     }
+
 }
