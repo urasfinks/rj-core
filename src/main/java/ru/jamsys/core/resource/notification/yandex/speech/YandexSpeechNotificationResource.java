@@ -5,6 +5,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.flat.util.YandexSpeechClient;
+import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -12,12 +13,14 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import java.io.File;
 
 @Component
-public class YandexSpeechNotificationResource extends ExpirationMsMutableImpl implements Resource<YandexSpeechNotificationResourceConstructor, YandexSpeechNotificationRequest, Void> {
+public class YandexSpeechNotificationResource
+        extends ExpirationMsMutableImpl
+        implements Resource<NamespaceResourceConstructor, YandexSpeechNotificationRequest, Void> {
 
     YandexSpeechClient client = null;
 
     @Override
-    public void constructor(YandexSpeechNotificationResourceConstructor constructor) throws Throwable {
+    public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
         String securityAlias = propertiesComponent.getProperties(constructor.namespaceProperties, "yandex.speech.kit.security.alias", String.class);
         client = new YandexSpeechClient(

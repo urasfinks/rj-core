@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.http.client.HttpClient;
@@ -21,7 +22,7 @@ import java.util.Map;
 @Component
 public class AndroidNotificationResource
         extends ExpirationMsMutableImpl
-        implements Resource<AndroidNotificationResourceConstructor, AndroidNotificationRequest, HttpResponse> {
+        implements Resource<NamespaceResourceConstructor, AndroidNotificationRequest, HttpResponse> {
 
     private String url;
 
@@ -32,7 +33,7 @@ public class AndroidNotificationResource
     private String accessToken;
 
     @Override
-    public void constructor(AndroidNotificationResourceConstructor constructor) throws Throwable {
+    public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
 
         this.url = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.url", String.class);

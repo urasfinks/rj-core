@@ -5,6 +5,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.manager.VirtualFileSystemManager;
 import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.http.client.HttpClient;
@@ -22,7 +23,7 @@ import java.util.Map;
 @Component
 public class AppleNotificationResource
         extends ExpirationMsMutableImpl
-        implements Resource<AppleNotificationResourceConstructor, AppleNotificationRequest, HttpResponse> {
+        implements Resource<NamespaceResourceConstructor, AppleNotificationRequest, HttpResponse> {
 
     private String virtualPath;
 
@@ -43,7 +44,7 @@ public class AppleNotificationResource
     private int timeoutMs;
 
     @Override
-    public void constructor(AppleNotificationResourceConstructor constructor) throws Throwable {
+    public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
 
         this.url = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.url", String.class);

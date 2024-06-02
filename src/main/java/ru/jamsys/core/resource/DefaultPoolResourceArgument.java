@@ -5,19 +5,13 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.influx.InfluxResource;
-import ru.jamsys.core.resource.influx.InfluxResourceConstructor;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
 import ru.jamsys.core.resource.jdbc.JdbcResourceConstructor;
 import ru.jamsys.core.resource.notification.android.AndroidNotificationResource;
-import ru.jamsys.core.resource.notification.android.AndroidNotificationResourceConstructor;
 import ru.jamsys.core.resource.notification.apple.AppleNotificationResource;
-import ru.jamsys.core.resource.notification.apple.AppleNotificationResourceConstructor;
 import ru.jamsys.core.resource.notification.email.EmailNotificationResource;
-import ru.jamsys.core.resource.notification.email.EmailNotificationResourceConstructor;
 import ru.jamsys.core.resource.notification.telegram.TelegramNotificationResource;
-import ru.jamsys.core.resource.notification.telegram.TelegramNotificationResourceConstructor;
 import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationResource;
-import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationResourceConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,27 +29,27 @@ public class DefaultPoolResourceArgument<R extends Resource<?, ?, RC>, RC> {
     public DefaultPoolResourceArgument() {
         map.put((Class<R>) EmailNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
                 EmailNotificationResource.class,
-                new EmailNotificationResourceConstructor(),
+                new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) AndroidNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
                 AndroidNotificationResource.class,
-                new AndroidNotificationResourceConstructor(),
+                new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) YandexSpeechNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
                 YandexSpeechNotificationResource.class,
-                new YandexSpeechNotificationResourceConstructor(),
+                new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) AppleNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
                 AppleNotificationResource.class,
-                new AppleNotificationResourceConstructor(),
+                new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) TelegramNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
                 TelegramNotificationResource.class,
-                new TelegramNotificationResourceConstructor(),
+                new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) HttpResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
@@ -65,7 +59,7 @@ public class DefaultPoolResourceArgument<R extends Resource<?, ?, RC>, RC> {
         ));
         map.put((Class<R>) InfluxResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
                 InfluxResource.class,
-                new InfluxResourceConstructor(),
+                new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) JdbcResource.class, (PoolSettings<R, RC>) new PoolSettings<>(

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.http.client.HttpClientImpl;
@@ -15,7 +16,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class TelegramNotificationResource extends ExpirationMsMutableImpl implements Resource<TelegramNotificationResourceConstructor, TelegramNotificationRequest, HttpResponse> {
+public class TelegramNotificationResource
+        extends ExpirationMsMutableImpl
+        implements Resource<NamespaceResourceConstructor, TelegramNotificationRequest, HttpResponse> {
 
     @Setter
     private String securityAlias;
@@ -32,7 +35,7 @@ public class TelegramNotificationResource extends ExpirationMsMutableImpl implem
     private SecurityComponent securityComponent;
 
     @Override
-    public void constructor(TelegramNotificationResourceConstructor constructor) throws Throwable {
+    public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
         securityComponent = App.context.getBean(SecurityComponent.class);
 

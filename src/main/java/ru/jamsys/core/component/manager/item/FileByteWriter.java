@@ -7,12 +7,12 @@ import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.manager.sub.ManagerElement;
+import ru.jamsys.core.extension.ByteItem;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
-import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -24,10 +24,10 @@ import java.util.LongSummaryStatistics;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class LogWriter implements KeepAlive, LifeCycleInterface {
+public class FileByteWriter implements KeepAlive, LifeCycleInterface {
 
     @Getter
-    ManagerElement<Broker<Log>, Void> broker;
+    ManagerElement<Broker<ByteItem>, Void> broker;
 
     final String folder;
 
@@ -45,11 +45,11 @@ public class LogWriter implements KeepAlive, LifeCycleInterface {
 
     final AtomicInteger counter = new AtomicInteger(0);
 
-    public LogWriter(String index) {
+    public FileByteWriter(String index) {
 
         this.index = index;
 
-        broker = App.context.getBean(BrokerManager.class).get(index, Log.class);
+        broker = App.context.getBean(BrokerManager.class).get(index, ByteItem.class);
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
         broker.get().getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(400_000);
@@ -110,7 +110,7 @@ public class LogWriter implements KeepAlive, LifeCycleInterface {
         currentFilePath = folder + "/" + index + "." + Util.padLeft(curIndex + "", (maxFileCount + "").length(), "0") + ".proc.bin";
     }
 
-    public void append(Log log) {
+    public void append(ByteItem log) {
         broker.get().add(log, 6_000);
     }
 
@@ -136,19 +136,15 @@ public class LogWriter implements KeepAlive, LifeCycleInterface {
             broker.accept(logBroker -> {
                 while (!logBroker.isEmpty() && isThreadRun.get()) {
                     try {
-                        ExpirationMsImmutableEnvelope<Log> itemExpirationMsMutableEnvelope = logBroker.pollFirst();
+                        ExpirationMsImmutableEnvelope<ByteItem> itemExpirationMsMutableEnvelope = logBroker.pollFirst();
                         if (itemExpirationMsMutableEnvelope != null) {
-                            Log item = itemExpirationMsMutableEnvelope.getValue();
-                            // Запись кол-ва заголовков
-                            fos.write(UtilByte.shortToBytes((short) item.header.size()));
-                            writeByteToCurrentFile.addAndGet(2);
-                            // Запись заголовков
-                            for (String key : item.header.keySet()) {
-                                UtilLog.shortWriteString(fos, key, writeByteToCurrentFile);
-                                UtilLog.shortWriteString(fos, item.header.get(key), writeByteToCurrentFile);
-                            }
-                            // Запись тела
-                            UtilLog.writeString(fos, item.data, writeByteToCurrentFile);
+                            ByteItem item = itemExpirationMsMutableEnvelope.getValue();
+
+                            byte[] d = item.getByteInstance();
+                            fos.write(UtilByte.intToBytes(d.length));
+                            writeByteToCurrentFile.addAndGet(4);
+                            fos.write(d);
+                            writeByteToCurrentFile.addAndGet(d.length);
 
                             if (writeByteToCurrentFile.get() > maxFileSizeByte) {
                                 writeByteToCurrentFile.set(0);

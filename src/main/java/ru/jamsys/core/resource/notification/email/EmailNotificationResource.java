@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -13,7 +14,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 @Component
 public class EmailNotificationResource
         extends ExpirationMsMutableImpl
-        implements Resource<EmailNotificationResourceConstructor, EmailNotificationRequest, Void> {
+        implements Resource<NamespaceResourceConstructor, EmailNotificationRequest, Void> {
 
     private SecurityComponent securityComponent;
 
@@ -34,7 +35,7 @@ public class EmailNotificationResource
     private boolean ssl;
 
     @Override
-    public void constructor(EmailNotificationResourceConstructor constructor) throws Throwable {
+    public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
         securityComponent = App.context.getBean(SecurityComponent.class);
 

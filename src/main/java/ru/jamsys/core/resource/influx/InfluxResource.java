@@ -7,13 +7,16 @@ import com.influxdb.client.write.Point;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.List;
 
-public class InfluxResource extends ExpirationMsMutableImpl implements Resource<InfluxResourceConstructor, List<Point>, Void> {
+public class InfluxResource
+        extends ExpirationMsMutableImpl
+        implements Resource<NamespaceResourceConstructor, List<Point>, Void> {
 
     private InfluxDBClient client = null;
 
@@ -24,7 +27,7 @@ public class InfluxResource extends ExpirationMsMutableImpl implements Resource<
     String bucket;
 
     @Override
-    public void constructor(InfluxResourceConstructor constructor) {
+    public void constructor(NamespaceResourceConstructor constructor) {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
         SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
 
