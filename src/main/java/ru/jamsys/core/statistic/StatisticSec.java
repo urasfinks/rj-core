@@ -2,15 +2,46 @@ package ru.jamsys.core.statistic;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+import ru.jamsys.core.extension.ByteItem;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
-public class StatisticSec extends ExpirationMsMutableImpl {
+@ToString
+public class StatisticSec extends ExpirationMsMutableImpl implements Serializable, ByteItem {
 
-    private List<Statistic> list = new ArrayList<>();
+    public List<Statistic> list = new ArrayList<>();
 
+    @Override
+    public byte[] getByteInstance() {
+        // Я попробовал One Nio, FST и Kryo все кроме Kryo упали, а Kryo не смогла переварить ArrayList
+        // Далее были добавлены модифиакторы CollectionSerializer serializer = new CollectionSerializer();
+        // И на выходе получилось ровно такое-же что из коробки java
+        // Как будто для быстрых вещей надо писать для каждого класса свой сериализатор, иначе - это история не работает
+        // По крайней мере у меня
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bos)) {
+            out.writeObject(this);
+            out.flush();
+            return bos.toByteArray();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public void instanceFromByte(byte[] bytes) {
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        try (ObjectInput in = new ObjectInputStream(bis)) {
+            StatisticSec statisticSec = (StatisticSec) in.readObject();
+            list = statisticSec.getList();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

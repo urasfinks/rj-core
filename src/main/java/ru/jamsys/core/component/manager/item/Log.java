@@ -5,6 +5,7 @@ import ru.jamsys.core.extension.ByteItem;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilLog;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -41,7 +42,8 @@ public class Log implements ByteItem {
     }
 
     @Override
-    public void instanceFromByte(InputStream fis) throws Exception {
+    public void instanceFromByte(byte[] bytes) throws Exception {
+        InputStream fis = new ByteArrayInputStream(bytes);
         short countHeader = UtilByte.bytesToShort(fis.readNBytes(2));
         for (int i = 0; i < countHeader; i++) {
             addHeader(UtilLog.shortReadString(fis), UtilLog.shortReadString(fis));

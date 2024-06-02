@@ -3,15 +3,16 @@ package ru.jamsys.core.statistic;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Getter
 @ToString
-public class Statistic {
+public class Statistic implements Serializable {
 
-    private final Map<String, String> tags = new LinkedHashMap<>();
-    private final Map<String, Object> fields = new LinkedHashMap<>();
+    public final Map<String, String> tags = new LinkedHashMap<>();
+    public final Map<String, Object> fields = new LinkedHashMap<>();
 
     public Statistic() {
     }

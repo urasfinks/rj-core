@@ -11,8 +11,9 @@ import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.rate.limit.RateLimitName;
+import ru.jamsys.core.statistic.Statistic;
+import ru.jamsys.core.statistic.StatisticSec;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,7 +34,7 @@ class FileByteWriterTest {
 
     @AfterAll
     static void shutdown() {
-        UtilFile.removeAllFilesInFolder("LogManager");
+        //UtilFile.removeAllFilesInFolder("LogManager");
         App.shutdown();
     }
 
@@ -126,10 +127,32 @@ class FileByteWriterTest {
         byte[] x = log1.getByteInstance();
 
         Log log2 = new Log();
-        log2.instanceFromByte(new ByteArrayInputStream(x));
+        log2.instanceFromByte(x);
 
         Assertions.assertEquals(log1.toString(), log2.toString());
 
+    }
+
+    @Test
+    void serialize() {
+        StatisticSec statisticSec1 = new StatisticSec();
+        statisticSec1.getList().add(new Statistic().addField("f1", 1).addTag("t1", "Hello"));
+        byte[] byteInstance = statisticSec1.getByteInstance();
+
+        StatisticSec statisticSec2 = new StatisticSec();
+        statisticSec2.instanceFromByte(byteInstance);
+
+        Assertions.assertEquals(statisticSec1.toString(), statisticSec2.toString());
+    }
+
+    @Test
+    void serializeStatisticSecToFile() {
+        UtilFile.removeAllFilesInFolder("LogManager");
+        StatisticSec statisticSec1 = new StatisticSec();
+        statisticSec1.getList().add(new Statistic().addField("f1", 1).addTag("t1", "Hello"));
+        FileByteWriter test = new FileByteWriter("default");
+        test.append(statisticSec1);
+        test.keepAlive(new AtomicBoolean(true));
     }
 
 }

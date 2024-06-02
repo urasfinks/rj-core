@@ -10,7 +10,6 @@ import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,7 @@ public class FileByteReaderResource
             while (fis.available() > 0) {
                 ByteItem item = arguments.getClsItem().getConstructor().newInstance();
                 int lenData = UtilByte.bytesToShort(fis.readNBytes(4));
-                item.instanceFromByte(new ByteArrayInputStream(fis.readNBytes(lenData)));
+                item.instanceFromByte(fis.readNBytes(lenData));
                 result.add(item);
             }
         } catch (Exception e) {
