@@ -45,22 +45,6 @@ public class LogWriter implements KeepAlive, LifeCycleInterface {
 
     final AtomicInteger counter = new AtomicInteger(0);
 
-    public int size() {
-        return broker.get().size();
-    }
-
-    public int getIndexFile() {
-        return counter.get();
-    }
-
-    private void genNextFile() {
-        if (currentFilePath != null) {
-            UtilFile.rename(currentFilePath, currentFilePath.substring(0, currentFilePath.length() - 8) + "bin");
-        }
-        int curIndex = counter.getAndIncrement() % maxFileCount;
-        currentFilePath = folder + "/" + index + "." + Util.padLeft(curIndex + "", (maxFileCount + "").length(), "0") + ".proc.bin";
-    }
-
     public LogWriter(String index) {
 
         this.index = index;
@@ -76,6 +60,14 @@ public class LogWriter implements KeepAlive, LifeCycleInterface {
         maxFileCount = propertiesComponent.getProperties(index, "log.file.count", Integer.class);
 
         restoreIndex();
+    }
+
+    public int size() {
+        return broker.get().size();
+    }
+
+    public int getIndexFile() {
+        return counter.get();
     }
 
     private void restoreIndex() {
@@ -108,6 +100,14 @@ public class LogWriter implements KeepAlive, LifeCycleInterface {
         if (flush.getCount() > 0) {
             counter.set((int) flush.getMax() + 1);
         }
+    }
+
+    private void genNextFile() {
+        if (currentFilePath != null) {
+            UtilFile.rename(currentFilePath, currentFilePath.substring(0, currentFilePath.length() - 8) + "bin");
+        }
+        int curIndex = counter.getAndIncrement() % maxFileCount;
+        currentFilePath = folder + "/" + index + "." + Util.padLeft(curIndex + "", (maxFileCount + "").length(), "0") + ".proc.bin";
     }
 
     public void append(Log log) {
