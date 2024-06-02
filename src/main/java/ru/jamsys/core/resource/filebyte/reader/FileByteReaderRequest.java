@@ -8,7 +8,7 @@ public class FileByteReaderRequest {
 
     private final String filePath;
 
-    private Class<? extends ByteItem> clsItem;
+    private final Class<? extends ByteItem> clsItem;
 
     public FileByteReaderRequest(String filePath, Class<? extends ByteItem> clsItem) {
         this.filePath = filePath;
