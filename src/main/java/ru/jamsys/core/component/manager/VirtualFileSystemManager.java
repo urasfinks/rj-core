@@ -3,11 +3,12 @@ package ru.jamsys.core.component.manager;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
+import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.resource.virtual.file.system.File;
 
 @Component
 @Lazy
-public class VirtualFileSystemManager extends AbstractManager<File, Void> {
+public class VirtualFileSystemManager extends AbstractManager<File, Void> implements KeepAliveComponent {
 
     public VirtualFileSystemManager() {
         setCleanableMap(false);

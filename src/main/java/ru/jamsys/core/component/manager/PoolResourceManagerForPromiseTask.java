@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
+import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.resource.PoolResourceForPromiseTask;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
@@ -19,7 +20,8 @@ public class PoolResourceManagerForPromiseTask<
         RA,
         RR,
         PI extends ExpirationMsMutable & Resource<RC, RA, RR>
-        > extends AbstractManager<PoolResourceForPromiseTask<?, ?, ?, ?>, PoolSettings<PI, RC>> {
+        > extends AbstractManager<PoolResourceForPromiseTask<?, ?, ?, ?>, PoolSettings<PI, RC>>
+        implements KeepAliveComponent {
 
     public ManagerElement<
             PoolResourceForPromiseTask<RC, RA, RR, PI>,

@@ -8,6 +8,7 @@ import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmut
 
 import java.util.function.Consumer;
 
+//ExpirationManager.keepAlive() вызывает KeepAliveExpirationManager->Cron1s
 @Component
 public class ExpirationManager extends AbstractManager<Expiration<?>, Consumer<DisposableExpirationMsImmutableEnvelope<?>>> {
 
