@@ -6,7 +6,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.extension.ByteItem;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.LifeCycleInterface;
@@ -23,12 +22,11 @@ import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 public class FileByteWriter implements KeepAlive, LifeCycleInterface {
 
     @Getter
-    ManagerElement<Broker<ByteItem>, Consumer<ByteItem>> broker;
+    Broker<ByteItem> broker;
 
     final String folder;
 
@@ -50,10 +48,10 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
 
         this.index = index;
 
-        broker = App.context.getBean(BrokerManager.class).get(index, ByteItem.class);
+        broker = App.context.getBean(BrokerManager.class).get(index, ByteItem.class, null);
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
-        broker.get().getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(400_000);
+        broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(400_000);
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
 
         folder = propertiesComponent.getProperties(index, "log.file.folder", String.class);
@@ -64,7 +62,7 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
     }
 
     public int size() {
-        return broker.get().size();
+        return broker.size();
     }
 
     public int getIndexFile() {
@@ -112,7 +110,7 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
     }
 
     public void append(ByteItem log) {
-        broker.get().add(log, 6_000);
+        broker.add(log, 6_000);
     }
 
     @Override
@@ -120,45 +118,40 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
         if (currentFilePath == null) {
             genNextFile();
         }
-        broker.accept(logBroker -> {
-            int maxWriteCount = maxFileCount;
-            while (!logBroker.isEmpty() && isThreadRun.get()) {
-                if (maxWriteCount <= 0) {
-                    break;
-                }
-                write(isThreadRun);
-                maxWriteCount--;
+        int maxWriteCount = maxFileCount;
+        while (!broker.isEmpty() && isThreadRun.get()) {
+            if (maxWriteCount <= 0) {
+                break;
             }
-        });
+            write(isThreadRun);
+            maxWriteCount--;
+        }
     }
 
     private void write(AtomicBoolean isThreadRun) {
         try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(currentFilePath, writeByteToCurrentFile.get() > 0))) {
-            broker.accept(logBroker -> {
-                while (!logBroker.isEmpty() && isThreadRun.get()) {
-                    try {
-                        ExpirationMsImmutableEnvelope<ByteItem> itemExpirationMsMutableEnvelope = logBroker.pollFirst();
-                        if (itemExpirationMsMutableEnvelope != null) {
-                            ByteItem item = itemExpirationMsMutableEnvelope.getValue();
+            while (!broker.isEmpty() && isThreadRun.get()) {
+                try {
+                    ExpirationMsImmutableEnvelope<ByteItem> itemExpirationMsMutableEnvelope = broker.pollFirst();
+                    if (itemExpirationMsMutableEnvelope != null) {
+                        ByteItem item = itemExpirationMsMutableEnvelope.getValue();
+                        byte[] d = item.getByteInstance();
+                        fos.write(UtilByte.intToBytes(d.length));
+                        writeByteToCurrentFile.addAndGet(4);
+                        fos.write(d);
+                        writeByteToCurrentFile.addAndGet(d.length);
 
-                            byte[] d = item.getByteInstance();
-                            fos.write(UtilByte.intToBytes(d.length));
-                            writeByteToCurrentFile.addAndGet(4);
-                            fos.write(d);
-                            writeByteToCurrentFile.addAndGet(d.length);
-
-                            if (writeByteToCurrentFile.get() > maxFileSizeByte) {
-                                writeByteToCurrentFile.set(0);
-                                genNextFile();
-                                break;
-                            }
+                        if (writeByteToCurrentFile.get() > maxFileSizeByte) {
+                            writeByteToCurrentFile.set(0);
+                            genNextFile();
+                            break;
                         }
-                    } catch (Exception e) {
-                        App.context.getBean(ExceptionHandler.class).handler(e);
-                        break;
                     }
+                } catch (Exception e) {
+                    App.context.getBean(ExceptionHandler.class).handler(e);
+                    break;
                 }
-            });
+            }
         } catch (Exception e) {
             // Предполагаю, что есть проблемы с файлом
             // Буду пробовать в другой записать
@@ -176,4 +169,5 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
     public void shutdown() {
         genNextFile();
     }
+
 }

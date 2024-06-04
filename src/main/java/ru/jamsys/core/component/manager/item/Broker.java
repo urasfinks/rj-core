@@ -83,9 +83,10 @@ public class Broker<TEO>
 
     private final Class<TEO> classItem;
 
-    public Broker(String index, ApplicationContext applicationContext, Class<TEO> classItem) {
+    public Broker(String index, ApplicationContext applicationContext, Class<TEO> classItem, Consumer<TEO> onDrop) {
         this.index = index;
         this.classItem = classItem;
+        this.onDrop = onDrop;
 
         rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(index, applicationContext))
                 .init(RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)

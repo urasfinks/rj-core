@@ -6,7 +6,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
@@ -21,25 +20,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 @Component
 public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassName {
 
-    final ManagerElement<Broker<StatisticSec>, Consumer<StatisticSec>> brokerManagerElement;
+    final Broker<StatisticSec> brokerManagerElement;
 
     public SendStatisticToInflux(BrokerManager brokerManager, ApplicationContext applicationContext) {
         brokerManagerElement = brokerManager.get(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
-                StatisticSec.class
+                StatisticSec.class,
+                null
         );
     }
 
     @Override
     public Promise generate() {
-        brokerManagerElement.accept(statisticSecBroker -> {
-            System.out.println(statisticSecBroker.size());
-        });
+        System.out.println(brokerManagerElement.size());
         Promise promise = new PromiseImpl(getClassName(), 6_000L);
         return promise;
     }
@@ -47,26 +44,24 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
     public Promise generateOld() {
         Promise promise = new PromiseImpl(getClass().getName(), 6_000L);
         promise.append(getClassName("collector"), (AtomicBoolean isThreadRun, Promise _) -> {
-                    brokerManagerElement.accept(queue -> {
-                        List<Point> listPoints = new ArrayList<>();
-                        while (!queue.isEmpty() && isThreadRun.get()) {
-                            ExpirationMsImmutableEnvelope<StatisticSec> statisticSec = queue.pollFirst();
-                            if (statisticSec != null) {
-                                List<Statistic> list = statisticSec.getValue().getList();
-                                for (Statistic statistic : list) {
-                                    HashMap<String, String> newTags = new HashMap<>(statistic.getTags());
-                                    String measurement = newTags.remove("measurement");
-                                    listPoints.add(
-                                            Point.measurement(measurement)
-                                                    .addTags(newTags)
-                                                    .addFields(statistic.getFields())
-                                                    .time(statisticSec.getLastActivityMs(), WritePrecision.MS)
-                                    );
-                                }
+                    List<Point> listPoints = new ArrayList<>();
+                    while (!brokerManagerElement.isEmpty() && isThreadRun.get()) {
+                        ExpirationMsImmutableEnvelope<StatisticSec> statisticSec = brokerManagerElement.pollFirst();
+                        if (statisticSec != null) {
+                            List<Statistic> list = statisticSec.getValue().getList();
+                            for (Statistic statistic : list) {
+                                HashMap<String, String> newTags = new HashMap<>(statistic.getTags());
+                                String measurement = newTags.remove("measurement");
+                                listPoints.add(
+                                        Point.measurement(measurement)
+                                                .addTags(newTags)
+                                                .addFields(statistic.getFields())
+                                                .time(statisticSec.getLastActivityMs(), WritePrecision.MS)
+                                );
                             }
                         }
-                        promise.setProperty("preparePoint", listPoints);
-                    });
+                    }
+                    promise.setProperty("preparePoint", listPoints);
                 })
                 .appendWait();
 //                .api(getClassName("sendToInflux"), new InfluxClientPromise().beforeExecute((InfluxClientPromise influxClientPromise) -> {

@@ -4,7 +4,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.Closable;
@@ -13,8 +12,6 @@ import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.promise.PromiseTaskWithResource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
-
-import java.util.function.Consumer;
 
 // Пул, который предоставляет освободившиеся объекты для задач PromiseTaskPool
 // В потоке исполнения задачи - совершается действие с освободившимся объектом и на вход подаётся результат
@@ -32,7 +29,7 @@ public class PoolResourceForPromiseTask<
     private final PoolSettings<PI, RC> argument;
 
     @SuppressWarnings("all")
-    final private ManagerElement<Broker<PromiseTaskWithResource>, Consumer<PromiseTaskWithResource>> broker;
+    final private Broker<PromiseTaskWithResource> broker;
 
     private final Class<PI> classItem;
 
@@ -40,7 +37,7 @@ public class PoolResourceForPromiseTask<
         super(name, argument.getClassPoolItem());
         this.argument = argument;
         this.classItem = classItem;
-        broker = App.context.getBean(BrokerManager.class).get(getName(), PromiseTaskWithResource.class);
+        broker = App.context.getBean(BrokerManager.class).get(getName(), PromiseTaskWithResource.class, null);
     }
 
     @Override
@@ -76,7 +73,7 @@ public class PoolResourceForPromiseTask<
     }
 
     public void addPromiseTaskPool(PromiseTaskWithResource<?> promiseTaskWithResource) {
-        broker.get().add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));
+        broker.add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));
         if (!addIfPoolEmpty()) {
             onParkUpdate();
         }
@@ -85,11 +82,11 @@ public class PoolResourceForPromiseTask<
     @SuppressWarnings("all")
     @Override
     public void onParkUpdate() {
-        if (!broker.get().isEmpty() && !parkQueue.isEmpty()) {
+        if (!broker.isEmpty() && !parkQueue.isEmpty()) {
             PI poolItem = parkQueue.pollLast();
             if (poolItem != null) {
                 //Забираем с конца, что бы никаких штормов
-                ExpirationMsImmutableEnvelope<PromiseTaskWithResource> envelope = broker.get().pollLast();
+                ExpirationMsImmutableEnvelope<PromiseTaskWithResource> envelope = broker.pollLast();
                 if (envelope != null) {
                     updateParkStatistic();
                     envelope.getValue().start(new PoolItemEnvelope<>(this, poolItem));

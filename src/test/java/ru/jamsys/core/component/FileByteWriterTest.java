@@ -34,7 +34,7 @@ class FileByteWriterTest {
 
     @AfterAll
     static void shutdown() {
-        //UtilFile.removeAllFilesInFolder("LogManager");
+        UtilFile.removeAllFilesInFolder("LogManager");
         App.shutdown();
     }
 
@@ -108,7 +108,7 @@ class FileByteWriterTest {
         UtilFile.removeAllFilesInFolder("LogManager");
         long start = System.currentTimeMillis();
         FileByteWriter test = new FileByteWriter("default");
-        test.getBroker().get().getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(9999999);
+        test.getBroker().getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(9999999);
         long start2 = System.currentTimeMillis();
         for (int i = 0; i < 1000000; i++) {
             test.append(new Log().setData("LogData" + i).addHeader("key", "value"));

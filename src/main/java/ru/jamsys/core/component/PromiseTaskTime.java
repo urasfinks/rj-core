@@ -4,7 +4,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.ExpirationManager;
-import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.KeepAliveComponent;
@@ -20,15 +19,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 @Component
 @Lazy
 public class PromiseTaskTime implements KeepAliveComponent, ClassName {
 
-    private final ManagerElement<Expiration<PromiseTask>, Consumer<DisposableExpirationMsImmutableEnvelope<PromiseTask>>> promiseTaskRetry;
+    private final Expiration<PromiseTask> promiseTaskRetry;
 
-    private final ManagerElement<Expiration<Promise>, Consumer<DisposableExpirationMsImmutableEnvelope<Promise>>> promiseTaskExpired;
+    private final Expiration<Promise> promiseTaskExpired;
 
     ConcurrentLinkedDeque<TimeEnvelopeNano<String>> queue = new ConcurrentLinkedDeque<>();
 
@@ -55,11 +53,11 @@ public class PromiseTaskTime implements KeepAliveComponent, ClassName {
     }
 
     public DisposableExpirationMsImmutableEnvelope<PromiseTask> addRetryDelay(PromiseTask promiseTask) {
-        return promiseTaskRetry.get().add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getRetryDelayMs()));
+        return promiseTaskRetry.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getRetryDelayMs()));
     }
 
     public DisposableExpirationMsImmutableEnvelope<Promise> addExpiration(Promise promise) {
-        return promiseTaskExpired.get().add(new DisposableExpirationMsImmutableEnvelope<>(promise, promise.getKeepAliveOnInactivityMs()));
+        return promiseTaskExpired.add(new DisposableExpirationMsImmutableEnvelope<>(promise, promise.getKeepAliveOnInactivityMs()));
     }
 
     public TimeEnvelopeNano<String> add(String index) {

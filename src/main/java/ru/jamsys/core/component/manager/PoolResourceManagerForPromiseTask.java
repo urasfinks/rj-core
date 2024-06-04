@@ -2,7 +2,6 @@ package ru.jamsys.core.component.manager;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
-import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.resource.PoolResourceForPromiseTask;
@@ -23,11 +22,8 @@ public class PoolResourceManagerForPromiseTask<
         > extends AbstractManager<PoolResourceForPromiseTask<?, ?, ?, ?>, PoolSettings<PI, RC>>
         implements KeepAliveComponent {
 
-    public ManagerElement<
-            PoolResourceForPromiseTask<RC, RA, RR, PI>,
-            PoolSettings<PI, RC>
-                > get(String index, PoolSettings<PI, RC> argument) {
-        return new ManagerElement<>(index, argument.getClassPoolItem(), this, argument);
+    public PoolResourceForPromiseTask<RC, RA, RR, PI> get(String index, PoolSettings<PI, RC> argument) {
+        return getManagerElement(index, argument.getClassPoolItem(), argument);
     }
 
     @Override

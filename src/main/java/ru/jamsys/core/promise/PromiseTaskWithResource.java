@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.PoolResourceManagerForPromiseTask;
-import ru.jamsys.core.component.manager.sub.ManagerElement;
-import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.pool.PoolItemEnvelope;
@@ -23,7 +21,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
 
     private final TriConsumer<AtomicBoolean, Promise, T> procedure;
 
-    private final ManagerElement<PoolResourceForPromiseTask<?, ?, ?, ?>, PoolSettings<?, ?>> managerElement;
+    private final PoolResourceForPromiseTask<?, ?, ?, ?> managerElement;
 
     @SuppressWarnings("all")
     private final Class<T> classResource;
@@ -48,7 +46,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
     @Override
     public void start() {
         getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Subscribe(" + classResource.getSimpleName() + ")", null, null, null));
-        managerElement.get().addPromiseTaskPool(this);
+        managerElement.addPromiseTaskPool(this);
     }
 
     @Override

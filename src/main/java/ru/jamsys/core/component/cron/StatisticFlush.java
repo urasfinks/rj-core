@@ -6,7 +6,6 @@ import ru.jamsys.core.component.ClassFinderComponent;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.component.manager.sub.ManagerElement;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
@@ -24,12 +23,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 @Component
 public class StatisticFlush implements Cron1s, PromiseGenerator {
 
-    final ManagerElement<Broker<StatisticSec>, Consumer<StatisticSec>> brokerManagerElement;
+    final Broker<StatisticSec> brokerManagerElement;
 
     List<StatisticsFlushComponent> list = new ArrayList<>();
 
@@ -76,7 +74,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
                         }
                     });
                     if (!statisticSec.getList().isEmpty()) {
-                        brokerManagerElement.get().add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
+                        brokerManagerElement.add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
                     }
                 });
     }
