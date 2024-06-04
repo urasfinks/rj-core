@@ -9,12 +9,13 @@ import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadResource> {
 
     AtomicInteger counter = new AtomicInteger(1);
 
-    private final ManagerElement<Broker<PromiseTask>, Void> brokerManagerElement;
+    private final ManagerElement<Broker<PromiseTask>, Consumer<PromiseTask>> brokerManagerElement;
 
     public ThreadPoolPromise(String name) {
         super(name, ThreadResource.class);

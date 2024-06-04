@@ -23,11 +23,12 @@ import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public class FileByteWriter implements KeepAlive, LifeCycleInterface {
 
     @Getter
-    ManagerElement<Broker<ByteItem>, Void> broker;
+    ManagerElement<Broker<ByteItem>, Consumer<ByteItem>> broker;
 
     final String folder;
 

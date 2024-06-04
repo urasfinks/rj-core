@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 class BrokerTest {
 
@@ -32,7 +33,7 @@ class BrokerTest {
 
     @Test
     void testLiner() {
-        ManagerElement<Broker<XTest>, Void> brokerManager = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class);
+        ManagerElement<Broker<XTest>, Consumer<XTest>> brokerManager = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class);
         brokerManager.accept(xTestBroker -> {
             xTestBroker.setMaxSizeQueue(10);
             xTestBroker.setMaxSizeQueueTail(3);
@@ -78,7 +79,7 @@ class BrokerTest {
 
     @Test
     void testCyclic() {
-        ManagerElement<Broker<XTest>, Void> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>, Consumer<XTest>> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
 
 
@@ -130,7 +131,7 @@ class BrokerTest {
 
     @Test
     void testReference() {
-        ManagerElement<Broker<XTest>, Void> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>, Consumer<XTest>> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
         broker.accept(queue -> {
             XTest obj = new XTest(1);
@@ -148,7 +149,7 @@ class BrokerTest {
     void testReference2() {
         AtomicBoolean isRun = new AtomicBoolean(true);
 
-        ManagerElement<Broker<XTest>, Void> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>, Consumer<XTest>> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
         broker.accept(queue -> {
             XTest obj = new XTest(1);
@@ -174,7 +175,7 @@ class BrokerTest {
 
     @Test
     void testExpired() {
-        ManagerElement<Broker<XTest>, Void> broker = App.context.getBean(BrokerManager.class)
+        ManagerElement<Broker<XTest>, Consumer<XTest>> broker = App.context.getBean(BrokerManager.class)
                 .get(XTest.class.getName(), XTest.class);
         broker.accept(queue -> {
             AtomicInteger counter = new AtomicInteger(0);

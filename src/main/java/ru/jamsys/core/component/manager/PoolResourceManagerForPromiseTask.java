@@ -36,7 +36,11 @@ public class PoolResourceManagerForPromiseTask<
             Class<?> classItem,
             PoolSettings<PI, RC> builderArgument
     ) {
-        PoolResourceForPromiseTask<RC, RA, RR, PI> poolResourceForPromiseTask = new PoolResourceForPromiseTask<>(index, builderArgument);
+        PoolResourceForPromiseTask<RC, RA, RR, ?> poolResourceForPromiseTask = new PoolResourceForPromiseTask<>(
+                index,
+                builderArgument,
+                (Class<PI>) classItem
+        );
         poolResourceForPromiseTask.run();
         return poolResourceForPromiseTask;
     }

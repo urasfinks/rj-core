@@ -21,18 +21,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 @Component
 public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassName {
 
-    final ManagerElement<Broker<StatisticSec>, Void> brokerManagerElement;
+    final ManagerElement<Broker<StatisticSec>, Consumer<StatisticSec>> brokerManagerElement;
 
     public SendStatisticToInflux(BrokerManager brokerManager, ApplicationContext applicationContext) {
-        brokerManagerElement = brokerManager.get(ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext), StatisticSec.class);
+        brokerManagerElement = brokerManager.get(
+                ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
+                StatisticSec.class
+        );
     }
 
     @Override
     public Promise generate() {
+        brokerManagerElement.accept(statisticSecBroker -> {
+            System.out.println(statisticSecBroker.size());
+        });
         Promise promise = new PromiseImpl(getClassName(), 6_000L);
         return promise;
     }

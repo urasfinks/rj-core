@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 // MO - MapObject
 // BA - BuilderArgument
@@ -22,6 +24,8 @@ public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable 
 
     protected final Map<String, MO> map = new ConcurrentHashMap<>();
 
+    protected final Map<String, MO> mapReserved = new ConcurrentHashMap<>();
+
     @Setter
     protected boolean cleanableMap = true;
 
@@ -32,18 +36,20 @@ public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable 
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
+        lockAddFromRemoved.lock();
         UtilRisc.forEach(
                 isThreadRun,
                 map,
                 (String key, MO element) -> {
                     if (cleanableMap && element.isExpired()) {
-                        map.remove(key);
+                        mapReserved.put(key, map.remove(key));
                         element.close();
                     } else if (element instanceof KeepAlive) {
                         ((KeepAlive) element).keepAlive(isThreadRun);
                     }
                 }
         );
+        lockAddFromRemoved.unlock();
     }
 
     // Скрытая реализация, потому что объекты могут выпадать из общей Map так как у них есть срок жизни
@@ -51,9 +57,18 @@ public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable 
     // текущий брокер по ключу, а он в какой-то момент времени может быть удалён, а ссылка останется
     // мы будем накладывать в некую очередь, которая уже будет не принадлежать менаджеру
     // и обслуживаться тоже не будет [keepAlive, flushAndGetStatistic] так что - плохая эта затея
+
+    private final Lock lockAddFromRemoved = new ReentrantLock();
+
     protected <T extends CheckClassItem> T getManagerElement(String key, Class<?> classItem, BA builderArgument) {
         @SuppressWarnings("unchecked")
-        T o = (T) map.computeIfAbsent(key, _ -> build(key, classItem, builderArgument));
+        T o = (T) map.computeIfAbsent(key, k1 -> {
+            MO build;
+            lockAddFromRemoved.lock();
+            build = mapReserved.containsKey(k1) ? mapReserved.remove(k1): build(key, classItem, builderArgument);
+            lockAddFromRemoved.unlock();
+            return build;
+        });
         if (o != null && o.checkClassItem(classItem)) {
             return o;
         }

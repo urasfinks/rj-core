@@ -14,6 +14,8 @@ import ru.jamsys.core.promise.PromiseTaskWithResource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
+import java.util.function.Consumer;
+
 // Пул, который предоставляет освободившиеся объекты для задач PromiseTaskPool
 // В потоке исполнения задачи - совершается действие с освободившимся объектом и на вход подаётся результат
 // Аргументы для действия над ресурсом задаются либо при инициализации задачи, либо непосредственно перед запуском
@@ -30,11 +32,14 @@ public class PoolResourceForPromiseTask<
     private final PoolSettings<PI, RC> argument;
 
     @SuppressWarnings("all")
-    final private ManagerElement<Broker<PromiseTaskWithResource>, Void> broker;
+    final private ManagerElement<Broker<PromiseTaskWithResource>, Consumer<PromiseTaskWithResource>> broker;
 
-    public PoolResourceForPromiseTask(String name, PoolSettings<PI, RC> argument) {
+    private final Class<PI> classItem;
+
+    public PoolResourceForPromiseTask(String name, PoolSettings<PI, RC> argument, Class<PI> classItem) {
         super(name, argument.getClassPoolItem());
         this.argument = argument;
+        this.classItem = classItem;
         broker = App.context.getBean(BrokerManager.class).get(getName(), PromiseTaskWithResource.class);
     }
 
@@ -67,7 +72,7 @@ public class PoolResourceForPromiseTask<
 
     @Override
     public boolean checkClassItem(Class<?> classItem) {
-        return true;
+        return this.classItem.equals(classItem);
     }
 
     public void addPromiseTaskPool(PromiseTaskWithResource<?> promiseTaskWithResource) {

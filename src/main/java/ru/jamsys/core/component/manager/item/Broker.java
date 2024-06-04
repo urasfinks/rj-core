@@ -81,7 +81,7 @@ public class Broker<TEO>
 
     private Consumer<TEO> onDrop = null;
 
-    private Class<TEO> classItem;
+    private final Class<TEO> classItem;
 
     public Broker(String index, ApplicationContext applicationContext, Class<TEO> classItem) {
         this.index = index;

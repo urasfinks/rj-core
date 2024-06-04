@@ -24,11 +24,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 @Component
 public class StatisticFlush implements Cron1s, PromiseGenerator {
 
-    final ManagerElement<Broker<StatisticSec>, Void> brokerManagerElement;
+    final ManagerElement<Broker<StatisticSec>, Consumer<StatisticSec>> brokerManagerElement;
 
     List<StatisticsFlushComponent> list = new ArrayList<>();
 
@@ -42,7 +43,13 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
             BrokerManager broker,
             ExceptionHandler exceptionHandler
     ) {
-        brokerManagerElement = broker.get(ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext), StatisticSec.class);
+        brokerManagerElement = broker.get(
+                ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
+                StatisticSec.class,
+                statisticSec -> {
+                    System.out.println("ON DROP " + statisticSec);
+                }
+        );
         this.exceptionHandler = exceptionHandler;
         classFinderComponent.findByInstance(StatisticsFlushComponent.class).forEach((Class<StatisticsFlushComponent> statisticsCollectorClass)
                 -> list.add(applicationContext.getBean(statisticsCollectorClass)));
