@@ -15,7 +15,14 @@ import java.util.concurrent.locks.ReentrantLock;
 // MO - MapObject
 // BA - BuilderArgument
 
-public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable & StatisticsFlush, BA>
+public abstract class AbstractManager<
+        MO extends
+                Closable
+                & ExpirationMsMutable
+                & StatisticsFlush
+                & ManagerItemAutoRestore
+                & CheckClassItem,
+        BA>
         implements
         StatisticsCollectorMap<MO>,
         KeepAlive,
@@ -60,15 +67,22 @@ public abstract class AbstractManager<MO extends Closable & ExpirationMsMutable 
 
     private final Lock lockAddFromRemoved = new ReentrantLock();
 
-    protected <T extends CheckClassItem> T getManagerElement(String key, Class<?> classItem, BA builderArgument) {
-        @SuppressWarnings("unchecked")
-        T o = (T) map.computeIfAbsent(key, k1 -> {
+    protected MO getManagerElement(String key, Class<?> classItem, BA builderArgument) {
+        MO o = map.computeIfAbsent(key, k1 -> {
             MO build;
             lockAddFromRemoved.lock();
             build = mapReserved.containsKey(k1) ? mapReserved.remove(k1): build(key, classItem, builderArgument);
             lockAddFromRemoved.unlock();
             return build;
         });
+        if (o != null && o.checkClassItem(classItem)) {
+            return o;
+        }
+        return null;
+    }
+
+    protected MO getManagerElementUnsafe(String key, Class<?> classItem) {
+        MO o = map.get(key);
         if (o != null && o.checkClassItem(classItem)) {
             return o;
         }

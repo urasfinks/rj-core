@@ -1,20 +1,21 @@
 package ru.jamsys.core.component.cron;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ClassFinderComponent;
 import ru.jamsys.core.extension.KeepAliveComponent;
+import ru.jamsys.core.flat.template.cron.release.Cron3s;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseImpl;
-import ru.jamsys.core.promise.PromiseTaskExecuteType;
-import ru.jamsys.core.flat.template.cron.release.Cron3s;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
+@Lazy
 public class KeepAlive implements Cron3s, PromiseGenerator {
 
     private final List<KeepAliveComponent> list = new ArrayList<>();

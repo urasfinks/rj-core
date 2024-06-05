@@ -18,7 +18,7 @@ public class ExpirationManager extends AbstractManager<Expiration<?>, Consumer<D
             Consumer<DisposableExpirationMsImmutableEnvelope<T>> onExpired
     ) {
         Consumer<DisposableExpirationMsImmutableEnvelope<?>> xx = (Consumer) onExpired;
-        return getManagerElement(index, classItem, xx);
+        return (Expiration) getManagerElement(index, classItem, xx);
     }
 
     @Override

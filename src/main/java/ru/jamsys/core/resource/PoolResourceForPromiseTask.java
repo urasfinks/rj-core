@@ -3,7 +3,9 @@ package ru.jamsys.core.resource;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.BrokerManager;
+import ru.jamsys.core.component.manager.PoolResourceManagerForPromiseTask;
 import ru.jamsys.core.component.manager.item.Broker;
+import ru.jamsys.core.component.manager.sub.ManagerItemAutoRestore;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.Closable;
@@ -12,6 +14,8 @@ import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.promise.PromiseTaskWithResource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 // Пул, который предоставляет освободившиеся объекты для задач PromiseTaskPool
 // В потоке исполнения задачи - совершается действие с освободившимся объектом и на вход подаётся результат
@@ -24,9 +28,11 @@ public class PoolResourceForPromiseTask<
         PI extends ExpirationMsMutable & Resource<RC, RA, RR>
         >
         extends AbstractPool<RC, RA, RR, PI>
-        implements Closable, CheckClassItem {
+        implements Closable, CheckClassItem, ManagerItemAutoRestore {
 
     private final PoolSettings<PI, RC> argument;
+
+    private final AtomicBoolean isRun = new AtomicBoolean(true);
 
     @SuppressWarnings("all")
     final private Broker<PromiseTaskWithResource> broker;
@@ -37,7 +43,7 @@ public class PoolResourceForPromiseTask<
         super(name, argument.getClassPoolItem());
         this.argument = argument;
         this.classItem = classItem;
-        broker = App.context.getBean(BrokerManager.class).get(getName(), PromiseTaskWithResource.class, null);
+        broker = App.context.getBean(BrokerManager.class).initAndGet(getName(), PromiseTaskWithResource.class, null);
     }
 
     @Override
@@ -64,6 +70,7 @@ public class PoolResourceForPromiseTask<
 
     @Override
     public void close() {
+        isRun.set(false);
         shutdown();
     }
 
@@ -74,6 +81,7 @@ public class PoolResourceForPromiseTask<
 
     public void addPromiseTaskPool(PromiseTaskWithResource<?> promiseTaskWithResource) {
         broker.add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));
+        restoreInManager();
         if (!addIfPoolEmpty()) {
             onParkUpdate();
         }
@@ -97,4 +105,11 @@ public class PoolResourceForPromiseTask<
         }
     }
 
+    @Override
+    public void restoreInManager() {
+        if (isRun.compareAndSet(false, true)) {
+            run();
+            App.context.getBean(PoolResourceManagerForPromiseTask.class).get(name, argument).active();
+        }
+    }
 }

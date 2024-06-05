@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.component.manager.sub.ManagerItemAutoRestore;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.resource.virtual.file.system.view.FileView;
@@ -19,7 +20,15 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class File extends ExpirationMsMutableImpl implements Closable, StatisticsFlush, KeepAlive, Property<String> {
+public class File extends ExpirationMsMutableImpl
+        implements
+        Closable,
+        StatisticsFlush,
+        KeepAlive,
+        Property<String>,
+        CheckClassItem,
+        ManagerItemAutoRestore
+{
 
     @Getter
     protected String folder; //Абсолютный путь виртуальной папки
@@ -165,6 +174,16 @@ public class File extends ExpirationMsMutableImpl implements Closable, Statistic
         if (isExpired()) {
             reset();
         }
+    }
+
+    @Override
+    public boolean checkClassItem(Class<?> classItem) {
+        return true;
+    }
+
+    @Override
+    public void restoreInManager() {
+        // TODO: явно тут надо что-то сделать
     }
 
 }

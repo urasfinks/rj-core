@@ -1,6 +1,7 @@
 package ru.jamsys.core.component.cron;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.ExpirationManager;
 import ru.jamsys.core.extension.ClassName;
@@ -12,6 +13,7 @@ import ru.jamsys.core.promise.PromiseImpl;
 // Нам надо вызывать KeepAlive у ExpiredManager 1 раз в секунду, а не 1раз в 3сек
 
 @Component
+@Lazy
 public class KeepAliveExpirationManager implements Cron1s, PromiseGenerator, ClassName {
 
     private final ExpirationManager expirationManager;

@@ -3,6 +3,7 @@ package ru.jamsys.core.component.cron;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.manager.item.Broker;
@@ -22,21 +23,21 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
+@Lazy
 public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassName {
 
-    final Broker<StatisticSec> brokerManagerElement;
+    final Broker<StatisticSec> broker;
 
     public SendStatisticToInflux(BrokerManager brokerManager, ApplicationContext applicationContext) {
-        brokerManagerElement = brokerManager.get(
+        broker = brokerManager.get(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
-                StatisticSec.class,
-                null
+                StatisticSec.class
         );
     }
 
     @Override
     public Promise generate() {
-        System.out.println(brokerManagerElement.size());
+        //System.out.println(brokerManagerElement.size());
         Promise promise = new PromiseImpl(getClassName(), 6_000L);
         return promise;
     }
@@ -45,8 +46,8 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
         Promise promise = new PromiseImpl(getClass().getName(), 6_000L);
         promise.append(getClassName("collector"), (AtomicBoolean isThreadRun, Promise _) -> {
                     List<Point> listPoints = new ArrayList<>();
-                    while (!brokerManagerElement.isEmpty() && isThreadRun.get()) {
-                        ExpirationMsImmutableEnvelope<StatisticSec> statisticSec = brokerManagerElement.pollFirst();
+                    while (!broker.isEmpty() && isThreadRun.get()) {
+                        ExpirationMsImmutableEnvelope<StatisticSec> statisticSec = broker.pollFirst();
                         if (statisticSec != null) {
                             List<Statistic> list = statisticSec.getValue().getList();
                             for (Statistic statistic : list) {

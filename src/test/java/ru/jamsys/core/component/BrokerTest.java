@@ -22,6 +22,7 @@ class BrokerTest {
     static void beforeAll() {
         String[] args = new String[]{};
         App.main(args);
+        App.context.getBean(BrokerManager.class).initAndGet(XTest.class.getName(), XTest.class, null);
     }
 
     @AfterAll
@@ -31,48 +32,48 @@ class BrokerTest {
 
     @Test
     void testLiner() {
-        Broker<XTest> brokerManager = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class, null);
-        brokerManager.setMaxSizeQueue(10);
-        brokerManager.setMaxSizeQueueTail(3);
+        Broker<XTest> broker = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class);
+        broker.setMaxSizeQueue(10);
+        broker.setMaxSizeQueueTail(3);
 
         for (int i = 0; i < 10; i++) {
-            brokerManager.add(new XTest(i), 6_000L);
+            broker.add(new XTest(i), 6_000L);
         }
         List<XTest> droped = new ArrayList<>();
-        brokerManager.setOnDrop(droped::add);
+        broker.setOnDrop(droped::add);
 
-        Assertions.assertEquals(10, brokerManager.size(), "#1");
+        Assertions.assertEquals(10, broker.size(), "#1");
 
-        ExpirationMsImmutableEnvelope<XTest> t = brokerManager.pollFirst();
+        ExpirationMsImmutableEnvelope<XTest> t = broker.pollFirst();
         Assertions.assertEquals(0, t.getValue().x, "#2");
-        Assertions.assertEquals(9, brokerManager.size(), "#3");
+        Assertions.assertEquals(9, broker.size(), "#3");
 
-        ExpirationMsImmutableEnvelope<XTest> t2 = brokerManager.pollLast();
+        ExpirationMsImmutableEnvelope<XTest> t2 = broker.pollLast();
         Assertions.assertEquals(9, t2.getValue().x, "#4");
-        Assertions.assertEquals(8, brokerManager.size(), "#5");
+        Assertions.assertEquals(8, broker.size(), "#5");
 
         try {
-            brokerManager.add(new XTest(11), 6_000L);
-            brokerManager.add(new XTest(12), 6_000L);
-            brokerManager.add(new XTest(13), 6_000L);
-            brokerManager.add(new XTest(14), 6_000L);
+            broker.add(new XTest(11), 6_000L);
+            broker.add(new XTest(12), 6_000L);
+            broker.add(new XTest(13), 6_000L);
+            broker.add(new XTest(14), 6_000L);
         } catch (Exception e) {
             Assertions.assertTrue(true, "#7");
         }
-        List<XTest> tail = brokerManager.getTail(null);
+        List<XTest> tail = broker.getTail(null);
         Assertions.assertEquals("[XTest{x=12}, XTest{x=13}, XTest{x=14}]", tail.toString(), "#8");
         Assertions.assertEquals("[XTest{x=1}, XTest{x=2}]", droped.toString(), "#8");
 
-        List<XTest> cloneQueue = brokerManager.getCloneQueue(null);
+        List<XTest> cloneQueue = broker.getCloneQueue(null);
         Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", cloneQueue.toString(), "#9");
-        brokerManager.reset();
-        Assertions.assertEquals("[]", brokerManager.getCloneQueue(null).toString(), "#10");
+        broker.reset();
+        Assertions.assertEquals("[]", broker.getCloneQueue(null).toString(), "#10");
     }
 
     @Test
     void testCyclic() {
         Broker<XTest> broker = App.context.getBean(BrokerManager.class)
-                .get(XTest.class.getName(), XTest.class, null);
+                .get(XTest.class.getName(), XTest.class);
 
         broker.setMaxSizeQueue(10);
         broker.setMaxSizeQueueTail(3);
@@ -121,7 +122,7 @@ class BrokerTest {
     @Test
     void testReference() {
         Broker<XTest> broker = App.context.getBean(BrokerManager.class)
-                .get(XTest.class.getName(), XTest.class, null);
+                .get(XTest.class.getName(), XTest.class);
         XTest obj = new XTest(1);
         DisposableExpirationMsImmutableEnvelope<XTest> o1 = broker.add(obj, 6_000L);
 
@@ -137,7 +138,7 @@ class BrokerTest {
         AtomicBoolean isRun = new AtomicBoolean(true);
 
         Broker<XTest> broker = App.context.getBean(BrokerManager.class)
-                .get(XTest.class.getName(), XTest.class, null);
+                .get(XTest.class.getName(), XTest.class);
         XTest obj = new XTest(1);
         XTest obj2 = new XTest(2);
         DisposableExpirationMsImmutableEnvelope<XTest> o1 = null;
@@ -161,7 +162,7 @@ class BrokerTest {
     @Test
     void testExpired() {
         Broker<XTest> broker = App.context.getBean(BrokerManager.class)
-                .get(XTest.class.getName(), XTest.class, null);
+                .get(XTest.class.getName(), XTest.class);
         AtomicInteger counter = new AtomicInteger(0);
         broker.setOnDrop(_ -> counter.incrementAndGet());
         XTest obj = new XTest(1);

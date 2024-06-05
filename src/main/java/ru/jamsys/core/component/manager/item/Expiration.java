@@ -1,6 +1,9 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.ExpirationManager;
+import ru.jamsys.core.component.manager.sub.ManagerItemAutoRestore;
 import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.KeepAlive;
@@ -42,6 +45,7 @@ public class Expiration<V>
         KeepAlive,
         StatisticsFlush,
         CheckClassItem,
+        ManagerItemAutoRestore,
         ExpirationMsMutable {
 
     private final ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>>> bucket = new ConcurrentSkipListMap<>();
@@ -52,6 +56,8 @@ public class Expiration<V>
     private final Class<?> classItem;
 
     private final Consumer<DisposableExpirationMsImmutableEnvelope<?>> onExpired;
+
+    private final AtomicBoolean isRun = new AtomicBoolean(true);
 
     public Expiration(String index, Class<?> classItem, Consumer<DisposableExpirationMsImmutableEnvelope<?>> onExpired) {
         this.index = index;
@@ -107,7 +113,7 @@ public class Expiration<V>
         UtilRisc.forEach(
                 isThreadRun,
                 bucket,
-                (Long key, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>> queue)
+                (Long _, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>> queue)
                         -> count.addAndGet(queue.size())
         );
         result.add(new Statistic(parentTags, parentFields)
@@ -123,6 +129,7 @@ public class Expiration<V>
     @Override
     public void close() {
         bucket.clear();
+        isRun.set(false);
     }
 
     @Override
@@ -131,6 +138,7 @@ public class Expiration<V>
     }
 
     public DisposableExpirationMsImmutableEnvelope<V> add(DisposableExpirationMsImmutableEnvelope<V> obj) {
+        restoreInManager();
         long timeMsExpiredFloor = Util.zeroLastNDigits(obj.getExpiredMs(), 3);
         bucket.computeIfAbsent(timeMsExpiredFloor, _ -> new ConcurrentLinkedQueue<>())
                 .add(obj);
@@ -141,4 +149,13 @@ public class Expiration<V>
     public boolean checkClassItem(Class<?> classItem) {
         return this.classItem.equals(classItem);
     }
+
+    @Override
+    public void restoreInManager() {
+        if (isRun.compareAndSet(false, true)) {
+            Expiration<?> expiration = App.context.getBean(ExpirationManager.class).get(index, classItem, null);
+            expiration.active();
+        }
+    }
+
 }

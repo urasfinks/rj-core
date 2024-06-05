@@ -23,7 +23,7 @@ public class PoolResourceManagerForPromiseTask<
         implements KeepAliveComponent {
 
     public PoolResourceForPromiseTask<RC, RA, RR, PI> get(String index, PoolSettings<PI, RC> argument) {
-        return getManagerElement(index, argument.getClassPoolItem(), argument);
+        return (PoolResourceForPromiseTask) getManagerElement(index, argument.getClassPoolItem(), argument);
     }
 
     @Override

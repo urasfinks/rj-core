@@ -2,6 +2,7 @@ package ru.jamsys.core.rate.limit;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.jamsys.core.component.manager.sub.ManagerItemAutoRestore;
 import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.StatisticsCollectorMap;
@@ -21,6 +22,7 @@ public class RateLimit
         StatisticsCollectorMap<RateLimitItem>,
         Closable,
         CheckClassItem,
+        ManagerItemAutoRestore,
         AddToMap<String, RateLimitItem>
 {
 
@@ -57,6 +59,7 @@ public class RateLimit
 
     public void reset() {
         // Рекомендуется использовать только для тестов
+        //TODO: что за дрянь? Удалить!
         this.active = false;
         map.forEach((String key, RateLimitItem rateLimitItem) -> rateLimitItem.reset());
     }
@@ -83,5 +86,10 @@ public class RateLimit
     @Override
     public boolean checkClassItem(Class<?> classItem) {
         return true;
+    }
+
+    @Override
+    public void restoreInManager() {
+        //setCleanableMap = false
     }
 }

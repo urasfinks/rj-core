@@ -1,6 +1,7 @@
 package ru.jamsys.core.component.cron;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ClassFinderComponent;
 import ru.jamsys.core.component.ExceptionHandler;
@@ -25,9 +26,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
+@Lazy
 public class StatisticFlush implements Cron1s, PromiseGenerator {
 
-    final Broker<StatisticSec> brokerManagerElement;
+    final Broker<StatisticSec> broker;
 
     List<StatisticsFlushComponent> list = new ArrayList<>();
 
@@ -41,12 +43,9 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
             BrokerManager broker,
             ExceptionHandler exceptionHandler
     ) {
-        brokerManagerElement = broker.get(
+        this.broker = broker.get(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
-                StatisticSec.class,
-                statisticSec -> {
-                    System.out.println("ON DROP " + statisticSec);
-                }
+                StatisticSec.class
         );
         this.exceptionHandler = exceptionHandler;
         classFinderComponent.findByInstance(StatisticsFlushComponent.class).forEach((Class<StatisticsFlushComponent> statisticsCollectorClass)
@@ -74,7 +73,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator {
                         }
                     });
                     if (!statisticSec.getList().isEmpty()) {
-                        brokerManagerElement.add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
+                        broker.add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
                     }
                 });
     }
