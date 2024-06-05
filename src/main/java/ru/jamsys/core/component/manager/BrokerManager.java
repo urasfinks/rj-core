@@ -21,8 +21,6 @@ public class BrokerManager extends AbstractManager<Broker<?>, Consumer<?>> imple
         return getManagerElement(index, classItem, builderArgument);
     }
 
-
-
     @Override
     public Broker<?> build(String index, Class<?> classItem, Consumer<?> builderArgument) {
         return new Broker<>(index, applicationContext, classItem, (Consumer) builderArgument);
