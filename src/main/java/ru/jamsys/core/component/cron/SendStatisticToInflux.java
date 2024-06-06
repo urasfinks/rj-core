@@ -31,7 +31,7 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
     private final String index;
 
     public SendStatisticToInflux(BrokerManager brokerManager, ApplicationContext applicationContext) {
-        index = getClassName("cron");
+        index = getClassName("cron", applicationContext);
         broker = brokerManager.get(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class

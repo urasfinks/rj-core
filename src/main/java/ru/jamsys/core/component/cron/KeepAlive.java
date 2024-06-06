@@ -24,7 +24,7 @@ public class KeepAlive implements Cron3s, PromiseGenerator, ClassName {
     private final String index;
 
     public KeepAlive(ClassFinderComponent classFinderComponent, ApplicationContext applicationContext) {
-        index = getClassName("cron");
+        index = getClassName("cron", applicationContext);
         classFinderComponent.findByInstance(KeepAliveComponent.class).forEach((Class<KeepAliveComponent> keepAliveClass)
                 -> list.add(applicationContext.getBean(keepAliveClass)));
     }

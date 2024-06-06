@@ -22,7 +22,7 @@ public class KeepAliveExpirationManager implements Cron1s, PromiseGenerator, Cla
 
     public KeepAliveExpirationManager(ApplicationContext applicationContext) {
         expirationManager = applicationContext.getBean(ExpirationManager.class);
-        index = getClassName("cron");
+        index = getClassName("cron", applicationContext);
     }
 
     @Override

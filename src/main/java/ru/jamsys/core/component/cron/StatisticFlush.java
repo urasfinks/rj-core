@@ -46,7 +46,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator, ClassName {
             BrokerManager broker,
             ExceptionHandler exceptionHandler
     ) {
-        index = getClassName("cron");
+        index = getClassName("cron", applicationContext);
         this.broker = broker.get(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class

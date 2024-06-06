@@ -1,5 +1,6 @@
 package ru.jamsys.core.component.cron;
 
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
@@ -20,8 +21,8 @@ public class PromiseController implements Cron1s, PromiseGenerator, ClassName {
 
     private final String index;
 
-    public PromiseController() {
-        index = getClassName("cron");
+    public PromiseController(ApplicationContext applicationContext) {
+        index = getClassName("cron", applicationContext);
     }
 
     @Override
