@@ -97,8 +97,6 @@ public class Broker<TEO>
 
         rliTailSize = rateLimit.get(RateLimitName.BROKER_TAIL_SIZE.getName());
         rliTailSize.set(5);
-
-        rateLimit.setActive(true);
     }
 
     public int size() {
@@ -251,9 +249,7 @@ public class Broker<TEO>
     }
 
     @Override
-    public void close() {
-        rateLimit.setActive(false);
-    }
+    public void close() {}
 
     // Рекомендуется использовать только для тестов
     public void reset() {

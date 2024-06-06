@@ -326,8 +326,6 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
         if (restartOperation.compareAndSet(false, true)) {
             isRun.set(true);
             overclocking(rliPoolSizeMin.get());
-            rateLimit.setActive(true);
-            rateLimitPoolItem.setActive(true);
             restartOperation.set(false);
         }
     }
@@ -341,8 +339,6 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
                     itemQueue,
                     this::removeAndClose
             );
-            rateLimit.setActive(false);
-            rateLimitPoolItem.setActive(false);
             restartOperation.set(false);
         }
     }

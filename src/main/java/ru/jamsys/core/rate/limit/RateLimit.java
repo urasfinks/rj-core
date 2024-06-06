@@ -1,7 +1,6 @@
 package ru.jamsys.core.rate.limit;
 
 import lombok.Getter;
-import lombok.Setter;
 import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.StatisticsCollectorMap;
@@ -26,11 +25,7 @@ public class RateLimit
 
     final Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
 
-    @Setter
-    private volatile boolean active = false;
-
     private final String index;
-
 
     public RateLimit(String index) {
         this.index = index;
@@ -38,7 +33,6 @@ public class RateLimit
 
     @Override
     public void close() {
-        setActive(false);
     }
 
     @Override
@@ -48,7 +42,6 @@ public class RateLimit
 
     public String getMomentumStatistic() {
         StringBuilder sb = new StringBuilder();
-        sb.append("active: ").append(active).append("; ");
         for (String key : map.keySet()) {
             sb.append(key).append(": ").append(map.get(key).getMomentumStatistic());
         }
@@ -57,13 +50,10 @@ public class RateLimit
 
     public void reset() {
         // Рекомендуется использовать только для тестов
-        //TODO: что за дрянь? Удалить!
-        this.active = false;
         map.forEach((String key, RateLimitItem rateLimitItem) -> rateLimitItem.reset());
     }
 
     public boolean check(Integer limit) {
-        this.active = true;
         for (String key : map.keySet()) {
             if (!map.get(key).check(limit)) {
                 return false;
