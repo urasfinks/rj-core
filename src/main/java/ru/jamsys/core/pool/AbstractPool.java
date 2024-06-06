@@ -39,8 +39,6 @@ import java.util.function.Function;
 // На работу плавцы отправляются из парка с конца очереди
 // Таким образом в парке в начале очереди будут тушиться пловцы без работы до их кончины
 
-//TODO: Добавить контроль TPS
-
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & Resource<RC, RA, RR>>
         extends ExpirationMsMutableImpl
