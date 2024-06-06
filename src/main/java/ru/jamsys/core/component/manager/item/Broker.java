@@ -6,10 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.manager.RateLimitManager;
-import ru.jamsys.core.component.manager.sub.ManagerItemAutoRestore;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -56,13 +53,10 @@ public class Broker<TEO>
         Closable,
         KeepAlive,
         CheckClassItem,
-        ManagerItemAutoRestore,
         AddToList<
                 ExpirationMsImmutableEnvelope<TEO>,
                 DisposableExpirationMsImmutableEnvelope<TEO> // Должны вернуть, что бы из вне можно было сделать remove
                 > {
-
-    private final AtomicBoolean isRun = new AtomicBoolean(true);
 
     private final ConcurrentLinkedDeque<DisposableExpirationMsImmutableEnvelope<TEO>> queue = new ConcurrentLinkedDeque<>();
 
@@ -142,7 +136,7 @@ public class Broker<TEO>
         if (envelope == null || envelope.isExpired()) {
             return null;
         }
-        restoreInManager();
+        active();
         DisposableExpirationMsImmutableEnvelope<TEO> convert = DisposableExpirationMsImmutableEnvelope.convert(envelope);
         // Проблема с производительностью
         // Мы не можем использовать queue.size() для расчёта переполнения
@@ -248,9 +242,6 @@ public class Broker<TEO>
         List<Statistic> result = new ArrayList<>();
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
         int sizeFlush = queueSize.get();
-        if (sizeFlush > 0 || tpsDequeueFlush > 0) {
-            active();
-        }
         result.add(new Statistic(parentTags, parentFields)
                 .addField("tpsDeq", tpsDequeueFlush)
                 .addField("size", sizeFlush)
@@ -262,7 +253,6 @@ public class Broker<TEO>
     @Override
     public void close() {
         rateLimit.setActive(false);
-        isRun.set(false);
     }
 
     // Рекомендуется использовать только для тестов
@@ -297,11 +287,4 @@ public class Broker<TEO>
         return this.classItem.equals(classItem);
     }
 
-    @Override
-    public void restoreInManager() {
-        if (isRun.compareAndSet(false, true)) {
-            Broker<?> expiration = App.context.getBean(BrokerManager.class).initAndGet(index, classItem, null);
-            expiration.active();
-        }
-    }
 }

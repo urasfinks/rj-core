@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 // MO - MapObject
 // BA - BuilderArgument
@@ -20,7 +21,6 @@ public abstract class AbstractManager<
                 Closable
                 & ExpirationMsMutable
                 & StatisticsFlush
-                & ManagerItemAutoRestore
                 & CheckClassItem,
         BA>
         implements
@@ -36,6 +36,8 @@ public abstract class AbstractManager<
     @Setter
     protected boolean cleanableMap = true;
 
+    private final Lock lockAddFromRemoved = new ReentrantLock();
+
     @Override
     public Map<String, MO> getMapForFlushStatistic() {
         return map;
@@ -48,7 +50,7 @@ public abstract class AbstractManager<
                 isThreadRun,
                 map,
                 (String key, MO element) -> {
-                    if (cleanableMap && element.isExpired()) {
+                    if (cleanableMap && element.isExpiredWithoutStop()) {
                         mapReserved.put(key, map.remove(key));
                         element.close();
                     } else if (element instanceof KeepAlive) {
@@ -59,22 +61,36 @@ public abstract class AbstractManager<
         lockAddFromRemoved.unlock();
     }
 
+    public void checkReserved() {
+        for (String key : mapReserved.keySet()) {
+            if (!mapReserved.get(key).isExpiredWithoutStop()) {
+                restoreFromReserved(key, null);
+            }
+        }
+    }
+
+    // Атомарная операция для map и mapReserved
+    private MO restoreFromReserved(String key, Supplier<MO> newObject) {
+        lockAddFromRemoved.lock();
+        MO result = null;
+        // computeIfAbsent так как заметил использование в других классах использование put
+        // хотя бы тут попробуем выдерживать консистентность
+        if (mapReserved.containsKey(key)) {
+            result = map.computeIfAbsent(key, mapReserved::remove);
+        } else if (newObject != null) {
+            result = map.computeIfAbsent(key, _ -> newObject.get());
+        }
+        lockAddFromRemoved.unlock();
+        return result;
+    }
+
     // Скрытая реализация, потому что объекты могут выпадать из общей Map так как у них есть срок жизни
     // Они унаследованы от ExpirationMsMutable, если реализация будет открытой, кто-то может прихранить ссылки на
     // текущий брокер по ключу, а он в какой-то момент времени может быть удалён, а ссылка останется
     // мы будем накладывать в некую очередь, которая уже будет не принадлежать менаджеру
     // и обслуживаться тоже не будет [keepAlive, flushAndGetStatistic] так что - плохая эта затея
-
-    private final Lock lockAddFromRemoved = new ReentrantLock();
-
     protected MO getManagerElement(String key, Class<?> classItem, BA builderArgument) {
-        MO o = map.computeIfAbsent(key, k1 -> {
-            MO build;
-            lockAddFromRemoved.lock();
-            build = mapReserved.containsKey(k1) ? mapReserved.remove(k1): build(key, classItem, builderArgument);
-            lockAddFromRemoved.unlock();
-            return build;
-        });
+        MO o = restoreFromReserved(key, () -> build(key, classItem, builderArgument));
         if (o != null && o.checkClassItem(classItem)) {
             return o;
         }
