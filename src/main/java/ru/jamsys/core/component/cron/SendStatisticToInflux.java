@@ -28,7 +28,10 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
 
     final Broker<StatisticSec> broker;
 
+    private final String index;
+
     public SendStatisticToInflux(BrokerManager brokerManager, ApplicationContext applicationContext) {
+        index = getClassName("cron");
         broker = brokerManager.get(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class
@@ -38,13 +41,13 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
     @Override
     public Promise generate() {
         //System.out.println(brokerManagerElement.size());
-        Promise promise = new PromiseImpl(getClassName(), 6_000L);
+        Promise promise = new PromiseImpl(index, 6_000L);
         return promise;
     }
 
     public Promise generateOld() {
-        Promise promise = new PromiseImpl(getClass().getName(), 6_000L);
-        promise.append(getClassName("collector"), (AtomicBoolean isThreadRun, Promise _) -> {
+        Promise promise = new PromiseImpl(index, 6_000L);
+        promise.append(getClassName("cron"), (AtomicBoolean isThreadRun, Promise _) -> {
                     List<Point> listPoints = new ArrayList<>();
                     while (!broker.isEmpty() && isThreadRun.get()) {
                         ExpirationMsImmutableEnvelope<StatisticSec> statisticSec = broker.pollFirst();

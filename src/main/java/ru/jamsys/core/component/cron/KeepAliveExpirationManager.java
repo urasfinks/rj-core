@@ -18,13 +18,16 @@ public class KeepAliveExpirationManager implements Cron1s, PromiseGenerator, Cla
 
     private final ExpirationManager expirationManager;
 
+    private final String index;
+
     public KeepAliveExpirationManager(ApplicationContext applicationContext) {
         expirationManager = applicationContext.getBean(ExpirationManager.class);
+        index = getClassName("cron");
     }
 
     @Override
     public Promise generate() {
-        return new PromiseImpl(getClass().getName(), 6_000L)
+        return new PromiseImpl(index, 6_000L)
                 .append(this.getClass().getName(), (isThreadRun, _) -> expirationManager.keepAlive(isThreadRun));
     }
 

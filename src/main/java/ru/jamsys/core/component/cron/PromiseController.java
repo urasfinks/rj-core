@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
@@ -15,11 +16,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @Lazy
-public class PromiseController implements Cron1s, PromiseGenerator {
+public class PromiseController implements Cron1s, PromiseGenerator, ClassName {
+
+    private final String index;
+
+    public PromiseController() {
+        index = getClassName("cron");
+    }
 
     @Override
     public Promise generate() {
-        return new PromiseImpl(getClass().getName(),6_000L)
+        return new PromiseImpl(index,6_000L)
                 .append(this.getClass().getName(), (AtomicBoolean isThreadRun, Promise _) -> {
                     AtomicInteger count = new AtomicInteger(0);
                     UtilRisc.forEach(isThreadRun, PromiseImpl.queueMultipleCompleteSet, promise -> {
