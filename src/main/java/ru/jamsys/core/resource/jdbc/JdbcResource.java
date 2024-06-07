@@ -30,7 +30,9 @@ public class JdbcResource
     private Connection connection;
 
     private String uri;
+
     private String user;
+
     private String securityAlias;
 
     @Override
