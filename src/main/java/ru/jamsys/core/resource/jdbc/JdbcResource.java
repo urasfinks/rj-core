@@ -50,6 +50,9 @@ public class JdbcResource
         if (uri == null || user == null || securityAlias == null) {
             return;
         }
+        if (connection != null) {
+            close();
+        }
         try {
             SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
             this.connection = DriverManager.getConnection(uri, user, new String(securityComponent.get(securityAlias)));
