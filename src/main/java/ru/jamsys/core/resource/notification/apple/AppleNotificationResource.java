@@ -2,7 +2,7 @@ package ru.jamsys.core.resource.notification.apple;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PropertiesComponent;
+import ru.jamsys.core.component.PropComponent;
 import ru.jamsys.core.component.manager.VirtualFileSystemManager;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
@@ -47,22 +47,22 @@ public class AppleNotificationResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        PropComponent propComponent = App.context.getBean(PropComponent.class);
         virtualFileSystemManager = App.context.getBean(VirtualFileSystemManager.class);
 
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.url", String.class, s -> this.url = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.security.alias", String.class, s -> this.securityAlias = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.topic", String.class, s -> this.topic = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.priority", String.class, s -> this.priority = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.expiration", String.class, s -> this.expiration = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.pushType", String.class, s -> this.pushType = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.timeoutMs", Integer.class, integer -> this.timeoutMs = integer);
+        propComponent.getProp(constructor.ns, "notification.apple.url", String.class, s -> this.url = s);
+        propComponent.getProp(constructor.ns, "notification.apple.security.alias", String.class, s -> this.securityAlias = s);
+        propComponent.getProp(constructor.ns, "notification.apple.topic", String.class, s -> this.topic = s);
+        propComponent.getProp(constructor.ns, "notification.apple.priority", String.class, s -> this.priority = s);
+        propComponent.getProp(constructor.ns, "notification.apple.expiration", String.class, s -> this.expiration = s);
+        propComponent.getProp(constructor.ns, "notification.apple.pushType", String.class, s -> this.pushType = s);
+        propComponent.getProp(constructor.ns, "notification.apple.timeoutMs", Integer.class, integer -> this.timeoutMs = integer);
 
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.virtual.path", String.class, s -> {
+        propComponent.getProp(constructor.ns, "notification.apple.virtual.path", String.class, s -> {
             this.virtualPath = s;
             reInitClient();
         });
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.storage", String.class, s -> {
+        propComponent.getProp(constructor.ns, "notification.apple.storage", String.class, s -> {
             this.storage = s;
             reInitClient();
         });

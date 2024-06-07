@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.PropertiesComponent;
+import ru.jamsys.core.component.PropComponent;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
@@ -37,11 +37,11 @@ public class JdbcResource
 
     @Override
     public void constructor(JdbcResourceConstructor constructor) throws Exception {
-        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        PropComponent propComponent = App.context.getBean(PropComponent.class);
 
-        propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.uri", String.class, s -> {this.uri = s; reInitClient();});
-        propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.user", String.class, s -> {this.user = s; reInitClient();});
-        propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.security.alias", String.class, s -> {this.securityAlias = s; reInitClient();});
+        propComponent.getProp(constructor.ns, "jdbc.uri", String.class, s -> {this.uri = s; reInitClient();});
+        propComponent.getProp(constructor.ns, "jdbc.user", String.class, s -> {this.user = s; reInitClient();});
+        propComponent.getProp(constructor.ns, "jdbc.security.alias", String.class, s -> {this.securityAlias = s; reInitClient();});
 
         this.statementControl = constructor.getStatementControl();
     }

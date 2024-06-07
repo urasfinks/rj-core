@@ -4,7 +4,7 @@ import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.HtmlEmail;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PropertiesComponent;
+import ru.jamsys.core.component.PropComponent;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
@@ -36,19 +36,19 @@ public class EmailNotificationResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        PropComponent propComponent = App.context.getBean(PropComponent.class);
         securityComponent = App.context.getBean(SecurityComponent.class);
 
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.host", String.class, s -> this.host = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.user", String.class, s -> this.user = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.from", String.class, s -> this.from = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.charset", String.class, s -> this.charset = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.security.alias", String.class, s -> this.securityAlias = s);
+        propComponent.getProp(constructor.ns, "notification.email.host", String.class, s -> this.host = s);
+        propComponent.getProp(constructor.ns, "notification.email.user", String.class, s -> this.user = s);
+        propComponent.getProp(constructor.ns, "notification.email.from", String.class, s -> this.from = s);
+        propComponent.getProp(constructor.ns, "notification.email.charset", String.class, s -> this.charset = s);
+        propComponent.getProp(constructor.ns, "notification.email.security.alias", String.class, s -> this.securityAlias = s);
 
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.port", Integer.class, integer -> this.port = integer);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.connectTimeoutMs", Integer.class, integer -> this.connectTimeoutMs = integer);
+        propComponent.getProp(constructor.ns, "notification.email.port", Integer.class, integer -> this.port = integer);
+        propComponent.getProp(constructor.ns, "notification.email.connectTimeoutMs", Integer.class, integer -> this.connectTimeoutMs = integer);
 
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.ssl", Boolean.class, aBoolean -> this.ssl = aBoolean);
+        propComponent.getProp(constructor.ns, "notification.email.ssl", Boolean.class, aBoolean -> this.ssl = aBoolean);
     }
 
     @Override

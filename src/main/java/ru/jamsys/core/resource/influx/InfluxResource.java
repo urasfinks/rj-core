@@ -6,7 +6,7 @@ import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.write.Point;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.PropertiesComponent;
+import ru.jamsys.core.component.PropComponent;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
@@ -33,15 +33,15 @@ public class InfluxResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) {
-        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        PropComponent propComponent = App.context.getBean(PropComponent.class);
 
-        propertiesComponent.getProperties(constructor.namespaceProperties, "influx.host", String.class, s -> {
+        propComponent.getProp(constructor.ns, "influx.host", String.class, s -> {
             this.host = s;
             reInitClient();
         });
-        propertiesComponent.getProperties(constructor.namespaceProperties, "influx.bucket", String.class, s -> bucket = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "influx.org", String.class, s -> org = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "influx.security.alias", String.class, s -> {
+        propComponent.getProp(constructor.ns, "influx.bucket", String.class, s -> bucket = s);
+        propComponent.getProp(constructor.ns, "influx.org", String.class, s -> org = s);
+        propComponent.getProp(constructor.ns, "influx.security.alias", String.class, s -> {
             alias = s;
             reInitClient();
         });

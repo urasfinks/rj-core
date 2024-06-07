@@ -13,21 +13,21 @@ import java.util.function.Consumer;
 
 @Component
 @Lazy
-public class PropertiesComponent {
+public class PropComponent {
 
     final ApplicationContext applicationContext;
 
     final Map<String, List<Consumer>> subscribe = new ConcurrentHashMap<>();
 
-    public PropertiesComponent(ApplicationContext applicationContext) {
+    public PropComponent(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
-    public <T> void getProperties(String namespace, String key, Class<T> cls, Consumer<T> onUpdate) {
-        getProperties(namespace + "." + key, cls, onUpdate);
+    public <T> void getProp(String namespace, String key, Class<T> cls, Consumer<T> onUpdate) {
+        getProp(namespace + "." + key, cls, onUpdate);
     }
 
-    public <T> void getProperties(String key, Class<T> cls, Consumer<T> onUpdate) {
+    public <T> void getProp(String key, Class<T> cls, Consumer<T> onUpdate) {
         Environment environment = applicationContext.getEnvironment();
         T result = environment.getProperty(key, cls);
         if (result == null) {

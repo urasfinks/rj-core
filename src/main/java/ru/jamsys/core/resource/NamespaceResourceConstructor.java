@@ -5,7 +5,7 @@ import lombok.Setter;
 @Setter
 public class NamespaceResourceConstructor {
 
-    // пространство из *.properties
-    public String namespaceProperties = "default";
+    // Namespace: пространство из *.properties
+    public String ns = "default";
 
 }

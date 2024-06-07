@@ -4,7 +4,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.PropertiesComponent;
+import ru.jamsys.core.component.PropComponent;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
@@ -39,18 +39,18 @@ public class AndroidNotificationResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        PropComponent propComponent = App.context.getBean(PropComponent.class);
 
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.url", String.class, s -> this.url = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.application.name", String.class, s -> this.applicationName = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.timeoutMs", Integer.class, integer -> this.timeoutMs = integer);
+        propComponent.getProp(constructor.ns, "notification.android.url", String.class, s -> this.url = s);
+        propComponent.getProp(constructor.ns, "notification.android.application.name", String.class, s -> this.applicationName = s);
+        propComponent.getProp(constructor.ns, "notification.android.timeoutMs", Integer.class, integer -> this.timeoutMs = integer);
 
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.messaging.scope", String.class, s -> {
+        propComponent.getProp(constructor.ns, "notification.android.messaging.scope", String.class, s -> {
             this.scope = s;
             reInitClient();
         });
 
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.storage.credentials", String.class, s -> {
+        propComponent.getProp(constructor.ns, "notification.android.storage.credentials", String.class, s -> {
             this.storageCredentials = s;
             reInitClient();
         });

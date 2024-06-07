@@ -31,9 +31,9 @@ public class ReCaptchaComponent {
     private final SecurityComponent securityComponent;
     private String securityAlias;
 
-    public ReCaptchaComponent(SecurityComponent securityComponent, PropertiesComponent propertiesComponent) {
+    public ReCaptchaComponent(SecurityComponent securityComponent, PropComponent propComponent) {
         this.securityComponent = securityComponent;
-        propertiesComponent.getProperties("rj.reCaptcha.security.alias", String.class, s -> this.securityAlias = s);
+        propComponent.getProp("rj.reCaptcha.security.alias", String.class, s -> this.securityAlias = s);
     }
 
     @SuppressWarnings("unused")

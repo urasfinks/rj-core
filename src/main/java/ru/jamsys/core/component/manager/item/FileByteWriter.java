@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.PropertiesComponent;
+import ru.jamsys.core.component.PropComponent;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.extension.ByteItem;
 import ru.jamsys.core.extension.KeepAlive;
@@ -52,11 +52,11 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
         broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(400_000);
-        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        PropComponent propComponent = App.context.getBean(PropComponent.class);
 
-        propertiesComponent.getProperties(index, "log.file.folder", String.class, s -> folder = s);
-        propertiesComponent.getProperties(index, "log.file.size.mb", Integer.class, integer -> maxFileSizeByte = integer * 1024 * 1024);
-        propertiesComponent.getProperties(index, "log.file.count", Integer.class, integer -> maxFileCount = integer);
+        propComponent.getProp(index, "log.file.folder", String.class, s -> folder = s);
+        propComponent.getProp(index, "log.file.size.mb", Integer.class, integer -> maxFileSizeByte = integer * 1024 * 1024);
+        propComponent.getProp(index, "log.file.count", Integer.class, integer -> maxFileCount = integer);
 
         restoreIndex();
     }

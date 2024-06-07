@@ -3,7 +3,7 @@ package ru.jamsys.core.resource.notification.telegram;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PropertiesComponent;
+import ru.jamsys.core.component.PropComponent;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
@@ -36,13 +36,13 @@ public class TelegramNotificationResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
+        PropComponent propComponent = App.context.getBean(PropComponent.class);
         securityComponent = App.context.getBean(SecurityComponent.class);
 
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.telegram.url", String.class, s -> this.url = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.telegram.idChat", String.class, s -> this.idChat = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.telegram.security.alias", String.class, s -> this.securityAlias = s);
-        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.telegram.timeoutMs", Integer.class, integer -> this.timeoutMs = integer);
+        propComponent.getProp(constructor.ns, "notification.telegram.url", String.class, s -> this.url = s);
+        propComponent.getProp(constructor.ns, "notification.telegram.idChat", String.class, s -> this.idChat = s);
+        propComponent.getProp(constructor.ns, "notification.telegram.security.alias", String.class, s -> this.securityAlias = s);
+        propComponent.getProp(constructor.ns, "notification.telegram.timeoutMs", Integer.class, integer -> this.timeoutMs = integer);
     }
 
     @Override
