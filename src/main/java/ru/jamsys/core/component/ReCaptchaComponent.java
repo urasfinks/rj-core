@@ -33,7 +33,7 @@ public class ReCaptchaComponent {
 
     public ReCaptchaComponent(SecurityComponent securityComponent, PropertiesComponent propertiesComponent) {
         this.securityComponent = securityComponent;
-        this.securityAlias = propertiesComponent.getProperties("rj.reCaptcha.security.alias", String.class);
+        propertiesComponent.getProperties("rj.reCaptcha.security.alias", String.class, s -> this.securityAlias = s);
     }
 
     @SuppressWarnings("unused")

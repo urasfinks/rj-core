@@ -5,6 +5,7 @@ import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.write.Point;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
@@ -26,18 +27,39 @@ public class InfluxResource
 
     String bucket;
 
+    String host = null;
+
+    String alias = null;
+
     @Override
     public void constructor(NamespaceResourceConstructor constructor) {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
-        SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
 
-        String host = propertiesComponent.getProperties(constructor.namespaceProperties, "influx.host", String.class);
-        bucket = propertiesComponent.getProperties(constructor.namespaceProperties, "influx.bucket", String.class);
-        org = propertiesComponent.getProperties(constructor.namespaceProperties, "influx.org", String.class);
-        String alias = propertiesComponent.getProperties(constructor.namespaceProperties, "influx.security.alias", String.class);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "influx.host", String.class, s -> {
+            this.host = s;
+            reInitClient();
+        });
+        propertiesComponent.getProperties(constructor.namespaceProperties, "influx.bucket", String.class, s -> bucket = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "influx.org", String.class, s -> org = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "influx.security.alias", String.class, s -> {
+            alias = s;
+            reInitClient();
+        });
+    }
 
-        client = InfluxDBClientFactory.create(host, securityComponent.get(alias));
-        writer = client.getWriteApiBlocking();
+    private void reInitClient() {
+        if (client != null) {
+            try {
+                client.close();
+            } catch (Exception e) {
+                App.context.getBean(ExceptionHandler.class).handler(e);
+            }
+        }
+        if (host != null && alias != null) {
+            SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
+            client = InfluxDBClientFactory.create(host, securityComponent.get(alias));
+            writer = client.getWriteApiBlocking();
+        }
     }
 
     @Override
