@@ -38,7 +38,7 @@ public class JdbcResource
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
 
         propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.uri", String.class, s -> {this.uri = s; reInitClient();});
-        propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.user", String.class, s -> {this.uri = s; reInitClient();});
+        propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.user", String.class, s -> {this.user = s; reInitClient();});
         propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.security.alias", String.class, s -> {this.securityAlias = s; reInitClient();});
 
         this.statementControl = constructor.getStatementControl();
