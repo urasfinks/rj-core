@@ -1,4 +1,4 @@
-package ru.jamsys.core.component.api;
+package ru.jamsys.core.component;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;

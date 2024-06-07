@@ -39,16 +39,16 @@ public class EmailNotificationResource
         PropComponent propComponent = App.context.getBean(PropComponent.class);
         securityComponent = App.context.getBean(SecurityComponent.class);
 
-        propComponent.getProp(constructor.ns, "notification.email.host", String.class, s -> this.host = s);
-        propComponent.getProp(constructor.ns, "notification.email.user", String.class, s -> this.user = s);
-        propComponent.getProp(constructor.ns, "notification.email.from", String.class, s -> this.from = s);
-        propComponent.getProp(constructor.ns, "notification.email.charset", String.class, s -> this.charset = s);
-        propComponent.getProp(constructor.ns, "notification.email.security.alias", String.class, s -> this.securityAlias = s);
+        propComponent.getProp(constructor.ns, "notification.email.host", s -> this.host = s);
+        propComponent.getProp(constructor.ns, "notification.email.user", s -> this.user = s);
+        propComponent.getProp(constructor.ns, "notification.email.from", s -> this.from = s);
+        propComponent.getProp(constructor.ns, "notification.email.charset", s -> this.charset = s);
+        propComponent.getProp(constructor.ns, "notification.email.security.alias", s -> this.securityAlias = s);
 
-        propComponent.getProp(constructor.ns, "notification.email.port", Integer.class, integer -> this.port = integer);
-        propComponent.getProp(constructor.ns, "notification.email.connectTimeoutMs", Integer.class, integer -> this.connectTimeoutMs = integer);
+        propComponent.getProp(constructor.ns, "notification.email.port", s -> this.port = Integer.parseInt(s));
+        propComponent.getProp(constructor.ns, "notification.email.connectTimeoutMs", s -> this.connectTimeoutMs = Integer.parseInt(s));
 
-        propComponent.getProp(constructor.ns, "notification.email.ssl", Boolean.class, aBoolean -> this.ssl = aBoolean);
+        propComponent.getProp(constructor.ns, "notification.email.ssl", s -> this.ssl = Boolean.parseBoolean(s));
     }
 
     @Override

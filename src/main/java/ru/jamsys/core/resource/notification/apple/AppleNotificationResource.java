@@ -50,19 +50,19 @@ public class AppleNotificationResource
         PropComponent propComponent = App.context.getBean(PropComponent.class);
         virtualFileSystemManager = App.context.getBean(VirtualFileSystemManager.class);
 
-        propComponent.getProp(constructor.ns, "notification.apple.url", String.class, s -> this.url = s);
-        propComponent.getProp(constructor.ns, "notification.apple.security.alias", String.class, s -> this.securityAlias = s);
-        propComponent.getProp(constructor.ns, "notification.apple.topic", String.class, s -> this.topic = s);
-        propComponent.getProp(constructor.ns, "notification.apple.priority", String.class, s -> this.priority = s);
-        propComponent.getProp(constructor.ns, "notification.apple.expiration", String.class, s -> this.expiration = s);
-        propComponent.getProp(constructor.ns, "notification.apple.pushType", String.class, s -> this.pushType = s);
-        propComponent.getProp(constructor.ns, "notification.apple.timeoutMs", Integer.class, integer -> this.timeoutMs = integer);
+        propComponent.getProp(constructor.ns, "notification.apple.url", s -> this.url = s);
+        propComponent.getProp(constructor.ns, "notification.apple.security.alias", s -> this.securityAlias = s);
+        propComponent.getProp(constructor.ns, "notification.apple.topic", s -> this.topic = s);
+        propComponent.getProp(constructor.ns, "notification.apple.priority", s -> this.priority = s);
+        propComponent.getProp(constructor.ns, "notification.apple.expiration", s -> this.expiration = s);
+        propComponent.getProp(constructor.ns, "notification.apple.pushType", s -> this.pushType = s);
+        propComponent.getProp(constructor.ns, "notification.apple.timeoutMs", s -> this.timeoutMs = Integer.parseInt(s));
 
-        propComponent.getProp(constructor.ns, "notification.apple.virtual.path", String.class, s -> {
+        propComponent.getProp(constructor.ns, "notification.apple.virtual.path", s -> {
             this.virtualPath = s;
             reInitClient();
         });
-        propComponent.getProp(constructor.ns, "notification.apple.storage", String.class, s -> {
+        propComponent.getProp(constructor.ns, "notification.apple.storage", s -> {
             this.storage = s;
             reInitClient();
         });

@@ -2,6 +2,7 @@ package ru.jamsys.core.rate.limit;
 
 import lombok.Getter;
 import ru.jamsys.core.extension.CheckClassItem;
+import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.StatisticsCollectorMap;
 import ru.jamsys.core.extension.addable.AddToMap;
@@ -20,6 +21,7 @@ public class RateLimit
         StatisticsCollectorMap<RateLimitItem>,
         Closable,
         CheckClassItem,
+        ClassName,
         AddToMap<String, RateLimitItem>
 {
 
@@ -67,7 +69,7 @@ public class RateLimit
     }
 
     public RateLimit init(String name, RateLimitItemInstance rateLimitItemInstance) {
-        map.computeIfAbsent(name, _ -> rateLimitItemInstance.create());
+        map.computeIfAbsent(name, key -> rateLimitItemInstance.create(getClassName() + "." + index + "." + key));
         return this;
     }
 

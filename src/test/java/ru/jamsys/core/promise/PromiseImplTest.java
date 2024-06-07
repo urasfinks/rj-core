@@ -275,7 +275,7 @@ class PromiseImplTest {
         Assertions.assertTrue(wf.isTerminated());
         Assertions.assertTrue(wf.isException());
         Assertions.assertEquals(1, counter.get());
-        Assertions.assertEquals("TimeOut cause: PromiseTaskTime::onPromiseTaskExpired", wf.getExceptionTrace().getFirst().getIndex());
+        Assertions.assertEquals("TimeOut cause: PromiseTaskTime.onPromiseTaskExpired", wf.getExceptionTrace().getFirst().getIndex());
 
     }
 

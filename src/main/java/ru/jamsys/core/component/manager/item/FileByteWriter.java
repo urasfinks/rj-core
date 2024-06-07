@@ -54,9 +54,9 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
         broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(400_000);
         PropComponent propComponent = App.context.getBean(PropComponent.class);
 
-        propComponent.getProp(index, "log.file.folder", String.class, s -> folder = s);
-        propComponent.getProp(index, "log.file.size.mb", Integer.class, integer -> maxFileSizeByte = integer * 1024 * 1024);
-        propComponent.getProp(index, "log.file.count", Integer.class, integer -> maxFileCount = integer);
+        propComponent.getProp(index, "log.file.folder", s -> folder = s);
+        propComponent.getProp(index, "log.file.size.mb", s -> maxFileSizeByte = Integer.parseInt(s) * 1024 * 1024);
+        propComponent.getProp(index, "log.file.count", s -> maxFileCount = Integer.parseInt(s));
 
         restoreIndex();
     }

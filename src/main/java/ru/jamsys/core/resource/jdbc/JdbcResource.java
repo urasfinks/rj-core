@@ -39,9 +39,9 @@ public class JdbcResource
     public void constructor(JdbcResourceConstructor constructor) throws Exception {
         PropComponent propComponent = App.context.getBean(PropComponent.class);
 
-        propComponent.getProp(constructor.ns, "jdbc.uri", String.class, s -> {this.uri = s; reInitClient();});
-        propComponent.getProp(constructor.ns, "jdbc.user", String.class, s -> {this.user = s; reInitClient();});
-        propComponent.getProp(constructor.ns, "jdbc.security.alias", String.class, s -> {this.securityAlias = s; reInitClient();});
+        propComponent.getProp(constructor.ns, "jdbc.uri", s -> {this.uri = s; reInitClient();});
+        propComponent.getProp(constructor.ns, "jdbc.user", s -> {this.user = s; reInitClient();});
+        propComponent.getProp(constructor.ns, "jdbc.security.alias", s -> {this.securityAlias = s; reInitClient();});
 
         this.statementControl = constructor.getStatementControl();
     }

@@ -18,7 +18,7 @@ class RateLimitItemTest {
         long curTime = 1709734264056L; //2024-03-06T17:11:04.056
         long aLong = 60_000L;
 
-        RateLimitItemPeriodic rateLimitItemPeriodic = new RateLimitItemPeriodic(TimeUnit.MINUTE);
+        RateLimitItemPeriodic rateLimitItemPeriodic = new RateLimitItemPeriodic(TimeUnit.MINUTE, "min");
         Assertions.assertEquals("{period=Minute, max=999999, tpu=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime, null, null).getFields().toString());
         Assertions.assertEquals("2024-03-06T17:12:04.056", rateLimitItemPeriodic.getNextTime());
         rateLimitItemPeriodic.check(null);
@@ -31,15 +31,15 @@ class RateLimitItemTest {
         Assertions.assertEquals("{period=Minute, max=999999, tpu=0, flushed=false}", rateLimitItemPeriodic.flushAndGetStatistic(curTime + 60_000, null, null).getFields().toString());
         Assertions.assertEquals("2024-03-06T17:13:04.056", rateLimitItemPeriodic.getNextTime());
 
-        rateLimitItemPeriodic = new RateLimitItemPeriodic(TimeUnit.HOUR_OF_DAY);
+        rateLimitItemPeriodic = new RateLimitItemPeriodic(TimeUnit.HOUR_OF_DAY, "hour");
         Assertions.assertEquals("{period=HourOfDay, max=999999, tpu=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime, null, null).getFields().toString());
         Assertions.assertEquals("2024-03-06T18:11:04.056", rateLimitItemPeriodic.getNextTime());
 
-        rateLimitItemPeriodic = new RateLimitItemPeriodic(TimeUnit.DAY_OF_WEEK);
+        rateLimitItemPeriodic = new RateLimitItemPeriodic(TimeUnit.DAY_OF_WEEK, "day");
         Assertions.assertEquals("{period=DayOfWeek, max=999999, tpu=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime, null, null).getFields().toString());
         Assertions.assertEquals("2024-03-07T17:11:04.056", rateLimitItemPeriodic.getNextTime());
 
-        rateLimitItemPeriodic = new RateLimitItemPeriodic(TimeUnit.MONTH);
+        rateLimitItemPeriodic = new RateLimitItemPeriodic(TimeUnit.MONTH, "month");
         Assertions.assertEquals("{period=Month, max=999999, tpu=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime, null, null).getFields().toString());
         Assertions.assertEquals("2024-04-06T17:11:04.056", rateLimitItemPeriodic.getNextTime());
         rateLimitItemPeriodic.check(null);
@@ -73,7 +73,7 @@ class RateLimitItemTest {
 
     @Test
     void testMax() {
-        RateLimitItem rateLimitMax = new RateLimitItemMax();
+        RateLimitItem rateLimitMax = new RateLimitItemMax("min");
         rateLimitMax.set(2);
         Assertions.assertTrue(rateLimitMax.check(1));
         Assertions.assertTrue(rateLimitMax.check(2));
@@ -88,7 +88,7 @@ class RateLimitItemTest {
 
     @Test
     void testMin() {
-        RateLimitItemMin rateLimitMin = new RateLimitItemMin();
+        RateLimitItemMin rateLimitMin = new RateLimitItemMin("min");
         rateLimitMin.set(2);
         Assertions.assertFalse(rateLimitMin.check(1));
         Assertions.assertTrue(rateLimitMin.check(2));
@@ -103,7 +103,7 @@ class RateLimitItemTest {
 
     @Test
     void testTps() {
-        RateLimitItem rateLimitTps = new RateLimitItemTps();
+        RateLimitItem rateLimitTps = new RateLimitItemTps("tps");
         rateLimitTps.set(2);
         Assertions.assertTrue(rateLimitTps.check(null));
         Assertions.assertTrue(rateLimitTps.check(null));

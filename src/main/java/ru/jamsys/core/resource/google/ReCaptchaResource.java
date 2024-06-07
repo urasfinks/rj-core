@@ -29,7 +29,7 @@ public class ReCaptchaResource
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
         PropComponent propComponent = App.context.getBean(PropComponent.class);
-        propComponent.getProp(constructor.ns, "reCaptcha.security.alias", String.class, s -> this.securityAlias = s);
+        propComponent.getProp(constructor.ns, "reCaptcha.security.alias", s -> this.securityAlias = s);
     }
 
     @Override

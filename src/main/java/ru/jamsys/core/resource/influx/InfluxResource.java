@@ -35,13 +35,13 @@ public class InfluxResource
     public void constructor(NamespaceResourceConstructor constructor) {
         PropComponent propComponent = App.context.getBean(PropComponent.class);
 
-        propComponent.getProp(constructor.ns, "influx.host", String.class, s -> {
+        propComponent.getProp(constructor.ns, "influx.host", s -> {
             this.host = s;
             reInitClient();
         });
-        propComponent.getProp(constructor.ns, "influx.bucket", String.class, s -> bucket = s);
-        propComponent.getProp(constructor.ns, "influx.org", String.class, s -> org = s);
-        propComponent.getProp(constructor.ns, "influx.security.alias", String.class, s -> {
+        propComponent.getProp(constructor.ns, "influx.bucket", s -> bucket = s);
+        propComponent.getProp(constructor.ns, "influx.org", s -> org = s);
+        propComponent.getProp(constructor.ns, "influx.security.alias", s -> {
             alias = s;
             reInitClient();
         });

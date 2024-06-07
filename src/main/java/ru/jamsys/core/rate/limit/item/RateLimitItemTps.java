@@ -15,6 +15,9 @@ public class RateLimitItemTps implements RateLimitItem {
 
     private final AtomicInteger max = new AtomicInteger(999999);
 
+    public RateLimitItemTps(String ns) {
+    }
+
     @Override
     public boolean check(@Nullable Integer limit) {
         return tps.incrementAndGet() <= max.get();

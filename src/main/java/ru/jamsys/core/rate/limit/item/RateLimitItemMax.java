@@ -14,6 +14,9 @@ public class RateLimitItemMax implements RateLimitItem {
 
     private final AtomicInteger max = new AtomicInteger(999999);
 
+    public RateLimitItemMax(String ns) {
+    }
+
     @Override
     public boolean check(Integer limit) {
         if (limit == null) {

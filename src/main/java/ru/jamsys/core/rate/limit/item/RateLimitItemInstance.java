@@ -13,15 +13,15 @@ public enum RateLimitItemInstance implements EnumName {
     TPW,
     MAX;
 
-    public RateLimitItem create() {
+    public RateLimitItem create(String ns) {
         return switch (this) {
-            case MIN -> new RateLimitItemMin();
-            case TPS -> new RateLimitItemTps();
-            case TPM -> new RateLimitItemPeriodic(TimeUnit.MINUTE);
-            case TPH -> new RateLimitItemPeriodic(TimeUnit.HOUR_OF_DAY);
-            case TPD -> new RateLimitItemPeriodic(TimeUnit.DAY_OF_MONTH);
-            case TPW -> new RateLimitItemPeriodic(TimeUnit.MONTH);
-            case MAX -> new RateLimitItemMax();
+            case MIN -> new RateLimitItemMin(ns);
+            case TPS -> new RateLimitItemTps(ns);
+            case TPM -> new RateLimitItemPeriodic(TimeUnit.MINUTE, ns);
+            case TPH -> new RateLimitItemPeriodic(TimeUnit.HOUR_OF_DAY, ns);
+            case TPD -> new RateLimitItemPeriodic(TimeUnit.DAY_OF_MONTH, ns);
+            case TPW -> new RateLimitItemPeriodic(TimeUnit.MONTH, ns);
+            case MAX -> new RateLimitItemMax(ns);
         };
     }
 

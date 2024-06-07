@@ -29,16 +29,16 @@ public class YandexSpeechNotificationResource
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
         PropComponent propComponent = App.context.getBean(PropComponent.class);
-        propComponent.getProp(constructor.ns, "yandex.speech.kit.security.alias", String.class, s -> {
+        propComponent.getProp(constructor.ns, "yandex.speech.kit.security.alias", s -> {
             this.alias = s;
             reInitClient();
         });
-        propComponent.getProp(constructor.ns, "yandex.speech.kit.host", String.class, s -> {
+        propComponent.getProp(constructor.ns, "yandex.speech.kit.host", s -> {
             this.host = s;
             reInitClient();
         });
-        propComponent.getProp(constructor.ns, "yandex.speech.kit.port", Integer.class, integer -> {
-            this.port = integer;
+        propComponent.getProp(constructor.ns, "yandex.speech.kit.port", s -> {
+            this.port = Integer.parseInt(s);
             reInitClient();
         });
     }

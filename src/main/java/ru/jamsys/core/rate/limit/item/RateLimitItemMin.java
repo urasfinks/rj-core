@@ -14,6 +14,10 @@ public class RateLimitItemMin implements RateLimitItem {
 
     private final AtomicInteger min = new AtomicInteger(0);
 
+    public RateLimitItemMin(String ns) {
+
+    }
+
     @Override
     public boolean check(Integer limit) {
         if (limit == null) {

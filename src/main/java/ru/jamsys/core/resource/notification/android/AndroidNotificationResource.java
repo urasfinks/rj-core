@@ -41,16 +41,16 @@ public class AndroidNotificationResource
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
         PropComponent propComponent = App.context.getBean(PropComponent.class);
 
-        propComponent.getProp(constructor.ns, "notification.android.url", String.class, s -> this.url = s);
-        propComponent.getProp(constructor.ns, "notification.android.application.name", String.class, s -> this.applicationName = s);
-        propComponent.getProp(constructor.ns, "notification.android.timeoutMs", Integer.class, integer -> this.timeoutMs = integer);
+        propComponent.getProp(constructor.ns, "notification.android.url", s -> this.url = s);
+        propComponent.getProp(constructor.ns, "notification.android.application.name", s -> this.applicationName = s);
+        propComponent.getProp(constructor.ns, "notification.android.timeoutMs", s -> this.timeoutMs = Integer.parseInt(s));
 
-        propComponent.getProp(constructor.ns, "notification.android.messaging.scope", String.class, s -> {
+        propComponent.getProp(constructor.ns, "notification.android.messaging.scope", s -> {
             this.scope = s;
             reInitClient();
         });
 
-        propComponent.getProp(constructor.ns, "notification.android.storage.credentials", String.class, s -> {
+        propComponent.getProp(constructor.ns, "notification.android.storage.credentials", s -> {
             this.storageCredentials = s;
             reInitClient();
         });

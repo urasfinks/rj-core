@@ -53,10 +53,10 @@ public class SecurityComponent implements LifeCycleComponent {
     private KeyStore.PasswordProtection keyStorePP;
 
     public SecurityComponent(PropComponent propComponent, ExceptionHandler exceptionHandler) {
-        propComponent.getProp("rj.security.path.storage", String.class, s -> this.pathStorage = s);
-        propComponent.getProp("rj.security.path.public.key", String.class, s -> this.pathPublicKey = s);
-        propComponent.getProp("rj.security.path.init", String.class, s -> this.pathInitAlias = s);
-        propComponent.getProp("rj.security.path.java", String.class, s -> this.pathInitSecurityKeyJava = s);
+        propComponent.getProp("core.security.path.storage", s -> this.pathStorage = s);
+        propComponent.getProp("core.security.path.public.key", s -> this.pathPublicKey = s);
+        propComponent.getProp("core.security.path.init", s -> this.pathInitAlias = s);
+        propComponent.getProp("core.security.path.java", s -> this.pathInitSecurityKeyJava = s);
         this.exceptionHandler = exceptionHandler;
     }
 

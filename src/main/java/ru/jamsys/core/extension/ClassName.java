@@ -37,7 +37,7 @@ public interface ClassName {
         if (classFinderComponent.getUniqueClassName().containsKey(cls)) {
             clsName = classFinderComponent.getUniqueClassName().get(cls);
         }
-        return index == null ? clsName : (clsName + "::" + index);
+        return index == null ? clsName : (clsName + "." + index);
     }
 
 }

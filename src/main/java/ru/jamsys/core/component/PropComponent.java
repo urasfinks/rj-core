@@ -8,7 +8,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -20,7 +23,7 @@ public class PropComponent {
 
     final Map<String, List<Consumer>> subscribe = new ConcurrentHashMap<>();
 
-    Map<String, Object> prop = new HashMap<>();
+    Map<String, String> prop = new HashMap<>();
 
     public PropComponent(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -44,15 +47,21 @@ public class PropComponent {
         }
     }
 
-    public <T> void getProp(String namespace, String key, Class<T> cls, Consumer<T> onUpdate) {
-        getProp(namespace + "." + key, cls, onUpdate);
+    public void getProp(String namespace, String key, Consumer<String> onUpdate) {
+        getProp(namespace + "." + key, onUpdate);
     }
 
-    public <T> void getProp(String key, Class<T> cls, Consumer<T> onUpdate) {
-        @SuppressWarnings("unchecked")
-        T result = (T) prop.get(key);
-        if (result == null) {
+    public void getProp(String key, Consumer<String> onUpdate) {
+        getProp(key, onUpdate, true, null);
+    }
+
+    public void getProp(String key, Consumer<String> onUpdate, boolean require, String defValue) {
+        String result = prop.get(key);
+        if (require && result == null) {
             throw new RuntimeException("Required key '" + key + "' not found");
+        }
+        if (result == null) {
+            result = prop.computeIfAbsent(key, _ -> defValue);
         }
         subscribe.computeIfAbsent(key, _ -> new ArrayList<>()).add(onUpdate);
         onUpdate.accept(result);

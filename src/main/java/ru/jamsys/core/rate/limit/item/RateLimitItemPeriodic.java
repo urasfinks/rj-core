@@ -29,7 +29,7 @@ public class RateLimitItemPeriodic implements RateLimitItem {
 
     private String nextTimeFlushFormat = "";
 
-    public RateLimitItemPeriodic(TimeUnit period) {
+    public RateLimitItemPeriodic(TimeUnit period, String ns) {
         this.period = period;
         this.periodName = period.getName();
     }
