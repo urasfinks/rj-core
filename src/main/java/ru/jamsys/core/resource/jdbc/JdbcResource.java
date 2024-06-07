@@ -29,17 +29,31 @@ public class JdbcResource
 
     private Connection connection;
 
+    private String uri;
+    private String user;
+    private String securityAlias;
+
     @Override
     public void constructor(JdbcResourceConstructor constructor) throws Exception {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
-        SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
 
-        String uri = propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.uri", String.class);
-        String user = propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.user", String.class);
-        String securityAlias = propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.security.alias", String.class);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.uri", String.class, s -> {this.uri = s; reInitClient();});
+        propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.user", String.class, s -> {this.uri = s; reInitClient();});
+        propertiesComponent.getProperties(constructor.namespaceProperties, "jdbc.security.alias", String.class, s -> {this.securityAlias = s; reInitClient();});
 
-        this.connection = DriverManager.getConnection(uri, user, new String(securityComponent.get(securityAlias)));
         this.statementControl = constructor.getStatementControl();
+    }
+
+    private void reInitClient() {
+        if (uri == null || user == null || securityAlias == null) {
+            return;
+        }
+        try {
+            SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
+            this.connection = DriverManager.getConnection(uri, user, new String(securityComponent.get(securityAlias)));
+        } catch (Exception e) {
+            App.context.getBean(ExceptionHandler.class).handler(e);
+        }
     }
 
     @Override

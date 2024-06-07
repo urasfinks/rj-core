@@ -39,16 +39,16 @@ public class EmailNotificationResource
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
         securityComponent = App.context.getBean(SecurityComponent.class);
 
-        this.host = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.host", String.class);
-        this.user = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.user", String.class);
-        this.from = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.from", String.class);
-        this.charset = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.charset", String.class);
-        this.securityAlias = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.security.alias", String.class);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.host", String.class, s -> this.host = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.user", String.class, s -> this.user = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.from", String.class, s -> this.from = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.charset", String.class, s -> this.charset = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.security.alias", String.class, s -> this.securityAlias = s);
 
-        this.port = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.port", Integer.class);
-        this.connectTimeoutMs = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.connectTimeoutMs", Integer.class);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.port", Integer.class, integer -> this.port = integer);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.connectTimeoutMs", Integer.class, integer -> this.connectTimeoutMs = integer);
 
-        this.ssl = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.ssl", Boolean.class);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.email.ssl", Boolean.class, aBoolean -> this.ssl = aBoolean);
     }
 
     @Override

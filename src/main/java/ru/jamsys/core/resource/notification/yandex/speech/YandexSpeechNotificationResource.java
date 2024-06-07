@@ -29,15 +29,21 @@ public class YandexSpeechNotificationResource
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
-        String securityAlias = propertiesComponent.getProperties(constructor.namespaceProperties, "yandex.speech.kit.security.alias", String.class);
-        client = new YandexSpeechClient(
-                propertiesComponent.getProperties(constructor.namespaceProperties, "yandex.speech.kit.host", String.class),
-                propertiesComponent.getProperties(constructor.namespaceProperties, "yandex.speech.kit.port", Integer.class),
-            new String(App.context.getBean(SecurityComponent.class).get(securityAlias))
-        );
+        propertiesComponent.getProperties(constructor.namespaceProperties, "yandex.speech.kit.security.alias", String.class, s -> {
+            this.alias = s;
+            reInitClient();
+        });
+        propertiesComponent.getProperties(constructor.namespaceProperties, "yandex.speech.kit.host", String.class, s -> {
+            this.host = s;
+            reInitClient();
+        });
+        propertiesComponent.getProperties(constructor.namespaceProperties, "yandex.speech.kit.port", Integer.class, integer -> {
+            this.port = integer;
+            reInitClient();
+        });
     }
 
-    private void reInitClient(){
+    private void reInitClient() {
         if(client != null){
             try {
                 client.shutdown();
@@ -48,7 +54,7 @@ public class YandexSpeechNotificationResource
         client = new YandexSpeechClient(
                 host,
                 port,
-                new String(App.context.getBean(SecurityComponent.class).get(securityAlias))
+                new String(App.context.getBean(SecurityComponent.class).get(alias))
         );
     }
 

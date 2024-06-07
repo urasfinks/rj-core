@@ -43,24 +43,37 @@ public class AppleNotificationResource
 
     private int timeoutMs;
 
+    private String storage;
+
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
-
-        this.url = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.url", String.class);
-        this.virtualPath = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.virtual.path", String.class);
-        this.securityAlias = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.security.alias", String.class);
-        this.topic = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.topic", String.class);
-        this.priority = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.priority", String.class);
-        this.expiration = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.expiration", String.class);
-        this.pushType = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.pushType", String.class);
-        this.timeoutMs = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.timeoutMs", Integer.class);
-
-        String storage = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.storage", String.class);
-
         virtualFileSystemManager = App.context.getBean(VirtualFileSystemManager.class);
-        virtualFileSystemManager.add(new File(virtualPath, FileLoaderFactory.fromFileSystem(storage)));
 
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.url", String.class, s -> this.url = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.security.alias", String.class, s -> this.securityAlias = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.topic", String.class, s -> this.topic = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.priority", String.class, s -> this.priority = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.expiration", String.class, s -> this.expiration = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.pushType", String.class, s -> this.pushType = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.timeoutMs", Integer.class, integer -> this.timeoutMs = integer);
+
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.virtual.path", String.class, s -> {
+            this.virtualPath = s;
+            reInitClient();
+        });
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.apple.storage", String.class, s -> {
+            this.storage = s;
+            reInitClient();
+        });
+
+    }
+
+    private void reInitClient() {
+        if (virtualPath == null || storage == null) {
+            return;
+        }
+        virtualFileSystemManager.add(new File(virtualPath, FileLoaderFactory.fromFileSystem(storage)));
     }
 
     @Override

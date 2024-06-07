@@ -3,6 +3,7 @@ package ru.jamsys.core.resource.notification.android;
 import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertiesComponent;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
@@ -32,22 +33,43 @@ public class AndroidNotificationResource
 
     private String accessToken;
 
+    private String scope;
+
+    private String storageCredentials;
+
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
 
-        this.url = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.url", String.class);
-        this.applicationName = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.application.name", String.class);
-        this.timeoutMs = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.timeoutMs", Integer.class);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.url", String.class, s -> this.url = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.application.name", String.class, s -> this.applicationName = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.timeoutMs", Integer.class, integer -> this.timeoutMs = integer);
 
-        String[] messagingScope = new String[]{propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.messaging.scope", String.class)};
-        String storageCredentials = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.storage.credentials", String.class);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.messaging.scope", String.class, s -> {
+            this.scope = s;
+            reInitClient();
+        });
 
-        GoogleCredentials googleCredentials = GoogleCredentials
-                .fromStream(new FileInputStream(storageCredentials))
-                .createScoped(Arrays.asList(messagingScope));
-        googleCredentials.refresh();
-        this.accessToken = googleCredentials.getAccessToken().getTokenValue();
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.android.storage.credentials", String.class, s -> {
+            this.storageCredentials = s;
+            reInitClient();
+        });
+    }
+
+    private void reInitClient() {
+        if (scope == null || storageCredentials == null) {
+            return;
+        }
+        try {
+            String[] messagingScope = new String[]{scope};
+            GoogleCredentials googleCredentials = GoogleCredentials
+                    .fromStream(new FileInputStream(storageCredentials))
+                    .createScoped(Arrays.asList(messagingScope));
+            googleCredentials.refresh();
+            this.accessToken = googleCredentials.getAccessToken().getTokenValue();
+        } catch (Exception e) {
+            App.context.getBean(ExceptionHandler.class).handler(e);
+        }
     }
 
     @Override

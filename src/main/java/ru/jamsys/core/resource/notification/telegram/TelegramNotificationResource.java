@@ -39,10 +39,10 @@ public class TelegramNotificationResource
         PropertiesComponent propertiesComponent = App.context.getBean(PropertiesComponent.class);
         securityComponent = App.context.getBean(SecurityComponent.class);
 
-        this.url = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.telegram.url", String.class);
-        this.idChat = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.telegram.idChat", String.class);
-        this.securityAlias = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.telegram.security.alias", String.class);
-        this.timeoutMs = propertiesComponent.getProperties(constructor.namespaceProperties, "notification.telegram.timeoutMs", Integer.class);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.telegram.url", String.class, s -> this.url = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.telegram.idChat", String.class, s -> this.idChat = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.telegram.security.alias", String.class, s -> this.securityAlias = s);
+        propertiesComponent.getProperties(constructor.namespaceProperties, "notification.telegram.timeoutMs", Integer.class, integer -> this.timeoutMs = integer);
     }
 
     @Override
