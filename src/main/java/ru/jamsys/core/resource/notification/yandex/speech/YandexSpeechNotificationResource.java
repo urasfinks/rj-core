@@ -44,12 +44,11 @@ public class YandexSpeechNotificationResource
     }
 
     private void reInitClient() {
+        if (host == null || port == null || alias == null) {
+            return;
+        }
         if(client != null){
-            try {
-                client.shutdown();
-            } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
-            }
+            close();
         }
         client = new YandexSpeechClient(
                 host,
@@ -72,7 +71,11 @@ public class YandexSpeechNotificationResource
 
     @Override
     public void close() {
-        client.shutdown();
+        try {
+            client.shutdown();
+        } catch (Exception e) {
+            App.context.getBean(ExceptionHandler.class).handler(e);
+        }
     }
 
     @Override

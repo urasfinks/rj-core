@@ -48,18 +48,15 @@ public class InfluxResource
     }
 
     private void reInitClient() {
+        if (host == null || alias == null) {
+            return;
+        }
         if (client != null) {
-            try {
-                client.close();
-            } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
-            }
+            close();
         }
-        if (host != null && alias != null) {
-            SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
-            client = InfluxDBClientFactory.create(host, securityComponent.get(alias));
-            writer = client.getWriteApiBlocking();
-        }
+        SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
+        client = InfluxDBClientFactory.create(host, securityComponent.get(alias));
+        writer = client.getWriteApiBlocking();
     }
 
     @Override
@@ -72,7 +69,11 @@ public class InfluxResource
 
     @Override
     public void close() {
-        client.close();
+        try {
+            client.close();
+        } catch (Exception e) {
+            App.context.getBean(ExceptionHandler.class).handler(e);
+        }
     }
 
     @Override
