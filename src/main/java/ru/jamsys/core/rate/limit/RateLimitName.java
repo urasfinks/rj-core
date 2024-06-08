@@ -7,7 +7,5 @@ public enum RateLimitName implements EnumName {
     POOL_SIZE_MIN,
     BROKER_SIZE,
     BROKER_TAIL_SIZE,
-    THREAD_TPS,
-    FILE_LOG_SIZE,
-    FILE_LOG_INDEX
+    THREAD_TPS
 }
