@@ -2,7 +2,7 @@ package ru.jamsys.core.resource.google;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PropComponent;
+import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
@@ -28,8 +28,9 @@ public class ReCaptchaResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropComponent propComponent = App.context.getBean(PropComponent.class);
-        propComponent.getProp(constructor.ns, "reCaptcha.security.alias", s -> this.securityAlias = s);
+        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+        //TODO: prop
+//        propComponent.getProp(constructor.ns, "reCaptcha.security.alias", s -> this.securityAlias = s);
     }
 
     @Override

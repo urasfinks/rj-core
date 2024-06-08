@@ -4,11 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.PropComponent;
+import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.extension.ByteItem;
-import ru.jamsys.core.extension.KeepAlive;
-import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.*;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -23,18 +21,21 @@ import java.util.LongSummaryStatistics;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class FileByteWriter implements KeepAlive, LifeCycleInterface {
+public class FileByteWriter extends PropertyConnector implements KeepAlive, LifeCycleInterface {
 
     @Getter
     Broker<ByteItem> broker;
 
+    @PropertyName("log.file.folder")
     String folder;
 
     @Setter
-    int maxFileSizeByte;
+    @PropertyName("log.file.size.kb")
+    String fileSizeKb;
 
     @Setter
-    int maxFileCount;
+    @PropertyName("log.file.count")
+    String fileCount;
 
     final String index;
 
@@ -44,6 +45,8 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
 
     final AtomicInteger counter = new AtomicInteger(0);
 
+    private Subscriber subscriber;
+
     public FileByteWriter(String index) {
 
         this.index = index;
@@ -52,11 +55,8 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
         broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(400_000);
-        PropComponent propComponent = App.context.getBean(PropComponent.class);
-
-        propComponent.getProp(index, "log.file.folder", s -> folder = s);
-        propComponent.getProp(index, "log.file.size.mb", s -> maxFileSizeByte = Integer.parseInt(s) * 1024 * 1024);
-        propComponent.getProp(index, "log.file.count", s -> maxFileCount = Integer.parseInt(s));
+        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+        subscriber = propertyComponent.getSubscriber(null, this, index);
 
         restoreIndex();
     }
@@ -105,8 +105,8 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
         if (currentFilePath != null) {
             UtilFile.rename(currentFilePath, currentFilePath.substring(0, currentFilePath.length() - 8) + "bin");
         }
-        int curIndex = counter.getAndIncrement() % maxFileCount;
-        currentFilePath = folder + "/" + index + "." + Util.padLeft(curIndex + "", (maxFileCount + "").length(), "0") + ".proc.bin";
+        int curIndex = counter.getAndIncrement() % Integer.parseInt(fileCount);
+        currentFilePath = folder + "/" + index + "." + Util.padLeft(curIndex + "", (fileCount).length(), "0") + ".proc.bin";
     }
 
     public void append(ByteItem log) {
@@ -118,7 +118,7 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
         if (currentFilePath == null) {
             genNextFile();
         }
-        int maxWriteCount = maxFileCount;
+        int maxWriteCount = Integer.parseInt(fileCount);
         while (!broker.isEmpty() && isThreadRun.get()) {
             if (maxWriteCount <= 0) {
                 break;
@@ -129,6 +129,7 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
     }
 
     private void write(AtomicBoolean isThreadRun) {
+        int tmpSizeKb = Integer.parseInt(fileSizeKb);
         try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(currentFilePath, writeByteToCurrentFile.get() > 0))) {
             while (!broker.isEmpty() && isThreadRun.get()) {
                 try {
@@ -141,7 +142,7 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
                         fos.write(d);
                         writeByteToCurrentFile.addAndGet(d.length);
 
-                        if (writeByteToCurrentFile.get() > maxFileSizeByte) {
+                        if (writeByteToCurrentFile.get() > tmpSizeKb) {
                             writeByteToCurrentFile.set(0);
                             genNextFile();
                             break;
@@ -168,6 +169,7 @@ public class FileByteWriter implements KeepAlive, LifeCycleInterface {
     @Override
     public void shutdown() {
         genNextFile();
+        subscriber.unsubscribe();
     }
 
 }

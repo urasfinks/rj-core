@@ -4,7 +4,9 @@ import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.PropComponent;
+import ru.jamsys.core.component.PropertyComponent;
+import ru.jamsys.core.extension.Subscriber;
+import ru.jamsys.core.extension.SubscriberPropertyNotifier;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
@@ -19,51 +21,36 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class AndroidNotificationResource
         extends ExpirationMsMutableImpl
-        implements Resource<NamespaceResourceConstructor, AndroidNotificationRequest, HttpResponse> {
-
-    private String url;
-
-    private String applicationName;
-
-    private int timeoutMs;
+        implements
+        Resource<NamespaceResourceConstructor, AndroidNotificationRequest, HttpResponse>,
+        SubscriberPropertyNotifier {
 
     private String accessToken;
 
-    private String scope;
+    private Subscriber subscriber;
 
-    private String storageCredentials;
+    private final AndroidNotificationProperty property = new AndroidNotificationProperty();
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropComponent propComponent = App.context.getBean(PropComponent.class);
-
-        propComponent.getProp(constructor.ns, "notification.android.url", s -> this.url = s);
-        propComponent.getProp(constructor.ns, "notification.android.application.name", s -> this.applicationName = s);
-        propComponent.getProp(constructor.ns, "notification.android.timeoutMs", s -> this.timeoutMs = Integer.parseInt(s));
-
-        propComponent.getProp(constructor.ns, "notification.android.messaging.scope", s -> {
-            this.scope = s;
-            reInitClient();
-        });
-
-        propComponent.getProp(constructor.ns, "notification.android.storage.credentials", s -> {
-            this.storageCredentials = s;
-            reInitClient();
-        });
+        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+        subscriber = propertyComponent.getSubscriber(this, property, constructor.ns);
     }
 
-    private void reInitClient() {
-        if (scope == null || storageCredentials == null) {
+    @Override
+    public void onPropertyUpdate(Set<String> updatedProp) {
+        if (property.getScope() == null || property.getStorageCredentials() == null) {
             return;
         }
         try {
-            String[] messagingScope = new String[]{scope};
+            String[] messagingScope = new String[]{property.getScope()};
             GoogleCredentials googleCredentials = GoogleCredentials
-                    .fromStream(new FileInputStream(storageCredentials))
+                    .fromStream(new FileInputStream(property.getStorageCredentials()))
                     .createScoped(Arrays.asList(messagingScope));
             googleCredentials.refresh();
             this.accessToken = googleCredentials.getAccessToken().getTokenValue();
@@ -75,8 +62,8 @@ public class AndroidNotificationResource
     @Override
     public HttpResponse execute(AndroidNotificationRequest arguments) {
         HttpClient httpClient = new HttpClientImpl();
-        httpClient.setUrl(url);
-        httpClient.setTimeoutMs(timeoutMs);
+        httpClient.setUrl(property.getUrl());
+        httpClient.setTimeoutMs(Integer.parseInt(property.getTimeoutMs()));
         httpClient.setRequestHeader("Content-type", "application/json");
         httpClient.setRequestHeader("Authorization", "Bearer " + accessToken);
         String postData = createPostData(arguments.getTitle(), arguments.getData(), arguments.getToken());
@@ -95,7 +82,7 @@ public class AndroidNotificationResource
 
         message.put("token", token);
 
-        notification.put("title", applicationName);
+        notification.put("title", property.getApplicationName());
         notification.put("body", title);
         message.put("notification", notification);
 
@@ -112,7 +99,7 @@ public class AndroidNotificationResource
 
     @Override
     public void close() {
-
+        subscriber.unsubscribe();
     }
 
     @Override

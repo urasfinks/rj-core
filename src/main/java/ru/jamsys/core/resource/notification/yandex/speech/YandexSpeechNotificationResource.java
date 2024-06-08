@@ -3,8 +3,10 @@ package ru.jamsys.core.resource.notification.yandex.speech;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.PropComponent;
+import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.Subscriber;
+import ru.jamsys.core.extension.SubscriberPropertyNotifier;
 import ru.jamsys.core.flat.util.YandexSpeechClient;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
@@ -12,48 +14,37 @@ import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.io.File;
+import java.util.Set;
 
 @Component
 public class YandexSpeechNotificationResource
         extends ExpirationMsMutableImpl
-        implements Resource<NamespaceResourceConstructor, YandexSpeechNotificationRequest, Void> {
+        implements Resource<NamespaceResourceConstructor, YandexSpeechNotificationRequest, Void>, SubscriberPropertyNotifier {
 
     YandexSpeechClient client = null;
 
-    String host = null;
+    private Subscriber subscriber;
 
-    Integer port = null;
-
-    String alias = null;
+    private final YandexSpeechNotificationProperty property = new YandexSpeechNotificationProperty();
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropComponent propComponent = App.context.getBean(PropComponent.class);
-        propComponent.getProp(constructor.ns, "yandex.speech.kit.security.alias", s -> {
-            this.alias = s;
-            reInitClient();
-        });
-        propComponent.getProp(constructor.ns, "yandex.speech.kit.host", s -> {
-            this.host = s;
-            reInitClient();
-        });
-        propComponent.getProp(constructor.ns, "yandex.speech.kit.port", s -> {
-            this.port = Integer.parseInt(s);
-            reInitClient();
-        });
+        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+        subscriber = propertyComponent.getSubscriber(this, property, constructor.ns);
     }
 
-    private void reInitClient() {
-        if (host == null || port == null || alias == null) {
+    @Override
+    public void onPropertyUpdate(Set<String> updatedProp) {
+        if (property.getHost() == null || property.getPort() == null || property.getAlias() == null) {
             return;
         }
         if(client != null){
             close();
         }
         client = new YandexSpeechClient(
-                host,
-                port,
-                new String(App.context.getBean(SecurityComponent.class).get(alias))
+                property.getHost(),
+                Integer.parseInt(property.getPort()),
+                new String(App.context.getBean(SecurityComponent.class).get(property.getAlias()))
         );
     }
 
@@ -76,6 +67,7 @@ public class YandexSpeechNotificationResource
         } catch (Exception e) {
             App.context.getBean(ExceptionHandler.class).handler(e);
         }
+        subscriber.unsubscribe();
     }
 
     @Override

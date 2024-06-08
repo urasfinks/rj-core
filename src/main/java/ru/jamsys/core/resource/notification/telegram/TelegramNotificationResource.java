@@ -1,10 +1,10 @@
 package ru.jamsys.core.resource.notification.telegram;
 
-import lombok.Setter;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PropComponent;
+import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.Subscriber;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
@@ -20,29 +20,17 @@ public class TelegramNotificationResource
         extends ExpirationMsMutableImpl
         implements Resource<NamespaceResourceConstructor, TelegramNotificationRequest, HttpResponse> {
 
-    @Setter
-    private String securityAlias;
-
-    @Setter
-    private String url;
-
-    @Setter
-    private String idChat;
-
-    @Setter
-    private int timeoutMs;
-
     private SecurityComponent securityComponent;
+
+    private Subscriber subscriber;
+
+    private final TelegramNotificationProperty property = new TelegramNotificationProperty();
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropComponent propComponent = App.context.getBean(PropComponent.class);
+        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
         securityComponent = App.context.getBean(SecurityComponent.class);
-
-        propComponent.getProp(constructor.ns, "notification.telegram.url", s -> this.url = s);
-        propComponent.getProp(constructor.ns, "notification.telegram.idChat", s -> this.idChat = s);
-        propComponent.getProp(constructor.ns, "notification.telegram.security.alias", s -> this.securityAlias = s);
-        propComponent.getProp(constructor.ns, "notification.telegram.timeoutMs", integer -> this.timeoutMs = Integer.parseInt(integer));
+        subscriber = propertyComponent.getSubscriber(null, property, constructor.ns);
     }
 
     @Override
@@ -53,15 +41,20 @@ public class TelegramNotificationResource
             bodyRequest = "*" + title + "*\r\n" + bodyRequest;
         }
         HttpClientImpl httpClient = new HttpClientImpl();
-        httpClient.setUrl(String.format(url, new String(securityComponent.get(securityAlias)), idChat, URLEncoder.encode(bodyRequest, StandardCharsets.UTF_8)));
-        httpClient.setTimeoutMs(timeoutMs);
+        httpClient.setUrl(String.format(
+                property.getUrl(),
+                new String(securityComponent.get(property.getSecurityAlias())),
+                property.getIdChat(),
+                URLEncoder.encode(bodyRequest, StandardCharsets.UTF_8))
+        );
+        httpClient.setTimeoutMs(Integer.parseInt(property.getTimeoutMs()));
         httpClient.exec();
         return httpClient.getHttpResponseEnvelope();
     }
 
     @Override
     public void close() {
-
+        subscriber.unsubscribe();
     }
 
     @Override

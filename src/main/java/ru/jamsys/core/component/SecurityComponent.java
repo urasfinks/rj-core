@@ -1,10 +1,15 @@
 package ru.jamsys.core.component;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.LifeCycleComponent;
+import ru.jamsys.core.extension.PropertyConnector;
+import ru.jamsys.core.extension.PropertyName;
+import ru.jamsys.core.extension.Subscriber;
 import ru.jamsys.core.flat.util.*;
 
 import javax.crypto.SecretKey;
@@ -25,17 +30,22 @@ import java.util.Set;
 
 @Component
 @Lazy
-public class SecurityComponent implements LifeCycleComponent {
+public class SecurityComponent extends PropertyConnector implements LifeCycleComponent {
 
     @Setter
+    @PropertyName("core.security.path.storage")
     private String pathStorage;
 
     @Setter
+    @PropertyName("core.security.path.public.key")
     private String pathPublicKey;
 
     @Setter
+    @PropertyName("core.security.path.init")
     private String pathInitAlias;
 
+    @Getter
+    @PropertyName("core.security.path.java")
     private String pathInitSecurityKeyJava;
 
     final private ExceptionHandler exceptionHandler;
@@ -52,11 +62,10 @@ public class SecurityComponent implements LifeCycleComponent {
 
     private KeyStore.PasswordProtection keyStorePP;
 
-    public SecurityComponent(PropComponent propComponent, ExceptionHandler exceptionHandler) {
-        propComponent.getProp("core.security.path.storage", s -> this.pathStorage = s);
-        propComponent.getProp("core.security.path.public.key", s -> this.pathPublicKey = s);
-        propComponent.getProp("core.security.path.init", s -> this.pathInitAlias = s);
-        propComponent.getProp("core.security.path.java", s -> this.pathInitSecurityKeyJava = s);
+    private final Subscriber subscriber;
+
+    public SecurityComponent(PropertyComponent propertyComponent, ExceptionHandler exceptionHandler) {
+        subscriber = propertyComponent.getSubscriber(null, this);
         this.exceptionHandler = exceptionHandler;
     }
 
@@ -347,7 +356,7 @@ public class SecurityComponent implements LifeCycleComponent {
 
     @Override
     public void shutdown() {
-
+        subscriber.unsubscribe();
     }
 
 }

@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.PropComponent;
+import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
@@ -37,11 +37,11 @@ public class JdbcResource
 
     @Override
     public void constructor(JdbcResourceConstructor constructor) throws Exception {
-        PropComponent propComponent = App.context.getBean(PropComponent.class);
-
-        propComponent.getProp(constructor.ns, "jdbc.uri", s -> {this.uri = s; reInitClient();});
-        propComponent.getProp(constructor.ns, "jdbc.user", s -> {this.user = s; reInitClient();});
-        propComponent.getProp(constructor.ns, "jdbc.security.alias", s -> {this.securityAlias = s; reInitClient();});
+        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+//TODO: prop
+//        propComponent.getProp(constructor.ns, "jdbc.uri", s -> {this.uri = s; reInitClient();});
+//        propComponent.getProp(constructor.ns, "jdbc.user", s -> {this.user = s; reInitClient();});
+//        propComponent.getProp(constructor.ns, "jdbc.security.alias", s -> {this.securityAlias = s; reInitClient();});
 
         this.statementControl = constructor.getStatementControl();
     }

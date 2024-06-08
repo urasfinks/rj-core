@@ -42,8 +42,8 @@ class FileByteWriterTest {
     void checkOverMaxFileWrite() {
         UtilFile.removeAllFilesInFolder("LogManager");
         FileByteWriter test = new FileByteWriter("default");
-        test.setMaxFileSizeByte(1);
-        test.setMaxFileCount(2);
+        test.setFileSizeKb("1");
+        test.setFileCount("2");
         test.append(new Log().setData("LogData1").addHeader("key", "value"));
         test.append(new Log().setData("LogData2").addHeader("key", "value"));
         test.append(new Log().setData("LogData3").addHeader("key", "value"));
@@ -64,7 +64,7 @@ class FileByteWriterTest {
     void checkNameLog() {
         UtilFile.removeAllFilesInFolder("LogManager");
         FileByteWriter test = new FileByteWriter("default");
-        test.setMaxFileCount(100);
+        test.setFileCount("100");
         test.append(new Log().setData("LogData1").addHeader("key", "value"));
         test.append(new Log().setData("LogData2").addHeader("key", "value"));
         test.append(new Log().setData("LogData3").addHeader("key", "value"));
