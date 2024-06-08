@@ -8,6 +8,8 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.rate.limit.RateLimitName;
+import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
@@ -193,6 +195,15 @@ class BrokerTest {
                     '}';
         }
 
+    }
+
+    @Test
+    void testProperty() {
+        Broker<XTest> broker = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class);
+        RateLimitItem rateLimitItem = broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName());
+        Assertions.assertEquals(3000, rateLimitItem.get());
+        rateLimitItem.set("max", 3001);
+        Assertions.assertEquals(3001, rateLimitItem.get());
     }
 
 }
