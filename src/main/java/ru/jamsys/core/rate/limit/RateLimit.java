@@ -13,6 +13,9 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+// Прослойка RateLimit сделана, что бы смотреть в run-time изменение показателей
+// Если статистики не надо, то можете просто использовать PropertyComponent для хранения настроек
+
 @Getter
 @SuppressWarnings("unused")
 public class RateLimit
