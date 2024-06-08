@@ -99,9 +99,4 @@ public class RateLimitItemPeriodic implements RateLimitItem {
         max.decrementAndGet();
     }
 
-    @Override
-    public String getMomentumStatistic() {
-        return "{period: " + periodName + "; max: " + max.get() + "; tpu: " + tpu.get() + "}";
-    }
-
 }

@@ -45,14 +45,6 @@ public class RateLimit
         return map;
     }
 
-    public String getMomentumStatistic() {
-        StringBuilder sb = new StringBuilder();
-        for (String key : map.keySet()) {
-            sb.append(key).append(": ").append(map.get(key).getMomentumStatistic());
-        }
-        return sb.toString();
-    }
-
     public void reset() {
         // Рекомендуется использовать только для тестов
         map.forEach((String key, RateLimitItem rateLimitItem) -> rateLimitItem.reset());

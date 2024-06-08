@@ -59,9 +59,4 @@ public class RateLimitItemTps implements RateLimitItem {
         max.decrementAndGet();
     }
 
-    @Override
-    public String getMomentumStatistic() {
-        return "{max: " + max.get() + "; tps: " + tps.get() + "}";
-    }
-
 }

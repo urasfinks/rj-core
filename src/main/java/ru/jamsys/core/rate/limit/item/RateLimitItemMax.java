@@ -14,6 +14,8 @@ public class RateLimitItemMax implements RateLimitItem {
 
     private final AtomicInteger max = new AtomicInteger(999999);
 
+    private volatile int cur;
+
     public RateLimitItemMax(String ns) {
     }
 
@@ -22,6 +24,7 @@ public class RateLimitItemMax implements RateLimitItem {
         if (limit == null) {
             return false;
         }
+        cur = limit;
         return this.max.get() >= limit;
     }
 
@@ -51,14 +54,12 @@ public class RateLimitItemMax implements RateLimitItem {
     }
 
     @Override
-    public String getMomentumStatistic() {
-        return "{max: " + max.get() + "}";
-    }
-
-    @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         List<Statistic> result = new ArrayList<>();
-        result.add(new Statistic(parentTags, parentFields).addField("max", max.get()));
+        result.add(new Statistic(parentTags, parentFields)
+                .addField("cur", cur)
+                .addField("max", max.get())
+        );
         return result;
     }
 

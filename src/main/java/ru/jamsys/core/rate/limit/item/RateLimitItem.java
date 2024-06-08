@@ -16,6 +16,4 @@ public interface RateLimitItem extends StatisticsFlush {
 
     void dec();
 
-    String getMomentumStatistic();
-
 }

@@ -14,6 +14,8 @@ public class RateLimitItemMin implements RateLimitItem {
 
     private final AtomicInteger min = new AtomicInteger(0);
 
+    private volatile int cur;
+
     public RateLimitItemMin(String ns) {
 
     }
@@ -23,6 +25,7 @@ public class RateLimitItemMin implements RateLimitItem {
         if (limit == null) {
             return false;
         }
+        cur = limit;
         return this.min.get() <= limit;
     }
 
@@ -52,14 +55,12 @@ public class RateLimitItemMin implements RateLimitItem {
     }
 
     @Override
-    public String getMomentumStatistic() {
-        return "{min: " + min.get() + "}";
-    }
-
-    @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         List<Statistic> result = new ArrayList<>();
-        result.add(new Statistic(parentTags, parentFields).addField("min", min.get()));
+        result.add(new Statistic(parentTags, parentFields)
+                .addField("cur", cur)
+                .addField("min", min.get())
+        );
         return result;
     }
 
