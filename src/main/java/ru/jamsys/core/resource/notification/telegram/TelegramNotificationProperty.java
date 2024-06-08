@@ -1,7 +1,6 @@
 package ru.jamsys.core.resource.notification.telegram;
 
 import lombok.Getter;
-import lombok.Setter;
 import ru.jamsys.core.extension.PropertyConnector;
 import ru.jamsys.core.extension.PropertyName;
 

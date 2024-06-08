@@ -45,7 +45,7 @@ public class FileByteWriter extends PropertyConnector implements KeepAlive, Life
 
     final AtomicInteger counter = new AtomicInteger(0);
 
-    private Subscriber subscriber;
+    private final Subscriber subscriber;
 
     public FileByteWriter(String index) {
 

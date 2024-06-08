@@ -121,7 +121,7 @@ class PropertyComponentTest {
     }
 
 
-    class x2 extends PropertyConnector implements SubscriberPropertyNotifier {
+    static class x2 extends PropertyConnector implements SubscriberPropertyNotifier {
 
         @PropertyName("security.path.storage")
         public String storage="wef";
