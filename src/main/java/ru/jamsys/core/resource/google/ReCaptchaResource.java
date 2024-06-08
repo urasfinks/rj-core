@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.Subscriber;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
@@ -20,7 +21,9 @@ public class ReCaptchaResource
 
     private final SecurityComponent securityComponent;
 
-    private String securityAlias;
+    private final ReCaptchaProperty property = new ReCaptchaProperty();
+
+    private Subscriber subscriber;
 
     public ReCaptchaResource(SecurityComponent securityComponent) {
         this.securityComponent = securityComponent;
@@ -29,8 +32,7 @@ public class ReCaptchaResource
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
         PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
-        //TODO: prop
-//        propComponent.getProp(constructor.ns, "reCaptcha.security.alias", s -> this.securityAlias = s);
+        subscriber = propertyComponent.getSubscriber(null, property, constructor.ns);
     }
 
     @Override
@@ -38,7 +40,7 @@ public class ReCaptchaResource
         HttpClientImpl httpClient = new HttpClientImpl();
         httpClient.setUrl("https://www.google.com/recaptcha/api/siteverify");
 
-        String body = "secret=" + new String(securityComponent.get(securityAlias)) + "&response=" + captchaValue;
+        String body = "secret=" + new String(securityComponent.get(property.getSecurityAlias())) + "&response=" + captchaValue;
         httpClient.setPostData(body.getBytes(StandardCharsets.UTF_8));
 
         httpClient.setTimeoutMs(3000);

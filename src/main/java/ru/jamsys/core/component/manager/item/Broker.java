@@ -33,11 +33,11 @@ import java.util.function.Consumer;
 // Но потом пришла реализация Cache где нельзя было такое сделать
 // и на вход надо было уже подавать объект TimeEnvelope<TEO>
 //     Причина: сначала необходимо выставлять время, на которое будем кешировать, а только потом делать вставку
-//              Индекс рассчитывается из времени протухания
-//              После установки время протухания изменить нельзя, так как индекс уже ключом Map
+//              Индекс рассчитывается из времени expired
+//              После установки время expired изменить нельзя, так как индекс уже ключом Map
 // Я захотел, что бы везде было одинаково. Только лишь поэтому TEO -> TimeEnvelope<TEO>
-// 11.05.2024 Cache перехал в Session, и вся история с однотипным протоколом распалась
-// 26.05.2024 Session был удалён)
+// 11.05.2024 Cache переехал в Session, и вся история с однотипным протоколом распалась
+// 26.05.2024 Session был удалён
 
 //Время срабатывания onExpired = 3 секунды
 
@@ -201,16 +201,6 @@ public class Broker<TEO>
         }
     }
 
-    @SuppressWarnings("StringBufferReplaceableByString")
-    String getExceptionInformation(String cause, ExpirationMsImmutableEnvelope<TEO> envelope) {
-        StringBuilder sb = new StringBuilder()
-                .append("Cause: ").append(cause).append("; ")
-                .append("Limit size: ").append(rliQueueSize.get()).append("; ")
-                .append("Class add: ").append(envelope.getValue().getClass().getName()).append("; ")
-                .append("Object add: ").append(envelope.getValue().toString()).append("; ");
-        return sb.toString();
-    }
-
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
         UtilRisc.forEach(isThreadRun, queue, (DisposableExpirationMsImmutableEnvelope<TEO> envelope) -> {
@@ -237,7 +227,7 @@ public class Broker<TEO>
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x
-        return queueSize.get() * 100 / (int) rliQueueSize.get();
+        return queueSize.get() * 100 / rliQueueSize.get();
     }
 
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {

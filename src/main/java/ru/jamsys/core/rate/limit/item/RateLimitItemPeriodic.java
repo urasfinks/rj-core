@@ -3,7 +3,6 @@ package ru.jamsys.core.rate.limit.item;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.extension.PropertyConnector;
 import ru.jamsys.core.extension.PropertyName;
@@ -39,11 +38,13 @@ public class RateLimitItemPeriodic extends PropertyConnector implements RateLimi
     @PropertyName("max")
     private String propMax = "1";
 
+    private final Subscriber subscriber;
+
     public RateLimitItemPeriodic(ApplicationContext applicationContext, TimeUnit period, String ns) {
         this.ns = ns;
         this.period = period;
         this.periodName = period.getName();
-        Subscriber subscriber = applicationContext.getBean(PropertyComponent.class).getSubscriber(
+        subscriber = applicationContext.getBean(PropertyComponent.class).getSubscriber(
                 this,
                 this,
                 ns,
@@ -96,6 +97,10 @@ public class RateLimitItemPeriodic extends PropertyConnector implements RateLimi
     @Override
     public void onPropertyUpdate(Set<String> updatedProp) {
         this.max.set(Integer.parseInt(propMax));
+    }
+
+    public void close() {
+        subscriber.unsubscribe();
     }
 
 }

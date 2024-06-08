@@ -2,13 +2,11 @@ package ru.jamsys.core.rate.limit.item;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.extension.PropertyConnector;
 import ru.jamsys.core.extension.PropertyName;
 import ru.jamsys.core.extension.PropertySubscriberNotify;
 import ru.jamsys.core.extension.Subscriber;
-import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.Statistic;
 
 import java.util.ArrayList;
@@ -32,9 +30,11 @@ public class RateLimitItemMax extends PropertyConnector implements RateLimitItem
     @Getter
     private final String ns;
 
+    private final Subscriber subscriber;
+
     public RateLimitItemMax(ApplicationContext applicationContext, String ns) {
         this.ns = ns;
-        Subscriber subscriber = applicationContext.getBean(PropertyComponent.class).getSubscriber(
+        subscriber = applicationContext.getBean(PropertyComponent.class).getSubscriber(
                 this,
                 this,
                 ns,
@@ -70,4 +70,9 @@ public class RateLimitItemMax extends PropertyConnector implements RateLimitItem
     public void onPropertyUpdate(Set<String> updatedProp) {
         this.max.set(Integer.parseInt(propMax));
     }
+
+    public void close() {
+        subscriber.unsubscribe();
+    }
+
 }

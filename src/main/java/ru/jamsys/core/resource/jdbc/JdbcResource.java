@@ -6,6 +6,8 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.PropertySubscriberNotify;
+import ru.jamsys.core.extension.Subscriber;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
 import ru.jamsys.core.resource.Resource;
@@ -16,6 +18,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 @Scope("prototype")
@@ -23,31 +26,27 @@ public class JdbcResource
         extends ExpirationMsMutableImpl
         implements
         Resource<JdbcResourceConstructor, JdbcRequest, List<Map<String, Object>>>,
-        JdbcExecute {
+        JdbcExecute,
+        PropertySubscriberNotify {
 
     private StatementControl statementControl;
 
     private Connection connection;
 
-    private String uri;
+    private Subscriber subscriber;
 
-    private String user;
-
-    private String securityAlias;
+    private final JdbcProperty property = new JdbcProperty();
 
     @Override
     public void constructor(JdbcResourceConstructor constructor) throws Exception {
         PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
-//TODO: prop
-//        propComponent.getProp(constructor.ns, "jdbc.uri", s -> {this.uri = s; reInitClient();});
-//        propComponent.getProp(constructor.ns, "jdbc.user", s -> {this.user = s; reInitClient();});
-//        propComponent.getProp(constructor.ns, "jdbc.security.alias", s -> {this.securityAlias = s; reInitClient();});
-
+        subscriber = propertyComponent.getSubscriber(this, property, constructor.ns);
         this.statementControl = constructor.getStatementControl();
     }
 
-    private void reInitClient() {
-        if (uri == null || user == null || securityAlias == null) {
+    @Override
+    public void onPropertyUpdate(Set<String> updatedProp) {
+        if (property.getUri() == null || property.getUser() == null || property.getSecurityAlias() == null) {
             return;
         }
         if (connection != null) {
@@ -55,7 +54,11 @@ public class JdbcResource
         }
         try {
             SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
-            this.connection = DriverManager.getConnection(uri, user, new String(securityComponent.get(securityAlias)));
+            this.connection = DriverManager.getConnection(
+                    property.getUri(),
+                    property.getUser(),
+                    new String(securityComponent.get(property.getSecurityAlias()))
+            );
         } catch (Exception e) {
             App.context.getBean(ExceptionHandler.class).handler(e);
         }
@@ -77,6 +80,7 @@ public class JdbcResource
         } catch (Exception e) {
             App.context.getBean(ExceptionHandler.class).handler(e);
         }
+        subscriber.unsubscribe();
     }
 
     @Override

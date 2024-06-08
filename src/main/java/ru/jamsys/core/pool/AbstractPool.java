@@ -6,7 +6,6 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
@@ -39,8 +38,8 @@ import java.util.function.Function;
 // RR - ResourceResult
 // PI - PoolItem
 
-// Отработанные плавцы добавляются в парк в конец очереди
-// На работу плавцы отправляются из парка с конца очереди
+// Отработанные пловцы добавляются в парк в конец очереди
+// На работу пловцы отправляются из парка с конца очереди
 // Таким образом в парке в начале очереди будут тушиться пловцы без работы до их кончины
 
 @ToString(onlyExplicitlyIncluded = true)
@@ -203,12 +202,12 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
         if (!itemQueue.contains(poolItem)) {
             return;
         }
-        // Если ошибка является критичной для пловца))) выбрасываем его нахер из пула
+        // Если ошибка является критичной для пловца - выбрасываем его из пула
         if (e != null && checkCriticalOfExceptionOnComplete(e)) {
             exceptionQueue.add(poolItem);
             return;
         }
-        //Объект, который возвращают в пул не может попасть на удаление, его как бы только что использовали! Алё?)
+        //Объект, который возвращают в пул не может попасть на удаление, его как бы только что использовали! Алё?
         poolItem.active();
         addToPark(poolItem);
         tpsComplete.incrementAndGet();
@@ -229,7 +228,7 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
             App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Этот код не должен был случиться! Проверить логику!"));
         }
         lockAddToPark.unlock();
-        // После разблокировки только начинаем заниматься грязной работой)
+        // После разблокировки только начинаем заниматься грязной работой
         if (addable) {
             onParkUpdate();
         }
@@ -308,14 +307,14 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
                         //addToPark(poolItem);
                         returns.add(poolItem);
                         // Так как мы изымаем пловцов с начала паркинга и мы уже встретили не протухшего
-                        // Дальнейшее перебираение считаю не уместным
+                        // Дальнейшее перебирание считаю не уместным
                         break;
                     }
                 }
                 size--;
             }
             if (!returns.isEmpty()) {
-                // вставка будет в начало паркинга по элементно
+                // вставка будет в начало паркинга по элементано
                 // Поэтому, что бы вставить как есть мы реверснём список
                 // park = [1,2,3,4,5,6] poolFirst + add -> [1,2,3] -> park = [4,5,6]
                 // [1,2,3].reversed() -> [3,2,1]; park.addFirst(E) ->
@@ -365,15 +364,6 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
                 .addField("remove", removeQueue.size())
         );
         return result;
-    }
-
-    public String getMomentumStatistic() {
-        return "item: " + itemQueue.size() + "; " +
-                "park: " + parkQueue.size() + "; " +
-                "remove: " + removeQueue.size() + "; " +
-                "isRun: " + isRun.get() + "; " +
-                "min: " + rliPoolSizeMin.get() + "; " +
-                "max: " + rliPoolSizeMax.get() + "; ";
     }
 
     // Этот метод нельзя вызывать под бизнес задачи, система сама должна это контролировать
