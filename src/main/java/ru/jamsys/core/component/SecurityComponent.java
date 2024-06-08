@@ -44,6 +44,7 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
     private String pathInitAlias;
 
     @Getter
+    @SuppressWarnings("all")
     @PropertyName("core.security.path.java")
     private String pathInitSecurityKeyJava;
 

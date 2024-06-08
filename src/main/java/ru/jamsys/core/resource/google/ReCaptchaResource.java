@@ -51,7 +51,7 @@ public class ReCaptchaResource
 
     @Override
     public void close() {
-
+        subscriber.unsubscribe();
     }
 
     @Override
