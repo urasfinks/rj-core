@@ -24,7 +24,7 @@ class BrokerTest {
     static void beforeAll() {
         String[] args = new String[]{};
         App.main(args);
-        App.context.getBean(BrokerManager.class).initAndGet(XTest.class.getName(), XTest.class, null);
+        App.context.getBean(BrokerManager.class).initAndGet(XTest.class.getSimpleName(), XTest.class, null);
     }
 
     @AfterAll
@@ -34,7 +34,7 @@ class BrokerTest {
 
     @Test
     void testLiner() {
-        Broker<XTest> broker = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class);
+        Broker<XTest> broker = App.context.getBean(BrokerManager.class).get(XTest.class.getSimpleName(), XTest.class);
         broker.setMaxSizeQueue(10);
         broker.setMaxSizeQueueTail(3);
 
@@ -75,7 +75,7 @@ class BrokerTest {
     @Test
     void testCyclic() {
         Broker<XTest> broker = App.context.getBean(BrokerManager.class)
-                .get(XTest.class.getName(), XTest.class);
+                .get(XTest.class.getSimpleName(), XTest.class);
 
         broker.setMaxSizeQueue(10);
         broker.setMaxSizeQueueTail(3);
@@ -124,7 +124,7 @@ class BrokerTest {
     @Test
     void testReference() {
         Broker<XTest> broker = App.context.getBean(BrokerManager.class)
-                .get(XTest.class.getName(), XTest.class);
+                .get(XTest.class.getSimpleName(), XTest.class);
         XTest obj = new XTest(1);
         DisposableExpirationMsImmutableEnvelope<XTest> o1 = broker.add(obj, 6_000L);
 
@@ -140,7 +140,7 @@ class BrokerTest {
         AtomicBoolean isRun = new AtomicBoolean(true);
 
         Broker<XTest> broker = App.context.getBean(BrokerManager.class)
-                .get(XTest.class.getName(), XTest.class);
+                .get(XTest.class.getSimpleName(), XTest.class);
         XTest obj = new XTest(1);
         XTest obj2 = new XTest(2);
         DisposableExpirationMsImmutableEnvelope<XTest> o1 = null;
@@ -164,7 +164,7 @@ class BrokerTest {
     @Test
     void testExpired() {
         Broker<XTest> broker = App.context.getBean(BrokerManager.class)
-                .get(XTest.class.getName(), XTest.class);
+                .get(XTest.class.getSimpleName(), XTest.class);
         AtomicInteger counter = new AtomicInteger(0);
         broker.setOnDrop(_ -> counter.incrementAndGet());
         XTest obj = new XTest(1);
@@ -199,11 +199,20 @@ class BrokerTest {
 
     @Test
     void testProperty() {
-        Broker<XTest> broker = App.context.getBean(BrokerManager.class).get(XTest.class.getName(), XTest.class);
+        App.context.getBean(PropertyComponent.class).update("RateLimit.Broker.XTest.BrokerSize.max", "3000");
+        Broker<XTest> broker = App.context.getBean(BrokerManager.class).get(XTest.class.getSimpleName(), XTest.class);
         RateLimitItem rateLimitItem = broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName());
         Assertions.assertEquals(3000, rateLimitItem.get());
         rateLimitItem.set("max", 3001);
         Assertions.assertEquals(3001, rateLimitItem.get());
+    }
+
+    @Test
+    void testPropertyDo() {
+        App.context.getBean(PropertyComponent.class).update("RateLimit.Broker.XTest.BrokerSize.max", "11");
+        Broker<XTest> broker = App.context.getBean(BrokerManager.class).get(XTest.class.getSimpleName(), XTest.class);
+        RateLimitItem rateLimitItem = broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName());
+        Assertions.assertEquals(11, rateLimitItem.get());
     }
 
 }
