@@ -1,6 +1,7 @@
 package ru.jamsys.core.rate.limit;
 
 import lombok.Getter;
+import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.Closable;
@@ -45,11 +46,6 @@ public class RateLimit
         return map;
     }
 
-    public void reset() {
-        // Рекомендуется использовать только для тестов
-        map.forEach((String key, RateLimitItem rateLimitItem) -> rateLimitItem.reset());
-    }
-
     public boolean check(Integer limit) {
         for (String key : map.keySet()) {
             if (!map.get(key).check(limit)) {
@@ -63,8 +59,8 @@ public class RateLimit
         return map.get(name);
     }
 
-    public RateLimit init(String name, RateLimitItemInstance rateLimitItemInstance) {
-        map.computeIfAbsent(name, key -> rateLimitItemInstance.create(getClassName() + "." + index + "." + key));
+    public RateLimit init(ApplicationContext applicationContext, String name, RateLimitItemInstance rateLimitItemInstance) {
+        map.computeIfAbsent(name, key -> rateLimitItemInstance.create(applicationContext, getClassName() + "." + index + "." + key));
         return this;
     }
 

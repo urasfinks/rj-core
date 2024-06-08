@@ -43,7 +43,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
     public ThreadResource(String name, ThreadPoolPromise pool) {
         this.pool = pool;
         RateLimit rateLimit = App.context.getBean(RateLimitManager.class).get(getClassName(pool.getName()));
-        rateLimit.init(RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);
+        rateLimit.init(App.context, RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);
         info
                 .append("[")
                 .append(Util.msToDataFormat(System.currentTimeMillis()))

@@ -1,19 +1,19 @@
 package ru.jamsys.core.rate.limit.item;
 
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.extension.StatisticsFlush;
 
 public interface RateLimitItem extends StatisticsFlush {
 
+    String getNs(); // Получить пространство Property RateLimit
+
     boolean check(Integer limit);
 
-    void set(Integer limit);
+    int get();
 
-    long get();
-
-    void reset(); //Используйте преимущественно для тестирования
-
-    void inc();
-
-    void dec();
+    default void set(String prop, int value) {
+        App.context.getBean(PropertyComponent.class).update(getNs() + "." + prop, value + "");
+    }
 
 }

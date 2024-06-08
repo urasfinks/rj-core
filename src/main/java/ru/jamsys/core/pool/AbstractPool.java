@@ -6,8 +6,12 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.manager.RateLimitManager;
-import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.ClassName;
+import ru.jamsys.core.extension.ClassNameImpl;
+import ru.jamsys.core.extension.KeepAlive;
+import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.rate.limit.RateLimit;
@@ -93,8 +97,8 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
 
         RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
         rateLimit = rateLimitManager.get(name)
-                .init(RateLimitName.POOL_SIZE_MAX.getName(), RateLimitItemInstance.MAX)
-                .init(RateLimitName.POOL_SIZE_MIN.getName(), RateLimitItemInstance.MIN);
+                .init(App.context, RateLimitName.POOL_SIZE_MAX.getName(), RateLimitItemInstance.MAX)
+                .init(App.context, RateLimitName.POOL_SIZE_MIN.getName(), RateLimitItemInstance.MIN);
         rliPoolSizeMax = rateLimit.get(RateLimitName.POOL_SIZE_MAX.getName());
         rliPoolSizeMin = rateLimit.get(RateLimitName.POOL_SIZE_MIN.getName());
 
@@ -136,14 +140,18 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
         if (dynamicPollSize.get()) {
             if (rliPoolSizeMin.check(max)) {
                 if (max > rliPoolSizeMax.get()) { //Медленно поднимаем
-                    rliPoolSizeMax.inc();
+                    setRliPoolSizeMax(rliPoolSizeMax.get() + 1);
                 } else { //Но очень быстро опускаем
-                    rliPoolSizeMax.set(max);
+                    setRliPoolSizeMax(max);
                 }
             } else {
                 Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < Pool.min = " + rliPoolSizeMin.get(), true);
             }
         }
+    }
+
+    private void setRliPoolSizeMax(int limit) {
+        rliPoolSizeMax.set("max", limit);
     }
 
     // Бассейн может поместить новые объекты для плаванья

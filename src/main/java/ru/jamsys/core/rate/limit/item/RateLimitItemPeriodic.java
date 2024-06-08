@@ -1,20 +1,24 @@
 package ru.jamsys.core.rate.limit.item;
 
 import lombok.Getter;
+import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.statistic.Statistic;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.PropertyComponent;
+import ru.jamsys.core.extension.PropertyConnector;
+import ru.jamsys.core.extension.PropertyName;
+import ru.jamsys.core.extension.PropertySubscriberNotify;
+import ru.jamsys.core.extension.Subscriber;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.statistic.Statistic;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class RateLimitItemPeriodic implements RateLimitItem {
+public class RateLimitItemPeriodic extends PropertyConnector implements RateLimitItem, PropertySubscriberNotify {
 
     private final AtomicInteger tpu = new AtomicInteger(0);
 
@@ -29,9 +33,22 @@ public class RateLimitItemPeriodic implements RateLimitItem {
 
     private String nextTimeFlushFormat = "";
 
-    public RateLimitItemPeriodic(TimeUnit period, String ns) {
+    @Getter
+    private final String ns;
+
+    @PropertyName("max")
+    private String propMax = "1";
+
+    public RateLimitItemPeriodic(ApplicationContext applicationContext, TimeUnit period, String ns) {
+        this.ns = ns;
         this.period = period;
         this.periodName = period.getName();
+        Subscriber subscriber = applicationContext.getBean(PropertyComponent.class).getSubscriber(
+                this,
+                this,
+                ns,
+                false
+        );
     }
 
     @Override
@@ -40,21 +57,8 @@ public class RateLimitItemPeriodic implements RateLimitItem {
     }
 
     @Override
-    public void set(Integer limit) {
-        this.max.set(limit);
-    }
-
-    @Override
-    public long get() {
+    public int get() {
         return max.get();
-    }
-
-    @Override
-    public void reset() {
-        tpu.set(0);
-        max.set(999999);
-        nextTimeFlush.set(0);
-        nextTimeFlushFormat = "";
     }
 
     @Override
@@ -90,13 +94,8 @@ public class RateLimitItemPeriodic implements RateLimitItem {
     }
 
     @Override
-    public void inc() {
-        max.incrementAndGet();
-    }
-
-    @Override
-    public void dec() {
-        max.decrementAndGet();
+    public void onPropertyUpdate(Set<String> updatedProp) {
+        this.max.set(Integer.parseInt(propMax));
     }
 
 }

@@ -25,10 +25,21 @@ public class Subscriber {
         this.component = component;
         this.propertyConnector = propertyConnector;
         this.ns = ns;
+        initSubscribe(true);
+    }
 
+    public Subscriber(PropertySubscriberNotify subscriber, PropertyComponent component, PropertyConnector propertyConnector, String ns, boolean require) {
+        this.subscriber = subscriber;
+        this.component = component;
+        this.propertyConnector = propertyConnector;
+        this.ns = ns;
+        initSubscribe(require);
+    }
+
+    private void initSubscribe(boolean require) {
         Map<String, String> mapPropValue = this.propertyConnector.getMapPropValue();
         for (String key : mapPropValue.keySet()) {
-            subscribe(key, mapPropValue.get(key), true);
+            subscribe(key, mapPropValue.get(key), require);
         }
     }
 

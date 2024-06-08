@@ -1,21 +1,43 @@
 package ru.jamsys.core.rate.limit.item;
 
+import lombok.Getter;
+import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.PropertyComponent;
+import ru.jamsys.core.extension.PropertyConnector;
+import ru.jamsys.core.extension.PropertyName;
+import ru.jamsys.core.extension.PropertySubscriberNotify;
+import ru.jamsys.core.extension.Subscriber;
 import ru.jamsys.core.statistic.Statistic;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RateLimitItemTps implements RateLimitItem {
+public class RateLimitItemTps extends PropertyConnector implements RateLimitItem, PropertySubscriberNotify {
 
     private final AtomicInteger tps = new AtomicInteger(0);
 
-    private final AtomicInteger max = new AtomicInteger(999999);
+    private final AtomicInteger max = new AtomicInteger(1);
 
-    public RateLimitItemTps(String ns) {
+    @Getter
+    private final String ns;
+
+    @PropertyName("max")
+    private String propMax = "1";
+
+    public RateLimitItemTps(ApplicationContext applicationContext, String ns) {
+        this.ns = ns;
+        Subscriber subscriber = applicationContext.getBean(PropertyComponent.class).getSubscriber(
+                this,
+                this,
+                ns,
+                false
+        );
     }
 
     @Override
@@ -24,19 +46,8 @@ public class RateLimitItemTps implements RateLimitItem {
     }
 
     @Override
-    public void set(Integer limit) {
-        this.max.set(limit);
-    }
-
-    @Override
-    public long get() {
+    public int get() {
         return max.get();
-    }
-
-    @Override
-    public void reset() {
-        tps.set(0);
-        max.set(999999);
     }
 
     @Override
@@ -50,13 +61,7 @@ public class RateLimitItemTps implements RateLimitItem {
     }
 
     @Override
-    public void inc() {
-        max.incrementAndGet();
+    public void onPropertyUpdate(Set<String> updatedProp) {
+        this.max.set(Integer.parseInt(propMax));
     }
-
-    @Override
-    public void dec() {
-        max.decrementAndGet();
-    }
-
 }

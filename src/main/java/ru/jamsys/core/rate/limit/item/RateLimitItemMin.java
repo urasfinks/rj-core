@@ -1,23 +1,44 @@
 package ru.jamsys.core.rate.limit.item;
 
+import lombok.Getter;
+import org.springframework.context.ApplicationContext;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.PropertyComponent;
+import ru.jamsys.core.extension.PropertyConnector;
+import ru.jamsys.core.extension.PropertyName;
+import ru.jamsys.core.extension.PropertySubscriberNotify;
+import ru.jamsys.core.extension.Subscriber;
 import ru.jamsys.core.statistic.Statistic;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // Всё сводится к тому, что бы значение не опустилось меньше минимума
 
-public class RateLimitItemMin implements RateLimitItem {
+public class RateLimitItemMin extends PropertyConnector implements RateLimitItem, PropertySubscriberNotify {
 
     private final AtomicInteger min = new AtomicInteger(0);
 
     private volatile int cur;
 
-    public RateLimitItemMin(String ns) {
+    @PropertyName("min")
+    private String propMin = "0";
 
+    @Getter
+    private final String ns;
+
+    public RateLimitItemMin(ApplicationContext applicationContext, String ns) {
+        this.ns = ns;
+        Subscriber subscriber = applicationContext.getBean(PropertyComponent.class).getSubscriber(
+                this,
+                this,
+                ns,
+                false
+        );
     }
 
     @Override
@@ -30,28 +51,8 @@ public class RateLimitItemMin implements RateLimitItem {
     }
 
     @Override
-    public void set(Integer limit) {
-        this.min.set(limit);
-    }
-
-    @Override
-    public long get() {
+    public int get() {
         return min.get();
-    }
-
-    @Override
-    public void reset() {
-        min.set(0);
-    }
-
-    @Override
-    public void inc() {
-        min.incrementAndGet();
-    }
-
-    @Override
-    public void dec() {
-        min.decrementAndGet();
     }
 
     @Override
@@ -64,4 +65,8 @@ public class RateLimitItemMin implements RateLimitItem {
         return result;
     }
 
+    @Override
+    public void onPropertyUpdate(Set<String> updatedProp) {
+        this.min.set(Integer.parseInt(propMin));
+    }
 }

@@ -98,11 +98,15 @@ public class PropertyComponent {
     }
 
     public Subscriber getSubscriber(PropertySubscriberNotify propertySubscriberNotify, PropertyConnector propertyConnector) {
-        return getSubscriber(propertySubscriberNotify, propertyConnector, null);
+        return getSubscriber(propertySubscriberNotify, propertyConnector, null, true);
     }
 
     public Subscriber getSubscriber(PropertySubscriberNotify propertySubscriberNotify, PropertyConnector propertyConnector, String ns) {
-        return new Subscriber(propertySubscriberNotify, this, propertyConnector, ns);
+        return new Subscriber(propertySubscriberNotify, this, propertyConnector, ns, true);
+    }
+
+    public Subscriber getSubscriber(PropertySubscriberNotify propertySubscriberNotify, PropertyConnector propertyConnector, String ns, boolean require) {
+        return new Subscriber(propertySubscriberNotify, this, propertyConnector, ns, require);
     }
 
 }

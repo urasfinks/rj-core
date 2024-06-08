@@ -54,7 +54,7 @@ public class FileByteWriter extends PropertyConnector implements KeepAlive, Life
         broker = App.context.getBean(BrokerManager.class).initAndGet(index, ByteItem.class, null);
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
-        broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(400_000);
+        broker.setMaxSizeQueue(400_000);
         PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
         subscriber = propertyComponent.getSubscriber(null, this, index);
 

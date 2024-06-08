@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
@@ -83,20 +84,23 @@ public class Broker<TEO>
 
     private final Class<TEO> classItem;
 
+    private PropertyComponent propertyComponent;
+
     public Broker(String index, ApplicationContext applicationContext, Class<TEO> classItem, Consumer<TEO> onDrop) {
         this.index = index;
         this.classItem = classItem;
         this.onDrop = onDrop;
 
         rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(index, applicationContext))
-                .init(RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)
-                .init(RateLimitName.BROKER_TAIL_SIZE.getName(), RateLimitItemInstance.MAX);
+                .init(applicationContext, RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)
+                .init(applicationContext, RateLimitName.BROKER_TAIL_SIZE.getName(), RateLimitItemInstance.MAX);
 
         rliQueueSize = rateLimit.get(RateLimitName.BROKER_SIZE.getName());
-        rliQueueSize.set(3000);
-
         rliTailSize = rateLimit.get(RateLimitName.BROKER_TAIL_SIZE.getName());
-        rliTailSize.set(5);
+
+        propertyComponent = applicationContext.getBean(PropertyComponent.class);
+        rliQueueSize.set("max", 3000);
+        rliTailSize.set("max", 5);
     }
 
     public int size() {
@@ -108,11 +112,11 @@ public class Broker<TEO>
     }
 
     public void setMaxSizeQueue(int newSize) {
-        rliQueueSize.set(newSize);
+        propertyComponent.update(rliQueueSize.getNs() + ".max", newSize + "");
     }
 
     public void setMaxSizeQueueTail(int newSize) {
-        rliTailSize.set(newSize);
+        rliTailSize.set("max", newSize);
     }
 
     private void statistic(ExpirationMsImmutableEnvelope<TEO> envelope) {
@@ -257,9 +261,6 @@ public class Broker<TEO>
         queueSize.set(0);
         tail.clear();
         tpsDequeue.set(0);
-        rateLimit.reset();
-        rliTailSize.set(5);
-        rliQueueSize.set(3000);
     }
 
     // Отладочная
