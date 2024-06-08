@@ -10,7 +10,7 @@ import java.util.Set;
 @Getter
 public class Subscriber {
 
-    private final SubscriberPropertyNotifier subscriber;
+    private final PropertySubscriberNotify subscriber;
 
     private final PropertyComponent component;
 
@@ -20,7 +20,7 @@ public class Subscriber {
 
     private final String ns;
 
-    public Subscriber(SubscriberPropertyNotifier subscriber, PropertyComponent component, PropertyConnector propertyConnector, String ns) {
+    public Subscriber(PropertySubscriberNotify subscriber, PropertyComponent component, PropertyConnector propertyConnector, String ns) {
         this.subscriber = subscriber;
         this.component = component;
         this.propertyConnector = propertyConnector;

@@ -24,7 +24,7 @@ class PropertyComponentTest {
         App.shutdown();
     }
 
-    public static class XX extends PropertyConnector implements SubscriberPropertyNotifier {
+    public static class XX extends PropertyConnector implements PropertySubscriberNotify {
 
         int c = 0;
 
@@ -121,7 +121,7 @@ class PropertyComponentTest {
     }
 
 
-    static class x2 extends PropertyConnector implements SubscriberPropertyNotifier {
+    static class x2 extends PropertyConnector implements PropertySubscriberNotify {
 
         @PropertyName("security.path.storage")
         public String storage="wef";

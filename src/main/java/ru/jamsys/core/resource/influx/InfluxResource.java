@@ -9,7 +9,7 @@ import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.Subscriber;
-import ru.jamsys.core.extension.SubscriberPropertyNotifier;
+import ru.jamsys.core.extension.PropertySubscriberNotify;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
@@ -20,7 +20,7 @@ import java.util.Set;
 
 public class InfluxResource
         extends ExpirationMsMutableImpl
-        implements Resource<NamespaceResourceConstructor, List<Point>, Void>, SubscriberPropertyNotifier {
+        implements Resource<NamespaceResourceConstructor, List<Point>, Void>, PropertySubscriberNotify {
 
     private InfluxDBClient client = null;
 

@@ -6,7 +6,7 @@ import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.Subscriber;
-import ru.jamsys.core.extension.SubscriberPropertyNotifier;
+import ru.jamsys.core.extension.PropertySubscriberNotify;
 import ru.jamsys.core.flat.util.YandexSpeechClient;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
@@ -19,7 +19,7 @@ import java.util.Set;
 @Component
 public class YandexSpeechNotificationResource
         extends ExpirationMsMutableImpl
-        implements Resource<NamespaceResourceConstructor, YandexSpeechNotificationRequest, Void>, SubscriberPropertyNotifier {
+        implements Resource<NamespaceResourceConstructor, YandexSpeechNotificationRequest, Void>, PropertySubscriberNotify {
 
     YandexSpeechClient client = null;
 

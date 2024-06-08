@@ -6,7 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.extension.Subscriber;
-import ru.jamsys.core.extension.SubscriberPropertyNotifier;
+import ru.jamsys.core.extension.PropertySubscriberNotify;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
@@ -28,7 +28,7 @@ public class AndroidNotificationResource
         extends ExpirationMsMutableImpl
         implements
         Resource<NamespaceResourceConstructor, AndroidNotificationRequest, HttpResponse>,
-        SubscriberPropertyNotifier {
+        PropertySubscriberNotify {
 
     private String accessToken;
 

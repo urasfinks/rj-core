@@ -5,7 +5,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.manager.VirtualFileSystemManager;
 import ru.jamsys.core.extension.Subscriber;
-import ru.jamsys.core.extension.SubscriberPropertyNotifier;
+import ru.jamsys.core.extension.PropertySubscriberNotify;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
@@ -28,7 +28,7 @@ public class AppleNotificationResource
         extends ExpirationMsMutableImpl
         implements
         Resource<NamespaceResourceConstructor, AppleNotificationRequest, HttpResponse>,
-        SubscriberPropertyNotifier {
+        PropertySubscriberNotify {
 
     private VirtualFileSystemManager virtualFileSystemManager;
 

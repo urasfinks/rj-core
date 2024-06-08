@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.HashMapBuilder;
 import ru.jamsys.core.extension.PropertyConnector;
 import ru.jamsys.core.extension.Subscriber;
-import ru.jamsys.core.extension.SubscriberPropertyNotifier;
+import ru.jamsys.core.extension.PropertySubscriberNotify;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -97,12 +97,12 @@ public class PropertyComponent {
         subscribe.get(key).remove(subscriber);
     }
 
-    public Subscriber getSubscriber(SubscriberPropertyNotifier subscriberPropertyNotifier, PropertyConnector propertyConnector) {
-        return getSubscriber(subscriberPropertyNotifier, propertyConnector, null);
+    public Subscriber getSubscriber(PropertySubscriberNotify propertySubscriberNotify, PropertyConnector propertyConnector) {
+        return getSubscriber(propertySubscriberNotify, propertyConnector, null);
     }
 
-    public Subscriber getSubscriber(SubscriberPropertyNotifier subscriberPropertyNotifier, PropertyConnector propertyConnector, String ns) {
-        return new Subscriber(subscriberPropertyNotifier, this, propertyConnector, ns);
+    public Subscriber getSubscriber(PropertySubscriberNotify propertySubscriberNotify, PropertyConnector propertyConnector, String ns) {
+        return new Subscriber(propertySubscriberNotify, this, propertyConnector, ns);
     }
 
 }
