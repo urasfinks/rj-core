@@ -26,6 +26,7 @@ public class RateLimitItemTps extends PropertyConnector implements RateLimitItem
     @Getter
     private final String ns;
 
+    @SuppressWarnings("all")
     @PropertyName("max")
     private String propMax = "1";
 

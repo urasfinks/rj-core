@@ -123,9 +123,11 @@ class PropertyComponentTest {
 
     static class x2 extends PropertyConnector implements PropertySubscriberNotify {
 
+        @SuppressWarnings("all")
         @PropertyName("security.path.storage")
         public String storage="wef";
 
+        @SuppressWarnings("all")
         @PropertyName("security.path.public.key")
         public String publicKey="ppbb";
 

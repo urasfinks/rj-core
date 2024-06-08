@@ -35,6 +35,7 @@ public class RateLimitItemPeriodic extends PropertyConnector implements RateLimi
     @Getter
     private final String ns;
 
+    @SuppressWarnings("all")
     @PropertyName("max")
     private String propMax = "1";
 

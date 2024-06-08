@@ -24,6 +24,7 @@ public class RateLimitItemMin extends PropertyConnector implements RateLimitItem
 
     private volatile int cur;
 
+    @SuppressWarnings("all")
     @PropertyName("min")
     private String propMin = "0";
 
