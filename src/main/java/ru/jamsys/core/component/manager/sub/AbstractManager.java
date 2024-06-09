@@ -113,6 +113,7 @@ public abstract class AbstractManager<
     @Override
     public void shutdown() {
         UtilRisc.forEach(new AtomicBoolean(true), map, (String _, E element) -> element.close());
+        // mapReserved не надо останавливать, они уже в остановленном состоянии
     }
 
     @Override

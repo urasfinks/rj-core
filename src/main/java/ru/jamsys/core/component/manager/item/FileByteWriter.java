@@ -44,6 +44,8 @@ public class FileByteWriter extends ExpirationMsMutableImpl implements KeepAlive
 
     private final Subscriber subscriber;
 
+    private final AtomicBoolean isRunWrite = new AtomicBoolean(false);
+
     public FileByteWriter(String index) {
 
         this.index = index;
@@ -131,40 +133,49 @@ public class FileByteWriter extends ExpirationMsMutableImpl implements KeepAlive
     }
 
     private void write(AtomicBoolean isThreadRun) {
-        int tmpSizeKb = Integer.parseInt(property.getFileSizeKb());
-        try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(currentFilePath, writeByteToCurrentFile.get() > 0))) {
-            while (!broker.isEmpty() && isThreadRun.get()) {
-                try {
-                    ExpirationMsImmutableEnvelope<ByteItem> itemExpirationMsMutableEnvelope = broker.pollFirst();
-                    if (itemExpirationMsMutableEnvelope != null) {
-                        ByteItem item = itemExpirationMsMutableEnvelope.getValue();
-                        byte[] d = item.getByteInstance();
-                        fos.write(UtilByte.intToBytes(d.length));
-                        writeByteToCurrentFile.addAndGet(4);
-                        fos.write(d);
-                        writeByteToCurrentFile.addAndGet(d.length);
+        // Что бы не допустить одновременного выполнения при остановки приложения, когда приходит ContextClosedEvent
+        if (isRunWrite.compareAndSet(false, true)) {
+            int tmpSizeKb = Integer.parseInt(property.getFileSizeKb());
+            try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(currentFilePath, writeByteToCurrentFile.get() > 0))) {
+                while (!broker.isEmpty() && isThreadRun.get()) {
+                    try {
+                        ExpirationMsImmutableEnvelope<ByteItem> itemExpirationMsMutableEnvelope = broker.pollFirst();
+                        if (itemExpirationMsMutableEnvelope != null) {
+                            ByteItem item = itemExpirationMsMutableEnvelope.getValue();
+                            byte[] d = item.getByteInstance();
+                            fos.write(UtilByte.intToBytes(d.length));
+                            writeByteToCurrentFile.addAndGet(4);
+                            fos.write(d);
+                            writeByteToCurrentFile.addAndGet(d.length);
 
-                        if (writeByteToCurrentFile.get() > tmpSizeKb) {
-                            writeByteToCurrentFile.set(0);
-                            genNextFile();
-                            break;
+                            if (writeByteToCurrentFile.get() > tmpSizeKb) {
+                                writeByteToCurrentFile.set(0);
+                                genNextFile();
+                                break;
+                            }
                         }
+                    } catch (Exception e) {
+                        App.context.getBean(ExceptionHandler.class).handler(e);
+                        break;
                     }
-                } catch (Exception e) {
-                    App.context.getBean(ExceptionHandler.class).handler(e);
-                    break;
                 }
+            } catch (Exception e) {
+                // Предполагаю, что есть проблемы с файлом
+                // Буду пробовать в другой записать
+                genNextFile();
+                App.context.getBean(ExceptionHandler.class).handler(e);
             }
-        } catch (Exception e) {
-            // Предполагаю, что есть проблемы с файлом
-            // Буду пробовать в другой записать
-            genNextFile();
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            isRunWrite.set(false);
         }
     }
 
     @Override
     public void close() {
+        Util.logConsole("Запишем если были накопления в брокере");
+        // Запишем если были накопления в брокере
+        keepAlive(new AtomicBoolean(true));
+        // Переименуем файл, что бы при следующем старте его не удалили как ошибочный
+        Util.logConsole("Переименуем файл, что бы при следующем старте его не удалили как ошибочный");
         genNextFile();
         subscriber.unsubscribe();
     }
