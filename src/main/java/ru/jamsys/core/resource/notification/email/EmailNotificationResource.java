@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.extension.Subscriber;
+import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;

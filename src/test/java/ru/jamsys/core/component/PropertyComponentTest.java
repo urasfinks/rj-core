@@ -6,6 +6,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.property.PropertySubscriberNotify;
+import ru.jamsys.core.extension.property.Subscriber;
 
 import java.util.Map;
 import java.util.Set;

@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.LifeCycleComponent;
-import ru.jamsys.core.extension.PropertyConnector;
-import ru.jamsys.core.extension.PropertyName;
-import ru.jamsys.core.extension.Subscriber;
+import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.util.*;
 
 import javax.crypto.SecretKey;

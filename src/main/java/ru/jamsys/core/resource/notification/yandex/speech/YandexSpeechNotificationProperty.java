@@ -1,8 +1,8 @@
 package ru.jamsys.core.resource.notification.yandex.speech;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.PropertyConnector;
-import ru.jamsys.core.extension.PropertyName;
+import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyName;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter

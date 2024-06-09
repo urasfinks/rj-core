@@ -1,8 +1,9 @@
 package ru.jamsys.core.resource.notification.android;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.PropertyConnector;
-import ru.jamsys.core.extension.PropertyName;
+import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyName;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
 public class AndroidNotificationProperty extends PropertyConnector {

@@ -8,6 +8,7 @@ import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;

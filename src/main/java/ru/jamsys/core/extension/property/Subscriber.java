@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension;
+package ru.jamsys.core.extension.property;
 
 import lombok.Getter;
 import ru.jamsys.core.component.PropertyComponent;

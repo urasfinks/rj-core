@@ -3,10 +3,10 @@ package ru.jamsys.core.rate.limit.item;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.component.PropertyComponent;
-import ru.jamsys.core.extension.PropertyConnector;
-import ru.jamsys.core.extension.PropertyName;
-import ru.jamsys.core.extension.PropertySubscriberNotify;
-import ru.jamsys.core.extension.Subscriber;
+import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.property.PropertySubscriberNotify;
+import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.statistic.Statistic;
 
 import java.util.ArrayList;

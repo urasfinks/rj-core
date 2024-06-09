@@ -8,9 +8,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.HashMapBuilder;
-import ru.jamsys.core.extension.PropertyConnector;
-import ru.jamsys.core.extension.Subscriber;
-import ru.jamsys.core.extension.PropertySubscriberNotify;
+import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.Subscriber;
+import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 
 import java.util.HashMap;
 import java.util.HashSet;
