@@ -69,8 +69,6 @@ public class Expiration<V>
         return bucket.keySet().stream().toList();
     }
 
-    AtomicBoolean lock = new AtomicBoolean(true);
-
     public ExpirationKeepAliveResult keepAlive(AtomicBoolean isThreadRun, long curTimeMs) {
         ExpirationKeepAliveResult keepAliveResult = new ExpirationKeepAliveResult();
         UtilRisc.forEach(isThreadRun, bucket, (Long time, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>> queue) -> {
