@@ -2,10 +2,7 @@ package ru.jamsys.core.rate.limit;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
-import ru.jamsys.core.extension.CheckClassItem;
-import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.Closable;
-import ru.jamsys.core.extension.StatisticsCollectorMap;
+import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
@@ -26,6 +23,7 @@ public class RateLimit
         Closable,
         CheckClassItem,
         ClassName,
+        LifeCycleInterface,
         AddToMap<String, RateLimitItem>
 {
 
@@ -67,6 +65,16 @@ public class RateLimit
     @Override
     public boolean checkClassItem(Class<?> classItem) {
         return true;
+    }
+
+    @Override
+    public void run() {
+        // Пока ничего не надо
+    }
+
+    @Override
+    public void shutdown() {
+        // Пока ничего не надо
     }
 
 }

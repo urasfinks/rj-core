@@ -27,7 +27,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @Scope("prototype")
-public class FileByteWriter extends ExpirationMsMutableImpl implements KeepAlive, Closable, StatisticsFlush, CheckClassItem {
+public class FileByteWriter extends ExpirationMsMutableImpl
+        implements
+        KeepAlive,
+        Closable,
+        StatisticsFlush,
+        CheckClassItem,
+        LifeCycleInterface {
 
     @Getter
     Broker<ByteItem> broker;
@@ -104,21 +110,29 @@ public class FileByteWriter extends ExpirationMsMutableImpl implements KeepAlive
         }
     }
 
-    private void genNextFile() {
+    private void closeLastFile() {
         if (currentFilePath != null) {
             UtilFile.rename(currentFilePath, currentFilePath.substring(0, currentFilePath.length() - 8) + "bin");
+            currentFilePath = null;
         }
+    }
+
+    private void genNextFile() {
+        closeLastFile();
         int curIndex = counter.getAndIncrement() % Integer.parseInt(property.getFileCount());
         currentFilePath = property.getFolder() + "/" + index + "." + Util.padLeft(curIndex + "", property.getFileCount().length(), "0") + ".proc.bin";
     }
 
     public void append(ByteItem log) {
-        broker.add(log, 6_000);
         active();
+        broker.add(log, 6_000);
     }
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
+        if (broker.isEmpty()) {
+            return;
+        }
         if (currentFilePath == null) {
             genNextFile();
         }
@@ -171,12 +185,12 @@ public class FileByteWriter extends ExpirationMsMutableImpl implements KeepAlive
 
     @Override
     public void close() {
-        Util.logConsole("Запишем если были накопления в брокере");
-        // Запишем если были накопления в брокере
+        // Запишем что накопили
         keepAlive(new AtomicBoolean(true));
-        // Переименуем файл, что бы при следующем старте его не удалили как ошибочный
-        Util.logConsole("Переименуем файл, что бы при следующем старте его не удалили как ошибочный");
-        genNextFile();
+        // Сначала не хотел закрывать файл, но решил, что надо, для того, что бы система могла уже с ним поработать
+        // Если оставить его не закрытым, то он будет висеть до закрытия программы, что наверное не очень хорошо
+        closeLastFile();
+        // Из менаджера ссылки не исчезают, можно по идеи и не отписываться (Перетекание из map -> mapReserved)
         subscriber.unsubscribe();
     }
 
@@ -188,6 +202,19 @@ public class FileByteWriter extends ExpirationMsMutableImpl implements KeepAlive
     @Override
     public boolean checkClassItem(Class<?> classItem) {
         return true;
+    }
+
+    @Override
+    public void run() {
+        subscriber.init(false);
+    }
+
+    @Override
+    public void shutdown() {
+        // Запишем если были накопления в брокере
+        keepAlive(new AtomicBoolean(true));
+        // Переименуем файл, что бы при следующем старте его не удалили как ошибочный
+        closeLastFile();
     }
 
 }

@@ -25,6 +25,7 @@ public class File extends ExpirationMsMutableImpl
         StatisticsFlush,
         KeepAlive,
         Property<String>,
+        LifeCycleInterface,
         CheckClassItem
 {
 
@@ -177,6 +178,16 @@ public class File extends ExpirationMsMutableImpl
     @Override
     public boolean checkClassItem(Class<?> classItem) {
         return true;
+    }
+
+    @Override
+    public void run() {
+        // Пока ничего не надо
+    }
+
+    @Override
+    public void shutdown() {
+        // Пока ничего не надо
     }
 
 }

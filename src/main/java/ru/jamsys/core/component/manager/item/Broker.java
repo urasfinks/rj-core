@@ -54,6 +54,7 @@ public class Broker<TEO>
         Closable,
         KeepAlive,
         CheckClassItem,
+        LifeCycleInterface,
         AddToList<
                 ExpirationMsImmutableEnvelope<TEO>,
                 DisposableExpirationMsImmutableEnvelope<TEO> // Должны вернуть, что бы из вне можно было сделать remove
@@ -272,6 +273,16 @@ public class Broker<TEO>
     @Override
     public boolean checkClassItem(Class<?> classItem) {
         return this.classItem.equals(classItem);
+    }
+
+    @Override
+    public void run() {
+        // Пока ничего не надо
+    }
+
+    @Override
+    public void shutdown() {
+        // Пока ничего не надо
     }
 
 }

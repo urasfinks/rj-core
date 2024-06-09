@@ -1,10 +1,7 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.CheckClassItem;
-import ru.jamsys.core.extension.Closable;
-import ru.jamsys.core.extension.KeepAlive;
-import ru.jamsys.core.extension.StatisticsFlush;
+import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.flat.util.ExpirationKeepAliveResult;
 import ru.jamsys.core.flat.util.Util;
@@ -42,6 +39,7 @@ public class Expiration<V>
         KeepAlive,
         StatisticsFlush,
         CheckClassItem,
+        LifeCycleInterface,
         ExpirationMsMutable {
 
     private final ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>>> bucket = new ConcurrentSkipListMap<>();
@@ -147,6 +145,16 @@ public class Expiration<V>
     @Override
     public boolean checkClassItem(Class<?> classItem) {
         return this.classItem.equals(classItem);
+    }
+
+    @Override
+    public void run() {
+        // Пока ничего не надо
+    }
+
+    @Override
+    public void shutdown() {
+        // Пока ничего не надо
     }
 
 }

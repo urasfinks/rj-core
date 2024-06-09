@@ -21,6 +21,7 @@ public abstract class AbstractManager<
                 Closable
                 & ExpirationMsMutable
                 & StatisticsFlush
+                & LifeCycleInterface
                 & CheckClassItem,
         EBA>
         implements
@@ -78,8 +79,10 @@ public abstract class AbstractManager<
         // хотя бы тут попробуем выдерживать консистентность
         if (mapReserved.containsKey(key)) {
             result = map.computeIfAbsent(key, mapReserved::remove);
+            result.run();
         } else if (newObject != null) {
             result = map.computeIfAbsent(key, _ -> newObject.get());
+            result.run();
         }
         lockAddFromRemoved.unlock();
         return result;
@@ -112,8 +115,8 @@ public abstract class AbstractManager<
 
     @Override
     public void shutdown() {
-        UtilRisc.forEach(new AtomicBoolean(true), map, (String _, E element) -> element.close());
-        // mapReserved не надо останавливать, они уже в остановленном состоянии
+        UtilRisc.forEach(new AtomicBoolean(true), map, (String _, E element) -> element.shutdown());
+        UtilRisc.forEach(new AtomicBoolean(true), mapReserved, (String _, E element) -> element.shutdown());
     }
 
     @Override

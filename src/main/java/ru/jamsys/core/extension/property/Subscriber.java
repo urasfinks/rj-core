@@ -25,7 +25,7 @@ public class Subscriber {
         this.component = component;
         this.propertyConnector = propertyConnector;
         this.ns = ns;
-        initSubscribe(true);
+        init(true);
     }
 
     public Subscriber(PropertySubscriberNotify subscriber, PropertyComponent component, PropertyConnector propertyConnector, String ns, boolean require) {
@@ -33,14 +33,14 @@ public class Subscriber {
         this.component = component;
         this.propertyConnector = propertyConnector;
         this.ns = ns;
-        initSubscribe(require);
+        init(require);
     }
 
     public void setProperty(String key, String value) {
         this.component.setProperty(getKeyWithNamespace(key), value);
     }
 
-    private void initSubscribe(boolean require) {
+    public void init(boolean require) {
         Map<String, String> mapPropValue = this.propertyConnector.getMapPropValue();
         for (String key : mapPropValue.keySet()) {
             subscribe(key, mapPropValue.get(key), require);
