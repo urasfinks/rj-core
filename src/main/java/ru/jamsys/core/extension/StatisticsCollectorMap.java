@@ -9,19 +9,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public interface StatisticsCollectorMap<T extends StatisticsFlush> extends StatisticsFlush {
+public interface StatisticsCollectorMap<E extends StatisticsFlush> extends StatisticsFlush {
 
-    Map<String, T> getMapForFlushStatistic();
+    Map<String, E> getMapForFlushStatistic();
 
     @Override
     default List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
-        Map<String, T> map = getMapForFlushStatistic();
+        Map<String, E> map = getMapForFlushStatistic();
         List<Statistic> result = new ArrayList<>();
         String clsName = ClassNameImpl.getClassNameStatic(getClass(), null);
         UtilRisc.forEach(
                 isThreadRun,
                 map,
-                (String key, T element) -> {
+                (String key, E element) -> {
                     LinkedHashMap<String, String> newParentTags = new LinkedHashMap<>(parentTags);
                     newParentTags.put(clsName, key);
                     List<Statistic> statistics = element.flushAndGetStatistic(newParentTags, parentFields, isThreadRun);

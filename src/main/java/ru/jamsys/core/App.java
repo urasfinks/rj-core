@@ -23,6 +23,7 @@ public class App {
             AtomicBoolean shutdownFinish = new AtomicBoolean(false);
 
             Thread shutdownThread = new Thread(() -> {
+                Thread.currentThread().setName("Shutdown");
                 App.shutdown();
                 shutdownFinish.set(true);
             });

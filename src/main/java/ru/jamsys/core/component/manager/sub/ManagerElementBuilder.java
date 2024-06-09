@@ -1,10 +1,10 @@
 package ru.jamsys.core.component.manager.sub;
 
-// BE - BuildElement
-// BA - BuilderArgument
+// E - BuildElement (Element)
+// EBA - ElementBuilderArgument
 
-public interface ManagerElementBuilder<BE, BA> {
+public interface ManagerElementBuilder<E, EBA> {
 
-    BE build(String index, Class<?> classItem, BA builderArgument);
+    E build(String index, Class<?> classItem, EBA builderArgument);
 
 }

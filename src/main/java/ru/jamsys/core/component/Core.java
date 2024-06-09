@@ -9,6 +9,7 @@ import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.StatisticSec;
 
 @Component
@@ -42,7 +43,9 @@ public class Core implements LifeCycleInterface {
     public void shutdown() {
         classFinderComponent.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
             if (!ClassFinderComponent.instanceOf(this.getClass(), runnableComponentClass)) {
-                applicationContext.getBean(runnableComponentClass).shutdown();
+                LifeCycleComponent bean = applicationContext.getBean(runnableComponentClass);
+                Util.logConsole(bean.getClass().getName());
+                bean.shutdown();
             }
         });
     }

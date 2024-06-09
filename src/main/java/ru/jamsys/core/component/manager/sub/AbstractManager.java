@@ -13,25 +13,26 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
-// MO - MapObject
-// BA - BuilderArgument
+// E - Element
+// EBA - ElementBuilderArgument
 
 public abstract class AbstractManager<
-        MO extends
+        E extends
                 Closable
                 & ExpirationMsMutable
                 & StatisticsFlush
                 & CheckClassItem,
-        BA>
+        EBA>
         implements
-        StatisticsCollectorMap<MO>,
+        StatisticsCollectorMap<E>,
         KeepAlive,
         StatisticsFlushComponent,
-        ManagerElementBuilder<MO, BA> {
+        LifeCycleComponent,
+        ManagerElementBuilder<E, EBA> {
 
-    protected final Map<String, MO> map = new ConcurrentHashMap<>();
+    protected final Map<String, E> map = new ConcurrentHashMap<>();
 
-    protected final Map<String, MO> mapReserved = new ConcurrentHashMap<>();
+    protected final Map<String, E> mapReserved = new ConcurrentHashMap<>();
 
     @Setter
     protected boolean cleanableMap = true;
@@ -39,7 +40,7 @@ public abstract class AbstractManager<
     private final Lock lockAddFromRemoved = new ReentrantLock();
 
     @Override
-    public Map<String, MO> getMapForFlushStatistic() {
+    public Map<String, E> getMapForFlushStatistic() {
         return map;
     }
 
@@ -49,7 +50,7 @@ public abstract class AbstractManager<
         UtilRisc.forEach(
                 isThreadRun,
                 map,
-                (String key, MO element) -> {
+                (String key, E element) -> {
                     if (cleanableMap && element.isExpiredWithoutStop()) {
                         mapReserved.put(key, map.remove(key));
                         element.close();
@@ -70,9 +71,9 @@ public abstract class AbstractManager<
     }
 
     // Атомарная операция для map и mapReserved
-    private MO restoreFromReserved(String key, Supplier<MO> newObject) {
+    private E restoreFromReserved(String key, Supplier<E> newObject) {
         lockAddFromRemoved.lock();
-        MO result = null;
+        E result = null;
         // computeIfAbsent так как заметил использование в других классах использование put
         // хотя бы тут попробуем выдерживать консистентность
         if (mapReserved.containsKey(key)) {
@@ -89,24 +90,34 @@ public abstract class AbstractManager<
     // текущий брокер по ключу, а он в какой-то момент времени может быть удалён, а ссылка останется
     // мы будем накладывать в некую очередь, которая уже будет не принадлежать менаджеру
     // и обслуживаться тоже не будет [keepAlive, flushAndGetStatistic] так что - плохая эта затея
-    protected MO getManagerElement(String key, Class<?> classItem, BA builderArgument) {
-        MO o = restoreFromReserved(key, () -> build(key, classItem, builderArgument));
-        if (o != null && o.checkClassItem(classItem)) {
-            return o;
+    protected E getManagerElement(String key, Class<?> classItem, EBA builderArgument) {
+        E element = restoreFromReserved(key, () -> build(key, classItem, builderArgument));
+        if (element != null && element.checkClassItem(classItem)) {
+            return element;
         }
         return null;
     }
 
-    protected MO getManagerElementUnsafe(String key, Class<?> classItem) {
-        MO o = map.get(key);
-        if (o != null && o.checkClassItem(classItem)) {
-            return o;
+    protected E getManagerElementUnsafe(String key, Class<?> classItem) {
+        E element = map.get(key);
+        if (element != null && element.checkClassItem(classItem)) {
+            return element;
         }
         return null;
     }
 
-    public Map<String, MO> getTestMap() {
+    public Map<String, E> getTestMap() {
         return new HashMap<>(map);
+    }
+
+    @Override
+    public void shutdown() {
+        UtilRisc.forEach(new AtomicBoolean(true), map, (String _, E element) -> element.close());
+    }
+
+    @Override
+    public void run() {
+
     }
 
 }

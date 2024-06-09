@@ -7,9 +7,9 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class JsonEnvelope<T> {
+public class JsonEnvelope<O> {
 
-    public void setObject(T object) {
+    public void setObject(O object) {
         if (object == null) {
             exception = new RuntimeException("Object is empty");
         } else {
@@ -17,7 +17,7 @@ public class JsonEnvelope<T> {
         }
     }
 
-    T object = null;
+    O object = null;
     Exception exception = null;
 
 }
