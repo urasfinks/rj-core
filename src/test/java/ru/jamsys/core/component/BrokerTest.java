@@ -23,7 +23,7 @@ class BrokerTest {
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{};
-        App.main(args);
+        App.run(args);
         App.context.getBean(BrokerManager.class).initAndGet(XTest.class.getSimpleName(), XTest.class, null);
     }
 

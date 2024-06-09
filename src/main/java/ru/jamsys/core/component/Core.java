@@ -4,6 +4,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.BrokerManager;
+import ru.jamsys.core.component.manager.FileByteWriterManager;
+import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
@@ -23,10 +25,11 @@ public class Core implements LifeCycleInterface {
 
     @Override
     public void run() {
+        FileByteWriter statistic = applicationContext.getBean(FileByteWriterManager.class).get("statistic");
         applicationContext.getBean(BrokerManager.class).initAndGet(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class,
-                null
+                statistic::append
         );
         classFinderComponent.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
             if (!ClassFinderComponent.instanceOf(this.getClass(), runnableComponentClass)) {

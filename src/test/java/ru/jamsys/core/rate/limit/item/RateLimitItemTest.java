@@ -15,7 +15,7 @@ class RateLimitItemTest {
         String[] args = new String[]{};
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
-        App.main(args);
+        App.run(args);
     }
 
     @AfterAll

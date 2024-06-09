@@ -112,6 +112,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl implements KeepAlive
 
     public void append(ByteItem log) {
         broker.add(log, 6_000);
+        active();
     }
 
     @Override
@@ -177,4 +178,5 @@ public class FileByteWriter extends ExpirationMsMutableImpl implements KeepAlive
     public boolean checkClassItem(Class<?> classItem) {
         return true;
     }
+
 }
