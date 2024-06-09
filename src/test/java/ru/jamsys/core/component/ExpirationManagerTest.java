@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.SpringApplication;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ExpirationManager;
 import ru.jamsys.core.component.manager.item.Expiration;
@@ -24,7 +25,8 @@ class ExpirationManagerTest {
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{};
-        App.main(args);
+        //App.main(args); // Если запустить проект получим работу Cron.KeepAliveExpirationManager
+        App.context = SpringApplication.run(App.class, args);
     }
 
     @AfterAll

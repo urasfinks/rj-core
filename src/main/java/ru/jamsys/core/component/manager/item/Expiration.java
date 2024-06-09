@@ -46,6 +46,8 @@ public class Expiration<V>
 
     private final ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>>> bucket = new ConcurrentSkipListMap<>();
 
+    private final ConcurrentSkipListMap<Long, AtomicInteger> bucketQueueSize = new ConcurrentSkipListMap<>();
+
     @Getter
     private final String index;
 
@@ -59,15 +61,15 @@ public class Expiration<V>
         this.onExpired = onExpired;
     }
 
+    private void incQueueSize(Long key) {
+        bucketQueueSize.computeIfAbsent(key, _ -> new AtomicInteger(0)).incrementAndGet();
+    }
+
     public List<Long> getBucketKey() {
         return bucket.keySet().stream().toList();
     }
 
-    public List<String> getBucketKeyFormat() {
-        List<String> result = new ArrayList<>();
-        getBucketKey().forEach(x -> result.add(Util.msToDataFormat(x)));
-        return result;
-    }
+    AtomicBoolean lock = new AtomicBoolean(true);
 
     public ExpirationKeepAliveResult keepAlive(AtomicBoolean isThreadRun, long curTimeMs) {
         ExpirationKeepAliveResult keepAliveResult = new ExpirationKeepAliveResult();
@@ -88,6 +90,7 @@ public class Expiration<V>
             });
             if (queue.isEmpty()) {
                 bucket.remove(time);
+                bucketQueueSize.remove(time);
                 return true;
             }
             return false;
@@ -103,16 +106,19 @@ public class Expiration<V>
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         List<Statistic> result = new ArrayList<>();
-        AtomicInteger count = new AtomicInteger(0);
+        AtomicInteger summaryCountItem = new AtomicInteger(0);
+        AtomicInteger countBucket = new AtomicInteger(0);
         UtilRisc.forEach(
                 isThreadRun,
                 bucket,
-                (Long _, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>> queue)
-                        -> count.addAndGet(queue.size())
+                (Long time, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>> _) -> {
+                    countBucket.incrementAndGet();
+                    summaryCountItem.addAndGet(bucketQueueSize.get(time).get());
+                }
         );
         result.add(new Statistic(parentTags, parentFields)
-                .addField("ItemSize", count.get())
-                .addField("BucketSize", bucket.size())
+                .addField("ItemSize", summaryCountItem.get())
+                .addField("BucketSize", countBucket.get())
         );
         if (!bucket.isEmpty()) {
             active();
@@ -123,6 +129,7 @@ public class Expiration<V>
     @Override
     public void close() {
         bucket.clear();
+        bucketQueueSize.clear();
     }
 
     @Override
@@ -135,6 +142,7 @@ public class Expiration<V>
         long timeMsExpiredFloor = Util.zeroLastNDigits(obj.getExpiredMs(), 3);
         bucket.computeIfAbsent(timeMsExpiredFloor, _ -> new ConcurrentLinkedQueue<>())
                 .add(obj);
+        incQueueSize(timeMsExpiredFloor);
         return obj;
     }
 
