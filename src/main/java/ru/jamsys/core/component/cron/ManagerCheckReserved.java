@@ -15,13 +15,13 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
-public class KeepAliveManager implements Cron1s, PromiseGenerator, ClassName {
+public class ManagerCheckReserved implements Cron1s, PromiseGenerator, ClassName {
 
     private final List<AbstractManager> list = new ArrayList<>();
 
     private final String index;
 
-    public KeepAliveManager(ClassFinderComponent classFinderComponent, ApplicationContext applicationContext) {
+    public ManagerCheckReserved(ClassFinderComponent classFinderComponent, ApplicationContext applicationContext) {
         index = getClassName("cron", applicationContext);
         classFinderComponent.findByInstance(AbstractManager.class).forEach(managerClass
                 -> list.add(applicationContext.getBean(managerClass)));
