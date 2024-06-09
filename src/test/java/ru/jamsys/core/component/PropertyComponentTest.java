@@ -52,18 +52,18 @@ class PropertyComponentTest {
 
         Assertions.assertEquals(2, xx.c);
 
-        propertyComponent.update("core.security.path.storage", "xx");
+        propertyComponent.setProperty("core.security.path.storage", "xx");
         Assertions.assertEquals(3, xx.c);
 
         // Дубликат значения не должен вызывать onPropUpdate
-        propertyComponent.update("core.security.path.storage", "xx");
+        propertyComponent.setProperty("core.security.path.storage", "xx");
         Assertions.assertEquals(3, xx.c);
 
         subscribe.unsubscribe();
         Assertions.assertEquals(0, subscribe.getSubscriptions().size());
 
         // После отписки мы не должны получать уведомления об изменениях
-        propertyComponent.update("core.security.path.storage", "x2");
+        propertyComponent.setProperty("core.security.path.storage", "x2");
         Assertions.assertEquals(3, xx.c);
 
         // Обратно подписываемся
@@ -75,19 +75,19 @@ class PropertyComponentTest {
         // Так как автоматом получим значение при подписке
         Assertions.assertEquals(5, xx.c);
 
-        propertyComponent.update("core.security.path.public.key", "x3");
+        propertyComponent.setProperty("core.security.path.public.key", "x3");
         Assertions.assertEquals(6, xx.c);
 
         subscribe.unsubscribe("core.security.path.public.key");
-        propertyComponent.update("core.security.path.public.key", "x4");
+        propertyComponent.setProperty("core.security.path.public.key", "x4");
         Assertions.assertEquals(6, xx.c);
 
         // Проверяем что другие подписки работают
-        propertyComponent.update("core.security.path.storage", "x5");
+        propertyComponent.setProperty("core.security.path.storage", "x5");
         Assertions.assertEquals(7, xx.c);
 
         //Мульти обновление без изменений значений
-        propertyComponent.update(new HashMapBuilder<String, String>()
+        propertyComponent.setProperty(new HashMapBuilder<String, String>()
                 .append("core.security.path.public.key", "x4")
                 .append("core.security.path.storage", "x5")
         );
@@ -95,7 +95,7 @@ class PropertyComponentTest {
 
 
         //Мульти обновление c неподписанным
-        propertyComponent.update(new HashMapBuilder<String, String>()
+        propertyComponent.setProperty(new HashMapBuilder<String, String>()
                 .append("core.security.path.public.key", "new") // Подписки нет, но значение изменено
                 .append("core.security.path.storage", "x5") // Подписка есть но значение старое
         );
@@ -105,14 +105,14 @@ class PropertyComponentTest {
         Assertions.assertEquals(8, xx.c);
 
         //Мульти обновление штатное
-        propertyComponent.update(new HashMapBuilder<String, String>()
+        propertyComponent.setProperty(new HashMapBuilder<String, String>()
                 .append("core.security.path.public.key", "new2")
                 .append("core.security.path.storage", "x5")
         );
         Assertions.assertEquals(10, xx.c);
 
         //Мульти обновление штатное
-        propertyComponent.update(new HashMapBuilder<String, String>()
+        propertyComponent.setProperty(new HashMapBuilder<String, String>()
                 .append("core.security.path.public.key", "new2")
                 .append("core.security.path.storage", "x6")
         );
@@ -151,7 +151,7 @@ class PropertyComponentTest {
 
         Assertions.assertEquals("security/security.jks", x2.storage);
 
-        propertyComponent.update("core.security.path.storage", "x3");
+        propertyComponent.setProperty("core.security.path.storage", "x3");
         Assertions.assertEquals("x3", x2.storage);
 
     }

@@ -199,7 +199,7 @@ class BrokerTest {
 
     @Test
     void testProperty() {
-        App.context.getBean(PropertyComponent.class).update("RateLimit.Broker.XTest.BrokerSize.max", "3000");
+        App.context.getBean(PropertyComponent.class).setProperty("RateLimit.Broker.XTest.BrokerSize.max", "3000");
         Broker<XTest> broker = App.context.getBean(BrokerManager.class).get(XTest.class.getSimpleName(), XTest.class);
         RateLimitItem rateLimitItem = broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName());
         Assertions.assertEquals(3000, rateLimitItem.get());
@@ -209,7 +209,7 @@ class BrokerTest {
 
     @Test
     void testPropertyDo() {
-        App.context.getBean(PropertyComponent.class).update("RateLimit.Broker.XTest.BrokerSize.max", "11");
+        App.context.getBean(PropertyComponent.class).setProperty("RateLimit.Broker.XTest.BrokerSize.max", "11");
         Broker<XTest> broker = App.context.getBean(BrokerManager.class).get(XTest.class.getSimpleName(), XTest.class);
         RateLimitItem rateLimitItem = broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName());
         Assertions.assertEquals(11, rateLimitItem.get());

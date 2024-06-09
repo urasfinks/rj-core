@@ -1,7 +1,8 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
-import lombok.Setter;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertyComponent;
@@ -11,30 +12,24 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.statistic.AvgMetric;
+import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.util.List;
 import java.util.LongSummaryStatistics;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class FileByteWriter extends PropertyConnector implements KeepAlive, LifeCycleInterface {
+@Component
+@Scope("prototype")
+public class FileByteWriter extends ExpirationMsMutableImpl implements KeepAlive, Closable, StatisticsFlush, CheckClassItem {
 
     @Getter
     Broker<ByteItem> broker;
-
-    @PropertyName("log.file.folder")
-    String folder;
-
-    @Setter
-    @PropertyName("log.file.size.kb")
-    String fileSizeKb;
-
-    @Setter
-    @PropertyName("log.file.count")
-    String fileCount;
 
     final String index;
 
@@ -43,6 +38,8 @@ public class FileByteWriter extends PropertyConnector implements KeepAlive, Life
     final AtomicInteger writeByteToCurrentFile = new AtomicInteger(0);
 
     final AtomicInteger counter = new AtomicInteger(0);
+
+    private final FileByteWriterProperty property = new FileByteWriterProperty();
 
     private final Subscriber subscriber;
 
@@ -55,9 +52,13 @@ public class FileByteWriter extends PropertyConnector implements KeepAlive, Life
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
         broker.setMaxSizeQueue(400_000);
         PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
-        subscriber = propertyComponent.getSubscriber(null, this, index);
+        subscriber = propertyComponent.getSubscriber(null, property, index, false);
 
         restoreIndex();
+    }
+
+    public void setProperty(String prop, String value) {
+        subscriber.setProperty(prop, value);
     }
 
     public int size() {
@@ -69,7 +70,7 @@ public class FileByteWriter extends PropertyConnector implements KeepAlive, Life
     }
 
     private void restoreIndex() {
-        List<String> filesRecursive = UtilFile.getFilesRecursive(folder, false);
+        List<String> filesRecursive = UtilFile.getFilesRecursive(property.getFolder(), false);
         AvgMetric metric = new AvgMetric();
         for (String filePath : filesRecursive) {
             if (filePath.startsWith("/" + index + ".")) {
@@ -80,7 +81,7 @@ public class FileByteWriter extends PropertyConnector implements KeepAlive, Life
                     // (so sorry my bad) Дима Г. наблевавший в номере)
                     App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("File will be remove: [" + filePath + "] so sorry my bad"));
                     try {
-                        UtilFile.remove(folder + filePath);
+                        UtilFile.remove(property.getFolder() + filePath);
                     } catch (Exception e) {
                         App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("So sorry my bad twice"));
                     }
@@ -104,8 +105,8 @@ public class FileByteWriter extends PropertyConnector implements KeepAlive, Life
         if (currentFilePath != null) {
             UtilFile.rename(currentFilePath, currentFilePath.substring(0, currentFilePath.length() - 8) + "bin");
         }
-        int curIndex = counter.getAndIncrement() % Integer.parseInt(fileCount);
-        currentFilePath = folder + "/" + index + "." + Util.padLeft(curIndex + "", (fileCount).length(), "0") + ".proc.bin";
+        int curIndex = counter.getAndIncrement() % Integer.parseInt(property.getFileCount());
+        currentFilePath = property.getFolder() + "/" + index + "." + Util.padLeft(curIndex + "", property.getFileCount().length(), "0") + ".proc.bin";
     }
 
     public void append(ByteItem log) {
@@ -117,7 +118,7 @@ public class FileByteWriter extends PropertyConnector implements KeepAlive, Life
         if (currentFilePath == null) {
             genNextFile();
         }
-        int maxWriteCount = Integer.parseInt(fileCount);
+        int maxWriteCount = Integer.parseInt(property.getFileCount());
         while (!broker.isEmpty() && isThreadRun.get()) {
             if (maxWriteCount <= 0) {
                 break;
@@ -128,7 +129,7 @@ public class FileByteWriter extends PropertyConnector implements KeepAlive, Life
     }
 
     private void write(AtomicBoolean isThreadRun) {
-        int tmpSizeKb = Integer.parseInt(fileSizeKb);
+        int tmpSizeKb = Integer.parseInt(property.getFileSizeKb());
         try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(currentFilePath, writeByteToCurrentFile.get() > 0))) {
             while (!broker.isEmpty() && isThreadRun.get()) {
                 try {
@@ -161,14 +162,18 @@ public class FileByteWriter extends PropertyConnector implements KeepAlive, Life
     }
 
     @Override
-    public void run() {
-
-    }
-
-    @Override
-    public void shutdown() {
+    public void close() {
         genNextFile();
         subscriber.unsubscribe();
     }
 
+    @Override
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
+        return List.of();
+    }
+
+    @Override
+    public boolean checkClassItem(Class<?> classItem) {
+        return true;
+    }
 }

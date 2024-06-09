@@ -112,7 +112,7 @@ public class Broker<TEO>
     }
 
     public void setMaxSizeQueue(int newSize) {
-        propertyComponent.update(rliQueueSize.getNs() + ".max", newSize + "");
+        propertyComponent.setProperty(rliQueueSize.getNs() + ".max", newSize + "");
     }
 
     public void setMaxSizeQueueTail(int newSize) {

@@ -36,6 +36,10 @@ public class Subscriber {
         initSubscribe(require);
     }
 
+    public void setProperty(String key, String value) {
+        this.component.setProperty(getKeyWithNamespace(key), value);
+    }
+
     private void initSubscribe(boolean require) {
         Map<String, String> mapPropValue = this.propertyConnector.getMapPropValue();
         for (String key : mapPropValue.keySet()) {

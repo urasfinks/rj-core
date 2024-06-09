@@ -40,9 +40,11 @@ class FileByteWriterTest {
     @Test
     void checkOverMaxFileWrite() {
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileByteWriter test = new FileByteWriter("default");
-        test.setFileSizeKb("1");
-        test.setFileCount("2");
+        FileByteWriter test = new FileByteWriter("default1");
+
+        test.setProperty("log.file.size.kb", "1");
+        test.setProperty("log.file.count", "2");
+
         test.append(new Log().setData("LogData1").addHeader("key", "value"));
         test.append(new Log().setData("LogData2").addHeader("key", "value"));
         test.append(new Log().setData("LogData3").addHeader("key", "value"));
@@ -51,62 +53,65 @@ class FileByteWriterTest {
         // Ничего личного, просто такие правила
         Assertions.assertEquals(1, test.size());
 
-        Assertions.assertEquals("[/default.0.bin, /default.1.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+        Assertions.assertEquals("[/default1.0.bin, /default1.1.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
         // Должна произойти перезапись 0 файла
         test.keepAlive(new AtomicBoolean(true));
         Assertions.assertEquals(0, test.size());
-        Assertions.assertEquals("[/default.0.bin, /default.1.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+        Assertions.assertEquals("[/default1.0.bin, /default1.1.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
     }
 
     @Test
     void checkNameLog() {
+
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileByteWriter test = new FileByteWriter("default");
-        test.setFileCount("100");
+        FileByteWriter test = new FileByteWriter("default2");
+
+        test.setProperty("log.file.count", "100");
+
         test.append(new Log().setData("LogData1").addHeader("key", "value"));
         test.append(new Log().setData("LogData2").addHeader("key", "value"));
         test.append(new Log().setData("LogData3").addHeader("key", "value"));
         test.keepAlive(new AtomicBoolean(true));
 
-        Assertions.assertEquals("[/default.000.proc.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
-        test.shutdown();
-        Assertions.assertEquals("[/default.000.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+        Assertions.assertEquals("[/default2.000.proc.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+        test.close();
+        Assertions.assertEquals("[/default2.000.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
     }
 
     @Test
     void checkRestoreExceptionShutdown() throws IOException {
         UtilFile.removeAllFilesInFolder("LogManager");
 
-        UtilFile.writeBytes("LogManager/default.000.bin", "hello1".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
-        UtilFile.writeBytes("LogManager/default.001.bin", "hello2".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
-        UtilFile.writeBytes("LogManager/default.002.proc.bin", "hello3".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
+        UtilFile.writeBytes("LogManager/default3.000.bin", "hello1".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
+        UtilFile.writeBytes("LogManager/default3.001.bin", "hello2".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
+        UtilFile.writeBytes("LogManager/default3.002.proc.bin", "hello3".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
 
         // Файлы для негативных проверок
         UtilFile.writeBytes("LogManager/test.003.proc.bin", "hello3".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
         UtilFile.writeBytes("LogManager/test.004.bin", "hello3".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
 
-        Assertions.assertEquals("[/default.000.bin, /default.001.bin, /default.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+        Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
-        FileByteWriter test = new FileByteWriter("default");
+        FileByteWriter test = new FileByteWriter("default3");
 
-        Assertions.assertEquals("[/default.000.bin, /default.001.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+        Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
         Assertions.assertEquals(2, test.getIndexFile());
 
         test.append(new Log().setData("LogData1").addHeader("key", "value"));
         test.keepAlive(new AtomicBoolean(true));
-        Assertions.assertEquals("[/default.000.bin, /default.001.bin, /default.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+        Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
-        test.shutdown();
-        Assertions.assertEquals("[/default.000.bin, /default.001.bin, /default.002.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
+        test.close();
+        Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
     }
 
     @Test
     void checkTime() {
         UtilFile.removeAllFilesInFolder("LogManager");
         long start = System.currentTimeMillis();
-        FileByteWriter test = new FileByteWriter("default");
+        FileByteWriter test = new FileByteWriter("default4");
         //test.getBroker().getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(9999999);
         test.getBroker().setMaxSizeQueue(9999999);
         long start2 = System.currentTimeMillis();
@@ -150,7 +155,7 @@ class FileByteWriterTest {
         UtilFile.removeAllFilesInFolder("LogManager");
         StatisticSec statisticSec1 = new StatisticSec();
         statisticSec1.getList().add(new Statistic().addField("f1", 1).addTag("t1", "Hello"));
-        FileByteWriter test = new FileByteWriter("default");
+        FileByteWriter test = new FileByteWriter("default5");
         test.append(statisticSec1);
         test.keepAlive(new AtomicBoolean(true));
     }

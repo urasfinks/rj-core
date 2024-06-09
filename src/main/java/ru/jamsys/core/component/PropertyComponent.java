@@ -47,7 +47,7 @@ public class PropertyComponent {
         }
     }
 
-    public void update(Map<String, String> map) {
+    public void setProperty(Map<String, String> map) {
         Set<Subscriber> notify = new HashSet<>();
         if (!map.isEmpty()) {
             for (String key : map.keySet()) {
@@ -64,8 +64,7 @@ public class PropertyComponent {
         }
     }
 
-    public void update(String key, String value) {
-
+    public void setProperty(String key, String value) {
         if (value == null) {
             prop.remove(key);
             if (subscribe.containsKey(key)) {
