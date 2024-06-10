@@ -26,8 +26,11 @@ public class PromiseImpl extends AbstractPromiseBuilder {
 
     @Override
     public void timeOut(String cause) {
-        setError("TimeOut cause: " + cause, getExpiredException(), null);
-        complete();
+        // Timeout может прилетать уже после того, как
+        if (isRun.get()) {
+            setError("TimeOut cause: " + cause, getExpiredException(), null);
+            complete();
+        }
     }
 
     public void complete(@NonNull PromiseTask task, @NonNull Throwable exception) {

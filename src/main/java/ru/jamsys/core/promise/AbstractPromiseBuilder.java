@@ -60,9 +60,7 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
     public Promise run() {
         isRun.set(true);
         complete();
-        if (onError != null) {
-            App.context.getBean(PromiseTaskTime.class).addExpiration(this);
-        }
+        App.context.getBean(PromiseTaskTime.class).addExpiration(this);
         return this;
     }
 

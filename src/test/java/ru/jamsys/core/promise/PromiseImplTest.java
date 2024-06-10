@@ -324,8 +324,10 @@ class PromiseImplTest {
                 .await(2000);
 
         System.out.println(promise.getLog());
-        Assertions.assertFalse(promise.isException());
-        Assertions.assertFalse(promise.isTerminated());
+        //Мы по timeout должны упасть
+        Assertions.assertTrue(promise.isException());
+        // Мы дали 1 секунду время жизни, EXTERNAL_WAIT не финишировал -> сработал timeout
+        Assertions.assertTrue(promise.isTerminated());
 
     }
 
