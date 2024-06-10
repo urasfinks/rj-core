@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.PropertyComponent;
+import ru.jamsys.core.component.manager.ExpirationManager;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
@@ -41,6 +42,7 @@ import java.util.function.Consumer;
 
 //Время срабатывания onExpired = 3 секунды
 
+//TODO: проверить для чего Component и prototype
 @Component
 @Scope("prototype")
 @Getter
@@ -52,7 +54,6 @@ public class Broker<TEO>
         ClassName,
         StatisticsFlush,
         Closable,
-        KeepAlive,
         CheckClassItem,
         LifeCycleInterface,
         AddToList<
@@ -81,11 +82,13 @@ public class Broker<TEO>
 
     final String index;
 
-    private Consumer<TEO> onDrop;
+    private final Consumer<TEO> onDrop;
 
     private final Class<TEO> classItem;
 
     private PropertyComponent propertyComponent;
+
+    private final Expiration<DisposableExpirationMsImmutableEnvelope> expiration;
 
     public Broker(String index, ApplicationContext applicationContext, Class<TEO> classItem, Consumer<TEO> onDrop) {
         this.index = index;
@@ -102,6 +105,13 @@ public class Broker<TEO>
         propertyComponent = applicationContext.getBean(PropertyComponent.class);
         rliQueueSize.set("max", 3000);
         rliTailSize.set("max", 5);
+
+        ExpirationManager expirationManager = applicationContext.getBean(ExpirationManager.class);
+        expiration = expirationManager.get(
+                getClassName(index, applicationContext),
+                DisposableExpirationMsImmutableEnvelope.class,
+                this::onDrop
+        );
     }
 
     public int size() {
@@ -148,8 +158,10 @@ public class Broker<TEO>
             // Он конечно протух не по своей воле, но что делать...
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
             DisposableExpirationMsImmutableEnvelope<TEO> teoDisposableExpirationMsImmutableEnvelope = queue.removeFirst();
-            queueSize.decrementAndGet();
             onDrop(teoDisposableExpirationMsImmutableEnvelope);
+        }
+        if (onDrop != null) {
+            expiration.add((DisposableExpirationMsImmutableEnvelope) convert);
         }
         queue.add(convert);
         queueSize.incrementAndGet();
@@ -174,18 +186,16 @@ public class Broker<TEO>
             if (result == null) {
                 return null;
             }
-            queueSize.decrementAndGet();
             statistic(result);
             if (result.isExpired()) {
                 onDrop(result);
-                Thread.onSpinWait();
                 continue;
             }
             TEO value = result.getValue();
             if (value == null) {
-                Thread.onSpinWait();
                 continue;
             }
+            queueSize.decrementAndGet();
             return result.revert();
         } while (!queue.isEmpty());
         return null;
@@ -196,31 +206,25 @@ public class Broker<TEO>
         if (envelope != null) {
             statistic(envelope);
             queue.remove(envelope);
-            queueSize.decrementAndGet();
             // Делаем так, что бы он больше не достался никому
-            envelope.getValue();
-        }
-    }
-
-    @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
-        UtilRisc.forEach(isThreadRun, queue, (DisposableExpirationMsImmutableEnvelope<TEO> envelope) -> {
-            if (envelope.isExpired()) {
-                queue.remove(envelope);
+            TEO value = envelope.getValue();
+            if (value != null) {
                 queueSize.decrementAndGet();
-                onDrop(envelope);
             }
-        });
+        }
     }
 
     //Обработка выпадающих сообщений
-    public void onDrop(DisposableExpirationMsImmutableEnvelope<TEO> envelope) {
-        if (envelope == null || onDrop == null) {
+    public void onDrop(DisposableExpirationMsImmutableEnvelope envelope) {
+        if (envelope == null) {
             return;
         }
-        TEO value = envelope.getValue();
+        TEO value = (TEO) envelope.getValue();
         if (value != null) {
-            onDrop.accept(value);
+            queueSize.decrementAndGet();
+            if (onDrop != null) {
+                onDrop.accept(value);
+            }
         }
     }
 

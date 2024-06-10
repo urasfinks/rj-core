@@ -34,16 +34,18 @@ class BrokerTest {
 
     @Test
     void testLiner() {
-        Broker<XTest> broker = App.context.getBean(BrokerManager.class).get(XTest.class.getSimpleName(), XTest.class);
+        List<XTest> droped = new ArrayList<>();
+        Broker<XTest> broker = App.context.getBean(BrokerManager.class)
+                .initAndGet(XTest.class.getSimpleName() + "_1", XTest.class, xTest -> {
+                    System.out.println("dropped: " + xTest);
+                    droped.add(xTest);
+                });
         broker.setMaxSizeQueue(10);
         broker.setMaxSizeQueueTail(3);
 
         for (int i = 0; i < 10; i++) {
             broker.add(new XTest(i), 6_000L);
         }
-        List<XTest> droped = new ArrayList<>();
-        broker.setOnDrop(droped::add);
-
         Assertions.assertEquals(10, broker.size(), "#1");
 
         ExpirationMsImmutableEnvelope<XTest> t = broker.pollFirst();
@@ -163,17 +165,15 @@ class BrokerTest {
 
     @Test
     void testExpired() {
-        Broker<XTest> broker = App.context.getBean(BrokerManager.class)
-                .get(XTest.class.getSimpleName(), XTest.class);
         AtomicInteger counter = new AtomicInteger(0);
-        broker.setOnDrop(_ -> counter.incrementAndGet());
+        Broker<XTest> broker = App.context.getBean(BrokerManager.class)
+                .initAndGet(XTest.class.getSimpleName() + "_2", XTest.class, _ -> counter.incrementAndGet());
+
         XTest obj = new XTest(1);
         broker.add(obj, 1_000L);
 
         Assertions.assertEquals(0, counter.get());
-        Util.sleepMs(1001);
-        broker.keepAlive(null);
-        broker.keepAlive(null);
+        Util.sleepMs(2001);
         Assertions.assertEquals(1, counter.get());
     }
 
