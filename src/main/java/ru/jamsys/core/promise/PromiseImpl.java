@@ -48,7 +48,12 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     public void complete() {
         if (isRun.get()) {
             if (isStartLoop.compareAndSet(false, true)) {
-                loop();
+                try{
+                    loop();
+                }catch (Throwable th){
+                    setError("loop", th, null);
+                    complete();
+                }
                 isStartLoop.set(false);
             } else if (!Thread.currentThread().equals(loopThread) && firstConcurrentCompletionWait.compareAndSet(false, true)) {
                 long expiredTimeMs = System.currentTimeMillis() + 5;
