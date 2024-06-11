@@ -26,8 +26,6 @@ public class PromiseTaskTime implements KeepAliveComponent, ClassName {
 
     private final Expiration<PromiseTask> promiseTaskRetry;
 
-    private final Expiration<Promise> promiseTaskExpired;
-
     ConcurrentLinkedDeque<TimeEnvelopeNano<String>> queue = new ConcurrentLinkedDeque<>();
 
     Map<String, Map<String, Object>> statistic = new HashMap<>();
@@ -35,7 +33,6 @@ public class PromiseTaskTime implements KeepAliveComponent, ClassName {
     public PromiseTaskTime(ApplicationContext applicationContext) {
         ExpirationManager expirationManager = applicationContext.getBean(ExpirationManager.class);
         promiseTaskRetry = expirationManager.get("PromiseTaskRetry", PromiseTask.class, this::onPromiseTaskRetry);
-        promiseTaskExpired = expirationManager.get("PromiseTaskExpired", Promise.class, this::onPromiseTaskExpired);
     }
 
     private void onPromiseTaskRetry(DisposableExpirationMsImmutableEnvelope<PromiseTask> env) {
@@ -54,10 +51,6 @@ public class PromiseTaskTime implements KeepAliveComponent, ClassName {
 
     public DisposableExpirationMsImmutableEnvelope<PromiseTask> addRetryDelay(PromiseTask promiseTask) {
         return promiseTaskRetry.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getRetryDelayMs()));
-    }
-
-    public DisposableExpirationMsImmutableEnvelope<Promise> addExpiration(Promise promise) {
-        return promiseTaskExpired.add(new DisposableExpirationMsImmutableEnvelope<>(promise, promise.getKeepAliveOnInactivityMs()));
     }
 
     public TimeEnvelopeNano<String> add(String index) {

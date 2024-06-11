@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.PromiseComponent;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
@@ -16,12 +17,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class PromiseImplTest {
 
+    public static PromiseComponent promiseComponent;
+
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{};
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         App.run(args);
+        promiseComponent = App.context.getBean(PromiseComponent.class);
     }
 
     @AfterAll
@@ -31,14 +35,14 @@ class PromiseImplTest {
 
     @Test
     void test1() {
-        PromiseImpl wf = new PromiseImpl("test", 6_000L);
-        wf
-                .append("test", (_, promise) -> {
+        Promise promise = promiseComponent.get("test", 6_000L); //new PromiseImpl("test", 6_000L);
+        promise
+                .append("test", (_, promise1) -> {
                     Util.sleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H1");
                     ArrayList<PromiseTask> objects = new ArrayList<>();
-                    objects.add(new PromiseTask("test2", wf, PromiseTaskExecuteType.JOIN, (_, _) -> System.out.println(Thread.currentThread().getName() + " EXTRA")));
-                    promise.addToHead(objects);
+                    objects.add(new PromiseTask("test2", promise, PromiseTaskExecuteType.JOIN, (_, _) -> System.out.println(Thread.currentThread().getName() + " EXTRA")));
+                    promise1.addToHead(objects);
                 })
                 .append("test", (_, _) -> {
                     Util.sleepMs(1000);
@@ -56,63 +60,63 @@ class PromiseImplTest {
 
     @Test
     void test2() {
-        PromiseImpl wf = new PromiseImpl("test", 6_000L);
+        Promise promise = promiseComponent.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
             final int x = i;
-            wf.join("test", (_, _) -> deque.add(x));
+            promise.join("test", (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
-        wf.run();
+        promise.run();
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
     }
 
     @Test
     void test3() {
-        PromiseImpl wf = new PromiseImpl("test", 6_000L);
+        Promise promise = promiseComponent.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
 
         for (int i = 0; i < 1000; i++) {
             final int x = i;
-            wf.join("test", (_, _) -> deque.add(x));
+            promise.join("test", (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
-        wf.run().await(1100);
-        System.out.println("test3 isTerminated: " + wf.isTerminated());
-        System.out.println(wf.getLog());
+        promise.run().await(1100);
+        System.out.println("test3 isTerminated: " + promise.isTerminated());
+        System.out.println(promise.getLog());
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
     }
 
     @Test
     void test4() {
-        PromiseImpl wf = new PromiseImpl("test", 6_000L);
+        Promise promise = promiseComponent.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
             final int x = i;
-            wf.then("test", (_, _) -> deque.add(x));
+            promise.then("test", (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
-        wf.run();
+        promise.run();
         Util.sleepMs(1000);
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
     }
 
     @Test
     void test5() {
-        PromiseImpl wf = new PromiseImpl("test", 6_000L);
+        Promise promise = promiseComponent.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 1000; i++) {
             final int x = i;
-            wf.then("test", (_, _) -> deque.add(x));
+            promise.then("test", (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
         //System.out.println("start size: " + wf.getListPendingTasks().size());
-        wf.run();
-        wf.await(5000);
+        promise.run();
+        promise.await(5000);
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
 
     }
@@ -129,11 +133,11 @@ class PromiseImplTest {
 
     @Test
     void test7() {
-        Promise wf = new PromiseImpl("test", 6_000L);
+        Promise promise = promiseComponent.get("test", 6_000L);
         AtomicInteger retry = new AtomicInteger(0);
         AtomicInteger error = new AtomicInteger(0);
         AtomicInteger complete = new AtomicInteger(0);
-        wf
+        promise
                 .append("test", (_, _) -> {
                     retry.incrementAndGet();
                     throw new RuntimeException("Hello world");
@@ -143,7 +147,7 @@ class PromiseImplTest {
                 .onComplete((_, _) -> complete.incrementAndGet())
                 .run()
                 .await(3000);
-        System.out.println(wf.getLog());
+        System.out.println(promise.getLog());
         Assertions.assertEquals(2, retry.get());
         Assertions.assertEquals(1, error.get());
         Assertions.assertEquals(0, complete.get());
@@ -156,8 +160,8 @@ class PromiseImplTest {
         AtomicInteger complete = new AtomicInteger(0);
         AtomicInteger exec = new AtomicInteger(0);
 
-        Promise wf = new PromiseImpl("test", 1_500L);
-        wf
+        Promise promise = promiseComponent.get("test", 1_500L);
+        promise
                 .join("1", (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
@@ -185,8 +189,8 @@ class PromiseImplTest {
         AtomicInteger complete = new AtomicInteger(0);
         AtomicInteger exec = new AtomicInteger(0);
 
-        Promise wf = new PromiseImpl("test", 1_500L);
-        wf
+        Promise promise = promiseComponent.get("test", 1_500L);
+        promise
                 .append("1", (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
@@ -203,7 +207,7 @@ class PromiseImplTest {
                 .onComplete((_, _) -> complete.incrementAndGet())
                 .run()
                 .await(2000);
-        System.out.println(wf.getLog());
+        System.out.println(promise.getLog());
         Assertions.assertEquals(1, error.get());
         Assertions.assertEquals(0, complete.get());
         Assertions.assertEquals(2, exec.get());
@@ -211,8 +215,8 @@ class PromiseImplTest {
 
     @Test
     void toLog() {
-        Promise wf = new PromiseImpl("test", 1_500L);
-        wf
+        Promise promise = promiseComponent.get("test", 1_500L);
+        promise
                 .append("1", (_, _) -> System.out.println(1))
                 .append("2", (_, _) -> System.out.println(2))
                 .then("3", (_, _) -> {
@@ -220,25 +224,25 @@ class PromiseImplTest {
                 })
                 .run()
                 .await(1000);
-        System.out.println(wf.getLog());
+        System.out.println(promise.getLog());
     }
 
     @Test
     void testExternalWait() {
-        Promise wf = new PromiseImpl("Async", 6_000L);
-        PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskExecuteType.EXTERNAL_WAIT);
-        wf.append(promiseTask);
-        wf.run().await(1000);
+        Promise promise = promiseComponent.get("Async", 6_000L);
+        PromiseTask promiseTask = new PromiseTask("test", promise, PromiseTaskExecuteType.EXTERNAL_WAIT);
+        promise.append(promiseTask);
+        promise.run().await(1000);
 
-        Assertions.assertEquals(1, wf.getTrace().size());
-        Assertions.assertEquals(0, wf.getExceptionTrace().size());
-        Assertions.assertFalse(wf.isTerminated());
+        Assertions.assertEquals(1, promise.getTrace().size());
+        Assertions.assertEquals(0, promise.getExceptionTrace().size());
+        Assertions.assertFalse(promise.isTerminated());
 
         promiseTask.externalComplete();
-        Assertions.assertTrue(wf.isTerminated());
-        Assertions.assertEquals(2, wf.getTrace().size());
+        Assertions.assertTrue(promise.isTerminated());
+        Assertions.assertEquals(2, promise.getTrace().size());
 
-        System.out.println(wf.getLog());
+        System.out.println(promise.getLog());
     }
 
     @Test
@@ -250,38 +254,38 @@ class PromiseImplTest {
         // добавил final c + c.incrementAndGet() уже равно не 1 а 2
         // Буду наблюдать дальше
 
-        Promise wf = new PromiseImpl("AsyncNoWait", 6_000L);
-        PromiseTask promiseTask = new PromiseTask("test", wf, PromiseTaskExecuteType.ASYNC_NO_WAIT_IO, (_, _) -> {
+        Promise promise = promiseComponent.get("AsyncNoWait", 6_000L);
+        PromiseTask promiseTask = new PromiseTask("test", promise, PromiseTaskExecuteType.ASYNC_NO_WAIT_IO, (_, _) -> {
             throw new RuntimeException("ERROR");
         });
-        wf.append(promiseTask);
-        wf.run().await(1000);
-        System.out.println(wf.getLog());
+        promise.append(promiseTask);
+        promise.run().await(1000);
+        System.out.println(promise.getLog());
 
-        Assertions.assertTrue(wf.isTerminated());
+        Assertions.assertTrue(promise.isTerminated());
     }
 
     @Test
     void testExpiration() {
-        Promise wf = new PromiseImpl("Expiration", 1_000L);
+        Promise promise = promiseComponent.get("Expiration", 1_000L);
         AtomicInteger counter = new AtomicInteger(0);
-        wf
+        promise
                 .append("longTimeout", (_, _)
                         -> Util.sleepMs(2000)).onError((_, _) -> counter.incrementAndGet())
                 .run().await(2010);
 
-        System.out.println(wf.getLog());
+        System.out.println(promise.getLog());
 
-        Assertions.assertTrue(wf.isTerminated());
-        Assertions.assertTrue(wf.isException());
+        Assertions.assertTrue(promise.isTerminated());
+        Assertions.assertTrue(promise.isException());
         Assertions.assertEquals(1, counter.get());
-        Assertions.assertEquals("TimeOut cause: PromiseTaskTime.onPromiseTaskExpired", wf.getExceptionTrace().getFirst().getIndex());
+        Assertions.assertEquals("TimeOut cause: PromiseComponent.onPromiseTaskExpired", promise.getExceptionTrace().getFirst().getIndex());
 
     }
 
     @SuppressWarnings("unused")
     void promiseTaskWithPool() {
-        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        Promise promise = promiseComponent.get("testPromise", 6_000L);
         promise
                 .appendWithResource("http", HttpResource.class, (_, _, _) -> {
                     //HttpResponseEnvelope execute = httpClientResource.execute(new Http2ClientImpl());
@@ -296,7 +300,7 @@ class PromiseImplTest {
 
     @Test
     void appendBeforeRun() {
-        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        Promise promise = promiseComponent.get("testPromise", 6_000L);
         promise.append("test", (_, promise1)
                 -> promise1.append("hey", (_, _) -> {
         }));
@@ -307,7 +311,7 @@ class PromiseImplTest {
 
     @Test
     void waitBeforeExternalTask() {
-        Promise promise = new PromiseImpl("testPromise", 1_000L);
+        Promise promise = promiseComponent.get("testPromise", 1_000L);
         promise
                 .append("st", (_, promise1) -> {
                     PromiseTask asyncPromiseTask = new PromiseTask(

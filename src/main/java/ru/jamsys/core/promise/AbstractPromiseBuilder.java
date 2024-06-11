@@ -1,8 +1,5 @@
 package ru.jamsys.core.promise;
 
-import ru.jamsys.core.App;
-import ru.jamsys.core.component.PromiseTaskTime;
-
 // В бассейне купаются объекты)
 // Есть очередь смотрящих, которые приходят к бассейну и ждут, когда им на глаза попадётся объект
 // Смотрящий берёт объект на карандаш и пока не надоест смотрит за ним)
@@ -60,7 +57,6 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
     public Promise run() {
         isRun.set(true);
         complete();
-        App.context.getBean(PromiseTaskTime.class).addExpiration(this);
         return this;
     }
 

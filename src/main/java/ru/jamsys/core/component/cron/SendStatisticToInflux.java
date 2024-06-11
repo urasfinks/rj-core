@@ -5,6 +5,7 @@ import com.influxdb.client.write.Point;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.component.PromiseComponent;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ClassName;
@@ -12,7 +13,6 @@ import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
-import ru.jamsys.core.promise.PromiseImpl;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.StatisticSec;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -30,7 +30,10 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
 
     private final String index;
 
-    public SendStatisticToInflux(BrokerManager brokerManager, ApplicationContext applicationContext) {
+    private final PromiseComponent promiseComponent;
+
+    public SendStatisticToInflux(BrokerManager brokerManager, ApplicationContext applicationContext, PromiseComponent promiseComponent) {
+        this.promiseComponent = promiseComponent;
         index = getClassName("cron", applicationContext);
         broker = brokerManager.get(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
@@ -41,12 +44,12 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
     @Override
     public Promise generate() {
         //System.out.println(brokerManagerElement.size());
-        Promise promise = new PromiseImpl(index, 6_000L);
+        Promise promise = promiseComponent.get(index, 6_000L);
         return promise;
     }
 
     public Promise generateOld() {
-        Promise promise = new PromiseImpl(index, 6_000L);
+        Promise promise = promiseComponent.get(index, 6_000L);
         promise.append(getClassName("cron"), (AtomicBoolean isThreadRun, Promise _) -> {
                     List<Point> listPoints = new ArrayList<>();
                     while (!broker.isEmpty() && isThreadRun.get()) {

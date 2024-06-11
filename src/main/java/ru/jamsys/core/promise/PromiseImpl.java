@@ -85,7 +85,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         if (isWait.get()) {
             if (setRunningTasks.isEmpty()) {
                 isWait.set(false);
-                getTrace().add(new TracePromise<>("ResumeWait in loop", null, null, null));
+                getTrace().add(new TracePromise<>("Все запущенные задачи исполнились. Прекращаем сон. (0)", null, null, null));
             } else {
                 return;
             }
@@ -110,12 +110,12 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             if (isWait.get()) {
                 if (setRunningTasks.isEmpty()) {
                     isWait.set(false);
-                    getTrace().add(new TracePromise<>("ResumeWait in while", null, null, null));
+                    getTrace().add(new TracePromise<>("Все запущенные задачи исполнились. Прекращаем сон. (1)", null, null, null));
                 } else {
                     break;
                 }
             }
-            PromiseTask firstTask = listPendingTasks.peekFirst();
+            PromiseTask firstTask = listPendingTasks.pollFirst();
             if (firstTask != null) {
                 switch (firstTask.type) {
                     case WAIT -> {
@@ -128,7 +128,6 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                         firstTask.start();
                     }
                 }
-                listPendingTasks.remove(firstTask);
             } else {
                 setError("listPendingTasks.peekFirst() return null value", null, null);
             }

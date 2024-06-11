@@ -103,8 +103,8 @@ public class Broker<TEO>
         rliTailSize = rateLimit.get(RateLimitName.BROKER_TAIL_SIZE.getName());
 
         propertyComponent = applicationContext.getBean(PropertyComponent.class);
-        rliQueueSize.set("max", 3000);
-        rliTailSize.set("max", 5);
+        rliQueueSize.set(applicationContext, "max", 3000);
+        rliTailSize.set(applicationContext,"max", 5);
 
         ExpirationManager expirationManager = applicationContext.getBean(ExpirationManager.class);
         expiration = expirationManager.get(
@@ -201,7 +201,6 @@ public class Broker<TEO>
         return null;
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void remove(DisposableExpirationMsImmutableEnvelope<TEO> envelope) {
         if (envelope != null) {
             statistic(envelope);

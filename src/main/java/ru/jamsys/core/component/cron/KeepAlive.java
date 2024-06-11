@@ -4,12 +4,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ClassFinderComponent;
+import ru.jamsys.core.component.PromiseComponent;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.flat.template.cron.release.Cron3s;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
-import ru.jamsys.core.promise.PromiseImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,10 @@ public class KeepAlive implements Cron3s, PromiseGenerator, ClassName {
 
     private final String index;
 
-    public KeepAlive(ClassFinderComponent classFinderComponent, ApplicationContext applicationContext) {
+    private final PromiseComponent promiseComponent;
+
+    public KeepAlive(ClassFinderComponent classFinderComponent, ApplicationContext applicationContext, PromiseComponent promiseComponent) {
+        this.promiseComponent = promiseComponent;
         index = getClassName("cron", applicationContext);
         classFinderComponent.findByInstance(KeepAliveComponent.class).forEach((Class<KeepAliveComponent> keepAliveClass)
                 -> list.add(applicationContext.getBean(keepAliveClass)));
@@ -31,7 +34,7 @@ public class KeepAlive implements Cron3s, PromiseGenerator, ClassName {
 
     @Override
     public Promise generate() {
-        return new PromiseImpl(index,6_000L)
+        return promiseComponent.get(index,6_000L)
                 .append(this.getClass().getName(), (AtomicBoolean isThreadRun, Promise _)
                         -> list.forEach((KeepAliveComponent keepAliveComponent)
                         -> keepAliveComponent.keepAlive(isThreadRun)));

@@ -4,9 +4,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.PromiseComponent;
 import ru.jamsys.core.extension.HashMapBuilder;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseImpl;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.resource.notification.android.AndroidNotificationRequest;
 import ru.jamsys.core.resource.notification.android.AndroidNotificationResource;
@@ -22,10 +22,14 @@ import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificati
 import java.util.HashMap;
 
 class NotificationTest {
+
+    public static PromiseComponent promiseComponent;
+
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{};
         App.run(args);
+        promiseComponent = App.context.getBean(PromiseComponent.class);
     }
 
     @AfterAll
@@ -35,7 +39,7 @@ class NotificationTest {
 
     @SuppressWarnings("unused")
     void telegramSend() {
-        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        Promise promise = promiseComponent.get("testPromise", 6_000L);
         promise
                 .appendWithResource("http", TelegramNotificationResource.class, (isThreadRun, _, telegramNotificationResource) -> {
                     HttpResponse execute = telegramNotificationResource.execute(new TelegramNotificationRequest("Привет", "Мир"));
@@ -48,7 +52,7 @@ class NotificationTest {
 
     @SuppressWarnings("unused")
     void appleSend() {
-        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        Promise promise = promiseComponent.get("testPromise", 6_000L);
         promise
                 .appendWithResource("http", AppleNotificationResource.class, (_, _, appleNotificationResource) -> {
                     HashMapBuilder<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 123);
@@ -62,7 +66,7 @@ class NotificationTest {
 
     @SuppressWarnings("unused")
     void yandexTest() {
-        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        Promise promise = promiseComponent.get("testPromise", 6_000L);
         promise
                 .appendWithResource("synthesize", YandexSpeechNotificationResource.class, (_, p1, yandexSpeechNotificationResource) -> {
                     yandexSpeechNotificationResource.execute(new YandexSpeechNotificationRequest(
@@ -80,7 +84,7 @@ class NotificationTest {
 
     @SuppressWarnings("unused")
     void androidTest() {
-        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        Promise promise = promiseComponent.get("testPromise", 6_000L);
         promise
                 .appendWithResource("push", AndroidNotificationResource.class, (atomicBoolean, promise1, androidNotificationResource) -> {
                     HashMap<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 1);
@@ -95,7 +99,7 @@ class NotificationTest {
 
     @SuppressWarnings("unused")
     void emailSend() {
-        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        Promise promise = promiseComponent.get("testPromise", 6_000L);
         promise
                 .appendWithResource("email", EmailNotificationResource.class, (_, _, emailNotificationResource) -> {
                     HashMap<String, String> data = new HashMapBuilder<String, String>().append("code", "999");

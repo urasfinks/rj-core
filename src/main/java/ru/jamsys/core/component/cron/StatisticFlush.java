@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ClassFinderComponent;
 import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.component.PromiseComponent;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ClassName;
@@ -15,7 +16,6 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
-import ru.jamsys.core.promise.PromiseImpl;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.StatisticSec;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -40,12 +40,16 @@ public class StatisticFlush implements Cron1s, PromiseGenerator, ClassName {
 
     private final String index;
 
+    private final PromiseComponent promiseComponent;
+
     public StatisticFlush(
             ClassFinderComponent classFinderComponent,
             ApplicationContext applicationContext,
             BrokerManager broker,
-            ExceptionHandler exceptionHandler
+            ExceptionHandler exceptionHandler,
+            PromiseComponent promiseComponent
     ) {
+        this.promiseComponent = promiseComponent;
         index = getClassName("cron", applicationContext);
         this.broker = broker.get(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
@@ -58,7 +62,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator, ClassName {
 
     @Override
     public Promise generate() {
-        return new PromiseImpl(index, 6_000L)
+        return promiseComponent.get(index, 6_000L)
                 .append(this.getClass().getName(), (AtomicBoolean isThreadRun, Promise _) -> {
                     StatisticSec statisticSec = new StatisticSec();
                     UtilRisc.forEach(isThreadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {

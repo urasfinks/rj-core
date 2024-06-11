@@ -3,18 +3,21 @@ package ru.jamsys.core.resource.jdbc;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.PromiseComponent;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseImpl;
 
 import java.util.List;
 import java.util.Map;
 
 class ConnectionResourceTest {
 
+    static public PromiseComponent promiseComponent;
+
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{};
         App.run(args);
+        promiseComponent = App.context.getBean(PromiseComponent.class);
     }
 
     @AfterAll
@@ -24,7 +27,7 @@ class ConnectionResourceTest {
 
     void promiseTaskWithPool() {
 
-        Promise promise = new PromiseImpl("testPromise", 6_000L);
+        Promise promise = promiseComponent.get("testPromise", 6_000L);
         promise
                 .appendWithResource("jdbc", JdbcResource.class, (_, _, jdbcResource) -> {
                     JdbcRequest jdbcRequest = new JdbcRequest(TestJdbcTemplate.TEST);

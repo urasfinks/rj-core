@@ -203,7 +203,7 @@ class BrokerTest {
         Broker<XTest> broker = App.context.getBean(BrokerManager.class).get(XTest.class.getSimpleName(), XTest.class);
         RateLimitItem rateLimitItem = broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName());
         Assertions.assertEquals(3000, rateLimitItem.get());
-        rateLimitItem.set("max", 3001);
+        rateLimitItem.set(App.context, "max", 3001);
         Assertions.assertEquals(3001, rateLimitItem.get());
     }
 

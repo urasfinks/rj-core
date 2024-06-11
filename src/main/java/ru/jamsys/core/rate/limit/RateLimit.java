@@ -58,7 +58,7 @@ public class RateLimit
     }
 
     public RateLimit init(ApplicationContext applicationContext, String name, RateLimitItemInstance rateLimitItemInstance) {
-        map.computeIfAbsent(name, key -> rateLimitItemInstance.create(applicationContext, getClassName() + "." + index + "." + key));
+        map.computeIfAbsent(name, key -> rateLimitItemInstance.create(applicationContext, getClassName(applicationContext) + "." + index + "." + key));
         return this;
     }
 
