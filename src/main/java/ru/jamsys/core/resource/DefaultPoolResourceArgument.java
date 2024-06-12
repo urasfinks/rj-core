@@ -3,6 +3,7 @@ package ru.jamsys.core.resource;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
+import ru.jamsys.core.resource.filebyte.reader.FileByteReaderResource;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.influx.InfluxResource;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
@@ -27,6 +28,11 @@ public class DefaultPoolResourceArgument<R extends Resource<?, ?, RC>, RC> {
 
     @SuppressWarnings("all")
     public DefaultPoolResourceArgument() {
+        map.put((Class<R>) FileByteReaderResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                FileByteReaderResource.class,
+                new NamespaceResourceConstructor(),
+                _ -> false
+        ));
         map.put((Class<R>) EmailNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
                 EmailNotificationResource.class,
                 new NamespaceResourceConstructor(),
@@ -81,7 +87,11 @@ public class DefaultPoolResourceArgument<R extends Resource<?, ?, RC>, RC> {
     @SuppressWarnings("all")
     public static <R extends Resource<?, ?, ?>> PoolSettings<R, ?> get(Class<R> cls) {
         DefaultPoolResourceArgument bean = App.get(DefaultPoolResourceArgument.class);
-        return bean.getMapValue(cls);
+        PoolSettings mapValue = bean.getMapValue(cls);
+        if (mapValue == null) {
+            throw new RuntimeException("Not found DefaultPoolResourceArgument for: " + cls.getName());
+        }
+        return mapValue;
     }
 
 }
