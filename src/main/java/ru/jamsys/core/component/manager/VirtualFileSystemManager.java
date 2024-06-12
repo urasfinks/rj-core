@@ -28,4 +28,9 @@ public class VirtualFileSystemManager extends AbstractManager<File, Void> implem
         return null;
     }
 
+    @Override
+    public int getInitializationIndex() {
+        return 999;
+    }
+
 }

@@ -1,5 +1,6 @@
 package ru.jamsys.core.resource.google;
 
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertyComponent;
@@ -15,6 +16,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import java.nio.charset.StandardCharsets;
 
 @Component
+@Scope("prototype")
 public class ReCaptchaResource
         extends ExpirationMsMutableImpl
         implements Resource<NamespaceResourceConstructor, String, HttpResponse> {

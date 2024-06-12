@@ -4,6 +4,8 @@ import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.write.Point;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertyComponent;
@@ -18,6 +20,8 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import java.util.List;
 import java.util.Set;
 
+@Component
+@Scope("prototype")
 public class InfluxResource
         extends ExpirationMsMutableImpl
         implements Resource<NamespaceResourceConstructor, List<Point>, Void>, PropertySubscriberNotify {
@@ -50,7 +54,7 @@ public class InfluxResource
     }
 
     @Override
-    public Void execute(List<Point> arguments) throws Throwable {
+    public Void execute(List<Point> arguments) {
         if (writer != null && !arguments.isEmpty()) {
             writer.writePoints(property.getBucket(), property.getOrg(), arguments);
         }

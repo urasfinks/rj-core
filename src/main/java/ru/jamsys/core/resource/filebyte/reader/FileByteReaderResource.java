@@ -1,5 +1,6 @@
 package ru.jamsys.core.resource.filebyte.reader;
 
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Scope("prototype")
 public class FileByteReaderResource
         extends ExpirationMsMutableImpl
         implements Resource<Void, FileByteReaderRequest, List<ByteItem>> {

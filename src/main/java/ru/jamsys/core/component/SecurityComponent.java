@@ -2,7 +2,6 @@ package ru.jamsys.core.component;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.LifeCycleComponent;
@@ -28,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-@Lazy
 public class SecurityComponent extends PropertyConnector implements LifeCycleComponent {
 
     @Setter
@@ -357,6 +355,11 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
     @Override
     public void shutdown() {
         subscriber.unsubscribe();
+    }
+
+    @Override
+    public int getInitializationIndex() {
+        return 0;
     }
 
 }

@@ -1,5 +1,6 @@
 package ru.jamsys.core.resource.notification.telegram;
 
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertyComponent;
@@ -16,6 +17,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Component
+@Scope("prototype")
 public class TelegramNotificationResource
         extends ExpirationMsMutableImpl
         implements Resource<NamespaceResourceConstructor, TelegramNotificationRequest, HttpResponse> {

@@ -12,6 +12,10 @@ import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.StatisticSec;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 @Component
 @Lazy
 public class Core implements LifeCycleInterface {
@@ -32,11 +36,14 @@ public class Core implements LifeCycleInterface {
                 StatisticSec.class,
                 statistic::append
         );
+        List<LifeCycleComponent> sortedList = new ArrayList<>();
         classFinderComponent.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
             if (!ClassFinderComponent.instanceOf(this.getClass(), runnableComponentClass)) {
-                applicationContext.getBean(runnableComponentClass).run();
+                sortedList.add(applicationContext.getBean(runnableComponentClass));
             }
         });
+        sortedList.sort(Comparator.comparingInt(LifeCycleComponent::getInitializationIndex));
+        sortedList.forEach(LifeCycleInterface::run);
     }
 
     @Override

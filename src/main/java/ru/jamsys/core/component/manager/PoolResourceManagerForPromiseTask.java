@@ -41,4 +41,9 @@ public class PoolResourceManagerForPromiseTask<
         return poolResourceForPromiseTask;
     }
 
+    @Override
+    public int getInitializationIndex() {
+        return 997;
+    }
+
 }

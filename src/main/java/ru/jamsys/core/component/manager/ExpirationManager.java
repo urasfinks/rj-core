@@ -30,4 +30,9 @@ public class ExpirationManager extends AbstractManager<Expiration<?>, Consumer<D
         return new Expiration<>(index, classItem, builderArgument);
     }
 
+    @Override
+    public int getInitializationIndex() {
+        return 995;
+    }
+
 }

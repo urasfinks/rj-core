@@ -34,4 +34,8 @@ public class BrokerManager extends AbstractManager<Broker<?>, Consumer<?>> imple
         return new Broker<>(index, applicationContext, classItem, (Consumer) builderArgument);
     }
 
+    @Override
+    public int getInitializationIndex() {
+        return 996;
+    }
 }

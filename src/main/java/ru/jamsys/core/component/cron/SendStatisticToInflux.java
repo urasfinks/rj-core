@@ -13,6 +13,7 @@ import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
+import ru.jamsys.core.resource.influx.InfluxResource;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.StatisticSec;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -43,9 +44,30 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
 
     @Override
     public Promise generate() {
-        //System.out.println(brokerManagerElement.size());
-        Promise promise = promiseComponent.get(index, 6_000L);
-        return promise;
+        return promiseComponent.get(index, 2_000L)
+                .appendWithResource("getInfluxResource", InfluxResource.class, (isThreadRun, _, influxResource) -> {
+                    List<Point> listPoints = new ArrayList<>();
+                    while (!broker.isEmpty() && isThreadRun.get()) {
+                        ExpirationMsImmutableEnvelope<StatisticSec> statisticSec = broker.pollFirst();
+                        if (statisticSec != null) {
+                            List<Statistic> list = statisticSec.getValue().getList();
+                            for (Statistic statistic : list) {
+                                HashMap<String, String> newTags = new HashMap<>(statistic.getTags());
+                                String measurement = newTags.remove("measurement");
+                                listPoints.add(
+                                        Point.measurement(measurement)
+                                                .addTags(newTags)
+                                                .addFields(statistic.getFields())
+                                                .time(statisticSec.getLastActivityMs(), WritePrecision.MS)
+                                );
+                            }
+                        }
+                    }
+                    influxResource.execute(listPoints);
+                }).onError((_, promise) -> {
+                    System.out.println("SORRY INFLUX NOT LOAD");
+                    //System.out.println(promise.getLog());
+                });
     }
 
     public Promise generateOld() {
@@ -78,4 +100,5 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
 //                }));
         return promise;
     }
+
 }

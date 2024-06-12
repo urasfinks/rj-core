@@ -17,4 +17,9 @@ public class FileByteWriterManager extends AbstractManager<FileByteWriter, Void>
         return new FileByteWriter(index);
     }
 
+    @Override
+    public int getInitializationIndex() {
+        return 999;
+    }
+
 }

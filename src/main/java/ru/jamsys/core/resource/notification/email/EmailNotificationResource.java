@@ -2,6 +2,7 @@ package ru.jamsys.core.resource.notification.email;
 
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.HtmlEmail;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.PropertyComponent;
@@ -13,6 +14,7 @@ import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 @Component
+@Scope("prototype")
 public class EmailNotificationResource
         extends ExpirationMsMutableImpl
         implements Resource<NamespaceResourceConstructor, EmailNotificationRequest, Void> {

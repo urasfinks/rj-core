@@ -20,4 +20,9 @@ public class RateLimitManager extends AbstractManager<RateLimit, Void> {
         return new RateLimit(index);
     }
 
+    @Override
+    public int getInitializationIndex() {
+        return 997;
+    }
+
 }

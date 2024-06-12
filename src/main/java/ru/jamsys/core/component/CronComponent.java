@@ -110,4 +110,9 @@ public class CronComponent implements LifeCycleComponent, ClassName {
         thread.interrupt();
     }
 
+    @Override
+    public int getInitializationIndex() {
+        return 998;
+    }
+
 }
