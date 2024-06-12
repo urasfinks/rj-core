@@ -2,7 +2,6 @@ package ru.jamsys.core.flat.template.jdbc;
 
 import lombok.Getter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.flat.template.twix.TemplateItemTwix;
 import ru.jamsys.core.flat.template.twix.TemplateTwix;
 

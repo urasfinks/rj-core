@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.ToString;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.view.FileViewKeyStoreSslContext;
 

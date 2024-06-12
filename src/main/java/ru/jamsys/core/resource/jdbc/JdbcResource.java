@@ -3,7 +3,6 @@ package ru.jamsys.core.resource.jdbc;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;

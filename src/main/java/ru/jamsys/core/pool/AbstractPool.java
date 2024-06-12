@@ -5,7 +5,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;

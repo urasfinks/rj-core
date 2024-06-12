@@ -1,7 +1,6 @@
 package ru.jamsys.core.resource;
 
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.sub.PoolSettings;

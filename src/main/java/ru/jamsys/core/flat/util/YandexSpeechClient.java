@@ -6,7 +6,6 @@ import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.Procedure;
 import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationRequest;
 import speechkit.common.v3.Common;

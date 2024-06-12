@@ -4,7 +4,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PromiseComponent;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;

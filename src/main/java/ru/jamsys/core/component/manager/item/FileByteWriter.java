@@ -4,7 +4,6 @@ import lombok.Getter;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PropertyComponent;
 import ru.jamsys.core.component.manager.BrokerManager;
 import ru.jamsys.core.extension.*;

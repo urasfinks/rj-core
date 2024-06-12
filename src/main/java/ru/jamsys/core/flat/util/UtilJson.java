@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 
 import java.util.List;
 import java.util.Map;

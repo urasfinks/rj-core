@@ -4,7 +4,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 
 import java.io.*;
 import java.net.InetSocketAddress;

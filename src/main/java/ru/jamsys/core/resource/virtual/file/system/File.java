@@ -3,7 +3,6 @@ package ru.jamsys.core.resource.virtual.file.system;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.resource.virtual.file.system.view.FileView;

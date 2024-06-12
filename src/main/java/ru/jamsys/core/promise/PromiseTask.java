@@ -3,7 +3,6 @@ package ru.jamsys.core.promise;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.PromiseComponent;
 import ru.jamsys.core.component.ThreadRealComponent;
 import ru.jamsys.core.component.ThreadVirtualComponent;

@@ -2,7 +2,6 @@ package ru.jamsys.core.resource.thread;
 
 import lombok.Getter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.RateLimitManager;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.flat.util.Util;
