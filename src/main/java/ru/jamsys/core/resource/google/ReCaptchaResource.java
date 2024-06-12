@@ -33,7 +33,7 @@ public class ReCaptchaResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
         subscriber = propertyComponent.getSubscriber(null, property, constructor.ns);
     }
 

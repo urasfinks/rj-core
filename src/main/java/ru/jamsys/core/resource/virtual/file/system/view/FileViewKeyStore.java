@@ -37,7 +37,7 @@ public class FileViewKeyStore implements FileView {
     @Override
     public void set(File file) {
         this.file = file;
-        securityComponent = App.context.getBean(SecurityComponent.class);
+        securityComponent = App.get(SecurityComponent.class);
         typeKeyStorage = file.getProperty(prop.TYPE.name(), String.class, "JCEKS");
         securityKey = file.getProperty(prop.SECURITY_KEY.name(), String.class, file.getAbsolutePath());
         if (file.isProperty(prop.TRUST_MANAGER.name())) {

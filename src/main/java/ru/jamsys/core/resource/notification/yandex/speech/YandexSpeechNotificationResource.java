@@ -30,7 +30,7 @@ public class YandexSpeechNotificationResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
         subscriber = propertyComponent.getSubscriber(this, property, constructor.ns);
     }
 
@@ -45,7 +45,7 @@ public class YandexSpeechNotificationResource
         client = new YandexSpeechClient(
                 property.getHost(),
                 Integer.parseInt(property.getPort()),
-                new String(App.context.getBean(SecurityComponent.class).get(property.getAlias()))
+                new String(App.get(SecurityComponent.class).get(property.getAlias()))
         );
     }
 

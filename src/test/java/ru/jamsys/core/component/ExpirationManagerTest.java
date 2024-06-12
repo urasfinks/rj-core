@@ -42,7 +42,7 @@ class ExpirationManagerTest {
     void testStop() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         AtomicInteger counterExpired = new AtomicInteger(0);
-        Expiration<XItem> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class, _ -> counterExpired.incrementAndGet());
+        Expiration<XItem> test = App.get(ExpirationManager.class).get("test", XItem.class, _ -> counterExpired.incrementAndGet());
 
 
         ExpirationMsImmutableEnvelope<XItem> add = test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
@@ -60,7 +60,7 @@ class ExpirationManagerTest {
     @Test
     void checkSize() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        Expiration<XItem> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class, System.out::println);
+        Expiration<XItem> test = App.get(ExpirationManager.class).get("test", XItem.class, System.out::println);
         test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
 
 
@@ -127,7 +127,7 @@ class ExpirationManagerTest {
 
     Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
         AvgMetric avgMetric = new AvgMetric();
-        final Expiration<XItem> test = App.context.getBean(ExpirationManager.class).get("test", XItem.class, (DisposableExpirationMsImmutableEnvelope<XItem> env) -> {
+        final Expiration<XItem> test = App.get(ExpirationManager.class).get("test", XItem.class, (DisposableExpirationMsImmutableEnvelope<XItem> env) -> {
             if (env.getExpiryRemainingMs() > 0) {
                 Assertions.fail("ALARM");
             } else {

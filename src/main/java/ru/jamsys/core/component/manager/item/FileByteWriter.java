@@ -55,11 +55,11 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
         this.index = index;
 
-        broker = App.context.getBean(BrokerManager.class).initAndGet(index, ByteItem.class, null);
+        broker = App.get(BrokerManager.class).initAndGet(index, ByteItem.class, null);
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
         broker.setMaxSizeQueue(400_000);
-        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
         subscriber = propertyComponent.getSubscriber(null, property, index, false);
 
         restoreIndex();

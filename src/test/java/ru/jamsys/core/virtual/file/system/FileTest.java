@@ -65,7 +65,7 @@ class FileTest {
 
     @Test
     public void testKeyStore() throws Exception {
-        SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
+        SecurityComponent securityComponent = App.get(SecurityComponent.class);
         securityComponent.setPathStorage("unit-test.jks");
         char[] password = "12345".toCharArray();
         securityComponent.loadKeyStorage(password);
@@ -81,7 +81,7 @@ class FileTest {
     @Test
     void testComponent() {
         File file = new File("hello/world/1.txt", FileLoaderFactory.fromString("Hello world", "UTF-8"));
-        VirtualFileSystemManager virtualFileSystemManager = App.context.getBean(VirtualFileSystemManager.class);
+        VirtualFileSystemManager virtualFileSystemManager = App.get(VirtualFileSystemManager.class);
         virtualFileSystemManager.add(file);
         File file1 = virtualFileSystemManager.get("/hello/world/1.txt");
 

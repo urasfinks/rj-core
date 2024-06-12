@@ -14,7 +14,7 @@ public interface RateLimitItem extends StatisticsFlush {
     int get();
 
     default void set(String prop, int value) {
-        App.context.getBean(PropertyComponent.class).setProperty(getNs() + "." + prop, value + "");
+        App.get(PropertyComponent.class).setProperty(getNs() + "." + prop, value + "");
     }
 
     default void set(ApplicationContext applicationContext, String prop, int value) {

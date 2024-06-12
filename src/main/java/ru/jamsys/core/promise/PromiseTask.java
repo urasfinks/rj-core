@@ -84,8 +84,8 @@ public class PromiseTask implements Runnable {
     // execute on another thread
     public void start() {
         switch (type) {
-            case IO, ASYNC_NO_WAIT_IO -> App.context.getBean(ThreadVirtualComponent.class).execute(this);
-            case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.context.getBean(ThreadRealComponent.class).execute(this);
+            case IO, ASYNC_NO_WAIT_IO -> App.get(ThreadVirtualComponent.class).execute(this);
+            case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.get(ThreadRealComponent.class).execute(this);
             case JOIN -> run();
             case EXTERNAL_WAIT ->
                     promise.getTrace().add(new TracePromise<>(getIndex() + ".start", null, type, this.getClass()));
@@ -96,7 +96,7 @@ public class PromiseTask implements Runnable {
     @Override
     public void run() {
         long startTime = System.currentTimeMillis();
-        TimeEnvelopeNano<String> timer = App.context.getBean(PromiseComponent.class).registrationTimer(index);
+        TimeEnvelopeNano<String> timer = App.get(PromiseComponent.class).registrationTimer(index);
         TracePromise<String, TraceTimer> trace = new TracePromise<>(getIndex(), null, type, this.getClass());
         promise.getTrace().add(trace);
         try {
@@ -106,7 +106,7 @@ public class PromiseTask implements Runnable {
             if (retryCount > 0) {
                 retryCount--;
                 promise.getExceptionTrace().add(new TracePromise<>(index, th, type, this.getClass()));
-                App.context.getBean(PromiseComponent.class).addRetryDelay(this);
+                App.get(PromiseComponent.class).addRetryDelay(this);
             } else {
                 switch (type) {
                     case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE ->

@@ -35,7 +35,7 @@ public class InfluxResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) {
-        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
         subscriber = propertyComponent.getSubscriber(this, property, constructor.ns);
     }
 
@@ -47,7 +47,7 @@ public class InfluxResource
         if (client != null) {
             close();
         }
-        SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
+        SecurityComponent securityComponent = App.get(SecurityComponent.class);
         client = InfluxDBClientFactory.create(property.getHost(), securityComponent.get(property.getAlias()));
         writer = client.getWriteApiBlocking();
     }

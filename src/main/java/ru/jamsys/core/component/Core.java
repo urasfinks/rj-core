@@ -21,17 +21,29 @@ import java.util.List;
 public class Core implements LifeCycleInterface {
 
     private final ClassFinderComponent classFinderComponent;
+
     private final ApplicationContext applicationContext;
 
-    public Core(ApplicationContext applicationContext, ClassFinderComponent classFinderComponent) {
+    private final FileByteWriterManager fileByteWriterManager;
+
+    private final BrokerManager brokerManager;
+
+    public Core(
+            ApplicationContext applicationContext,
+            ClassFinderComponent classFinderComponent,
+            FileByteWriterManager fileByteWriterManager,
+            BrokerManager brokerManager
+    ) {
         this.applicationContext = applicationContext;
         this.classFinderComponent = classFinderComponent;
+        this.fileByteWriterManager = fileByteWriterManager;
+        this.brokerManager = brokerManager;
     }
 
     @Override
     public void run() {
-        FileByteWriter statistic = applicationContext.getBean(FileByteWriterManager.class).get("statistic");
-        applicationContext.getBean(BrokerManager.class).initAndGet(
+        FileByteWriter statistic = fileByteWriterManager.get("statistic");
+        brokerManager.initAndGet(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class,
                 statistic::append

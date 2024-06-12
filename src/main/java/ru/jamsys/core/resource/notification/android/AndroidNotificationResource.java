@@ -37,7 +37,7 @@ public class AndroidNotificationResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
         subscriber = propertyComponent.getSubscriber(this, property, constructor.ns);
     }
 

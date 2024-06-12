@@ -38,7 +38,7 @@ public class JdbcResource
 
     @Override
     public void constructor(JdbcResourceConstructor constructor) throws Exception {
-        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
         subscriber = propertyComponent.getSubscriber(this, property, constructor.ns);
         this.statementControl = constructor.getStatementControl();
     }
@@ -52,7 +52,7 @@ public class JdbcResource
             close();
         }
         try {
-            SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
+            SecurityComponent securityComponent = App.get(SecurityComponent.class);
             this.connection = DriverManager.getConnection(
                     property.getUri(),
                     property.getUser(),

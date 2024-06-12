@@ -25,7 +25,7 @@ class PromiseImplTest {
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         App.run(args);
-        promiseComponent = App.context.getBean(PromiseComponent.class);
+        promiseComponent = App.get(PromiseComponent.class);
     }
 
     @AfterAll

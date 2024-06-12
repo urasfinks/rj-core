@@ -80,7 +80,7 @@ public class DefaultPoolResourceArgument<R extends Resource<?, ?, RC>, RC> {
 
     @SuppressWarnings("all")
     public static <R extends Resource<?, ?, ?>> PoolSettings<R, ?> get(Class<R> cls) {
-        DefaultPoolResourceArgument bean = App.context.getBean(DefaultPoolResourceArgument.class);
+        DefaultPoolResourceArgument bean = App.get(DefaultPoolResourceArgument.class);
         return bean.getMapValue(cls);
     }
 

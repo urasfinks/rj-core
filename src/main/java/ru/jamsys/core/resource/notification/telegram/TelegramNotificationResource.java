@@ -30,8 +30,8 @@ public class TelegramNotificationResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
-        securityComponent = App.context.getBean(SecurityComponent.class);
+        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
+        securityComponent = App.get(SecurityComponent.class);
         subscriber = propertyComponent.getSubscriber(null, property, constructor.ns);
     }
 

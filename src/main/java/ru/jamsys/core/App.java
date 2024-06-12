@@ -65,15 +65,16 @@ public class App {
     public static void run(String[] args) {
         if (context == null) {
             context = application.run(args);
-            context.getBean(Core.class).run();
+            get(Core.class).run();
         }
     }
 
     public static void shutdown() {
         if (context != null) {
-            context.getBean(Core.class).shutdown();
+            get(Core.class).shutdown();
             context.close();
             context = null;
+            mapBean.clear();
         }
     }
 

@@ -93,7 +93,7 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
     public AbstractPool(String name, Class<PI> cls) {
         this.name = getClassName(name);
 
-        RateLimitManager rateLimitManager = App.context.getBean(RateLimitManager.class);
+        RateLimitManager rateLimitManager = App.get(RateLimitManager.class);
         rateLimit = rateLimitManager.get(name)
                 .init(App.context, RateLimitName.POOL_SIZE_MAX.getName(), RateLimitItemInstance.MAX)
                 .init(App.context, RateLimitName.POOL_SIZE_MIN.getName(), RateLimitItemInstance.MIN);

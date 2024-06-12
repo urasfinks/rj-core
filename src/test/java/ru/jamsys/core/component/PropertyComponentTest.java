@@ -41,7 +41,7 @@ class PropertyComponentTest {
 
     @Test
     void test() {
-        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
         XX xx = new XX();
         Subscriber subscribe = propertyComponent
                 .getSubscriber(xx, xx)
@@ -143,7 +143,7 @@ class PropertyComponentTest {
 
     @Test
     void testEnum() {
-        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
+        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
         x2 x2 = new x2();
 
         Map<String, String> mapPropValue = x2.getMapPropValue();

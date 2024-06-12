@@ -22,9 +22,13 @@ public class KeepAliveExpirationManager implements Cron1s, PromiseGenerator, Cla
 
     private final String index;
 
-    public KeepAliveExpirationManager(ApplicationContext applicationContext, PromiseComponent promiseComponent) {
+    public KeepAliveExpirationManager(
+            ApplicationContext applicationContext,
+            PromiseComponent promiseComponent,
+            ExpirationManager expirationManager
+    ) {
         this.promiseComponent = promiseComponent;
-        expirationManager = applicationContext.getBean(ExpirationManager.class);
+        this.expirationManager = expirationManager;
         index = getClassName("cron", applicationContext);
     }
 

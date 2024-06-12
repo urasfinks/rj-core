@@ -35,7 +35,7 @@ public class FileLoaderFactory {
 
     public static SupplierThrowing<byte[]> createKeyStore(String path, String securityKey) throws Exception {
         KeyStore ks = KeyStore.getInstance("JCEKS");
-        SecurityComponent securityComponent = App.context.getBean(SecurityComponent.class);
+        SecurityComponent securityComponent = App.get(SecurityComponent.class);
         char[] pass = securityComponent.get(securityKey);
         ks.load(null, pass);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

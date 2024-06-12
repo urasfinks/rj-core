@@ -29,7 +29,7 @@ class NotificationTest {
     static void beforeAll() {
         String[] args = new String[]{};
         App.run(args);
-        promiseComponent = App.context.getBean(PromiseComponent.class);
+        promiseComponent = App.get(PromiseComponent.class);
     }
 
     @AfterAll

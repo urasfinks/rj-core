@@ -36,7 +36,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
         super(index, promise, PromiseTaskExecuteType.IO);
         this.procedure = procedure;
         this.classResource = classResource;
-        PoolResourceManagerForPromiseTask poolResourceManagerForPromiseTask = App.context.getBean(PoolResourceManagerForPromiseTask.class);
+        PoolResourceManagerForPromiseTask poolResourceManagerForPromiseTask = App.get(PoolResourceManagerForPromiseTask.class);
         managerElement = poolResourceManagerForPromiseTask.get(index, DefaultPoolResourceArgument.get(classResource));
     }
 

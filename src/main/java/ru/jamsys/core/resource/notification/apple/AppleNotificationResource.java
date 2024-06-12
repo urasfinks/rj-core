@@ -38,8 +38,8 @@ public class AppleNotificationResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertyComponent propertyComponent = App.context.getBean(PropertyComponent.class);
-        virtualFileSystemManager = App.context.getBean(VirtualFileSystemManager.class);
+        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
+        virtualFileSystemManager = App.get(VirtualFileSystemManager.class);
         subscriber = propertyComponent.getSubscriber(this, property, constructor.ns);
     }
 

@@ -36,12 +36,12 @@ public class PoolResourceForPromiseTask<
         super(name, argument.getClassPoolItem());
         this.argument = argument;
         this.classItem = classItem;
-        broker = App.context.getBean(BrokerManager.class).initAndGet(getName(), PromiseTaskWithResource.class, null);
+        broker = App.get(BrokerManager.class).initAndGet(getName(), PromiseTaskWithResource.class, null);
     }
 
     @Override
     public PI createPoolItem() {
-        PI newPoolItem = App.context.getBean(argument.getClassPoolItem());
+        PI newPoolItem = App.get(argument.getClassPoolItem());
         try {
             newPoolItem.constructor(argument.getResourceConstructor());
             return newPoolItem;
