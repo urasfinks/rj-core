@@ -42,11 +42,11 @@ public class Core implements LifeCycleInterface {
 
     @Override
     public void run() {
-        FileByteWriter statistic = fileByteWriterManager.get("statistic");
+        FileByteWriter fileByteWriter = fileByteWriterManager.get("statistic");
         brokerManager.initAndGet(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class,
-                statistic::append
+                fileByteWriter::append
         );
         List<LifeCycleComponent> sortedList = new ArrayList<>();
         classFinderComponent.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
