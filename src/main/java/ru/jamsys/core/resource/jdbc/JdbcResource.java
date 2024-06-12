@@ -60,7 +60,7 @@ public class JdbcResource
                     new String(securityComponent.get(property.getSecurityAlias()))
             );
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
     }
 
@@ -78,7 +78,7 @@ public class JdbcResource
         try {
             connection.close();
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         subscriber.unsubscribe();
     }

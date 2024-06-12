@@ -74,7 +74,7 @@ public class Util {
             Thread.sleep(ms);
             //TimeUnit.MILLISECONDS.sleep(ms);
         } catch (InterruptedException e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
     }
 
@@ -199,7 +199,7 @@ public class Util {
         try {
             return DATE_FORMAT.format(DATE_FORMAT.parse(date)).equals(date);
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         return false;
     }
@@ -307,7 +307,6 @@ public class Util {
                         + Thread.currentThread().getName() + "] "
                         + "Util.printStackTrace: " + label + "\r\n"
         );
-        //App.context.getBean(ExceptionHandler.class).handler(exception);
         exception.printStackTrace();
     }
 
@@ -343,7 +342,6 @@ public class Util {
             result = socket.getLocalAddress().toString();
             socket.close();
         } catch (Exception e) {
-            // App.context.getBean(ExceptionHandler.class).handler(exception);
             // Нет в этот момент контекста ещё
             e.printStackTrace();
         }
@@ -361,7 +359,7 @@ public class Util {
                 sum += digestByte & 0xFF;
             }
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         int sumReverse = Integer.parseInt(new StringBuilder(sum + "").reverse().toString());
         double result = min + Math.floor(Double.parseDouble("0." + sumReverse) * (max - min + 1));

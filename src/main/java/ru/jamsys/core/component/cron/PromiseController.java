@@ -41,7 +41,7 @@ public class PromiseController implements Cron1s, PromiseGenerator, ClassName {
                     });
 
                     if (count.get() > 0) {
-                        App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Multiple complete: " + count));
+                        App.error(new RuntimeException("Multiple complete: " + count));
                     }
                 });
     }

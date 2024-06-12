@@ -305,7 +305,7 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
                 });
 
             } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
+                App.error(e);
             }
         } else {
             Util.logConsole("file not exist");

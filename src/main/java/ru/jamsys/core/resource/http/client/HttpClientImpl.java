@@ -151,7 +151,7 @@ public class HttpClientImpl implements HttpClient {
 
         } catch (Exception e) {
             exception = e;
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
     }
 

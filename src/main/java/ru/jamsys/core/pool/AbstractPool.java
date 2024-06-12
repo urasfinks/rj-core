@@ -225,7 +225,7 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
             updateParkStatistic();
             addable = true;
         } else {
-            App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Этот код не должен был случиться! Проверить логику!"));
+            App.error(new RuntimeException("Этот код не должен был случиться! Проверить логику!"));
         }
         lockAddToPark.unlock();
         // После разблокировки только начинаем заниматься грязной работой
@@ -242,7 +242,7 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
                 parkQueue.addLast(poolItem);
                 updateParkStatistic();
             } else {
-                App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("Этот код не должен был случиться! Проверить логику!"));
+                App.error(new RuntimeException("Этот код не должен был случиться! Проверить логику!"));
             }
         }
         lockAddToPark.unlock();
@@ -383,7 +383,7 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
                     removeInactive();
                 }
             } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
+                App.error(e);
             }
         }
     }

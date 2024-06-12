@@ -44,7 +44,7 @@ public class UtilJson {
         try {
             return objectMapper.writeValueAsString(object);
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         return def;
     }
@@ -61,7 +61,7 @@ public class UtilJson {
         try {
             return objectMapper.writer(prettyPrinter).writeValueAsString(object);
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         return def;
     }
@@ -74,7 +74,7 @@ public class UtilJson {
             ret.setObject(objectMapper2.readValue(json, t));
         } catch (Exception e) {
             ret.setException(e);
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         return ret;
     }
@@ -87,7 +87,7 @@ public class UtilJson {
             ret.setObject(objectMapper.readValue(json, t));
         } catch (Exception e) {
             ret.setException(e);
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         return ret;
     }
@@ -104,7 +104,7 @@ public class UtilJson {
             }));
         } catch (Exception e) {
             ret.setException(e);
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         return ret;
     }
@@ -117,7 +117,7 @@ public class UtilJson {
             }));
         } catch (Exception e) {
             ret.setException(e);
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         return ret;
     }

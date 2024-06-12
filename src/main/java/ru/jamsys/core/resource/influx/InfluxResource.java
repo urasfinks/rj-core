@@ -67,7 +67,7 @@ public class InfluxResource
         try {
             client.close();
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
     }
 

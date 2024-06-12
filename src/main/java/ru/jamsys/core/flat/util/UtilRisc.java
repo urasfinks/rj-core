@@ -42,7 +42,7 @@ public class UtilRisc {
                                 break;
                             }
                         } catch (Exception e2) {
-                            App.context.getBean(ExceptionHandler.class).handler(e2);
+                            App.error(e2);
                         }
                     } else {
                         break;
@@ -53,7 +53,7 @@ public class UtilRisc {
                     }
                 }
             } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
+                App.error(e);
             }
         }
     }
@@ -79,7 +79,7 @@ public class UtilRisc {
                         try {
                             consumer.accept(value);
                         } catch (Exception e2) {
-                            App.context.getBean(ExceptionHandler.class).handler(e2);
+                            App.error(e2);
                         }
                     } else {
                         break;
@@ -90,7 +90,7 @@ public class UtilRisc {
                     }
                 }
             } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
+                App.error(e);
             }
         }
     }
@@ -109,14 +109,14 @@ public class UtilRisc {
                                 }
                             }
                         } catch (Exception e2) {
-                            App.context.getBean(ExceptionHandler.class).handler(e2);
+                            App.error(e2);
                         }
                     } else {
                         break;
                     }
                 }
             } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
+                App.error(e);
             }
         }
     }
@@ -133,14 +133,14 @@ public class UtilRisc {
                                 consumer.accept(key, value);
                             }
                         } catch (Exception e2) {
-                            App.context.getBean(ExceptionHandler.class).handler(e2);
+                            App.error(e2);
                         }
                     } else {
                         break;
                     }
                 }
             } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
+                App.error(e);
             }
         }
     }

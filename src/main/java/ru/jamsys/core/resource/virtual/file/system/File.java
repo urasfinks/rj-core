@@ -59,7 +59,7 @@ public class File extends ExpirationMsMutableImpl
                 fileView.createCache();
                 return fileView;
             } catch (Throwable th) {
-                App.context.getBean(ExceptionHandler.class).handler(th);
+                App.error(th);
             }
             return null;
         });
@@ -101,7 +101,7 @@ public class File extends ExpirationMsMutableImpl
             }
             active();
         } catch (Throwable th) {
-            App.context.getBean(ExceptionHandler.class).handler(th);
+            App.error(th);
         }
     }
 

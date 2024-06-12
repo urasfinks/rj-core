@@ -35,7 +35,7 @@ public class TemplateJdbc {
             CompiledSqlTemplate compiledSqlTemplate = compile(new HashMap<>());
             return compiledSqlTemplate.getSql();
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         return null;
     }
@@ -118,7 +118,7 @@ public class TemplateJdbc {
                 }
                 sb.append(value == null ? "null" : value);
             } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
+                App.error(e);
             }
         }
         return sb.toString();

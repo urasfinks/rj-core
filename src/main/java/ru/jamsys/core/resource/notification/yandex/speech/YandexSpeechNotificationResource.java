@@ -67,7 +67,7 @@ public class YandexSpeechNotificationResource
         try {
             client.shutdown();
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         subscriber.unsubscribe();
     }

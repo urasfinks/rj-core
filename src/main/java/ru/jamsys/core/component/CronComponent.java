@@ -57,7 +57,7 @@ public class CronComponent implements LifeCycleComponent, ClassName {
                 } catch (InterruptedException ie) {
                     Util.logConsole("STOP");
                 } catch (Exception e) {
-                    App.context.getBean(ExceptionHandler.class).handler(e);
+                    App.error(e);
                 }
             }
         });
@@ -70,7 +70,7 @@ public class CronComponent implements LifeCycleComponent, ClassName {
                 try {
                     cronPromise.getPromiseGenerator().generate().run();
                 } catch (Exception e) {
-                    App.context.getBean(ExceptionHandler.class).handler(e);
+                    App.error(e);
                 }
             }
         });

@@ -55,7 +55,7 @@ public class AndroidNotificationResource
             googleCredentials.refresh();
             this.accessToken = googleCredentials.getAccessToken().getTokenValue();
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
     }
 

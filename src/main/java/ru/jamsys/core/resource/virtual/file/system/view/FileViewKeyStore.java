@@ -56,7 +56,7 @@ public class FileViewKeyStore implements FileView {
                 keyStore.load(stream, pass);
             } catch (Exception e) {
                 keyStore = null;
-                App.context.getBean(ExceptionHandler.class).handler(e);
+                App.error(e);
             }
             if (keyManagers == null) {
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
@@ -64,7 +64,7 @@ public class FileViewKeyStore implements FileView {
                 keyManagers = kmf.getKeyManagers();
             }
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
     }
 

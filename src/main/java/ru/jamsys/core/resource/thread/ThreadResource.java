@@ -67,7 +67,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
                     try {
                         promiseTask.getValue().run();
                     } catch (Exception e) {
-                        App.context.getBean(ExceptionHandler.class).handler(e);
+                        App.error(e);
                     }
                     continue; // Если таска была - перепрыгиваем pause()
                 }
@@ -88,7 +88,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
     }
 
     private void raiseUp(String cause, String action) {
-        App.context.getBean(ExceptionHandler.class).handler(
+        App.error(
                 new RuntimeException("class: " + getClassName()
                         + "; action: " + action
                         + "; cause: " + cause + " \r\n"

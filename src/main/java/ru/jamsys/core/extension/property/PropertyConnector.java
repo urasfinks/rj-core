@@ -33,7 +33,7 @@ public class PropertyConnector {
                 try {
                     mapPropValue.put(prop, (String) field.get(this));
                 } catch (Exception e) {
-                    App.context.getBean(ExceptionHandler.class).handler(e);
+                    App.error(e);
                 }
             }
         }
@@ -46,7 +46,7 @@ public class PropertyConnector {
                 mapPropField.get(prop).set(this, value);
             }
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
     }
 

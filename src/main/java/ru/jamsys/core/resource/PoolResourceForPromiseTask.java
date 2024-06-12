@@ -47,7 +47,7 @@ public class PoolResourceForPromiseTask<
             newPoolItem.constructor(argument.getResourceConstructor());
             return newPoolItem;
         } catch (Throwable e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         return null;
     }

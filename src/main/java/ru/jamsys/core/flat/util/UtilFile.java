@@ -55,7 +55,7 @@ public class UtilFile {
                 remove(path);
             }
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
     }
 
@@ -68,7 +68,7 @@ public class UtilFile {
             try {
                 remove(curPath);
             } catch (IOException e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
+                App.error(e);
             }
         });
 
@@ -125,7 +125,7 @@ public class UtilFile {
             File file2 = new File(pathTo);
             return file.renameTo(file2);
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         return false;
     }

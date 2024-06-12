@@ -103,7 +103,7 @@ public class PromiseTask implements Runnable {
         try {
             executeBlock();
         } catch (Throwable th) {
-            App.context.getBean(ExceptionHandler.class).handler(th);
+            App.error(th);
             if (retryCount > 0) {
                 retryCount--;
                 promise.getExceptionTrace().add(new TracePromise<>(index, th, type, this.getClass()));

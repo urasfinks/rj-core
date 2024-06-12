@@ -7,20 +7,25 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.ContextClosedEvent;
 import ru.jamsys.core.component.Core;
+import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.flat.util.Util;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @PropertySource("global.properties")
 @SpringBootApplication
 public class App {
 
+    private static final Map<Class<?>, Object> mapBean = new ConcurrentHashMap<>();
+
     public static ConfigurableApplicationContext context = null;
 
     public static SpringApplication application = new SpringApplication(App.class);
 
     public static void main(String[] args) {
-        application.addListeners((ApplicationListener<ContextClosedEvent>) event -> {
+        application.addListeners((ApplicationListener<ContextClosedEvent>) _ -> {
             Util.logConsole("App shutdown process...");
 
             AtomicBoolean shutdownFinish = new AtomicBoolean(false);
@@ -46,6 +51,15 @@ public class App {
             }
         });
         run(args);
+    }
+
+    @SuppressWarnings("all")
+    public static  <T> T get(Class<T> cls) {
+        return (T) mapBean.computeIfAbsent(cls, aClass -> App.context.getBean(aClass));
+    }
+
+    public static void error(Throwable th) {
+        get(ExceptionHandler.class).handler(th);
     }
 
     public static void run(String[] args) {

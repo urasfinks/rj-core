@@ -23,7 +23,7 @@ public class FileViewKeyStoreSslContext extends FileViewKeyStore {
                 ssl.init(super.getKeyManagers(), super.getTrustManager().getListTrustManager(), new SecureRandom());
                 return ssl;
             } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
+                App.error(e);
             }
             return null;
         });

@@ -24,7 +24,7 @@ public class FileViewKeyStoreSslSocketFactory extends FileViewKeyStore {
                 ssl.init(super.getKeyManagers(), super.getTrustManager().getListTrustManager(), new SecureRandom());
                 return ssl.getSocketFactory();
             } catch (Exception e) {
-                App.context.getBean(ExceptionHandler.class).handler(e);
+                App.error(e);
             }
             return null;
         });

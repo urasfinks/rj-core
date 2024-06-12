@@ -50,7 +50,7 @@ public class YandexSpeechClient {
             channel.shutdown();
             channel.awaitTermination(5000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
     }
 

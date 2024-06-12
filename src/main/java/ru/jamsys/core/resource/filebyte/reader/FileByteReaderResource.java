@@ -37,7 +37,7 @@ public class FileByteReaderResource
                 result.add(item);
             }
         } catch (Exception e) {
-            App.context.getBean(ExceptionHandler.class).handler(e);
+            App.error(e);
         }
         return result;
     }

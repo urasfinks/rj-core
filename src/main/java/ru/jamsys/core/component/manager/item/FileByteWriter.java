@@ -88,11 +88,11 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                     // файлы с расширение proc.bin должны были переименоваться
                     // Предполагается фатальное завершение прошлого процесса и такие файлы будут выкидываться
                     // (so sorry my bad) Дима Г. наблевавший в номере)
-                    App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("File will be remove: [" + filePath + "] so sorry my bad"));
+                    App.error(new RuntimeException("File will be remove: [" + filePath + "] so sorry my bad"));
                     try {
                         UtilFile.remove(property.getFolder() + filePath);
                     } catch (Exception e) {
-                        App.context.getBean(ExceptionHandler.class).handler(new RuntimeException("So sorry my bad twice"));
+                        App.error(new RuntimeException("So sorry my bad twice"));
                     }
                 } else {
                     // Что угодно может произойти, защищаемся от всего
@@ -169,7 +169,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                             }
                         }
                     } catch (Exception e) {
-                        App.context.getBean(ExceptionHandler.class).handler(e);
+                        App.error(e);
                         break;
                     }
                 }
@@ -177,7 +177,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                 // Предполагаю, что есть проблемы с файлом
                 // Буду пробовать в другой записать
                 genNextFile();
-                App.context.getBean(ExceptionHandler.class).handler(e);
+                App.error(e);
             }
             isRunWrite.set(false);
         }
