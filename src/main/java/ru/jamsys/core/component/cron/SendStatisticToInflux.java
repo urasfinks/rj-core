@@ -101,7 +101,7 @@ public class SendStatisticToInflux extends PropertyConnector implements Cron5s, 
                         }
                     }
                     if (!restore.isEmpty()) {
-                        promise.setProperty("readyFile", ListSort.sort(restore).getFirst());
+                        promise.setProperty("readyFile", getFolder() + ListSort.sort(restore).getFirst());
                     }
                 })
                 .appendWait()
@@ -130,7 +130,7 @@ public class SendStatisticToInflux extends PropertyConnector implements Cron5s, 
                     if (reserve != null && !reserve.isEmpty()) {
                         reserve.forEach(statisticSec -> broker.add(statisticSec, 2_000L));
                     }
-                    System.out.println(promise.getLog());
+                    //System.out.println(promise.getLog());
                 });
     }
 
