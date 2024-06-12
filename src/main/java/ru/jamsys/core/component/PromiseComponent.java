@@ -33,7 +33,7 @@ public class PromiseComponent implements ClassName, KeepAliveComponent {
 
     ConcurrentLinkedDeque<TimeEnvelopeNano<String>> queueTimer = new ConcurrentLinkedDeque<>();
 
-    Map<String, Map<String, Object>> timeStatistic = new HashMap<>();
+    Map<String, Map<String, Object>> timeStatisticNano = new HashMap<>();
 
     public PromiseComponent(BrokerManager brokerManager, ApplicationContext applicationContext, ExpirationManager expirationManager ) {
         this.broker = brokerManager.initAndGet(getClassName(applicationContext), Promise.class, promise
@@ -66,16 +66,17 @@ public class PromiseComponent implements ClassName, KeepAliveComponent {
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        Map<String, AvgMetric> metric = new HashMap<>();
+        Map<String, AvgMetric> mapMetric = new HashMap<>();
         UtilRisc.forEach(isThreadRun, queueTimer, (TimeEnvelopeNano<String> timeEnvelope) -> {
             String index = timeEnvelope.getValue();
-            metric.computeIfAbsent(index, _ -> new AvgMetric())
+            mapMetric.computeIfAbsent(index, _ -> new AvgMetric())
                     .add(timeEnvelope.getOffsetLastActivityNano());
             if (timeEnvelope.isStop()) {
                 queueTimer.remove(timeEnvelope);
             }
         });
-        metric.forEach((String index, AvgMetric metric1) -> timeStatistic.put(index, metric1.flush("")));
+        mapMetric.forEach((String index, AvgMetric metric) -> timeStatisticNano.put(index, metric.flush("")));
+        //System.out.println(UtilJson.toStringPretty(timeStatisticNano, ""));
     }
 
 }

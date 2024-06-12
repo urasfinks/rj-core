@@ -33,7 +33,7 @@ public class ManagerCheckReserved implements Cron1s, PromiseGenerator, ClassName
     @Override
     public Promise generate() {
         return promiseComponent.get(index, 6_000L)
-                .append(this.getClass().getName(), (AtomicBoolean _, Promise _)
+                .append("CheckReserved", (AtomicBoolean _, Promise _)
                         -> list.forEach(AbstractManager::checkReserved));
     }
 }

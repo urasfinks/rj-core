@@ -41,19 +41,6 @@ public class PromiseTask implements Runnable {
     @Setter
     AtomicBoolean isThreadRun = new AtomicBoolean(true);
 
-    public void externalComplete() {
-        if (Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT) {
-            promise.getTrace().add(new TracePromise<>(getIndex() + ".complete", null, type, this.getClass()));
-            promise.complete(this);
-        }
-    }
-
-    public void externalError(Throwable th) {
-        if (Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT) {
-            promise.complete(this, th);
-        }
-    }
-
     public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type) {
         this.index = index;
         this.promise = promise;
@@ -65,6 +52,19 @@ public class PromiseTask implements Runnable {
         this.promise = promise;
         this.type = type;
         this.procedure = procedure;
+    }
+
+    public void externalComplete() {
+        if (Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT) {
+            promise.getTrace().add(new TracePromise<>(getIndex() + ".complete", null, type, this.getClass()));
+            promise.complete(this);
+        }
+    }
+
+    public void externalError(Throwable th) {
+        if (Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT) {
+            promise.complete(this, th);
+        }
     }
 
     public PromiseTask setRetryCount(int count, int delayMs) {

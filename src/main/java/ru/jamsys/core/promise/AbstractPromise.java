@@ -24,9 +24,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractPromise extends ExpirationMsImmutableImpl implements Promise, Correlation {
 
     @JsonProperty
-    @Setter
     @Getter
-    private String index;
+    private final String index;
 
     @Setter
     @Getter
@@ -77,12 +76,14 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     @Getter
     protected Collection<TracePromise<String, TraceTimer>> trace = new ConcurrentLinkedQueue<>();
 
-    public AbstractPromise(long keepAliveOnInactivityMs, long lastActivityMs) {
+    public AbstractPromise(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
         super(keepAliveOnInactivityMs, lastActivityMs);
+        this.index = index;
     }
 
-    public AbstractPromise(long keepAliveOnInactivityMs) {
+    public AbstractPromise(String index, long keepAliveOnInactivityMs) {
         super(keepAliveOnInactivityMs);
+        this.index = index;
     }
 
     @JsonIgnore

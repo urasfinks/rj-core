@@ -21,8 +21,6 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     String getIndex();
 
-    void setIndex(String index);
-
     void complete(@NonNull PromiseTask task, @NonNull Throwable exception);
 
     void complete(@Nullable PromiseTask task);
@@ -39,14 +37,14 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
     Promise onComplete(PromiseTask onComplete);
 
     default Promise onComplete(BiConsumer<AtomicBoolean, Promise> fn) {
-        return onComplete(new PromiseTask("onComplete", this, PromiseTaskExecuteType.JOIN, fn));
+        return onComplete(new PromiseTask(getIndex() + ".onComplete", this, PromiseTaskExecuteType.JOIN, fn));
     }
 
     // Добавление задачи, которая выполнится после фатального завершения цепочки Promise
     Promise onError(PromiseTask onError);
 
     default Promise onError(BiConsumer<AtomicBoolean, Promise> fn) {
-        return onError(new PromiseTask("onError", this, PromiseTaskExecuteType.JOIN, fn));
+        return onError(new PromiseTask(getIndex() + ".onError", this, PromiseTaskExecuteType.JOIN, fn));
     }
 
     // Если в цепочку надо внедрить дополнительные задачи в runTime исполнения
@@ -56,7 +54,7 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     default Promise append(String index, BiConsumer<AtomicBoolean, Promise> fn) {
         //TODO: IO -> COMPUTED
-        return append(new PromiseTask(index, this, PromiseTaskExecuteType.IO, fn));
+        return append(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.IO, fn));
     }
 
     default <T extends Resource<?, ?, ?>> Promise appendWithResource(
@@ -65,7 +63,7 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
             TriConsumer<AtomicBoolean, Promise, T> procedure
     ) {
         return append(new PromiseTaskWithResource<>(
-                index,
+                getIndex() + "." + index,
                 this,
                 procedure,
                 clasResource
@@ -76,11 +74,11 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     default Promise then(String index, BiConsumer<AtomicBoolean, Promise> fn) {
         //TODO: IO -> COMPUTED
-        return then(new PromiseTask(index, this, PromiseTaskExecuteType.IO, fn));
+        return then(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.IO, fn));
     }
 
     default Promise join(String index, BiConsumer<AtomicBoolean, Promise> fn) {
-        return append(new PromiseTask(index, this, PromiseTaskExecuteType.JOIN, fn));
+        return append(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.JOIN, fn));
     }
 
     Promise appendWait();

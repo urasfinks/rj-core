@@ -21,7 +21,6 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
@@ -68,37 +67,6 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
                     System.out.println("SORRY INFLUX NOT LOAD");
                     //System.out.println(promise.getLog());
                 });
-    }
-
-    public Promise generateOld() {
-        Promise promise = promiseComponent.get(index, 6_000L);
-        promise.append(getClassName("cron"), (AtomicBoolean isThreadRun, Promise _) -> {
-                    List<Point> listPoints = new ArrayList<>();
-                    while (!broker.isEmpty() && isThreadRun.get()) {
-                        ExpirationMsImmutableEnvelope<StatisticSec> statisticSec = broker.pollFirst();
-                        if (statisticSec != null) {
-                            List<Statistic> list = statisticSec.getValue().getList();
-                            for (Statistic statistic : list) {
-                                HashMap<String, String> newTags = new HashMap<>(statistic.getTags());
-                                String measurement = newTags.remove("measurement");
-                                listPoints.add(
-                                        Point.measurement(measurement)
-                                                .addTags(newTags)
-                                                .addFields(statistic.getFields())
-                                                .time(statisticSec.getLastActivityMs(), WritePrecision.MS)
-                                );
-                            }
-                        }
-                    }
-                    promise.setProperty("preparePoint", listPoints);
-                })
-                .appendWait();
-//                .api(getClassName("sendToInflux"), new InfluxClientPromise().beforeExecute((InfluxClientPromise influxClientPromise) -> {
-//                    @SuppressWarnings("unchecked")
-//                    List<Point> list = (List<Point>) promise.getProperty("preparePoint", List.class);
-//                    influxClientPromise.getList().addAll(list);
-//                }));
-        return promise;
     }
 
 }

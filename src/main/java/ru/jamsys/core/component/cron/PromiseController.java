@@ -31,7 +31,7 @@ public class PromiseController implements Cron1s, PromiseGenerator, ClassName {
     @Override
     public Promise generate() {
         return promiseComponent.get(index,6_000L)
-                .append(this.getClass().getName(), (AtomicBoolean isThreadRun, Promise _) -> {
+                .append("MultipleComplete", (AtomicBoolean isThreadRun, Promise _) -> {
                     AtomicInteger count = new AtomicInteger(0);
                     UtilRisc.forEach(isThreadRun, PromiseImpl.queueMultipleCompleteSet, promise -> {
                         assert promise != null;

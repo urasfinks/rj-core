@@ -11,12 +11,12 @@ package ru.jamsys.core.promise;
 
 public abstract class AbstractPromiseBuilder extends AbstractPromise {
 
-    public AbstractPromiseBuilder(long keepAliveOnInactivityMs, long lastActivityMs) {
-        super(keepAliveOnInactivityMs, lastActivityMs);
+    public AbstractPromiseBuilder(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
+        super(index, keepAliveOnInactivityMs, lastActivityMs);
     }
 
-    public AbstractPromiseBuilder(long keepAliveOnInactivityMs) {
-        super(keepAliveOnInactivityMs);
+    public AbstractPromiseBuilder(String index, long keepAliveOnInactivityMs) {
+        super(index, keepAliveOnInactivityMs);
     }
 
     public Promise onComplete(PromiseTask onComplete) {

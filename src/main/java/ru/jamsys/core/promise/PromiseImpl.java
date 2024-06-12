@@ -15,13 +15,11 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     private volatile Thread loopThread;
 
     public PromiseImpl(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
-        super(keepAliveOnInactivityMs, lastActivityMs);
-        setIndex(index);
+        super(index, keepAliveOnInactivityMs, lastActivityMs);
     }
 
     public PromiseImpl(String index, long keepAliveOnInactivityMs) {
-        super(keepAliveOnInactivityMs);
-        setIndex(index);
+        super(index, keepAliveOnInactivityMs);
     }
 
     @Override
