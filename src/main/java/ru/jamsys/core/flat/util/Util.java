@@ -64,10 +64,6 @@ public class Util {
         return System.currentTimeMillis() / 1000;
     }
 
-    public static String getApplicationProperties(String key) throws Exception {
-        throw new Exception("Deprecated");
-    }
-
     public static void sleepMs(long ms) {
         try {
             Thread.sleep(ms);
