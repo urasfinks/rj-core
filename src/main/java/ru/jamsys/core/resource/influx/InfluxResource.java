@@ -29,6 +29,8 @@ public class InfluxResource
         extends ExpirationMsMutableImpl
         implements Resource<NamespaceResourceConstructor, List<Point>, Void>, PropertySubscriberNotify {
 
+    //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token ''
+
     private InfluxDBClient client = null;
 
     private WriteApiBlocking writer;

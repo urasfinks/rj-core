@@ -106,15 +106,12 @@ public class SendStatisticToInflux extends PropertyConnector implements Cron5s, 
                 })
                 .appendWait()
                 .appendWithResource("read", FileByteReaderResource.class, (_, promise, fileByteReaderResource) -> {
-                    System.out.println("getOccupancyPercentage(): " + broker.getOccupancyPercentage());
                     if (broker.getOccupancyPercentage() < 50) {
                         String readyFile = promise.getProperty("readyFile", String.class);
-                        System.out.println("readyFile: " + readyFile);
                         if (readyFile != null) {
                             List<ByteItem> execute = fileByteReaderResource.execute(
                                     new FileByteReaderRequest(readyFile, StatisticSec.class)
                             );
-                            System.out.println("restore: " + execute.size());
                             execute.forEach(byteItem -> broker.add((StatisticSec) byteItem, 6_000L));
                             try {
                                 UtilFile.remove(readyFile);
@@ -125,7 +122,6 @@ public class SendStatisticToInflux extends PropertyConnector implements Cron5s, 
                     }
                 })
                 .onError((_, promise) -> {
-                    System.out.println("SORRY INFLUX NOT LOAD");
                     List<StatisticSec> reserve = promise.getProperty("reserve", List.class, null);
                     if (reserve != null && !reserve.isEmpty()) {
                         reserve.forEach(statisticSec -> broker.add(statisticSec, 2_000L));
