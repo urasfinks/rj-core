@@ -2,6 +2,7 @@ package ru.jamsys.core.promise;
 
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
+import ru.jamsys.core.App;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.flat.util.Util;
 
@@ -49,8 +50,13 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 try{
                     loop();
                 }catch (Throwable th){
+                    // Произошла ошибка, её же никто не обработает
                     setError("loop", th, null);
-                    complete();
+                    try {
+                        loop();
+                    } catch (Throwable th2) {
+                        App.error(th2);
+                    }
                 }
                 isStartLoop.set(false);
             } else if (!Thread.currentThread().equals(loopThread) && firstConcurrentCompletionWait.compareAndSet(false, true)) {
@@ -85,7 +91,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     private void loop() {
-        if (isWait.get()) {
+        if (isWait.get() && isNextLoop()) {
             if (setRunningTasks.isEmpty()) {
                 isWait.set(false);
                 getTrace().add(new TracePromise<>("Все запущенные задачи исполнились. Прекращаем сон. (0)", null, null, null));

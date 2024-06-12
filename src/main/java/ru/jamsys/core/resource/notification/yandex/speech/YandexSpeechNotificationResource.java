@@ -63,12 +63,14 @@ public class YandexSpeechNotificationResource
 
     @Override
     public void close() {
+        if (subscriber != null) {
+            subscriber.unsubscribe();
+        }
         try {
             client.shutdown();
         } catch (Exception e) {
             App.error(e);
         }
-        subscriber.unsubscribe();
     }
 
     @Override

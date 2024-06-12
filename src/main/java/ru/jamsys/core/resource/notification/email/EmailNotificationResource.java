@@ -64,7 +64,9 @@ public class EmailNotificationResource
 
     @Override
     public void close() {
-        subscriber.unsubscribe();
+        if (subscriber != null) {
+            subscriber.unsubscribe();
+        }
     }
 
     @Override

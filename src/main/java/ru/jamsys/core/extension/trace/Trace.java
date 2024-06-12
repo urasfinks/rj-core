@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.flat.util.Util;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @JsonPropertyOrder({"index", "timeAdd", "value"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -27,16 +27,9 @@ public class Trace<K, V> {
 
     public Object getValue() {
         if (value != null && value instanceof Throwable) {
-            StackTraceElement[] elements = ((Throwable) value).getStackTrace();
-            List<String> result = new ArrayList<>();
-            result.add(value.getClass().getName() + " " + ((Throwable) value).getMessage());
-            for (StackTraceElement element : elements) {
-                result.add(
-                        "at "
-                                + element.getClassName() + "." + element.getMethodName()
-                                + "(" + element.getFileName() + ":" + element.getLineNumber() + ")");
-            }
-            return result;
+            LineWriterList lineWriterList = new LineWriterList();
+            App.get(ExceptionHandler.class).getTextException((Throwable) value, lineWriterList);
+            return lineWriterList.getResult();
         }
         return value;
     }

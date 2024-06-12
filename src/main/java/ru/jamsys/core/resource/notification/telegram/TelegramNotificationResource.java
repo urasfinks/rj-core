@@ -56,7 +56,9 @@ public class TelegramNotificationResource
 
     @Override
     public void close() {
-        subscriber.unsubscribe();
+        if (subscriber != null) {
+            subscriber.unsubscribe();
+        }
     }
 
     @Override

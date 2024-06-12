@@ -74,12 +74,14 @@ public class JdbcResource
 
     @Override
     public void close() {
+        if (subscriber != null) {
+            subscriber.unsubscribe();
+        }
         try {
             connection.close();
         } catch (Exception e) {
             App.error(e);
         }
-        subscriber.unsubscribe();
     }
 
     @Override

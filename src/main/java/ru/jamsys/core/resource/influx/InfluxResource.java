@@ -1,9 +1,11 @@
 package ru.jamsys.core.resource.influx;
 
+import com.influxdb.LogLevel;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.write.Point;
+import com.influxdb.internal.AbstractRestClient;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
@@ -18,6 +20,8 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Component
 @Scope("prototype")
@@ -49,6 +53,12 @@ public class InfluxResource
         }
         SecurityComponent securityComponent = App.get(SecurityComponent.class);
         client = InfluxDBClientFactory.create(property.getHost(), securityComponent.get(property.getAlias()));
+        client.setLogLevel(LogLevel.NONE);
+        // Как вы поняли) Верхняя строчка не работает
+        Logger.getLogger(AbstractRestClient.class.getName()).setLevel(Level.OFF);
+        if (!client.ping()) {
+            throw new RuntimeException("Ping request wasn't successful");
+        }
         writer = client.getWriteApiBlocking();
     }
 
@@ -62,7 +72,9 @@ public class InfluxResource
 
     @Override
     public void close() {
-        subscriber.unsubscribe();
+        if (subscriber != null) {
+            subscriber.unsubscribe();
+        }
         try {
             client.close();
         } catch (Exception e) {
