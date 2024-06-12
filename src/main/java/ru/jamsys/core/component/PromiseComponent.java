@@ -66,19 +66,16 @@ public class PromiseComponent implements ClassName, KeepAliveComponent {
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        Map<String, AvgMetric> tmp = new HashMap<>();
+        Map<String, AvgMetric> metric = new HashMap<>();
         UtilRisc.forEach(isThreadRun, queueTimer, (TimeEnvelopeNano<String> timeEnvelope) -> {
             String index = timeEnvelope.getValue();
-            // Не конкурентная проверка
-            if (!tmp.containsKey(index)) {
-                tmp.put(index, new AvgMetric());
-            }
-            tmp.get(index).add(timeEnvelope.getOffsetLastActivityNano());
+            metric.computeIfAbsent(index, _ -> new AvgMetric())
+                    .add(timeEnvelope.getOffsetLastActivityNano());
             if (timeEnvelope.isStop()) {
                 queueTimer.remove(timeEnvelope);
             }
         });
-        tmp.forEach((String index, AvgMetric metric) -> timeStatistic.put(index, metric.flush("")));
+        metric.forEach((String index, AvgMetric metric1) -> timeStatistic.put(index, metric1.flush("")));
     }
 
 }

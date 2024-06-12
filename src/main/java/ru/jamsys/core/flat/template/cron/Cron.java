@@ -1,9 +1,9 @@
 package ru.jamsys.core.flat.template.cron;
 
 import lombok.Getter;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.AvgMetricUnit;
-import ru.jamsys.core.flat.util.Util;
 
 import java.util.*;
 
@@ -22,7 +22,7 @@ public class Cron {
     private final Map<Integer, TemplateItemCron> templateMap = new LinkedHashMap<>();
 
     @Getter
-    private final List<TimeVariant> listTimeVariant = new ArrayList<>();
+    private final Set<TimeVariant> listTimeVariant = new LinkedHashSet<>();
 
     private Long next = 0L;
 
@@ -117,6 +117,7 @@ public class Cron {
     }
 
     private void init() {
+
         listTimeVariant.clear();
         List<TimeUnit> listEmptyTimeUnit = new ArrayList<>();
         List<List<Integer>> tmpList = new ArrayList<>();
@@ -145,10 +146,7 @@ public class Cron {
                     timeVariant.set(templateMap.get(5).getTimeUnit(), dayOfWeek);
                     timeVariant.init();
 
-                    // Не конкурентная проверка
-                    if (!listTimeVariant.contains(timeVariant)) {
-                        listTimeVariant.add(timeVariant);
-                    }
+                    listTimeVariant.add(timeVariant);
                 }
         ))))));
 
