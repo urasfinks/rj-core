@@ -44,7 +44,7 @@ public class AvgMetric {
         }
         Map<String, Object> result = new LinkedHashMap<>();
         long count = avg.getCount();
-        result.put(AvgMetricUnit.AVG_COUNT.getNameCache(), avg.getCount());
+        result.put(AvgMetricUnit.SELECTION.getNameCache(), avg.getCount());
         result.put(prefix + AvgMetricUnit.MIN.getNameCache(), count == 0 ? 0 : avg.getMin());
         result.put(prefix + AvgMetricUnit.MAX.getNameCache(), count == 0 ? 0 : avg.getMax());
         result.put(prefix + AvgMetricUnit.SUM.getNameCache(), avg.getSum());
@@ -55,7 +55,7 @@ public class AvgMetric {
     @SuppressWarnings("unused")
     public static Map<String, Object> getEmpty(String prefix) {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put(AvgMetricUnit.AVG_COUNT.getNameCache(), 0);
+        result.put(AvgMetricUnit.SELECTION.getNameCache(), 0);
         result.put(prefix + AvgMetricUnit.MIN.getNameCache(), 0);
         result.put(prefix + AvgMetricUnit.MAX.getNameCache(), 0);
         result.put(prefix + AvgMetricUnit.SUM.getNameCache(), 0);

@@ -6,9 +6,9 @@ import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.Property;
 import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
-import ru.jamsys.core.extension.trace.TraceTimer;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
+import ru.jamsys.core.statistic.timer.Timer;
 
 import java.util.Collection;
 import java.util.List;
@@ -87,7 +87,7 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     List<TracePromise<String, Throwable>> getExceptionTrace();
 
-    Collection<TracePromise<String, TraceTimer>> getTrace();
+    Collection<TracePromise<String, Timer>> getTrace();
 
     String getLog();
 

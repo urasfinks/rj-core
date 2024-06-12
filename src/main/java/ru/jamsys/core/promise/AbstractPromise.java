@@ -8,10 +8,10 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.trace.TracePromise;
-import ru.jamsys.core.extension.trace.TraceTimer;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
+import ru.jamsys.core.statistic.timer.Timer;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -74,7 +74,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     @JsonProperty
     @Getter
-    protected Collection<TracePromise<String, TraceTimer>> trace = new ConcurrentLinkedQueue<>();
+    protected Collection<TracePromise<String, Timer>> trace = new ConcurrentLinkedQueue<>();
 
     public AbstractPromise(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
         super(keepAliveOnInactivityMs, lastActivityMs);

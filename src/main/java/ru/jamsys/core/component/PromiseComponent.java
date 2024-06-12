@@ -1,5 +1,6 @@
 package ru.jamsys.core.component;
 
+import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -14,9 +15,9 @@ import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseImpl;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.statistic.AvgMetric;
-import ru.jamsys.core.statistic.expiration.TimeEnvelopeNano;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.statistic.timer.Timer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,9 +32,12 @@ public class PromiseComponent implements ClassName, KeepAliveComponent {
 
     private final Expiration<PromiseTask> promiseTaskRetry;
 
-    ConcurrentLinkedDeque<TimeEnvelopeNano<String>> queueTimer = new ConcurrentLinkedDeque<>();
+    ConcurrentLinkedDeque<Timer> queueTimerNano = new ConcurrentLinkedDeque<>();
 
     Map<String, Map<String, Object>> timeStatisticNano = new HashMap<>();
+
+    @Getter
+    Map<String, Map<String, Object>> timeStatisticMs = new HashMap<>();
 
     public PromiseComponent(BrokerManager brokerManager, ApplicationContext applicationContext, ExpirationManager expirationManager ) {
         this.broker = brokerManager.initAndGet(getClassName(applicationContext), Promise.class, promise
@@ -42,7 +46,7 @@ public class PromiseComponent implements ClassName, KeepAliveComponent {
     }
 
     public Promise get(String index, long timeout) {
-        PromiseImpl promise = new PromiseImpl(index, timeout);
+        Promise promise = new PromiseImpl(index, timeout);
         broker.add(promise, timeout);
         return promise;
     }
@@ -51,10 +55,10 @@ public class PromiseComponent implements ClassName, KeepAliveComponent {
         promiseTaskRetry.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getRetryDelayMs()));
     }
 
-    public TimeEnvelopeNano<String> registrationTimer(String index) {
-        TimeEnvelopeNano<String> timeEnvelopeMs = new TimeEnvelopeNano<>(index);
-        queueTimer.add(timeEnvelopeMs);
-        return timeEnvelopeMs;
+    public Timer registrationTimer(String index) {
+        Timer timer = new Timer(index);
+        queueTimerNano.add(timer);
+        return timer;
     }
 
     private void onPromiseTaskRetry(DisposableExpirationMsImmutableEnvelope<PromiseTask> env) {
@@ -66,17 +70,19 @@ public class PromiseComponent implements ClassName, KeepAliveComponent {
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        Map<String, AvgMetric> mapMetric = new HashMap<>();
-        UtilRisc.forEach(isThreadRun, queueTimer, (TimeEnvelopeNano<String> timeEnvelope) -> {
-            String index = timeEnvelope.getValue();
-            mapMetric.computeIfAbsent(index, _ -> new AvgMetric())
-                    .add(timeEnvelope.getOffsetLastActivityNano());
+        Map<String, AvgMetric> mapMetricNano = new HashMap<>();
+        Map<String, AvgMetric> mapMetricMs = new HashMap<>();
+        UtilRisc.forEach(isThreadRun, queueTimerNano, (Timer timeEnvelope) -> {
+            String index = timeEnvelope.getIndex();
+            mapMetricNano.computeIfAbsent(index, _ -> new AvgMetric()).add(timeEnvelope.getNano());
+            mapMetricMs.computeIfAbsent(index, _ -> new AvgMetric()).add(timeEnvelope.getMs());
             if (timeEnvelope.isStop()) {
-                queueTimer.remove(timeEnvelope);
+                queueTimerNano.remove(timeEnvelope);
             }
         });
-        mapMetric.forEach((String index, AvgMetric metric) -> timeStatisticNano.put(index, metric.flush("")));
-        //System.out.println(UtilJson.toStringPretty(timeStatisticNano, ""));
+        mapMetricNano.forEach((String index, AvgMetric metric) -> timeStatisticNano.put(index, metric.flush("")));
+        mapMetricMs.forEach((String index, AvgMetric metric) -> timeStatisticMs.put(index, metric.flush("")));
+        //System.out.println(UtilJson.toStringPretty(timeStatisticMs, ""));
     }
 
 }

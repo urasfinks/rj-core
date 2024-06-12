@@ -161,7 +161,7 @@ public class Cron {
                 }
             }
             Map<String, Object> flush = avgMetric.flush("");
-            if ((long) flush.get(AvgMetricUnit.AVG_COUNT.getNameCache()) > 0) {
+            if ((long) flush.get(AvgMetricUnit.SELECTION.getNameCache()) > 0) {
                 if (debug) {
                     System.out.println("Avg min: "
                             + Util.msToDataFormat((Long) flush.get(AvgMetricUnit.MIN.getNameCache()))

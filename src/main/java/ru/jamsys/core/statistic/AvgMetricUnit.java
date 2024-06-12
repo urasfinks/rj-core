@@ -3,14 +3,14 @@ package ru.jamsys.core.statistic;
 import lombok.Getter;
 import ru.jamsys.core.extension.EnumName;
 
+@Getter
 public enum AvgMetricUnit implements EnumName {
-    AVG_COUNT,
+    SELECTION,
     MIN,
     MAX,
     SUM,
     AVG;
 
-    @Getter
     private final String nameCache;
 
     AvgMetricUnit() {

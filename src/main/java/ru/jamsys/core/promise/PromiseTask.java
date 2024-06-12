@@ -7,8 +7,7 @@ import ru.jamsys.core.component.PromiseComponent;
 import ru.jamsys.core.component.ThreadRealComponent;
 import ru.jamsys.core.component.ThreadVirtualComponent;
 import ru.jamsys.core.extension.trace.TracePromise;
-import ru.jamsys.core.extension.trace.TraceTimer;
-import ru.jamsys.core.statistic.expiration.TimeEnvelopeNano;
+import ru.jamsys.core.statistic.timer.Timer;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -95,9 +94,8 @@ public class PromiseTask implements Runnable {
     // execute current thread
     @Override
     public void run() {
-        long startTime = System.currentTimeMillis();
-        TimeEnvelopeNano<String> timer = App.get(PromiseComponent.class).registrationTimer(index);
-        TracePromise<String, TraceTimer> trace = new TracePromise<>(getIndex(), null, type, this.getClass());
+        Timer timer = App.get(PromiseComponent.class).registrationTimer(index);
+        TracePromise<String, Timer> trace = new TracePromise<>(getIndex(), null, type, this.getClass());
         promise.getTrace().add(trace);
         try {
             executeBlock();
@@ -116,7 +114,7 @@ public class PromiseTask implements Runnable {
             }
         }
         timer.stop();
-        trace.setValue(new TraceTimer(startTime, System.currentTimeMillis(), timer.getOffsetLastActivityNano()));
+        trace.setValue(timer);
     }
 
     protected void executeBlock() throws Throwable {

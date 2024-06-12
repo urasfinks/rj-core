@@ -44,7 +44,7 @@ public class SendStatisticToInflux implements Cron5s, PromiseGenerator, ClassNam
     @Override
     public Promise generate() {
         return promiseComponent.get(index, 2_000L)
-                .appendWithResource("getInfluxResource", InfluxResource.class, (isThreadRun, _, influxResource) -> {
+                .appendWithResource("sendToInflux", InfluxResource.class, (isThreadRun, _, influxResource) -> {
                     List<Point> listPoints = new ArrayList<>();
                     while (!broker.isEmpty() && isThreadRun.get()) {
                         ExpirationMsImmutableEnvelope<StatisticSec> statisticSec = broker.pollFirst();

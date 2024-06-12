@@ -1,12 +1,7 @@
-package ru.jamsys.core.statistic.expiration;
+package ru.jamsys.core.statistic.timer.nano;
 
 
-public interface TimeControllerNano {
-
-    // Установить время последней активности
-    default void active() {
-        setLastActivityNano(System.currentTimeMillis());
-    }
+public interface TimerNano {
 
     // Кол-во миллисекунд с момента последней активности до остановки (если конечно она произошла)
     default long getOffsetLastActivityNano(long curTime) {
@@ -41,11 +36,9 @@ public interface TimeControllerNano {
         return getTimeStopNano() != null;
     }
 
-    void setLastActivityNano(long timeNano);
-
     long getLastActivityNano();
 
-    void setTimeStopNano(Long timeMs);
+    void setTimeStopNano(Long timeNano);
 
     Long getTimeStopNano();
 

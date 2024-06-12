@@ -1,11 +1,11 @@
-package ru.jamsys.core.statistic.expiration;
+package ru.jamsys.core.statistic.timer.nano;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class TimeControllerNanoImpl implements TimeControllerNano {
+public class TimerNanoImpl implements TimerNano {
 
     private long lastActivityNano = System.nanoTime(); //Nano time потоко не безопасен + ресурсоёмкий
 
