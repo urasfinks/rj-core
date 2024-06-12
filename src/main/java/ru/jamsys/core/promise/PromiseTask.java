@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.PromiseTaskTime;
+import ru.jamsys.core.component.PromiseComponent;
 import ru.jamsys.core.component.ThreadRealComponent;
 import ru.jamsys.core.component.ThreadVirtualComponent;
 import ru.jamsys.core.extension.trace.TracePromise;
@@ -97,7 +97,7 @@ public class PromiseTask implements Runnable {
     @Override
     public void run() {
         long startTime = System.currentTimeMillis();
-        TimeEnvelopeNano<String> timer = App.context.getBean(PromiseTaskTime.class).add(index);
+        TimeEnvelopeNano<String> timer = App.context.getBean(PromiseComponent.class).registrationTimer(index);
         TracePromise<String, TraceTimer> trace = new TracePromise<>(getIndex(), null, type, this.getClass());
         promise.getTrace().add(trace);
         try {
@@ -107,7 +107,7 @@ public class PromiseTask implements Runnable {
             if (retryCount > 0) {
                 retryCount--;
                 promise.getExceptionTrace().add(new TracePromise<>(index, th, type, this.getClass()));
-                App.context.getBean(PromiseTaskTime.class).addRetryDelay(this);
+                App.context.getBean(PromiseComponent.class).addRetryDelay(this);
             } else {
                 switch (type) {
                     case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE ->
