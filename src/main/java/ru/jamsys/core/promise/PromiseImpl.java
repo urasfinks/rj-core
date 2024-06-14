@@ -1,10 +1,13 @@
 package ru.jamsys.core.promise;
 
 import lombok.NonNull;
+import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.PromiseComponent;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 
 import java.util.List;
 import java.util.Set;
@@ -14,6 +17,9 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     public static Set<Promise> queueMultipleCompleteSet = Util.getConcurrentHashSet();
 
     private volatile Thread loopThread;
+
+    @Setter
+    private DisposableExpirationMsImmutableEnvelope<Promise> registerInBroker;
 
     public PromiseImpl(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
         super(index, keepAliveOnInactivityMs, lastActivityMs);
@@ -145,6 +151,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             if (isException.get()) {
                 isRun.set(false);
                 queueMultipleCompleteSet.remove(this);
+                App.get(PromiseComponent.class).finish(registerInBroker);
                 if (onError != null) {
                     onError.start();
                 }
@@ -156,6 +163,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             ) {
                 isRun.set(false);
                 queueMultipleCompleteSet.remove(this);
+                App.get(PromiseComponent.class).finish(registerInBroker);
                 if (onComplete != null) {
                     onComplete.start();
                 }

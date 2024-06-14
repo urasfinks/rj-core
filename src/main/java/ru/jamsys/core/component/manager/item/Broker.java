@@ -71,6 +71,8 @@ public class Broker<TEO>
     // Я подумал, при деградации хорошо увидеть, что очередь вообще читается
     private final AtomicInteger tpsDequeue = new AtomicInteger(0);
 
+    private final AtomicInteger tpsDrop = new AtomicInteger(0);
+
     private final AvgMetric timeInQueue = new AvgMetric();
 
     @Getter
@@ -140,8 +142,8 @@ public class Broker<TEO>
         return add(new ExpirationMsImmutableEnvelope<>(element, timeOut, curTime));
     }
 
-    public DisposableExpirationMsImmutableEnvelope<TEO> add(TEO element, long timeOut) {
-        return add(new ExpirationMsImmutableEnvelope<>(element, timeOut));
+    public DisposableExpirationMsImmutableEnvelope<TEO> add(TEO element, long timeOutMs) {
+        return add(new ExpirationMsImmutableEnvelope<>(element, timeOutMs));
     }
 
     @Override
@@ -186,7 +188,6 @@ public class Broker<TEO>
             if (result == null) {
                 return null;
             }
-            statistic(result);
             if (result.isExpired()) {
                 onDrop(result);
                 continue;
@@ -195,6 +196,7 @@ public class Broker<TEO>
             if (value == null) {
                 continue;
             }
+            statistic(result);
             queueSize.decrementAndGet();
             return result.revert();
         } while (!queue.isEmpty());
@@ -203,11 +205,10 @@ public class Broker<TEO>
 
     public void remove(DisposableExpirationMsImmutableEnvelope<TEO> envelope) {
         if (envelope != null) {
-            statistic(envelope);
-            queue.remove(envelope);
             // Делаем так, что бы он больше не достался никому
             TEO value = envelope.getValue();
             if (value != null) {
+                statistic(envelope);
                 queueSize.decrementAndGet();
             }
         }
@@ -221,6 +222,7 @@ public class Broker<TEO>
         TEO value = (TEO) envelope.getValue();
         if (value != null) {
             queueSize.decrementAndGet();
+            tpsDrop.incrementAndGet();
             if (onDrop != null) {
                 onDrop.accept(value);
             }
@@ -237,9 +239,11 @@ public class Broker<TEO>
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         List<Statistic> result = new ArrayList<>();
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
+        int tpsDropFlush = tpsDrop.getAndSet(0);
         int sizeFlush = queueSize.get();
         result.add(new Statistic(parentTags, parentFields)
                 .addField("tpsDeq", tpsDequeueFlush)
+                .addField("tpsDrop", tpsDropFlush)
                 .addField("size", sizeFlush)
                 .addFields(timeInQueue.flush("time"))
         );

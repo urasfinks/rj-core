@@ -20,9 +20,7 @@ public class ExceptionHandler {
                 Util.msToDataFormat(System.currentTimeMillis())
                         + " Exception in thread: [" + Thread.currentThread().getName() + "]"
         );
-        System.err.println(
-                getTextException(new RuntimeException(th), lineWriter)
-        );
+        System.err.println(getTextException(th, lineWriter));
     }
 
     public String getTextException(Throwable th, LineWriter sw) {

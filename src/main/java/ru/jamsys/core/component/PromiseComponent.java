@@ -46,9 +46,13 @@ public class PromiseComponent implements ClassName, KeepAliveComponent {
     }
 
     public Promise get(String index, long timeout) {
-        Promise promise = new PromiseImpl(index, timeout);
-        broker.add(promise, timeout);
+        PromiseImpl promise = new PromiseImpl(index, timeout);
+        promise.setRegisterInBroker(broker.add(promise, timeout));
         return promise;
+    }
+
+    public void finish(DisposableExpirationMsImmutableEnvelope<Promise> fin) {
+        broker.remove(fin);
     }
 
     public void addRetryDelay(PromiseTask promiseTask) {

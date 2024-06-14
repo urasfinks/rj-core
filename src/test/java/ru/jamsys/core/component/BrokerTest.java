@@ -134,6 +134,9 @@ class BrokerTest {
         Assertions.assertEquals(obj.hashCode(), cloneQueue.getFirst().hashCode(), "#1");
         broker.remove(o1);
         Assertions.assertEquals(0, broker.size(), "#1");
+        ExpirationMsImmutableEnvelope<XTest> xTestExpirationMsImmutableEnvelope = broker.pollLast();
+        Assertions.assertNull(xTestExpirationMsImmutableEnvelope, "#2");
+        Assertions.assertEquals(0, broker.size(), "#1");
         broker.reset();
     }
 
@@ -213,6 +216,35 @@ class BrokerTest {
         Broker<XTest> broker = App.get(BrokerManager.class).get(XTest.class.getSimpleName(), XTest.class);
         RateLimitItem rateLimitItem = broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName());
         Assertions.assertEquals(11, rateLimitItem.get());
+    }
+
+    @Test
+    void testSpeedRemove() {
+        int selection = 1_000_000;
+        App.get(PropertyComponent.class).setProperty("RateLimit.Broker.XTest.BrokerSize.max", "3000000");
+        Broker<XTest> broker = App.get(BrokerManager.class).get(XTest.class.getSimpleName(), XTest.class);
+        List<DisposableExpirationMsImmutableEnvelope<XTest>> list = new ArrayList<>();
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < selection; i++) {
+            XTest obj = new XTest(i);
+            DisposableExpirationMsImmutableEnvelope<XTest> add = broker.add(obj, 4_000L);
+            list.add(add);
+        }
+        long timeAdd = System.currentTimeMillis() - start;
+        System.out.println("add time: " + timeAdd);
+        Assertions.assertTrue(timeAdd < 200, "#3");
+        start = System.currentTimeMillis();
+        for (int i = 0; i < selection; i++) {
+            broker.remove(list.get(selection - i - 1));
+        }
+        long timeRem = System.currentTimeMillis() - start;
+        System.out.println("remove time: " + timeRem);
+        Assertions.assertTrue(timeRem < 100, "#3");
+        Assertions.assertEquals(0, broker.size(), "#3");
+        start = System.currentTimeMillis();
+        ExpirationMsImmutableEnvelope<XTest> xTestExpirationMsImmutableEnvelope = broker.pollLast();
+        System.out.println("pool time: " + (System.currentTimeMillis() - start));
+        Assertions.assertNull(xTestExpirationMsImmutableEnvelope, "#3");
     }
 
 }
