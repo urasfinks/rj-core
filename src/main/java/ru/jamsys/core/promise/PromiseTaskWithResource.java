@@ -3,12 +3,12 @@ package ru.jamsys.core.promise;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.PoolResourceManagerForPromiseTask;
+import ru.jamsys.core.component.manager.PoolManager;
+import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.pool.PoolItemEnvelope;
-import ru.jamsys.core.resource.DefaultPoolResourceArgument;
-import ru.jamsys.core.resource.PoolResourceForPromiseTask;
+import ru.jamsys.core.resource.Pool;
 import ru.jamsys.core.resource.Resource;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,23 +21,22 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
 
     private final TriConsumer<AtomicBoolean, Promise, T> procedure;
 
-    private final PoolResourceForPromiseTask<?, ?, ?, ?> managerElement;
+    private final Pool<?, ?, ?, ?> managerElement;
 
-    @SuppressWarnings("all")
-    private final Class<T> classResource;
+    private final PoolSettings<T, ?> poolSettings;
 
     @SuppressWarnings("all")
     public PromiseTaskWithResource(
             String index,
             Promise promise,
             TriConsumer<AtomicBoolean, Promise, T> procedure,
-            Class<T> classResource
+            PoolSettings<T, ?> poolSettings
     ) {
         super(index, promise, PromiseTaskExecuteType.IO);
+        this.poolSettings = poolSettings;
         this.procedure = procedure;
-        this.classResource = classResource;
-        PoolResourceManagerForPromiseTask poolResourceManagerForPromiseTask = App.get(PoolResourceManagerForPromiseTask.class);
-        managerElement = poolResourceManagerForPromiseTask.get(index, DefaultPoolResourceArgument.get(classResource));
+        PoolManager poolManager = App.get(PoolManager.class);
+        managerElement = poolManager.get(poolSettings.getIndex(), poolSettings);
     }
 
     // Этот блок вызывается из Promise.loop() и подразумевает запуск ::run из внешнего потока
@@ -45,7 +44,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
     // Пул сам вызовет start с передачей туда ресурса, там то мы и вызовем ::run из внешнего потока
     @Override
     public void start() {
-        getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Subscribe(" + classResource.getSimpleName() + ")", null, null, null));
+        getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Subscribe(" + poolSettings.getIndex() + ")", null, null, null));
         managerElement.addPromiseTaskPool(this);
     }
 
@@ -60,7 +59,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
     // Пул вызывает этот метод
     public void start(PoolItemEnvelope<?, ?, ?, T> poolItem) {
         setPoolItemEnvelope(poolItem);
-        getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Received(" + classResource.getSimpleName() + ")", null, null, null));
+        getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Received(" + poolSettings.getIndex() + ")", null, null, null));
         super.start();
     }
 

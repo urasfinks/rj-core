@@ -1,8 +1,10 @@
 package ru.jamsys.core.resource;
 
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
+import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.resource.filebyte.reader.FileByteReaderResource;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.influx.InfluxResource;
@@ -18,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class DefaultPoolResourceArgument<R extends Resource<?, ?, RC>, RC> {
+public class DefaultPoolResourceArgument<R extends Resource<?, ?, RC>, RC> implements ClassName {
 
     public Map<Class<R>, PoolSettings<R, RC>> map = new HashMap<>();
 
@@ -27,48 +29,57 @@ public class DefaultPoolResourceArgument<R extends Resource<?, ?, RC>, RC> {
     }
 
     @SuppressWarnings("all")
-    public DefaultPoolResourceArgument() {
+    public DefaultPoolResourceArgument(ApplicationContext applicationContext) {
         map.put((Class<R>) FileByteReaderResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                getClassName(FileByteReaderResource.class, null, applicationContext),
                 FileByteReaderResource.class,
                 new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) EmailNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                getClassName(EmailNotificationResource.class, null, applicationContext),
                 EmailNotificationResource.class,
                 new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) AndroidNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                getClassName(AndroidNotificationResource.class, null, applicationContext),
                 AndroidNotificationResource.class,
                 new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) YandexSpeechNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                getClassName(YandexSpeechNotificationResource.class, null, applicationContext),
                 YandexSpeechNotificationResource.class,
                 new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) AppleNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                getClassName(AppleNotificationResource.class, null, applicationContext),
                 AppleNotificationResource.class,
                 new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) TelegramNotificationResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                getClassName(TelegramNotificationResource.class, null, applicationContext),
                 TelegramNotificationResource.class,
                 new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) HttpResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                getClassName(HttpResource.class, null, applicationContext),
                 HttpResource.class,
                 null,
                 _ -> false
         ));
         map.put((Class<R>) InfluxResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                getClassName(InfluxResource.class, null, applicationContext),
                 InfluxResource.class,
                 new NamespaceResourceConstructor(),
                 _ -> false
         ));
         map.put((Class<R>) JdbcResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
+                getClassName(JdbcResource.class, null, applicationContext),
                 JdbcResource.class,
                 new JdbcResourceConstructor(),
                 e -> {

@@ -6,6 +6,7 @@ import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.Property;
 import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
+import ru.jamsys.core.resource.DefaultPoolResourceArgument;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
 import ru.jamsys.core.statistic.timer.Timer;
@@ -59,14 +60,14 @@ public interface Promise extends Property<String>, ExpirationMsImmutable, Correl
 
     default <T extends Resource<?, ?, ?>> Promise appendWithResource(
             String index,
-            Class<T> clasResource,
+            Class<T> classResource,
             TriConsumer<AtomicBoolean, Promise, T> procedure
     ) {
         return append(new PromiseTaskWithResource<>(
                 getIndex() + "." + index,
                 this,
                 procedure,
-                clasResource
+                DefaultPoolResourceArgument.get(classResource)
         ));
     }
 

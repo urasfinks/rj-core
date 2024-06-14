@@ -16,7 +16,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 // В потоке исполнения задачи - совершается действие с освободившимся объектом и на вход подаётся результат
 // Аргументы для действия над ресурсом задаются либо при инициализации задачи, либо непосредственно перед запуском
 
-public class PoolResourceForPromiseTask<
+public class Pool<
         RC,
         RA,
         RR,
@@ -25,25 +25,25 @@ public class PoolResourceForPromiseTask<
         extends AbstractPool<RC, RA, RR, PI>
         implements Closable, CheckClassItem {
 
-    private final PoolSettings<PI, RC> argument;
+    private final PoolSettings<PI, RC> poolSettings;
 
     @SuppressWarnings("all")
     final private Broker<PromiseTaskWithResource> broker;
 
     private final Class<PI> classItem;
 
-    public PoolResourceForPromiseTask(String name, PoolSettings<PI, RC> argument, Class<PI> classItem) {
-        super(name, argument.getClassPoolItem());
-        this.argument = argument;
+    public Pool(String name, PoolSettings<PI, RC> poolSettings, Class<PI> classItem) {
+        super(name, poolSettings.getClassPoolItem());
+        this.poolSettings = poolSettings;
         this.classItem = classItem;
         broker = App.get(BrokerManager.class).initAndGet(getName(), PromiseTaskWithResource.class, null);
     }
 
     @Override
     public PI createPoolItem() {
-        PI newPoolItem = App.get(argument.getClassPoolItem());
+        PI newPoolItem = App.get(poolSettings.getClassPoolItem());
         try {
-            newPoolItem.constructor(argument.getResourceConstructor());
+            newPoolItem.constructor(poolSettings.getResourceConstructor());
             return newPoolItem;
         } catch (Throwable e) {
             App.error(e);
@@ -58,7 +58,7 @@ public class PoolResourceForPromiseTask<
 
     @Override
     public boolean checkCriticalOfExceptionOnComplete(Exception e) {
-        return argument.getCheckExceptionOnComplete().apply(e);
+        return poolSettings.getCheckExceptionOnComplete().apply(e);
     }
 
     @Override
