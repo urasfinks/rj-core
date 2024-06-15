@@ -2,8 +2,8 @@ package ru.jamsys.core.resource.notification.apple;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PropertyComponent;
-import ru.jamsys.core.component.manager.VirtualFileSystemManager;
+import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.component.manager.ManagerVirtualFileSystem;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -30,7 +30,7 @@ public class AppleNotificationResource
         Resource<NamespaceResourceConstructor, AppleNotificationRequest, HttpResponse>,
         PropertySubscriberNotify {
 
-    private VirtualFileSystemManager virtualFileSystemManager;
+    private ManagerVirtualFileSystem managerVirtualFileSystem;
 
     private Subscriber subscriber;
 
@@ -38,9 +38,9 @@ public class AppleNotificationResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
-        virtualFileSystemManager = App.get(VirtualFileSystemManager.class);
-        subscriber = propertyComponent.getSubscriber(this, property, constructor.ns);
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
+        managerVirtualFileSystem = App.get(ManagerVirtualFileSystem.class);
+        subscriber = serviceProperty.getSubscriber(this, property, constructor.ns);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class AppleNotificationResource
         if (property.getVirtualPath() == null || property.getStorage() == null) {
             return;
         }
-        virtualFileSystemManager.add(
+        managerVirtualFileSystem.add(
                 new File(property.getVirtualPath(), FileLoaderFactory.fromFileSystem(property.getStorage()))
         );
     }
@@ -77,7 +77,7 @@ public class AppleNotificationResource
         httpClient.setRequestHeader("apns-topic", property.getTopic());
 
         httpClient.setKeyStore(
-                virtualFileSystemManager.get(property.getVirtualPath()),
+                managerVirtualFileSystem.get(property.getVirtualPath()),
                 FileViewKeyStore.prop.SECURITY_KEY.name(), property.getSecurityAlias(),
             FileViewKeyStore.prop.TYPE.name(), "PKCS12"
         );

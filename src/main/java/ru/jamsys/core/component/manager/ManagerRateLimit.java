@@ -5,9 +5,9 @@ import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.rate.limit.RateLimit;
 
 @Component
-public class RateLimitManager extends AbstractManager<RateLimit, Void> {
+public class ManagerRateLimit extends AbstractManager<RateLimit, Void> {
 
-    public RateLimitManager() {
+    public ManagerRateLimit() {
         setCleanableMap(false);
     }
 

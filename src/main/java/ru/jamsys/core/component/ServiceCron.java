@@ -16,21 +16,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// S - Service
 @Component
 @Lazy
-public class CronComponent implements LifeCycleComponent, ClassName {
+public class ServiceCron implements LifeCycleComponent, ClassName {
 
     final private Thread thread;
     final private List<CronPromise> listItem = new ArrayList<>();
     final private AtomicBoolean isWhile = new AtomicBoolean(true);
 
     @SuppressWarnings("all")
-    public CronComponent(
+    public ServiceCron(
             ExceptionHandler exceptionHandler,
-            ClassFinderComponent classFinderComponent,
+            ServiceClassFinder serviceClassFinder,
             ApplicationContext applicationContext
     ) {
-        initList(classFinderComponent, applicationContext, exceptionHandler);
+        initList(serviceClassFinder, applicationContext, exceptionHandler);
         thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -77,16 +78,19 @@ public class CronComponent implements LifeCycleComponent, ClassName {
     }
 
     private void initList(
-            ClassFinderComponent classFinderComponent,
+            ServiceClassFinder serviceClassFinder,
             ApplicationContext applicationContext,
             ExceptionHandler exceptionHandler
     ) {
-        classFinderComponent.findByInstance(CronTemplate.class).forEach((Class<CronTemplate> statisticsCollectorClass) -> {
-            CronTemplate cronTemplate = applicationContext.getBean(statisticsCollectorClass);
-            if (cronTemplate instanceof PromiseGenerator) {
-                listItem.add(
-                        new CronPromise(new Cron(cronTemplate.getCronTemplate()), (PromiseGenerator) cronTemplate)
+        String className = getClassName(applicationContext);
+        serviceClassFinder.findByInstance(CronTemplate.class).forEach((Class<CronTemplate> cronTemplateClass) -> {
+            CronTemplate cronTemplate = applicationContext.getBean(cronTemplateClass);
+            if (cronTemplate instanceof PromiseGenerator promiseGenerator) {
+                promiseGenerator.setIndex(
+                        className + "." +
+                                getClassName(promiseGenerator.getClass(), null, applicationContext)
                 );
+                listItem.add(new CronPromise(new Cron(cronTemplate.getCronTemplate()), promiseGenerator));
             } else {
                 exceptionHandler.handler(new RuntimeException(
                         "CronTemplate class: "

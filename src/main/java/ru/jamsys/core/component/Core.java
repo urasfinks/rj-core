@@ -3,8 +3,8 @@ package ru.jamsys.core.component;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.manager.BrokerManager;
-import ru.jamsys.core.component.manager.FileByteWriterManager;
+import ru.jamsys.core.component.manager.ManagerBroker;
+import ru.jamsys.core.component.manager.ManagerFileByteWriter;
 import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.LifeCycleComponent;
@@ -20,37 +20,37 @@ import java.util.List;
 @Lazy
 public class Core implements LifeCycleInterface {
 
-    private final ClassFinderComponent classFinderComponent;
+    private final ServiceClassFinder serviceClassFinder;
 
     private final ApplicationContext applicationContext;
 
-    private final FileByteWriterManager fileByteWriterManager;
+    private final ManagerFileByteWriter managerFileByteWriter;
 
-    private final BrokerManager brokerManager;
+    private final ManagerBroker managerBroker;
 
     public Core(
             ApplicationContext applicationContext,
-            ClassFinderComponent classFinderComponent,
-            FileByteWriterManager fileByteWriterManager,
-            BrokerManager brokerManager
+            ServiceClassFinder serviceClassFinder,
+            ManagerFileByteWriter managerFileByteWriter,
+            ManagerBroker managerBroker
     ) {
         this.applicationContext = applicationContext;
-        this.classFinderComponent = classFinderComponent;
-        this.fileByteWriterManager = fileByteWriterManager;
-        this.brokerManager = brokerManager;
+        this.serviceClassFinder = serviceClassFinder;
+        this.managerFileByteWriter = managerFileByteWriter;
+        this.managerBroker = managerBroker;
     }
 
     @Override
     public void run() {
-        FileByteWriter fileByteWriter = fileByteWriterManager.get("statistic");
-        brokerManager.initAndGet(
+        FileByteWriter fileByteWriter = managerFileByteWriter.get("statistic");
+        managerBroker.initAndGet(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class,
                 fileByteWriter::append
         );
         List<LifeCycleComponent> sortedList = new ArrayList<>();
-        classFinderComponent.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
-            if (!ClassFinderComponent.instanceOf(this.getClass(), runnableComponentClass)) {
+        serviceClassFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
+            if (!serviceClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
                 sortedList.add(applicationContext.getBean(runnableComponentClass));
             }
         });
@@ -60,8 +60,8 @@ public class Core implements LifeCycleInterface {
 
     @Override
     public void shutdown() {
-        classFinderComponent.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
-            if (!ClassFinderComponent.instanceOf(this.getClass(), runnableComponentClass)) {
+        serviceClassFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
+            if (!serviceClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
                 LifeCycleComponent bean = applicationContext.getBean(runnableComponentClass);
                 Util.logConsole(bean.getClass().getName());
                 bean.shutdown();

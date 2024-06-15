@@ -3,7 +3,7 @@ package ru.jamsys.core.resource.google;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PropertyComponent;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
@@ -33,8 +33,8 @@ public class ReCaptchaResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
-        subscriber = propertyComponent.getSubscriber(null, property, constructor.ns);
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
+        subscriber = serviceProperty.getSubscriber(null, property, constructor.ns);
     }
 
     @Override

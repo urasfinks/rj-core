@@ -3,7 +3,7 @@ package ru.jamsys.core.promise;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.PoolTaskManager;
+import ru.jamsys.core.component.manager.ManagerPoolTask;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
@@ -35,8 +35,8 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
         super(index, promise, PromiseTaskExecuteType.IO);
         this.poolSettings = poolSettings;
         this.procedure = procedure;
-        PoolTaskManager poolTaskManager = App.get(PoolTaskManager.class);
-        managerElement = poolTaskManager.get(poolSettings.getIndex(), poolSettings);
+        ManagerPoolTask managerPoolTask = App.get(ManagerPoolTask.class);
+        managerElement = managerPoolTask.get(poolSettings.getIndex(), poolSettings);
     }
 
     // Этот блок вызывается из Promise.loop() и подразумевает запуск ::run из внешнего потока

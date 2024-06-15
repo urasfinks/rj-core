@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.ExpirationManager;
+import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.flat.util.ExpirationKeepAliveResult;
 import ru.jamsys.core.flat.util.Util;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class ExpirationManagerTest {
+class ExpirationHelperTest {
     AtomicBoolean isThreadRun = new AtomicBoolean(true);
 
     @BeforeAll
@@ -42,7 +42,7 @@ class ExpirationManagerTest {
     void testStop() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         AtomicInteger counterExpired = new AtomicInteger(0);
-        Expiration<XItem> test = App.get(ExpirationManager.class).get("test", XItem.class, _ -> counterExpired.incrementAndGet());
+        Expiration<XItem> test = App.get(ManagerExpiration.class).get("test", XItem.class, _ -> counterExpired.incrementAndGet());
 
 
         ExpirationMsImmutableEnvelope<XItem> add = test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
@@ -60,7 +60,7 @@ class ExpirationManagerTest {
     @Test
     void checkSize() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        Expiration<XItem> test = App.get(ExpirationManager.class).get("test", XItem.class, System.out::println);
+        Expiration<XItem> test = App.get(ManagerExpiration.class).get("test", XItem.class, System.out::println);
         test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
 
 
@@ -127,7 +127,7 @@ class ExpirationManagerTest {
 
     Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
         AvgMetric avgMetric = new AvgMetric();
-        final Expiration<XItem> test = App.get(ExpirationManager.class).get("test", XItem.class, (DisposableExpirationMsImmutableEnvelope<XItem> env) -> {
+        final Expiration<XItem> test = App.get(ManagerExpiration.class).get("test", XItem.class, (DisposableExpirationMsImmutableEnvelope<XItem> env) -> {
             if (env.getExpiryRemainingMs() > 0) {
                 Assertions.fail("ALARM");
             } else {

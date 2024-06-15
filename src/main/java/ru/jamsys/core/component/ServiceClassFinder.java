@@ -12,7 +12,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 @Component
-public class ClassFinderComponent {
+public class ServiceClassFinder {
 
     private final List<Class<?>> availableClass;
 
@@ -22,7 +22,7 @@ public class ClassFinderComponent {
 
     private final ExceptionHandler exceptionHandler;
 
-    public ClassFinderComponent(ExceptionHandler exceptionHandler) {
+    public ServiceClassFinder(ExceptionHandler exceptionHandler) {
         this.exceptionHandler = exceptionHandler;
         @SuppressWarnings("SameParameterValue")
         String pkg = "ru.jamsys";

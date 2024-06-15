@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 
 @Component
-public class ThreadVirtualComponent implements Resource<Void, PromiseTask, Void> {
+public class ServiceThreadVirtual implements Resource<Void, PromiseTask, Void> {
 
     private final ExecutorService executorService = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("v-thread-", 0).factory());
 

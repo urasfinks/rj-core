@@ -1,7 +1,7 @@
 package ru.jamsys.core.extension.property;
 
 import lombok.Getter;
-import ru.jamsys.core.component.PropertyComponent;
+import ru.jamsys.core.component.ServiceProperty;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -12,7 +12,7 @@ public class Subscriber {
 
     private final PropertySubscriberNotify subscriber;
 
-    private final PropertyComponent component;
+    private final ServiceProperty component;
 
     private final Set<String> subscriptions = new HashSet<>();
 
@@ -20,7 +20,7 @@ public class Subscriber {
 
     private final String ns;
 
-    public Subscriber(PropertySubscriberNotify subscriber, PropertyComponent component, PropertyConnector propertyConnector, String ns) {
+    public Subscriber(PropertySubscriberNotify subscriber, ServiceProperty component, PropertyConnector propertyConnector, String ns) {
         this.subscriber = subscriber;
         this.component = component;
         this.propertyConnector = propertyConnector;
@@ -28,7 +28,7 @@ public class Subscriber {
         init(true);
     }
 
-    public Subscriber(PropertySubscriberNotify subscriber, PropertyComponent component, PropertyConnector propertyConnector, String ns, boolean require) {
+    public Subscriber(PropertySubscriberNotify subscriber, ServiceProperty component, PropertyConnector propertyConnector, String ns, boolean require) {
         this.subscriber = subscriber;
         this.component = component;
         this.propertyConnector = propertyConnector;

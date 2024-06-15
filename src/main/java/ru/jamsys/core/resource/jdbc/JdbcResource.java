@@ -3,7 +3,7 @@ package ru.jamsys.core.resource.jdbc;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PropertyComponent;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
@@ -38,8 +38,8 @@ public class JdbcResource
 
     @Override
     public void constructor(JdbcResourceConstructor constructor) throws Exception {
-        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
-        subscriber = propertyComponent.getSubscriber(this, property, constructor.ns);
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
+        subscriber = serviceProperty.getSubscriber(this, property, constructor.ns);
         this.statementControl = constructor.getStatementControl();
     }
 

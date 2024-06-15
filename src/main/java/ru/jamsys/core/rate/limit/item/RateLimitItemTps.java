@@ -3,7 +3,7 @@ package ru.jamsys.core.rate.limit.item;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.component.PropertyComponent;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertyConnector;
 import ru.jamsys.core.extension.property.PropertyName;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
@@ -34,7 +34,7 @@ public class RateLimitItemTps extends PropertyConnector implements RateLimitItem
 
     public RateLimitItemTps(ApplicationContext applicationContext, String ns) {
         this.ns = ns;
-        subscriber = applicationContext.getBean(PropertyComponent.class).getSubscriber(
+        subscriber = applicationContext.getBean(ServiceProperty.class).getSubscriber(
                 this,
                 this,
                 ns,

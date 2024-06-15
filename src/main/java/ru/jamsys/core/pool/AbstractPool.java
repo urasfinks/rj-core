@@ -5,7 +5,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.RateLimitManager;
+import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.KeepAlive;
@@ -93,14 +93,14 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
     public AbstractPool(String name, Class<PI> cls) {
         this.name = getClassName(name);
 
-        RateLimitManager rateLimitManager = App.get(RateLimitManager.class);
-        rateLimit = rateLimitManager.get(name)
+        ManagerRateLimit managerRateLimit = App.get(ManagerRateLimit.class);
+        rateLimit = managerRateLimit.get(name)
                 .init(App.context, RateLimitName.POOL_SIZE_MAX.getName(), RateLimitItemInstance.MAX)
                 .init(App.context, RateLimitName.POOL_SIZE_MIN.getName(), RateLimitItemInstance.MIN);
         rliPoolSizeMax = rateLimit.get(RateLimitName.POOL_SIZE_MAX.getName());
         rliPoolSizeMin = rateLimit.get(RateLimitName.POOL_SIZE_MIN.getName());
 
-        rateLimitPoolItem = rateLimitManager.get(ClassNameImpl.getClassNameStatic(cls, name));
+        rateLimitPoolItem = managerRateLimit.get(ClassNameImpl.getClassNameStatic(cls, name));
     }
 
     public void setDynamicPollSize(boolean dynamic) {

@@ -1,9 +1,10 @@
 package ru.jamsys.core.component.cron;
 
+import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.ClassFinderComponent;
-import ru.jamsys.core.component.PromiseComponent;
+import ru.jamsys.core.component.ServiceClassFinder;
+import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
@@ -15,25 +16,25 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
-public class ManagerCheckReserved implements Cron1s, PromiseGenerator, ClassName {
+public class ReservedHelper implements Cron1s, PromiseGenerator, ClassName {
 
     private final List<AbstractManager> list = new ArrayList<>();
 
-    private final String index;
+    @Setter
+    private String index;
 
-    private final PromiseComponent promiseComponent;
+    private final ServicePromise servicePromise;
 
-    public ManagerCheckReserved(ClassFinderComponent classFinderComponent, ApplicationContext applicationContext, PromiseComponent promiseComponent) {
-        this.promiseComponent = promiseComponent;
-        index = getClassName("cron", applicationContext);
-        classFinderComponent.findByInstance(AbstractManager.class).forEach(managerClass
+    public ReservedHelper(ServiceClassFinder serviceClassFinder, ApplicationContext applicationContext, ServicePromise servicePromise) {
+        this.servicePromise = servicePromise;
+        serviceClassFinder.findByInstance(AbstractManager.class).forEach(managerClass
                 -> list.add(applicationContext.getBean(managerClass)));
     }
 
     @Override
     public Promise generate() {
-        return promiseComponent.get(index, 6_000L)
-                .append("CheckReserved", (AtomicBoolean _, Promise _)
+        return servicePromise.get(index, 6_000L)
+                .append("_", (AtomicBoolean _, Promise _)
                         -> list.forEach(AbstractManager::checkReserved));
     }
 }

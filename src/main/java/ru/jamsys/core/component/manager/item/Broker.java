@@ -6,9 +6,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.PropertyComponent;
-import ru.jamsys.core.component.manager.ExpirationManager;
-import ru.jamsys.core.component.manager.RateLimitManager;
+import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.component.manager.ManagerExpiration;
+import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -88,7 +88,7 @@ public class Broker<TEO>
 
     private final Class<TEO> classItem;
 
-    private PropertyComponent propertyComponent;
+    private ServiceProperty serviceProperty;
 
     private final Expiration<DisposableExpirationMsImmutableEnvelope> expiration;
 
@@ -97,19 +97,19 @@ public class Broker<TEO>
         this.classItem = classItem;
         this.onDrop = onDrop;
 
-        rateLimit = applicationContext.getBean(RateLimitManager.class).get(getClassName(index, applicationContext))
+        rateLimit = applicationContext.getBean(ManagerRateLimit.class).get(getClassName(index, applicationContext))
                 .init(applicationContext, RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)
                 .init(applicationContext, RateLimitName.BROKER_TAIL_SIZE.getName(), RateLimitItemInstance.MAX);
 
         rliQueueSize = rateLimit.get(RateLimitName.BROKER_SIZE.getName());
         rliTailSize = rateLimit.get(RateLimitName.BROKER_TAIL_SIZE.getName());
 
-        propertyComponent = applicationContext.getBean(PropertyComponent.class);
+        serviceProperty = applicationContext.getBean(ServiceProperty.class);
         rliQueueSize.set(applicationContext, "max", 3000);
         rliTailSize.set(applicationContext,"max", 5);
 
-        ExpirationManager expirationManager = applicationContext.getBean(ExpirationManager.class);
-        expiration = expirationManager.get(
+        ManagerExpiration managerExpiration = applicationContext.getBean(ManagerExpiration.class);
+        expiration = managerExpiration.get(
                 getClassName(index, applicationContext),
                 DisposableExpirationMsImmutableEnvelope.class,
                 this::onDrop
@@ -125,7 +125,7 @@ public class Broker<TEO>
     }
 
     public void setMaxSizeQueue(int newSize) {
-        propertyComponent.setProperty(rliQueueSize.getNs() + ".max", newSize + "");
+        serviceProperty.setProperty(rliQueueSize.getNs() + ".max", newSize + "");
     }
 
     public void setMaxSizeQueueTail(int newSize) {
@@ -239,6 +239,7 @@ public class Broker<TEO>
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         List<Statistic> result = new ArrayList<>();
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
+        System.out.println(tpsDequeueFlush);
         int tpsDropFlush = tpsDrop.getAndSet(0);
         int sizeFlush = queueSize.get();
         result.add(new Statistic(parentTags, parentFields)

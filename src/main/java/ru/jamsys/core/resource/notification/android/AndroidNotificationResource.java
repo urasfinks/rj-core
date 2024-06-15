@@ -3,7 +3,7 @@ package ru.jamsys.core.resource.notification.android;
 import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PropertyComponent;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -37,8 +37,8 @@ public class AndroidNotificationResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
-        subscriber = propertyComponent.getSubscriber(this, property, constructor.ns);
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
+        subscriber = serviceProperty.getSubscriber(this, property, constructor.ns);
     }
 
     @Override

@@ -62,8 +62,8 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
 
     private final Subscriber subscriber;
 
-    public SecurityComponent(PropertyComponent propertyComponent, ExceptionHandler exceptionHandler) {
-        subscriber = propertyComponent.getSubscriber(null, this);
+    public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
+        subscriber = serviceProperty.getSubscriber(null, this);
         this.exceptionHandler = exceptionHandler;
     }
 

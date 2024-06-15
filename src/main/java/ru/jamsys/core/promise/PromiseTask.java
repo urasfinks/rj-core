@@ -3,9 +3,9 @@ package ru.jamsys.core.promise;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PromiseComponent;
-import ru.jamsys.core.component.ThreadRealComponent;
-import ru.jamsys.core.component.ThreadVirtualComponent;
+import ru.jamsys.core.component.ServicePromise;
+import ru.jamsys.core.component.ServiceThreadReal;
+import ru.jamsys.core.component.ServiceThreadVirtual;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.statistic.timer.Timer;
 
@@ -83,8 +83,8 @@ public class PromiseTask implements Runnable {
     // execute on another thread
     public void start() {
         switch (type) {
-            case IO, ASYNC_NO_WAIT_IO -> App.get(ThreadVirtualComponent.class).execute(this);
-            case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.get(ThreadRealComponent.class).execute(this);
+            case IO, ASYNC_NO_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);
+            case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.get(ServiceThreadReal.class).execute(this);
             case JOIN -> run();
             case EXTERNAL_WAIT ->
                     promise.getTrace().add(new TracePromise<>(getIndex() + ".start", null, type, this.getClass()));
@@ -94,7 +94,7 @@ public class PromiseTask implements Runnable {
     // execute current thread
     @Override
     public void run() {
-        Timer timer = App.get(PromiseComponent.class).registrationTimer(index);
+        Timer timer = App.get(ServicePromise.class).registrationTimer(index);
         TracePromise<String, Timer> trace = new TracePromise<>(getIndex(), null, type, this.getClass());
         promise.getTrace().add(trace);
         try {
@@ -104,7 +104,7 @@ public class PromiseTask implements Runnable {
             if (retryCount > 0) {
                 retryCount--;
                 promise.getExceptionTrace().add(new TracePromise<>(index, th, type, this.getClass()));
-                App.get(PromiseComponent.class).addRetryDelay(this);
+                App.get(ServicePromise.class).addRetryDelay(this);
             } else {
                 switch (type) {
                     case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE ->

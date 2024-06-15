@@ -14,7 +14,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 // PI - PoolItem
 
 @Component
-public class PoolTaskManager<
+public class ManagerPoolTask<
         RC,
         RA,
         RR,

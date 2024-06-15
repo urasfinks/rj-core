@@ -1,12 +1,13 @@
 package ru.jamsys.core.component.cron;
 
+import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.ClassFinderComponent;
+import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.PromiseComponent;
-import ru.jamsys.core.component.manager.BrokerManager;
+import ru.jamsys.core.component.ServicePromise;
+import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
@@ -38,32 +39,32 @@ public class StatisticFlush implements Cron1s, PromiseGenerator, ClassName {
 
     final ExceptionHandler exceptionHandler;
 
-    private final String index;
+    @Setter
+    private String index;
 
-    private final PromiseComponent promiseComponent;
+    private final ServicePromise servicePromise;
 
     public StatisticFlush(
-            ClassFinderComponent classFinderComponent,
+            ServiceClassFinder serviceClassFinder,
             ApplicationContext applicationContext,
-            BrokerManager broker,
+            ManagerBroker broker,
             ExceptionHandler exceptionHandler,
-            PromiseComponent promiseComponent
+            ServicePromise servicePromise
     ) {
-        this.promiseComponent = promiseComponent;
-        index = getClassName("cron", applicationContext);
+        this.servicePromise = servicePromise;
         this.broker = broker.get(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class
         );
         this.exceptionHandler = exceptionHandler;
-        classFinderComponent.findByInstance(StatisticsFlushComponent.class).forEach(statisticsCollectorClass
+        serviceClassFinder.findByInstance(StatisticsFlushComponent.class).forEach(statisticsCollectorClass
                 -> list.add(applicationContext.getBean(statisticsCollectorClass)));
     }
 
     @Override
     public Promise generate() {
-        return promiseComponent.get(index, 6_000L)
-                .append("FlushAndGetStatistic", (AtomicBoolean isThreadRun, Promise _) -> {
+        return servicePromise.get(index, 6_000L)
+                .append("_", (AtomicBoolean isThreadRun, Promise _) -> {
                     StatisticSec statisticSec = new StatisticSec();
                     UtilRisc.forEach(isThreadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
                         Map<String, String> parentTags = new LinkedHashMap<>();

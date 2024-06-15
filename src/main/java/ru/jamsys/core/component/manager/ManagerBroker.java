@@ -9,11 +9,11 @@ import ru.jamsys.core.extension.KeepAliveComponent;
 import java.util.function.Consumer;
 
 @Component
-public class BrokerManager extends AbstractManager<Broker<?>, Consumer<?>> implements KeepAliveComponent {
+public class ManagerBroker extends AbstractManager<Broker<?>, Consumer<?>> implements KeepAliveComponent {
 
     private final ApplicationContext applicationContext;
 
-    public BrokerManager(ApplicationContext applicationContext) {
+    public ManagerBroker(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 

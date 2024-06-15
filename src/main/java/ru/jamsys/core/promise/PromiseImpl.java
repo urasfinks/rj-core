@@ -4,7 +4,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PromiseComponent;
+import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
@@ -151,7 +151,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             if (isException.get()) {
                 isRun.set(false);
                 queueMultipleCompleteSet.remove(this);
-                App.get(PromiseComponent.class).finish(registerInBroker);
+                App.get(ServicePromise.class).finish(registerInBroker);
                 if (onError != null) {
                     onError.start();
                 }
@@ -163,7 +163,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             ) {
                 isRun.set(false);
                 queueMultipleCompleteSet.remove(this);
-                App.get(PromiseComponent.class).finish(registerInBroker);
+                App.get(ServicePromise.class).finish(registerInBroker);
                 if (onComplete != null) {
                     onComplete.start();
                 }

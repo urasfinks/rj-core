@@ -1,7 +1,7 @@
 package ru.jamsys.core.resource;
 
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.BrokerManager;
+import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.CheckClassItem;
@@ -36,7 +36,7 @@ public class PoolTask<
         super(name, poolSettings.getClassPoolItem());
         this.poolSettings = poolSettings;
         this.classItem = classItem;
-        broker = App.get(BrokerManager.class).initAndGet(getName(), PromiseTaskWithResource.class, null);
+        broker = App.get(ManagerBroker.class).initAndGet(getName(), PromiseTaskWithResource.class, null);
     }
 
     @Override

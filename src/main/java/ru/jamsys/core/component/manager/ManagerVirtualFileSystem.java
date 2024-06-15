@@ -8,9 +8,9 @@ import ru.jamsys.core.resource.virtual.file.system.File;
 
 @Component
 @Lazy
-public class VirtualFileSystemManager extends AbstractManager<File, Void> implements KeepAliveComponent {
+public class ManagerVirtualFileSystem extends AbstractManager<File, Void> implements KeepAliveComponent {
 
-    public VirtualFileSystemManager() {
+    public ManagerVirtualFileSystem() {
         setCleanableMap(false);
     }
 

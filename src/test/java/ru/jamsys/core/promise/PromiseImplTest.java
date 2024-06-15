@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PromiseComponent;
+import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class PromiseImplTest {
 
-    public static PromiseComponent promiseComponent;
+    public static ServicePromise servicePromise;
 
     @BeforeAll
     static void beforeAll() {
@@ -25,7 +25,7 @@ class PromiseImplTest {
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         App.run(args);
-        promiseComponent = App.get(PromiseComponent.class);
+        servicePromise = App.get(ServicePromise.class);
     }
 
     @AfterAll
@@ -35,7 +35,7 @@ class PromiseImplTest {
 
     @Test
     void test1() {
-        Promise promise = promiseComponent.get("test", 6_000L); //new PromiseImpl("test", 6_000L);
+        Promise promise = servicePromise.get("test", 6_000L); //new PromiseImpl("test", 6_000L);
         promise
                 .append("test", (_, promise1) -> {
                     Util.sleepMs(1000);
@@ -60,7 +60,7 @@ class PromiseImplTest {
 
     @Test
     void test2() {
-        Promise promise = promiseComponent.get("test", 6_000L);
+        Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
@@ -74,7 +74,7 @@ class PromiseImplTest {
 
     @Test
     void test3() {
-        Promise promise = promiseComponent.get("test", 6_000L);
+        Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
 
@@ -91,7 +91,7 @@ class PromiseImplTest {
 
     @Test
     void test4() {
-        Promise promise = promiseComponent.get("test", 6_000L);
+        Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
@@ -106,7 +106,7 @@ class PromiseImplTest {
 
     @Test
     void test5() {
-        Promise promise = promiseComponent.get("test", 6_000L);
+        Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 1000; i++) {
@@ -133,7 +133,7 @@ class PromiseImplTest {
 
     @Test
     void test7() {
-        Promise promise = promiseComponent.get("test", 6_000L);
+        Promise promise = servicePromise.get("test", 6_000L);
         AtomicInteger retry = new AtomicInteger(0);
         AtomicInteger error = new AtomicInteger(0);
         AtomicInteger complete = new AtomicInteger(0);
@@ -160,7 +160,7 @@ class PromiseImplTest {
         AtomicInteger complete = new AtomicInteger(0);
         AtomicInteger exec = new AtomicInteger(0);
 
-        Promise promise = promiseComponent.get("test", 1_500L);
+        Promise promise = servicePromise.get("test", 1_500L);
         promise
                 .join("1", (_, _) -> {
                     exec.incrementAndGet();
@@ -189,7 +189,7 @@ class PromiseImplTest {
         AtomicInteger complete = new AtomicInteger(0);
         AtomicInteger exec = new AtomicInteger(0);
 
-        Promise promise = promiseComponent.get("test", 1_500L);
+        Promise promise = servicePromise.get("test", 1_500L);
         promise
                 .append("1", (_, _) -> {
                     exec.incrementAndGet();
@@ -215,7 +215,7 @@ class PromiseImplTest {
 
     @Test
     void toLog() {
-        Promise promise = promiseComponent.get("test", 1_500L);
+        Promise promise = servicePromise.get("test", 1_500L);
         promise
                 .append("1", (_, _) -> System.out.println(1))
                 .append("2", (_, _) -> System.out.println(2))
@@ -229,7 +229,7 @@ class PromiseImplTest {
 
     @Test
     void testExternalWait() {
-        Promise promise = promiseComponent.get("Async", 6_000L);
+        Promise promise = servicePromise.get("Async", 6_000L);
         PromiseTask promiseTask = new PromiseTask("test", promise, PromiseTaskExecuteType.EXTERNAL_WAIT);
         promise.append(promiseTask);
         promise.run().await(1000);
@@ -254,7 +254,7 @@ class PromiseImplTest {
         // добавил final c + c.incrementAndGet() уже равно не 1 а 2
         // Буду наблюдать дальше
 
-        Promise promise = promiseComponent.get("AsyncNoWait", 6_000L);
+        Promise promise = servicePromise.get("AsyncNoWait", 6_000L);
         PromiseTask promiseTask = new PromiseTask("test", promise, PromiseTaskExecuteType.ASYNC_NO_WAIT_IO, (_, _) -> {
             throw new RuntimeException("ERROR");
         });
@@ -267,7 +267,7 @@ class PromiseImplTest {
 
     @Test
     void testExpiration() {
-        Promise promise = promiseComponent.get("Expiration", 1_000L);
+        Promise promise = servicePromise.get("Expiration", 1_000L);
         AtomicInteger counter = new AtomicInteger(0);
         promise
                 .append("longTimeout", (_, _)
@@ -285,7 +285,7 @@ class PromiseImplTest {
 
     @SuppressWarnings("unused")
     void promiseTaskWithPool() {
-        Promise promise = promiseComponent.get("testPromise", 6_000L);
+        Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
                 .appendWithResource("http", HttpResource.class, (_, _, _) -> {
                     //HttpResponseEnvelope execute = httpClientResource.execute(new Http2ClientImpl());
@@ -300,7 +300,7 @@ class PromiseImplTest {
 
     @Test
     void appendBeforeRun() {
-        Promise promise = promiseComponent.get("testPromise", 6_000L);
+        Promise promise = servicePromise.get("testPromise", 6_000L);
         promise.append("test", (_, promise1)
                 -> promise1.append("hey", (_, _) -> {
         }));
@@ -311,7 +311,7 @@ class PromiseImplTest {
 
     @Test
     void waitBeforeExternalTask() {
-        Promise promise = promiseComponent.get("testPromise", 1_000L);
+        Promise promise = servicePromise.get("testPromise", 1_000L);
         promise
                 .append("st", (_, promise1) -> {
                     PromiseTask asyncPromiseTask = new PromiseTask(

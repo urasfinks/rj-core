@@ -3,7 +3,7 @@ package ru.jamsys.core.resource.notification.telegram;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.PropertyComponent;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
@@ -30,9 +30,9 @@ public class TelegramNotificationResource
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
-        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         securityComponent = App.get(SecurityComponent.class);
-        subscriber = propertyComponent.getSubscriber(null, property, constructor.ns);
+        subscriber = serviceProperty.getSubscriber(null, property, constructor.ns);
     }
 
     @Override

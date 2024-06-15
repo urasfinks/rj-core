@@ -20,13 +20,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Lazy
-public class PropertyComponent {
+public class ServiceProperty {
 
     final private Map<String, Set<Subscriber>> subscribe = new ConcurrentHashMap<>();
 
     final private Map<String, String> prop = new HashMap<>();
 
-    public PropertyComponent(ApplicationContext applicationContext) {
+    public ServiceProperty(ApplicationContext applicationContext) {
         Environment env = applicationContext.getEnvironment();
         MutablePropertySources propertySources = ((AbstractEnvironment) env).getPropertySources();
         for (org.springframework.core.env.PropertySource<?> next : propertySources) {

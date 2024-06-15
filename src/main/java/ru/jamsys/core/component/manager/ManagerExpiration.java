@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 //ExpirationManager.keepAlive() вызывает KeepAliveExpirationManager->Cron1s
 @Component
-public class ExpirationManager extends AbstractManager<Expiration<?>, Consumer<DisposableExpirationMsImmutableEnvelope<?>>> {
+public class ManagerExpiration extends AbstractManager<Expiration<?>, Consumer<DisposableExpirationMsImmutableEnvelope<?>>> {
 
     @SuppressWarnings("all")
     public <T> Expiration<T> get(

@@ -14,7 +14,7 @@ import ru.jamsys.core.extension.property.Subscriber;
 import java.util.Map;
 import java.util.Set;
 
-class PropertyComponentTest {
+class sPropertyTest {
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{};
@@ -41,9 +41,9 @@ class PropertyComponentTest {
 
     @Test
     void test() {
-        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         XX xx = new XX();
-        Subscriber subscribe = propertyComponent
+        Subscriber subscribe = serviceProperty
                 .getSubscriber(xx, xx)
                 .subscribe("core.security.path.storage", true)
                 .subscribe("core.security.path.storage", true);
@@ -56,18 +56,18 @@ class PropertyComponentTest {
 
         Assertions.assertEquals(2, xx.c);
 
-        propertyComponent.setProperty("core.security.path.storage", "xx");
+        serviceProperty.setProperty("core.security.path.storage", "xx");
         Assertions.assertEquals(3, xx.c);
 
         // Дубликат значения не должен вызывать onPropUpdate
-        propertyComponent.setProperty("core.security.path.storage", "xx");
+        serviceProperty.setProperty("core.security.path.storage", "xx");
         Assertions.assertEquals(3, xx.c);
 
         subscribe.unsubscribe();
         Assertions.assertEquals(0, subscribe.getSubscriptions().size());
 
         // После отписки мы не должны получать уведомления об изменениях
-        propertyComponent.setProperty("core.security.path.storage", "x2");
+        serviceProperty.setProperty("core.security.path.storage", "x2");
         Assertions.assertEquals(3, xx.c);
 
         // Обратно подписываемся
@@ -79,19 +79,19 @@ class PropertyComponentTest {
         // Так как автоматом получим значение при подписке
         Assertions.assertEquals(5, xx.c);
 
-        propertyComponent.setProperty("core.security.path.public.key", "x3");
+        serviceProperty.setProperty("core.security.path.public.key", "x3");
         Assertions.assertEquals(6, xx.c);
 
         subscribe.unsubscribe("core.security.path.public.key");
-        propertyComponent.setProperty("core.security.path.public.key", "x4");
+        serviceProperty.setProperty("core.security.path.public.key", "x4");
         Assertions.assertEquals(6, xx.c);
 
         // Проверяем что другие подписки работают
-        propertyComponent.setProperty("core.security.path.storage", "x5");
+        serviceProperty.setProperty("core.security.path.storage", "x5");
         Assertions.assertEquals(7, xx.c);
 
         //Мульти обновление без изменений значений
-        propertyComponent.setProperty(new HashMapBuilder<String, String>()
+        serviceProperty.setProperty(new HashMapBuilder<String, String>()
                 .append("core.security.path.public.key", "x4")
                 .append("core.security.path.storage", "x5")
         );
@@ -99,7 +99,7 @@ class PropertyComponentTest {
 
 
         //Мульти обновление c неподписанным
-        propertyComponent.setProperty(new HashMapBuilder<String, String>()
+        serviceProperty.setProperty(new HashMapBuilder<String, String>()
                 .append("core.security.path.public.key", "new") // Подписки нет, но значение изменено
                 .append("core.security.path.storage", "x5") // Подписка есть но значение старое
         );
@@ -109,14 +109,14 @@ class PropertyComponentTest {
         Assertions.assertEquals(8, xx.c);
 
         //Мульти обновление штатное
-        propertyComponent.setProperty(new HashMapBuilder<String, String>()
+        serviceProperty.setProperty(new HashMapBuilder<String, String>()
                 .append("core.security.path.public.key", "new2")
                 .append("core.security.path.storage", "x5")
         );
         Assertions.assertEquals(10, xx.c);
 
         //Мульти обновление штатное
-        propertyComponent.setProperty(new HashMapBuilder<String, String>()
+        serviceProperty.setProperty(new HashMapBuilder<String, String>()
                 .append("core.security.path.public.key", "new2")
                 .append("core.security.path.storage", "x6")
         );
@@ -143,19 +143,19 @@ class PropertyComponentTest {
 
     @Test
     void testEnum() {
-        PropertyComponent propertyComponent = App.get(PropertyComponent.class);
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         x2 x2 = new x2();
 
         Map<String, String> mapPropValue = x2.getMapPropValue();
         System.out.println(mapPropValue);
 
-        Subscriber subscribe = propertyComponent.getSubscriber(x2, x2, "core");
+        Subscriber subscribe = serviceProperty.getSubscriber(x2, x2, "core");
 
         Assertions.assertEquals(2, subscribe.getSubscriptions().size());
 
         Assertions.assertEquals("security/security.jks", x2.storage);
 
-        propertyComponent.setProperty("core.security.path.storage", "x3");
+        serviceProperty.setProperty("core.security.path.storage", "x3");
         Assertions.assertEquals("x3", x2.storage);
 
     }

@@ -3,12 +3,13 @@ package ru.jamsys.core.component.cron;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.PromiseComponent;
-import ru.jamsys.core.component.PropertyComponent;
-import ru.jamsys.core.component.manager.BrokerManager;
+import ru.jamsys.core.component.ServicePromise;
+import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ByteItem;
 import ru.jamsys.core.extension.ClassName;
@@ -34,13 +35,14 @@ import java.util.List;
 
 @Component
 @Lazy
-public class SendStatisticToInflux extends PropertyConnector implements Cron5s, PromiseGenerator, ClassName {
+public class StatisticUploader extends PropertyConnector implements Cron5s, PromiseGenerator, ClassName {
 
     final Broker<StatisticSec> broker;
 
-    private final String index;
+    @Setter
+    private String index;
 
-    private final PromiseComponent promiseComponent;
+    private final ServicePromise servicePromise;
 
     private final Subscriber subscriber;
 
@@ -48,24 +50,28 @@ public class SendStatisticToInflux extends PropertyConnector implements Cron5s, 
     @PropertyName("default.log.file.folder")
     private String folder = "LogManager";
 
-    public SendStatisticToInflux(
-            BrokerManager brokerManager,
+    public StatisticUploader(
+            ManagerBroker managerBroker,
             ApplicationContext applicationContext,
-            PromiseComponent promiseComponent,
-            PropertyComponent propertyComponent
+            ServicePromise servicePromise,
+            ServiceProperty serviceProperty
     ) {
-        this.promiseComponent = promiseComponent;
-        index = getClassName("cron", applicationContext);
-        broker = brokerManager.get(
+        this.servicePromise = servicePromise;
+        broker = managerBroker.get(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class
         );
-        subscriber = propertyComponent.getSubscriber(null, this, index, false);
+        subscriber = serviceProperty.getSubscriber(
+                null,
+                this,
+                getClassName(applicationContext),
+                false
+        );
     }
 
     @Override
     public Promise generate() {
-        return promiseComponent.get(index, 2_000L)
+        return servicePromise.get(index, 2_000L)
                 .appendWithResource("sendToInflux", InfluxResource.class, (isThreadRun, promise, influxResource) -> {
                     List<Point> listPoints = new ArrayList<>();
                     List<StatisticSec> reserve = new ArrayList<>();
