@@ -34,7 +34,7 @@ public class ExpirationHelper implements Cron1s, PromiseGenerator, ClassName {
     @Override
     public Promise generate() {
         return servicePromise.get(index, 6_000L)
-                .append("_", (isThreadRun, _) -> managerExpiration.keepAlive(isThreadRun));
+                .append("main", (isThreadRun, _) -> managerExpiration.keepAlive(isThreadRun));
     }
 
 }

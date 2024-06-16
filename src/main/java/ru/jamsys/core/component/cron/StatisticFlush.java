@@ -64,7 +64,7 @@ public class StatisticFlush implements Cron1s, PromiseGenerator, ClassName {
     @Override
     public Promise generate() {
         return servicePromise.get(index, 6_000L)
-                .append("_", (AtomicBoolean isThreadRun, Promise _) -> {
+                .append("main", (AtomicBoolean isThreadRun, Promise _) -> {
                     StatisticSec statisticSec = new StatisticSec();
                     UtilRisc.forEach(isThreadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
                         Map<String, String> parentTags = new LinkedHashMap<>();

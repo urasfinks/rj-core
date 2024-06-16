@@ -36,7 +36,7 @@ public class KeepAlive implements Cron3s, PromiseGenerator, ClassName {
     @Override
     public Promise generate() {
         return servicePromise.get(index,6_000L)
-                .append("_", (AtomicBoolean isThreadRun, Promise _)
+                .append("main", (AtomicBoolean isThreadRun, Promise _)
                         -> list.forEach((KeepAliveComponent keepAliveComponent)
                         -> keepAliveComponent.keepAlive(isThreadRun)));
     }

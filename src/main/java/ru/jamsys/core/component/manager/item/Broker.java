@@ -239,7 +239,6 @@ public class Broker<TEO>
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         List<Statistic> result = new ArrayList<>();
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
-        System.out.println(tpsDequeueFlush);
         int tpsDropFlush = tpsDrop.getAndSet(0);
         int sizeFlush = queueSize.get();
         result.add(new Statistic(parentTags, parentFields)

@@ -32,7 +32,7 @@ public class PromiseController implements Cron1s, PromiseGenerator, ClassName {
     @Override
     public Promise generate() {
         return servicePromise.get(index,6_000L)
-                .append("_", (AtomicBoolean isThreadRun, Promise _) -> {
+                .append("main", (AtomicBoolean isThreadRun, Promise _) -> {
                     AtomicInteger count = new AtomicInteger(0);
                     UtilRisc.forEach(isThreadRun, PromiseImpl.queueMultipleCompleteSet, promise -> {
                         assert promise != null;
