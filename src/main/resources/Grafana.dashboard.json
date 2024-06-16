@@ -55,9 +55,9 @@
             "lineWidth": 1,
             "pointSize": 1,
             "scaleDistribution": {
-              "linearThreshold": 2,
+              "linearThreshold": 1,
               "log": 2,
-              "type": "symlog"
+              "type": "log"
             },
             "showPoints": "auto",
             "spanNulls": false,
@@ -600,7 +600,7 @@
             "seriesBy": "max"
           },
           "custom": {
-            "axisBorderShow": true,
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisGridShow": true,
@@ -971,7 +971,7 @@
               }
             ]
           },
-          "unit": "none",
+          "unit": "short",
           "unitScale": true
         },
         "overrides": []
@@ -1043,13 +1043,13 @@
     ]
   },
   "time": {
-    "from": "now-1m",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "New dashboard",
   "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 35,
+  "version": 36,
   "weekStart": ""
 }
