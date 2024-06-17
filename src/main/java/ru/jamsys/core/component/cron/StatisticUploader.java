@@ -96,6 +96,44 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                     if (!reserve.isEmpty()) {
                         promise.setProperty("reserve", reserve);
                     }
+                    //syslog,
+                    // appname=mysecondapp,
+                    // facility=console,
+                    // host=myhost,
+                    // hostname=myhost,
+                    // severity=crit
+                    // facility_code=14i,
+                    // message="critical message here",
+                    // severity_code=2i,procid="12346"
+                    // ,timestamp=1534418426076078000i,
+                    // version=1i
+                    listPoints.add(
+                            Point.measurement("TestLog")
+                                    .addTag("correlation", java.util.UUID.randomUUID().toString())
+                                    .addTag("severity", "err")
+                                    .addField("message", "[ERROR] " + promise.getLog())
+                                    .time(System.currentTimeMillis(), WritePrecision.MS)
+
+                    );
+
+                    listPoints.add(
+                            Point.measurement("TestLog")
+                                    .addTag("correlation", java.util.UUID.randomUUID().toString())
+                                    .addTag("severity", "info")
+                                    .addField("message", "[INFO] " + promise.getLog())
+                                    .time(System.currentTimeMillis(), WritePrecision.MS)
+
+                    );
+
+                    listPoints.add(
+                            Point.measurement("TestLog")
+                                    .addTag("correlation", java.util.UUID.randomUUID().toString())
+                                    .addTag("severity", "debug")
+                                    .addField("message", "[DEBUG] " + promise.getLog())
+                                    .time(System.currentTimeMillis(), WritePrecision.MS)
+
+                    );
+
                     influxResource.execute(listPoints);
                 })
                 .then("readDirectory", (_, promise) -> {
