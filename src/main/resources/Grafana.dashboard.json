@@ -974,7 +974,32 @@
           "unit": "short",
           "unitScale": true
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "ServiceCron.StatisticFlush.main"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
@@ -1010,6 +1035,137 @@
       ],
       "title": "ServicePromise Nano",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 7,
+        "x": 12,
+        "y": 12
+      },
+      "id": 25,
+      "maxDataPoints": 50,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop) \n|> filter(fn: (r) => r._measurement == \"TestLog\")\n|> count()\n//|> group()\n//|> window(every: v.windowPeriod)\n//|> group()\n//|> keep(columns: [\"_time\", \"_value\"])\n//\n//|> group(columns: [\"_time\"])\n//|> group()\n//|> keep(columns: [\"_time\", \"severity\", \"_value\"])\n//|> sort(columns: [\"_time\"], desc: true)\n//|> group(columns: [\"_time\"])\n//|> group()\n//|> aggregateWindow(every: v.windowPeriod, fn: count, createEmpty: false)\n//|> count()\n\n//|> aggregateWindow(every: 1h, fn: mean, createEmpty: true)\n\n//|> drop(columns: [\"start\", \"stop\"])\n//|> window(every: 1m)\n//|> group()\n//|> drop(columns: [\"_field\", \"_start\", \"_stop\", \"_measurement\", \"_value\", \"correlation\"])\n//|> sort(columns: [\"_time\"], desc: true)\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Logs Count",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 5,
+        "x": 19,
+        "y": 12
+      },
+      "id": 24,
+      "maxDataPoints": 50,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": true,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop) \n|> filter(fn: (r) => r._measurement == \"TestLog\" and  (r.correlation == \"${correlation}\" or \"all\" == \"${correlation}\") )\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Panel Title",
+      "type": "logs"
     }
   ],
   "refresh": "5s",
@@ -1019,9 +1175,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "selected": true,
+          "text": "/192.168.0.14",
+          "value": "/192.168.0.14"
         },
         "datasource": {
           "type": "influxdb",
@@ -1039,6 +1195,26 @@
         "skipUrlSync": false,
         "sort": 0,
         "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "all",
+          "value": "all"
+        },
+        "hide": 0,
+        "label": "correlation",
+        "name": "correlation",
+        "options": [
+          {
+            "selected": true,
+            "text": "all",
+            "value": "all"
+          }
+        ],
+        "query": "all",
+        "skipUrlSync": false,
+        "type": "textbox"
       }
     ]
   },
@@ -1050,6 +1226,6 @@
   "timezone": "",
   "title": "New dashboard",
   "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 36,
+  "version": 39,
   "weekStart": ""
 }
