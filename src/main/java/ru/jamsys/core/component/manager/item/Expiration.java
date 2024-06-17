@@ -109,9 +109,10 @@ public class Expiration<V>
                 bucket,
                 (Long time, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>> _) -> {
                     countBucket.incrementAndGet();
-                    //TODO: bucketQueueSize.get(time) - return null
-                    // Cannot invoke "java.util.concurrent.atomic.AtomicInteger.get()" because the return value of "java.util.concurrent.ConcurrentSkipListMap.get(Object)" is null
-                    summaryCountItem.addAndGet(bucketQueueSize.get(time).get());
+                    AtomicInteger s = bucketQueueSize.get(time);
+                    if (s != null) {
+                        summaryCountItem.addAndGet(s.get());
+                    }
                 }
         );
         result.add(new Statistic(parentTags, parentFields)
