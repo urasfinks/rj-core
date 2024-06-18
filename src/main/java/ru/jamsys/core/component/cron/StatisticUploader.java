@@ -111,7 +111,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                             Point.measurement("TestLog")
                                     .addTag("correlation", java.util.UUID.randomUUID().toString())
                                     .addTag("severity", "err")
-                                    .addField("message", "[ERROR] " + promise.getLog())
+                                    .addField("message", "[ERROR] " + "1")
                                     .time(System.currentTimeMillis(), WritePrecision.MS)
 
                     );
@@ -120,7 +120,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                             Point.measurement("TestLog")
                                     .addTag("correlation", java.util.UUID.randomUUID().toString())
                                     .addTag("severity", "info")
-                                    .addField("message", "[INFO] " + promise.getLog())
+                                    .addField("message", "[INFO] " + "2")
                                     .time(System.currentTimeMillis(), WritePrecision.MS)
 
                     );
@@ -129,7 +129,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                             Point.measurement("TestLog")
                                     .addTag("correlation", java.util.UUID.randomUUID().toString())
                                     .addTag("severity", "debug")
-                                    .addField("message", "[DEBUG] " + promise.getLog())
+                                    .addField("message", "[DEBUG] " + "3")
                                     .time(System.currentTimeMillis(), WritePrecision.MS)
 
                     );
