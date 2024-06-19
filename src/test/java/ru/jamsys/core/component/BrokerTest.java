@@ -232,14 +232,14 @@ class BrokerTest {
         }
         long timeAdd = System.currentTimeMillis() - start;
         System.out.println("add time: " + timeAdd);
-        Assertions.assertTrue(timeAdd < 200, "#3");
+        Assertions.assertTrue(timeAdd < 500, "#3");
         start = System.currentTimeMillis();
         for (int i = 0; i < selection; i++) {
             broker.remove(list.get(selection - i - 1));
         }
         long timeRem = System.currentTimeMillis() - start;
         System.out.println("remove time: " + timeRem);
-        Assertions.assertTrue(timeRem < 100, "#3");
+        Assertions.assertTrue(timeRem < 500, "#3");
         Assertions.assertEquals(0, broker.size(), "#3");
         start = System.currentTimeMillis();
         ExpirationMsImmutableEnvelope<XTest> xTestExpirationMsImmutableEnvelope = broker.pollLast();

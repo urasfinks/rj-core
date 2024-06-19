@@ -56,6 +56,7 @@ public class Broker<TEO>
         Closable,
         CheckClassItem,
         LifeCycleInterface,
+        KeepAlive,
         AddToList<
                 ExpirationMsImmutableEnvelope<TEO>,
                 DisposableExpirationMsImmutableEnvelope<TEO> // Должны вернуть, что бы из вне можно было сделать remove
@@ -106,7 +107,7 @@ public class Broker<TEO>
 
         serviceProperty = applicationContext.getBean(ServiceProperty.class);
         rliQueueSize.set(applicationContext, "max", 3000);
-        rliTailSize.set(applicationContext,"max", 5);
+        rliTailSize.set(applicationContext, "max", 5);
 
         ManagerExpiration managerExpiration = applicationContext.getBean(ManagerExpiration.class);
         expiration = managerExpiration.get(
@@ -251,7 +252,8 @@ public class Broker<TEO>
     }
 
     @Override
-    public void close() {}
+    public void close() {
+    }
 
     // Рекомендуется использовать только для тестов
     public void reset() {
@@ -290,6 +292,23 @@ public class Broker<TEO>
     @Override
     public void shutdown() {
         // Пока ничего не надо
+    }
+
+    @Override
+    public void keepAlive(AtomicBoolean isThreadRun) {
+        // Если в очередь добавлять сообщения - будет вызываться active()
+        // Брокер будет жить и при переполнении при вставке даже будет чистить очередь с начала
+        // Но если очистка будет из вне при помощи remove или onDrop, да объекты будут обезврежены от
+        // повторного использования, но ссылки в очереди останутся
+        // Как решение пробегать с начала очереди, до момента получения не нейтрализованного объекта
+        while (isThreadRun.get()) {
+            // так как ConcurrentLinkedDeque.remove() идёт с first() - будем тоже работать с конца
+            DisposableExpirationMsImmutableEnvelope<TEO> obj = queue.peekFirst();
+            if (obj == null || !obj.isNeutralized()) {
+                break;
+            }
+            queue.remove(obj);
+        }
     }
 
 }

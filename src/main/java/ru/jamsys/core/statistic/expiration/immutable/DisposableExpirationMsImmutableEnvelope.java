@@ -21,6 +21,10 @@ public class DisposableExpirationMsImmutableEnvelope<T> extends ExpirationMsImmu
         super(value, keepAliveOnInactivityMs, lastActivityMs);
     }
 
+    public boolean isNeutralized() {
+        return usage.get();
+    }
+
     @Override
     public T getValue() {
         if (usage.compareAndSet(false, true)) {
