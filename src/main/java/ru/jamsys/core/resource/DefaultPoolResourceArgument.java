@@ -76,15 +76,22 @@ public class DefaultPoolResourceArgument<R extends Resource<?, ?, RC>, RC> imple
                 getClassName(InfluxResource.class, null, applicationContext),
                 InfluxResource.class,
                 new NamespaceResourceConstructor(),
-                _ -> false
+                th -> {
+                    if (th != null) {
+                        String msg = th.getMessage();
+                        // Не конкурентная проверка
+                        return msg.contains("Failed to connect");
+                    }
+                    return false;
+                }
         ));
         map.put((Class<R>) JdbcResource.class, (PoolSettings<R, RC>) new PoolSettings<>(
                 getClassName(JdbcResource.class, null, applicationContext),
                 JdbcResource.class,
                 new JdbcResourceConstructor(),
-                e -> {
-                    if (e != null) {
-                        String msg = e.getMessage();
+                th -> {
+                    if (th != null) {
+                        String msg = th.getMessage();
                         // Не конкурентная проверка
                         return msg.contains("закрыто")
                                 || msg.contains("close")

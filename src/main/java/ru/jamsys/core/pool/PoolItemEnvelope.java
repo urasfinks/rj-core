@@ -16,7 +16,7 @@ public class PoolItemEnvelope<RC, RA, RR, PI extends Resource<RC, RA, RR>> imple
     final PI item;
 
     @Setter
-    private Exception e = null;
+    private Throwable throwable = null;
 
     public PoolItemEnvelope(Pool<RC, RA, RR, PI> pool, PI item) {
         this.pool = pool;
@@ -25,7 +25,7 @@ public class PoolItemEnvelope<RC, RA, RR, PI extends Resource<RC, RA, RR>> imple
 
     @Override
     public void close() throws Exception {
-        this.pool.complete(this.item, e);
+        this.pool.complete(this.item, throwable);
     }
 
 }

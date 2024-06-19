@@ -57,7 +57,7 @@ public class PoolTask<
     }
 
     @Override
-    public boolean checkCriticalOfExceptionOnComplete(Exception e) {
+    public boolean checkCriticalOfExceptionOnComplete(Throwable e) {
         return poolSettings.getCheckExceptionOnComplete().apply(e);
     }
 

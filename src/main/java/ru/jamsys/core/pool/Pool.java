@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.StatisticsFlush;
 public interface Pool<RC, RA, RR, PI extends Resource<RC, RA, RR>> extends StatisticsFlush {
 
     //После работы с ресурсом его надо вернуть в пул
-    void complete(PI ret, Exception e);
+    void complete(PI ret, Throwable e);
 
     // overclocking / onInitPool min resource / addPoolItemIfEmpty
     PI createPoolItem();
@@ -21,7 +21,7 @@ public interface Pool<RC, RA, RR, PI extends Resource<RC, RA, RR>> extends Stati
     String getName();
 
     //Реализация проверки ошибки, для принятия решений выкидывания ресурса из пула
-    boolean checkCriticalOfExceptionOnComplete(Exception e);
+    boolean checkCriticalOfExceptionOnComplete(Throwable e);
 
     // Ручное удаление ресурса из пула, желательно конечно лишний раз не использовать
     void remove(PI poolItem);

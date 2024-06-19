@@ -76,11 +76,11 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                     List<Point> listPoints = new ArrayList<>();
                     List<StatisticSec> reserve = new ArrayList<>();
                     while (!broker.isEmpty() && isThreadRun.get()) {
-                        ExpirationMsImmutableEnvelope<StatisticSec> statisticSec = broker.pollFirst();
-                        if (statisticSec != null) {
-                            StatisticSec value = statisticSec.getValue();
-                            reserve.add(value);
-                            List<Statistic> list = value.getList();
+                        ExpirationMsImmutableEnvelope<StatisticSec> envelope = broker.pollFirst();
+                        if (envelope != null) {
+                            StatisticSec statisticSec = envelope.getValue();
+                            reserve.add(statisticSec);
+                            List<Statistic> list = statisticSec.getList();
                             for (Statistic statistic : list) {
                                 HashMap<String, String> newTags = new HashMap<>(statistic.getTags());
                                 String measurement = newTags.remove("measurement");
@@ -107,33 +107,32 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                     // severity_code=2i,procid="12346"
                     // ,timestamp=1534418426076078000i,
                     // version=1i
-                    listPoints.add(
-                            Point.measurement("TestLog")
-                                    .addTag("correlation", java.util.UUID.randomUUID().toString())
-                                    .addTag("severity", "err")
-                                    .addField("message", "[ERROR] " + "1")
-                                    .time(System.currentTimeMillis(), WritePrecision.MS)
-
-                    );
-
-                    listPoints.add(
-                            Point.measurement("TestLog")
-                                    .addTag("correlation", java.util.UUID.randomUUID().toString())
-                                    .addTag("severity", "info")
-                                    .addField("message", "[INFO] " + "2")
-                                    .time(System.currentTimeMillis(), WritePrecision.MS)
-
-                    );
-
-                    listPoints.add(
-                            Point.measurement("TestLog")
-                                    .addTag("correlation", java.util.UUID.randomUUID().toString())
-                                    .addTag("severity", "debug")
-                                    .addField("message", "[DEBUG] " + "3")
-                                    .time(System.currentTimeMillis(), WritePrecision.MS)
-
-                    );
-
+//                    listPoints.add(
+//                            Point.measurement("TestLog")
+//                                    .addTag("correlation", java.util.UUID.randomUUID().toString())
+//                                    .addTag("severity", "err")
+//                                    .addField("message", "[ERROR] " + "1")
+//                                    .time(System.currentTimeMillis(), WritePrecision.MS)
+//
+//                    );
+//
+//                    listPoints.add(
+//                            Point.measurement("TestLog")
+//                                    .addTag("correlation", java.util.UUID.randomUUID().toString())
+//                                    .addTag("severity", "info")
+//                                    .addField("message", "[INFO] " + "2")
+//                                    .time(System.currentTimeMillis(), WritePrecision.MS)
+//
+//                    );
+//
+//                    listPoints.add(
+//                            Point.measurement("TestLog")
+//                                    .addTag("correlation", java.util.UUID.randomUUID().toString())
+//                                    .addTag("severity", "debug")
+//                                    .addField("message", "[DEBUG] " + "3")
+//                                    .time(System.currentTimeMillis(), WritePrecision.MS)
+//
+//                    );
                     influxResource.execute(listPoints);
                 })
                 .then("readDirectory", (_, promise) -> {

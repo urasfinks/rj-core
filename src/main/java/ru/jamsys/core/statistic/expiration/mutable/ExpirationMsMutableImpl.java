@@ -2,10 +2,14 @@ package ru.jamsys.core.statistic.expiration.mutable;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+
+import java.io.Serializable;
 
 @Setter
 @Getter
-public class ExpirationMsMutableImpl implements ExpirationMsMutable {
+@ToString
+public class ExpirationMsMutableImpl implements ExpirationMsMutable, Serializable {
 
     private long keepAliveOnInactivityMs = 6_000; // Время жизни если нет активности
 

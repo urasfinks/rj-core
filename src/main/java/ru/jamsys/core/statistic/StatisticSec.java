@@ -12,8 +12,8 @@ import java.util.List;
 
 @Getter
 @Setter
-@ToString
-public class StatisticSec extends ExpirationMsMutableImpl implements Serializable, ByteItem {
+@ToString(callSuper = true)
+public class StatisticSec extends ExpirationMsMutableImpl implements ByteItem, Serializable {
 
     public List<Statistic> list = new ArrayList<>();
 
@@ -40,8 +40,12 @@ public class StatisticSec extends ExpirationMsMutableImpl implements Serializabl
         try (ObjectInput in = new ObjectInputStream(bis)) {
             StatisticSec statisticSec = (StatisticSec) in.readObject();
             list = statisticSec.getList();
+            setLastActivityMs(statisticSec.getLastActivityMs());
+            setStopTimeMs(statisticSec.getStopTimeMs());
+            setKeepAliveOnInactivityMs(statisticSec.getKeepAliveOnInactivityMs());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
+
 }
