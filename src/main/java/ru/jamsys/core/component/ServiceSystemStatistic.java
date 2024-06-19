@@ -54,6 +54,11 @@ public class ServiceSystemStatistic implements StatisticsFlushComponent {
             result.add(statistic);
         }
         first = !first;
+        Statistic statistic = new Statistic(parentTags, parentFields);
+        statistic.addField("heapSize", Runtime.getRuntime().totalMemory());
+        statistic.addField("heapSizeMax", Runtime.getRuntime().maxMemory());
+        statistic.addField("heapSizeFree", Runtime.getRuntime().freeMemory());
+        result.add(statistic);
         return result;
     }
 }
