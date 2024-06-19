@@ -1,6 +1,5 @@
 package ru.jamsys.core.component;
 
-import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -40,9 +39,6 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
 
     Map<String, Map<String, Object>> timeStatisticNano = new HashMap<>();
 
-    @Getter
-    Map<String, Map<String, Object>> timeStatisticMs = new HashMap<>();
-
     public ServicePromise(ManagerBroker managerBroker, ApplicationContext applicationContext, ManagerExpiration managerExpiration) {
         this.broker = managerBroker.initAndGet(getClassName(applicationContext), Promise.class, promise
                 -> promise.timeOut(getClassName("onPromiseTaskExpired")));
@@ -79,17 +75,15 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
         Map<String, AvgMetric> mapMetricNano = new HashMap<>();
-        Map<String, AvgMetric> mapMetricMs = new HashMap<>();
+        //Map<String, AvgMetric> mapMetricMs = new HashMap<>();
         UtilRisc.forEach(isThreadRun, queueTimerNano, (Timer timeEnvelope) -> {
             String index = timeEnvelope.getIndex();
             mapMetricNano.computeIfAbsent(index, _ -> new AvgMetric()).add(timeEnvelope.getNano());
-            mapMetricMs.computeIfAbsent(index, _ -> new AvgMetric()).add(timeEnvelope.getMs());
             if (timeEnvelope.isStop()) {
                 queueTimerNano.remove(timeEnvelope);
             }
         });
         mapMetricNano.forEach((String index, AvgMetric metric) -> timeStatisticNano.put(index, metric.flush("")));
-        //mapMetricMs.forEach((String index, AvgMetric metric) -> timeStatisticMs.put(index, metric.flush("")));
     }
 
     @Override
@@ -102,12 +96,6 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
                     .addTag("unit", "nano")
             );
         });
-//        UtilRisc.forEach(isThreadRun, timeStatisticMs, (s, stringObjectMap) -> {
-//            result.add(new Statistic(parentTags, parentFields)
-//                    .addField(s, stringObjectMap.get("Sum"))
-//                    .addTag("unit", "ms")
-//            );
-//        });
         return result;
     }
 }
