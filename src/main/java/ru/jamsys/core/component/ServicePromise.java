@@ -89,8 +89,7 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
             }
         });
         mapMetricNano.forEach((String index, AvgMetric metric) -> timeStatisticNano.put(index, metric.flush("")));
-        mapMetricMs.forEach((String index, AvgMetric metric) -> timeStatisticMs.put(index, metric.flush("")));
-        //System.out.println(UtilJson.toStringPretty(timeStatisticMs, ""));
+        //mapMetricMs.forEach((String index, AvgMetric metric) -> timeStatisticMs.put(index, metric.flush("")));
     }
 
     @Override
@@ -99,16 +98,16 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
 
         UtilRisc.forEach(isThreadRun, timeStatisticNano, (s, stringObjectMap) -> {
             result.add(new Statistic(parentTags, parentFields)
-                    .addField(s, stringObjectMap.get("Avg"))
+                    .addField(s, stringObjectMap.get("Sum"))
                     .addTag("unit", "nano")
             );
         });
-        UtilRisc.forEach(isThreadRun, timeStatisticMs, (s, stringObjectMap) -> {
-            result.add(new Statistic(parentTags, parentFields)
-                    .addField(s, stringObjectMap.get("Avg"))
-                    .addTag("unit", "ms")
-            );
-        });
+//        UtilRisc.forEach(isThreadRun, timeStatisticMs, (s, stringObjectMap) -> {
+//            result.add(new Statistic(parentTags, parentFields)
+//                    .addField(s, stringObjectMap.get("Sum"))
+//                    .addTag("unit", "ms")
+//            );
+//        });
         return result;
     }
 }
