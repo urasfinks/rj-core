@@ -91,8 +91,9 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
         List<Statistic> result = new ArrayList<>();
 
         UtilRisc.forEach(isThreadRun, timeStatisticNano, (s, stringObjectMap) -> {
+            long x = (long) stringObjectMap.get("Sum");
             result.add(new Statistic(parentTags, parentFields)
-                    .addField(s, stringObjectMap.get("Sum"))
+                    .addField(s, x)
                     .addTag("unit", "nano")
             );
         });
