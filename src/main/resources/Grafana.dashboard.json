@@ -162,7 +162,7 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "smooth",
+            "lineInterpolation": "stepBefore",
             "lineStyle": {
               "fill": "solid"
             },
@@ -269,7 +269,7 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "smooth",
+            "lineInterpolation": "stepBefore",
             "lineStyle": {
               "fill": "solid"
             },
@@ -376,7 +376,7 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "smooth",
+            "lineInterpolation": "stepBefore",
             "lineStyle": {
               "fill": "solid"
             },
@@ -518,7 +518,32 @@
           "unit": "bytes",
           "unitScale": true
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "heapSizeFree"
+            },
+            "properties": [
+              {
+                "id": "custom.fillOpacity",
+                "value": 50
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "heapSize"
+            },
+            "properties": [
+              {
+                "id": "custom.fillOpacity",
+                "value": 5
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 6,
@@ -582,7 +607,7 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "smooth",
+            "lineInterpolation": "stepBefore",
             "lineStyle": {
               "fill": "solid"
             },
@@ -689,7 +714,7 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "smooth",
+            "lineInterpolation": "stepBefore",
             "lineStyle": {
               "fill": "solid"
             },
@@ -946,7 +971,7 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "smooth",
+            "lineInterpolation": "stepBefore",
             "lineStyle": {
               "fill": "solid"
             },
@@ -958,7 +983,7 @@
               "type": "symlog"
             },
             "showPoints": "auto",
-            "spanNulls": false,
+            "spanNulls": 5000,
             "stacking": {
               "group": "A",
               "mode": "normal"
@@ -983,7 +1008,7 @@
               }
             ]
           },
-          "unit": "none",
+          "unit": "short",
           "unitScale": true
         },
         "overrides": []
@@ -1017,7 +1042,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ServicePromise\" and r.unit == \"nano\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean)\n|> drop(columns: [\"Host\", \"unit\"])\n\n\n\n",
+          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ServicePromise\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"type\"])\n\n\n\n",
           "refId": "A"
         }
       ],
@@ -1354,7 +1379,7 @@
       "type": "table"
     }
   ],
-  "refresh": "5s",
+  "refresh": false,
   "schemaVersion": 39,
   "tags": [],
   "templating": {
@@ -1405,13 +1430,13 @@
     ]
   },
   "time": {
-    "from": "now-1m",
-    "to": "now"
+    "from": "2024-06-20T19:57:08.091Z",
+    "to": "2024-06-20T19:57:53.992Z"
   },
   "timepicker": {},
   "timezone": "",
   "title": "New dashboard2",
   "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 7,
+  "version": 11,
   "weekStart": ""
 }
