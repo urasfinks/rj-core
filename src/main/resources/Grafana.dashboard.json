@@ -130,7 +130,7 @@
           "refId": "A"
         }
       ],
-      "title": "StatisticSystem",
+      "title": "StatisticSystem Cpu",
       "type": "timeseries"
     },
     {
@@ -355,156 +355,6 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "filterable": true,
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unitScale": true
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 70
-              },
-              {
-                "id": "custom.align",
-                "value": "center"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "RateLimit"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 115
-              },
-              {
-                "id": "custom.align",
-                "value": "center"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 5,
-        "x": 19,
-        "y": 1
-      },
-      "id": 13,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": []
-      },
-      "pluginVersion": "10.3.3",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> limit(n: 1)\n|> filter(fn: (r) => r._measurement == \"ManagerRateLimit\" and r._field == \"max\" and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\", \"_start\", \"_stop\", \"_measurement\"])\n//|> group(columns: [\"_time\"])\n//|> sort(columns: [\"RateLimitKey\", \"RateLimitItem\", \"_field\", \"_value\"])",
-          "refId": "A"
-        }
-      ],
-      "title": "RateLimit",
-      "transformations": [
-        {
-          "id": "seriesToRows",
-          "options": {}
-        },
-        {
-          "id": "extractFields",
-          "options": {
-            "source": "Metric"
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Metric": true,
-              "Time": true,
-              "max": true
-            },
-            "includeByName": {},
-            "indexByName": {
-              "Metric": 1,
-              "RateLimitItem": 4,
-              "RateLimitKey": 2,
-              "Time": 0,
-              "Value": 5,
-              "max": 3
-            },
-            "renameByName": {
-              "RateLimitItem": "Item",
-              "RateLimitKey": "Key",
-              "Value": "Value"
-            }
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "fields": {},
-            "sort": [
-              {
-                "field": "Key"
-              }
-            ]
-          }
-        }
-      ],
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
             "fixedColor": "#c92020",
             "mode": "palette-classic",
             "seriesBy": "max"
@@ -537,7 +387,7 @@
               "log": 2,
               "type": "symlog"
             },
-            "showPoints": "always",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -571,17 +421,17 @@
       "gridPos": {
         "h": 6,
         "w": 5,
-        "x": 0,
-        "y": 7
+        "x": 19,
+        "y": 1
       },
-      "id": 23,
+      "id": 20,
       "maxDataPoints": 60,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "table",
           "placement": "right",
-          "showLegend": false,
+          "showLegend": true,
           "sortBy": "Name",
           "sortDesc": false
         },
@@ -597,11 +447,110 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"tpsDrop\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean)\n|> drop(columns: [\"Host\"])\n\n\n\n",
+          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerExpiration\" and r._field == \"ItemSize\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean)\n|> drop(columns: [\"Host\"])\n\n\n\n",
           "refId": "A"
         }
       ],
-      "title": "ManagerBroker Drop",
+      "title": "ManagerExpiration ItemSize",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": 5000,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 1,
+            "scaleDistribution": {
+              "linearThreshold": 1,
+              "log": 2,
+              "type": "log"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bytes",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 0,
+        "y": 7
+      },
+      "id": 29,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ServiceSystemStatistic\" and (r._field == \"heapSize\" or r._field == \"heapSizeMax\" or r._field == \"heapSizeFree\") and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\"])\n",
+          "refId": "A"
+        }
+      ],
+      "title": "StatisticSystem Heap",
       "type": "timeseries"
     },
     {
@@ -751,7 +700,7 @@
               "log": 2,
               "type": "symlog"
             },
-            "showPoints": "auto",
+            "showPoints": "always",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -784,18 +733,18 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 7,
-        "x": 12,
+        "w": 5,
+        "x": 19,
         "y": 7
       },
-      "id": 20,
+      "id": 23,
       "maxDataPoints": 60,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "table",
           "placement": "right",
-          "showLegend": true,
+          "showLegend": false,
           "sortBy": "Name",
           "sortDesc": false
         },
@@ -811,12 +760,162 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerExpiration\" and r._field == \"ItemSize\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean)\n|> drop(columns: [\"Host\"])\n\n\n\n",
+          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"tpsDrop\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean)\n|> drop(columns: [\"Host\"])\n\n\n\n",
           "refId": "A"
         }
       ],
-      "title": "ManagerExpiration ItemSize",
+      "title": "ManagerBroker Drop",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unitScale": true
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "RateLimit"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 115
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 5,
+        "x": 0,
+        "y": 13
+      },
+      "id": 13,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "10.3.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> limit(n: 1)\n|> filter(fn: (r) => r._measurement == \"ManagerRateLimit\" and r._field == \"max\" and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\", \"_start\", \"_stop\", \"_measurement\"])\n//|> group(columns: [\"_time\"])\n//|> sort(columns: [\"RateLimitKey\", \"RateLimitItem\", \"_field\", \"_value\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "RateLimit",
+      "transformations": [
+        {
+          "id": "seriesToRows",
+          "options": {}
+        },
+        {
+          "id": "extractFields",
+          "options": {
+            "source": "Metric"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Metric": true,
+              "Time": true,
+              "max": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "Metric": 1,
+              "RateLimitItem": 4,
+              "RateLimitKey": 2,
+              "Time": 0,
+              "Value": 5,
+              "max": 3
+            },
+            "renameByName": {
+              "RateLimitItem": "Item",
+              "RateLimitKey": "Key",
+              "Value": "Value"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Key"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "table"
     },
     {
       "datasource": {
@@ -890,114 +989,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 5,
-        "x": 0,
-        "y": 13
-      },
-      "id": 19,
-      "maxDataPoints": 60,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": false,
-          "sortBy": "Name",
-          "sortDesc": false
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ServicePromise\" and r.unit == \"ms\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean)\n|> drop(columns: [\"Host\", \"unit\"])\n\n\n\n",
-          "refId": "A"
-        }
-      ],
-      "title": "ServicePromise Task Execute Ms",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "#c92020",
-            "mode": "palette-classic",
-            "seriesBy": "max"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 1,
-            "scaleDistribution": {
-              "linearThreshold": 2,
-              "log": 2,
-              "type": "symlog"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 0,
-          "fieldMinMax": false,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short",
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 7,
         "x": 5,
         "y": 13
@@ -1038,7 +1030,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 21
       },
       "id": 28,
       "panels": [],
@@ -1165,7 +1157,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 22
       },
       "id": 26,
       "maxDataPoints": 300,
@@ -1302,7 +1294,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 28
       },
       "id": 24,
       "maxDataPoints": 50,
@@ -1413,13 +1405,13 @@
     ]
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-1m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "New dashboard2",
   "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 4,
+  "version": 7,
   "weekStart": ""
 }
