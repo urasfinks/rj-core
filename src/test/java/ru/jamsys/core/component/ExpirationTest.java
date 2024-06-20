@@ -19,7 +19,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class ExpirationHelperTest {
+class ExpirationTest {
+
     AtomicBoolean isThreadRun = new AtomicBoolean(true);
 
     @BeforeAll

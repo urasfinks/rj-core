@@ -63,6 +63,13 @@ public class Expiration<V>
         bucketQueueSize.computeIfAbsent(key, _ -> new AtomicInteger(0)).incrementAndGet();
     }
 
+    private void deqQueueSize(Long key) {
+        AtomicInteger atomicInteger = bucketQueueSize.get(key);
+        if (atomicInteger != null) {
+            atomicInteger.decrementAndGet();
+        }
+    }
+
     public List<Long> getBucketKey() {
         return bucket.keySet().stream().toList();
     }
@@ -75,11 +82,11 @@ public class Expiration<V>
             }
             keepAliveResult.getReadBucket().add(time);
             UtilRisc.forEach(isThreadRun, queue, (DisposableExpirationMsImmutableEnvelope<V> envelope) -> {
-                if (envelope.isExpired()) {
-                    onExpired.accept(envelope);
+                if (envelope.isNeutralized() || envelope.isStop()) {
                     queue.remove(envelope);
                     keepAliveResult.getCountRemove().incrementAndGet();
-                } else if (envelope.isStop()) {
+                } else if (envelope.isExpired()) {
+                    onExpired.accept(envelope);
                     queue.remove(envelope);
                     keepAliveResult.getCountRemove().incrementAndGet();
                 }
@@ -143,6 +150,18 @@ public class Expiration<V>
                 .add(obj);
         incQueueSize(timeMsExpiredFloor);
         return obj;
+    }
+
+    public void remove(DisposableExpirationMsImmutableEnvelope<V> obj) {
+        remove(obj, true);
+    }
+
+    public void remove(DisposableExpirationMsImmutableEnvelope<V> obj, boolean neutralize) {
+        if (neutralize && obj.getValue() == null) {
+            return;
+        }
+        long timeMsExpiredFloor = Util.zeroLastNDigits(obj.getExpiredMs(), 3);
+        deqQueueSize(timeMsExpiredFloor);
     }
 
     @Override

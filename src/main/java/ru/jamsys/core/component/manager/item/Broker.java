@@ -85,7 +85,7 @@ public class Broker<TEO>
 
     final String index;
 
-    private final Consumer<TEO> onDrop;
+    private final Consumer<TEO> onDropConsumer;
 
     private final Class<TEO> classItem;
 
@@ -93,10 +93,10 @@ public class Broker<TEO>
 
     private final Expiration<DisposableExpirationMsImmutableEnvelope> expiration;
 
-    public Broker(String index, ApplicationContext applicationContext, Class<TEO> classItem, Consumer<TEO> onDrop) {
+    public Broker(String index, ApplicationContext applicationContext, Class<TEO> classItem, Consumer<TEO> onDropConsumer) {
         this.index = index;
         this.classItem = classItem;
-        this.onDrop = onDrop;
+        this.onDropConsumer = onDropConsumer;
 
         rateLimit = applicationContext.getBean(ManagerRateLimit.class).get(getClassName(index, applicationContext))
                 .init(applicationContext, RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)
@@ -163,9 +163,10 @@ public class Broker<TEO>
             DisposableExpirationMsImmutableEnvelope<TEO> teoDisposableExpirationMsImmutableEnvelope = queue.removeFirst();
             onDrop(teoDisposableExpirationMsImmutableEnvelope);
         }
-        if (onDrop != null) {
-            expiration.add((DisposableExpirationMsImmutableEnvelope) convert);
-        }
+
+        // Не важно есть onDropConsumer или нет, мы при помощи неё будем удалять сообщения из брокера
+        expiration.add((DisposableExpirationMsImmutableEnvelope) convert);
+
         queue.add(convert);
         queueSize.incrementAndGet();
         tail.add(envelope);
@@ -211,6 +212,8 @@ public class Broker<TEO>
             if (value != null) {
                 statistic(envelope);
                 queueSize.decrementAndGet();
+                // Объект уже нейтрализован, поэтому просто его удаляем из expiration
+                expiration.remove((DisposableExpirationMsImmutableEnvelope) envelope, false);
             }
         }
     }
@@ -224,8 +227,8 @@ public class Broker<TEO>
         if (value != null) {
             queueSize.decrementAndGet();
             tpsDrop.incrementAndGet();
-            if (onDrop != null) {
-                onDrop.accept(value);
+            if (onDropConsumer != null) {
+                onDropConsumer.accept(value);
             }
         }
     }
