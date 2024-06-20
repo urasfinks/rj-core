@@ -8,7 +8,7 @@ import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.pool.PoolItemEnvelope;
-import ru.jamsys.core.resource.PoolTask;
+import ru.jamsys.core.resource.TaskWait;
 import ru.jamsys.core.resource.Resource;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,7 +21,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
 
     private final TriConsumer<AtomicBoolean, Promise, T> procedure;
 
-    private final PoolTask<?, ?, ?, ?> managerElement;
+    private final TaskWait<?, ?, ?, ?> managerElement;
 
     private final PoolSettings<T, ?> poolSettings;
 

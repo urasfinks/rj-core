@@ -16,7 +16,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 // В потоке исполнения задачи - совершается действие с освободившимся объектом и на вход подаётся результат
 // Аргументы для действия над ресурсом задаются либо при инициализации задачи, либо непосредственно перед запуском
 
-public class PoolTask<
+public class TaskWait<
         RC,
         RA,
         RR,
@@ -32,7 +32,7 @@ public class PoolTask<
 
     private final Class<PI> classItem;
 
-    public PoolTask(String name, PoolSettings<PI, RC> poolSettings, Class<PI> classItem) {
+    public TaskWait(String name, PoolSettings<PI, RC> poolSettings, Class<PI> classItem) {
         super(name, poolSettings.getClassPoolItem());
         this.poolSettings = poolSettings;
         this.classItem = classItem;

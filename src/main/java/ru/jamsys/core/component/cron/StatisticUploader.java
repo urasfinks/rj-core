@@ -20,6 +20,7 @@ import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
 import ru.jamsys.core.flat.util.ListSort;
 import ru.jamsys.core.flat.util.UtilFile;
+import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.resource.filebyte.reader.FileByteReaderRequest;
@@ -133,7 +134,12 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
 //                                    .time(System.currentTimeMillis(), WritePrecision.MS)
 //
 //                    );
-                    influxResource.execute(listPoints);
+                    try {
+                        influxResource.execute(listPoints);
+                    } catch (Throwable th) {
+                        System.out.println(UtilJson.toStringPretty(reserve, "{}"));
+                        throw th;
+                    }
                 })
                 .then("readDirectory", (_, promise) -> {
                     List<String> filesRecursive = UtilFile.getFilesRecursive(getFolder(), false);
