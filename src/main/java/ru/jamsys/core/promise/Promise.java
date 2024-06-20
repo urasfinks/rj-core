@@ -3,7 +3,7 @@ package ru.jamsys.core.promise;
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.extension.Correlation;
-import ru.jamsys.core.extension.Property;
+import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.resource.DefaultPoolResourceArgument;
@@ -18,7 +18,7 @@ import java.util.function.BiConsumer;
 
 // Цепочка обещаний
 
-public interface Promise extends Property<String>, ExpirationMsImmutable, Correlation {
+public interface Promise extends Property<String, Object>, ExpirationMsImmutable, Correlation {
 
     String getIndex();
 

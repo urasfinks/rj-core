@@ -1,20 +1,25 @@
-package ru.jamsys.core.extension;
+package ru.jamsys.core.extension.property;
 
 import ru.jamsys.core.component.ServiceClassFinder;
 
 import java.util.Map;
 
-public interface Property<Key> {
+public interface Property<K, V> {
 
-    Map<Key, Object> getMapProperty();
+    Map<K, V> getMapProperty();
 
-    default <R> R setProperty(Key key, R obj) {
+    default <R> R setProperty(K key, R obj) {
         @SuppressWarnings("unchecked")
-        R result = (R) getMapProperty().computeIfAbsent(key, _ -> obj);
+        R result = (R) getMapProperty().computeIfAbsent(key, _ -> (V) obj);
         return result;
     }
 
-    default <R> R getProperty(Key key, Class<R> cls, R def) {
+    default Property<K, V> setProperty(Map<K, V> map) {
+        getMapProperty().putAll(map);
+        return this;
+    }
+
+    default <R> R getProperty(K key, Class<R> cls, R def) {
         Object o = getMapProperty().get(key);
         if (o != null && ServiceClassFinder.instanceOf(o.getClass(), cls)) {
             @SuppressWarnings("unchecked")
@@ -24,11 +29,11 @@ public interface Property<Key> {
         return def;
     }
 
-    default <R> R getProperty(Key key, Class<R> cls) {
+    default <R> R getProperty(K key, Class<R> cls) {
         return getProperty(key, cls, null);
     }
 
-    default boolean isProperty(Key key) {
+    default boolean isProperty(K key) {
         return getMapProperty().containsKey(key);
     }
 

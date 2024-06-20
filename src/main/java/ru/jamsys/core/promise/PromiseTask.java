@@ -6,6 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadReal;
 import ru.jamsys.core.component.ServiceThreadVirtual;
+import ru.jamsys.core.extension.property.PropertyEnvelope;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.statistic.timer.Timer;
 
@@ -94,7 +95,9 @@ public class PromiseTask implements Runnable {
     // execute current thread
     @Override
     public void run() {
-        Timer timer = App.get(ServicePromise.class).registrationTimer(index);
+        PropertyEnvelope<Timer, String, String> timerEnvelope = App.get(ServicePromise.class).registrationTimer(index);
+        timerEnvelope.setProperty("type", type.getName());
+        Timer timer = timerEnvelope.getValue();
         TracePromise<String, Timer> trace = new TracePromise<>(getIndex(), null, type, this.getClass());
         promise.getTrace().add(trace);
         try {
@@ -122,10 +125,4 @@ public class PromiseTask implements Runnable {
             getPromise().complete(this);
     }
 
-    @Override
-    public String toString() {
-        return "PromiseTask{" +
-                getIndex() +
-                '}';
-    }
 }

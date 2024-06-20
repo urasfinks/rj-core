@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.resource.virtual.file.system.view.FileView;
 import ru.jamsys.core.statistic.Statistic;
@@ -23,7 +24,7 @@ public class File extends ExpirationMsMutableImpl
         Closable,
         StatisticsFlush,
         KeepAlive,
-        Property<String>,
+        Property<String, Object>,
         LifeCycleInterface,
         CheckClassItem
 {

@@ -2,13 +2,14 @@ package ru.jamsys.core.extension;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.extension.property.Property;
 
 import java.util.HashMap;
 import java.util.Map;
 
 class PropertyTest {
 
-    public static class P implements Property<String>{
+    public static class P implements Property<String, Object> {
 
         Map<String, Object> map = new HashMap<>();
 

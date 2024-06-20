@@ -10,6 +10,7 @@ import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.extension.property.PropertyEnvelope;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseImpl;
@@ -20,10 +21,7 @@ import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmut
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.timer.Timer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -35,9 +33,11 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
 
     private final Expiration<PromiseTask> promiseTaskRetry;
 
-    ConcurrentLinkedDeque<Timer> queueTimerNano = new ConcurrentLinkedDeque<>();
+    ConcurrentLinkedDeque<PropertyEnvelope<Timer, String, String>> queueTimer = new ConcurrentLinkedDeque<>();
 
-    Map<String, Map<String, Object>> timeStatisticNano = new HashMap<>();
+    Map<String, LongSummaryStatistics> timeStatisticNano = new HashMap<>();
+
+    private final ConcurrentLinkedDeque<Statistic> toStatistic = new ConcurrentLinkedDeque<>();
 
     public ServicePromise(ManagerBroker managerBroker, ApplicationContext applicationContext, ManagerExpiration managerExpiration) {
         this.broker = managerBroker.initAndGet(getClassName("run", applicationContext), Promise.class, promise
@@ -59,9 +59,9 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
         promiseTaskRetry.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getRetryDelayMs()));
     }
 
-    public Timer registrationTimer(String index) {
-        Timer timer = new Timer(index);
-        queueTimerNano.add(timer);
+    public PropertyEnvelope<Timer, String, String> registrationTimer(String index) {
+        PropertyEnvelope<Timer, String, String> timer = new PropertyEnvelope<>(new Timer(index));
+        queueTimer.add(timer);
         return timer;
     }
 
@@ -74,29 +74,40 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        Map<String, AvgMetric> mapMetricNano = new HashMap<>();
-        //Map<String, AvgMetric> mapMetricMs = new HashMap<>();
-        UtilRisc.forEach(isThreadRun, queueTimerNano, (Timer timeEnvelope) -> {
-            String index = timeEnvelope.getIndex();
-            mapMetricNano.computeIfAbsent(index, _ -> new AvgMetric()).add(timeEnvelope.getNano());
-            if (timeEnvelope.isStop()) {
-                queueTimerNano.remove(timeEnvelope);
+        Map<String, PropertyEnvelope<AvgMetric, String, String>> mapMetricNano = new HashMap<>();
+        UtilRisc.forEach(isThreadRun, queueTimer, (PropertyEnvelope<Timer, String, String> timerEnvelope) -> {
+            Timer timer = timerEnvelope.getValue();
+            mapMetricNano.computeIfAbsent(timer.getIndex(), _ -> {
+                PropertyEnvelope<AvgMetric, String, String> envelope = new PropertyEnvelope<>(new AvgMetric());
+                envelope.setProperty(timerEnvelope.getMapProperty());
+                return envelope;
+            }).getValue().add(timer.getNano());
+            if (timer.isStop()) {
+                queueTimer.remove(timerEnvelope);
             }
         });
-        mapMetricNano.forEach((String index, AvgMetric metric) -> timeStatisticNano.put(index, metric.flush("")));
+        mapMetricNano.forEach((index, envelope) -> {
+            AvgMetric metric = envelope.getValue();
+            LongSummaryStatistics flush = metric.flush();
+            timeStatisticNano.put(index, flush);
+            toStatistic.add(new Statistic()
+                    .addTags(envelope.getMapProperty())
+                    .addField(index, flush.getSum())
+            );
+        });
     }
 
     @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         List<Statistic> result = new ArrayList<>();
-
-        UtilRisc.forEach(isThreadRun, timeStatisticNano, (s, stringObjectMap) -> {
-            long x = (long) stringObjectMap.get("Sum");
-            result.add(new Statistic(parentTags, parentFields)
-                    .addField(s, x)
-                    .addTag("unit", "nano")
-            );
-        });
+        while (!toStatistic.isEmpty()) {
+            Statistic statistic = toStatistic.pollFirst();
+            if (statistic != null) {
+                statistic.addTags(parentTags).addFields(parentFields);
+                result.add(statistic);
+            }
+        }
         return result;
     }
+
 }
