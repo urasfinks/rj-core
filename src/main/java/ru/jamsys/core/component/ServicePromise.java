@@ -40,7 +40,7 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
     Map<String, Map<String, Object>> timeStatisticNano = new HashMap<>();
 
     public ServicePromise(ManagerBroker managerBroker, ApplicationContext applicationContext, ManagerExpiration managerExpiration) {
-        this.broker = managerBroker.initAndGet(getClassName(applicationContext), Promise.class, promise
+        this.broker = managerBroker.initAndGet(getClassName("run", applicationContext), Promise.class, promise
                 -> promise.timeOut(getClassName("onPromiseTaskExpired")));
         promiseTaskRetry = managerExpiration.get("PromiseTaskRetry", PromiseTask.class, this::onPromiseTaskRetry);
     }
