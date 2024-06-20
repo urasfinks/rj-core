@@ -274,14 +274,14 @@
               "fill": "solid"
             },
             "lineWidth": 1,
-            "pointSize": 1,
+            "pointSize": 2,
             "scaleDistribution": {
               "linearThreshold": 2,
               "log": 2,
               "type": "symlog"
             },
-            "showPoints": "auto",
-            "spanNulls": 5000,
+            "showPoints": "always",
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "normal"
@@ -1379,7 +1379,7 @@
       "type": "table"
     }
   ],
-  "refresh": false,
+  "refresh": "5s",
   "schemaVersion": 39,
   "tags": [],
   "templating": {
@@ -1430,7 +1430,7 @@
     ]
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-1m",
     "to": "now"
   },
   "timepicker": {
@@ -1440,6 +1440,6 @@
   "timezone": "",
   "title": "New dashboard2",
   "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 15,
+  "version": 17,
   "weekStart": ""
 }
