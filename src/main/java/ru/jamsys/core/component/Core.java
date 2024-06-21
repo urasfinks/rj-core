@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerFileByteWriter;
 import ru.jamsys.core.component.manager.item.FileByteWriter;
+import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
@@ -42,12 +43,16 @@ public class Core implements LifeCycleInterface {
 
     @Override
     public void run() {
-        FileByteWriter fileByteWriter = managerFileByteWriter.get("statistic");
-        managerBroker.initAndGet(
-                ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
-                StatisticSec.class,
-                fileByteWriter::append
-        );
+
+        String indexStatistic = ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext);
+        String indexLog = ClassNameImpl.getClassNameStatic(Log.class, null, applicationContext);
+
+        FileByteWriter fileByteWriterStatistic = managerFileByteWriter.get(indexStatistic);
+        FileByteWriter fileByteWriterLog = managerFileByteWriter.get(indexLog);
+
+        managerBroker.initAndGet(indexStatistic, StatisticSec.class, fileByteWriterStatistic::append);
+        managerBroker.initAndGet(indexLog, StatisticSec.class, fileByteWriterLog::append);
+
         List<LifeCycleComponent> sortedList = new ArrayList<>();
         serviceClassFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
             if (!serviceClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {

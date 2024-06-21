@@ -15,7 +15,14 @@ import java.util.Map;
 public class Log implements ByteItem {
 
     public Map<String, String> header = new HashMap<>();
+
     public String data;
+
+    public final LogType logType;
+
+    public Log(LogType logType) {
+        this.logType = logType;
+    }
 
     public Log setData(String data) {
         this.data = data;

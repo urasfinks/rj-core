@@ -8,6 +8,7 @@ import org.springframework.boot.SpringApplication;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.component.manager.item.Log;
+import ru.jamsys.core.component.manager.item.LogType;
 import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.statistic.Statistic;
@@ -45,9 +46,9 @@ class FileByteWriterTest {
         test.setProperty("log.file.size.kb", "1");
         test.setProperty("log.file.count", "2");
 
-        test.append(new Log().setData("LogData1").addHeader("key", "value"));
-        test.append(new Log().setData("LogData2").addHeader("key", "value"));
-        test.append(new Log().setData("LogData3").addHeader("key", "value"));
+        test.append(new Log(LogType.INFO).setData("LogData1").addHeader("key", "value"));
+        test.append(new Log(LogType.INFO).setData("LogData2").addHeader("key", "value"));
+        test.append(new Log(LogType.INFO).setData("LogData3").addHeader("key", "value"));
         test.keepAlive(new AtomicBoolean(true));
         // Потому что за одну итерацию мы не записываем больше файлов чем максимальное кол-во
         // Ничего личного, просто такие правила
@@ -69,9 +70,9 @@ class FileByteWriterTest {
 
         test.setProperty("log.file.count", "100");
 
-        test.append(new Log().setData("LogData1").addHeader("key", "value"));
-        test.append(new Log().setData("LogData2").addHeader("key", "value"));
-        test.append(new Log().setData("LogData3").addHeader("key", "value"));
+        test.append(new Log(LogType.INFO).setData("LogData1").addHeader("key", "value"));
+        test.append(new Log(LogType.INFO).setData("LogData2").addHeader("key", "value"));
+        test.append(new Log(LogType.INFO).setData("LogData3").addHeader("key", "value"));
         test.keepAlive(new AtomicBoolean(true));
 
         Assertions.assertEquals("[/default2.000.proc.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
@@ -99,7 +100,7 @@ class FileByteWriterTest {
 
         Assertions.assertEquals(2, test.getIndexFile());
 
-        test.append(new Log().setData("LogData1").addHeader("key", "value"));
+        test.append(new Log(LogType.INFO).setData("LogData1").addHeader("key", "value"));
         test.keepAlive(new AtomicBoolean(true));
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
@@ -116,7 +117,7 @@ class FileByteWriterTest {
         test.getBroker().setMaxSizeQueue(9999999);
         long start2 = System.currentTimeMillis();
         for (int i = 0; i < 1000000; i++) {
-            test.append(new Log().setData("LogData" + i).addHeader("key", "value"));
+            test.append(new Log(LogType.INFO).setData("LogData" + i).addHeader("key", "value"));
         }
         System.out.println("add time: " + (System.currentTimeMillis() - start2));
         long start3 = System.currentTimeMillis();
@@ -128,12 +129,12 @@ class FileByteWriterTest {
 
     @Test
     void test() throws Exception {
-        Log log1 = new Log().setData("Hello").addHeader("x", "y");
+        Log log1 = new Log(LogType.INFO).setData("Hello").addHeader("x", "y");
         byte[] x = log1.getByteInstance();
 
-        Log log2 = new Log();
+        Log log2 = new Log(LogType.INFO);
         log2.instanceFromByte(x);
-
+        System.out.println(log1);
         Assertions.assertEquals(log1.toString(), log2.toString());
 
     }

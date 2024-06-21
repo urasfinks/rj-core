@@ -38,7 +38,7 @@ import java.util.List;
 @Lazy
 public class StatisticUploader extends PropertyConnector implements Cron5s, PromiseGenerator, ClassName {
 
-    final Broker<StatisticSec> broker;
+    final Broker<StatisticSec> brokerStatistic;
 
     @Setter
     private String index;
@@ -58,7 +58,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
             ServiceProperty serviceProperty
     ) {
         this.servicePromise = servicePromise;
-        broker = managerBroker.get(
+        brokerStatistic = managerBroker.get(
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class
         );
@@ -76,8 +76,8 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                 .appendWithResource("sendToInflux", InfluxResource.class, (isThreadRun, promise, influxResource) -> {
                     List<Point> listPoints = new ArrayList<>();
                     List<StatisticSec> reserve = new ArrayList<>();
-                    while (!broker.isEmpty() && isThreadRun.get()) {
-                        ExpirationMsImmutableEnvelope<StatisticSec> envelope = broker.pollFirst();
+                    while (!brokerStatistic.isEmpty() && isThreadRun.get()) {
+                        ExpirationMsImmutableEnvelope<StatisticSec> envelope = brokerStatistic.pollFirst();
                         if (envelope != null) {
                             StatisticSec statisticSec = envelope.getValue();
                             reserve.add(statisticSec);
@@ -155,13 +155,13 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                 })
                 .appendWait()
                 .appendWithResource("read", FileByteReaderResource.class, (_, promise, fileByteReaderResource) -> {
-                    if (broker.getOccupancyPercentage() < 50) {
+                    if (brokerStatistic.getOccupancyPercentage() < 50) {
                         String readyFile = promise.getProperty("readyFile", String.class);
                         if (readyFile != null) {
                             List<ByteItem> execute = fileByteReaderResource.execute(
                                     new FileByteReaderRequest(readyFile, StatisticSec.class)
                             );
-                            execute.forEach(byteItem -> broker.add((StatisticSec) byteItem, 6_000L));
+                            execute.forEach(byteItem -> brokerStatistic.add((StatisticSec) byteItem, 6_000L));
                             try {
                                 UtilFile.remove(readyFile);
                             } catch (Exception e) {
@@ -173,7 +173,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                 .onError((_, promise) -> {
                     List<StatisticSec> reserve = promise.getProperty("reserve", List.class, null);
                     if (reserve != null && !reserve.isEmpty()) {
-                        reserve.forEach(statisticSec -> broker.add(statisticSec, 2_000L));
+                        reserve.forEach(statisticSec -> brokerStatistic.add(statisticSec, 2_000L));
                     }
                     //System.out.println(promise.getLog());
                 });
