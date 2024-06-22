@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
@@ -16,13 +17,12 @@ import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.property.PropertyConnector;
 import ru.jamsys.core.extension.property.PropertyName;
-import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
 import ru.jamsys.core.flat.util.ListSort;
 import ru.jamsys.core.flat.util.UtilFile;
-import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
+import ru.jamsys.core.resource.DefaultPoolResourceArgument;
 import ru.jamsys.core.resource.filebyte.reader.FileByteReaderRequest;
 import ru.jamsys.core.resource.filebyte.reader.FileByteReaderResource;
 import ru.jamsys.core.resource.influx.InfluxResource;
@@ -33,6 +33,8 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @Lazy
@@ -45,11 +47,17 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
 
     private final ServicePromise servicePromise;
 
-    private final Subscriber subscriber;
-
     @Getter
     @PropertyName("default.log.file.folder")
     private String folder = "LogManager";
+
+    @Getter
+    @PropertyName("default.log.limit.insert")
+    private String limitInsert = "10000";
+
+    public enum PromiseProperty {
+        RESERVE_STATISTIC,
+    }
 
     public StatisticUploader(
             ManagerBroker managerBroker,
@@ -62,7 +70,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                 ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class
         );
-        subscriber = serviceProperty.getSubscriber(
+        serviceProperty.getSubscriber(
                 null,
                 this,
                 getClassName(applicationContext),
@@ -74,78 +82,21 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
     public Promise generate() {
         return servicePromise.get(index, 2_000L)
                 .appendWithResource("sendToInflux", InfluxResource.class, (isThreadRun, promise, influxResource) -> {
+                    int limitInsert = Integer.parseInt(this.limitInsert);
+                    AtomicInteger countInsert = new AtomicInteger(0);
                     List<Point> listPoints = new ArrayList<>();
-                    List<StatisticSec> reserve = new ArrayList<>();
-                    while (!brokerStatistic.isEmpty() && isThreadRun.get()) {
-                        ExpirationMsImmutableEnvelope<StatisticSec> envelope = brokerStatistic.pollFirst();
-                        if (envelope != null) {
-                            StatisticSec statisticSec = envelope.getValue();
-                            reserve.add(statisticSec);
-                            List<Statistic> list = statisticSec.getList();
-                            for (Statistic statistic : list) {
-                                HashMap<String, String> newTags = new HashMap<>(statistic.getTags());
-                                String measurement = newTags.remove("measurement");
-                                listPoints.add(
-                                        Point.measurement(measurement)
-                                                .addTags(newTags)
-                                                .addFields(statistic.getFields())
-                                                .time(statisticSec.getLastActivityMs(), WritePrecision.MS)
-                                );
-                            }
-                        }
-                    }
-                    if (!reserve.isEmpty()) {
-                        promise.setProperty("reserve", reserve);
-                    }
-                    //syslog,
-                    // appname=mysecondapp,
-                    // facility=console,
-                    // host=myhost,
-                    // hostname=myhost,
-                    // severity=crit
-                    // facility_code=14i,
-                    // message="critical message here",
-                    // severity_code=2i,procid="12346"
-                    // ,timestamp=1534418426076078000i,
-                    // version=1i
-//                    listPoints.add(
-//                            Point.measurement("TestLog")
-//                                    .addTag("correlation", java.util.UUID.randomUUID().toString())
-//                                    .addTag("severity", "err")
-//                                    .addField("message", "[ERROR] " + "1")
-//                                    .time(System.currentTimeMillis(), WritePrecision.MS)
-//
-//                    );
-//
-//                    listPoints.add(
-//                            Point.measurement("TestLog")
-//                                    .addTag("correlation", java.util.UUID.randomUUID().toString())
-//                                    .addTag("severity", "info")
-//                                    .addField("message", "[INFO] " + "2")
-//                                    .time(System.currentTimeMillis(), WritePrecision.MS)
-//
-//                    );
-//
-//                    listPoints.add(
-//                            Point.measurement("TestLog")
-//                                    .addTag("correlation", java.util.UUID.randomUUID().toString())
-//                                    .addTag("severity", "debug")
-//                                    .addField("message", "[DEBUG] " + "3")
-//                                    .time(System.currentTimeMillis(), WritePrecision.MS)
-//
-//                    );
-                    try {
-                        influxResource.execute(listPoints);
-                    } catch (Throwable th) {
-                        System.out.println(UtilJson.toStringPretty(reserve, "{}"));
-                        throw th;
-                    }
+                    promise.setProperty(
+                            PromiseProperty.RESERVE_STATISTIC.name(),
+                            appendStatistic(limitInsert, isThreadRun, countInsert, listPoints)
+                    );
+                    influxResource.execute(listPoints);
                 })
                 .then("readDirectory", (_, promise) -> {
+                    String indexStatistic = ClassNameImpl.getClassNameStatic(StatisticSec.class, null, App.context);
                     List<String> filesRecursive = UtilFile.getFilesRecursive(getFolder(), false);
                     List<String> restore = new ArrayList<>();
                     for (String filePath : filesRecursive) {
-                        if (filePath.startsWith("/statistic.") && !filePath.endsWith(".proc.bin")) {
+                        if (filePath.startsWith("/" + indexStatistic + ".") && !filePath.endsWith(".proc.bin")) {
                             restore.add(filePath);
                         }
                     }
@@ -171,12 +122,41 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                     }
                 })
                 .onError((_, promise) -> {
-                    List<StatisticSec> reserve = promise.getProperty("reserve", List.class, null);
-                    if (reserve != null && !reserve.isEmpty()) {
-                        reserve.forEach(statisticSec -> brokerStatistic.add(statisticSec, 2_000L));
+                    Throwable exception = promise.getException();
+                    if (exception != null) {
+                        if (DefaultPoolResourceArgument.get(InfluxResource.class).getIsFatalExceptionOnComplete().apply(exception)) {
+                            // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
+                            List<StatisticSec> reserveStatistic = promise.getProperty(PromiseProperty.RESERVE_STATISTIC.name(), List.class, null);
+                            if (reserveStatistic != null && !reserveStatistic.isEmpty()) {
+                                reserveStatistic.forEach(statisticSec -> brokerStatistic.add(statisticSec, 2_000L));
+                            }
+                        }
                     }
-                    //System.out.println(promise.getLog());
                 });
+    }
+
+    private List<StatisticSec> appendStatistic(int limitInsert, AtomicBoolean isThreadRun, AtomicInteger countInsert, List<Point> listPoints) {
+        List<StatisticSec> reserve = new ArrayList<>();
+        while (!brokerStatistic.isEmpty() && isThreadRun.get() && countInsert.get() < limitInsert) {
+            ExpirationMsImmutableEnvelope<StatisticSec> envelope = brokerStatistic.pollFirst();
+            if (envelope != null) {
+                StatisticSec statisticSec = envelope.getValue();
+                reserve.add(statisticSec);
+                List<Statistic> list = statisticSec.getList();
+                for (Statistic statistic : list) {
+                    HashMap<String, String> newTags = new HashMap<>(statistic.getTags());
+                    String measurement = newTags.remove("measurement");
+                    listPoints.add(
+                            Point.measurement(measurement)
+                                    .addTags(newTags)
+                                    .addFields(statistic.getFields())
+                                    .time(statisticSec.getLastActivityMs(), WritePrecision.MS)
+                    );
+                    countInsert.incrementAndGet();
+                }
+            }
+        }
+        return reserve;
     }
 
 }

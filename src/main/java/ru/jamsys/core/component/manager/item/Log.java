@@ -1,49 +1,50 @@
 package ru.jamsys.core.component.manager.item;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.extension.ByteItem;
-import ru.jamsys.core.flat.util.UtilByte;
+import ru.jamsys.core.extension.Correlation;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 @ToString
-public class Log implements ByteItem {
-
-    public Map<String, String> header = new HashMap<>();
+@Getter
+public class Log implements ByteItem, Correlation {
 
     public String data;
 
-    public final LogType logType;
+    public LogType logType;
+
+    public long timeAdd = System.currentTimeMillis();
+
+    @Setter
+    protected String correlation;
 
     public Log(LogType logType) {
         this.logType = logType;
     }
 
-    public Log setData(String data) {
-        this.data = data;
-        return this;
+    public Log(LogType logType, String correlation) {
+        this.logType = logType;
+        this.correlation = correlation;
     }
 
-    public Log addHeader(String key, String value) {
-        this.header.put(key, value);
+    public Log setData(String data) {
+        this.data = data;
+        this.correlation = java.util.UUID.randomUUID().toString();
         return this;
     }
 
     public byte[] getByteInstance() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        os.write(UtilByte.shortToBytes((short) header.size()));
-
-        // Запись заголовков
-        for (String key : header.keySet()) {
-            UtilLog.shortWriteString(os, key);
-            UtilLog.shortWriteString(os, header.get(key));
-        }
-        // Запись тела
+        UtilLog.writeShortString(os, correlation);
+        UtilLog.writeShortString(os, logType.getName());
+        UtilLog.writeShortString(os, timeAdd + "");
         UtilLog.writeString(os, data);
         return os.toByteArray();
     }
@@ -51,10 +52,9 @@ public class Log implements ByteItem {
     @Override
     public void instanceFromByte(byte[] bytes) throws Exception {
         InputStream fis = new ByteArrayInputStream(bytes);
-        short countHeader = UtilByte.bytesToShort(fis.readNBytes(2));
-        for (int i = 0; i < countHeader; i++) {
-            addHeader(UtilLog.shortReadString(fis), UtilLog.shortReadString(fis));
-        }
+        setCorrelation(UtilLog.readShortString(fis));
+        logType = LogType.valueOf(Util.camelToSnake(UtilLog.readShortString(fis)));
+        timeAdd = Long.parseLong(UtilLog.readShortString(fis));
         setData(UtilLog.readString(fis));
     }
 

@@ -12,7 +12,7 @@ public class PoolSettings<T extends Resource<?, ?, ?>, RC> {
 
     private final RC resourceConstructor;
 
-    private final Function<Throwable, Boolean> checkExceptionOnComplete;
+    private final Function<Throwable, Boolean> isFatalExceptionOnComplete;
 
     private final String index;
 
@@ -20,11 +20,11 @@ public class PoolSettings<T extends Resource<?, ?, ?>, RC> {
             String index,
             Class<T> classPoolItem,
             RC resourceConstructor,
-            Function<Throwable, Boolean> checkExceptionOnComplete
+            Function<Throwable, Boolean> isFatalExceptionOnComplete
     ) {
         this.index = index;
         this.classPoolItem = classPoolItem;
         this.resourceConstructor = resourceConstructor;
-        this.checkExceptionOnComplete = checkExceptionOnComplete;
+        this.isFatalExceptionOnComplete = isFatalExceptionOnComplete;
     }
 }

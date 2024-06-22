@@ -1,6 +1,7 @@
 package ru.jamsys.core.component.manager;
 
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.extension.KeepAliveComponent;
@@ -14,7 +15,7 @@ public class ManagerFileByteWriter extends AbstractManager<FileByteWriter, Void>
 
     @Override
     public FileByteWriter build(String index, Class<?> classItem, Void builderArgument) {
-        return new FileByteWriter(index);
+        return new FileByteWriter(index, App.context);
     }
 
     @Override

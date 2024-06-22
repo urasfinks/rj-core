@@ -8,10 +8,13 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.http.HttpResource;
+import ru.jamsys.core.resource.jdbc.JdbcRequest;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
+import ru.jamsys.core.resource.jdbc.TestJdbcTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -333,6 +336,23 @@ class PromiseImplTest {
         // Мы дали 1 секунду время жизни, EXTERNAL_WAIT не финишировал -> сработал timeout
         Assertions.assertTrue(promise.isTerminated());
 
+    }
+
+    @Test
+    void testPostgreSql() {
+        Promise promise = servicePromise.get("testPromisePosgreSQL", 6_000L);
+        promise
+                .appendWithResource("jdbc", JdbcResource.class, (_, _, jdbcResource) -> {
+                    try {
+                        List<Map<String, Object>> execute = jdbcResource.execute(new JdbcRequest(TestJdbcTemplate.GET_LOG));
+                        System.out.println(execute);
+                    } catch (Throwable th) {
+                        App.error(th);
+                    }
+                })
+                .run()
+                .await(2000);
+        //System.out.println(promise.getLog());
     }
 
 }

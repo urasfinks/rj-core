@@ -4,7 +4,10 @@ import lombok.NonNull;
 import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceLogger;
 import ru.jamsys.core.component.ServicePromise;
+import ru.jamsys.core.component.manager.item.Log;
+import ru.jamsys.core.component.manager.item.LogType;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
@@ -57,6 +60,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     loop();
                 }catch (Throwable th){
                     // Произошла ошибка, её же никто не обработает
+                    App.error(th);
                     setError("loop", th, null);
                     try {
                         loop();
@@ -167,6 +171,10 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 if (onComplete != null) {
                     onComplete.start();
                 }
+                App.get(ServiceLogger.class).add(new Log(LogType.INFO, getCorrelation()).setData(getLog()));
+                App.get(ServiceLogger.class).add(new Log(LogType.DEBUG, getCorrelation()).setData(getLog()));
+                App.get(ServiceLogger.class).add(new Log(LogType.ERROR, getCorrelation()).setData(getLog()));
+                App.get(ServiceLogger.class).add(new Log(LogType.SYSTEM_EXCEPTION, getCorrelation()).setData(getLog()));
             }
         }
     }

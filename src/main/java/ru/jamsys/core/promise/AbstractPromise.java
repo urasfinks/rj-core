@@ -35,10 +35,11 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     // Что бы перехватить инициативу крутить основной loop
     protected AtomicBoolean firstConcurrentCompletionWait = new AtomicBoolean(false);
 
-    @JsonProperty
+    @JsonIgnore
     @Getter
     private final Map<String, Object> mapProperty = new ConcurrentHashMap<>();
 
+    @Getter
     protected volatile Throwable exception = null;
 
     protected final AtomicBoolean isRun = new AtomicBoolean(false);

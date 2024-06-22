@@ -17,6 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 // Цепочка обещаний
+// TODO: сделать finish() что skipAllStep
+// TODO: сделать jump(indexTask) что вычеркнуть из списка все задачи до индекса таски
 
 public interface Promise extends Property<String, Object>, ExpirationMsImmutable, Correlation {
 
@@ -97,5 +99,7 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
     boolean isException();
 
     void timeOut(String cause);
+
+    Throwable getException();
 
 }

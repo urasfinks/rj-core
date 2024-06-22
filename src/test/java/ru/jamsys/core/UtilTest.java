@@ -24,6 +24,13 @@ class UtilTest {
     }
 
     @Test
+    void camelToSnake() {
+        Assertions.assertEquals("HELLO_WORLD", Util.camelToSnake("HelloWorld"));
+        Assertions.assertEquals("HELLO_WORLD1", Util.camelToSnake("HelloWorld1"));
+        Assertions.assertEquals("HELLOWORLD", Util.camelToSnake("Helloworld"));
+    }
+
+    @Test
     void testRiscCollection() {
         List<String> list = new ArrayList<>();
 

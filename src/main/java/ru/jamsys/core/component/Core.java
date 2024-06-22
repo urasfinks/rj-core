@@ -51,7 +51,7 @@ public class Core implements LifeCycleInterface {
         FileByteWriter fileByteWriterLog = managerFileByteWriter.get(indexLog);
 
         managerBroker.initAndGet(indexStatistic, StatisticSec.class, fileByteWriterStatistic::append);
-        managerBroker.initAndGet(indexLog, StatisticSec.class, fileByteWriterLog::append);
+        managerBroker.initAndGet(indexLog, Log.class, fileByteWriterLog::append);
 
         List<LifeCycleComponent> sortedList = new ArrayList<>();
         serviceClassFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {

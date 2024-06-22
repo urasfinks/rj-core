@@ -1,6 +1,7 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
@@ -51,11 +52,15 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     private final AtomicBoolean isRunWrite = new AtomicBoolean(false);
 
-    public FileByteWriter(String index) {
+    public FileByteWriter(String index, ApplicationContext applicationContext) {
 
         this.index = index;
 
-        broker = App.get(ManagerBroker.class).initAndGet(index, ByteItem.class, null);
+        broker = App.get(ManagerBroker.class).initAndGet(
+                ClassNameImpl.getClassNameStatic(FileByteWriter.class, index, applicationContext),
+                ByteItem.class,
+                null
+        );
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
         broker.setMaxSizeQueue(400_000);

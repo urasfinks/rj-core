@@ -23,19 +23,6 @@
   "liveNow": false,
   "panels": [
     {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 27,
-      "panels": [],
-      "title": "Statistics",
-      "type": "row"
-    },
-    {
       "datasource": {
         "type": "influxdb",
         "uid": "P951FEA4DE68E13C5"
@@ -129,7 +116,7 @@
         "h": 7,
         "w": 4,
         "x": 0,
-        "y": 1
+        "y": 0
       },
       "id": 1,
       "maxDataPoints": 60,
@@ -254,7 +241,7 @@
         "h": 7,
         "w": 4,
         "x": 4,
-        "y": 1
+        "y": 0
       },
       "id": 29,
       "maxDataPoints": 60,
@@ -282,113 +269,6 @@
         }
       ],
       "title": "StatisticSystem Heap",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "#c92020",
-            "mode": "palette-classic",
-            "seriesBy": "max"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "stepBefore",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 1,
-            "scaleDistribution": {
-              "linearThreshold": 2,
-              "log": 2,
-              "type": "symlog"
-            },
-            "showPoints": "always",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 0,
-          "fieldMinMax": false,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none",
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 6,
-        "x": 8,
-        "y": 1
-      },
-      "id": 23,
-      "maxDataPoints": 60,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": false
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"tpsDrop\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\"])\n\n\n\n",
-          "refId": "A"
-        }
-      ],
-      "title": "ManagerBroker Drop",
       "type": "timeseries"
     },
     {
@@ -465,8 +345,8 @@
       "gridPos": {
         "h": 28,
         "w": 10,
-        "x": 14,
-        "y": 1
+        "x": 8,
+        "y": 0
       },
       "id": 18,
       "maxDataPoints": 60,
@@ -496,113 +376,6 @@
         }
       ],
       "title": "ServicePromise Task Execute Nano",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "#c92020",
-            "mode": "palette-classic",
-            "seriesBy": "max"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "stepBefore",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 1,
-            "scaleDistribution": {
-              "linearThreshold": 2,
-              "log": 2,
-              "type": "symlog"
-            },
-            "showPoints": "always",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 0,
-          "fieldMinMax": false,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none",
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 0,
-        "y": 8
-      },
-      "id": 22,
-      "maxDataPoints": 60,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": false
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"tpsDeq\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\"])\n\n\n\n",
-          "refId": "A"
-        }
-      ],
-      "title": "ManagerBroker Dequeue",
       "type": "timeseries"
     },
     {
@@ -679,8 +452,8 @@
       "gridPos": {
         "h": 7,
         "w": 6,
-        "x": 8,
-        "y": 8
+        "x": 18,
+        "y": 0
       },
       "id": 20,
       "maxDataPoints": 60,
@@ -705,7 +478,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerExpiration\" and r._field == \"ItemSize\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\"])\n\n\n\n",
+          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerExpiration\" and r._field == \"ItemSize\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_field\"])\n\n\n\n",
           "refId": "A"
         }
       ],
@@ -787,7 +560,7 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 15
+        "y": 7
       },
       "id": 21,
       "maxDataPoints": 60,
@@ -812,11 +585,12 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"size\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\"])\n\n\n\n",
+          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"size\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_field\"])\n\n\n\n",
           "refId": "A"
         }
       ],
       "title": "ManagerBroker Size",
+      "transformations": [],
       "type": "timeseries"
     },
     {
@@ -827,16 +601,50 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "#c92020",
+            "mode": "palette-classic",
+            "seriesBy": "max"
           },
           "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
-            "filterable": true,
-            "inspect": false
+            "insertNulls": false,
+            "lineInterpolation": "stepBefore",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 1,
+            "scaleDistribution": {
+              "linearThreshold": 2,
+              "log": 2,
+              "type": "symlog"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
+          "decimals": 0,
+          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -851,123 +659,342 @@
               }
             ]
           },
+          "unit": "none",
           "unitScale": true
         },
         "overrides": [
           {
             "matcher": {
               "id": "byName",
-              "options": "Value"
+              "options": "SystemException"
             },
             "properties": [
               {
-                "id": "custom.width",
-                "value": 70
-              },
-              {
-                "id": "custom.align",
-                "value": "center"
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "RateLimit"
+              "options": "Error"
             },
             "properties": [
               {
-                "id": "custom.width",
-                "value": 115
-              },
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Debug"
+            },
+            "properties": [
               {
-                "id": "custom.align",
-                "value": "center"
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Info"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "semi-dark-green",
+                  "mode": "fixed"
+                }
               }
             ]
           }
         ]
       },
       "gridPos": {
-        "h": 14,
+        "h": 7,
         "w": 6,
-        "x": 8,
-        "y": 15
+        "x": 18,
+        "y": 7
       },
-      "id": 13,
+      "id": 30,
+      "maxDataPoints": 60,
       "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Name",
+          "sortDesc": false
         },
-        "showHeader": true,
-        "sortBy": []
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "single",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "10.3.3",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> limit(n: 1)\n|> filter(fn: (r) => r._measurement == \"ManagerRateLimit\" and r._field == \"max\" and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\", \"_start\", \"_stop\", \"_measurement\"])\n//|> group(columns: [\"_time\"])\n//|> sort(columns: [\"RateLimitKey\", \"RateLimitItem\", \"_field\", \"_value\"])",
+          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ServiceLogger\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_measurement\"])\n\n\n\n",
           "refId": "A"
         }
       ],
-      "title": "RateLimit",
+      "title": "ServiceLogger Tps",
       "transformations": [
         {
-          "id": "seriesToRows",
+          "id": "joinByField",
           "options": {}
-        },
-        {
-          "id": "extractFields",
-          "options": {
-            "source": "Metric"
-          }
         },
         {
           "id": "organize",
           "options": {
-            "excludeByName": {
-              "Metric": true,
-              "Time": true,
-              "max": true
-            },
+            "excludeByName": {},
             "includeByName": {},
             "indexByName": {
-              "Metric": 1,
-              "RateLimitItem": 4,
-              "RateLimitKey": 2,
-              "Time": 0,
-              "Value": 5,
-              "max": 3
+              "Debug": 2,
+              "Error": 1,
+              "Info": 3,
+              "SystemException": 0,
+              "Time": 4
             },
-            "renameByName": {
-              "RateLimitItem": "Item",
-              "RateLimitKey": "Key",
-              "Value": "Value"
-            }
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "fields": {},
-            "sort": [
-              {
-                "field": "Key"
-              }
-            ]
+            "renameByName": {}
           }
         }
       ],
-      "type": "table"
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#c92020",
+            "mode": "palette-classic",
+            "seriesBy": "max"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "stepBefore",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 1,
+            "scaleDistribution": {
+              "linearThreshold": 2,
+              "log": 2,
+              "type": "symlog"
+            },
+            "showPoints": "always",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 14
+      },
+      "id": 22,
+      "maxDataPoints": 60,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Name",
+          "sortDesc": false
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"tpsDeq\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_field\"])\n\n\n\n",
+          "refId": "A"
+        }
+      ],
+      "title": "ManagerBroker Dequeue",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#c92020",
+            "mode": "palette-classic",
+            "seriesBy": "max"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "stepBefore",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 1,
+            "scaleDistribution": {
+              "linearThreshold": 2,
+              "log": 2,
+              "type": "symlog"
+            },
+            "showPoints": "always",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 18,
+        "y": 14
+      },
+      "id": 23,
+      "maxDataPoints": 60,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Name",
+          "sortDesc": false
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"tpsDrop\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_field\"])\n\n\n\n",
+          "refId": "A"
+        }
+      ],
+      "title": "ManagerBroker Drop",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -1044,7 +1071,7 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 22
+        "y": 21
       },
       "id": 7,
       "maxDataPoints": 60,
@@ -1069,25 +1096,12 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"timeAvg\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\"])\n\n\n\n",
+          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"timeAvg\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_field\"])\n\n\n\n",
           "refId": "A"
         }
       ],
-      "title": "ManagerBroker TimeInQueue",
+      "title": "ManagerBroker TimeInQueue Avg",
       "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 29
-      },
-      "id": 28,
-      "panels": [],
-      "title": "Logs",
-      "type": "row"
     },
     {
       "datasource": {
@@ -1097,49 +1111,16 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "#c92020",
-            "mode": "palette-classic",
-            "seriesBy": "max"
+            "mode": "thresholds"
           },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "bars",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
             },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 1,
-            "scaleDistribution": {
-              "linearThreshold": 2,
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "filterable": true,
+            "inspect": false
           },
-          "decimals": 0,
-          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1154,207 +1135,54 @@
               }
             ]
           },
-          "unit": "short",
           "unitScale": true
         },
         "overrides": [
           {
             "matcher": {
               "id": "byName",
-              "options": "err"
+              "options": "Value"
             },
             "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "debug"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "info"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 24,
-        "x": 0,
-        "y": 30
-      },
-      "id": 26,
-      "maxDataPoints": 300,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": true
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket: \"5gm\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"TestLog\")\n  |> sort(columns: [\"_time\"], desc: true)\n  |> group(columns: [\"_time\", \"severity\"])\n  |> count()\n  |> group(columns:[\"severity\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: sum, createEmpty: false)",
-          "refId": "A"
-        }
-      ],
-      "title": "ServicePromise Nano",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "purple",
-            "mode": "shades"
-          },
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": [
-            {
-              "options": {
-                "debug": {
-                  "color": "light-blue",
-                  "index": 1
-                },
-                "err": {
-                  "color": "light-red",
-                  "index": 0
-                },
-                "info": {
-                  "color": "light-yellow",
-                  "index": 2
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unitScale": true
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "_time"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Time"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "_value"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Data"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "severity"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Type"
-              },
-              {
-                "id": "custom.filterable",
-                "value": true
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-text"
-                }
-              },
               {
                 "id": "custom.width",
-                "value": 80
+                "value": 70
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "RateLimit"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 115
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
               }
             ]
           }
         ]
       },
       "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 36
+        "h": 7,
+        "w": 6,
+        "x": 18,
+        "y": 21
       },
-      "id": 24,
-      "maxDataPoints": 50,
+      "id": 13,
       "options": {
         "cellHeight": "sm",
         "footer": {
           "countRows": false,
-          "enablePagination": true,
           "fields": "",
           "reducer": [
             "sum"
@@ -1371,36 +1199,56 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop) \n|> filter(fn: (r) => r._measurement == \"TestLog\" and  (r.correlation == \"${correlation}\" or \"all\" == \"${correlation}\"))\n|> group(columns: [\"_time\"])\n|> window(every: v.windowPeriod)\n//|> limit(n:1)\n|> group()\n|> drop(columns: [\"_start\", \"_stop\", \"_field\", \"_measurement\"])\n|> limit(n:50)",
+          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> limit(n: 1)\n|> filter(fn: (r) => r._measurement == \"ManagerRateLimit\" and r._field == \"max\" and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\", \"_start\", \"_stop\", \"_measurement\"])\n//|> group(columns: [\"_time\"])\n//|> sort(columns: [\"RateLimitKey\", \"RateLimitItem\", \"_field\", \"_value\"])",
           "refId": "A"
         }
       ],
-      "title": "Panel Title",
+      "title": "RateLimit",
       "transformations": [
+        {
+          "id": "seriesToRows",
+          "options": {}
+        },
         {
           "id": "extractFields",
           "options": {
-            "format": "json",
-            "replace": true
+            "source": "Metric"
           }
         },
         {
           "id": "organize",
           "options": {
-            "excludeByName": {},
+            "excludeByName": {
+              "Metric": true,
+              "Time": true,
+              "max": true
+            },
             "includeByName": {},
             "indexByName": {
-              "_time": 0,
-              "_value": 2,
-              "correlation": 3,
-              "severity": 1
+              "Metric": 1,
+              "RateLimitItem": 4,
+              "RateLimitKey": 2,
+              "Time": 0,
+              "Value": 5,
+              "max": 3
             },
-            "renameByName": {}
+            "renameByName": {
+              "RateLimitItem": "Item",
+              "RateLimitKey": "Key",
+              "Value": "Value"
+            }
           }
         },
         {
-          "id": "filterFieldsByName",
-          "options": {}
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Key"
+              }
+            ]
+          }
         }
       ],
       "type": "table"
@@ -1467,6 +1315,6 @@
   "timezone": "",
   "title": "New dashboard2",
   "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 21,
+  "version": 23,
   "weekStart": ""
 }

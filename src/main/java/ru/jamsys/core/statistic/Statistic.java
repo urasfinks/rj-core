@@ -12,6 +12,7 @@ import java.util.Map;
 public class Statistic implements Serializable {
 
     public final Map<String, String> tags = new LinkedHashMap<>();
+
     public final Map<String, Object> fields = new LinkedHashMap<>();
 
     public Statistic() {

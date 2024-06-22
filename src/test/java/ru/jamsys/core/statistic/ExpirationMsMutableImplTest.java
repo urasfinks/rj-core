@@ -51,4 +51,5 @@ class ExpirationMsMutableImplTest {
         Assertions.assertFalse(timeControllerMsMutable instanceof ExpirationMsImmutable);
 
     }
+
 }

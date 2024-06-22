@@ -233,20 +233,6 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
         }
     }
 
-    private void addToParkReturnBeforeCheckInactivity(@NonNull List<PI> poolItems) {
-        // Не использовать этот метод вообще в личных целях
-        lockAddToPark.lock();
-        for (PI poolItem : poolItems) {
-            if (!parkQueue.contains(poolItem)) {
-                parkQueue.addLast(poolItem);
-                updateParkStatistic();
-            } else {
-                App.error(new RuntimeException("Этот код не должен был случиться! Проверить логику!"));
-            }
-        }
-        lockAddToPark.unlock();
-    }
-
     // Это не явное удаление, а всего лишь маркировка, что в принципе объект может быть удалён
     private boolean addToRemove(@NonNull PI poolItem) {
         // Добавлена блокировка, что бы избежать дублей в очереди на удаление
@@ -320,7 +306,7 @@ public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & 
                 //      1. [3,4,5,6]
                 //      2. [2,3,4,5,6]
                 //      3. [1,2,3,4,5,6]
-                addToParkReturnBeforeCheckInactivity(returns.reversed());
+                returns.forEach(this::addToPark);
             }
         }
     }

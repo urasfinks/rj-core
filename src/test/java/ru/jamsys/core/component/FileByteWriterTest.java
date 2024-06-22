@@ -41,14 +41,14 @@ class FileByteWriterTest {
     @Test
     void checkOverMaxFileWrite() {
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileByteWriter test = new FileByteWriter("default1");
+        FileByteWriter test = new FileByteWriter("default1", App.context);
 
         test.setProperty("log.file.size.kb", "1");
         test.setProperty("log.file.count", "2");
 
-        test.append(new Log(LogType.INFO).setData("LogData1").addHeader("key", "value"));
-        test.append(new Log(LogType.INFO).setData("LogData2").addHeader("key", "value"));
-        test.append(new Log(LogType.INFO).setData("LogData3").addHeader("key", "value"));
+        test.append(new Log(LogType.INFO).setData("LogData1"));
+        test.append(new Log(LogType.INFO).setData("LogData2"));
+        test.append(new Log(LogType.INFO).setData("LogData3"));
         test.keepAlive(new AtomicBoolean(true));
         // Потому что за одну итерацию мы не записываем больше файлов чем максимальное кол-во
         // Ничего личного, просто такие правила
@@ -66,13 +66,13 @@ class FileByteWriterTest {
     void checkNameLog() {
 
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileByteWriter test = new FileByteWriter("default2");
+        FileByteWriter test = new FileByteWriter("default2", App.context);
 
         test.setProperty("log.file.count", "100");
 
-        test.append(new Log(LogType.INFO).setData("LogData1").addHeader("key", "value"));
-        test.append(new Log(LogType.INFO).setData("LogData2").addHeader("key", "value"));
-        test.append(new Log(LogType.INFO).setData("LogData3").addHeader("key", "value"));
+        test.append(new Log(LogType.INFO).setData("LogData1"));
+        test.append(new Log(LogType.INFO).setData("LogData2"));
+        test.append(new Log(LogType.INFO).setData("LogData3"));
         test.keepAlive(new AtomicBoolean(true));
 
         Assertions.assertEquals("[/default2.000.proc.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
@@ -94,13 +94,13 @@ class FileByteWriterTest {
 
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
-        FileByteWriter test = new FileByteWriter("default3");
+        FileByteWriter test = new FileByteWriter("default3", App.context);
         // Проверяем, что default3.002.proc.bin - удалён
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
         Assertions.assertEquals(2, test.getIndexFile());
 
-        test.append(new Log(LogType.INFO).setData("LogData1").addHeader("key", "value"));
+        test.append(new Log(LogType.INFO).setData("LogData1"));
         test.keepAlive(new AtomicBoolean(true));
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
@@ -112,12 +112,12 @@ class FileByteWriterTest {
     void checkTime() {
         UtilFile.removeAllFilesInFolder("LogManager");
         long start = System.currentTimeMillis();
-        FileByteWriter test = new FileByteWriter("default4");
+        FileByteWriter test = new FileByteWriter("default4", App.context);
         //test.getBroker().getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(9999999);
         test.getBroker().setMaxSizeQueue(9999999);
         long start2 = System.currentTimeMillis();
         for (int i = 0; i < 1000000; i++) {
-            test.append(new Log(LogType.INFO).setData("LogData" + i).addHeader("key", "value"));
+            test.append(new Log(LogType.INFO).setData("LogData" + i));
         }
         System.out.println("add time: " + (System.currentTimeMillis() - start2));
         long start3 = System.currentTimeMillis();
@@ -129,12 +129,12 @@ class FileByteWriterTest {
 
     @Test
     void test() throws Exception {
-        Log log1 = new Log(LogType.INFO).setData("Hello").addHeader("x", "y");
+        Log log1 = new Log(LogType.INFO).setData("Hello");
         byte[] x = log1.getByteInstance();
 
         Log log2 = new Log(LogType.INFO);
         log2.instanceFromByte(x);
-        System.out.println(log1);
+        System.out.println(log2);
         Assertions.assertEquals(log1.toString(), log2.toString());
 
     }
@@ -156,7 +156,7 @@ class FileByteWriterTest {
         UtilFile.removeAllFilesInFolder("LogManager");
         StatisticSec statisticSec1 = new StatisticSec();
         statisticSec1.getList().add(new Statistic().addField("f1", 1).addTag("t1", "Hello"));
-        FileByteWriter test = new FileByteWriter("default5");
+        FileByteWriter test = new FileByteWriter("default5", App.context);
         test.append(statisticSec1);
         test.keepAlive(new AtomicBoolean(true));
     }

@@ -320,6 +320,18 @@ public class Util {
         return sb.toString();
     }
 
+    public static String camelToSnake(String phrase) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < phrase.length(); i++) {
+            char c = phrase.charAt(i);
+            if (Character.isUpperCase(c) && i > 0) {
+                sb.append("_");
+            }
+            sb.append(c);
+        }
+        return sb.toString().toUpperCase();
+    }
+
     public static String ucword(String someString) {
         return someString.substring(0, 1).toUpperCase() + someString.substring(1);
     }

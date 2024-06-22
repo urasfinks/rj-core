@@ -58,7 +58,7 @@ public class TaskWait<
 
     @Override
     public boolean checkCriticalOfExceptionOnComplete(Throwable e) {
-        return poolSettings.getCheckExceptionOnComplete().apply(e);
+        return poolSettings.getIsFatalExceptionOnComplete().apply(e);
     }
 
     @Override
