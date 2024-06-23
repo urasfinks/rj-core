@@ -1,0 +1,40 @@
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo tee /etc/apt/trusted.gpg.d/pgdg.asc &>/dev/null
+
+sudo apt update
+
+sudo apt install postgresql-client-15 postgresql-15
+
+sudo su postgres -c psql postgres
+ALTER USER postgres WITH PASSWORD '***';
+
+sudo systemctl restart postgresql
+
+sudo apt-get -y install postgresql-15-cron
+
+shared_preload_libraries = 'pg_cron'
+cron.database_name = 'postgres'
+
+sudo systemctl restart postgresql
+
+CREATE EXTENSION pg_cron;
+
+select
+  cron.schedule(
+    'partition-helper',
+    '0 0 * * *', -- every day at midnight
+    $$
+    call create_partition(
+    	now()::timestamp::date::timestamp,
+    	30,
+    	interval '1 day'
+    );
+    $$
+  );
+  UPDATE cron.job SET nodename = '';
+
+--every day at noon
+SELECT cron.schedule('delete-job-run-details', '0 12 * * *', $$DELETE FROM cron.job_run_details WHERE end_time < now() - interval '1 days'$$);
+UPDATE cron.job SET nodename = '';
+
+--select cron.unschedule('partition-helper')
