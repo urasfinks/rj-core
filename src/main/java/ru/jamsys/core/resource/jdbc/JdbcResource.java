@@ -69,7 +69,7 @@ public class JdbcResource
         if (template == null) {
             throw new RuntimeException("TemplateEnum: " + arguments.getName() + " return null template");
         }
-        return execute(connection, template, arguments.getArgs(), statementControl, arguments.getDebug());
+        return execute(connection, template, arguments.getListArgs(), statementControl, arguments.getDebug());
     }
 
     @Override

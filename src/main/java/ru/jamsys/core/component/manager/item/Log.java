@@ -27,6 +27,7 @@ public class Log implements ByteItem, Correlation {
 
     public Log(LogType logType) {
         this.logType = logType;
+        this.correlation = java.util.UUID.randomUUID().toString();
     }
 
     public Log(LogType logType, String correlation) {
@@ -36,13 +37,12 @@ public class Log implements ByteItem, Correlation {
 
     public Log setData(String data) {
         this.data = data;
-        this.correlation = java.util.UUID.randomUUID().toString();
         return this;
     }
 
     public byte[] getByteInstance() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        UtilLog.writeShortString(os, correlation);
+        UtilLog.writeShortString(os, getCorrelation());
         UtilLog.writeShortString(os, logType.getName());
         UtilLog.writeShortString(os, timeAdd + "");
         UtilLog.writeString(os, data);

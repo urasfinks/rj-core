@@ -17,6 +17,7 @@ public class TemplateJdbc {
     @Getter
     private final StatementType statementType;
 
+    @Getter
     private boolean dynamicArgument = false;
 
     private List<TemplateItemTwix> listTemplateItemTwix;

@@ -4,7 +4,9 @@ import lombok.Getter;
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
 import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unused")
@@ -14,7 +16,7 @@ public class JdbcRequest {
     final JdbcTemplate jdbcTemplate;
 
     @Getter
-    final Map<String, Object> args = new LinkedHashMap<>();
+    final List<Map<String, Object>> listArgs = new ArrayList<>();
 
     boolean debug = false;
 
@@ -23,10 +25,16 @@ public class JdbcRequest {
     public JdbcRequest(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
         this.nameCache = jdbcTemplate.getName();
+        listArgs.add(new LinkedHashMap<>());
     }
 
     public JdbcRequest addArg(String key, Object obj) {
-        args.put(key, obj);
+        listArgs.getLast().put(key, obj);
+        return this;
+    }
+
+    public JdbcRequest nextBatch() {
+        listArgs.add(new LinkedHashMap<>());
         return this;
     }
 

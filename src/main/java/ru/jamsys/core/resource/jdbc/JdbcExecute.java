@@ -14,11 +14,15 @@ public interface JdbcExecute {
     default List<Map<String, Object>> execute(
             Connection conn,
             TemplateJdbc template,
-            Map<String, Object> args,
+            List<Map<String, Object>> argsList,
             StatementControl statementControl,
             boolean debug
     ) throws Exception {
-        CompiledSqlTemplate compiledSqlTemplate = template.compile(args);
+        // Динамичный фрагмент не может использоваться в executeBatch
+        if (template.isDynamicArgument() && argsList.size() > 1) {
+            throw new Exception("ExecuteBatch not support DynamicArguments");
+        }
+        CompiledSqlTemplate compiledSqlTemplate = template.compile(argsList.getFirst());
         if (debug) {
             Util.logConsole(compiledSqlTemplate.getSql());
             Util.logConsole(template.debug(compiledSqlTemplate));
@@ -29,10 +33,22 @@ public interface JdbcExecute {
                 statementType.isSelect()
                         ? conn.prepareStatement(compiledSqlTemplate.getSql())
                         : conn.prepareCall(compiledSqlTemplate.getSql());
-        for (Argument argument : compiledSqlTemplate.getListArgument()) {
-            setParam(statementControl, conn, preparedStatement, argument);
+        if (argsList.size() == 1) {
+            for (Argument argument : compiledSqlTemplate.getListArgument()) {
+                setParam(statementControl, conn, preparedStatement, argument);
+            }
+            preparedStatement.execute();
+        } else if (!argsList.isEmpty()) {
+            for (Map<String, Object> qArgs : argsList) {
+                CompiledSqlTemplate tmp = template.compile(qArgs);
+                for (Argument argument : tmp.getListArgument()) {
+                    setParam(statementControl, conn, preparedStatement, argument);
+                    preparedStatement.addBatch();
+                }
+            }
+            preparedStatement.executeBatch();
         }
-        preparedStatement.execute();
+
         List<Map<String, Object>> listRet = new ArrayList<>();
         switch (template.getStatementType()) {
             case SELECT_WITHOUT_AUTO_COMMIT:
