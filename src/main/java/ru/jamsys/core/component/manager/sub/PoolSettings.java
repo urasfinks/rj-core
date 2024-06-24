@@ -8,13 +8,13 @@ import java.util.function.Function;
 @Getter
 public class PoolSettings<T extends Resource<?, ?, ?>, RC> {
 
+    private final String index;
+
     private final Class<T> classPoolItem;
 
     private final RC resourceConstructor;
 
     private final Function<Throwable, Boolean> isFatalExceptionOnComplete;
-
-    private final String index;
 
     public PoolSettings(
             String index,
@@ -27,4 +27,5 @@ public class PoolSettings<T extends Resource<?, ?, ?>, RC> {
         this.resourceConstructor = resourceConstructor;
         this.isFatalExceptionOnComplete = isFatalExceptionOnComplete;
     }
+
 }

@@ -6,6 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.ByteItem;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
+import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -14,12 +15,15 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 @Component
 @Scope("prototype")
 public class FileByteReaderResource
         extends ExpirationMsMutableImpl
-        implements Resource<NamespaceResourceConstructor, FileByteReaderRequest, List<ByteItem>> {
+        implements
+        Resource<NamespaceResourceConstructor, FileByteReaderRequest, List<ByteItem>>,
+        ResourceCheckException {
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
@@ -50,6 +54,11 @@ public class FileByteReaderResource
     @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 0;
+    }
+
+    @Override
+    public Function<Throwable, Boolean> getFatalException() {
+        return _ -> false;
     }
 
 }

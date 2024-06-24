@@ -22,7 +22,7 @@ import ru.jamsys.core.flat.util.ListSort;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
-import ru.jamsys.core.resource.DefaultPoolResourceArgument;
+import ru.jamsys.core.resource.PoolSettingsRegistry;
 import ru.jamsys.core.resource.filebyte.reader.FileByteReaderRequest;
 import ru.jamsys.core.resource.filebyte.reader.FileByteReaderResource;
 import ru.jamsys.core.resource.influx.InfluxResource;
@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 @Component
 @Lazy
@@ -124,7 +125,12 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                 .onError((_, promise) -> {
                     Throwable exception = promise.getException();
                     if (exception != null) {
-                        if (DefaultPoolResourceArgument.get(InfluxResource.class).getIsFatalExceptionOnComplete().apply(exception)) {
+                        @SuppressWarnings("unchecked")
+                        Function<Throwable, Boolean> isFatalExceptionOnComplete = App
+                                .get(PoolSettingsRegistry.class)
+                                .get(InfluxResource.class, "default")
+                                .getIsFatalExceptionOnComplete();
+                        if (isFatalExceptionOnComplete.apply(exception)) {
                             // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
                             List<StatisticSec> reserveStatistic = promise.getProperty(PromiseProperty.RESERVE_STATISTIC.name(), List.class, null);
                             if (reserveStatistic != null && !reserveStatistic.isEmpty()) {

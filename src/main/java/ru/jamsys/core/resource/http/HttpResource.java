@@ -8,6 +8,8 @@ import ru.jamsys.core.resource.http.client.HttpClient;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
+import java.util.function.Function;
+
 @Component
 @Scope("prototype")
 public class HttpResource extends ExpirationMsMutableImpl implements Resource<HttpConstructor, HttpClient, HttpResponse> {
@@ -31,6 +33,11 @@ public class HttpResource extends ExpirationMsMutableImpl implements Resource<Ht
     @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 0;
+    }
+
+    @Override
+    public Function<Throwable, Boolean> getFatalException() {
+        return _ -> false;
     }
 
 }

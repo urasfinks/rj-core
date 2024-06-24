@@ -15,6 +15,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Function;
 
 @Component
 @Scope("prototype")
@@ -64,6 +65,11 @@ public class TelegramNotificationResource
     @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 0;
+    }
+
+    @Override
+    public Function<Throwable, Boolean> getFatalException() {
+        return _ -> false;
     }
 
 }

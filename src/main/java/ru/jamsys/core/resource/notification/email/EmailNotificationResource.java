@@ -9,15 +9,21 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
+import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+
+import java.util.function.Function;
 
 @Component
 @Scope("prototype")
 public class EmailNotificationResource
         extends ExpirationMsMutableImpl
-        implements Resource<NamespaceResourceConstructor, EmailNotificationRequest, Void> {
+        implements
+        Resource<NamespaceResourceConstructor, EmailNotificationRequest, Void>,
+        ResourceCheckException
+{
 
     private SecurityComponent securityComponent;
 
@@ -72,6 +78,11 @@ public class EmailNotificationResource
     @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 0;
+    }
+
+    @Override
+    public Function<Throwable, Boolean> getFatalException() {
+        return _ -> false;
     }
 
 }

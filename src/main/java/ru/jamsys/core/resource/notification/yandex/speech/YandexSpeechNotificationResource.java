@@ -15,12 +15,15 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.io.File;
 import java.util.Set;
+import java.util.function.Function;
 
 @Component
 @Scope("prototype")
 public class YandexSpeechNotificationResource
         extends ExpirationMsMutableImpl
-        implements Resource<NamespaceResourceConstructor, YandexSpeechNotificationRequest, Void>, PropertySubscriberNotify {
+        implements
+        Resource<NamespaceResourceConstructor, YandexSpeechNotificationRequest, Void>,
+        PropertySubscriberNotify {
 
     YandexSpeechClient client = null;
 
@@ -76,6 +79,11 @@ public class YandexSpeechNotificationResource
     @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 0;
+    }
+
+    @Override
+    public Function<Throwable, Boolean> getFatalException() {
+        return _ -> false;
     }
 
 }

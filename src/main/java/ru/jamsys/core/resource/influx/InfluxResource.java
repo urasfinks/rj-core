@@ -9,17 +9,19 @@ import com.influxdb.internal.AbstractRestClient;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
+import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,7 +29,10 @@ import java.util.logging.Logger;
 @Scope("prototype")
 public class InfluxResource
         extends ExpirationMsMutableImpl
-        implements Resource<NamespaceResourceConstructor, List<Point>, Void>, PropertySubscriberNotify {
+        implements
+        Resource<NamespaceResourceConstructor, List<Point>, Void>,
+        PropertySubscriberNotify,
+        ResourceCheckException {
 
     //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token ''
 
@@ -87,6 +92,18 @@ public class InfluxResource
     @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 0;
+    }
+
+    @Override
+    public Function<Throwable, Boolean> getFatalException() {
+        return throwable -> {
+            if (throwable != null) {
+                String msg = throwable.getMessage();
+                // Не конкурентная проверка
+                return msg.contains("Failed to connect");
+            }
+            return false;
+        };
     }
 
 }

@@ -16,6 +16,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.Function;
 
 public class ThreadResource extends ExpirationMsMutableImpl implements ClassName, Resource<Void, Void, Void> {
 
@@ -234,6 +235,11 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
     @Override
     public void close() {
         shutdown();
+    }
+
+    @Override
+    public Function<Throwable, Boolean> getFatalException() {
+        return _ -> false;
     }
 
 }

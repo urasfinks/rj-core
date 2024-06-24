@@ -3,8 +3,8 @@ package ru.jamsys.core.resource.jdbc;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
@@ -18,6 +18,7 @@ import java.sql.DriverManager;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 @Component
 @Scope("prototype")
@@ -87,6 +88,21 @@ public class JdbcResource
     @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 0;
+    }
+
+    @Override
+    public Function<Throwable, Boolean> getFatalException() {
+        return th -> {
+            if (th != null) {
+                String msg = th.getMessage();
+                // Не конкурентная проверка
+                return msg.contains("закрыто")
+                        || msg.contains("close")
+                        || msg.contains("Connection reset")
+                        || msg.contains("Ошибка ввода/вывода при отправке бэкенду");
+            }
+            return false;
+        };
     }
 
 }

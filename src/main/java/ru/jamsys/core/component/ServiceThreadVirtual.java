@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 /**
  * Wow it's amazing!
@@ -50,6 +51,11 @@ public class ServiceThreadVirtual implements Resource<Void, PromiseTask, Void> {
             return ((ThreadPoolExecutor) executorService).getActiveCount();
         }
         return isThreadRun.get() ? 1 : 0;
+    }
+
+    @Override
+    public Function<Throwable, Boolean> getFatalException() {
+        return _ -> false;
     }
 
 }
