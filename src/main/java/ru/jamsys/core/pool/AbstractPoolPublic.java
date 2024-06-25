@@ -9,8 +9,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // Я считаю, что эта реализация плохая, так как в ней есть ожидания
 // Я решил оставить эту реализацию только для тестирования, так как напрямую можно пощупать poolItem
 
-public abstract class AbstractPoolPublic<RC, RA, RR, PI extends ExpirationMsMutable & Resource<RC, RA, RR>>
-        extends AbstractPool<RC, RA, RR, PI> {
+public abstract class AbstractPoolPublic<RA, RR, PI extends ExpirationMsMutable & Resource<RA, RR>>
+        extends AbstractPool<RA, RR, PI> {
 
     public AbstractPoolPublic(String name, Class<PI> cls) {
         super(name, cls);

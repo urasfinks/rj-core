@@ -22,7 +22,7 @@ import java.util.function.Function;
 public class YandexSpeechNotificationResource
         extends ExpirationMsMutableImpl
         implements
-        Resource<NamespaceResourceConstructor, YandexSpeechNotificationRequest, Void>,
+        Resource<YandexSpeechNotificationRequest, Void>,
         PropertySubscriberNotify {
 
     YandexSpeechClient client = null;

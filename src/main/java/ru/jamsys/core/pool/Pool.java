@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.StatisticsFlush;
 // RR - ResourceResult
 // PI - PoolItem
 
-public interface Pool<RC, RA, RR, PI extends Resource<RC, RA, RR>> extends StatisticsFlush {
+public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlush {
 
     //После работы с ресурсом его надо вернуть в пул
     void complete(PI ret, Throwable e);

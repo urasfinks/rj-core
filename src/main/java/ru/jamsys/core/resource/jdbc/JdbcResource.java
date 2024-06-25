@@ -7,8 +7,10 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
+import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
+import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -25,7 +27,7 @@ import java.util.function.Function;
 public class JdbcResource
         extends ExpirationMsMutableImpl
         implements
-        Resource<JdbcResourceConstructor, JdbcRequest, List<Map<String, Object>>>,
+        Resource<JdbcRequest, List<Map<String, Object>>>,
         JdbcExecute,
         PropertySubscriberNotify {
 
@@ -38,10 +40,10 @@ public class JdbcResource
     private final JdbcProperty property = new JdbcProperty();
 
     @Override
-    public void constructor(JdbcResourceConstructor constructor) throws Exception {
+    public void constructor(NamespaceResourceConstructor constructor) throws Exception {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         subscriber = serviceProperty.getSubscriber(this, property, constructor.ns);
-        this.statementControl = constructor.getStatementControl();
+        this.statementControl = new DefaultStatementControl();
     }
 
     @Override

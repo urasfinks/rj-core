@@ -342,7 +342,7 @@ class PromiseImplTest {
     void testPostgreSql() {
         Promise promise = servicePromise.get("testPromisePosgreSQL", 6_000L);
         promise
-                .appendWithResource("jdbc", JdbcResource.class, (_, _, jdbcResource) -> {
+                .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, jdbcResource) -> {
                     try {
                         List<Map<String, Object>> execute = jdbcResource.execute(new JdbcRequest(TestJdbcTemplate.GET_LOG));
                         System.out.println(execute);

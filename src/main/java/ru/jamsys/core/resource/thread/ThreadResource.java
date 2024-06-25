@@ -9,6 +9,7 @@ import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
+import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -18,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
 
-public class ThreadResource extends ExpirationMsMutableImpl implements ClassName, Resource<Void, Void, Void> {
+public class ThreadResource extends ExpirationMsMutableImpl implements ClassName, Resource<Void, Void> {
 
     private final Thread thread;
 
@@ -223,7 +224,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
     }
 
     @Override
-    public void constructor(Void constructor) {
+    public void constructor(NamespaceResourceConstructor constructor) {
 
     }
 

@@ -20,7 +20,7 @@ import java.util.function.Function;
 @Scope("prototype")
 public class ReCaptchaResource
         extends ExpirationMsMutableImpl
-        implements Resource<NamespaceResourceConstructor, String, HttpResponse> {
+        implements Resource<String, HttpResponse> {
 
     private final SecurityComponent securityComponent;
 

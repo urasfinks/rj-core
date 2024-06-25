@@ -12,20 +12,20 @@ import java.util.function.Function;
 
 @Component
 public class PoolSettingsRegistry<
-        R extends Resource<?, ?, RC> & ResourceCheckException,
+        R extends Resource<?, RC> & ResourceCheckException,
         RC extends NamespaceResourceConstructor
         >
         implements ClassName {
 
     private final Map<Class<R>, Function<Throwable, Boolean>> fn = new HashMap<>();
 
-    private final Map<String, PoolSettings<R, RC>> registry = new HashMap<>();
+    private final Map<String, PoolSettings<R>> registry = new HashMap<>();
 
     @SuppressWarnings("all")
-    public PoolSettings<?, ?> get(Class<R> cls, String ns) {
+    public PoolSettings<?> get(Class<R> cls, String ns) {
         String index = ClassNameImpl.getClassNameStatic(cls, ns, App.context);
         return registry.computeIfAbsent(index, s -> {
-            return (PoolSettings<R, RC>) new PoolSettings<>(
+            return (PoolSettings<R>) new PoolSettings<>(
                     s,
                     cls,
                     new NamespaceResourceConstructor(ns),

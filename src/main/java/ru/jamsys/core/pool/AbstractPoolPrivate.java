@@ -8,8 +8,8 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 // Так как все объекты пула живут своей жизнью, они могут пойти поспать или вообще перестать работать
 // Для синхронизации с внешним миром - есть звоночек (это как вызов официанта ServiceBell) - что бы взбодрить пул
 
-public abstract class AbstractPoolPrivate<RA, RR, PI extends ExpirationMsMutable & Resource<Void, RA, RR>>
-        extends AbstractPool<Void, RA, RR, PI> {
+public abstract class AbstractPoolPrivate<RA, RR, PI extends ExpirationMsMutable & Resource<RA, RR>>
+        extends AbstractPool<RA, RR, PI> {
 
     public AbstractPoolPrivate(String name, Class<PI> cls) {
         super(name, cls);

@@ -42,9 +42,9 @@ import java.util.function.Function;
 // Таким образом в парке в начале очереди будут тушиться пловцы без работы до их кончины
 
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<RC, RA, RR, PI extends ExpirationMsMutable & Resource<RC, RA, RR>>
+public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Resource<RA, RR>>
         extends ExpirationMsMutableImpl
-        implements Pool<RC, RA, RR, PI>, LifeCycleInterface, KeepAlive, ClassName {
+        implements Pool<RA, RR, PI>, LifeCycleInterface, KeepAlive, ClassName {
 
     @Getter
     @ToString.Include

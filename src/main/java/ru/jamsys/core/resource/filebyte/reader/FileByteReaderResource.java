@@ -22,7 +22,7 @@ import java.util.function.Function;
 public class FileByteReaderResource
         extends ExpirationMsMutableImpl
         implements
-        Resource<NamespaceResourceConstructor, FileByteReaderRequest, List<ByteItem>>,
+        Resource<FileByteReaderRequest, List<ByteItem>>,
         ResourceCheckException {
 
     @Override

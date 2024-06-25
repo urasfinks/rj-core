@@ -13,24 +13,24 @@ import ru.jamsys.core.resource.Resource;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends PromiseTask {
+public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTask {
 
     @Getter
     @Setter
-    private PoolItemEnvelope<?, ?, ?, T> poolItemEnvelope;
+    private PoolItemEnvelope<?, ?, T> poolItemEnvelope;
 
     private final TriConsumer<AtomicBoolean, Promise, T> procedure;
 
-    private final TaskWait<?, ?, ?, ?> managerElement;
+    private final TaskWait<?, ?, ?> managerElement;
 
-    private final PoolSettings<T, ?> poolSettings;
+    private final PoolSettings<T> poolSettings;
 
     @SuppressWarnings("all")
     public PromiseTaskWithResource(
             String index,
             Promise promise,
             TriConsumer<AtomicBoolean, Promise, T> procedure,
-            PoolSettings<T, ?> poolSettings
+            PoolSettings<T> poolSettings
     ) {
         super(index, promise, PromiseTaskExecuteType.IO);
         this.poolSettings = poolSettings;
@@ -50,7 +50,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
 
     @Override
     protected void executeBlock() throws Throwable {
-        try (PoolItemEnvelope<?, ?, ?, T> res = getPoolItemEnvelope()) {
+        try (PoolItemEnvelope<?, ?, T> res = getPoolItemEnvelope()) {
             try {
                 procedure.accept(isThreadRun, getPromise(), res.getItem());
                 getPromise().complete(this);
@@ -62,7 +62,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?, ?>> extends Promis
     }
 
     // Пул вызывает этот метод
-    public void start(PoolItemEnvelope<?, ?, ?, T> poolItem) {
+    public void start(PoolItemEnvelope<?, ?, T> poolItem) {
         setPoolItemEnvelope(poolItem);
         getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Received(" + poolSettings.getIndex() + ")", null, null, null));
         super.start();

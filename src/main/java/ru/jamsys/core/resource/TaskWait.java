@@ -17,22 +17,21 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 // Аргументы для действия над ресурсом задаются либо при инициализации задачи, либо непосредственно перед запуском
 
 public class TaskWait<
-        RC,
         RA,
         RR,
-        PI extends ExpirationMsMutable & Resource<RC, RA, RR>
+        PI extends ExpirationMsMutable & Resource<RA, RR>
         >
-        extends AbstractPool<RC, RA, RR, PI>
+        extends AbstractPool<RA, RR, PI>
         implements Closable, CheckClassItem {
 
-    private final PoolSettings<PI, RC> poolSettings;
+    private final PoolSettings<PI> poolSettings;
 
     @SuppressWarnings("all")
     final private Broker<PromiseTaskWithResource> broker;
 
     private final Class<PI> classItem;
 
-    public TaskWait(String name, PoolSettings<PI, RC> poolSettings, Class<PI> classItem) {
+    public TaskWait(String name, PoolSettings<PI> poolSettings, Class<PI> classItem) {
         super(name, poolSettings.getClassPoolItem());
         this.poolSettings = poolSettings;
         this.classItem = classItem;

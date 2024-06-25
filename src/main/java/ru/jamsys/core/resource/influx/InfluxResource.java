@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 public class InfluxResource
         extends ExpirationMsMutableImpl
         implements
-        Resource<NamespaceResourceConstructor, List<Point>, Void>,
+        Resource<List<Point>, Void>,
         PropertySubscriberNotify,
         ResourceCheckException {
 

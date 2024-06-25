@@ -28,7 +28,7 @@ import java.util.function.Function;
 public class AppleNotificationResource
         extends ExpirationMsMutableImpl
         implements
-        Resource<NamespaceResourceConstructor, AppleNotificationRequest, HttpResponse>,
+        Resource<AppleNotificationRequest, HttpResponse>,
         PropertySubscriberNotify {
 
     private ManagerVirtualFileSystem managerVirtualFileSystem;

@@ -21,7 +21,7 @@ import java.util.function.Function;
 public class EmailNotificationResource
         extends ExpirationMsMutableImpl
         implements
-        Resource<NamespaceResourceConstructor, EmailNotificationRequest, Void>,
+        Resource<EmailNotificationRequest, Void>,
         ResourceCheckException
 {
 

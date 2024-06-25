@@ -8,9 +8,9 @@ import ru.jamsys.core.resource.Resource;
 // RR - ResourceResult
 // PI - PoolItem
 
-public class PoolItemEnvelope<RC, RA, RR, PI extends Resource<RC, RA, RR>> implements AutoCloseable {
+public class PoolItemEnvelope<RA, RR, PI extends Resource<RA, RR>> implements AutoCloseable {
 
-    final Pool<RC, RA, RR, PI> pool;
+    final Pool<RA, RR, PI> pool;
 
     @Getter
     final PI item;
@@ -18,7 +18,7 @@ public class PoolItemEnvelope<RC, RA, RR, PI extends Resource<RC, RA, RR>> imple
     @Setter
     private Throwable throwable = null;
 
-    public PoolItemEnvelope(Pool<RC, RA, RR, PI> pool, PI item) {
+    public PoolItemEnvelope(Pool<RA, RR, PI> pool, PI item) {
         this.pool = pool;
         this.item = item;
     }

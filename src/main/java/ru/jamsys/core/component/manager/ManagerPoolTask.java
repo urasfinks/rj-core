@@ -15,24 +15,23 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
 @Component
 public class ManagerPoolTask<
-        RC,
         RA,
         RR,
-        PI extends ExpirationMsMutable & Resource<RC, RA, RR>
-        > extends AbstractManager<TaskWait<?, ?, ?, ?>, PoolSettings<PI, RC>>
+        PI extends ExpirationMsMutable & Resource<RA, RR>
+        > extends AbstractManager<TaskWait<?, ?, ?>, PoolSettings<PI>>
         implements KeepAliveComponent {
 
-    public TaskWait<RC, RA, RR, PI> get(String index, PoolSettings<PI, RC> argument) {
+    public TaskWait<RA, RR, PI> get(String index, PoolSettings<PI> argument) {
         return (TaskWait) getManagerElement(index, argument.getClassPoolItem(), argument);
     }
 
     @Override
-    public TaskWait<?, ?, ?, ?> build(
+    public TaskWait<?, ?, ?> build(
             String index,
             Class<?> classItem,
-            PoolSettings<PI, RC> poolSettings
+            PoolSettings<PI> poolSettings
     ) {
-        TaskWait<RC, RA, RR, ?> taskWait = new TaskWait<>(
+        TaskWait<RA, RR, ?> taskWait = new TaskWait<>(
                 index,
                 poolSettings,
                 (Class<PI>) classItem

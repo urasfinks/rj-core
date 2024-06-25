@@ -27,7 +27,7 @@ import java.util.function.Function;
 public class AndroidNotificationResource
         extends ExpirationMsMutableImpl
         implements
-        Resource<NamespaceResourceConstructor, AndroidNotificationRequest, HttpResponse>,
+        Resource<AndroidNotificationRequest, HttpResponse>,
         PropertySubscriberNotify {
 
     private String accessToken;

@@ -6,10 +6,10 @@ import ru.jamsys.core.resource.balancer.BalancerItem;
 // A - ArgumentsExecute
 // R - Result
 
-public interface Resource<C, A, R> extends BalancerItem, ResourceCheckException {
+public interface Resource<A, R> extends BalancerItem, ResourceCheckException {
 
     // Вызывается при создании экземпляра ресурса
-    void constructor(C constructor) throws Throwable;
+    void constructor(NamespaceResourceConstructor constructor) throws Throwable;
 
     R execute(A arguments) throws Throwable;
 

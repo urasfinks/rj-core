@@ -2,6 +2,7 @@ package ru.jamsys.core.component;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.promise.PromiseTask;
+import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.balancer.algorithm.LeastConnections;
@@ -22,14 +23,14 @@ import java.util.function.Function;
  */
 
 @Component
-public class ServiceThreadVirtual implements Resource<Void, PromiseTask, Void> {
+public class ServiceThreadVirtual implements Resource<PromiseTask, Void> {
 
     private final ExecutorService executorService = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("v-thread-", 0).factory());
 
     private final AtomicBoolean isThreadRun = new AtomicBoolean(true);
 
     @Override
-    public void constructor(Void constructor) {
+    public void constructor(NamespaceResourceConstructor constructor) {
 
     }
 

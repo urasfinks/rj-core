@@ -21,7 +21,7 @@ import java.util.function.Function;
 @Scope("prototype")
 public class TelegramNotificationResource
         extends ExpirationMsMutableImpl
-        implements Resource<NamespaceResourceConstructor, TelegramNotificationRequest, HttpResponse> {
+        implements Resource<TelegramNotificationRequest, HttpResponse> {
 
     private SecurityComponent securityComponent;
 

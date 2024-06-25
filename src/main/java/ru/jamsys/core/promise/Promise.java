@@ -61,7 +61,7 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
         return append(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.IO, fn));
     }
 
-    default <T extends Resource<?, ?, ?>> Promise appendWithResource(
+    default <T extends Resource<?, ?>> Promise appendWithResource(
             String index,
             Class<T> classResource,
             TriConsumer<AtomicBoolean, Promise, T> procedure
@@ -69,7 +69,7 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
         return appendWithResource(index, classResource, "default", procedure);
     }
 
-    default <T extends Resource<?, ?, ?>> Promise appendWithResource(
+    default <T extends Resource<?, ?>> Promise appendWithResource(
             String index,
             Class<T> classResource,
             String ns,
