@@ -99,6 +99,10 @@ public class InfluxResource
         return throwable -> {
             if (throwable != null) {
                 String msg = throwable.getMessage();
+                if (msg == null) {
+                    App.error(throwable);
+                    return false;
+                }
                 // Не конкурентная проверка
                 return msg.contains("Failed to connect");
             }

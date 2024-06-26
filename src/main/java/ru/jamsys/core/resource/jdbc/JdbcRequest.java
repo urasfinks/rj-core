@@ -18,7 +18,7 @@ public class JdbcRequest {
     final List<Map<String, Object>> listArgs = new ArrayList<>();
 
     public List<Map<String, Object>> getListArgs() {
-        if (listArgs.getLast().isEmpty()) {
+        if (listArgs.size() > 1 && listArgs.getLast().isEmpty()) {
             listArgs.removeLast();
         }
         return listArgs;

@@ -11,6 +11,7 @@ import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
+import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Lazy
 public class ServiceLogger implements StatisticsFlushComponent {
 
-    private Map<String, AtomicInteger> stat = new HashMap<>();
+    private final Map<String, AtomicInteger> stat = new HashMap<>();
 
     Broker<Log> broker;
 
@@ -39,8 +40,7 @@ public class ServiceLogger implements StatisticsFlushComponent {
 
     public DisposableExpirationMsImmutableEnvelope<Log> add(Log log) {
         stat.get(log.logType.getName()).incrementAndGet();
-        //return broker.add(new ExpirationMsImmutableEnvelope<>(log, 6_000));
-        return null;
+        return broker.add(new ExpirationMsImmutableEnvelope<>(log, 6_000));
     }
 
     @Override

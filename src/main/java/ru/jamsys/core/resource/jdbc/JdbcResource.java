@@ -94,9 +94,13 @@ public class JdbcResource
 
     @Override
     public Function<Throwable, Boolean> getFatalException() {
-        return th -> {
-            if (th != null) {
-                String msg = th.getMessage();
+        return throwable -> {
+            if (throwable != null) {
+                String msg = throwable.getMessage();
+                if (msg == null) {
+                    App.error(throwable);
+                    return false;
+                }
                 // Не конкурентная проверка
                 return msg.contains("закрыто")
                         || msg.contains("close")

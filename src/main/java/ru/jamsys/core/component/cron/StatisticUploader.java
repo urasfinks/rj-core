@@ -33,7 +33,6 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -56,7 +55,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
     @PropertyName("default.log.limit.insert")
     private String limitInsert = "10000";
 
-    public enum PromiseProperty {
+    public enum StatisticUploaderPromiseProperty {
         RESERVE_STATISTIC,
     }
 
@@ -86,11 +85,32 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                     int limitInsert = Integer.parseInt(this.limitInsert);
                     AtomicInteger countInsert = new AtomicInteger(0);
                     List<Point> listPoints = new ArrayList<>();
-                    promise.setProperty(
-                            PromiseProperty.RESERVE_STATISTIC.name(),
-                            appendStatistic(limitInsert, isThreadRun, countInsert, listPoints)
-                    );
-                    influxResource.execute(listPoints);
+
+                    List<StatisticSec> reserve = new ArrayList<>();
+                    while (!brokerStatistic.isEmpty() && isThreadRun.get() && countInsert.get() < limitInsert) {
+                        ExpirationMsImmutableEnvelope<StatisticSec> envelope = brokerStatistic.pollFirst();
+                        if (envelope != null) {
+                            StatisticSec statisticSec = envelope.getValue();
+                            reserve.add(statisticSec);
+                            List<Statistic> list = statisticSec.getList();
+                            for (Statistic statistic : list) {
+                                HashMap<String, String> newTags = new HashMap<>(statistic.getTags());
+                                String measurement = newTags.remove("measurement");
+                                listPoints.add(
+                                        Point.measurement(measurement)
+                                                .addTags(newTags)
+                                                .addFields(statistic.getFields())
+                                                .time(statisticSec.getLastActivityMs(), WritePrecision.MS)
+                                );
+                                countInsert.incrementAndGet();
+                            }
+                        }
+                    }
+                    promise.setProperty(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), reserve);
+
+                    if (countInsert.get() > 0) {
+                        influxResource.execute(listPoints);
+                    }
                 })
                 .then("readDirectory", (_, promise) -> {
                     String indexStatistic = ClassNameImpl.getClassNameStatic(StatisticSec.class, null, App.context);
@@ -132,37 +152,13 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                                 .getIsFatalExceptionOnComplete();
                         if (isFatalExceptionOnComplete.apply(exception)) {
                             // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
-                            List<StatisticSec> reserveStatistic = promise.getProperty(PromiseProperty.RESERVE_STATISTIC.name(), List.class, null);
+                            List<StatisticSec> reserveStatistic = promise.getProperty(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), List.class, null);
                             if (reserveStatistic != null && !reserveStatistic.isEmpty()) {
                                 reserveStatistic.forEach(statisticSec -> brokerStatistic.add(statisticSec, 2_000L));
                             }
                         }
                     }
                 });
-    }
-
-    private List<StatisticSec> appendStatistic(int limitInsert, AtomicBoolean isThreadRun, AtomicInteger countInsert, List<Point> listPoints) {
-        List<StatisticSec> reserve = new ArrayList<>();
-        while (!brokerStatistic.isEmpty() && isThreadRun.get() && countInsert.get() < limitInsert) {
-            ExpirationMsImmutableEnvelope<StatisticSec> envelope = brokerStatistic.pollFirst();
-            if (envelope != null) {
-                StatisticSec statisticSec = envelope.getValue();
-                reserve.add(statisticSec);
-                List<Statistic> list = statisticSec.getList();
-                for (Statistic statistic : list) {
-                    HashMap<String, String> newTags = new HashMap<>(statistic.getTags());
-                    String measurement = newTags.remove("measurement");
-                    listPoints.add(
-                            Point.measurement(measurement)
-                                    .addTags(newTags)
-                                    .addFields(statistic.getFields())
-                                    .time(statisticSec.getLastActivityMs(), WritePrecision.MS)
-                    );
-                    countInsert.incrementAndGet();
-                }
-            }
-        }
-        return reserve;
     }
 
 }

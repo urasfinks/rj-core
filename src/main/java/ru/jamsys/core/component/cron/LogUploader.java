@@ -3,6 +3,8 @@ package ru.jamsys.core.component.cron;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
@@ -23,10 +25,8 @@ import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
 import ru.jamsys.core.resource.filebyte.reader.FileByteReaderRequest;
 import ru.jamsys.core.resource.filebyte.reader.FileByteReaderResource;
-import ru.jamsys.core.resource.influx.InfluxResource;
 import ru.jamsys.core.resource.jdbc.JdbcRequest;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
-import ru.jamsys.core.statistic.StatisticSec;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.ArrayList;
@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+@Component
+@Lazy
 public class LogUploader extends PropertyConnector implements Cron5s, PromiseGenerator, ClassName {
 
     final Broker<Log> brokerLog;
@@ -51,9 +53,9 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
     @PropertyName("default.log.limit.insert")
     private String limitInsert = "10000";
 
-    private String idx;
+    private final String idx;
 
-    public enum PromiseProperty {
+    public enum LogUploaderPromiseProperty {
         RESERVE_LOG,
     }
 
@@ -88,11 +90,13 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
                     countInsert.incrementAndGet();
                 }
             }
-            promise.setProperty(PromiseProperty.RESERVE_LOG.name(), reserve);
-            try {
-                influxResource.execute(jdbcRequest);
-            } catch (Throwable th) {
-                promise.setErrorInRunTask(th);
+            promise.setProperty(LogUploaderPromiseProperty.RESERVE_LOG.name(), reserve);
+            if (countInsert.get() > 0) {
+                try {
+                    influxResource.execute(jdbcRequest);
+                } catch (Throwable th) {
+                    promise.setErrorInRunTask(th);
+                }
             }
         }).then("readDirectory", (_, promise) -> {
             List<String> filesRecursive = UtilFile.getFilesRecursive(getFolder(), false);
@@ -128,9 +132,9 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
 
                 if (isFatalExceptionOnComplete.apply(exception)) {
                     // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
-                    List<StatisticSec> reserveLog = promise.getProperty(PromiseProperty.RESERVE_LOG.name(), List.class, null);
+                    List<Log> reserveLog = promise.getProperty(LogUploaderPromiseProperty.RESERVE_LOG.name(), List.class, null);
                     if (reserveLog != null && !reserveLog.isEmpty()) {
-                        reserveLog.forEach(statisticSec -> brokerLog.add(statisticSec, 2_000L));
+                        reserveLog.forEach(log -> brokerLog.add(log, 2_000L));
                     }
                 }
             }
