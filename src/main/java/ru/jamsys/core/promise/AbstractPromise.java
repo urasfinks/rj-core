@@ -130,4 +130,9 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
         isException.set(true);
     }
 
+    public void setErrorInRunTask(Throwable throwable) {
+        this.exception = throwable;
+        isException.set(true);
+    }
+
 }

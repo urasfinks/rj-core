@@ -112,4 +112,6 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
 
     Throwable getException();
 
+    void setErrorInRunTask(Throwable throwable);
+
 }

@@ -7,7 +7,9 @@ import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
 public enum TestJdbcTemplate implements JdbcTemplate {
 
     TEST("select * from test", StatementType.SELECT_WITH_AUTO_COMMIT),
+
     GET_LOG("select * from logger", StatementType.SELECT_WITH_AUTO_COMMIT);
+
 
     private final TemplateJdbc template;
 

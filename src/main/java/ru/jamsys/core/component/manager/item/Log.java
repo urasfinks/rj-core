@@ -16,14 +16,16 @@ import java.io.InputStream;
 @Getter
 public class Log implements ByteItem, Correlation {
 
-    public String data;
+    public long timeAdd = System.currentTimeMillis();
 
     public LogType logType;
 
-    public long timeAdd = System.currentTimeMillis();
-
     @Setter
     protected String correlation;
+
+    public String extIndex;
+
+    public String data;
 
     public Log(LogType logType) {
         this.logType = logType;

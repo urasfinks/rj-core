@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.jt.Logger;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.jdbc.JdbcRequest;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
@@ -345,6 +346,36 @@ class PromiseImplTest {
                 .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, jdbcResource) -> {
                     try {
                         List<Map<String, Object>> execute = jdbcResource.execute(new JdbcRequest(TestJdbcTemplate.GET_LOG));
+                        System.out.println(execute);
+                    } catch (Throwable th) {
+                        App.error(th);
+                    }
+                })
+                .run()
+                .await(2000);
+        //System.out.println(promise.getLog());
+    }
+
+    @Test
+    void testInsertLog() {
+        Promise promise = servicePromise.get("testPromisePosgreSQL", 6_000L);
+        promise
+                .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, jdbcResource) -> {
+                    try {
+                        JdbcRequest jdbcRequest = new JdbcRequest(Logger.INSERT);
+                        int idx = 0;
+                        for (int i = 0; i < 2; i++) {
+                            jdbcRequest
+                                    .addArg("date_add", System.currentTimeMillis())
+                                    .addArg("type", "Info")
+                                    .addArg("correlation", java.util.UUID.randomUUID().toString())
+                                    .addArg("host", "abc")
+                                    .addArg("ext_index", null)
+                                    .addArg("data", "{\"idx\":" + (idx++) + "}")
+                                    .nextBatch()
+                            ;
+                        }
+                        List<Map<String, Object>> execute = jdbcResource.execute(jdbcRequest);
                         System.out.println(execute);
                     } catch (Throwable th) {
                         App.error(th);

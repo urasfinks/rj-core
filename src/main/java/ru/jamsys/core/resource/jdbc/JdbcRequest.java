@@ -15,8 +15,14 @@ public class JdbcRequest {
     @Getter
     final JdbcTemplate jdbcTemplate;
 
-    @Getter
     final List<Map<String, Object>> listArgs = new ArrayList<>();
+
+    public List<Map<String, Object>> getListArgs() {
+        if (listArgs.getLast().isEmpty()) {
+            listArgs.removeLast();
+        }
+        return listArgs;
+    }
 
     boolean debug = false;
 

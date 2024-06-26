@@ -43,8 +43,8 @@ public interface JdbcExecute {
                 CompiledSqlTemplate tmp = template.compile(qArgs);
                 for (Argument argument : tmp.getListArgument()) {
                     setParam(statementControl, conn, preparedStatement, argument);
-                    preparedStatement.addBatch();
                 }
+                preparedStatement.addBatch();
             }
             preparedStatement.executeBatch();
         }
