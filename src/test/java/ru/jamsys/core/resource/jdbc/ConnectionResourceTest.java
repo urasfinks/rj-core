@@ -41,7 +41,7 @@ class ConnectionResourceTest {
                 })
                 .run()
                 .await(2000);
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
 
     }
 }

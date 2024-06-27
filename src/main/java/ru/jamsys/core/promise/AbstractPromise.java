@@ -23,6 +23,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
 public abstract class AbstractPromise extends ExpirationMsImmutableImpl implements Promise, Correlation {
 
+    @JsonIgnore
+    @Getter
+    private boolean log = false;
+
     @JsonProperty
     @Getter
     private final String index;
@@ -87,9 +91,14 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
         this.index = index;
     }
 
+    public AbstractPromise setLog(boolean log){
+        this.log = log;
+        return this;
+    }
+
     @JsonIgnore
     @Override
-    public String getLog() {
+    public String getLogString() {
         return UtilJson.toStringPretty(this, "{}");
     }
 

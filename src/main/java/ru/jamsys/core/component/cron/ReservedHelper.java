@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// Восстановления законсервированных элементов AbstractManager при наличии их повторной активности
+
 @Component
 public class ReservedHelper implements Cron1s, PromiseGenerator, ClassName {
 
@@ -34,6 +36,7 @@ public class ReservedHelper implements Cron1s, PromiseGenerator, ClassName {
     @Override
     public Promise generate() {
         return servicePromise.get(index, 6_000L)
+                .setLog(true)
                 .append("main", (AtomicBoolean _, Promise _)
                         -> list.forEach(AbstractManager::checkReserved));
     }

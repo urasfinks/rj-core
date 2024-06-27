@@ -102,7 +102,7 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
 
     Collection<TracePromise<String, Timer>> getTrace();
 
-    String getLog();
+    String getLogString();
 
     boolean isTerminated();
 
@@ -113,5 +113,7 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
     Throwable getException();
 
     void setErrorInRunTask(Throwable throwable);
+
+    Promise setLog(boolean log);
 
 }

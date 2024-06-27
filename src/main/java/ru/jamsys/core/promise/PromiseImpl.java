@@ -21,6 +21,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     @Setter
     private DisposableExpirationMsImmutableEnvelope<Promise> registerInBroker;
 
+    @SuppressWarnings("unused")
     public PromiseImpl(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
         super(index, keepAliveOnInactivityMs, lastActivityMs);
     }
@@ -82,7 +83,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 ServicePromise.queueMultipleCompleteSet.add(this);
             }
         } else {
-            //TODO: тут наверное надо повторно откинуть лог, допустим сюда могут исполненные задачи, но время закончилось
+            flushLog();
         }
     }
 
@@ -101,6 +102,9 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         if (isWait.get() && isNextLoop()) {
             if (setRunningTasks.isEmpty()) {
                 isWait.set(false);
+                if(getIndex().equals("ServiceCron.ReservedHelper")){
+                    Util.printStackTrace("!");
+                }
                 getTrace().add(new TracePromise<>("Все запущенные задачи исполнились. Прекращаем сон. (0)", null, null, null));
             } else {
                 return;
@@ -168,12 +172,20 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 if (onComplete != null) {
                     onComplete.start();
                 }
-                App.get(ServiceLogger.class).add(new Log(LogType.INFO, getCorrelation()).setData(getLog()));
-                App.get(ServiceLogger.class).add(new Log(LogType.DEBUG, getCorrelation()).setData(getLog()));
-                App.get(ServiceLogger.class).add(new Log(LogType.ERROR, getCorrelation()).setData(getLog()));
-                App.get(ServiceLogger.class).add(new Log(LogType.SYSTEM_EXCEPTION, getCorrelation()).setData(getLog()));
+                flushLog();
             }
         }
+    }
+
+    private void flushLog() {
+        if (isLog()) {
+//            App.get(ServiceLogger.class).add(new Log(
+//                    isException.get() ? LogType.ERROR : LogType.INFO,
+//                    getCorrelation()
+//            ).setData(getLogString()));
+            System.out.println(getLogString());
+        }
+
     }
 
     public void await(long timeoutMs) {

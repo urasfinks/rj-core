@@ -89,7 +89,7 @@ class PromiseImplTest {
         }
         promise.run().await(1100);
         System.out.println("test3 isTerminated: " + promise.isTerminated());
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
     }
 
@@ -151,7 +151,7 @@ class PromiseImplTest {
                 .onComplete((_, _) -> complete.incrementAndGet())
                 .run()
                 .await(3000);
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
         Assertions.assertEquals(2, retry.get());
         Assertions.assertEquals(1, error.get());
         Assertions.assertEquals(0, complete.get());
@@ -211,7 +211,7 @@ class PromiseImplTest {
                 .onComplete((_, _) -> complete.incrementAndGet())
                 .run()
                 .await(2000);
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
         Assertions.assertEquals(1, error.get());
         Assertions.assertEquals(0, complete.get());
         Assertions.assertEquals(2, exec.get());
@@ -228,7 +228,7 @@ class PromiseImplTest {
                 })
                 .run()
                 .await(1000);
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
     }
 
     @Test
@@ -246,7 +246,7 @@ class PromiseImplTest {
         Assertions.assertTrue(promise.isTerminated());
         Assertions.assertEquals(2, promise.getTrace().size());
 
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
     }
 
     @Test
@@ -264,7 +264,7 @@ class PromiseImplTest {
         });
         promise.append(promiseTask);
         promise.run().await(1000);
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
 
         Assertions.assertTrue(promise.isTerminated());
     }
@@ -278,7 +278,7 @@ class PromiseImplTest {
                         -> Util.sleepMs(2000)).onError((_, _) -> counter.incrementAndGet())
                 .run().await(2010);
 
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
 
         Assertions.assertTrue(promise.isTerminated());
         Assertions.assertTrue(promise.isException());
@@ -299,7 +299,7 @@ class PromiseImplTest {
                         -> System.out.println(jdbcResource))
                 .run()
                 .await(2000);
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
     }
 
     @Test
@@ -309,7 +309,7 @@ class PromiseImplTest {
                 -> promise1.append("hey", (_, _) -> {
         }));
         promise.run().await(1000);
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
         Assertions.assertTrue(promise.isException());
     }
 
@@ -331,7 +331,7 @@ class PromiseImplTest {
                 .run()
                 .await(2000);
 
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
         //Мы по timeout должны упасть
         Assertions.assertTrue(promise.isException());
         // Мы дали 1 секунду время жизни, EXTERNAL_WAIT не финишировал -> сработал timeout

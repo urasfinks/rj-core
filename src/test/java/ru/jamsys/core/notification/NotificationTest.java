@@ -47,7 +47,7 @@ class NotificationTest {
                 })
                 .run()
                 .await(2000);
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
     }
 
     @SuppressWarnings("unused")
@@ -61,7 +61,7 @@ class NotificationTest {
                 })
                 .run()
                 .await(2000);
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
     }
 
     @SuppressWarnings("unused")
@@ -77,9 +77,9 @@ class NotificationTest {
                 })
                 .run()
                 .await(3000);
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
         Assertions.assertFalse(promise.isException());
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
     }
 
     @SuppressWarnings("unused")
@@ -92,9 +92,9 @@ class NotificationTest {
                 })
                 .run()
                 .await(3000);
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
         Assertions.assertFalse(promise.isException());
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
     }
 
     @SuppressWarnings("unused")
@@ -113,8 +113,8 @@ class NotificationTest {
                 })
                 .run()
                 .await(3000);
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
         Assertions.assertFalse(promise.isException());
-        System.out.println(promise.getLog());
+        System.out.println(promise.getLogString());
     }
 }
