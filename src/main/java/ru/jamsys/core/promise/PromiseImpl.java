@@ -13,11 +13,8 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 
 import java.util.List;
-import java.util.Set;
 
 public class PromiseImpl extends AbstractPromiseBuilder {
-
-    public static Set<Promise> queueMultipleCompleteSet = Util.getConcurrentHashSet();
 
     private volatile Thread loopThread;
 
@@ -82,7 +79,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     complete();
                 }
             } else {
-                queueMultipleCompleteSet.add(this);
+                ServicePromise.queueMultipleCompleteSet.add(this);
             }
         } else {
             //TODO: тут наверное надо повторно откинуть лог, допустим сюда могут исполненные задачи, но время закончилось
@@ -154,7 +151,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         if (isRun.get()) {
             if (isException.get()) {
                 isRun.set(false);
-                queueMultipleCompleteSet.remove(this);
+                ServicePromise.queueMultipleCompleteSet.remove(this);
                 App.get(ServicePromise.class).finish(registerInBroker);
                 if (onError != null) {
                     onError.start();
@@ -166,7 +163,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                             && toHead.isEmpty() // Список добавленных в runTime задача пуст
             ) {
                 isRun.set(false);
-                queueMultipleCompleteSet.remove(this);
+                ServicePromise.queueMultipleCompleteSet.remove(this);
                 App.get(ServicePromise.class).finish(registerInBroker);
                 if (onComplete != null) {
                     onComplete.start();

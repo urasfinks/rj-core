@@ -11,6 +11,7 @@ import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.property.PropertyEnvelope;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseImpl;
@@ -28,6 +29,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 @Lazy
 public class ServicePromise implements ClassName, KeepAliveComponent, StatisticsFlushComponent {
+
+    public static Set<Promise> queueMultipleCompleteSet = Util.getConcurrentHashSet();
 
     Broker<Promise> broker;
 

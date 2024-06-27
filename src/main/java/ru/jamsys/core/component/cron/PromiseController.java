@@ -1,7 +1,6 @@
 package ru.jamsys.core.component.cron;
 
 import lombok.Setter;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
@@ -11,7 +10,6 @@ import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
-import ru.jamsys.core.promise.PromiseImpl;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,7 +23,7 @@ public class PromiseController implements Cron1s, PromiseGenerator, ClassName {
 
     private final ServicePromise servicePromise;
 
-    public PromiseController(ApplicationContext applicationContext, ServicePromise servicePromise) {
+    public PromiseController(ServicePromise servicePromise) {
         this.servicePromise = servicePromise;
     }
 
@@ -34,7 +32,7 @@ public class PromiseController implements Cron1s, PromiseGenerator, ClassName {
         return servicePromise.get(index,6_000L)
                 .append("main", (AtomicBoolean isThreadRun, Promise _) -> {
                     AtomicInteger count = new AtomicInteger(0);
-                    UtilRisc.forEach(isThreadRun, PromiseImpl.queueMultipleCompleteSet, promise -> {
+                    UtilRisc.forEach(isThreadRun, ServicePromise.queueMultipleCompleteSet, promise -> {
                         assert promise != null;
                         promise.complete();
                         count.incrementAndGet();
