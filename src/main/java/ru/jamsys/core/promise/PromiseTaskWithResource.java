@@ -8,8 +8,8 @@ import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.pool.PoolItemEnvelope;
-import ru.jamsys.core.resource.TaskWait;
 import ru.jamsys.core.resource.Resource;
+import ru.jamsys.core.resource.TaskWait;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -51,13 +51,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     @Override
     protected void executeBlock() throws Throwable {
         try (PoolItemEnvelope<?, ?, T> res = getPoolItemEnvelope()) {
-            try {
-                procedure.accept(isThreadRun, getPromise(), res.getItem());
-                getPromise().complete(this);
-            } catch (Throwable th) {
-                App.error(th);
-                res.setThrowable(th);
-            }
+            procedure.accept(isThreadRun, getPromise(), res.getItem());
         }
     }
 

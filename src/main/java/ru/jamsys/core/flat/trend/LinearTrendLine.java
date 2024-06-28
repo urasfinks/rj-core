@@ -20,8 +20,6 @@ public class LinearTrendLine {
             doubles[i][1] = y[i];
         }
         simpleRegression.addData(doubles);
-        // System.out.println("slope = " + simpleRegression.getSlope());
-        // System.out.println("intercept = " + simpleRegression.getIntercept());
         return simpleRegression.predict(x.length - 1 + predict);
     }
 }

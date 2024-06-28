@@ -17,7 +17,7 @@ public class HttpResource extends ExpirationMsMutableImpl implements Resource<Ht
 
     @Override
     public void constructor(NamespaceResourceConstructor constructor) {
-        //System.out.println(constructor);
+
     }
 
     @Override

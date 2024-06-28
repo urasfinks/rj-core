@@ -232,6 +232,32 @@ class PromiseImplTest {
     }
 
     @Test
+    void testOneTaskExecutionTime() {
+        AtomicInteger x = new AtomicInteger(0);
+        Promise promise = servicePromise.get("testOneTaskExecutionTime", 1_500L);
+        promise
+                .append("1", (_, _) -> {
+
+                })
+                .onComplete((_, _) -> x.incrementAndGet())
+                .run()
+                .await(3000);
+        Assertions.assertEquals(1, x.get());
+    }
+
+    @Test
+    void testNoTask() {
+        // Выполнение onComplete если нет задач у обещания
+        AtomicInteger x = new AtomicInteger(0);
+        Promise promise = servicePromise.get("test", 1_500L);
+        promise
+                .onComplete((_, _) -> x.incrementAndGet())
+                .run()
+                .await(1000);
+        Assertions.assertEquals(1, x.get());
+    }
+
+    @Test
     void testExternalWait() {
         Promise promise = servicePromise.get("Async", 6_000L);
         PromiseTask promiseTask = new PromiseTask("test", promise, PromiseTaskExecuteType.EXTERNAL_WAIT);
@@ -293,7 +319,7 @@ class PromiseImplTest {
         promise
                 .appendWithResource("http", HttpResource.class, (_, _, _) -> {
                     //HttpResponseEnvelope execute = httpClientResource.execute(new Http2ClientImpl());
-                    System.out.println("!!!");
+
                 })
                 .appendWithResource("jdbc", JdbcResource.class, (_, _, jdbcResource)
                         -> System.out.println(jdbcResource))

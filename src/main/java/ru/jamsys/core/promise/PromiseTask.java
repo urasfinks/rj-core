@@ -100,8 +100,10 @@ public class PromiseTask implements Runnable {
         Timer timer = timerEnvelope.getValue();
         TracePromise<String, Timer> trace = new TracePromise<>(getIndex(), null, type, this.getClass());
         promise.getTrace().add(trace);
+        boolean isNormal = false;
         try {
             executeBlock();
+            isNormal = true;
         } catch (Throwable th) {
             App.error(th);
             if (retryCount > 0) {
@@ -118,11 +120,13 @@ public class PromiseTask implements Runnable {
         }
         timer.stop();
         trace.setValue(timer);
+        if (isNormal) {
+            getPromise().complete(this);
+        }
     }
 
     protected void executeBlock() throws Throwable {
-            procedure.accept(isThreadRun, getPromise());
-            getPromise().complete(this);
+        procedure.accept(isThreadRun, getPromise());
     }
 
 }

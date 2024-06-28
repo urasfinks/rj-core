@@ -154,38 +154,36 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         }
         if (isRun.get()) {
             if (isException.get()) {
-                isRun.set(false);
                 ServicePromise.queueMultipleCompleteSet.remove(this);
                 App.get(ServicePromise.class).finish(registerInBroker);
                 if (onError != null) {
                     onError.start();
                 }
+                isRun.set(false);
             } else if (
                     !isWait.get() // Мы не ждём
                             && setRunningTasks.isEmpty() // Список запущенных задач пуст
                             && listPendingTasks.isEmpty() //  Список задач в работу пуст
                             && toHead.isEmpty() // Список добавленных в runTime задача пуст
             ) {
-                isRun.set(false);
                 ServicePromise.queueMultipleCompleteSet.remove(this);
                 App.get(ServicePromise.class).finish(registerInBroker);
                 if (onComplete != null) {
                     onComplete.start();
                 }
                 flushLog();
+                isRun.set(false);
             }
         }
     }
 
     private void flushLog() {
         if (isLog()) {
-//            App.get(ServiceLogger.class).add(new Log(
-//                    isException.get() ? LogType.ERROR : LogType.INFO,
-//                    getCorrelation()
-//            ).setData(getLogString()));
-            System.out.println(getLogString());
+            App.get(ServiceLogger.class).add(new Log(
+                    isException.get() ? LogType.ERROR : LogType.INFO,
+                    getCorrelation()
+            ).setData(getLogString()));
         }
-
     }
 
     public void await(long timeoutMs) {
