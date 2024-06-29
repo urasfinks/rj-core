@@ -44,7 +44,7 @@ public class RateLimitItemMin extends PropertyConnector implements RateLimitItem
     }
 
     @Override
-    public boolean check(Integer limit) {
+    public boolean check(Integer limit) { // limit больше либо равен минимуму
         if (limit == null) {
             return false;
         }

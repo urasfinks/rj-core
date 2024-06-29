@@ -170,7 +170,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     }
 
     public boolean addIfPoolEmpty() {
-        if (rliPoolSizeMin.get() == 0 && itemQueue.isEmpty() && parkQueue.isEmpty()) {
+        if (rliPoolSizeMin.get() == 0 && itemQueue.isEmpty()) {
             return add();
         }
         return false;
@@ -362,7 +362,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
                 // Если паркинг был пуст уже больше секунды начнём увеличивать
                 if (getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
                     overclocking(formulaAddCount.apply(1));
-                } else if (rliPoolSizeMin.check(itemQueue.size())) { //Кол-во больше минимума
+                } else if (itemQueue.size() > rliPoolSizeMin.get()) { //Кол-во больше минимума
                     // закрываем с прошлого раза всех из отставки
                     // так сделано специально, если на следующей итерации будет overclocking
                     // что бы можно было достать кого-то из отставки
