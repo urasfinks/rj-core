@@ -38,7 +38,7 @@ import java.util.function.Function;
 @Lazy
 public class LogUploader extends PropertyConnector implements Cron5s, PromiseGenerator, ClassName {
 
-    final Broker<Log> brokerLog;
+    final Broker<Log> broker;
 
     @Setter
     private String index;
@@ -62,7 +62,7 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
     public LogUploader(ManagerBroker managerBroker, ApplicationContext applicationContext, ServicePromise servicePromise, ServiceProperty serviceProperty) {
         this.servicePromise = servicePromise;
         this.idx = ClassNameImpl.getClassNameStatic(Log.class, null, applicationContext);
-        brokerLog = managerBroker.get(idx, Log.class);
+        broker = managerBroker.get(idx, Log.class);
         serviceProperty.getSubscriber(null, this, getClassName(applicationContext), false);
     }
 
@@ -75,8 +75,8 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
             JdbcRequest jdbcRequest = new JdbcRequest(Logger.INSERT);
             List<Log> reserve = new ArrayList<>();
 
-            while (!brokerLog.isEmpty() && isThreadRun.get() && countInsert.get() < limitInsert) {
-                ExpirationMsImmutableEnvelope<Log> envelope = brokerLog.pollFirst();
+            while (!broker.isEmpty() && isThreadRun.get() && countInsert.get() < limitInsert) {
+                ExpirationMsImmutableEnvelope<Log> envelope = broker.pollFirst();
                 if (envelope != null) {
                     Log log = envelope.getValue();
                     reserve.add(log);
@@ -110,11 +110,11 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
                 promise.setProperty("readyFile", getFolder() + ListSort.sort(restore).getFirst());
             }
         }).appendWait().appendWithResource("read", FileByteReaderResource.class, (_, promise, fileByteReaderResource) -> {
-            if (brokerLog.getOccupancyPercentage() < 50) {
+            if (broker.getOccupancyPercentage() < 50) {
                 String readyFile = promise.getProperty("readyFile", String.class);
                 if (readyFile != null) {
                     List<ByteItem> execute = fileByteReaderResource.execute(new FileByteReaderRequest(readyFile, Log.class));
-                    execute.forEach(byteItem -> brokerLog.add((Log) byteItem, 6_000L));
+                    execute.forEach(byteItem -> broker.add((Log) byteItem, 6_000L));
                     try {
                         UtilFile.remove(readyFile);
                     } catch (Exception e) {
@@ -134,7 +134,7 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
                     // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
                     List<Log> reserveLog = promise.getProperty(LogUploaderPromiseProperty.RESERVE_LOG.name(), List.class, null);
                     if (reserveLog != null && !reserveLog.isEmpty()) {
-                        reserveLog.forEach(log -> brokerLog.add(log, 2_000L));
+                        reserveLog.forEach(log -> broker.add(log, 2_000L));
                     }
                 }
             }
