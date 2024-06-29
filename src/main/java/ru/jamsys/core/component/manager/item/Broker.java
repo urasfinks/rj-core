@@ -1,7 +1,6 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
