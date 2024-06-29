@@ -77,6 +77,7 @@ public class TaskWait<
         broker.add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));
         // Если пул был пустой, создаётся ресурс и вызывается onParkUpdate()
         // Если же в пуле были ресурсы, то вернётся false и мы самостоятельно запустим onParkUpdate()
+        // Что бы попытаться найти свободный ресурс и запустить только что добавленную задачу
         if (!addIfPoolEmpty()) {
             onParkUpdate();
         }
