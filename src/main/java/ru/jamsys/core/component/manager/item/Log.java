@@ -42,6 +42,11 @@ public class Log implements ByteItem, Correlation {
         return this;
     }
 
+    public Log setExtIndex(String extIndex) {
+        this.extIndex = extIndex;
+        return this;
+    }
+
     public byte[] getByteInstance() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         UtilLog.writeShortString(os, getCorrelation());

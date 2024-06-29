@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.flat.util.Util;
 
@@ -23,6 +24,7 @@ class ThreadEnvelopeTest {
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         if (App.context == null) {
             App.context = SpringApplication.run(App.class);
+            App.context.getBean(ServiceProperty.class).setProperty("run.args.remote.log", "false");
         }
     }
 

@@ -25,7 +25,7 @@ class PromiseImplTest {
 
     @BeforeAll
     static void beforeAll() {
-        String[] args = new String[]{};
+        String[] args = new String[]{"run.args.remote.log=false"};
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         App.run(args);
@@ -74,6 +74,7 @@ class PromiseImplTest {
         }
         promise.run();
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
+        App.error(new RuntimeException("Hello"));
     }
 
     @Test

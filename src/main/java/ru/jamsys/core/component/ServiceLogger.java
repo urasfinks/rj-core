@@ -3,30 +3,40 @@ package ru.jamsys.core.component;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.cron.LogUploader;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.component.manager.item.LogType;
 import ru.jamsys.core.extension.ClassNameImpl;
+import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.property.PropertySubscriberNotify;
+import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @Lazy
-public class ServiceLogger implements StatisticsFlushComponent {
+public class ServiceLogger extends PropertyConnector implements
+        StatisticsFlushComponent,
+        PropertySubscriberNotify, LifeCycleComponent {
 
     private final Map<String, AtomicInteger> stat = new HashMap<>();
 
     Broker<Log> broker;
+
+    @PropertyName("remote.log")
+    private String remoteLog = "true";
 
     public ServiceLogger(ManagerBroker managerBroker, ApplicationContext applicationContext) {
         broker = managerBroker.get(
@@ -36,11 +46,34 @@ public class ServiceLogger implements StatisticsFlushComponent {
         for (LogType type : LogType.values()) {
             stat.put(type.getName(), new AtomicInteger(0));
         }
+        applicationContext
+                .getBean(ServiceProperty.class)
+                .getSubscriber(this, this, "run.args");
     }
 
     public DisposableExpirationMsImmutableEnvelope<Log> add(Log log) {
         stat.get(log.logType.getName()).incrementAndGet();
-        return broker.add(new ExpirationMsImmutableEnvelope<>(log, 6_000));
+        if (remoteLog.equals("true")) {
+            return broker.add(new ExpirationMsImmutableEnvelope<>(log, 6_000));
+        }
+        return null;
+    }
+
+    public DisposableExpirationMsImmutableEnvelope<Log> add(
+            LogType logType,
+            Map<String, Object> data,
+            String extIndex,
+            boolean print
+    ) {
+        String stringData = UtilJson.toStringPretty(data, "{}");
+        Log log = new Log(logType).setData(stringData).setExtIndex(extIndex);
+        if (print) {
+            switch (logType) {
+                case ERROR, SYSTEM_EXCEPTION -> Util.logConsole("::" + extIndex + "; " + stringData, true);
+                case INFO, DEBUG -> Util.logConsole("::" + extIndex + "; " + stringData, false);
+            }
+        }
+        return add(log);
     }
 
     @Override
@@ -54,4 +87,25 @@ public class ServiceLogger implements StatisticsFlushComponent {
         return result;
     }
 
+    @Override
+    public void onPropertyUpdate(Set<String> updatedProp) {
+
+    }
+
+    @Override
+    public int getInitializationIndex() {
+        return 0;
+    }
+
+    @Override
+    public void run() {
+
+    }
+
+    @Override
+    public void shutdown() {
+        if (remoteLog.equals("true") && !broker.isEmpty()) {
+            App.get(LogUploader.class).generate().run().await(5000);
+        }
+    }
 }

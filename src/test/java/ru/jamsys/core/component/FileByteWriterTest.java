@@ -18,18 +18,18 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 //TODO: добавить тесты когда нет директории LogManager
 class FileByteWriterTest {
 
     @BeforeAll
     static void beforeAll() {
         UtilFile.removeAllFilesInFolder("LogManager");
-        String[] args = new String[]{};
+        String[] args = new String[]{"run.args.remote.log=false"};
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         //App.main(args);
         App.context = SpringApplication.run(App.class, args);
+        App.context.getBean(ServiceProperty.class).setProperty("run.args.remote.log", "false");
     }
 
     @AfterAll

@@ -14,10 +14,10 @@ import ru.jamsys.core.extension.property.Subscriber;
 import java.util.Map;
 import java.util.Set;
 
-class sPropertyTest {
+class PropertyTest {
     @BeforeAll
     static void beforeAll() {
-        String[] args = new String[]{};
+        String[] args = new String[]{"run.args.remote.log=false"};
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         App.run(args);

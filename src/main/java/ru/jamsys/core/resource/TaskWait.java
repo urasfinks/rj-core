@@ -40,7 +40,7 @@ public class TaskWait<
 
     @Override
     public PI createPoolItem() {
-        PI newPoolItem = App.get(poolSettings.getClassPoolItem());
+        PI newPoolItem = App.context.getBean(poolSettings.getClassPoolItem());
         try {
             newPoolItem.constructor(poolSettings.getResourceConstructor());
             return newPoolItem;

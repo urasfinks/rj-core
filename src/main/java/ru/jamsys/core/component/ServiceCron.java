@@ -57,8 +57,9 @@ public class ServiceCron implements LifeCycleComponent, ClassName {
                     }
                 } catch (InterruptedException ie) {
                     Util.logConsole("STOP");
-                } catch (Exception e) {
-                    App.error(e);
+                } catch (Throwable th) {
+                    // Может ещё не быть контекста
+                    applicationContext.getBean(ExceptionHandler.class).handler(th);
                 }
             }
         });

@@ -36,7 +36,6 @@ public class ReservedHelper implements Cron1s, PromiseGenerator, ClassName {
     @Override
     public Promise generate() {
         return servicePromise.get(index, 6_000L)
-                .setLog(true)
                 .append("main", (AtomicBoolean _, Promise _)
                         -> list.forEach(AbstractManager::checkReserved));
     }

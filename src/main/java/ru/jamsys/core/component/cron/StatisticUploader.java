@@ -80,7 +80,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
 
     @Override
     public Promise generate() {
-        return servicePromise.get(index, 2_000L)
+        return servicePromise.get(index, 4_999L)
                 .appendWithResource("sendToInflux", InfluxResource.class, (isThreadRun, promise, influxResource) -> {
                     int limitInsert = Integer.parseInt(this.limitInsert);
                     AtomicInteger countInsert = new AtomicInteger(0);

@@ -3,7 +3,6 @@ package ru.jamsys.core.component.cron;
 import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
@@ -37,10 +36,6 @@ public class PromiseController implements Cron1s, PromiseGenerator, ClassName {
                         promise.complete();
                         count.incrementAndGet();
                     });
-
-                    if (count.get() > 0) {
-                        App.error(new RuntimeException("Multiple complete: " + count));
-                    }
                 });
     }
 

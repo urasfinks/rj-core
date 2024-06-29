@@ -68,7 +68,7 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
 
     @Override
     public Promise generate() {
-        return servicePromise.get(index, 2_000L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (isThreadRun, promise, influxResource) -> {
+        return servicePromise.get(index, 4_999L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (isThreadRun, promise, influxResource) -> {
             int limitInsert = Integer.parseInt(this.limitInsert);
             AtomicInteger countInsert = new AtomicInteger(0);
 

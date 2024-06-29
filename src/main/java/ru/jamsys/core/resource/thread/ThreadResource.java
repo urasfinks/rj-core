@@ -2,6 +2,7 @@ package ru.jamsys.core.resource.thread;
 
 import lombok.Getter;
 import ru.jamsys.core.App;
+import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.flat.util.Util;
@@ -11,7 +12,6 @@ import ru.jamsys.core.rate.limit.RateLimitName;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
@@ -37,30 +37,19 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
 
     private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
-    private final StringBuilder info = new StringBuilder();
-
     private final ThreadPoolPromise pool;
 
     public ThreadResource(String name, ThreadPoolPromise pool) {
         this.pool = pool;
         RateLimit rateLimit = App.get(ManagerRateLimit.class).get(getClassName(pool.getName()));
         rateLimit.init(App.context, RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);
-        info
-                .append("[")
-                .append(Util.msToDataFormat(System.currentTimeMillis()))
-                .append("] ")
-                .append("create: ")
-                .append(Thread.currentThread().getName())
-                .append(" with name: ")
-                .append(name)
-                .append("\r\n");
         this.name = name;
 
         thread = new Thread(() -> {
             while (isWhile.get() && isNotInterrupted()) {
                 active();
                 if (!rateLimit.check(null)) {
-                    pause();
+                    goToTheParking();
                     continue;
                 }
                 ExpirationMsImmutableEnvelope<PromiseTask> promiseTask = pool.getPromiseTask();
@@ -73,7 +62,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
                     continue; // Если таска была - перепрыгиваем pause()
                 }
                 //Конец итерации цикла -> всегда pause()
-                pause();
+                goToTheParking();
             }
             isRun.set(false);
         });
@@ -89,18 +78,13 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
     }
 
     private void raiseUp(String cause, String action) {
-        App.error(
-                new RuntimeException("class: " + getClassName()
-                        + "; action: " + action
-                        + "; cause: " + cause + " \r\n"
-                        + info)
-        );
+        App.error(new RuntimeException("action: " + action + "; cause: " + cause));
     }
 
-    private boolean pause() {
+    private void goToTheParking() {
         if (!isInit.get()) {
             raiseUp("Thread not initialize", "pause()");
-            return false;
+            return;
         }
         if (inPark.compareAndSet(false, true)) {
             if (isShutdown.get()) {
@@ -108,30 +92,21 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
             } else {
                 pool.complete(this, null);
                 LockSupport.park(thread);
-                return true;
             }
         }
-        return false;
     }
 
     public boolean run() {
         if (isShutdown.get()) {
-            raiseUp("Thread shutdown", "run()");
+            raiseUp("Подавление запуска, поток остановлен", "run()");
             return false;
         } else if (isInit.compareAndSet(false, true)) {
-            //Что бы второй раз не получилось запустить поток после остановки проверим на isWhile
+            //Что бы второй раз не получилось запустить поток после остановки проверим на isRun
             if (isRun.compareAndSet(false, true)) {
-                info
-                        .append("[")
-                        .append(Util.msToDataFormat(System.currentTimeMillis()))
-                        .append("]")
-                        .append(" run: ")
-                        .append(Thread.currentThread().getName())
-                        .append(";\r\n");
                 thread.start(); //start() - create new thread / run() - Runnable run in main thread
                 return true;
             } else {
-                raiseUp("WTF?", "run()");
+                raiseUp("Подавление запуска, поток в работе", "run()");
             }
         } else if (inPark.compareAndSet(true, false)) {
             LockSupport.unpark(thread);
@@ -142,80 +117,52 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
 
     public boolean shutdown() {
         if (!isInit.get()) {
-            raiseUp("Thread not initialize", "shutdown()");
+            raiseUp("Подавление остановки, поток не инициализирован", "shutdown()");
             return false;
         }
         if (isShutdown.compareAndSet(false, true)) { //Что бы больше никто не смог начать останавливать
             doShutdown();
             return true;
         } else {
-            raiseUp("Thread shutdown", "shutdown()");
+            raiseUp("Подавление остановки, поток уже остановлен", "shutdown()");
         }
         return false;
     }
 
     @SuppressWarnings("all")
     private void doShutdown() {
-        info
-                .append("[")
-                .append(Util.msToDataFormat(System.currentTimeMillis()))
-                .append("] ")
-                .append("shutdown: ")
-                .append(Thread.currentThread().getName())
-                .append("\r\n");
         //#1
         isWhile.set(false); //Говорим закончить
         //#2
         if (inPark.compareAndSet(true, false)) {
             LockSupport.unpark(thread);
         }
-        //Выводим из возможного паркинга
-        //#3
-        isShutdown.set(true);
 
         long timeOutMs = 1500; // Так как есть CronManager и по его жизненному циклу нормально спать 1000ms
         long startTimeMs = System.currentTimeMillis();
         while (isRun.get()) { //Пытаемся подождать пока потоки самостоятельно закончат свою работу
             Util.sleepMs(timeOutMs / 4);
             if (System.currentTimeMillis() - startTimeMs > timeOutMs) { //Не смогли за отведённое время
-                raiseUp("timeOut. The thread is keep alive", "isWhile.set(false)");
+                raiseUp("Поток самостоятельно не закончил работу в течении " + timeOutMs, "doShutdown()");
                 break;
             }
         }
-        if (!isRun.get()) {
-            return;
-        } else {
-            Util.logConsole("do Thread " + thread.getName() + ".interrupt()", true);
+        if (isRun.get()) {
             thread.interrupt();
         }
         startTimeMs = System.currentTimeMillis();
         while (isRun.get()) { //Пытаемся подождать пока потоки выйдут от interrupt
             Util.sleepMs(timeOutMs / 4);
             if (System.currentTimeMillis() - startTimeMs > timeOutMs) { //Не смогли за отведённое время
-                raiseUp("timeOut. The thread is keep alive", "interrupt()");
+                raiseUp("Поток не закончил работу после interrupt()", "doShutdown()");
                 break;
             }
         }
-        if (!isRun.get()) {
-            return;
-        } else {
-            Util.logConsole("do Thread " + thread.getName() + ".stop()", true);
-            //TODO: удалить из менаджера контроля тасками, что бы не текло время по этой таске для корректного рассчёта
-            // распределения тредов по задачам
-        }
+        // Так как мы не можем больше повлиять на остановку
+        // В java 22 борльше нет функционала принудительной остановки thread.stop()
+        // Таску мы не будем удалять из тайминга - пусть растёт время, а то слишком круто будет новым житься
         pool.remove(this);
         isRun.set(false);
-    }
-
-    @SuppressWarnings("StringBufferReplaceableByString")
-    public String getMomentumStatistic() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("isInit: ").append(isInit.get()).append("; ");
-        sb.append("isRun: ").append(isRun.get()).append("; ");
-        sb.append("isWhile: ").append(isWhile.get()).append("; ");
-        sb.append("inPark: ").append(inPark.get()).append("; ");
-        sb.append("isShutdown: ").append(isShutdown.get()).append("; ");
-        return sb.toString();
     }
 
     @Override

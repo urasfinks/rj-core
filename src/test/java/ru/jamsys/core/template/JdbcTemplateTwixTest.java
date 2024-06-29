@@ -16,7 +16,7 @@ class JdbcTemplateTwixTest {
 
     @BeforeAll
     static void beforeAll() {
-        String[] args = new String[]{};
+        String[] args = new String[]{"run.args.remote.log=false"};
         App.run(args);
     }
 

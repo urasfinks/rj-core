@@ -3,9 +3,7 @@ package ru.jamsys.core.component.manager.item;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Scope;
 import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
@@ -42,9 +40,6 @@ import java.util.function.Consumer;
 
 //Время срабатывания onExpired = 3 секунды
 
-//TODO: проверить для чего Component и prototype
-@Component
-@Scope("prototype")
 @Getter
 @Setter
 //@IgnoreClassFinder // не знаю почему он был исключён

@@ -17,7 +17,14 @@ public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadRes
 
     public ThreadPoolPromise(String name) {
         super(name, ThreadResource.class);
-        this.brokerManagerElement = App.get(ManagerBroker.class).initAndGet(getName(), PromiseTask.class, null);
+        this.brokerManagerElement = App.get(ManagerBroker.class)
+                .initAndGet(getName(), PromiseTask.class, promiseTask ->
+                        promiseTask.
+                                getPromise().
+                                setErrorInRunTask(new RuntimeException(
+                                        ThreadPoolPromise.class.getSimpleName() + ".broker->drop(task)")
+                                )
+                );
     }
 
     public void addPromiseTask(PromiseTask promiseTask) {

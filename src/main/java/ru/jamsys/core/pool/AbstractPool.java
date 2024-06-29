@@ -134,17 +134,20 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         return itemQueue.isEmpty();
     }
 
-    public void setMaxSlowRiseAndFastFall(int max) {
-        if (dynamicPollSize.get()) {
-            if (rliPoolSizeMin.check(max)) {
-                if (max > rliPoolSizeMax.get()) { //Медленно поднимаем
-                    setRliPoolSizeMax(rliPoolSizeMax.get() + 1);
-                } else { //Но очень быстро опускаем
-                    setRliPoolSizeMax(max);
-                }
-            } else {
-                Util.logConsole("Pool [" + getName() + "] sorry max = " + max + " < Pool.min = " + rliPoolSizeMin.get(), true);
-            }
+    public void setPoolSizeMax(int want) {
+        if (!dynamicPollSize.get()) {
+            return;
+        }
+        // Если хотят меньше минимума - очень резко опускаем максимум до минимума
+        if (want < rliPoolSizeMin.get()) {
+            setRliPoolSizeMax(rliPoolSizeMin.get());
+            return;
+        }
+        // Если желаемое значение элементов в пуле больше минимума, так как return не сработал
+        if (want > rliPoolSizeMax.get()) { //Медленно поднимаем
+            setRliPoolSizeMax(rliPoolSizeMax.get() + 1);
+        } else { //Но очень быстро опускаем
+            setRliPoolSizeMax(want);
         }
     }
 
@@ -224,7 +227,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
             updateParkStatistic();
             addable = true;
         } else {
-            App.error(new RuntimeException("Этот код не должен был случиться! Проверить логику!"));
+            App.error(new RuntimeException("Этот код не должен был случиться! Проверить логику! " + poolItem.hashCode()));
         }
         lockAddToPark.unlock();
         // После разблокировки только начинаем заниматься грязной работой

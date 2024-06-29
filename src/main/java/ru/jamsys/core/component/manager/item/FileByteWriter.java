@@ -2,9 +2,8 @@ package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceLogger;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.extension.*;
@@ -25,8 +24,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Component
-@Scope("prototype")
 public class FileByteWriter extends ExpirationMsMutableImpl
         implements
         KeepAlive,
@@ -92,7 +89,12 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                     // файлы с расширение proc.bin должны были переименоваться
                     // Предполагается фатальное завершение прошлого процесса и такие файлы будут выкидываться
                     // (so sorry my bad) Дима Г. наблевавший в номере)
-                    App.error(new RuntimeException("File will be remove: [" + filePath + "] so sorry my bad"));
+                    App.get(ServiceLogger.class).add(
+                            LogType.INFO,
+                            new HashMapBuilder<String, Object>().append("exception", "File will be remove: [" + filePath + "] so sorry my bad"),
+                            getClass().getSimpleName() + ".restoreIndex",
+                            true
+                    );
                     try {
                         UtilFile.remove(property.getFolder() + filePath);
                     } catch (Exception e) {
