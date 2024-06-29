@@ -12,9 +12,10 @@ import ru.jamsys.core.promise.PromiseTaskWithResource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
-// Пул, который предоставляет освободившиеся объекты для задач PromiseTaskPool
-// В потоке исполнения задачи - совершается действие с освободившимся объектом и на вход подаётся результат
-// Аргументы для действия над ресурсом задаются либо при инициализации задачи, либо непосредственно перед запуском
+// Пул ресурсов хранит очередь задач, которые ждут освободившиеся ресурсы
+// При освобождении ресурса происходит передача управления ресурса в задачу
+// Пул, который предоставляет освободившиеся ресурсы для задач PromiseTaskPool
+// В потоке исполнения задачи - совершается действие с освободившимся ресурсом
 
 public class TaskWait<
         RA,
@@ -74,6 +75,8 @@ public class TaskWait<
     public void addPromiseTaskPool(PromiseTaskWithResource<?> promiseTaskWithResource) {
         active();
         broker.add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));
+        // Если пул был пустой, создаётся ресурс и вызывается onParkUpdate()
+        // Если же в пуле были ресурсы, то вернётся false и мы самостоятельно запустим onParkUpdate()
         if (!addIfPoolEmpty()) {
             onParkUpdate();
         }

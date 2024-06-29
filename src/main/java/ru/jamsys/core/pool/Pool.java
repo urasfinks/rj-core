@@ -33,6 +33,7 @@ public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlu
     // Добавляет ресурс в пустой пул
     boolean addIfPoolEmpty();
 
+    // Вызывается когда в парк добавляется ресурс
     void onParkUpdate();
 
 }
