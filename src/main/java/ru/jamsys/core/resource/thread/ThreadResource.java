@@ -177,6 +177,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
 
     @Override
     public Void execute(Void arguments) {
+        run();
         return null;
     }
 
