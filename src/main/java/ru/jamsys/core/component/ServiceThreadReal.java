@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
+import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 
 import java.util.function.Function;
 

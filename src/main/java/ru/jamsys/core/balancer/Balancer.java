@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.balancer;
+package ru.jamsys.core.balancer;
 
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.extension.KeepAlive;

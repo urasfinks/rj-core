@@ -1,8 +1,8 @@
-package ru.jamsys.core.resource.balancer;
+package ru.jamsys.core.balancer;
 
 import lombok.Getter;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
+import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 
 import java.util.ArrayList;
 import java.util.List;

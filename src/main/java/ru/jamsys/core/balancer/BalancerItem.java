@@ -1,6 +1,6 @@
-package ru.jamsys.core.resource.balancer;
+package ru.jamsys.core.balancer;
 
-import ru.jamsys.core.resource.balancer.algorithm.BalancerAlgorithm;
+import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 
 public interface BalancerItem {
 

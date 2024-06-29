@@ -1,7 +1,7 @@
-package ru.jamsys.core.resource.balancer.algorithm;
+package ru.jamsys.core.balancer.algorithm;
 
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.resource.balancer.BalancerItem;
+import ru.jamsys.core.balancer.BalancerItem;
 import ru.jamsys.core.extension.KeepAlive;
 
 import java.util.List;
