@@ -107,10 +107,6 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         dynamicPollSize.set(dynamic);
     }
 
-    public boolean allInPark() {
-        return parkQueue.size() == itemQueue.size();
-    }
-
     // Сколько времени паркинг был пуст
     private long getTimeParkIsEmpty() {
         if (timeWhenParkIsEmpty == -1) {
