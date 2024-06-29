@@ -29,7 +29,6 @@ public class StickySessions implements BalancerAlgorithm {
             }
         }
         //diff содержит BalancerItem, которые вышли из балансировки
-        Set<String> strings = map.keySet();
         for (BalancerItem balancerItem : diff) {
             remove(balancerItem);
         }
