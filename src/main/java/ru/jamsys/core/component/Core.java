@@ -30,7 +30,7 @@ public class Core implements LifeCycleInterface {
 
     private final ManagerBroker managerBroker;
 
-    private ConcurrentLinkedDeque<LifeCycleComponent> runComponent = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<LifeCycleComponent> runComponent = new ConcurrentLinkedDeque<>();
 
     public Core(
             ApplicationContext applicationContext,

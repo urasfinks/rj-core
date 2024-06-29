@@ -83,7 +83,7 @@ public class Broker<TEO>
 
     private final Class<TEO> classItem;
 
-    private ServiceProperty serviceProperty;
+    private final ServiceProperty serviceProperty;
 
     private final Expiration<DisposableExpirationMsImmutableEnvelope> expiration;
 
