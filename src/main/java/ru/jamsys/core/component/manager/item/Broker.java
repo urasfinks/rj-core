@@ -40,9 +40,6 @@ import java.util.function.Consumer;
 
 //Время срабатывания onExpired = 3 секунды
 
-@Getter
-@Setter
-//@IgnoreClassFinder // не знаю почему он был исключён
 public class Broker<TEO>
         extends ExpirationMsMutableImpl
         implements
@@ -73,6 +70,9 @@ public class Broker<TEO>
 
     @Getter
     final RateLimit rateLimit;
+
+    @Getter
+    private Double lastTimeInQueue;
 
     final RateLimitItem rliQueueSize;
 
@@ -240,17 +240,20 @@ public class Broker<TEO>
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
         int tpsDropFlush = tpsDrop.getAndSet(0);
         int sizeFlush = queueSize.get();
+        Map<String, Object> flush = timeInQueue.flush("time");
+        lastTimeInQueue = (Double) flush.get("timeAvg");
         result.add(new Statistic(parentTags, parentFields)
                 .addField("tpsDeq", tpsDequeueFlush)
                 .addField("tpsDrop", tpsDropFlush)
                 .addField("size", sizeFlush)
-                .addFields(timeInQueue.flush("time"))
+                .addFields(flush)
         );
         return result;
     }
 
     @Override
     public void close() {
+        lastTimeInQueue = null;
     }
 
     // Рекомендуется использовать только для тестов
