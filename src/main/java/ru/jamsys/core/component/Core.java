@@ -16,6 +16,7 @@ import ru.jamsys.core.statistic.StatisticSec;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 @Component
 @Lazy
@@ -28,6 +29,8 @@ public class Core implements LifeCycleInterface {
     private final ManagerFileByteWriter managerFileByteWriter;
 
     private final ManagerBroker managerBroker;
+
+    private ConcurrentLinkedDeque<LifeCycleComponent> runComponent = new ConcurrentLinkedDeque<>();
 
     public Core(
             ApplicationContext applicationContext,
@@ -60,18 +63,22 @@ public class Core implements LifeCycleInterface {
             }
         });
         sortedList.sort(Comparator.comparingInt(LifeCycleComponent::getInitializationIndex));
-        sortedList.forEach(LifeCycleInterface::run);
+        sortedList.forEach(lifeCycleComponent -> {
+            runComponent.add(lifeCycleComponent);
+            Util.logConsole(lifeCycleComponent.getClass().getName());
+            lifeCycleComponent.run();
+        });
     }
 
     @Override
     public void shutdown() {
-        serviceClassFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
-            if (!serviceClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
-                LifeCycleComponent bean = applicationContext.getBean(runnableComponentClass);
-                Util.logConsole(bean.getClass().getName());
-                bean.shutdown();
+        while (!runComponent.isEmpty()) {
+            LifeCycleComponent lifeCycleComponent = runComponent.pollLast();
+            if (lifeCycleComponent != null) {
+                Util.logConsole(lifeCycleComponent.getClass().getName());
+                lifeCycleComponent.shutdown();
             }
-        });
+        }
     }
 
 }

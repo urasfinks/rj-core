@@ -36,6 +36,6 @@ public class ManagerBroker extends AbstractManager<Broker<?>, Consumer<?>> imple
 
     @Override
     public int getInitializationIndex() {
-        return 996;
+        return 995;
     }
 }

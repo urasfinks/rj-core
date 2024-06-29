@@ -117,7 +117,7 @@ public class ServiceCron implements LifeCycleComponent, ClassName {
 
     @Override
     public int getInitializationIndex() {
-        return 998;
+        return 3;
     }
 
 }

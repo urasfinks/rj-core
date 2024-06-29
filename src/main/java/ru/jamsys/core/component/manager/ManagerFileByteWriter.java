@@ -20,7 +20,7 @@ public class ManagerFileByteWriter extends AbstractManager<FileByteWriter, Void>
 
     @Override
     public int getInitializationIndex() {
-        return 999;
+        return 997;
     }
 
 }

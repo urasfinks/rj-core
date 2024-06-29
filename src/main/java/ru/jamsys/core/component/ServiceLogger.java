@@ -94,7 +94,7 @@ public class ServiceLogger extends PropertyConnector implements
 
     @Override
     public int getInitializationIndex() {
-        return 0;
+        return 999;
     }
 
     @Override
