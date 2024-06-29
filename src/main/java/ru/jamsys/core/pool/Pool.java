@@ -21,7 +21,7 @@ public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlu
     String getName();
 
     //Реализация проверки ошибки, для принятия решений выкидывания ресурса из пула
-    boolean checkCriticalOfExceptionOnComplete(Throwable e);
+    boolean checkFatalException(Throwable th);
 
     // Ручное удаление ресурса из пула, желательно конечно лишний раз не использовать
     void remove(PI poolItem);

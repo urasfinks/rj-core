@@ -205,7 +205,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
             return;
         }
         // Если ошибка является критичной для пловца - выбрасываем его из пула
-        if (e != null && checkCriticalOfExceptionOnComplete(e)) {
+        if (e != null && checkFatalException(e)) {
             exceptionQueue.add(poolItem);
             return;
         }

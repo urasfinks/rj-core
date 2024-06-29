@@ -149,7 +149,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                         Function<Throwable, Boolean> isFatalExceptionOnComplete = App
                                 .get(PoolSettingsRegistry.class)
                                 .get(InfluxResource.class, "default")
-                                .getIsFatalExceptionOnComplete();
+                                .getFunctionCheckFatalException();
                         if (isFatalExceptionOnComplete.apply(exception)) {
                             // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
                             List<StatisticSec> reserveStatistic = promise.getProperty(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), List.class, null);

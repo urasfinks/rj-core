@@ -128,7 +128,7 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
                 @SuppressWarnings("unchecked") Function<Throwable, Boolean> isFatalExceptionOnComplete = App
                         .get(PoolSettingsRegistry.class)
                         .get(JdbcResource.class, "logger")
-                        .getIsFatalExceptionOnComplete();
+                        .getFunctionCheckFatalException();
 
                 if (isFatalExceptionOnComplete.apply(exception)) {
                     // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему

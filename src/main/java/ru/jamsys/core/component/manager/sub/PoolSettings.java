@@ -15,18 +15,18 @@ public class PoolSettings<T extends Resource<?, ?>> {
 
     private final NamespaceResourceConstructor resourceConstructor;
 
-    private final Function<Throwable, Boolean> isFatalExceptionOnComplete;
+    private final Function<Throwable, Boolean> functionCheckFatalException;
 
     public PoolSettings(
             String index,
             Class<T> classPoolItem,
             NamespaceResourceConstructor resourceConstructor,
-            Function<Throwable, Boolean> isFatalExceptionOnComplete
+            Function<Throwable, Boolean> functionCheckFatalException
     ) {
         this.index = index;
         this.classPoolItem = classPoolItem;
         this.resourceConstructor = resourceConstructor;
-        this.isFatalExceptionOnComplete = isFatalExceptionOnComplete;
+        this.functionCheckFatalException = functionCheckFatalException;
     }
 
 }

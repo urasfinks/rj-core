@@ -13,11 +13,11 @@ public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadRes
 
     AtomicInteger counter = new AtomicInteger(1);
 
-    private final Broker<PromiseTask> brokerManagerElement;
+    private final Broker<PromiseTask> broker;
 
     public ThreadPoolPromise(String name) {
         super(name, ThreadResource.class);
-        this.brokerManagerElement = App.get(ManagerBroker.class)
+        this.broker = App.get(ManagerBroker.class)
                 .initAndGet(getName(), PromiseTask.class, promiseTask ->
                         promiseTask.
                                 getPromise().
@@ -28,13 +28,13 @@ public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadRes
     }
 
     public void addPromiseTask(PromiseTask promiseTask) {
-        brokerManagerElement.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getPromise().getExpiryRemainingMs()));
+        broker.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getPromise().getExpiryRemainingMs()));
         addIfPoolEmpty();
         serviceBell();
     }
 
     public ExpirationMsImmutableEnvelope<PromiseTask> getPromiseTask() {
-        return brokerManagerElement.pollLast();
+        return broker.pollLast();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadRes
     }
 
     @Override
-    public boolean checkCriticalOfExceptionOnComplete(Throwable e) {
+    public boolean checkFatalException(Throwable th) {
         return false;
     }
 
