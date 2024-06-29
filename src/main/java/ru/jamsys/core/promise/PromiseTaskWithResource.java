@@ -3,13 +3,13 @@ package ru.jamsys.core.promise;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.ManagerPoolTask;
+import ru.jamsys.core.component.manager.ManagerPoolTaskWait;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.TaskWait;
+import ru.jamsys.core.resource.PoolTaskWait;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -21,7 +21,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
 
     private final TriConsumer<AtomicBoolean, Promise, T> procedure;
 
-    private final TaskWait<?, ?, ?> managerElement;
+    private final PoolTaskWait<?, ?, ?> managerElement;
 
     private final PoolSettings<T> poolSettings;
 
@@ -35,8 +35,8 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
         super(index, promise, PromiseTaskExecuteType.IO);
         this.poolSettings = poolSettings;
         this.procedure = procedure;
-        ManagerPoolTask managerPoolTask = App.get(ManagerPoolTask.class);
-        managerElement = managerPoolTask.get(poolSettings.getIndex(), poolSettings);
+        ManagerPoolTaskWait managerPoolTaskWait = App.get(ManagerPoolTaskWait.class);
+        managerElement = managerPoolTaskWait.get(poolSettings.getIndex(), poolSettings);
     }
 
     // Этот блок вызывается из Promise.loop() и подразумевает запуск ::run из внешнего потока

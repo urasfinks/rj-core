@@ -17,7 +17,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 // Пул, который предоставляет освободившиеся ресурсы для задач PromiseTaskPool
 // В потоке исполнения задачи - совершается действие с освободившимся ресурсом
 
-public class TaskWait<
+public class PoolTaskWait<
         RA,
         RR,
         PI extends ExpirationMsMutable & Resource<RA, RR>
@@ -32,7 +32,7 @@ public class TaskWait<
 
     private final Class<PI> classItem;
 
-    public TaskWait(String name, PoolSettings<PI> poolSettings, Class<PI> classItem) {
+    public PoolTaskWait(String name, PoolSettings<PI> poolSettings, Class<PI> classItem) {
         super(name, poolSettings.getClassPoolItem());
         this.poolSettings = poolSettings;
         this.classItem = classItem;

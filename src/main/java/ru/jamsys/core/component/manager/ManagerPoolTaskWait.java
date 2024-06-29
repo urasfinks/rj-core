@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.KeepAliveComponent;
-import ru.jamsys.core.resource.TaskWait;
+import ru.jamsys.core.resource.PoolTaskWait;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
@@ -14,30 +14,30 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 // PI - PoolItem
 
 @Component
-public class ManagerPoolTask<
+public class ManagerPoolTaskWait<
         RA,
         RR,
         PI extends ExpirationMsMutable & Resource<RA, RR>
-        > extends AbstractManager<TaskWait<?, ?, ?>, PoolSettings<PI>>
+        > extends AbstractManager<PoolTaskWait<?, ?, ?>, PoolSettings<PI>>
         implements KeepAliveComponent {
 
-    public TaskWait<RA, RR, PI> get(String index, PoolSettings<PI> argument) {
-        return (TaskWait) getManagerElement(index, argument.getClassPoolItem(), argument);
+    public PoolTaskWait<RA, RR, PI> get(String index, PoolSettings<PI> argument) {
+        return (PoolTaskWait) getManagerElement(index, argument.getClassPoolItem(), argument);
     }
 
     @Override
-    public TaskWait<?, ?, ?> build(
+    public PoolTaskWait<?, ?, ?> build(
             String index,
             Class<?> classItem,
             PoolSettings<PI> poolSettings
     ) {
-        TaskWait<RA, RR, ?> taskWait = new TaskWait<>(
+        PoolTaskWait<RA, RR, ?> poolTaskWait = new PoolTaskWait<>(
                 index,
                 poolSettings,
                 (Class<PI>) classItem
         );
-        taskWait.run();
-        return taskWait;
+        poolTaskWait.run();
+        return poolTaskWait;
     }
 
     @Override
