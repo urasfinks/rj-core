@@ -37,9 +37,9 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
 
     private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
-    private final ThreadPoolPromise pool;
+    private final ThreadPool pool;
 
-    public ThreadResource(String name, ThreadPoolPromise pool) {
+    public ThreadResource(String name, ThreadPool pool) {
         this.pool = pool;
         RateLimit rateLimit = App.get(ManagerRateLimit.class).get(getClassName(pool.getName()));
         rateLimit.init(App.context, RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);
