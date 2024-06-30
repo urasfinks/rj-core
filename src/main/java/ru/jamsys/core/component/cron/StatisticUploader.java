@@ -52,7 +52,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
     private String folder = "LogManager";
 
     @Getter
-    @PropertyName("default.log.limit.insert")
+    @PropertyName("run.args.remote.statistic.limit.points")
     private String limitInsert = "10000";
 
     public enum StatisticUploaderPromiseProperty {

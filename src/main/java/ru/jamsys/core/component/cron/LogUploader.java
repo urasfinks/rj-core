@@ -50,8 +50,8 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
     private String folder = "LogManager";
 
     @Getter
-    @PropertyName("default.log.limit.insert")
-    private String limitInsert = "10000";
+    @PropertyName("run.args.remote.log.limit.points")
+    private String limitInsert = "2000";
 
     private final String idx;
 

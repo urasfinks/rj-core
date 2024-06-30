@@ -30,20 +30,20 @@ import java.util.Set;
 public class SecurityComponent extends PropertyConnector implements LifeCycleComponent {
 
     @Setter
-    @PropertyName("core.security.path.storage")
+    @PropertyName("run.args.security.path.storage")
     private String pathStorage;
 
     @Setter
-    @PropertyName("core.security.path.public.key")
+    @PropertyName("run.args.security.path.public.key")
     private String pathPublicKey;
 
     @Setter
-    @PropertyName("core.security.path.init")
+    @PropertyName("run.args.security.path.init")
     private String pathInitAlias;
 
     @Getter
     @SuppressWarnings("all")
-    @PropertyName("core.security.path.java")
+    @PropertyName("run.args.security.path.java")
     private String pathInitSecurityKeyJava;
 
     final private ExceptionHandler exceptionHandler;
