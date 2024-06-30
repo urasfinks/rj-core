@@ -3,26 +3,28 @@ package ru.jamsys.core.resource.thread;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
+import ru.jamsys.core.extension.CheckClassItem;
+import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadResource> {
+public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> implements Closable, CheckClassItem {
 
     AtomicInteger counter = new AtomicInteger(1);
 
     private final Broker<PromiseTask> broker;
 
-    public ThreadPoolPromise(String name) {
-        super(name, ThreadResource.class);
+    public ThreadPool(String index) {
+        super(index, ThreadResource.class);
         this.broker = App.get(ManagerBroker.class)
                 .initAndGet(getName(), PromiseTask.class, promiseTask ->
                         promiseTask.
                                 getPromise().
                                 setErrorInRunTask(new RuntimeException(
-                                        ThreadPoolPromise.class.getSimpleName() + ".broker->drop(task)")
+                                        ThreadPool.class.getSimpleName() + ".broker->drop(task)")
                                 )
                 );
     }
@@ -30,6 +32,7 @@ public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadRes
     public void addPromiseTask(PromiseTask promiseTask) {
         broker.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getPromise().getExpiryRemainingMs()));
         addIfPoolEmpty();
+        System.out.println("LastTimeInQueue: " + broker.getLastTimeInQueue());
         serviceBell();
     }
 
@@ -50,6 +53,16 @@ public class ThreadPoolPromise extends AbstractPoolPrivate<Void, Void, ThreadRes
     @Override
     public boolean checkFatalException(Throwable th) {
         return false;
+    }
+
+    @Override
+    public void close() {
+        shutdown();
+    }
+
+    @Override
+    public boolean checkClassItem(Class<?> classItem) {
+        return true;
     }
 
 }
