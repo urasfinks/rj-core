@@ -1,17 +1,12 @@
 package ru.jamsys.core.component;
 
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.promise.PromiseTask;
-import ru.jamsys.core.resource.NamespaceResourceConstructor;
-import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
-import ru.jamsys.core.balancer.algorithm.LeastConnections;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 /**
  * Wow it's amazing!
@@ -23,40 +18,30 @@ import java.util.function.Function;
  */
 
 @Component
-public class ServiceThreadVirtual implements Resource<PromiseTask, Void> {
+public class ServiceThreadVirtual implements LifeCycleComponent {
 
     private final ExecutorService executorService = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("v-thread-", 0).factory());
 
     private final AtomicBoolean isThreadRun = new AtomicBoolean(true);
 
-    @Override
-    public void constructor(NamespaceResourceConstructor constructor) {
-
-    }
-
-    @Override
-    public Void execute(PromiseTask arguments) {
+    public void execute(PromiseTask arguments) {
         arguments.setIsThreadRun(isThreadRun);
         executorService.submit(arguments);
-        return null;
     }
 
     @Override
-    public void close() {
+    public int getInitializationIndex() {
+        return 1;
+    }
+
+    @Override
+    public void run() {
+
+    }
+
+    @Override
+    public void shutdown() {
         executorService.shutdown();
-    }
-
-    @Override
-    public int getWeight(BalancerAlgorithm balancerAlgorithm) {
-        if (balancerAlgorithm instanceof LeastConnections) {
-            return ((ThreadPoolExecutor) executorService).getActiveCount();
-        }
-        return isThreadRun.get() ? 1 : 0;
-    }
-
-    @Override
-    public Function<Throwable, Boolean> getFatalException() {
-        return _ -> false;
     }
 
 }
