@@ -6,9 +6,9 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadReal;
 import ru.jamsys.core.component.ServiceThreadVirtual;
-import ru.jamsys.core.extension.property.PropertyEnvelope;
+import ru.jamsys.core.extension.Procedure;
 import ru.jamsys.core.extension.trace.TracePromise;
-import ru.jamsys.core.statistic.timer.Timer;
+import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,10 +36,10 @@ public class PromiseTask implements Runnable {
     @Getter
     private final String index;
 
-    // Багу поймал, когда задача на JOIN выполняется в родительском потоке
-    // Там нет передачи isThreadRun, только в случаях [IO, COMPUTE] Setter вызывается
+    protected Procedure beforeExecuteBlock;
+
     @Setter
-    AtomicBoolean isThreadRun = new AtomicBoolean(true);
+    AtomicBoolean isThreadRun;
 
     public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type) {
         this.index = index;
@@ -68,60 +68,73 @@ public class PromiseTask implements Runnable {
     }
 
     public PromiseTask setRetryCount(int count, int delayMs) {
-        if (type == PromiseTaskExecuteType.JOIN) {
-            throw new RuntimeException(
-                    this.getClass().getName()
-                            + " with type: ["
-                            + PromiseTaskExecuteType.JOIN.getName()
-                            + "] doesn't work with retries"
-            );
-        }
         this.retryCount = count;
         this.retryDelayMs = delayMs;
         return this;
     }
 
     // execute on another thread
-    public void start() {
+    public void start(Procedure beforeExecuteBlock) {
+        this.beforeExecuteBlock = beforeExecuteBlock;
         switch (type) {
             case IO, ASYNC_NO_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);
             case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.get(ServiceThreadReal.class).execute(this);
-            case JOIN -> run();
-            case EXTERNAL_WAIT ->
-                    promise.getTrace().add(new TracePromise<>(getIndex() + ".start", null, type, this.getClass()));
+            case EXTERNAL_WAIT -> promise
+                    .getTrace()
+                    .add(new TracePromise<>(getIndex() + ".start", null, type, this.getClass()));
         }
     }
 
     // execute current thread
     @Override
     public void run() {
-        PropertyEnvelope<Timer, String, String> timerEnvelope = App.get(ServicePromise.class).registrationTimer(index);
-        timerEnvelope.setProperty("type", type.getName());
-        Timer timer = timerEnvelope.getValue();
-        TracePromise<String, Timer> trace = new TracePromise<>(getIndex(), null, type, this.getClass());
+        TimerNanoEnvelope<String> timerEnvelope = App.get(ServicePromise.class).registrationTimer(index);
+        TracePromise<String, TimerNanoEnvelope<String>> trace = new TracePromise<>(
+                getIndex(),
+                timerEnvelope,
+                type,
+                this.getClass()
+        );
+        if (retryCount > 0) {
+            trace.setRetry(retryCount);
+        }
         promise.getTrace().add(trace);
-        boolean isNormal = false;
+        Throwable registerThrowable = null;
+        boolean retry = false;
         try {
             executeBlock();
-            isNormal = true;
         } catch (Throwable th) {
-            App.error(th);
             if (retryCount > 0) {
                 retryCount--;
                 promise.getExceptionTrace().add(new TracePromise<>(index, th, type, this.getClass()));
                 App.get(ServicePromise.class).addRetryDelay(this);
+                retry = true;
             } else {
-                switch (type) {
-                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE ->
-                            promise.getExceptionTrace().add(new TracePromise<>(index, th, type, this.getClass()));
-                    default -> promise.complete(this, th);
-                }
+                registerThrowable = th;
             }
         }
-        timer.stop();
-        trace.setValue(timer);
-        if (isNormal) {
-            getPromise().complete(this);
+        if (beforeExecuteBlock != null) {
+            try {
+                beforeExecuteBlock.run();
+            } catch (Throwable th) {
+                registerThrowable = th;
+            }
+        }
+        timerEnvelope.stop();
+        trace.setTimeStop(System.currentTimeMillis());
+        if (registerThrowable == null) {
+            // Если в повтор не вышли
+            if (!retry) {
+                promise.complete(this);
+            }
+        } else {
+            switch (type) {
+                // Если это методы без ожидания, нам надо самостоятельно зафиксировать их исключения
+                // так как complete для них не вызывается
+                case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE ->
+                        promise.getExceptionTrace().add(new TracePromise<>(index, registerThrowable, type, this.getClass()));
+                default -> promise.complete(this, registerThrowable);
+            }
         }
     }
 

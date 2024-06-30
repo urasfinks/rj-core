@@ -45,7 +45,7 @@ class PromiseImplTest {
                     Util.sleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H1");
                     ArrayList<PromiseTask> objects = new ArrayList<>();
-                    objects.add(new PromiseTask("test2", promise, PromiseTaskExecuteType.JOIN, (_, _) -> System.out.println(Thread.currentThread().getName() + " EXTRA")));
+                    objects.add(new PromiseTask("test2", promise, PromiseTaskExecuteType.IO, (_, _) -> System.out.println(Thread.currentThread().getName() + " EXTRA")));
                     promise1.addToHead(objects);
                 })
                 .append("test", (_, _) -> {
@@ -57,7 +57,7 @@ class PromiseImplTest {
                     Util.sleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H3");
                 })
-                .join("test", (_, _) -> System.out.println(Thread.currentThread().getName() + " FINISH"))
+                .append("test", (_, _) -> System.out.println(Thread.currentThread().getName() + " FINISH"))
                 .run()
                 .await(4000);
     }
@@ -69,10 +69,10 @@ class PromiseImplTest {
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < 10; i++) {
             final int x = i;
-            promise.join("test", (_, _) -> deque.add(x));
+            promise.then("test", (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
-        promise.run();
+        promise.run().await(500);
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
         App.error(new RuntimeException("Hello"));
     }
@@ -85,11 +85,11 @@ class PromiseImplTest {
 
         for (int i = 0; i < 1000; i++) {
             final int x = i;
-            promise.join("test", (_, _) -> deque.add(x));
+            promise.then("test", (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
         promise.run().await(1100);
-        System.out.println("test3 isTerminated: " + promise.isTerminated());
+        System.out.println("test3 isRun: " + promise.isRun());
         System.out.println(promise.getLogString());
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
     }
@@ -147,7 +147,7 @@ class PromiseImplTest {
                     retry.incrementAndGet();
                     throw new RuntimeException("Hello world");
                 })
-                .getLastAppendedTask().setRetryCount(1, 1000).getPromise()
+                .getLastTask().setRetryCount(1, 1000).getPromise()
                 .onError((_, _) -> error.incrementAndGet())
                 .onComplete((_, _) -> complete.incrementAndGet())
                 .run()
@@ -167,22 +167,22 @@ class PromiseImplTest {
 
         Promise promise = servicePromise.get("test", 1_500L);
         promise
-                .join("1", (_, _) -> {
+                .append("1", (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .join("2", (_, _) -> {
+                .then("2", (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
-                .join("3", (_, _) -> {
+                .then("3", (_, _) -> {
                     exec.incrementAndGet();
                     Util.sleepMs(1000);
                 })
                 .onError((_, _) -> error.incrementAndGet())
                 .onComplete((_, _) -> complete.incrementAndGet())
                 .run()
-                .await(2000);
+                .await(2100);
         Assertions.assertEquals(1, error.get());
         Assertions.assertEquals(0, complete.get());
         Assertions.assertEquals(2, exec.get());
@@ -267,10 +267,10 @@ class PromiseImplTest {
 
         Assertions.assertEquals(1, promise.getTrace().size());
         Assertions.assertEquals(0, promise.getExceptionTrace().size());
-        Assertions.assertFalse(promise.isTerminated());
+        Assertions.assertTrue(promise.isRun());
 
         promiseTask.externalComplete();
-        Assertions.assertTrue(promise.isTerminated());
+        Assertions.assertFalse(promise.isRun());
         Assertions.assertEquals(2, promise.getTrace().size());
 
         System.out.println(promise.getLogString());
@@ -293,7 +293,7 @@ class PromiseImplTest {
         promise.run().await(1000);
         System.out.println(promise.getLogString());
 
-        Assertions.assertTrue(promise.isTerminated());
+        Assertions.assertFalse(promise.isRun());
     }
 
     @Test
@@ -307,7 +307,7 @@ class PromiseImplTest {
 
         System.out.println(promise.getLogString());
 
-        Assertions.assertTrue(promise.isTerminated());
+        Assertions.assertFalse(promise.isRun());
         Assertions.assertTrue(promise.isException());
         Assertions.assertEquals(1, counter.get());
         Assertions.assertEquals("TimeOut cause: ServicePromise.onPromiseTaskExpired", promise.getExceptionTrace().getFirst().getIndex());
@@ -362,7 +362,7 @@ class PromiseImplTest {
         //Мы по timeout должны упасть
         Assertions.assertTrue(promise.isException());
         // Мы дали 1 секунду время жизни, EXTERNAL_WAIT не финишировал -> сработал timeout
-        Assertions.assertTrue(promise.isTerminated());
+        Assertions.assertFalse(promise.isRun());
 
     }
 

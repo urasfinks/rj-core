@@ -13,10 +13,13 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PromiseImpl extends AbstractPromiseBuilder {
 
     private volatile Thread loopThread;
+
+    private final AtomicBoolean finalAction = new AtomicBoolean(false);
 
     @Setter
     private DisposableExpirationMsImmutableEnvelope<Promise> registerInBroker;
@@ -68,13 +71,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 }
                 isStartLoop.set(false);
             } else if (!Thread.currentThread().equals(loopThread) && firstConcurrentCompletionWait.compareAndSet(false, true)) {
-                long expiredTimeMs = System.currentTimeMillis() + 5;
-                while (isStartLoop.get()) {
-                    if (System.currentTimeMillis() > expiredTimeMs) {
-                        break;
-                    }
-                    Thread.onSpinWait();
-                }
+                Util.await(isStartLoop, 5, null);
                 firstConcurrentCompletionWait.set(false);
                 if (!isStartLoop.get()) {
                     complete();
@@ -83,6 +80,9 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 ServicePromise.queueMultipleCompleteSet.add(this);
             }
         } else {
+            // Этот блок может отработать, если какая-то задача выполнялась дольше чем сработал timeout promise
+            // Задача в трейсах должна зафиксировать время своего исполнения и нам для общего понимания
+            // полагаю пригодится эта информация
             flushLog();
         }
     }
@@ -142,10 +142,10 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                         isWait.set(true);
                         getTrace().add(new TracePromise<>("StartWait", null, null, null));
                     }
-                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> firstTask.start();
+                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> firstTask.start(null);
                     default -> {
                         setRunningTasks.add(firstTask);
-                        firstTask.start();
+                        firstTask.start(null);
                     }
                 }
             } else {
@@ -154,25 +154,39 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         }
         if (isRun.get()) {
             if (isException.get()) {
-                ServicePromise.queueMultipleCompleteSet.remove(this);
-                App.get(ServicePromise.class).finish(registerInBroker);
-                if (onError != null) {
-                    onError.start();
+                if (finalAction.compareAndSet(false, true)) {
+                    ServicePromise.queueMultipleCompleteSet.remove(this);
+                    App.get(ServicePromise.class).finish(registerInBroker);
+                    if (onError != null) {
+                        onError.start(() -> isRun.set(false));
+                    } else {
+                        isRun.set(false);
+                        flushLog();
+                    }
                 }
-                isRun.set(false);
             } else if (
                     !isWait.get() // Мы не ждём
                             && setRunningTasks.isEmpty() // Список запущенных задач пуст
                             && listPendingTasks.isEmpty() //  Список задач в работу пуст
                             && toHead.isEmpty() // Список добавленных в runTime задача пуст
             ) {
-                ServicePromise.queueMultipleCompleteSet.remove(this);
-                App.get(ServicePromise.class).finish(registerInBroker);
-                if (onComplete != null) {
-                    onComplete.start();
+                if (finalAction.compareAndSet(false, true)) {
+                    ServicePromise.queueMultipleCompleteSet.remove(this);
+                    App.get(ServicePromise.class).finish(registerInBroker);
+                    if (onComplete != null) {
+                        onComplete.start(() -> isRun.set(false));
+                        // Дальнейшие действия под капотом
+                        // 1) установится isRun.set(false)
+                        // 2) Вызовится complete
+                        // 3) complete пойдёт по ветке flushLog()
+                        //
+                        // Тут есть проблема, что лог будет зафиксирован после того, как закончится await
+                        // Пока не знаю на сколько это плохо
+                    } else {
+                        isRun.set(false);
+                        flushLog();
+                    }
                 }
-                flushLog();
-                isRun.set(false);
             }
         }
     }
@@ -187,17 +201,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     public void await(long timeoutMs) {
-        long start = System.currentTimeMillis();
-        long expiredTime = start + timeoutMs;
-        while (!isTerminated() && expiredTime >= System.currentTimeMillis()) {
-            Thread.onSpinWait();
-        }
-        if (!isTerminated()) {
-            Util.printStackTrace(
-                    "await timeout start: " + Util.msToDataFormat(start)
-                            + " now: " + Util.msToDataFormat(System.currentTimeMillis()) + ";\r\n"
-                            + "Promise not terminated");
-        }
+        Util.await(isRun, timeoutMs, "Promise not terminated");
     }
 
 }

@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
-import ru.jamsys.core.statistic.timer.Timer;
+import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.Collection;
 import java.util.List;
@@ -41,14 +41,14 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
     Promise onComplete(PromiseTask onComplete);
 
     default Promise onComplete(BiConsumer<AtomicBoolean, Promise> fn) {
-        return onComplete(new PromiseTask(getIndex() + ".onComplete", this, PromiseTaskExecuteType.JOIN, fn));
+        return onComplete(new PromiseTask(getIndex() + ".onComplete", this, PromiseTaskExecuteType.IO, fn));
     }
 
     // Добавление задачи, которая выполнится после фатального завершения цепочки Promise
     Promise onError(PromiseTask onError);
 
     default Promise onError(BiConsumer<AtomicBoolean, Promise> fn) {
-        return onError(new PromiseTask(getIndex() + ".onError", this, PromiseTaskExecuteType.JOIN, fn));
+        return onError(new PromiseTask(getIndex() + ".onError", this, PromiseTaskExecuteType.IO, fn));
     }
 
     // Если в цепочку надо внедрить дополнительные задачи в runTime исполнения
@@ -90,21 +90,17 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
         return then(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.IO, fn));
     }
 
-    default Promise join(String index, BiConsumer<AtomicBoolean, Promise> fn) {
-        return append(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.JOIN, fn));
-    }
-
     Promise appendWait();
 
-    PromiseTask getLastAppendedTask();
+    PromiseTask getLastTask();
 
     List<TracePromise<String, Throwable>> getExceptionTrace();
 
-    Collection<TracePromise<String, Timer>> getTrace();
+    Collection<TracePromise<String, TimerNanoEnvelope<String>>> getTrace();
 
     String getLogString();
 
-    boolean isTerminated();
+    boolean isRun();
 
     boolean isException();
 

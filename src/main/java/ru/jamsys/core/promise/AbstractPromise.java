@@ -11,7 +11,7 @@ import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
-import ru.jamsys.core.statistic.timer.Timer;
+import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,7 +79,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     @JsonProperty
     @Getter
-    protected Collection<TracePromise<String, Timer>> trace = new ConcurrentLinkedQueue<>();
+    protected Collection<TracePromise<String, TimerNanoEnvelope<String>>> trace = new ConcurrentLinkedQueue<>();
 
     public AbstractPromise(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
         super(keepAliveOnInactivityMs, lastActivityMs);
@@ -89,6 +89,11 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     public AbstractPromise(String index, long keepAliveOnInactivityMs) {
         super(keepAliveOnInactivityMs);
         this.index = index;
+    }
+
+    @JsonProperty
+    public boolean isRun() {
+        return isRun.get();
     }
 
     public AbstractPromise setLog(boolean log){
@@ -104,12 +109,6 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     public void addToHead(List<PromiseTask> append) {
         toHead.add(append);
-    }
-
-    @JsonProperty
-    @Override
-    public boolean isTerminated() {
-        return isException.get() || !isRun.get();
     }
 
     @JsonProperty

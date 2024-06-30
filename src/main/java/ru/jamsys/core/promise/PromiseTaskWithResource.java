@@ -5,6 +5,7 @@ import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerPoolTaskWait;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
+import ru.jamsys.core.extension.Procedure;
 import ru.jamsys.core.extension.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.pool.PoolItemEnvelope;
@@ -43,7 +44,8 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     // Мы его переопределили, добавляя задачу в Pool, а вот уже когда освободится ресурс в пуле
     // Пул сам вызовет start с передачей туда ресурса, там то мы и вызовем ::run из внешнего потока
     @Override
-    public void start() {
+    public void start(Procedure beforeExecuteBlock) {
+        this.beforeExecuteBlock = beforeExecuteBlock;
         getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Subscribe(" + poolSettings.getIndex() + ")", null, null, null));
         managerElement.addPromiseTaskPool(this);
     }
@@ -59,7 +61,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     public void start(PoolItemEnvelope<?, ?, T> poolItem) {
         setPoolItemEnvelope(poolItem);
         getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Received(" + poolSettings.getIndex() + ")", null, null, null));
-        super.start();
+        super.start(null);
     }
 
 }

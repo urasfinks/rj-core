@@ -3,13 +3,26 @@ package ru.jamsys.core.extension.trace;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Setter;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
-@JsonPropertyOrder({"index", "type", "timeAdd", "value", "class"})
+@JsonPropertyOrder({"index", "retry", "type", "timeAdd", "timeStop", "value", "class"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TracePromise<K, V> extends Trace<K, V> {
 
     final Class<?> cls;
+
+    @JsonProperty
+    @Setter
+    public Integer retry = null; //Попытка запуска задачи
+
+    @Setter
+    public Long timeStop;
+
+    public String getTimeStop() {
+        return Util.msToDataFormat(timeStop);
+    }
 
     @JsonProperty("class")
     String getCls() {

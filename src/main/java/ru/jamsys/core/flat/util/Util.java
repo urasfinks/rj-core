@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -375,6 +376,22 @@ public class Util {
 
     public static  <T> Set<T> getConcurrentHashSet(){
         return ConcurrentHashMap.newKeySet();
+    }
+
+    public static boolean await(AtomicBoolean isRun, long timeoutMs, String exceptionMessage) {
+        long start = System.currentTimeMillis();
+        long expiredTime = start + timeoutMs;
+        while (isRun.get() && expiredTime >= System.currentTimeMillis()) {
+            Thread.onSpinWait();
+        }
+        if (isRun.get()) {
+            if (exceptionMessage != null) {
+                logConsole(exceptionMessage, true);
+            }
+            return false;
+        } else {
+            return true;
+        }
     }
 
 }

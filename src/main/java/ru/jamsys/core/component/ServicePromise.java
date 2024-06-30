@@ -10,7 +10,6 @@ import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.property.PropertyEnvelope;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
@@ -20,7 +19,7 @@ import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.timer.Timer;
+import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -36,7 +35,7 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
 
     private final Expiration<PromiseTask> promiseTaskRetry;
 
-    ConcurrentLinkedDeque<PropertyEnvelope<Timer, String, String>> queueTimer = new ConcurrentLinkedDeque<>();
+    ConcurrentLinkedDeque<TimerNanoEnvelope<String>> queueTimer = new ConcurrentLinkedDeque<>();
 
     Map<String, LongSummaryStatistics> timeStatisticNano = new HashMap<>();
 
@@ -62,8 +61,8 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
         promiseTaskRetry.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getRetryDelayMs()));
     }
 
-    public PropertyEnvelope<Timer, String, String> registrationTimer(String index) {
-        PropertyEnvelope<Timer, String, String> timer = new PropertyEnvelope<>(new Timer(index));
+    public TimerNanoEnvelope<String> registrationTimer(String index) {
+        TimerNanoEnvelope<String> timer = new TimerNanoEnvelope<>(index);
         queueTimer.add(timer);
         return timer;
     }
@@ -71,31 +70,26 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
     private void onPromiseTaskRetry(DisposableExpirationMsImmutableEnvelope<PromiseTask> env) {
         PromiseTask promiseTask = env.getValue();
         if (promiseTask != null) {
-            promiseTask.start();
+            promiseTask.start(null);
         }
     }
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        Map<String, PropertyEnvelope<AvgMetric, String, String>> mapMetricNano = new HashMap<>();
-        UtilRisc.forEach(isThreadRun, queueTimer, (PropertyEnvelope<Timer, String, String> timerEnvelope) -> {
-            Timer timer = timerEnvelope.getValue();
-            mapMetricNano.computeIfAbsent(timer.getIndex(), _ -> {
-                PropertyEnvelope<AvgMetric, String, String> envelope = new PropertyEnvelope<>(new AvgMetric());
-                envelope.setProperty(timerEnvelope.getMapProperty());
-                return envelope;
-            }).getValue().add(timer.getNano());
+        Map<String, AvgMetric> mapMetricNano = new HashMap<>();
+        UtilRisc.forEach(isThreadRun, queueTimer, (TimerNanoEnvelope<String> timer) -> {
+            mapMetricNano.computeIfAbsent(timer.getValue(), _ -> new AvgMetric())
+                    .add(timer.getOffsetLastActivityNano());
             if (timer.isStop()) {
-                queueTimer.remove(timerEnvelope);
+                queueTimer.remove(timer);
             }
         });
-        mapMetricNano.forEach((index, envelope) -> {
-            AvgMetric metric = envelope.getValue();
+        mapMetricNano.forEach((index, metric) -> {
             LongSummaryStatistics flush = metric.flush();
             timeStatisticNano.put(index, flush);
             toStatistic.add(new Statistic()
-                    .addTags(envelope.getMapProperty())
-                    .addField(index, flush.getSum())
+                    .addTag("index", index)
+                    .addField("sum", flush.getSum())
             );
         });
     }

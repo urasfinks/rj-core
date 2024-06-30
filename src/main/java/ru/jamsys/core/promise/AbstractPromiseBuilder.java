@@ -60,7 +60,7 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
         return this;
     }
 
-    public PromiseTask getLastAppendedTask() {
+    public PromiseTask getLastTask() {
         return listPendingTasks.peekLast();
     }
 

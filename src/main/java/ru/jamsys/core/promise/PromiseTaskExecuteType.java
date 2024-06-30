@@ -7,7 +7,6 @@ import ru.jamsys.core.extension.EnumName;
 public enum PromiseTaskExecuteType implements EnumName {
 
     WAIT, // Ждём когда все предыдущие запущенные задачи будут исполнены
-    JOIN, // Выполняем в том же потоке, на котором пошёл loop
     IO, //Запускаем эту задачу в VirtualThread
     COMPUTE, //Запускаем эту задачу в RealThread
     EXTERNAL_WAIT, // Внешняя задача, complete будет вызван сторонними средствами
