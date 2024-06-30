@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Lazy
 public class ServiceLogger extends PropertyConnector implements
         StatisticsFlushComponent,
-        PropertySubscriberNotify, LifeCycleComponent {
+        LifeCycleComponent {
 
     private final Map<String, AtomicInteger> stat = new HashMap<>();
 
@@ -48,7 +48,7 @@ public class ServiceLogger extends PropertyConnector implements
         }
         applicationContext
                 .getBean(ServiceProperty.class)
-                .getSubscriber(this, this, "run.args");
+                .getSubscriber(null, this, "run.args");
     }
 
     public DisposableExpirationMsImmutableEnvelope<Log> add(Log log) {
@@ -88,11 +88,6 @@ public class ServiceLogger extends PropertyConnector implements
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedProp) {
-
-    }
-
-    @Override
     public int getInitializationIndex() {
         return 999;
     }
@@ -108,4 +103,5 @@ public class ServiceLogger extends PropertyConnector implements
             App.get(LogUploader.class).generate().run().await(5000);
         }
     }
+
 }

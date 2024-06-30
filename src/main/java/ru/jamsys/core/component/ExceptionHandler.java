@@ -12,15 +12,12 @@ import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.extension.line.writer.LineWriterString;
 import ru.jamsys.core.extension.property.PropertyConnector;
 import ru.jamsys.core.extension.property.PropertyName;
-import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.flat.util.Util;
-
-import java.util.Set;
 
 @Setter
 @Component
 @Lazy
-public class ExceptionHandler extends PropertyConnector implements PropertySubscriberNotify {
+public class ExceptionHandler extends PropertyConnector {
 
     private int maxLine = 20;
 
@@ -33,7 +30,7 @@ public class ExceptionHandler extends PropertyConnector implements PropertySubsc
     public ExceptionHandler(ApplicationContext applicationContext) {
         applicationContext
                 .getBean(ServiceProperty.class)
-                .getSubscriber(this, this, "run.args");
+                .getSubscriber(null, this, "run.args");
     }
 
     public void handler(Throwable th) {
@@ -83,11 +80,6 @@ public class ExceptionHandler extends PropertyConnector implements PropertySubsc
                 break;
             }
         }
-    }
-
-    @Override
-    public void onPropertyUpdate(Set<String> updatedProp) {
-
     }
 
 }
