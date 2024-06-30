@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.cron.CronPromise;
 import ru.jamsys.core.extension.ClassName;
+import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.CronTemplate;
@@ -22,8 +23,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ServiceCron implements LifeCycleComponent, ClassName {
 
     final private Thread thread;
+
     final private List<CronPromise> listItem = new ArrayList<>();
+
     final private AtomicBoolean isWhile = new AtomicBoolean(true);
+
+    final private AtomicBoolean isRun = new AtomicBoolean(true);
 
     @SuppressWarnings("all")
     public ServiceCron(
@@ -61,9 +66,10 @@ public class ServiceCron implements LifeCycleComponent, ClassName {
                     // Может ещё не быть контекста
                     applicationContext.getBean(ExceptionHandler.class).handler(th);
                 }
+                isRun.set(false);
             }
         });
-        thread.setName("CronComponent");
+        thread.setName(ClassNameImpl.getClassNameStatic(getClass(), null, applicationContext));
     }
 
     private void runCronTask(long curTimeMs) {
@@ -113,6 +119,7 @@ public class ServiceCron implements LifeCycleComponent, ClassName {
     public void shutdown() {
         isWhile.set(false);
         thread.interrupt();
+        Util.await(isRun, 1500, getClass().getSimpleName() + " not stop interrupt");
     }
 
     @Override

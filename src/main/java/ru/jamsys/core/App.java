@@ -29,26 +29,19 @@ public class App {
         application.addListeners((ApplicationListener<ContextClosedEvent>) _ -> {
             Util.logConsole("App shutdown process...");
 
-            AtomicBoolean shutdownFinish = new AtomicBoolean(false);
+            AtomicBoolean isRun = new AtomicBoolean(true);
 
             Thread shutdownThread = new Thread(() -> {
                 Thread.currentThread().setName("Shutdown");
                 context.getBean(Core.class).shutdown();
-                shutdownFinish.set(true);
+                isRun.set(false);
             });
             //Запускаем демоническим, что бы если будут зависания в shutdown - мы могли это проигнорировать
             shutdownThread.setDaemon(true);
             shutdownThread.start();
 
-            long start = System.currentTimeMillis();
-            long expiredTime = start + 5000;
-            while (!shutdownFinish.get() && expiredTime >= System.currentTimeMillis()) {
-                Thread.onSpinWait();
-            }
-            if (expiredTime >= System.currentTimeMillis()) {
+            if (Util.await(isRun, 5000, "App stop with error timeout shutdown")) {
                 Util.logConsole("App stop. I wish you good luck, see you soon!");
-            } else {
-                Util.logConsole("App stop with error timeout shutdown");
             }
         });
         run(args);
