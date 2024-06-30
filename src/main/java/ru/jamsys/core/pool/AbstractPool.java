@@ -48,7 +48,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     @Getter
     @ToString.Include
-    public final String name;
+    public final String index;
 
     protected final ConcurrentLinkedDeque<PI> parkQueue = new ConcurrentLinkedDeque<>();
 
@@ -90,17 +90,17 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     private final Lock lockAddToRemove = new ReentrantLock();
 
-    public AbstractPool(String name, Class<PI> cls) {
-        this.name = getClassName(name);
+    public AbstractPool(String index, Class<PI> cls) {
+        this.index = getClassName(index);
 
         ManagerRateLimit managerRateLimit = App.get(ManagerRateLimit.class);
-        rateLimit = managerRateLimit.get(name)
+        rateLimit = managerRateLimit.get(index)
                 .init(App.context, RateLimitName.POOL_SIZE_MAX.getName(), RateLimitItemInstance.MAX)
                 .init(App.context, RateLimitName.POOL_SIZE_MIN.getName(), RateLimitItemInstance.MIN);
         rliPoolSizeMax = rateLimit.get(RateLimitName.POOL_SIZE_MAX.getName());
         rliPoolSizeMin = rateLimit.get(RateLimitName.POOL_SIZE_MIN.getName());
 
-        rateLimitPoolItem = managerRateLimit.get(ClassNameImpl.getClassNameStatic(cls, name));
+        rateLimitPoolItem = managerRateLimit.get(ClassNameImpl.getClassNameStatic(cls, index));
     }
 
     public void setDynamicPollSize(boolean dynamic) {

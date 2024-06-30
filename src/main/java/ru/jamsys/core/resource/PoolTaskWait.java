@@ -36,7 +36,7 @@ public class PoolTaskWait<
         super(name, poolSettings.getClassPoolItem());
         this.poolSettings = poolSettings;
         this.classItem = classItem;
-        broker = App.get(ManagerBroker.class).initAndGet(getName(), PromiseTaskWithResource.class, null);
+        broker = App.get(ManagerBroker.class).initAndGet(this.getIndex(), PromiseTaskWithResource.class, null);
     }
 
     @Override

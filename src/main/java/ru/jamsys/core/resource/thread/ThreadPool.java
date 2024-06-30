@@ -20,7 +20,7 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
     public ThreadPool(String index) {
         super(index, ThreadResource.class);
         this.broker = App.get(ManagerBroker.class)
-                .initAndGet(getName(), PromiseTask.class, promiseTask ->
+                .initAndGet(this.getIndex(), PromiseTask.class, promiseTask ->
                         promiseTask.
                                 getPromise().
                                 setErrorInRunTask(new RuntimeException(
@@ -42,7 +42,7 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
 
     @Override
     public ThreadResource createPoolItem() {
-        return new ThreadResource(getName() + "-" + counter.getAndIncrement(), this);
+        return new ThreadResource(this.getIndex() + "-" + counter.getAndIncrement(), this);
     }
 
     @Override
