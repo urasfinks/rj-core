@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 // Цепочка обещаний
-// TODO: сделать finish() что skipAllStep
 // TODO: сделать jump(indexTask) что вычеркнуть из списка все задачи до индекса таски
 
 public interface Promise extends Property<String, Object>, ExpirationMsImmutable, Correlation {
@@ -83,6 +82,28 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
         ));
     }
 
+    default <T extends Resource<?, ?>> Promise thenWithResource(
+            String index,
+            Class<T> classResource,
+            TriConsumer<AtomicBoolean, Promise, T> procedure
+    ) {
+        return thenWithResource(index, classResource, "default", procedure);
+    }
+
+    default <T extends Resource<?, ?>> Promise thenWithResource(
+            String index,
+            Class<T> classResource,
+            String ns,
+            TriConsumer<AtomicBoolean, Promise, T> procedure
+    ) {
+        return then(new PromiseTaskWithResource<>(
+                getIndex() + "." + index,
+                this,
+                procedure,
+                App.get(PoolSettingsRegistry.class).get(classResource, ns)
+        ));
+    }
+
     Promise then(PromiseTask task);
 
     default Promise then(String index, BiConsumer<AtomicBoolean, Promise> fn) {
@@ -111,5 +132,7 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
     void setErrorInRunTask(Throwable throwable);
 
     Promise setLog(boolean log);
+
+    void skipAllStep();
 
 }

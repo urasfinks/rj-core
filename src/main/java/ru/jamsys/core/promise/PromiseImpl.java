@@ -42,6 +42,11 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         }
     }
 
+    @Override
+    public void skipAllStep() {
+        listPendingTasks.clear();
+    }
+
     public void complete(@NonNull PromiseTask task, @NonNull Throwable exception) {
         setError(task.getIndex(), exception, task.getType());
         complete();

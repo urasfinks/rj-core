@@ -1,17 +1,21 @@
 package ru.jamsys.core.component.cron;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyName;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -29,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
-public class StatisticFlush implements Cron1s, PromiseGenerator, ClassName {
+public class StatisticFlush extends PropertyConnector implements Cron1s, PromiseGenerator, ClassName {
 
     final Broker<StatisticSec> broker;
 
@@ -44,12 +48,17 @@ public class StatisticFlush implements Cron1s, PromiseGenerator, ClassName {
 
     private final ServicePromise servicePromise;
 
+    @Getter
+    @PropertyName("run.args.remote.statistic")
+    private String remoteStatistic = "true";
+
     public StatisticFlush(
             ServiceClassFinder serviceClassFinder,
             ApplicationContext applicationContext,
             ManagerBroker broker,
             ExceptionHandler exceptionHandler,
-            ServicePromise servicePromise
+            ServicePromise servicePromise,
+            ServiceProperty serviceProperty
     ) {
         this.servicePromise = servicePromise;
         this.broker = broker.get(
@@ -59,6 +68,13 @@ public class StatisticFlush implements Cron1s, PromiseGenerator, ClassName {
         this.exceptionHandler = exceptionHandler;
         serviceClassFinder.findByInstance(StatisticsFlushComponent.class).forEach(statisticsCollectorClass
                 -> list.add(applicationContext.getBean(statisticsCollectorClass)));
+
+        serviceProperty.getSubscriber(
+                null,
+                this,
+                null,
+                false
+        );
     }
 
     @Override
@@ -80,7 +96,9 @@ public class StatisticFlush implements Cron1s, PromiseGenerator, ClassName {
                             statisticSec.getList().addAll(statistics);
                         }
                     });
-                    if (!statisticSec.getList().isEmpty()) {
+                    // Не смотря на remoteStatistic надо с сервисов сбрасывать статистику
+                    // Так что мы будем всё собирать, но отправлять не будем
+                    if (!statisticSec.getList().isEmpty() && remoteStatistic.equals("true")) {
                         broker.add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
                     }
                 });

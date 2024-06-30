@@ -413,7 +413,7 @@ class PromiseImplTest {
         //System.out.println(promise.getLog());
     }
 
-    @Test
+    //@Test
     void testRealThread() {
         new Thread(() -> {
             int counter = 1;
@@ -431,6 +431,16 @@ class PromiseImplTest {
                 }
             }
         }).run();
+    }
+
+    //@Test
+    void testNotSendStatistic() {
+        Promise promise = servicePromise.get("testRealThread", 6_000L);
+        promise.append(new PromiseTask("x1", promise, PromiseTaskExecuteType.COMPUTE, (atomicBoolean, promise1) -> {
+            //Util.sleepMs(500);
+        }));
+        promise.run().await(1000);
+        System.out.println(promise.getLogString());
     }
 
 }

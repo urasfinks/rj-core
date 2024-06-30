@@ -73,7 +73,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
         serviceProperty.getSubscriber(
                 null,
                 this,
-                getClassName(applicationContext),
+                null,
                 false
         );
     }
@@ -81,7 +81,12 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
     @Override
     public Promise generate() {
         return servicePromise.get(index, 4_999L)
-                .appendWithResource("sendToInflux", InfluxResource.class, (isThreadRun, promise, influxResource) -> {
+                .append("checkStatistic", (_, promise) -> {
+                    if (broker.isEmpty()) {
+                        promise.skipAllStep();
+                    }
+                })
+                .thenWithResource("sendToInflux", InfluxResource.class, (isThreadRun, promise, influxResource) -> {
                     int limitInsert = Integer.parseInt(this.limitInsert);
                     AtomicInteger countInsert = new AtomicInteger(0);
                     List<Point> listPoints = new ArrayList<>();
