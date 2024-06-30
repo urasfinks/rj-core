@@ -211,8 +211,22 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         tpsComplete.incrementAndGet();
     }
 
+    public PI getFromPark() {
+        // Забираем с начала, что бы под нож улетели последние добавленные
+        PI poolItem = parkQueue.pollLast();
+        if (poolItem != null) {
+            updateParkStatistic();
+            return poolItem;
+        }
+        return null;
+    }
+
     private void addToPark(@NonNull PI poolItem) {
-        // Вставка poolItem в parkQueue должна быть только в этом месте (+ системный addToParkReturnBeforeCheckInactivity)
+        // Если есть потребители, которые ждут ресурс - отдаём ресурс без перевставок в park
+        if (doYouNeedPoolItem(poolItem)) {
+            return;
+        }
+        // Вставка poolItem в parkQueue должна быть только в этом месте
         // Я написал блокировку на вставку в паркинг, что бы сделать атомарной операцию contains и addLast
         // Только что бы избежать дублей в паркинге
         // В обычной жизни конечно такое не должно произойти, но защищаемся всё равно

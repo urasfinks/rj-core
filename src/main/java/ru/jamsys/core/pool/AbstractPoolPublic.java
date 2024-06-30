@@ -20,12 +20,7 @@ public abstract class AbstractPoolPublic<RA, RR, PI extends ExpirationMsMutable 
         if (!isRun.get()) {
             return null;
         }
-        // Забираем с начала, что бы под нож улетели последние добавленные
-        PI poolItem = parkQueue.pollLast();
-        if (poolItem != null) {
-            updateParkStatistic();
-        }
-        return poolItem;
+        return getFromPark();
     }
 
     public PI getPoolItem(long timeOutMs, AtomicBoolean isThreadRun) {
@@ -34,9 +29,8 @@ public abstract class AbstractPoolPublic<RA, RR, PI extends ExpirationMsMutable 
         }
         long finishTimeMs = System.currentTimeMillis() + timeOutMs;
         while (isRun.get() && isThreadRun.get() && finishTimeMs > System.currentTimeMillis()) {
-            PI poolItem = parkQueue.pollLast();
+            PI poolItem = getFromPark();
             if (poolItem != null) {
-                updateParkStatistic();
                 return poolItem;
             }
             Util.sleepMs(100);

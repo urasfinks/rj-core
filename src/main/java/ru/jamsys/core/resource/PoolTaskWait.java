@@ -87,12 +87,11 @@ public class PoolTaskWait<
     @Override
     public void onParkUpdate() {
         if (!broker.isEmpty() && !parkQueue.isEmpty()) {
-            PI poolItem = parkQueue.pollLast();
+            PI poolItem = getFromPark();
             if (poolItem != null) {
                 //Забираем с конца, что бы никаких штормов
                 ExpirationMsImmutableEnvelope<PromiseTaskWithResource> envelope = broker.pollLast();
                 if (envelope != null) {
-                    updateParkStatistic();
                     envelope.getValue().start(new PoolItemEnvelope<>(this, poolItem));
                 } else {
                     complete(poolItem, null);
@@ -101,4 +100,13 @@ public class PoolTaskWait<
         }
     }
 
+    @Override
+    public boolean doYouNeedPoolItem(PI poolItem) {
+        ExpirationMsImmutableEnvelope<PromiseTaskWithResource> envelope = broker.pollLast();
+        if (envelope != null) {
+            envelope.getValue().start(new PoolItemEnvelope<>(this, poolItem));
+            return true;
+        }
+        return false;
+    }
 }

@@ -36,4 +36,7 @@ public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlu
     // Вызывается когда в парк добавляется ресурс
     void onParkUpdate();
 
+    //
+    boolean doYouNeedPoolItem(PI poolItem);
+
 }

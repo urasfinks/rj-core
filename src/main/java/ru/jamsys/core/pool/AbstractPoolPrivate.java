@@ -1,5 +1,6 @@
 package ru.jamsys.core.pool;
 
+import ru.jamsys.core.App;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
@@ -17,11 +18,24 @@ public abstract class AbstractPoolPrivate<RA, RR, PI extends ExpirationMsMutable
 
     // Звоночек, что бы взбодрить приватные ресурсы
     public void serviceBell() {
-
+        PI pi = getFromPark();
+        if (pi != null) {
+            try {
+                pi.execute(null);
+            } catch (Throwable th) {
+                App.error(th);
+            }
+        }
     }
 
     @Override
     public void onParkUpdate() {
         // Приватный объект закончил свою работу, нет никакого смысла его снова запускать
     }
+
+    @Override
+    public boolean doYouNeedPoolItem(PI poolItem) {
+        return false;
+    }
+
 }
