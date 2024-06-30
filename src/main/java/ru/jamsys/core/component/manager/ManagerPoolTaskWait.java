@@ -42,7 +42,7 @@ public class ManagerPoolTaskWait<
 
     @Override
     public int getInitializationIndex() {
-        return 996;
+        return 500;
     }
 
 }

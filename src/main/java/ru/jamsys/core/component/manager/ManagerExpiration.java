@@ -32,7 +32,7 @@ public class ManagerExpiration extends AbstractManager<Expiration<?>, Consumer<D
 
     @Override
     public int getInitializationIndex() {
-        return 2;
+        return 4;
     }
 
 }

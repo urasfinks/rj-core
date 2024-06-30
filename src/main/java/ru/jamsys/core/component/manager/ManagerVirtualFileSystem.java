@@ -30,7 +30,7 @@ public class ManagerVirtualFileSystem extends AbstractManager<File, Void> implem
 
     @Override
     public int getInitializationIndex() {
-        return 998;
+        return 502;
     }
 
 }

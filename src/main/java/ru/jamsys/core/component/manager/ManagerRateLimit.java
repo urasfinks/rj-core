@@ -22,7 +22,7 @@ public class ManagerRateLimit extends AbstractManager<RateLimit, Void> {
 
     @Override
     public int getInitializationIndex() {
-        return 1;
+        return 2;
     }
 
 }

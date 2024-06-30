@@ -61,7 +61,7 @@ public class ServiceCron implements LifeCycleComponent, ClassName {
                         }
                     }
                 } catch (InterruptedException ie) {
-                    Util.logConsole("STOP");
+                    Util.logConsole("interrupt()");
                 } catch (Throwable th) {
                     // Может ещё не быть контекста
                     applicationContext.getBean(ExceptionHandler.class).handler(th);
@@ -124,7 +124,7 @@ public class ServiceCron implements LifeCycleComponent, ClassName {
 
     @Override
     public int getInitializationIndex() {
-        return 3;
+        return 6;
     }
 
 }
