@@ -22,7 +22,7 @@ import java.util.Set;
 @Lazy
 public class ExceptionHandler extends PropertyConnector implements PropertySubscriberNotify {
 
-    private int maxLine = 15;
+    private int maxLine = 20;
 
     @PropertyName("remote.log")
     private String remoteLog = "true";
@@ -39,17 +39,12 @@ public class ExceptionHandler extends PropertyConnector implements PropertySubsc
     public void handler(Throwable th) {
         if (consoleOutput.equals("true")) {
             LineWriter lineWriter = new LineWriterString();
-            lineWriter.addLine(
-                    Util.msToDataFormat(System.currentTimeMillis())
-                            + " Exception in thread: [" + Thread.currentThread().getName() + "]"
-            );
             Util.logConsole(getTextException(th, lineWriter));
         }
         if (remoteLog.equals("true")) {
             LineWriterList lineWriterList = new LineWriterList();
             lineWriterList.addLine(
-                    Util.msToDataFormat(System.currentTimeMillis())
-                            + " Exception in thread: [" + Thread.currentThread().getName() + "]"
+                    Util.msToDataFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
             );
             getTextException(th, lineWriterList);
             App.get(ServiceLogger.class).add(
