@@ -413,4 +413,24 @@ class PromiseImplTest {
         //System.out.println(promise.getLog());
     }
 
+    @Test
+    void testRealThread() {
+        new Thread(() -> {
+            int counter = 1;
+            while (true) {
+                Promise promise = servicePromise.get("testRealThread", 6_000L);
+                promise.append(new PromiseTask("x1", promise, PromiseTaskExecuteType.COMPUTE, (atomicBoolean, promise1) -> {
+                    Util.sleepMs(500);
+                }));
+                promise.run().await(1000);
+                System.out.println(promise.getLogString());
+                Util.sleepMs(1000);
+                counter++;
+                if (counter > 10) {
+                    break;
+                }
+            }
+        }).run();
+    }
+
 }
