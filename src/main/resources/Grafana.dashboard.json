@@ -371,7 +371,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ServicePromise\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\"])\n\n\n\n",
+          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ServicePromise\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_field\"])\n\n\n\n",
           "refId": "A"
         }
       ],
@@ -1305,7 +1305,7 @@
     ]
   },
   "time": {
-    "from": "now-1m",
+    "from": "now-60s",
     "to": "now"
   },
   "timepicker": {
@@ -1315,6 +1315,6 @@
   "timezone": "",
   "title": "New dashboard2",
   "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 23,
+  "version": 24,
   "weekStart": ""
 }
