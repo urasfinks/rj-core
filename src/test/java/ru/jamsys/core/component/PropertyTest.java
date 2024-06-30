@@ -149,7 +149,7 @@ class PropertyTest {
         Map<String, String> mapPropValue = x2.getMapPropValue();
         System.out.println(mapPropValue);
 
-        Subscriber subscribe = serviceProperty.getSubscriber(x2, x2, "core");
+        Subscriber subscribe = serviceProperty.getSubscriber(x2, x2, "run.args");
 
         Assertions.assertEquals(2, subscribe.getSubscriptions().size());
 
