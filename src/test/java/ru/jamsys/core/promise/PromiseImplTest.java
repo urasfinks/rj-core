@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class PromiseImplTest {
+class PromiseImplTest { //time: 17.510sec all test execute on virtual thread
 
     public static ServicePromise servicePromise;
 
@@ -96,6 +96,7 @@ class PromiseImplTest {
 
     @Test
     void test4() {
+        //TODO: этот кейс пока не проходит
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
@@ -302,7 +303,8 @@ class PromiseImplTest {
         AtomicInteger counter = new AtomicInteger(0);
         promise
                 .append("longTimeout", (_, _)
-                        -> Util.sleepMs(2000)).onError((_, _) -> counter.incrementAndGet())
+                        -> Util.sleepMs(2000))
+                .onError((_, _) -> counter.incrementAndGet())
                 .run().await(2010);
 
         System.out.println(promise.getLogString());

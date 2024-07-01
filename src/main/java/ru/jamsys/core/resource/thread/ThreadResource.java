@@ -52,10 +52,12 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
                     goToTheParking();
                     continue;
                 }
-                ExpirationMsImmutableEnvelope<PromiseTask> promiseTask = pool.getPromiseTask();
-                if (promiseTask != null) {
+                ExpirationMsImmutableEnvelope<PromiseTask> promiseTaskEnvelope = pool.getPromiseTask();
+                if (promiseTaskEnvelope != null) {
                     try {
-                        promiseTask.getValue().run();
+                        PromiseTask promiseTask = promiseTaskEnvelope.getValue();
+                        promiseTask.setIsThreadRun(isWhile);
+                        promiseTask.run();
                     } catch (Exception e) {
                         App.error(e);
                     }

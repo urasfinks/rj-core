@@ -32,7 +32,7 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
     public void addPromiseTask(PromiseTask promiseTask) {
         broker.add(new ExpirationMsImmutableEnvelope<>(promiseTask, promiseTask.getPromise().getExpiryRemainingMs()));
         addIfPoolEmpty();
-        System.out.println("LastTimeInQueue: " + broker.getLastTimeInQueue());
+        //System.out.println("LastTimeInQueue: " + broker.getLastTimeInQueue());
         serviceBell();
     }
 

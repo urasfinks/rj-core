@@ -140,17 +140,17 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     break;
                 }
             }
-            PromiseTask firstTask = listPendingTasks.pollFirst();
-            if (firstTask != null) {
-                switch (firstTask.type) {
+            PromiseTask poolTask = listPendingTasks.pollFirst();
+            if (poolTask != null) {
+                switch (poolTask.type) {
                     case WAIT -> {
                         isWait.set(true);
                         getTrace().add(new TracePromise<>("StartWait", null, null, null));
                     }
-                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> firstTask.start(null);
+                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> poolTask.start(null);
                     default -> {
-                        setRunningTasks.add(firstTask);
-                        firstTask.start(null);
+                        setRunningTasks.add(poolTask);
+                        poolTask.start(null);
                     }
                 }
             } else {

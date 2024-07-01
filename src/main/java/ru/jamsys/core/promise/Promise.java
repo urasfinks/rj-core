@@ -56,8 +56,7 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
     Promise append(PromiseTask task);
 
     default Promise append(String index, BiConsumer<AtomicBoolean, Promise> fn) {
-        //TODO: IO -> COMPUTED
-        return append(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.IO, fn));
+        return append(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
     }
 
     default <T extends Resource<?, ?>> Promise appendWithResource(
@@ -104,14 +103,19 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
         ));
     }
 
-    Promise then(PromiseTask task);
-
-    default Promise then(String index, BiConsumer<AtomicBoolean, Promise> fn) {
-        //TODO: IO -> COMPUTED
-        return then(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.IO, fn));
+    default Promise then(PromiseTask task) {
+        appendWait().append(task);
+        return this;
     }
 
-    Promise appendWait();
+    default Promise then(String index, BiConsumer<AtomicBoolean, Promise> fn) {
+        return then(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
+    }
+
+    default Promise appendWait() {
+        append(new PromiseTask(PromiseTaskExecuteType.WAIT.getName(), this, PromiseTaskExecuteType.WAIT));
+        return this;
+    }
 
     PromiseTask getLastTask();
 
