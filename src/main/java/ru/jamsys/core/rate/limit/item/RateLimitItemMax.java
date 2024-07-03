@@ -25,8 +25,8 @@ public class RateLimitItemMax extends PropertyConnector implements RateLimitItem
     private volatile int cur;
 
     @SuppressWarnings("all")
-    @PropertyName("max")
-    private String propMax = "1";
+    @PropertyName
+    private String propMax = "1000";
 
     @Getter
     private final String ns;

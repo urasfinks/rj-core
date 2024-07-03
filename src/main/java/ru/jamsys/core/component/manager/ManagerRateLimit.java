@@ -1,6 +1,8 @@
 package ru.jamsys.core.component.manager;
 
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.rate.limit.RateLimit;
 
@@ -23,6 +25,11 @@ public class ManagerRateLimit extends AbstractManager<RateLimit, Void> {
     @Override
     public int getInitializationIndex() {
         return 2;
+    }
+
+    public void setLimit(String index, String key, int value) {
+        //RateLimit.ThreadPool.seq.then1.ThreadTps
+        App.context.getBean(ServiceProperty.class).setProperty("RateLimit." + index + "." + key, value + "");
     }
 
 }

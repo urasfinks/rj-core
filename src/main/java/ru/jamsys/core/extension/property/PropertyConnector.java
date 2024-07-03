@@ -17,6 +17,7 @@ public class PropertyConnector {
     public PropertyConnector() {
         for (Field field : getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(PropertyName.class)) {
+                // Может такое быть, что value = "", это значит что мы смотрим прямо на корневое значение ns
                 String prop = field.getAnnotation(PropertyName.class).value();
                 field.setAccessible(true);
                 mapPropField.put(prop, field);

@@ -148,7 +148,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     }
 
     private void setRliPoolSizeMax(int limit) {
-        rliPoolSizeMax.set("max", limit);
+        rliPoolSizeMax.set(limit);
     }
 
     // Бассейн может поместить новые объекты для плаванья

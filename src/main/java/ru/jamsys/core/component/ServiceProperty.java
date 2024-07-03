@@ -9,8 +9,8 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyConnector;
-import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
+import ru.jamsys.core.extension.property.Subscriber;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,7 +60,7 @@ public class ServiceProperty {
                     notify.addAll(subscribe.get(key));
                 }
             }
-            notify.forEach(subscriber -> subscriber.onUpdate(new HashMap<>(map)));
+            notify.forEach(subscriber -> subscriber.onServicePropertyUpdate(new HashMap<>(map)));
         }
     }
 
@@ -69,13 +69,13 @@ public class ServiceProperty {
             prop.remove(key);
             if (subscribe.containsKey(key)) {
                 HashMapBuilder<String, String> append = new HashMapBuilder<String, String>().append(key, null);
-                subscribe.get(key).forEach(subscriber -> subscriber.onUpdate(append));
+                subscribe.get(key).forEach(subscriber -> subscriber.onServicePropertyUpdate(append));
             }
         } else if (!prop.containsKey(key) || !prop.get(key).equals(value)) {
             prop.put(key, value);
             if (subscribe.containsKey(key)) {
                 HashMapBuilder<String, String> append = new HashMapBuilder<String, String>().append(key, value);
-                subscribe.get(key).forEach(subscriber -> subscriber.onUpdate(append));
+                subscribe.get(key).forEach(subscriber -> subscriber.onServicePropertyUpdate(append));
             }
         }
     }
@@ -89,22 +89,34 @@ public class ServiceProperty {
             result = prop.computeIfAbsent(key, _ -> defValue);
         }
         subscribe.computeIfAbsent(key, _ -> new HashSet<>()).add(subscriber);
-        subscriber.onUpdate(new HashMapBuilder<String, String>().append(key, result));
+        subscriber.onServicePropertyUpdate(new HashMapBuilder<String, String>().append(key, result));
     }
 
     public void unsubscribe(String key, Subscriber subscriber) {
         subscribe.get(key).remove(subscriber);
     }
 
-    public Subscriber getSubscriber(PropertySubscriberNotify propertySubscriberNotify, PropertyConnector propertyConnector) {
+    public Subscriber getSubscriber(
+            PropertySubscriberNotify propertySubscriberNotify,
+            PropertyConnector propertyConnector
+    ) {
         return getSubscriber(propertySubscriberNotify, propertyConnector, null, true);
     }
 
-    public Subscriber getSubscriber(PropertySubscriberNotify propertySubscriberNotify, PropertyConnector propertyConnector, String ns) {
+    public Subscriber getSubscriber(
+            PropertySubscriberNotify propertySubscriberNotify,
+            PropertyConnector propertyConnector,
+            String ns
+    ) {
         return new Subscriber(propertySubscriberNotify, this, propertyConnector, ns, true);
     }
 
-    public Subscriber getSubscriber(PropertySubscriberNotify propertySubscriberNotify, PropertyConnector propertyConnector, String ns, boolean require) {
+    public Subscriber getSubscriber(
+            PropertySubscriberNotify propertySubscriberNotify,
+            PropertyConnector propertyConnector,
+            String ns,
+            boolean require
+    ) {
         return new Subscriber(propertySubscriberNotify, this, propertyConnector, ns, require);
     }
 

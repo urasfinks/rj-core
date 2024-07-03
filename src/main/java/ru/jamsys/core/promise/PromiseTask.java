@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
-import ru.jamsys.core.component.ServiceThreadReal;
 import ru.jamsys.core.component.ServiceThreadVirtual;
+import ru.jamsys.core.component.manager.ManagerThreadPool;
 import ru.jamsys.core.extension.Procedure;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
@@ -78,7 +78,7 @@ public class PromiseTask implements Runnable {
         this.beforeExecuteBlock = beforeExecuteBlock;
         switch (type) {
             case IO, ASYNC_NO_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);
-            case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.get(ServiceThreadReal.class).execute(this);
+            case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.get(ManagerThreadPool.class).addPromiseTask(this);
             case EXTERNAL_WAIT -> promise
                     .getTrace()
                     .add(new TracePromise<>(getIndex() + ".start", null, type, this.getClass()));

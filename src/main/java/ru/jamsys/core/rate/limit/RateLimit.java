@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToMap;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -47,6 +48,7 @@ public class RateLimit
     public boolean check(Integer limit) {
         for (String key : map.keySet()) {
             if (!map.get(key).check(limit)) {
+                Util.logConsole("RateLimit index: " + index + "; key: " + key + " FAILED (" + map.get(key).get() + " ? " + limit + ")", true);
                 return false;
             }
         }
@@ -58,7 +60,10 @@ public class RateLimit
     }
 
     public RateLimit init(ApplicationContext applicationContext, String name, RateLimitItemInstance rateLimitItemInstance) {
-        map.computeIfAbsent(name, key -> rateLimitItemInstance.create(applicationContext, getClassName(applicationContext) + "." + index + "." + key));
+        map.computeIfAbsent(name, key -> rateLimitItemInstance.create(
+                applicationContext,
+                getClassName(applicationContext) + "." + index + "." + key)
+        );
         return this;
     }
 

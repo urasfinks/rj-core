@@ -202,17 +202,17 @@ class BrokerTest {
 
     @Test
     void testProperty() {
-        App.get(ServiceProperty.class).setProperty("RateLimit.Broker.XTest.BrokerSize.max", "3000");
+        App.get(ServiceProperty.class).setProperty("RateLimit.Broker.XTest.BrokerSize", "3000");
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
         RateLimitItem rateLimitItem = broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName());
         Assertions.assertEquals(3000, rateLimitItem.get());
-        rateLimitItem.set(App.context, "max", 3001);
+        rateLimitItem.set(App.context, 3001);
         Assertions.assertEquals(3001, rateLimitItem.get());
     }
 
     @Test
     void testPropertyDo() {
-        App.get(ServiceProperty.class).setProperty("RateLimit.Broker.XTest.BrokerSize.max", "11");
+        App.get(ServiceProperty.class).setProperty("RateLimit.Broker.XTest.BrokerSize", "11");
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
         RateLimitItem rateLimitItem = broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName());
         Assertions.assertEquals(11, rateLimitItem.get());
@@ -221,7 +221,7 @@ class BrokerTest {
     @Test
     void testSpeedRemove() {
         int selection = 1_000_000;
-        App.get(ServiceProperty.class).setProperty("RateLimit.Broker.XTest.BrokerSize.max", "3000000");
+        App.get(ServiceProperty.class).setProperty("RateLimit.Broker.XTest.BrokerSize", "3000000");
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
         List<DisposableExpirationMsImmutableEnvelope<XTest>> list = new ArrayList<>();
         long start = System.currentTimeMillis();

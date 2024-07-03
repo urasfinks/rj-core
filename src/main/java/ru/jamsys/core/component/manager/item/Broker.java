@@ -100,8 +100,8 @@ public class Broker<TEO>
         rliTailSize = rateLimit.get(RateLimitName.BROKER_TAIL_SIZE.getName());
 
         serviceProperty = applicationContext.getBean(ServiceProperty.class);
-        rliQueueSize.set(applicationContext, "max", 3000);
-        rliTailSize.set(applicationContext, "max", 5);
+        rliQueueSize.set(applicationContext, 3000);
+        rliTailSize.set(applicationContext, 5);
 
         ManagerExpiration managerExpiration = applicationContext.getBean(ManagerExpiration.class);
         expiration = managerExpiration.get(
@@ -120,11 +120,11 @@ public class Broker<TEO>
     }
 
     public void setMaxSizeQueue(int newSize) {
-        serviceProperty.setProperty(rliQueueSize.getNs() + ".max", newSize + "");
+        serviceProperty.setProperty(rliQueueSize.getNs(), newSize + "");
     }
 
     public void setMaxSizeQueueTail(int newSize) {
-        rliTailSize.set("max", newSize);
+        rliTailSize.set(newSize);
     }
 
     private void statistic(ExpirationMsImmutableEnvelope<TEO> envelope) {

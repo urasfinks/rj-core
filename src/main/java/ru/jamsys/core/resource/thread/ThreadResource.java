@@ -8,8 +8,6 @@ import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.rate.limit.RateLimitName;
-import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -41,8 +39,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
 
     public ThreadResource(String name, ThreadPool pool) {
         this.pool = pool;
-        RateLimit rateLimit = App.get(ManagerRateLimit.class).get(getClassName(pool.getIndex()));
-        rateLimit.init(App.context, RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);
+        RateLimit rateLimit = App.get(ManagerRateLimit.class).get(pool.getIndex());
         this.name = name;
 
         thread = new Thread(() -> {

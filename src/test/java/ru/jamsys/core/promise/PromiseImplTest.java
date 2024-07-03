@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
+import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.jt.Logger;
 import ru.jamsys.core.resource.http.HttpResource;
@@ -29,6 +30,8 @@ class PromiseImplTest { //time: 17.510sec all test execute on virtual thread
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         App.run(args);
+        //App.context = SpringApplication.run(App.class, args);
+        //App.context.getBean(ServiceProperty.class).setProperty("run.args.remote.log", "false");
         servicePromise = App.get(ServicePromise.class);
     }
 
@@ -79,6 +82,7 @@ class PromiseImplTest { //time: 17.510sec all test execute on virtual thread
 
     @Test
     void test3() {
+        App.get(ManagerRateLimit.class).setLimit("ThreadPool.test.test", "ThreadTps", 10000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
@@ -90,8 +94,20 @@ class PromiseImplTest { //time: 17.510sec all test execute on virtual thread
         }
         promise.run().await(1100);
         System.out.println("test3 isRun: " + promise.isRun());
-        System.out.println(promise.getLogString());
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
+    }
+
+    @Test
+    void test3_1() {
+        App.get(ManagerRateLimit.class).setLimit("ThreadPool.seq.then1", "ThreadTps", 1);
+        Promise promise = servicePromise.get("seq", 6_000L);
+        AtomicInteger c = new AtomicInteger(0);
+        promise.then("then1", (_, _) -> c.incrementAndGet());
+        promise.then("then1", (_, _) -> c.incrementAndGet());
+
+        promise.run().await(1000);
+        System.out.println(promise.getLogString());
+        Assertions.assertEquals(1, c.get());
     }
 
     @Test
@@ -105,13 +121,14 @@ class PromiseImplTest { //time: 17.510sec all test execute on virtual thread
             promise.then("test", (_, _) -> deque.add(x));
             dequeRes.add(i);
         }
-        promise.run();
-        Util.sleepMs(1000);
+        promise.run().await(3000);
+        System.out.println(promise.getLogString());
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
     }
 
     @Test
     void test5() {
+        App.get(ManagerRateLimit.class).setLimit("ThreadPool.test.test", "ThreadTps", 100000000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();

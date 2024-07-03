@@ -107,10 +107,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         if (isWait.get() && isNextLoop()) {
             if (setRunningTasks.isEmpty()) {
                 isWait.set(false);
-                if(getIndex().equals("ServiceCron.ReservedHelper")){
-                    Util.printStackTrace("!");
-                }
-                getTrace().add(new TracePromise<>("Все запущенные задачи исполнились. Прекращаем сон. (0)", null, null, null));
+                getTrace().add(new TracePromise<>(Thread.currentThread().getName() + " Все запущенные задачи исполнились. Прекращаем сон. (0)", null, null, null));
             } else {
                 return;
             }
@@ -135,7 +132,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             if (isWait.get()) {
                 if (setRunningTasks.isEmpty()) {
                     isWait.set(false);
-                    getTrace().add(new TracePromise<>("Все запущенные задачи исполнились. Прекращаем сон. (1)", null, null, null));
+                    getTrace().add(new TracePromise<>(Thread.currentThread().getName() + " Все запущенные задачи исполнились. Прекращаем сон. (1)", null, null, null));
                 } else {
                     break;
                 }

@@ -7,12 +7,17 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+// Посредник между объектом, кто хочет получать уведомления от изменения свойств до ServiceProperty
+// При получении событий по изменению свойств вызывает onPropertyUpdate у хозяина
+// Решает проблему ключей с ns или без ns + хранит подписки, что бы в случаи удалении объекта произвести отписку
+// Просто как дворецкий, ни больше не меньше
+
 @Getter
 public class Subscriber {
 
     private final PropertySubscriberNotify subscriber;
 
-    private final ServiceProperty component;
+    private final ServiceProperty serviceProperty;
 
     private final Set<String> subscriptions = new HashSet<>();
 
@@ -20,24 +25,35 @@ public class Subscriber {
 
     private final String ns;
 
-    public Subscriber(PropertySubscriberNotify subscriber, ServiceProperty component, PropertyConnector propertyConnector, String ns) {
+    public Subscriber(
+            PropertySubscriberNotify subscriber,
+            ServiceProperty serviceProperty,
+            PropertyConnector propertyConnector,
+            String ns
+    ) {
         this.subscriber = subscriber;
-        this.component = component;
+        this.serviceProperty = serviceProperty;
         this.propertyConnector = propertyConnector;
         this.ns = ns;
         init(true);
     }
 
-    public Subscriber(PropertySubscriberNotify subscriber, ServiceProperty component, PropertyConnector propertyConnector, String ns, boolean require) {
+    public Subscriber(
+            PropertySubscriberNotify subscriber,
+            ServiceProperty serviceProperty,
+            PropertyConnector propertyConnector,
+            String ns,
+            boolean require
+    ) {
         this.subscriber = subscriber;
-        this.component = component;
+        this.serviceProperty = serviceProperty;
         this.propertyConnector = propertyConnector;
         this.ns = ns;
         init(require);
     }
 
     public void setProperty(String key, String value) {
-        this.component.setProperty(getKeyWithNamespace(key), value);
+        this.serviceProperty.setProperty(getKeyWithNamespace(key), value);
     }
 
     public void init(boolean require) {
@@ -48,7 +64,18 @@ public class Subscriber {
     }
 
     private String getKeyWithNamespace(String key) {
-        return ns != null ? (ns + "." + key) : key;
+        if (key.isEmpty()) {
+            if (ns == null) {
+                // Не надо таких поворотов, когда и ns = null и ключ пустой
+                // На что это ссылка получается в property? на на что?
+                // Допустим есть ns = run.args.x1 и ключ пустота => подписываемся на run.args.x1
+                // Если ns = "" и ключ = "" мы подписываемся на "" - а это исключено
+                throw new RuntimeException("Определитесь либо ns = null либо key.isEmpty()");
+            }
+            return ns;
+        } else {
+            return ns != null ? (ns + "." + key) : key;
+        }
     }
 
     public Subscriber subscribe(String key, boolean require) {
@@ -58,28 +85,29 @@ public class Subscriber {
     public Subscriber subscribe(String key, String defValue, boolean require) {
         if (!subscriptions.contains(key)) {
             subscriptions.add(key);
-            component.subscribe(getKeyWithNamespace(key), this, require, defValue);
+            serviceProperty.subscribe(getKeyWithNamespace(key), this, require, defValue);
         }
         return this;
     }
 
     public void unsubscribe(String key) {
         subscriptions.remove(key);
-        component.unsubscribe(getKeyWithNamespace(key), this);
+        serviceProperty.unsubscribe(getKeyWithNamespace(key), this);
     }
 
     public void unsubscribe() {
         for (String key : subscriptions) {
-            component.unsubscribe(getKeyWithNamespace(key), this);
+            serviceProperty.unsubscribe(getKeyWithNamespace(key), this);
         }
         subscriptions.clear();
     }
 
-    public void onUpdate(Map<String, String> map) {
+    public void onServicePropertyUpdate(Map<String, String> map) {
         Set<String> updatedProp = new HashSet<>();
         if (ns != null) {
             for (String key : map.keySet()) {
-                String prop = key.substring(ns.length() + 1);
+                // Бывает такое, что мы можем подписываться на чистый ns, так как не предполагается больше ключей
+                String prop = key.equals(ns) ? "" : key.substring(ns.length() + 1);
                 updatedProp.add(prop);
                 propertyConnector.setValueByProp(prop, map.get(key));
             }
