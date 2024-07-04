@@ -33,7 +33,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
             TriConsumer<AtomicBoolean, Promise, T> procedure,
             PoolSettings<T> poolSettings
     ) {
-        super(index, promise, PromiseTaskExecuteType.IO);
+        super(index, promise, App.getResourceExecutor());
         this.poolSettings = poolSettings;
         this.procedure = procedure;
         ManagerPoolTaskWait managerPoolTaskWait = App.get(ManagerPoolTaskWait.class);

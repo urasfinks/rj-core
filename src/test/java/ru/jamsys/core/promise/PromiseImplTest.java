@@ -20,7 +20,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class PromiseImplTest { //time: 17.510sec all test execute on virtual thread
+class PromiseImplTest {
+    //time: 17.510sec all test execute on virtual thread
+    //time: 15.93sec all test execute on real thread
 
     public static ServicePromise servicePromise;
 
@@ -48,7 +50,7 @@ class PromiseImplTest { //time: 17.510sec all test execute on virtual thread
                     Util.sleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H1");
                     ArrayList<PromiseTask> objects = new ArrayList<>();
-                    objects.add(new PromiseTask("test2", promise, PromiseTaskExecuteType.IO, (_, _) -> System.out.println(Thread.currentThread().getName() + " EXTRA")));
+                    objects.add(new PromiseTask("test2", promise, App.getUsualExecutor(), (_, _) -> System.out.println(Thread.currentThread().getName() + " EXTRA")));
                     promise1.addToHead(objects);
                 })
                 .append("test", (_, _) -> {

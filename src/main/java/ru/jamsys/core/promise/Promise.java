@@ -40,14 +40,14 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
     Promise onComplete(PromiseTask onComplete);
 
     default Promise onComplete(BiConsumer<AtomicBoolean, Promise> fn) {
-        return onComplete(new PromiseTask(getIndex() + ".onComplete", this, PromiseTaskExecuteType.IO, fn));
+        return onComplete(new PromiseTask(getIndex() + ".onComplete", this, App.getUsualExecutor(), fn));
     }
 
     // Добавление задачи, которая выполнится после фатального завершения цепочки Promise
     Promise onError(PromiseTask onError);
 
     default Promise onError(BiConsumer<AtomicBoolean, Promise> fn) {
-        return onError(new PromiseTask(getIndex() + ".onError", this, PromiseTaskExecuteType.IO, fn));
+        return onError(new PromiseTask(getIndex() + ".onError", this, App.getUsualExecutor(), fn));
     }
 
     // Если в цепочку надо внедрить дополнительные задачи в runTime исполнения
@@ -56,7 +56,7 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
     Promise append(PromiseTask task);
 
     default Promise append(String index, BiConsumer<AtomicBoolean, Promise> fn) {
-        return append(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
+        return append(new PromiseTask(getIndex() + "." + index, this, App.getUsualExecutor(), fn));
     }
 
     default <T extends Resource<?, ?>> Promise appendWithResource(
@@ -109,7 +109,7 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
     }
 
     default Promise then(String index, BiConsumer<AtomicBoolean, Promise> fn) {
-        return then(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
+        return then(new PromiseTask(getIndex() + "." + index, this, App.getUsualExecutor(), fn));
     }
 
     default Promise appendWait() {

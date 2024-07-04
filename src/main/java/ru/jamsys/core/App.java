@@ -10,6 +10,7 @@ import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,6 +79,14 @@ public class App {
             context = null;
             mapBean.clear();
         }
+    }
+
+    public static PromiseTaskExecuteType getUsualExecutor() {
+        return PromiseTaskExecuteType.COMPUTE;
+    }
+
+    public static PromiseTaskExecuteType getResourceExecutor() {
+        return PromiseTaskExecuteType.IO;
     }
 
 }
