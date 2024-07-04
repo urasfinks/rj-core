@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.util.Util;
 
+// IO time: 53
+// COMPUTE time: 54
+
 class CronTest {
 
     @Test
