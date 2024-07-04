@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// IO time: 1sec 425ms
+// COMPUTE time: 1sec 411ms
+
 //TODO: добавить тесты когда нет директории LogManager
 class FileByteWriterTest {
 
