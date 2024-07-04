@@ -8,6 +8,9 @@ import ru.jamsys.core.flat.util.JsonEnvelope;
 
 import java.util.Map;
 
+// IO time: 109ms
+// COMPUTE time: 112ms
+
 class UtilJsonTest {
 
     @Test
