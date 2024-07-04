@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// IO time: 2.481
+// COMPUTE time: 2.457
+
 class BrokerTest {
 
     @BeforeAll
