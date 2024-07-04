@@ -8,6 +8,9 @@ import ru.jamsys.core.flat.util.UtilFileResource;
 
 import java.io.IOException;
 
+// IO time: 139ms
+// COMPUTE time: 141ms
+
 class JsonSchemaTest {
 
     @Test
