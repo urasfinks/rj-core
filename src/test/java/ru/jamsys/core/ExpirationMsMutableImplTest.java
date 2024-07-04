@@ -8,6 +8,9 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
+// IO time: 9ms
+// COMPUTE time: 8ms
+
 class ExpirationMsMutableImplTest {
 
     @Test
