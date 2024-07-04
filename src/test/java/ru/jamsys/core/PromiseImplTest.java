@@ -21,15 +21,18 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// IO time: 16.956
-// COMPUTE time: 15.124
+// IO time: 16.956 (17885)
+// COMPUTE time: 15.124 (24859)
 
 class PromiseImplTest {
 
     public static ServicePromise servicePromise;
 
+    static long start;
+
     @BeforeAll
     static void beforeAll() {
+        start = System.currentTimeMillis();
         String[] args = new String[]{"run.args.remote.log=false"};
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
@@ -42,6 +45,7 @@ class PromiseImplTest {
     @AfterAll
     static void shutdown() {
         App.shutdown();
+        System.out.println(System.currentTimeMillis() - start);
     }
 
     @Test
