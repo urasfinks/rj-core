@@ -7,6 +7,9 @@ import ru.jamsys.core.flat.template.twix.TemplateTwix;
 import java.util.HashMap;
 import java.util.Map;
 
+// IO time: 13ms
+// COMPUTE time: 13ms
+
 class TwixTest {
 
     @Test
