@@ -19,6 +19,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// IO time: 1min 3 sec
+// COMPUTE time: 1min 3 sec
+
 class ExpirationTest {
 
     AtomicBoolean isThreadRun = new AtomicBoolean(true);
