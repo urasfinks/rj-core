@@ -12,6 +12,9 @@ import ru.jamsys.core.flat.util.Util;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// IO time: 4sec 32ms
+// COMPUTE time: 4sec
+
 class ThreadEnvelopeTest {
 
     String namePool = "TestPool";
