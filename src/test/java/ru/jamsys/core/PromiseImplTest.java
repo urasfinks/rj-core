@@ -21,9 +21,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// IO time: 16.956
+// COMPUTE time: 15.124
+
 class PromiseImplTest {
-    // time: 16.956 sec all test execute on virtual thread
-    // time: 15.655 sec all test execute on real thread
 
     public static ServicePromise servicePromise;
 
