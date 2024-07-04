@@ -40,14 +40,18 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
     Promise onComplete(PromiseTask onComplete);
 
     default Promise onComplete(BiConsumer<AtomicBoolean, Promise> fn) {
-        return onComplete(new PromiseTask(getIndex() + ".onComplete", this, App.getUsualExecutor(), fn));
+        PromiseTask promiseTask = new PromiseTask("onCompleteTask", this, App.getUsualExecutor(), fn);
+        promiseTask.setTerminated(true);
+        return onComplete(promiseTask);
     }
 
     // Добавление задачи, которая выполнится после фатального завершения цепочки Promise
     Promise onError(PromiseTask onError);
 
     default Promise onError(BiConsumer<AtomicBoolean, Promise> fn) {
-        return onError(new PromiseTask(getIndex() + ".onError", this, App.getUsualExecutor(), fn));
+        PromiseTask promiseTask = new PromiseTask("onErrorTask", this, App.getUsualExecutor(), fn);
+        promiseTask.setTerminated(true);
+        return onError(promiseTask);
     }
 
     // Если в цепочку надо внедрить дополнительные задачи в runTime исполнения

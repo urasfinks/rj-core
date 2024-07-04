@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class PromiseImplTest {
     //time: 17.510sec all test execute on virtual thread
-    //time: 15.93sec all test execute on real thread
+    //time: 15.655sec all test execute on real thread
 
     public static ServicePromise servicePromise;
 

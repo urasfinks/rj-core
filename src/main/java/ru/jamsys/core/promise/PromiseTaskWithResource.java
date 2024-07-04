@@ -44,8 +44,8 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     // Мы его переопределили, добавляя задачу в Pool, а вот уже когда освободится ресурс в пуле
     // Пул сам вызовет start с передачей туда ресурса, там то мы и вызовем ::run из внешнего потока
     @Override
-    public void start(Procedure beforeExecuteBlock) {
-        this.beforeExecuteBlock = beforeExecuteBlock;
+    public void start(Procedure afterExecuteBlock) {
+        this.afterExecuteBlock = afterExecuteBlock;
         getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Subscribe(" + poolSettings.getIndex() + ")", null, null, null));
         managerElement.addPromiseTaskPool(this);
     }

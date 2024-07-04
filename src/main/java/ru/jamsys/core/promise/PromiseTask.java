@@ -36,7 +36,11 @@ public class PromiseTask implements Runnable {
     @Getter
     private final String index;
 
-    protected Procedure beforeExecuteBlock;
+    protected Procedure afterExecuteBlock;
+
+    @Setter
+    @Getter
+    private boolean terminated = false;
 
     @Setter
     AtomicBoolean isThreadRun;
@@ -74,8 +78,8 @@ public class PromiseTask implements Runnable {
     }
 
     // execute on another thread
-    public void start(Procedure beforeExecuteBlock) {
-        this.beforeExecuteBlock = beforeExecuteBlock;
+    public void start(Procedure afterExecuteBlock) {
+        this.afterExecuteBlock = afterExecuteBlock;
         switch (type) {
             case IO, ASYNC_NO_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);
             case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.get(ManagerThreadPool.class).addPromiseTask(this);
@@ -113,9 +117,9 @@ public class PromiseTask implements Runnable {
                 registerThrowable = th;
             }
         }
-        if (beforeExecuteBlock != null) {
+        if (afterExecuteBlock != null) {
             try {
-                beforeExecuteBlock.run();
+                afterExecuteBlock.run();
             } catch (Throwable th) {
                 registerThrowable = th;
             }
