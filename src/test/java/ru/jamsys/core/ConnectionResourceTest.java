@@ -1,10 +1,11 @@
-package ru.jamsys.core.resource.jdbc;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.promise.Promise;
+import ru.jamsys.core.resource.jdbc.JdbcRequest;
+import ru.jamsys.core.resource.jdbc.JdbcResource;
 
 import java.util.List;
 import java.util.Map;

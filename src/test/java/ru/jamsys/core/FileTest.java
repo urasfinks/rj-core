@@ -1,10 +1,9 @@
-package ru.jamsys.core.virtual.file.system;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.manager.ManagerVirtualFileSystem;
 import ru.jamsys.core.resource.virtual.file.system.File;

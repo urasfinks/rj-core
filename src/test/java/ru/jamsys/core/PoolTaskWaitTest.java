@@ -1,9 +1,8 @@
-package ru.jamsys.core.resource;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.App;
 
 class PoolTaskWaitTest {
     @BeforeAll

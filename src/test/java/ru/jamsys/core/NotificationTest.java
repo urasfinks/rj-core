@@ -1,9 +1,8 @@
-package ru.jamsys.core.notification;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.HashMapBuilder;
 import ru.jamsys.core.promise.Promise;

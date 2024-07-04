@@ -1,11 +1,11 @@
-package ru.jamsys.core.component;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
-import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.flat.util.ExpirationKeepAliveResult;

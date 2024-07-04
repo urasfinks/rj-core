@@ -1,4 +1,4 @@
-package ru.jamsys.core.template;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

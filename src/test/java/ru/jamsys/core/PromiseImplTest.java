@@ -1,18 +1,19 @@
-package ru.jamsys.core.promise;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.jt.Logger;
+import ru.jamsys.core.promise.Promise;
+import ru.jamsys.core.promise.PromiseTask;
+import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.jdbc.JdbcRequest;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
-import ru.jamsys.core.resource.jdbc.TestJdbcTemplate;
 
 import java.util.ArrayList;
 import java.util.List;

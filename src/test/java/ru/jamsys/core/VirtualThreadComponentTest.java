@@ -1,4 +1,4 @@
-package ru.jamsys.core.thread;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

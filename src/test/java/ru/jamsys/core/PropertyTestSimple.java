@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.property.Property;
 import java.util.HashMap;
 import java.util.Map;
 
-class PropertyTest {
+class PropertyTestSimple {
 
     public static class P implements Property<String, Object> {
 

@@ -1,10 +1,9 @@
-package ru.jamsys.core.template;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.App;
 import ru.jamsys.core.flat.template.jdbc.CompiledSqlTemplate;
 import ru.jamsys.core.flat.template.jdbc.StatementType;
 import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;

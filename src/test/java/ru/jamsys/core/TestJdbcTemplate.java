@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.jdbc;
+package ru.jamsys.core;
 
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
 import ru.jamsys.core.flat.template.jdbc.StatementType;
