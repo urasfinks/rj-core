@@ -6,6 +6,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.util.UtilTrend;
 
+// IO time: 17ms
+// COMPUTE time: 18ms
+
 class UtilTrendTest {
     @BeforeAll
     static void beforeAll() {

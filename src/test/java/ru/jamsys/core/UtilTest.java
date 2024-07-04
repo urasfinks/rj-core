@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// IO time: 13ms
+// COMPUTE time: 10ms
+
 class UtilTest {
 
     @Test
