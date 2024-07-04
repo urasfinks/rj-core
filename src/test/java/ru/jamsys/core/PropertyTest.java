@@ -14,6 +14,9 @@ import ru.jamsys.core.extension.property.Subscriber;
 import java.util.Map;
 import java.util.Set;
 
+// IO time: 5ms
+// COMPUTE time: 5ms
+
 class PropertyTest {
     @BeforeAll
     static void beforeAll() {
