@@ -8,6 +8,9 @@ import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.rate.limit.item.*;
 
+// IO time: 6ms
+// COMPUTE time: 5ms
+
 class RateLimitItemTest {
 
     @BeforeAll
