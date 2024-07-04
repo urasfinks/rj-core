@@ -11,6 +11,9 @@ import ru.jamsys.core.resource.virtual.file.system.FileLoaderFactory;
 import ru.jamsys.core.resource.virtual.file.system.FileSaverFactory;
 import ru.jamsys.core.flat.util.UtilFile;
 
+// IO time: 88ms
+// COMPUTE time: 89ms
+
 class FileTest {
     @BeforeAll
     static void beforeAll() {
