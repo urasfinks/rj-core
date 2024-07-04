@@ -21,8 +21,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class PromiseImplTest {
-    //time: 17.510sec all test execute on virtual thread
-    //time: 15.655sec all test execute on real thread
+    // time: 16.956 sec all test execute on virtual thread
+    // time: 15.655 sec all test execute on real thread
 
     public static ServicePromise servicePromise;
 
@@ -109,6 +109,7 @@ class PromiseImplTest {
 
         promise.run().await(1000);
         System.out.println(promise.getLogString());
+        // Для IO потоков нет ограничений по tps, поэтому там будет expected = 2 это нормально!
         Assertions.assertEquals(1, c.get());
     }
 
