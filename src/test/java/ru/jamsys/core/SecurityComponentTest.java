@@ -9,6 +9,9 @@ import ru.jamsys.core.flat.util.UtilFile;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+// IO time: 203ms
+// COMPUTE time: 202ms
+
 class SecurityComponentTest {
 
     @BeforeAll
