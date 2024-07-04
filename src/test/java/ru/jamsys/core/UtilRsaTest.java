@@ -9,6 +9,9 @@ import ru.jamsys.core.flat.util.UtilRsa;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 
+// IO time: 65ms
+// COMPUTE time: 61ms
+
 class UtilRsaTest {
 
     @Test
