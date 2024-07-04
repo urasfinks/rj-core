@@ -11,6 +11,9 @@ import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
 import java.util.HashMap;
 import java.util.List;
 
+// IO time: 6ms
+// COMPUTE time: 6ms
+
 class JdbcTemplateTwixTest {
 
     @BeforeAll
