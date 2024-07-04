@@ -7,6 +7,9 @@ import ru.jamsys.core.pool.AutoBalancerPools;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+// IO time: 8ms
+// COMPUTE time: 9ms
+
 class TaskManagerTest {
 
     @Test
