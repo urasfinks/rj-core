@@ -7,6 +7,9 @@ import ru.jamsys.core.extension.property.Property;
 import java.util.HashMap;
 import java.util.Map;
 
+// IO time: 11ms
+// COMPUTE time: 12ms
+
 class PropertyTestSimple {
 
     public static class P implements Property<String, Object> {
