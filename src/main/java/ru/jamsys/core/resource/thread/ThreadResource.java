@@ -136,27 +136,12 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
         if (inPark.compareAndSet(true, false)) {
             LockSupport.unpark(thread);
         }
-
-        long timeOutMs = 1500; // Так как есть CronManager и по его жизненному циклу нормально спать 1000ms
-        long startTimeMs = System.currentTimeMillis();
-        while (isRun.get()) { //Пытаемся подождать пока потоки самостоятельно закончат свою работу
-            Util.sleepMs(timeOutMs / 4);
-            if (System.currentTimeMillis() - startTimeMs > timeOutMs) { //Не смогли за отведённое время
-                raiseUp("Поток самостоятельно не закончил работу в течении " + timeOutMs, "doShutdown()");
-                break;
-            }
-        }
+        Util.await(isRun, 1500, "Поток не закончил работу после isWhile.set(false)");
         if (isRun.get()) {
+            // Мы сами не реализуем sleep, но внутренние процеесы его могут реализовать
             thread.interrupt();
         }
-        startTimeMs = System.currentTimeMillis();
-        while (isRun.get()) { //Пытаемся подождать пока потоки выйдут от interrupt
-            Util.sleepMs(timeOutMs / 4);
-            if (System.currentTimeMillis() - startTimeMs > timeOutMs) { //Не смогли за отведённое время
-                raiseUp("Поток не закончил работу после interrupt()", "doShutdown()");
-                break;
-            }
-        }
+        Util.await(isRun, 1500, "Поток не закончил работу после interrupt()");
         // Так как мы не можем больше повлиять на остановку
         // В java 22 борльше нет функционала принудительной остановки thread.stop()
         // Таску мы не будем удалять из тайминга - пусть растёт время, а то слишком круто будет новым житься
