@@ -33,7 +33,10 @@ class PromiseImplTest {
     @BeforeAll
     static void beforeAll() {
         start = System.currentTimeMillis();
-        String[] args = new String[]{"run.args.remote.log=false"};
+        String[] args = new String[]{
+                "run.args.remote.log=false",
+                "run.args.remote.statistic=false"
+        };
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         App.run(args);
@@ -90,7 +93,7 @@ class PromiseImplTest {
 
     @Test
     void test3() {
-        App.get(ManagerRateLimit.class).setLimit("ThreadPool.test.test", "ThreadTps", 10000);
+        App.get(ManagerRateLimit.class).setLimit("ThreadPool.test.test", "tps", 10000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
@@ -107,7 +110,7 @@ class PromiseImplTest {
 
     @Test
     void test3_1() {
-        App.get(ManagerRateLimit.class).setLimit("ThreadPool.seq.then1", "ThreadTps", 1);
+        App.get(ManagerRateLimit.class).setLimit("ThreadPool.seq.then1", "tps", 1);
         Promise promise = servicePromise.get("seq", 6_000L);
         AtomicInteger c = new AtomicInteger(0);
         promise.then("then1", (_, _) -> c.incrementAndGet());
@@ -137,7 +140,7 @@ class PromiseImplTest {
 
     @Test
     void test5() {
-        App.get(ManagerRateLimit.class).setLimit("ThreadPool.test.test", "ThreadTps", 100000000);
+        App.get(ManagerRateLimit.class).setLimit("ThreadPool.test.test", "tps", 100000000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();

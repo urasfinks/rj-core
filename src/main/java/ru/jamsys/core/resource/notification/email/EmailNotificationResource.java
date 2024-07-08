@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.ResourceCheckException;
@@ -63,7 +64,7 @@ public class EmailNotificationResource
             email.setHtmlMsg(arguments.getDataHtml());
             email.send();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new ForwardException(e);
         }
         return null;
     }

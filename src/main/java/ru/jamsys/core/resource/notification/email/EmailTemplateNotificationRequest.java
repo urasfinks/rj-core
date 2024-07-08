@@ -1,5 +1,6 @@
 package ru.jamsys.core.resource.notification.email;
 
+import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.flat.template.twix.TemplateTwix;
 import ru.jamsys.core.flat.util.UtilFileResource;
 
@@ -12,7 +13,7 @@ public class EmailTemplateNotificationRequest extends EmailNotificationRequest {
         try {
             setDataHtml(TemplateTwix.template(UtilFileResource.getAsString(template), args));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new ForwardException(e);
         }
     }
 

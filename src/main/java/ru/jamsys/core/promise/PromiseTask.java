@@ -78,7 +78,7 @@ public class PromiseTask implements Runnable {
     }
 
     // execute on another thread
-    public void start(Procedure afterExecuteBlock) {
+    public void prepareLaunch(Procedure afterExecuteBlock) {
         this.afterExecuteBlock = afterExecuteBlock;
         switch (type) {
             case IO, ASYNC_NO_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);

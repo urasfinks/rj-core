@@ -15,6 +15,7 @@ import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ByteItem;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
+import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.extension.property.PropertyConnector;
 import ru.jamsys.core.extension.property.PropertyName;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
@@ -55,6 +56,10 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
     @PropertyName("run.args.remote.statistic.limit.points")
     private String limitInsert = "10000";
 
+    @Getter
+    @PropertyName("run.args.remote.statistic")
+    private String remoteStatistic = "true";
+
     public enum StatisticUploaderPromiseProperty {
         RESERVE_STATISTIC,
     }
@@ -80,6 +85,9 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
 
     @Override
     public Promise generate() {
+        if (!remoteStatistic.equals("true")) {
+            return null;
+        }
         return servicePromise.get(index, 4_999L)
                 .append("checkStatistic", (_, promise) -> {
                     if (broker.isEmpty()) {
@@ -142,7 +150,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                             try {
                                 UtilFile.remove(readyFile);
                             } catch (Exception e) {
-                                throw new RuntimeException(e);
+                                throw new ForwardException(e);
                             }
                         }
                     }

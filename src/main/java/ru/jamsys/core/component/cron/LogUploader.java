@@ -14,6 +14,7 @@ import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.extension.ByteItem;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
+import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.extension.property.PropertyConnector;
 import ru.jamsys.core.extension.property.PropertyName;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
@@ -53,6 +54,10 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
     @PropertyName("run.args.remote.log.limit.points")
     private String limitInsert = "2000";
 
+    @Getter
+    @PropertyName("run.args.remote.log")
+    private String remoteLog = "true";
+
     private final String idx;
 
     public enum LogUploaderPromiseProperty {
@@ -63,11 +68,14 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
         this.servicePromise = servicePromise;
         this.idx = ClassNameImpl.getClassNameStatic(Log.class, null, applicationContext);
         broker = managerBroker.get(idx, Log.class);
-        serviceProperty.getSubscriber(null, this, getClassName(applicationContext), false);
+        serviceProperty.getSubscriber(null, this, null, false);
     }
 
     @Override
     public Promise generate() {
+        if (!remoteLog.equals("true")) {
+            return null;
+        }
         return servicePromise.get(index, 4_999L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (isThreadRun, promise, influxResource) -> {
             int limitInsert = Integer.parseInt(this.limitInsert);
             AtomicInteger countInsert = new AtomicInteger(0);
@@ -118,7 +126,7 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
                     try {
                         UtilFile.remove(readyFile);
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new ForwardException(e);
                     }
                 }
             }

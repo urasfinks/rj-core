@@ -7,10 +7,12 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.cron.CronPromise;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
+import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.CronTemplate;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 
 import java.util.ArrayList;
@@ -64,7 +66,9 @@ public class ServiceCron implements LifeCycleComponent, ClassName {
                     Util.logConsole("interrupt()");
                 } catch (Throwable th) {
                     // Может ещё не быть контекста
-                    applicationContext.getBean(ExceptionHandler.class).handler(th);
+                    applicationContext
+                            .getBean(ExceptionHandler.class)
+                            .handler(new ForwardException(th));
                 }
                 isRun.set(false);
             }
@@ -75,10 +79,15 @@ public class ServiceCron implements LifeCycleComponent, ClassName {
     private void runCronTask(long curTimeMs) {
         listItem.forEach((CronPromise cronPromise) -> {
             if (cronPromise.getCron().isTimeHasCome(curTimeMs)) {
+                String indexPromise = null;
                 try {
-                    cronPromise.getPromiseGenerator().generate().run();
+                    Promise promise = cronPromise.getPromiseGenerator().generate();
+                    if (promise != null) {
+                        indexPromise = promise.getIndex();
+                        promise.run();
+                    }
                 } catch (Exception e) {
-                    App.error(e);
+                    App.error(new ForwardException("Cron task (" + indexPromise + ")", e));
                 }
             }
         });

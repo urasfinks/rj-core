@@ -28,7 +28,7 @@ public class ManagerRateLimit extends AbstractManager<RateLimit, Void> {
     }
 
     public void setLimit(String index, String key, int value) {
-        //RateLimit.ThreadPool.seq.then1.ThreadTps
+        //RateLimit.ThreadPool.seq.then1.tps
         App.context.getBean(ServiceProperty.class).setProperty("RateLimit." + index + "." + key, value + "");
     }
 

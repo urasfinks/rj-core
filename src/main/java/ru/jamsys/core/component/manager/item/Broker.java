@@ -3,16 +3,13 @@ package ru.jamsys.core.component.manager.item;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerExpiration;
-import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
+import ru.jamsys.core.extension.property.PropertyType;
+import ru.jamsys.core.extension.property.PropertyValue;
+import ru.jamsys.core.extension.property.ValueName;
 import ru.jamsys.core.flat.util.UtilRisc;
-import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.rate.limit.RateLimitName;
-import ru.jamsys.core.rate.limit.item.RateLimitItem;
-import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
@@ -53,12 +50,12 @@ public class Broker<TEO>
                 DisposableExpirationMsImmutableEnvelope<TEO> // Должны вернуть, что бы из вне можно было сделать remove
                 > {
 
-    private final ConcurrentLinkedDeque<DisposableExpirationMsImmutableEnvelope<TEO>> queue = new ConcurrentLinkedDeque<>();
-
     private final AtomicInteger queueSize = new AtomicInteger(0);
 
+    private final ConcurrentLinkedDeque<DisposableExpirationMsImmutableEnvelope<TEO>> queue = new ConcurrentLinkedDeque<>();
+
     //Последний сообщения проходящие через очередь
-    private final ConcurrentLinkedDeque<ExpirationMsImmutableEnvelope<TEO>> tail = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<ExpirationMsImmutableEnvelope<TEO>> tailQueue = new ConcurrentLinkedDeque<>();
 
     // Я подумал, при деградации хорошо увидеть, что очередь вообще читается
     private final AtomicInteger tpsDequeue = new AtomicInteger(0);
@@ -68,14 +65,13 @@ public class Broker<TEO>
     private final AvgMetric timeInQueue = new AvgMetric();
 
     @Getter
-    final RateLimit rateLimit;
-
-    @Getter
     private Double lastTimeInQueue;
 
-    final RateLimitItem rliQueueSize;
+    @Getter
+    final PropertyValue maxQueueSize;
 
-    final RateLimitItem rliTailSize;
+    @Getter
+    final PropertyValue maxTailQueueSize;
 
     final String index;
 
@@ -83,25 +79,26 @@ public class Broker<TEO>
 
     private final Class<TEO> classItem;
 
-    private final ServiceProperty serviceProperty;
-
     private final Expiration<DisposableExpirationMsImmutableEnvelope> expiration;
 
     public Broker(String index, ApplicationContext applicationContext, Class<TEO> classItem, Consumer<TEO> onDropConsumer) {
         this.index = index;
         this.classItem = classItem;
         this.onDropConsumer = onDropConsumer;
+        String clsIndex = getClassName(index, applicationContext);
+        maxQueueSize = new PropertyValue(
+                applicationContext,
+                PropertyType.INTEGER,
+                clsIndex + "." + ValueName.BROKER_SIZE.getName(),
+                "3000"
+        );
 
-        rateLimit = applicationContext.getBean(ManagerRateLimit.class).get(getClassName(index, applicationContext))
-                .init(applicationContext, RateLimitName.BROKER_SIZE.getName(), RateLimitItemInstance.MAX)
-                .init(applicationContext, RateLimitName.BROKER_TAIL_SIZE.getName(), RateLimitItemInstance.MAX);
-
-        rliQueueSize = rateLimit.get(RateLimitName.BROKER_SIZE.getName());
-        rliTailSize = rateLimit.get(RateLimitName.BROKER_TAIL_SIZE.getName());
-
-        serviceProperty = applicationContext.getBean(ServiceProperty.class);
-        rliQueueSize.set(applicationContext, 3000);
-        rliTailSize.set(applicationContext, 5);
+        maxTailQueueSize = new PropertyValue(
+                applicationContext,
+                PropertyType.INTEGER,
+                clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getName(),
+                "3000"
+        );
 
         ManagerExpiration managerExpiration = applicationContext.getBean(ManagerExpiration.class);
         expiration = managerExpiration.get(
@@ -117,14 +114,6 @@ public class Broker<TEO>
 
     public boolean isEmpty() {
         return queue.isEmpty();
-    }
-
-    public void setMaxSizeQueue(int newSize) {
-        serviceProperty.setProperty(rliQueueSize.getNs(), newSize + "");
-    }
-
-    public void setMaxSizeQueueTail(int newSize) {
-        rliTailSize.set(newSize);
     }
 
     private void statistic(ExpirationMsImmutableEnvelope<TEO> envelope) {
@@ -151,7 +140,7 @@ public class Broker<TEO>
         // Проблема с производительностью
         // Мы не можем использовать queue.size() для расчёта переполнения
         // пример: вставка 100к записей занимаем 35сек
-        if (!rliQueueSize.check(queueSize.get() + 1)) {
+        if (queueSize.get() >= maxQueueSize.getAsInt()) {
             // Он конечно протух не по своей воле, но что делать...
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
             DisposableExpirationMsImmutableEnvelope<TEO> teoDisposableExpirationMsImmutableEnvelope = queue.removeFirst();
@@ -163,10 +152,10 @@ public class Broker<TEO>
 
         queue.add(convert);
         queueSize.incrementAndGet();
-        tail.add(envelope);
-        if (!rliTailSize.check(tail.size())) {
-            tail.pollFirst(); // с начала изымаем
+        if (tailQueue.size() >= maxTailQueueSize.getAsInt()) {
+            tailQueue.pollFirst(); // с начала изымаем
         }
+        tailQueue.add(envelope);
         return convert;
     }
 
@@ -231,7 +220,7 @@ public class Broker<TEO>
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x
-        return queueSize.get() * 100 / rliQueueSize.get();
+        return queueSize.get() * 100 / maxQueueSize.getAsInt();
     }
 
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
@@ -259,15 +248,15 @@ public class Broker<TEO>
     public void reset() {
         queue.clear();
         queueSize.set(0);
-        tail.clear();
+        tailQueue.clear();
         tpsDequeue.set(0);
     }
 
     // Отладочная
 
-    public List<TEO> getTail(@Nullable AtomicBoolean isRun) {
+    public List<TEO> getTailQueue(@Nullable AtomicBoolean isRun) {
         final List<TEO> ret = new ArrayList<>();
-        UtilRisc.forEach(isRun, tail, (ExpirationMsImmutableEnvelope<TEO> envelope) ->
+        UtilRisc.forEach(isRun, tailQueue, (ExpirationMsImmutableEnvelope<TEO> envelope) ->
                 ret.add(envelope.getValue()));
         return ret;
     }

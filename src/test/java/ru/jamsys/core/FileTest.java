@@ -17,7 +17,10 @@ import ru.jamsys.core.flat.util.UtilFile;
 class FileTest {
     @BeforeAll
     static void beforeAll() {
-        String[] args = new String[]{"run.args.remote.log=false"};
+        String[] args = new String[]{
+                "run.args.remote.log=false",
+                "run.args.remote.statistic=false"
+        };
         App.run(args);
     }
 

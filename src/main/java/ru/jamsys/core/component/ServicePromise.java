@@ -70,7 +70,7 @@ public class ServicePromise implements ClassName, KeepAliveComponent, Statistics
     private void onPromiseTaskRetry(DisposableExpirationMsImmutableEnvelope<PromiseTask> env) {
         PromiseTask promiseTask = env.getValue();
         if (promiseTask != null) {
-            promiseTask.start(null);
+            promiseTask.prepareLaunch(null);
         }
     }
 

@@ -14,14 +14,17 @@ import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.property.PropertyConnector;
 import ru.jamsys.core.extension.property.PropertyName;
-import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,7 +38,7 @@ public class ServiceLogger extends PropertyConnector implements
 
     Broker<Log> broker;
 
-    @PropertyName("remote.log")
+    @PropertyName("run.args.remote.log")
     private String remoteLog = "true";
 
     public ServiceLogger(ManagerBroker managerBroker, ApplicationContext applicationContext) {
@@ -48,7 +51,7 @@ public class ServiceLogger extends PropertyConnector implements
         }
         applicationContext
                 .getBean(ServiceProperty.class)
-                .getSubscriber(null, this, "run.args");
+                .getSubscriber(null, this, null);
     }
 
     public DisposableExpirationMsImmutableEnvelope<Log> add(Log log) {
@@ -100,7 +103,10 @@ public class ServiceLogger extends PropertyConnector implements
     @Override
     public void shutdown() {
         if (remoteLog.equals("true") && !broker.isEmpty()) {
-            App.get(LogUploader.class).generate().run().await(5000);
+            Promise promise = App.get(LogUploader.class).generate();
+            if (promise != null) {
+                promise.run().await(5000);
+            }
         }
     }
 

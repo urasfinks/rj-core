@@ -6,6 +6,7 @@ import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.CheckClassItem;
 import ru.jamsys.core.extension.Closable;
+import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.promise.PromiseTaskWithResource;
@@ -45,8 +46,8 @@ public class PoolTaskWait<
         try {
             newPoolItem.constructor(poolSettings.getResourceConstructor());
             return newPoolItem;
-        } catch (Throwable e) {
-            App.error(e);
+        } catch (Throwable th) {
+            App.error(new ForwardException(th));
         }
         return null;
     }
@@ -101,7 +102,7 @@ public class PoolTaskWait<
     }
 
     @Override
-    public boolean doYouNeedPoolItem(PI poolItem) {
+    public boolean forwardResourceWithoutParking(PI poolItem) {
         ExpirationMsImmutableEnvelope<PromiseTaskWithResource> envelope = broker.pollLast();
         if (envelope != null) {
             envelope.getValue().start(new PoolItemEnvelope<>(this, poolItem));

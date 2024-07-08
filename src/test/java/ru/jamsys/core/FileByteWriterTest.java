@@ -27,7 +27,10 @@ class FileByteWriterTest {
     @BeforeAll
     static void beforeAll() {
         UtilFile.removeAllFilesInFolder("LogManager");
-        String[] args = new String[]{"run.args.remote.log=false"};
+        String[] args = new String[]{
+                "run.args.remote.log=false",
+                "run.args.remote.statistic=false"
+        };
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         //App.main(args);
@@ -117,7 +120,7 @@ class FileByteWriterTest {
         long start = System.currentTimeMillis();
         FileByteWriter test = new FileByteWriter("default4", App.context);
         //test.getBroker().getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(9999999);
-        test.getBroker().setMaxSizeQueue(9999999);
+        test.getBroker().getMaxQueueSize().set(9999999);
         long start2 = System.currentTimeMillis();
         for (int i = 0; i < 1000000; i++) {
             test.append(new Log(LogType.INFO).setData("LogData" + i));

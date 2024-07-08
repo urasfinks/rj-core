@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
@@ -61,8 +62,8 @@ public class JdbcResource
                     property.getUser(),
                     new String(securityComponent.get(property.getSecurityAlias()))
             );
-        } catch (Exception e) {
-            App.error(e);
+        } catch (Throwable th) {
+            App.error(new ForwardException(th));
         }
     }
 

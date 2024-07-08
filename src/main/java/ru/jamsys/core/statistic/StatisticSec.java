@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.extension.ByteItem;
+import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.io.*;
@@ -30,7 +31,7 @@ public class StatisticSec extends ExpirationMsMutableImpl implements ByteItem, S
             out.flush();
             return bos.toByteArray();
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new ForwardException(ex);
         }
     }
 
@@ -44,7 +45,7 @@ public class StatisticSec extends ExpirationMsMutableImpl implements ByteItem, S
             setStopTimeMs(statisticSec.getStopTimeMs());
             setKeepAliveOnInactivityMs(statisticSec.getKeepAliveOnInactivityMs());
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new ForwardException(ex);
         }
     }
 

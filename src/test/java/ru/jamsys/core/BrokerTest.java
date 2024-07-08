@@ -8,8 +8,6 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.rate.limit.RateLimitName;
-import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
@@ -25,7 +23,10 @@ class BrokerTest {
 
     @BeforeAll
     static void beforeAll() {
-        String[] args = new String[]{"run.args.remote.log=false"};
+        String[] args = new String[]{
+                "run.args.remote.log=false",
+                "run.args.remote.statistic=false"
+        };
         App.run(args);
         App.get(ManagerBroker.class).initAndGet(XTest.class.getSimpleName(), XTest.class, null);
     }
@@ -43,12 +44,14 @@ class BrokerTest {
                     System.out.println("dropped: " + xTest);
                     droped.add(xTest);
                 });
-        broker.setMaxSizeQueue(10);
-        broker.setMaxSizeQueueTail(3);
+        broker.getMaxQueueSize().set(10);
+        broker.getMaxTailQueueSize().set(3);
 
         for (int i = 0; i < 10; i++) {
             broker.add(new XTest(i), 6_000L);
         }
+        Assertions.assertEquals("[XTest{x=0}, XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=9}]", broker.getCloneQueue(null).toString(), "#9");
+
         Assertions.assertEquals(10, broker.size(), "#1");
 
         ExpirationMsImmutableEnvelope<XTest> t = broker.pollFirst();
@@ -59,6 +62,9 @@ class BrokerTest {
         Assertions.assertEquals(9, t2.getValue().x, "#4");
         Assertions.assertEquals(8, broker.size(), "#5");
 
+        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}]", broker.getCloneQueue(null).toString(), "#9");
+
+
         try {
             broker.add(new XTest(11), 6_000L);
             broker.add(new XTest(12), 6_000L);
@@ -67,7 +73,9 @@ class BrokerTest {
         } catch (Exception e) {
             Assertions.assertTrue(true, "#7");
         }
-        List<XTest> tail = broker.getTail(null);
+        Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", broker.getCloneQueue(null).toString(), "#9");
+
+        List<XTest> tail = broker.getTailQueue(null);
         Assertions.assertEquals("[XTest{x=12}, XTest{x=13}, XTest{x=14}]", tail.toString(), "#8");
         Assertions.assertEquals("[XTest{x=1}, XTest{x=2}]", droped.toString(), "#8");
 
@@ -82,8 +90,8 @@ class BrokerTest {
         Broker<XTest> broker = App.get(ManagerBroker.class)
                 .get(XTest.class.getSimpleName(), XTest.class);
 
-        broker.setMaxSizeQueue(10);
-        broker.setMaxSizeQueueTail(3);
+        broker.getMaxQueueSize().set(10);
+        broker.getMaxTailQueueSize().set(3);
 
         for (int i = 0; i < 10; i++) {
             broker.add(new XTest(i), 6_000L);
@@ -117,7 +125,7 @@ class BrokerTest {
         Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", broker.getCloneQueue(null).toString());
         Assertions.assertTrue(true, "#6");
 
-        List<XTest> tail = broker.getTail(null);
+        List<XTest> tail = broker.getTailQueue(null);
         Assertions.assertEquals("[XTest{x=12}, XTest{x=13}, XTest{x=14}]", tail.toString(), "#8");
 
         Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", broker.getCloneQueue(null).toString());
@@ -205,26 +213,25 @@ class BrokerTest {
 
     @Test
     void testProperty() {
-        App.get(ServiceProperty.class).setProperty("RateLimit.Broker.XTest.BrokerSize", "3000");
+        App.get(ServiceProperty.class).setProperty("Broker.XTest.BrokerSize", "3000");
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
-        RateLimitItem rateLimitItem = broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName());
-        Assertions.assertEquals(3000, rateLimitItem.get());
-        rateLimitItem.set(App.context, 3001);
-        Assertions.assertEquals(3001, rateLimitItem.get());
+
+        Assertions.assertEquals(3000, broker.getMaxQueueSize().getAsInt());
+        broker.getMaxQueueSize().set(3001);
+        Assertions.assertEquals(3001, broker.getMaxQueueSize().getAsInt());
     }
 
     @Test
     void testPropertyDo() {
-        App.get(ServiceProperty.class).setProperty("RateLimit.Broker.XTest.BrokerSize", "11");
+        App.get(ServiceProperty.class).setProperty("Broker.XTest.BrokerSize", "11");
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
-        RateLimitItem rateLimitItem = broker.getRateLimit().get(RateLimitName.BROKER_SIZE.getName());
-        Assertions.assertEquals(11, rateLimitItem.get());
+        Assertions.assertEquals(11, broker.getMaxQueueSize().getAsInt());
     }
 
     @Test
     void testSpeedRemove() {
         int selection = 1_000_000;
-        App.get(ServiceProperty.class).setProperty("RateLimit.Broker.XTest.BrokerSize", "3000000");
+        App.get(ServiceProperty.class).setProperty("Broker.XTest.BrokerSize", "3000000");
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
         List<DisposableExpirationMsImmutableEnvelope<XTest>> list = new ArrayList<>();
         long start = System.currentTimeMillis();

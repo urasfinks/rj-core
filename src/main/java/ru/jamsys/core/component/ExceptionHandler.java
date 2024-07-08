@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.LogType;
+import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.extension.HashMapBuilder;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
@@ -19,18 +20,18 @@ import ru.jamsys.core.flat.util.Util;
 @Lazy
 public class ExceptionHandler extends PropertyConnector {
 
-    private int maxLine = 20;
+    private int maxLine = 50;
 
-    @PropertyName("remote.log")
+    @PropertyName("run.args.remote.log")
     private String remoteLog = "true";
 
-    @PropertyName("console.output")
+    @PropertyName("run.args.console.output")
     private String consoleOutput = "true";
 
     public ExceptionHandler(ApplicationContext applicationContext) {
         applicationContext
                 .getBean(ServiceProperty.class)
-                .getSubscriber(null, this, "run.args");
+                .getSubscriber(null, this, null);
     }
 
     public void handler(Throwable th) {
@@ -55,7 +56,7 @@ public class ExceptionHandler extends PropertyConnector {
     }
 
     public String getTextException(Throwable th, LineWriter sw) {
-        printStackTrace(th, sw);
+        printStackTrace(th, sw, (th instanceof ForwardException) ? 1 : null);
         Throwable cause = th.getCause();
         if (cause != null) {
             sw.addLine("Caused by: ");
@@ -64,10 +65,10 @@ public class ExceptionHandler extends PropertyConnector {
         return sw.toString();
     }
 
-    private void printStackTrace(Throwable th, LineWriter sw) {
+    private void printStackTrace(Throwable th, LineWriter sw, Integer count) {
         StackTraceElement[] elements = th.getStackTrace();
         sw.addLine(th.getClass().getName() + ": " + th.getMessage());
-        int m = maxLine;
+        int m = count != null ? count : maxLine;
         int s = elements.length;
         for (StackTraceElement element : elements) {
             sw.addLineIndent("at "

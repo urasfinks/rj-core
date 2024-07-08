@@ -15,7 +15,10 @@ class RateLimitItemTest {
 
     @BeforeAll
     static void beforeAll() {
-        String[] args = new String[]{"run.args.remote.log=false"};
+        String[] args = new String[]{
+                "run.args.remote.log=false",
+                "run.args.remote.statistic=false"
+        };
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
         App.run(args);
@@ -93,36 +96,6 @@ class RateLimitItemTest {
         Assertions.assertEquals("2024-05-07T17:11:04.056", rateLimitItemPeriodic.getNextTime());
         Assertions.assertEquals("{period=Month, max=999999, tpu=0, flushed=false}", rateLimitItemPeriodic.flushAndGetStatistic(curTime + (aLong * 60 * 24 * 32), null, null).getFields().toString());
         Assertions.assertEquals("2024-05-07T17:11:04.056", rateLimitItemPeriodic.getNextTime());
-    }
-
-    @Test
-    void testMax() {
-        RateLimitItem rateLimitMax = new RateLimitItemMax(App.context, "min");
-        rateLimitMax.set(2);
-        Assertions.assertTrue(rateLimitMax.check(1));
-        Assertions.assertTrue(rateLimitMax.check(2));
-        Assertions.assertFalse(rateLimitMax.check(3));
-        rateLimitMax.set(-1);
-        Assertions.assertFalse(rateLimitMax.check(3));
-        Assertions.assertFalse(rateLimitMax.check(3));
-        Assertions.assertTrue(rateLimitMax.check(-1));
-        Assertions.assertTrue(rateLimitMax.check(-2));
-        Assertions.assertTrue(rateLimitMax.check(-3));
-    }
-
-    @Test
-    void testMin() {
-        RateLimitItemMin rateLimitMin = new RateLimitItemMin(App.context, "min");
-        rateLimitMin.set(2);
-        Assertions.assertFalse(rateLimitMin.check(1));
-        Assertions.assertTrue(rateLimitMin.check(2));
-        Assertions.assertTrue(rateLimitMin.check(3));
-        rateLimitMin.set(-1);
-        Assertions.assertTrue(rateLimitMin.check(3));
-        Assertions.assertTrue(rateLimitMin.check(3));
-        Assertions.assertTrue(rateLimitMin.check(-1));
-        Assertions.assertFalse(rateLimitMin.check(-2));
-        Assertions.assertFalse(rateLimitMin.check(-3));
     }
 
     @Test

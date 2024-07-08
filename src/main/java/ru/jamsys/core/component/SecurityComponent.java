@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.property.PropertyConnector;
 import ru.jamsys.core.extension.property.PropertyName;
@@ -141,7 +142,7 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
                 System.err.println("** Update file [" + pathInitAlias + "]; password field must not be empty");
             }
         } catch (Exception e) {
-            throw new RuntimeException("Other problem", e);
+            throw new ForwardException("Other problem", e);
         }
         System.err.println("== INIT SECURITY ===========================");
         throw new RuntimeException("Security.run() failed");
@@ -157,7 +158,7 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
             bytesPasswordKeyStore = UtilRsa.decrypt(UtilRsa.getPrivateKey(bytesPrivateKey), token);
         } catch (Exception e) {
             UtilFile.removeIfExist(pathPublicKey);
-            throw new RuntimeException("Decrypt token exception. File: [" + pathPublicKey + "] removed, please restart application", e);
+            throw new ForwardException("Decrypt token exception. File: [" + pathPublicKey + "] removed, please restart application", e);
         }
         if (bytesPasswordKeyStore == null || bytesPasswordKeyStore.length == 0) {
             throw new RuntimeException("Decrypt Token empty. Change/remove token file: [" + pathPublicKey + "]");
@@ -178,13 +179,13 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
                 init = UtilFileResource.get("security.json").readAllBytes();
                 UtilFile.writeBytes(pathInitAlias, init, FileWriteOptions.CREATE_OR_REPLACE);
             } catch (Exception e) {
-                throw new RuntimeException(e.getMessage(), e);
+                throw new ForwardException(e);
             }
             //Нет смысла продолжать работу, когда файл инициализации в данный момент пустой
             throw new RuntimeException("Update file [" + pathInitAlias + "]");
         } catch (IOException e) {
             //Если возникли другие проблемы при чтении файла инициализации прекратим работу
-            throw new RuntimeException(e.getMessage(), e);
+            throw new ForwardException(e);
         }
         return init;
     }
@@ -259,7 +260,7 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
                 throw new RuntimeException("Security компонент не инициализирован");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new ForwardException(e);
         }
     }
 
@@ -300,7 +301,7 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
                             System.out.println(keySpec.getPassword());
                         }
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new ForwardException(e);
                     }
                 });
 
@@ -328,7 +329,7 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
             try {
                 loadKeyStorage(UtilByte.bytesToChars(passwordKeyStore));
             } catch (Exception e) {
-                throw new RuntimeException("Security.run() init exception", e);
+                throw new ForwardException(e);
             }
             if (UtilFile.ifExist(pathInitAlias)) {
                 System.err.println("Please remove file [" + pathInitAlias + "] with credentials information");

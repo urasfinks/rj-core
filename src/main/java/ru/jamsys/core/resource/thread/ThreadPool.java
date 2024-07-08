@@ -9,8 +9,7 @@ import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.rate.limit.RateLimitName;
-import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
+import ru.jamsys.core.rate.limit.RateLimitFactory;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -48,7 +47,7 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
     @Override
     public ThreadResource createPoolItem() {
         RateLimit rateLimit = App.get(ManagerRateLimit.class).get(getIndex());
-        rateLimit.init(App.context, RateLimitName.THREAD_TPS.getName(), RateLimitItemInstance.TPS);
+        rateLimit.init(App.context, "tps", RateLimitFactory.TPS);
         return new ThreadResource(this.getIndex() + "-" + counter.getAndIncrement(), this);
     }
 

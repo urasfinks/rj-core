@@ -13,7 +13,7 @@ public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlu
     void complete(PI ret, Throwable e);
 
     // overclocking / onInitPool min resource / addPoolItemIfEmpty
-    PI createPoolItem();
+    PI createPoolItem() ;
 
     // Реализация закрытия ресурса
     void closePoolItem(PI poolItem);
@@ -36,7 +36,7 @@ public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlu
     // Вызывается когда в парк добавляется ресурс
     void onParkUpdate();
 
-    //
-    boolean doYouNeedPoolItem(PI poolItem);
+    // Если есть потребители, которые ждут ресурс - отдаём ресурс без перевставок в park
+    boolean forwardResourceWithoutParking(PI poolItem);
 
 }

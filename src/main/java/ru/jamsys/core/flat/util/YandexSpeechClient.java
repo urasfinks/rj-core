@@ -6,6 +6,7 @@ import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.extension.Procedure;
 import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationRequest;
 import speechkit.common.v3.Common;
@@ -79,7 +80,7 @@ public class YandexSpeechClient {
                     try {
                         result.write(utteranceSynthesisResponse.getAudioChunk().getData().toByteArray());
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new ForwardException(e);
                     }
                 }
             }
@@ -95,7 +96,7 @@ public class YandexSpeechClient {
                     AudioInputStream audioStream = AudioSystem.getAudioInputStream(new ByteArrayInputStream(result.toByteArray()));
                     AudioSystem.write(audioStream, AudioFileFormat.Type.WAVE, output);
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new ForwardException(e);
                 }
                 onComplete.run();
             }

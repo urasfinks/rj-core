@@ -34,7 +34,7 @@ public abstract class AbstractPoolPrivate<RA, RR, PI extends ExpirationMsMutable
     }
 
     @Override
-    public boolean doYouNeedPoolItem(PI poolItem) {
+    public boolean forwardResourceWithoutParking(PI poolItem) {
         return false;
     }
 

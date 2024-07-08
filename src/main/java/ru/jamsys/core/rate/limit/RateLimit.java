@@ -6,14 +6,14 @@ import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
-import ru.jamsys.core.rate.limit.item.RateLimitItemInstance;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-// Прослойка RateLimit сделана, что бы смотреть в run-time изменение показателей
-// Если статистики не надо, то можете просто использовать PropertyComponent для хранения настроек
+// Прослойка RateLimit сделана, не для того, что бы отслеживать в run-time изменение показателей
+// RateLimit даёт комплексный подход к гибким метрикам ограничения скорости например:
+// установить 1 tps + не больше 200 запросов в день
 
 @Getter
 @SuppressWarnings("unused")
@@ -59,8 +59,8 @@ public class RateLimit
         return map.get(name);
     }
 
-    public RateLimit init(ApplicationContext applicationContext, String name, RateLimitItemInstance rateLimitItemInstance) {
-        map.computeIfAbsent(name, key -> rateLimitItemInstance.create(
+    public RateLimit init(ApplicationContext applicationContext, String name, RateLimitFactory rateLimitFactory) {
+        map.computeIfAbsent(name, key -> rateLimitFactory.create(
                 applicationContext,
                 getClassName(applicationContext) + "." + index + "." + key)
         );

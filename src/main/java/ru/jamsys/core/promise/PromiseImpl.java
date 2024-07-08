@@ -144,10 +144,10 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                         isWait.set(true);
                         getTrace().add(new TracePromise<>("StartWait", null, null, null));
                     }
-                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> poolTask.start(null);
+                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> poolTask.prepareLaunch(null);
                     default -> {
                         setRunningTasks.add(poolTask);
-                        poolTask.start(null);
+                        poolTask.prepareLaunch(null);
                     }
                 }
             } else {
@@ -160,7 +160,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     ServicePromise.queueMultipleCompleteSet.remove(this);
                     App.get(ServicePromise.class).finish(registerInBroker);
                     if (onError != null) {
-                        onError.start(() -> isRun.set(false));
+                        onError.prepareLaunch(() -> isRun.set(false));
                     } else {
                         isRun.set(false);
                         flushLog();
@@ -176,7 +176,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     ServicePromise.queueMultipleCompleteSet.remove(this);
                     App.get(ServicePromise.class).finish(registerInBroker);
                     if (onComplete != null) {
-                        onComplete.start(() -> isRun.set(false));
+                        onComplete.prepareLaunch(() -> isRun.set(false));
                         // Дальнейшие действия под капотом
                         // 1) установится isRun.set(false)
                         // 2) Вызовится complete

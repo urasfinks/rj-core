@@ -3,6 +3,7 @@ package ru.jamsys.core;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import ru.jamsys.core.component.ServicePromise;
+import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.resource.jdbc.JdbcRequest;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
@@ -16,7 +17,10 @@ class ConnectionResourceTest {
 
     @BeforeAll
     static void beforeAll() {
-        String[] args = new String[]{"run.args.remote.log=false"};
+        String[] args = new String[]{
+                "run.args.remote.log=false",
+                "run.args.remote.statistic=false"
+        };
         App.run(args);
         servicePromise = App.get(ServicePromise.class);
     }
@@ -37,7 +41,7 @@ class ConnectionResourceTest {
                         promise.setProperty("req1", execute);
                         //System.out.println(execute);
                     } catch (Throwable e) {
-                        throw new RuntimeException(e);
+                        throw new ForwardException(e);
                     }
                 })
                 .run()

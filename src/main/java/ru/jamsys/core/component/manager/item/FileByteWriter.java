@@ -60,7 +60,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         );
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
-        broker.setMaxSizeQueue(400_000);
+        broker.getMaxQueueSize().set(400_000);
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         subscriber = serviceProperty.getSubscriber(null, property, index, false);
 
