@@ -62,9 +62,9 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     public void complete() {
         if (isRun.get()) {
             if (isStartLoop.compareAndSet(false, true)) {
-                try{
+                try {
                     loop();
-                }catch (Throwable th){
+                } catch (Throwable th) {
                     // Произошла ошибка, её же никто не обработает
                     App.error(th);
                     setError("loop", th, null);
@@ -203,7 +203,9 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     public void await(long timeoutMs) {
+        long start = System.currentTimeMillis();
         Util.await(isRun, timeoutMs, "Promise not terminated");
+        System.out.println("await: " + (System.currentTimeMillis() - start));
     }
 
 }
