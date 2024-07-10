@@ -203,9 +203,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     public void await(long timeoutMs) {
-        long start = System.currentTimeMillis();
         Util.await(isRun, timeoutMs, "Promise not terminated");
-        System.out.println("await: " + (System.currentTimeMillis() - start));
     }
 
 }

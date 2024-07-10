@@ -52,6 +52,8 @@ public class Broker<TEO>
 
     private final AtomicInteger queueSize = new AtomicInteger(0);
 
+    private final AtomicInteger tailQueueSize = new AtomicInteger(0);
+
     private final ConcurrentLinkedDeque<DisposableExpirationMsImmutableEnvelope<TEO>> queue = new ConcurrentLinkedDeque<>();
 
     //Последний сообщения проходящие через очередь
@@ -152,8 +154,11 @@ public class Broker<TEO>
 
         queue.add(convert);
         queueSize.incrementAndGet();
-        if (tailQueue.size() >= maxTailQueueSize.getAsInt()) {
-            tailQueue.pollFirst(); // с начала изымаем
+
+        if (tailQueueSize.get() >= maxTailQueueSize.getAsInt()) {
+            tailQueue.removeFirst();
+        } else {
+            tailQueueSize.incrementAndGet();
         }
         tailQueue.add(envelope);
         return convert;
@@ -250,6 +255,7 @@ public class Broker<TEO>
         queueSize.set(0);
         tailQueue.clear();
         tpsDequeue.set(0);
+        tailQueueSize.set(0);
     }
 
     // Отладочная

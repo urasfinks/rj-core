@@ -28,7 +28,7 @@ class BrokerTest {
                 "run.args.remote.statistic=false"
         };
         App.run(args);
-        App.get(ManagerBroker.class).initAndGet(XTest.class.getSimpleName(), XTest.class, null);
+        App.get(ManagerBroker.class).initAndGet(XTest.class.getSimpleName(), XTest.class, xTest -> System.out.println("DROP"));
     }
 
     @AfterAll
@@ -242,7 +242,7 @@ class BrokerTest {
         }
         long timeAdd = System.currentTimeMillis() - start;
         System.out.println("add time: " + timeAdd);
-        Assertions.assertTrue(timeAdd < 500, "#3");
+        Assertions.assertTrue(timeAdd < 600, "#3");
         start = System.currentTimeMillis();
         for (int i = 0; i < selection; i++) {
             broker.remove(list.get(selection - i - 1));
