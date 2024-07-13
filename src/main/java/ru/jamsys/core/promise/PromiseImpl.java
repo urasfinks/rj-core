@@ -13,6 +13,7 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PromiseImpl extends AbstractPromiseBuilder {
@@ -20,6 +21,8 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     private volatile Thread loopThread;
 
     private final AtomicBoolean finalAction = new AtomicBoolean(false);
+
+    private final ConcurrentLinkedDeque<String> goTo = new ConcurrentLinkedDeque<>();
 
     @Setter
     private DisposableExpirationMsImmutableEnvelope<Promise> registerInBroker;
@@ -40,11 +43,6 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             setError("TimeOut cause: " + cause, getExpiredException(), null);
             complete();
         }
-    }
-
-    @Override
-    public void skipAllStep() {
-        listPendingTasks.clear();
     }
 
     public void complete(@NonNull PromiseTask task, @NonNull Throwable exception) {
@@ -107,7 +105,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         if (isWait.get() && isNextLoop()) {
             if (setRunningTasks.isEmpty()) {
                 isWait.set(false);
-                getTrace().add(new TracePromise<>(Thread.currentThread().getName() + " Все запущенные задачи исполнились. Прекращаем сон. (0)", null, null, null));
+                //getTrace().add(new TracePromise<>(Thread.currentThread().getName() + " Все запущенные задачи исполнились. Прекращаем сон. (0)", null, null, null));
             } else {
                 return;
             }
@@ -132,13 +130,23 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             if (isWait.get()) {
                 if (setRunningTasks.isEmpty()) {
                     isWait.set(false);
-                    getTrace().add(new TracePromise<>(Thread.currentThread().getName() + " Все запущенные задачи исполнились. Прекращаем сон. (1)", null, null, null));
+                    //getTrace().add(new TracePromise<>(Thread.currentThread().getName() + " Все запущенные задачи исполнились. Прекращаем сон. (1)", null, null, null));
                 } else {
                     break;
                 }
             }
             PromiseTask poolTask = listPendingTasks.pollFirst();
             if (poolTask != null) {
+                // Мы не должны помешать цепочке ожиданий, если выставлено ожидание, сначала будем ждать,
+                // а только потом перескакивать
+                if (poolTask.type != PromiseTaskExecuteType.WAIT && !goTo.isEmpty()) {
+                    if (!goTo.peekFirst().equals(poolTask.getIndex())) {
+                        getTrace().add(new TracePromise<>("Skip task: " + poolTask.getIndex() + "; goTo: " + goTo.peek(), null, null, null));
+                        continue;
+                    } else {
+                        goTo.pollFirst();
+                    }
+                }
                 switch (poolTask.type) {
                     case WAIT -> {
                         isWait.set(true);
@@ -156,41 +164,50 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         }
         if (isRun.get()) {
             if (isException.get()) {
-                if (finalAction.compareAndSet(false, true)) {
-                    ServicePromise.queueMultipleCompleteSet.remove(this);
-                    App.get(ServicePromise.class).finish(registerInBroker);
-                    if (onError != null) {
-                        onError.prepareLaunch(() -> isRun.set(false));
-                    } else {
-                        isRun.set(false);
-                        flushLog();
-                    }
-                }
+                terminate(onError);
             } else if (
                     !isWait.get() // Мы не ждём
                             && setRunningTasks.isEmpty() // Список запущенных задач пуст
                             && listPendingTasks.isEmpty() //  Список задач в работу пуст
                             && toHead.isEmpty() // Список добавленных в runTime задача пуст
             ) {
-                if (finalAction.compareAndSet(false, true)) {
-                    ServicePromise.queueMultipleCompleteSet.remove(this);
-                    App.get(ServicePromise.class).finish(registerInBroker);
-                    if (onComplete != null) {
-                        onComplete.prepareLaunch(() -> isRun.set(false));
-                        // Дальнейшие действия под капотом
-                        // 1) установится isRun.set(false)
-                        // 2) Вызовится complete
-                        // 3) complete пойдёт по ветке flushLog()
-                        //
-                        // Тут есть проблема, что лог будет зафиксирован после того, как закончится await
-                        // Пока не знаю на сколько это плохо
-                    } else {
-                        isRun.set(false);
-                        flushLog();
-                    }
+                if (!goTo.isEmpty()) {
+                    setError("goTo is not empty: " + goTo, null, null);
+                } else {
+                    terminate(onComplete);
                 }
             }
         }
+    }
+
+    private void terminate(PromiseTask fn) {
+        if (finalAction.compareAndSet(false, true)) {
+            ServicePromise.queueMultipleCompleteSet.remove(this);
+            App.get(ServicePromise.class).finish(registerInBroker);
+            if (fn != null) {
+                fn.prepareLaunch(() -> isRun.set(false));
+                // Дальнейшие действия под капотом
+                // 1) установится isRun.set(false)
+                // 2) Вызовится complete
+                // 3) complete пойдёт по ветке flushLog()
+                //
+                // Тут есть проблема, что лог будет зафиксирован после того, как закончится await
+                // Пока не знаю на сколько это плохо
+            } else {
+                isRun.set(false);
+                flushLog();
+            }
+        }
+    }
+
+    @Override
+    public void skipAllStep() {
+        listPendingTasks.clear();
+    }
+
+    @Override
+    public void goTo(String to) {
+        goTo.add(getIndex() + "." + to);
     }
 
     private void flushLog() {

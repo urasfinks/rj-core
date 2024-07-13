@@ -473,4 +473,87 @@ class PromiseImplTest {
         System.out.println(promise.getLogString());
     }
 
+    @Test
+    void testGoTo() {
+        AtomicInteger xx = new AtomicInteger(0);
+        Promise promise = servicePromise.get("goTo", 6_000L);
+        promise.then("1task", (_, promise1) -> {
+            promise1.goTo("task3");
+        }).then("task2", (_, _) -> {
+            xx.incrementAndGet();
+        }).then("task3", (_, _) -> {
+            xx.incrementAndGet();
+        });
+        promise.run().await(1000);
+        System.out.println(promise.getLogString());
+        Assertions.assertEquals(1, xx.get());
+    }
+
+    @Test
+    void testGoTo2() {
+        AtomicInteger xx = new AtomicInteger(0);
+        Promise promise = servicePromise.get("goTo", 6_000L);
+        promise.then("1task", (_, promise1) -> {
+            promise1.goTo("task5");
+        }).then("task2", (_, _) -> {
+            xx.incrementAndGet();
+        }).then("task3", (_, _) -> {
+            xx.incrementAndGet();
+        }).then("task4", (_, _) -> {
+            xx.incrementAndGet();
+        }).then("task5", (_, _) -> {
+            xx.incrementAndGet();
+        });
+        promise.run().await(1000);
+        System.out.println(promise.getLogString());
+        Assertions.assertEquals(1, xx.get());
+    }
+
+    @Test
+    void testGoTo3() {
+        AtomicInteger xx = new AtomicInteger(0);
+        Promise promise = servicePromise.get("goTo", 6_000L);
+        promise.then("1task", (_, promise1) -> {
+            // Сначала добежим до task3 и выполним
+            // потом пробежим до task5 и выполним
+            promise1.goTo("task3");
+            promise1.goTo("task5");
+        }).then("task2", (_, _) -> {
+            xx.incrementAndGet();
+        }).then("task3", (_, _) -> {
+            xx.incrementAndGet();
+        }).then("task4", (_, _) -> {
+            xx.incrementAndGet();
+        }).then("task5", (_, _) -> {
+            xx.incrementAndGet();
+        });
+        promise.run().await(1000);
+        System.out.println(promise.getLogString());
+        Assertions.assertEquals(2, xx.get());
+    }
+
+    @Test
+    void testGoToError() {
+        AtomicInteger xx = new AtomicInteger(0);
+        Promise promise = servicePromise.get("goTo", 6_000L);
+        promise.then("1task", (_, promise1) -> {
+            // Сначала добежим до task3 и выполним
+            // потом пробежим до task5 и выполним
+            promise1.goTo("task3");
+            promise1.goTo("task6");
+        }).then("task2", (_, _) -> {
+            xx.incrementAndGet();
+        }).then("task3", (_, _) -> {
+            xx.incrementAndGet();
+        }).then("task4", (_, _) -> {
+            xx.incrementAndGet();
+        }).then("task5", (_, _) -> {
+            xx.incrementAndGet();
+        });
+        promise.run().await(1000);
+        System.out.println(promise.getLogString());
+        Assertions.assertEquals(1, xx.get());
+        Assertions.assertTrue(promise.isException());
+    }
+
 }
