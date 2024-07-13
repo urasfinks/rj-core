@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractPoolPublic<RA, RR, PI extends ExpirationMsMutable & Resource<RA, RR>>
         extends AbstractPool<RA, RR, PI> {
 
-    public AbstractPoolPublic(String name, Class<PI> cls) {
-        super(name, cls);
+    public AbstractPoolPublic(String name) {
+        super(name);
     }
 
     public PI getPoolItem() {

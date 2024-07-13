@@ -124,7 +124,6 @@ class PromiseImplTest {
 
     @Test
     void test4() {
-        //TODO: этот кейс пока не проходит
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();

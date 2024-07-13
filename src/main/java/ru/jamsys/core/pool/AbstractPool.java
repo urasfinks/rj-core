@@ -82,7 +82,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     private final Lock lockAddToRemove = new ReentrantLock();
 
-    public AbstractPool(String index, Class<PI> cls) {
+    public AbstractPool(String index) {
         this.index = getClassName(index);
 
         rliPoolSizeMax = new PropertyValue(
@@ -353,9 +353,6 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         }
         result.add(new Statistic(parentTags, parentFields)
                 .addField("tpsComplete", tpsCompleteFlush)
-                // TODO: как будто min/max надо удалить от сюда просмотр и управление добавить в менаджер properties
-                .addField("min", rliPoolSizeMin.getAsInt())
-                .addField("max", rliPoolSizeMax.getAsInt())
                 .addField("item", itemQueue.size())
                 .addField("park", parkQueue.size())
                 .addField("remove", removeQueue.size())

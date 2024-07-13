@@ -12,8 +12,8 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 public abstract class AbstractPoolPrivate<RA, RR, PI extends ExpirationMsMutable & Resource<RA, RR>>
         extends AbstractPool<RA, RR, PI> {
 
-    public AbstractPoolPrivate(String name, Class<PI> cls) {
-        super(name, cls);
+    public AbstractPoolPrivate(String name) {
+        super(name);
     }
 
     // Звоночек, что бы взбодрить приватные ресурсы

@@ -34,7 +34,7 @@ public class PoolTaskWait<
     private final Class<PI> classItem;
 
     public PoolTaskWait(String name, PoolSettings<PI> poolSettings, Class<PI> classItem) {
-        super(name, poolSettings.getClassPoolItem());
+        super(name);
         this.poolSettings = poolSettings;
         this.classItem = classItem;
         broker = App.get(ManagerBroker.class).initAndGet(this.getIndex(), PromiseTaskWithResource.class, null);

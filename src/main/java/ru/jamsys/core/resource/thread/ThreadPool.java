@@ -21,7 +21,7 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
     private final Broker<PromiseTask> broker;
 
     public ThreadPool(String index) {
-        super(index, ThreadResource.class);
+        super(index);
         this.broker = App.get(ManagerBroker.class)
                 .initAndGet(this.getIndex(), PromiseTask.class, promiseTask ->
                         promiseTask.
