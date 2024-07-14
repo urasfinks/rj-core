@@ -39,9 +39,9 @@ class PropertyTest {
         int c = 0;
 
         @Override
-        public void onPropertyUpdate(Set<String> updatedProp) {
-            c += updatedProp.size();
-            System.out.println(updatedProp);
+        public void onPropertyUpdate(Set<String> updatedPropAlias) {
+            c += updatedPropAlias.size();
+            System.out.println(updatedPropAlias);
         }
     }
 
@@ -142,8 +142,8 @@ class PropertyTest {
         public String publicKey="ppbb";
 
         @Override
-        public void onPropertyUpdate(Set<String> updatedProp) {
-            System.out.println(updatedProp);
+        public void onPropertyUpdate(Set<String> updatedPropAlias) {
+            System.out.println(updatedPropAlias);
         }
     }
 

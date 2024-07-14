@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // IO time: 1sec 425ms
 // COMPUTE time: 1sec 411ms
 
-//TODO: добавить тесты когда нет директории LogManager
 class FileByteWriterTest {
 
     @BeforeAll
@@ -45,12 +44,24 @@ class FileByteWriterTest {
     }
 
     @Test
+    void folderNotExist() {
+        try {
+            FileByteWriter test = new FileByteWriter("checkOverMaxFileWrite");
+            test.getSubscriber().setProperty("log.file.folder", "xxkaa");
+            Assertions.fail();
+        } catch (Throwable th) {
+            th.printStackTrace();
+        }
+    }
+
+    @Test
     void checkOverMaxFileWrite() {
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileByteWriter test = new FileByteWriter("default1", App.context);
+        FileByteWriter test = new FileByteWriter("checkOverMaxFileWrite");
 
-        test.setProperty("log.file.size.kb", "1");
-        test.setProperty("log.file.count", "2");
+        test.getSubscriber().setProperty("log.file.size.kb", "1");
+        test.getSubscriber().setProperty("log.file.count", "2");
+        test.getSubscriber().setProperty("log.file.name", "default1");
 
         test.append(new Log(LogType.INFO).setData("LogData1"));
         test.append(new Log(LogType.INFO).setData("LogData2"));
@@ -58,13 +69,13 @@ class FileByteWriterTest {
         test.keepAlive(new AtomicBoolean(true));
         // Потому что за одну итерацию мы не записываем больше файлов чем максимальное кол-во
         // Ничего личного, просто такие правила
-        Assertions.assertEquals(1, test.size());
+        Assertions.assertEquals(1, test.getBroker().size());
 
         Assertions.assertEquals("[/default1.0.bin, /default1.1.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
         // Должна произойти перезапись 0 файла
         test.keepAlive(new AtomicBoolean(true));
-        Assertions.assertEquals(0, test.size());
+        Assertions.assertEquals(0, test.getBroker().size());
         Assertions.assertEquals("[/default1.0.bin, /default1.1.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
     }
 
@@ -72,9 +83,10 @@ class FileByteWriterTest {
     void checkNameLog() {
 
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileByteWriter test = new FileByteWriter("default2", App.context);
+        FileByteWriter test = new FileByteWriter("checkNameLog");
 
-        test.setProperty("log.file.count", "100");
+        test.getSubscriber().setProperty("log.file.count", "100");
+        test.getSubscriber().setProperty("log.file.name", "default2");
 
         test.append(new Log(LogType.INFO).setData("LogData1"));
         test.append(new Log(LogType.INFO).setData("LogData2"));
@@ -100,7 +112,8 @@ class FileByteWriterTest {
 
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
-        FileByteWriter test = new FileByteWriter("default3", App.context);
+        FileByteWriter test = new FileByteWriter("checkRestoreExceptionShutdown");
+        test.getSubscriber().setProperty("log.file.name", "default3");
         // Проверяем, что default3.002.proc.bin - удалён
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
@@ -118,7 +131,8 @@ class FileByteWriterTest {
     void checkTime() {
         UtilFile.removeAllFilesInFolder("LogManager");
         long start = System.currentTimeMillis();
-        FileByteWriter test = new FileByteWriter("default4", App.context);
+        FileByteWriter test = new FileByteWriter("checkTime");
+        test.getSubscriber().setProperty("log.file.name", "default4");
         //test.getBroker().getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(9999999);
         test.getBroker().getMaxQueueSize().set(9999999);
         long start2 = System.currentTimeMillis();
@@ -162,7 +176,7 @@ class FileByteWriterTest {
         UtilFile.removeAllFilesInFolder("LogManager");
         StatisticSec statisticSec1 = new StatisticSec();
         statisticSec1.getList().add(new Statistic().addField("f1", 1).addTag("t1", "Hello"));
-        FileByteWriter test = new FileByteWriter("default5", App.context);
+        FileByteWriter test = new FileByteWriter("default5");
         test.append(statisticSec1);
         test.keepAlive(new AtomicBoolean(true));
     }

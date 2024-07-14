@@ -73,7 +73,7 @@ public class PropertyValue extends PropertyConnector implements PropertySubscrib
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedProp) {
+    public void onPropertyUpdate(Set<String> updatedPropAlias) {
         switch (propertyType) {
             case INTEGER -> intValue.set(Integer.parseInt(prop));
             case BOOLEAN -> boolValue.set(Boolean.parseBoolean(prop));

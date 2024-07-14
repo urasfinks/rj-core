@@ -10,14 +10,18 @@ import ru.jamsys.core.extension.property.PropertyName;
 public class FileByteWriterProperty extends PropertyConnector {
 
     @PropertyName("log.file.folder")
-    String folder = "LogManager";
+    private String folder = "LogManager";
 
     @Setter
     @PropertyName("log.file.size.kb")
-    String fileSizeKb = "20971520";
+    private String fileSizeKb = "20971520";
 
     @Setter
     @PropertyName("log.file.count")
-    String fileCount = "100";
+    private String fileCount = "100";
+
+    @Setter
+    @PropertyName("log.file.name")
+    private String fileName = "log";
 
 }

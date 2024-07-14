@@ -4,6 +4,6 @@ import java.util.Set;
 
 public interface PropertySubscriberNotify {
 
-    void onPropertyUpdate(Set<String> updatedProp);
+    void onPropertyUpdate(Set<String> updatedPropAlias); // Alias - это то что указано в аннотации @PropertyName
 
 }

@@ -43,7 +43,7 @@ public class AndroidNotificationResource
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedProp) {
+    public void onPropertyUpdate(Set<String> updatedPropAlias) {
         if (property.getScope() == null || property.getStorageCredentials() == null) {
             return;
         }

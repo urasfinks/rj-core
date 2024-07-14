@@ -96,7 +96,7 @@ public class RateLimitItemPeriodic extends PropertyConnector implements RateLimi
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedProp) {
+    public void onPropertyUpdate(Set<String> updatedPropAlias) {
         this.max.set(Integer.parseInt(propMax));
     }
 

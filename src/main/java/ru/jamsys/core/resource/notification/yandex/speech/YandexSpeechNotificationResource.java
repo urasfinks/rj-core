@@ -38,7 +38,7 @@ public class YandexSpeechNotificationResource
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedProp) {
+    public void onPropertyUpdate(Set<String> updatedPropAlias) {
         if (property.getHost() == null || property.getPort() == null || property.getAlias() == null) {
             return;
         }

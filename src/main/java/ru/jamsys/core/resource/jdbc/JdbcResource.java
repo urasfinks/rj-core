@@ -48,7 +48,7 @@ public class JdbcResource
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedProp) {
+    public void onPropertyUpdate(Set<String> updatedPropAlias) {
         if (property.getUri() == null || property.getUser() == null || property.getSecurityAlias() == null) {
             return;
         }

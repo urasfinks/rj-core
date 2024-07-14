@@ -51,7 +51,7 @@ public class InfluxResource
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedProp) {
+    public void onPropertyUpdate(Set<String> updatedPropAlias) {
         if (property.getHost() == null || property.getAlias() == null) {
             return;
         }

@@ -63,7 +63,7 @@ public class RateLimitItemTps extends PropertyConnector implements RateLimitItem
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedProp) {
+    public void onPropertyUpdate(Set<String> updatedPropAlias) {
         this.max.set(Integer.parseInt(propMax));
     }
 

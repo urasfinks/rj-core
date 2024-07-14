@@ -1,12 +1,12 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
-import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceLogger;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,14 +31,13 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         Closable,
         StatisticsFlush,
         CheckClassItem,
+        PropertySubscriberNotify,
         LifeCycleInterface {
 
     @Getter
-    Broker<ByteItem> broker;
+    private Broker<ByteItem> broker;
 
-    final String index;
-
-    String currentFilePath;
+    private String currentFilePath;
 
     final AtomicInteger writeByteToCurrentFile = new AtomicInteger(0);
 
@@ -45,34 +45,44 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     private final FileByteWriterProperty property = new FileByteWriterProperty();
 
+    @Getter
     private final Subscriber subscriber;
 
     private final AtomicBoolean isRunWrite = new AtomicBoolean(false);
 
-    public FileByteWriter(String index, ApplicationContext applicationContext) {
-
-        this.index = index;
-
-        broker = App.get(ManagerBroker.class).initAndGet(
-                ClassNameImpl.getClassNameStatic(FileByteWriter.class, index, applicationContext),
-                ByteItem.class,
-                null
-        );
+    public FileByteWriter(String ns) {
+        ns = ns != null ? ns : "default";
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
-        broker.getMaxQueueSize().set(400_000);
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        subscriber = serviceProperty.getSubscriber(null, property, index, false);
+        subscriber = serviceProperty.getSubscriber(this, property, ns, false);
 
-        restoreIndex();
+        if (broker == null) {
+            throw new RuntimeException("broker is null");
+        }
+        broker.getMaxQueueSize().set(400_000);
+
+        if (property.getFileName() == null || property.getFileName().isEmpty()) {
+            throw new RuntimeException("file name is empty");
+        }
     }
 
-    public void setProperty(String prop, String value) {
-        subscriber.setProperty(prop, value);
-    }
-
-    public int size() {
-        return broker.size();
+    @Override
+    public void onPropertyUpdate(Set<String> updatedPropAlias) {
+        if (updatedPropAlias.contains("log.file.name")) {
+            broker = App.get(ManagerBroker.class).initAndGet(
+                    ClassNameImpl.getClassNameStatic(FileByteWriter.class, property.getFileName(), App.context),
+                    ByteItem.class,
+                    null
+            );
+            restoreIndex();
+        }
+        if (updatedPropAlias.contains("log.file.folder")) {
+            if (!UtilFile.ifExist(property.getFolder())) {
+                throw new RuntimeException("log.file.folder: " + property.getFolder() + "; not exist");
+            }
+        }
+        System.out.println(updatedPropAlias);
     }
 
     public int getIndexFile() {
@@ -83,7 +93,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         List<String> filesRecursive = UtilFile.getFilesRecursive(property.getFolder(), false);
         AvgMetric metric = new AvgMetric();
         for (String filePath : filesRecursive) {
-            if (filePath.startsWith("/" + index + ".")) {
+            if (filePath.startsWith("/" + property.getFileName() + ".")) {
                 if (filePath.endsWith(".proc.bin")) {
                     // Файл скорее всего имеет не корректную структуру, так как при нормально завершении
                     // файлы с расширение proc.bin должны были переименоваться
@@ -103,7 +113,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                 } else {
                     // Что угодно может произойти, защищаемся от всего
                     try {
-                        String substring = filePath.substring(index.length() + 2);
+                        String substring = filePath.substring(property.getFileName().length() + 2);
                         metric.add(Long.parseLong(substring.substring(0, substring.indexOf("."))));
                     } catch (Exception ignore) {
                     }
@@ -126,7 +136,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     private void genNextFile() {
         closeLastFile();
         int curIndex = counter.getAndIncrement() % Integer.parseInt(property.getFileCount());
-        currentFilePath = property.getFolder() + "/" + index + "." + Util.padLeft(curIndex + "", property.getFileCount().length(), "0") + ".proc.bin";
+        currentFilePath = property.getFolder() + "/" + property.getFileName() + "." + Util.padLeft(curIndex + "", property.getFileCount().length(), "0") + ".proc.bin";
     }
 
     public void append(ByteItem log) {
@@ -136,7 +146,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
-        if (broker.isEmpty()) {
+        if (broker == null || broker.isEmpty()) {
             return;
         }
         if (currentFilePath == null) {

@@ -45,7 +45,7 @@ public class AppleNotificationResource
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedProp) {
+    public void onPropertyUpdate(Set<String> updatedPropAlias) {
         if (property.getVirtualPath() == null || property.getStorage() == null) {
             return;
         }
