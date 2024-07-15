@@ -5,7 +5,6 @@ import ru.jamsys.core.extension.*;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -109,10 +108,6 @@ public abstract class AbstractManager<
         return null;
     }
 
-    public Map<String, E> getTestMap() {
-        return new HashMap<>(map);
-    }
-
     @Override
     public void shutdown() {
         UtilRisc.forEach(new AtomicBoolean(true), map, (String _, E element) -> element.shutdown());
@@ -121,7 +116,8 @@ public abstract class AbstractManager<
 
     @Override
     public void run() {
-
+        UtilRisc.forEach(new AtomicBoolean(true), map, (String _, E element) -> element.run());
+        UtilRisc.forEach(new AtomicBoolean(true), mapReserved, (String _, E element) -> element.run());
     }
 
 }
