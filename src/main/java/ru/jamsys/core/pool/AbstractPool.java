@@ -74,9 +74,10 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     private final AtomicBoolean dynamicPollSize = new AtomicBoolean(false);
 
-    private final PropertyValue rliPoolSizeMax;
+    @Getter
+    private final PropertyValue propertyPoolSizeMax;
 
-    private final PropertyValue rliPoolSizeMin;
+    private final PropertyValue propertyPoolSizeMin;
 
     private final Lock lockAddToPark = new ReentrantLock();
 
@@ -85,14 +86,14 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     public AbstractPool(String index) {
         this.index = getClassName(index);
 
-        rliPoolSizeMax = new PropertyValue(
+        propertyPoolSizeMax = new PropertyValue(
                 App.context,
                 PropertyType.INTEGER,
                 this.index + "." + ValueName.POOL_SIZE_MAX.getName(),
                 "1"
         );
 
-        rliPoolSizeMin = new PropertyValue(
+        propertyPoolSizeMin = new PropertyValue(
                 App.context,
                 PropertyType.INTEGER,
                 this.index + "." + ValueName.POOL_SIZE_MIN.getName(),
@@ -133,25 +134,21 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
             return;
         }
         // Если хотят меньше минимума - очень резко опускаем максимум до минимума
-        if (want < rliPoolSizeMin.getAsInt()) {
-            setRliPoolSizeMax(rliPoolSizeMin.getAsInt());
+        if (want < propertyPoolSizeMin.getAsInt()) {
+            getPropertyPoolSizeMax().set(propertyPoolSizeMin.getAsInt());
             return;
         }
         // Если желаемое значение элементов в пуле больше минимума, так как return не сработал
-        if (want > rliPoolSizeMax.getAsInt()) { //Медленно поднимаем
-            setRliPoolSizeMax(rliPoolSizeMax.getAsInt() + 1);
+        if (want > propertyPoolSizeMax.getAsInt()) { //Медленно поднимаем
+            getPropertyPoolSizeMax().set(propertyPoolSizeMax.getAsInt() + 1);
         } else { //Но очень быстро опускаем
-            setRliPoolSizeMax(want);
+            getPropertyPoolSizeMax().set(want);
         }
-    }
-
-    private void setRliPoolSizeMax(int limit) {
-        rliPoolSizeMax.set(limit);
     }
 
     // Бассейн может поместить новые объекты для плаванья
     private boolean isSizePoolAllowsExtend() {
-        return isRun.get() && itemQueue.size() < rliPoolSizeMax.getAsInt();
+        return isRun.get() && itemQueue.size() < propertyPoolSizeMax.getAsInt();
     }
 
     // Увеличиваем кол-во объектов для плаванья
@@ -164,7 +161,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     }
 
     public boolean addIfPoolEmpty() {
-        if (rliPoolSizeMin.getAsInt() == 0 && itemQueue.isEmpty()) {
+        if (propertyPoolSizeMin.getAsInt() == 0 && itemQueue.isEmpty()) {
             add();
         }
         return false;
@@ -249,7 +246,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         // Добавлена блокировка, что бы избежать дублей в очереди на удаление
         boolean result = false;
         lockAddToRemove.lock();
-        if (itemQueue.size() > rliPoolSizeMin.getAsInt()) {
+        if (itemQueue.size() > propertyPoolSizeMin.getAsInt()) {
             result = true;
             // Что если объект уже был добавлен в очередь на удаление?
             // Мы должны вернуть result = true по факту удаление состоялось
@@ -326,7 +323,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     public void run() {
         if (restartOperation.compareAndSet(false, true)) {
             isRun.set(true);
-            overclocking(rliPoolSizeMin.getAsInt());
+            overclocking(propertyPoolSizeMin.getAsInt());
             restartOperation.set(false);
         }
     }
@@ -368,7 +365,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
                 // Если паркинг был пуст уже больше секунды начнём увеличивать
                 if (getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
                     overclocking(formulaAddCount.apply(1));
-                } else if (itemQueue.size() > rliPoolSizeMin.getAsInt()) { //Кол-во больше минимума
+                } else if (itemQueue.size() > propertyPoolSizeMin.getAsInt()) { //Кол-во больше минимума
                     // закрываем с прошлого раза всех из отставки
                     // так сделано специально, если на следующей итерации будет overclocking
                     // что бы можно было достать кого-то из отставки
