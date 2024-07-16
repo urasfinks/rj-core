@@ -27,6 +27,16 @@ public class Subscriber implements LifeCycleInterface {
 
     private final HashMap<String, SubscriberItem> subscriptions = new HashMap<>();
 
+    public int getCountSubscribe() {
+        int count = 0;
+        for (String key : subscriptions.keySet()) {
+            if (subscriptions.get(key).isSubscribe()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public Subscriber(
             PropertySubscriberNotify subscriber,
             ServiceProperty serviceProperty,
@@ -80,19 +90,17 @@ public class Subscriber implements LifeCycleInterface {
         }
     }
 
-    public int getCountSubscribe() {
-        int count = 0;
-        for (String key : subscriptions.keySet()) {
-            if (subscriptions.get(key).isSubscribe()) {
-                count++;
-            }
-        }
-        return count;
-    }
-
     public Subscriber subscribe(String key, String defValue, boolean require) {
-        subscriptions.computeIfAbsent(key, _ -> new SubscriberItem(defValue, require));
-        serviceProperty.subscribe(getKeyWithNamespace(key), this, require, defValue);
+        SubscriberItem subscriberItem = subscriptions.computeIfAbsent(key, _ -> new SubscriberItem(defValue, require));
+        if (!subscriberItem.isSubscribe()) {
+            serviceProperty.subscribe(
+                    getKeyWithNamespace(key),
+                    this,
+                    subscriberItem.isRequire(),
+                    subscriberItem.getDefValue()
+            );
+            subscriberItem.setSubscribe(true);
+        }
         return this;
     }
 

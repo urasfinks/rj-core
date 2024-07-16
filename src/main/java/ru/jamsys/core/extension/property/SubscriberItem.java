@@ -11,7 +11,7 @@ public class SubscriberItem {
     private final boolean require;
 
     @Setter
-    private boolean isSubscribe = true;
+    private boolean isSubscribe = false;
 
     public SubscriberItem(String defValue, boolean require) {
         this.defValue = defValue;
