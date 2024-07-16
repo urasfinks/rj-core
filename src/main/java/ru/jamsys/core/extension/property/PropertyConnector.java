@@ -2,6 +2,7 @@ package ru.jamsys.core.extension.property;
 
 import lombok.Getter;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.annotation.PropertyName;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

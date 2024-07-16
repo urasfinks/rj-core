@@ -11,11 +11,11 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.ClassNameImpl;
+import ru.jamsys.core.extension.UniqueClassName;
+import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.property.PropertyConnector;
-import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
-public class StatisticFlush extends PropertyConnector implements Cron1s, PromiseGenerator, ClassName {
+public class StatisticFlush extends PropertyConnector implements Cron1s, PromiseGenerator, UniqueClassName {
 
     final Broker<StatisticSec> broker;
 
@@ -62,7 +62,7 @@ public class StatisticFlush extends PropertyConnector implements Cron1s, Promise
     ) {
         this.servicePromise = servicePromise;
         this.broker = broker.get(
-                ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
+                UniqueClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class
         );
         this.exceptionHandler = exceptionHandler;
@@ -84,7 +84,7 @@ public class StatisticFlush extends PropertyConnector implements Cron1s, Promise
                     StatisticSec statisticSec = new StatisticSec();
                     UtilRisc.forEach(isThreadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
                         Map<String, String> parentTags = new LinkedHashMap<>();
-                        String measurement = ClassNameImpl.getClassNameStatic(statisticsFlushComponent.getClass(), null);
+                        String measurement = UniqueClassNameImpl.getClassNameStatic(statisticsFlushComponent.getClass(), null);
                         parentTags.put("measurement", measurement);
                         parentTags.put("Host", ip);
                         List<Statistic> statistics = statisticsFlushComponent.flushAndGetStatistic(

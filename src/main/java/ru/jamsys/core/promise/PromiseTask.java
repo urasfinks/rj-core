@@ -6,7 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadVirtual;
 import ru.jamsys.core.component.manager.ManagerThreadPool;
-import ru.jamsys.core.extension.Procedure;
+import ru.jamsys.core.extension.functional.iface.Procedure;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 

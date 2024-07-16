@@ -29,7 +29,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         implements
         KeepAlive,
         StatisticsFlush,
-        CheckClassItem,
+        ClassEquals,
         PropertySubscriberNotify,
         LifeCycleInterface {
 
@@ -70,7 +70,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     public void onPropertyUpdate(Set<String> updatedPropAlias) {
         if (updatedPropAlias.contains("log.file.name")) {
             broker = App.get(ManagerBroker.class).initAndGet(
-                    ClassNameImpl.getClassNameStatic(FileByteWriter.class, property.getFileName(), App.context),
+                    UniqueClassNameImpl.getClassNameStatic(FileByteWriter.class, property.getFileName(), App.context),
                     ByteTransformer.class,
                     null
             );
@@ -204,7 +204,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     }
 
     @Override
-    public boolean checkClassItem(Class<?> classItem) {
+    public boolean classEquals(Class<?> classItem) {
         return true;
     }
 

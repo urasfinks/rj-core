@@ -1,6 +1,6 @@
 package ru.jamsys.core.flat.template.jdbc;
 
-import ru.jamsys.core.extension.EnumName;
+import ru.jamsys.core.extension.CamelNormalization;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public enum ArgumentType implements EnumName {
+public enum ArgumentType implements CamelNormalization {
 
     CLOB,
     VARCHAR,

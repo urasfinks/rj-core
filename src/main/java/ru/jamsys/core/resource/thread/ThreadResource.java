@@ -4,7 +4,7 @@ import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
-import ru.jamsys.core.extension.ClassName;
+import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
 
-public class ThreadResource extends ExpirationMsMutableImpl implements ClassName, Resource<Void, Void> {
+public class ThreadResource extends ExpirationMsMutableImpl implements UniqueClassName, Resource<Void, Void> {
 
     private final Thread thread;
 

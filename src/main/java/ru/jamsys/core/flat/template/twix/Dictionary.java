@@ -1,10 +1,10 @@
 package ru.jamsys.core.flat.template.twix;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.EnumName;
+import ru.jamsys.core.extension.CamelNormalization;
 
 @Getter
-public enum Dictionary implements EnumName {
+public enum Dictionary implements CamelNormalization {
 
     DOLLAR("$"),
     CURLY_BRACE_OPEN("{"),

@@ -3,7 +3,7 @@ package ru.jamsys.core.component.manager.item;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.property.PropertyConnector;
-import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyName;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter

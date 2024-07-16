@@ -382,7 +382,7 @@ class PromiseImplTest {
                     );
                     List<PromiseTask> add = new ArrayList<>();
                     add.add(asyncPromiseTask);
-                    add.add(new PromiseTask(PromiseTaskExecuteType.WAIT.getName(), promise1, PromiseTaskExecuteType.WAIT));
+                    add.add(new PromiseTask(PromiseTaskExecuteType.WAIT.getNameCamel(), promise1, PromiseTaskExecuteType.WAIT));
                     promise1.addToHead(add);
                 })
                 .run()

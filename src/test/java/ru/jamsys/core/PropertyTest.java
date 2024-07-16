@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.property.PropertyConnector;
-import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
 

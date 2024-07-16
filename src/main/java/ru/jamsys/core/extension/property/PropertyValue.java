@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.annotation.PropertyName;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;

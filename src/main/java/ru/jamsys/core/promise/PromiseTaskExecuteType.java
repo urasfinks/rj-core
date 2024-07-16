@@ -1,10 +1,10 @@
 package ru.jamsys.core.promise;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.EnumName;
+import ru.jamsys.core.extension.CamelNormalization;
 
 @Getter
-public enum PromiseTaskExecuteType implements EnumName {
+public enum PromiseTaskExecuteType implements CamelNormalization {
 
     WAIT, // Ждём когда все предыдущие запущенные задачи будут исполнены
     IO, //Запускаем эту задачу в VirtualThread

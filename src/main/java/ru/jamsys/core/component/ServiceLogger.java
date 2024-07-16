@@ -9,11 +9,11 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.component.manager.item.LogType;
-import ru.jamsys.core.extension.ClassNameImpl;
+import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.property.PropertyConnector;
-import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.promise.Promise;
@@ -43,11 +43,11 @@ public class ServiceLogger extends PropertyConnector implements
 
     public ServiceLogger(ManagerBroker managerBroker, ApplicationContext applicationContext) {
         broker = managerBroker.get(
-                ClassNameImpl.getClassNameStatic(Log.class, null, applicationContext),
+                UniqueClassNameImpl.getClassNameStatic(Log.class, null, applicationContext),
                 Log.class
         );
         for (LogType type : LogType.values()) {
-            stat.put(type.getName(), new AtomicInteger(0));
+            stat.put(type.getNameCamel(), new AtomicInteger(0));
         }
         applicationContext
                 .getBean(ServiceProperty.class)
@@ -55,7 +55,7 @@ public class ServiceLogger extends PropertyConnector implements
     }
 
     public DisposableExpirationMsImmutableEnvelope<Log> add(Log log) {
-        stat.get(log.logType.getName()).incrementAndGet();
+        stat.get(log.logType.getNameCamel()).incrementAndGet();
         if (remoteLog.equals("true")) {
             return broker.add(new ExpirationMsImmutableEnvelope<>(log, 6_000));
         }

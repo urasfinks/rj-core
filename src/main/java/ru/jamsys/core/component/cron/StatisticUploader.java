@@ -13,11 +13,11 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ByteTransformer;
-import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.ClassNameImpl;
-import ru.jamsys.core.extension.ForwardException;
+import ru.jamsys.core.extension.UniqueClassName;
+import ru.jamsys.core.extension.UniqueClassNameImpl;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyConnector;
-import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
 import ru.jamsys.core.flat.util.ListSort;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -39,7 +39,7 @@ import java.util.function.Function;
 
 @Component
 @Lazy
-public class StatisticUploader extends PropertyConnector implements Cron5s, PromiseGenerator, ClassName {
+public class StatisticUploader extends PropertyConnector implements Cron5s, PromiseGenerator, UniqueClassName {
 
     final Broker<StatisticSec> broker;
 
@@ -72,7 +72,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
     ) {
         this.servicePromise = servicePromise;
         broker = managerBroker.get(
-                ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
+                UniqueClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class
         );
         serviceProperty.getSubscriber(
@@ -126,7 +126,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                     }
                 })
                 .then("readDirectory", (_, promise) -> {
-                    String indexStatistic = ClassNameImpl.getClassNameStatic(StatisticSec.class, null, App.context);
+                    String indexStatistic = UniqueClassNameImpl.getClassNameStatic(StatisticSec.class, null, App.context);
                     List<String> filesRecursive = UtilFile.getFilesRecursive(getFolder(), false);
                     List<String> restore = new ArrayList<>();
                     for (String filePath : filesRecursive) {

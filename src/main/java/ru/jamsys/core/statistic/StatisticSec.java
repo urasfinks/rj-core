@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.extension.ByteTransformer;
-import ru.jamsys.core.extension.ForwardException;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.io.*;

@@ -12,11 +12,11 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.extension.ByteTransformer;
-import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.ClassNameImpl;
-import ru.jamsys.core.extension.ForwardException;
+import ru.jamsys.core.extension.UniqueClassName;
+import ru.jamsys.core.extension.UniqueClassNameImpl;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyConnector;
-import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
 import ru.jamsys.core.flat.util.ListSort;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -37,7 +37,7 @@ import java.util.function.Function;
 
 @Component
 @Lazy
-public class LogUploader extends PropertyConnector implements Cron5s, PromiseGenerator, ClassName {
+public class LogUploader extends PropertyConnector implements Cron5s, PromiseGenerator, UniqueClassName {
 
     final Broker<Log> broker;
 
@@ -66,7 +66,7 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
 
     public LogUploader(ManagerBroker managerBroker, ApplicationContext applicationContext, ServicePromise servicePromise, ServiceProperty serviceProperty) {
         this.servicePromise = servicePromise;
-        this.idx = ClassNameImpl.getClassNameStatic(Log.class, null, applicationContext);
+        this.idx = UniqueClassNameImpl.getClassNameStatic(Log.class, null, applicationContext);
         broker = managerBroker.get(idx, Log.class);
         serviceProperty.getSubscriber(null, this, null, false);
     }
@@ -89,7 +89,7 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
                     Log log = envelope.getValue();
                     reserve.add(log);
                     jdbcRequest.addArg("date_add", log.getTimeAdd())
-                            .addArg("type", log.getLogType().getName())
+                            .addArg("type", log.getLogType().getNameCamel())
                             .addArg("correlation", log.getCorrelation())
                             .addArg("host", "localhost")
                             .addArg("ext_index", log.getExtIndex())

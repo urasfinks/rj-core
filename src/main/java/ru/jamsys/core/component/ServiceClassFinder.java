@@ -2,7 +2,7 @@ package ru.jamsys.core.component;
 
 import lombok.Getter;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.extension.IgnoreClassFinder;
+import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
 
 import javax.tools.*;
 import java.lang.annotation.Annotation;

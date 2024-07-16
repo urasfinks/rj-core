@@ -7,7 +7,7 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Expiration;
-import ru.jamsys.core.extension.ClassName;
+import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.flat.util.Util;
@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
-public class ServicePromise implements ClassName, KeepAliveComponent, StatisticsFlushComponent {
+public class ServicePromise implements UniqueClassName, KeepAliveComponent, StatisticsFlushComponent {
 
     public static Set<Promise> queueMultipleCompleteSet = Util.getConcurrentHashSet();
 

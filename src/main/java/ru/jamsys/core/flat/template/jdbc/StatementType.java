@@ -1,9 +1,9 @@
 package ru.jamsys.core.flat.template.jdbc;
 
 
-import ru.jamsys.core.extension.EnumName;
+import ru.jamsys.core.extension.CamelNormalization;
 
-public enum StatementType implements EnumName {
+public enum StatementType implements CamelNormalization {
 
     SELECT_WITH_AUTO_COMMIT,
     SELECT_WITHOUT_AUTO_COMMIT,

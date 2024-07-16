@@ -1,6 +1,6 @@
 package ru.jamsys.core.resource.notification.email;
 
-import ru.jamsys.core.extension.ForwardException;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.template.twix.TemplateTwix;
 import ru.jamsys.core.flat.util.UtilFileResource;
 

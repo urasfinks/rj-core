@@ -39,9 +39,9 @@ import java.util.function.Consumer;
 public class Broker<TEO>
         extends ExpirationMsMutableImpl
         implements
-        ClassName,
+        UniqueClassName,
         StatisticsFlush,
-        CheckClassItem,
+        ClassEquals,
         LifeCycleInterface,
         KeepAlive,
         AddToList<
@@ -90,14 +90,14 @@ public class Broker<TEO>
         propertyBrokerSize = new PropertyValue(
                 applicationContext,
                 PropertyType.INTEGER,
-                clsIndex + "." + ValueName.BROKER_SIZE.getName(),
+                clsIndex + "." + ValueName.BROKER_SIZE.getNameCamel(),
                 "3000"
         );
 
         propertyBrokerTailSize = new PropertyValue(
                 applicationContext,
                 PropertyType.INTEGER,
-                clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getName(),
+                clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),
                 "5"
         );
 
@@ -269,7 +269,7 @@ public class Broker<TEO>
     }
 
     @Override
-    public boolean checkClassItem(Class<?> classItem) {
+    public boolean classEquals(Class<?> classItem) {
         return this.classItem.equals(classItem);
     }
 

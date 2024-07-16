@@ -4,7 +4,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.extension.CheckClassItem;
+import ru.jamsys.core.extension.ClassEquals;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
@@ -13,7 +13,7 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> implements CheckClassItem {
+public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> implements ClassEquals {
 
     AtomicInteger counter = new AtomicInteger(1);
 
@@ -61,7 +61,7 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
     }
 
     @Override
-    public boolean checkClassItem(Class<?> classItem) {
+    public boolean classEquals(Class<?> classItem) {
         return true;
     }
 

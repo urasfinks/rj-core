@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension;
+package ru.jamsys.core.extension.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

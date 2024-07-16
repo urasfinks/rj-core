@@ -4,7 +4,7 @@ import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ServicePromise;
-import ru.jamsys.core.extension.ClassName;
+import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @Lazy
-public class PromiseController implements Cron1s, PromiseGenerator, ClassName {
+public class PromiseController implements Cron1s, PromiseGenerator, UniqueClassName {
 
     @Setter
     private String index;

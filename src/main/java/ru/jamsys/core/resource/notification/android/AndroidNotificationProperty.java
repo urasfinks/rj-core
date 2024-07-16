@@ -2,7 +2,7 @@ package ru.jamsys.core.resource.notification.android;
 
 import lombok.Getter;
 import ru.jamsys.core.extension.property.PropertyConnector;
-import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyName;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter

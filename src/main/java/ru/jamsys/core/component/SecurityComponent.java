@@ -4,10 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.ForwardException;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.property.PropertyConnector;
-import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.util.*;
 

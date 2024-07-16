@@ -20,7 +20,7 @@ public abstract class AbstractManager<
                 ExpirationMsMutable
                 & StatisticsFlush
                 & LifeCycleInterface
-                & CheckClassItem,
+                & ClassEquals,
         EBA>
         implements
         StatisticsCollectorMap<E>,
@@ -93,7 +93,7 @@ public abstract class AbstractManager<
     // и обслуживаться тоже не будет [keepAlive, flushAndGetStatistic] так что - плохая эта затея
     protected E getManagerElement(String key, Class<?> classItem, EBA builderArgument) {
         E element = restoreFromReserved(key, () -> build(key, classItem, builderArgument));
-        if (element != null && element.checkClassItem(classItem)) {
+        if (element != null && element.classEquals(classItem)) {
             return element;
         }
         return null;
@@ -101,7 +101,7 @@ public abstract class AbstractManager<
 
     protected E getManagerElementUnsafe(String key, Class<?> classItem) {
         E element = map.get(key);
-        if (element != null && element.checkClassItem(classItem)) {
+        if (element != null && element.classEquals(classItem)) {
             return element;
         }
         return null;

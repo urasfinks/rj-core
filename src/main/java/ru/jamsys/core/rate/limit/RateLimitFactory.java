@@ -1,13 +1,13 @@
 package ru.jamsys.core.rate.limit;
 
 import org.springframework.context.ApplicationContext;
-import ru.jamsys.core.extension.EnumName;
+import ru.jamsys.core.extension.CamelNormalization;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemPeriodic;
 import ru.jamsys.core.rate.limit.item.RateLimitItemTps;
 
-public enum RateLimitFactory implements EnumName {
+public enum RateLimitFactory implements CamelNormalization {
 
     TPS,
     TPM,

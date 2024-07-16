@@ -4,7 +4,7 @@ import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.Correlation;
-import ru.jamsys.core.extension.TriConsumer;
+import ru.jamsys.core.extension.functional.iface.TriConsumer;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
@@ -116,7 +116,7 @@ public interface Promise extends Property<String, Object>, ExpirationMsImmutable
     }
 
     default Promise appendWait() {
-        append(new PromiseTask(PromiseTaskExecuteType.WAIT.getName(), this, PromiseTaskExecuteType.WAIT));
+        append(new PromiseTask(PromiseTaskExecuteType.WAIT.getNameCamel(), this, PromiseTaskExecuteType.WAIT));
         return this;
     }
 

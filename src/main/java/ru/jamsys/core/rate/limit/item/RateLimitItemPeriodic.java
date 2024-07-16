@@ -6,7 +6,7 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.PropertyConnector;
-import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
@@ -47,7 +47,7 @@ public class RateLimitItemPeriodic
     public RateLimitItemPeriodic(ApplicationContext applicationContext, TimeUnit period, String ns) {
         this.ns = ns;
         this.period = period;
-        this.periodName = period.getName();
+        this.periodName = period.getNameCamel();
         subscriber = applicationContext.getBean(ServiceProperty.class).getSubscriber(
                 this,
                 this,

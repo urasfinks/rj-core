@@ -5,7 +5,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.ClassName;
+import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.PropertyType;
@@ -41,7 +41,7 @@ import java.util.function.Function;
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Resource<RA, RR>>
         extends ExpirationMsMutableImpl
-        implements Pool<RA, RR, PI>, LifeCycleInterface, KeepAlive, ClassName {
+        implements Pool<RA, RR, PI>, LifeCycleInterface, KeepAlive, UniqueClassName {
 
     @Getter
     @ToString.Include
@@ -89,14 +89,14 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         propertyPoolSizeMax = new PropertyValue(
                 App.context,
                 PropertyType.INTEGER,
-                this.index + "." + ValueName.POOL_SIZE_MAX.getName(),
+                this.index + "." + ValueName.POOL_SIZE_MAX.getNameCamel(),
                 "1"
         );
 
         propertyPoolSizeMin = new PropertyValue(
                 App.context,
                 PropertyType.INTEGER,
-                this.index + "." + ValueName.POOL_SIZE_MIN.getName(),
+                this.index + "." + ValueName.POOL_SIZE_MIN.getNameCamel(),
                 "0"
         );
 

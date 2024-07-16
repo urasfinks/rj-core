@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension;
+package ru.jamsys.core.extension.functional.iface;
 
 @FunctionalInterface
 public interface TriConsumer<K, V, S> {

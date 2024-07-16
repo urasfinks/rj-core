@@ -6,13 +6,13 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.LogType;
-import ru.jamsys.core.extension.ForwardException;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.HashMapBuilder;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.extension.line.writer.LineWriterString;
 import ru.jamsys.core.extension.property.PropertyConnector;
-import ru.jamsys.core.extension.property.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.flat.util.Util;
 
 @Setter
@@ -48,7 +48,7 @@ public class ExceptionHandler extends PropertyConnector {
             App.get(ServiceLogger.class).add(
                     LogType.SYSTEM_EXCEPTION,
                     new HashMapBuilder<String, Object>().append("exception", lineWriterList.getResult()),
-                    LogType.SYSTEM_EXCEPTION.getName(),
+                    LogType.SYSTEM_EXCEPTION.getNameCamel(),
                     false
             );
         }

@@ -7,7 +7,7 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerFileByteWriter;
 import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.component.manager.item.Log;
-import ru.jamsys.core.extension.ClassNameImpl;
+import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.flat.util.Util;
@@ -47,8 +47,8 @@ public class Core implements LifeCycleInterface {
     @Override
     public void run() {
         Util.logConsole(getClass().getSimpleName() + ".run()");
-        String indexStatistic = ClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext);
-        String indexLog = ClassNameImpl.getClassNameStatic(Log.class, null, applicationContext);
+        String indexStatistic = UniqueClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext);
+        String indexLog = UniqueClassNameImpl.getClassNameStatic(Log.class, null, applicationContext);
 
         FileByteWriter fileByteWriterStatistic = managerFileByteWriter.get(indexStatistic);
         FileByteWriter fileByteWriterLog = managerFileByteWriter.get(indexLog);

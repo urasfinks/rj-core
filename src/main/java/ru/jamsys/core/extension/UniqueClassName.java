@@ -4,7 +4,7 @@ import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceClassFinder;
 
-public interface ClassName {
+public interface UniqueClassName {
 
     default String getClassName(String index) {
         return getClassName(getClass(), index);

@@ -21,8 +21,8 @@ public class RateLimit
         extends ExpirationMsMutableImpl
         implements
         StatisticsCollectorMap<RateLimitItem>,
-        CheckClassItem,
-        ClassName,
+        ClassEquals,
+        UniqueClassName,
         LifeCycleInterface,
         AddToMap<String, RateLimitItem>
 {
@@ -63,7 +63,7 @@ public class RateLimit
     }
 
     @Override
-    public boolean checkClassItem(Class<?> classItem) {
+    public boolean classEquals(Class<?> classItem) {
         return true;
     }
 

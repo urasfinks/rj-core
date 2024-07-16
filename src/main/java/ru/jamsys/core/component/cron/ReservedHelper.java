@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
-import ru.jamsys.core.extension.ClassName;
+import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // Восстановления законсервированных элементов AbstractManager при наличии их повторной активности
 
 @Component
-public class ReservedHelper implements Cron1s, PromiseGenerator, ClassName {
+public class ReservedHelper implements Cron1s, PromiseGenerator, UniqueClassName {
 
     private final List<AbstractManager> list = new ArrayList<>();
 

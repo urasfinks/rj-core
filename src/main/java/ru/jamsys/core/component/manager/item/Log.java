@@ -50,7 +50,7 @@ public class Log implements ByteTransformer, Correlation {
     public byte[] getByteInstance() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         UtilLog.writeShortString(os, getCorrelation());
-        UtilLog.writeShortString(os, logType.getName());
+        UtilLog.writeShortString(os, logType.getNameCamel());
         UtilLog.writeShortString(os, timeAdd + "");
         UtilLog.writeString(os, data);
         return os.toByteArray();

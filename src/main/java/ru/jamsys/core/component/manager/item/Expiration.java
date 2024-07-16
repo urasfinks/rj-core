@@ -37,7 +37,7 @@ public class Expiration<V>
                 >,
         KeepAlive,
         StatisticsFlush,
-        CheckClassItem,
+        ClassEquals,
         LifeCycleInterface,
         ExpirationMsMutable {
 
@@ -158,7 +158,7 @@ public class Expiration<V>
     }
 
     @Override
-    public boolean checkClassItem(Class<?> classItem) {
+    public boolean classEquals(Class<?> classItem) {
         return this.classItem.equals(classItem);
     }
 

@@ -3,8 +3,8 @@ package ru.jamsys.core.resource;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
-import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.ClassNameImpl;
+import ru.jamsys.core.extension.UniqueClassName;
+import ru.jamsys.core.extension.UniqueClassNameImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +15,7 @@ public class PoolSettingsRegistry<
         R extends Resource<?, RC> & ResourceCheckException,
         RC extends NamespaceResourceConstructor
         >
-        implements ClassName {
+        implements UniqueClassName {
 
     private final Map<Class<R>, Function<Throwable, Boolean>> fn = new HashMap<>();
 
@@ -23,7 +23,7 @@ public class PoolSettingsRegistry<
 
     @SuppressWarnings("all")
     public PoolSettings<?> get(Class<R> cls, String ns) {
-        String index = ClassNameImpl.getClassNameStatic(cls, ns, App.context);
+        String index = UniqueClassNameImpl.getClassNameStatic(cls, ns, App.context);
         return registry.computeIfAbsent(index, s -> {
             return (PoolSettings<R>) new PoolSettings<>(
                     s,

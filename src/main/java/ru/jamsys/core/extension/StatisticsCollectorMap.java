@@ -17,7 +17,7 @@ public interface StatisticsCollectorMap<E extends StatisticsFlush> extends Stati
     default List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         Map<String, E> map = getMapForFlushStatistic();
         List<Statistic> result = new ArrayList<>();
-        String clsName = ClassNameImpl.getClassNameStatic(getClass(), null);
+        String clsName = UniqueClassNameImpl.getClassNameStatic(getClass(), null);
         UtilRisc.forEach(
                 isThreadRun,
                 map,

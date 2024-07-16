@@ -5,9 +5,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.cron.CronPromise;
-import ru.jamsys.core.extension.ClassName;
-import ru.jamsys.core.extension.ClassNameImpl;
-import ru.jamsys.core.extension.ForwardException;
+import ru.jamsys.core.extension.UniqueClassName;
+import ru.jamsys.core.extension.UniqueClassNameImpl;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.CronTemplate;
@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // S - Service
 @Component
 @Lazy
-public class ServiceCron implements LifeCycleComponent, ClassName {
+public class ServiceCron implements LifeCycleComponent, UniqueClassName {
 
     final private Thread thread;
 
@@ -73,7 +73,7 @@ public class ServiceCron implements LifeCycleComponent, ClassName {
                 isRun.set(false);
             }
         });
-        thread.setName(ClassNameImpl.getClassNameStatic(getClass(), null, applicationContext));
+        thread.setName(UniqueClassNameImpl.getClassNameStatic(getClass(), null, applicationContext));
     }
 
     private void runCronTask(long curTimeMs) {

@@ -1,7 +1,7 @@
 package ru.jamsys.core.resource.virtual.file.system;
 
 
-import ru.jamsys.core.extension.ConsumerThrowing;
+import ru.jamsys.core.extension.functional.iface.ConsumerThrowing;
 import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilFile;
 

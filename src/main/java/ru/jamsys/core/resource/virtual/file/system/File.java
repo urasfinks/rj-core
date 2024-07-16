@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.functional.iface.ConsumerThrowing;
+import ru.jamsys.core.extension.functional.iface.SupplierThrowing;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.resource.virtual.file.system.view.FileView;
@@ -25,7 +27,7 @@ public class File extends ExpirationMsMutableImpl
         KeepAlive,
         Property<String, Object>,
         LifeCycleInterface,
-        CheckClassItem
+        ClassEquals
 {
 
     @Getter
@@ -170,7 +172,7 @@ public class File extends ExpirationMsMutableImpl
     }
 
     @Override
-    public boolean checkClassItem(Class<?> classItem) {
+    public boolean classEquals(Class<?> classItem) {
         return true;
     }
 

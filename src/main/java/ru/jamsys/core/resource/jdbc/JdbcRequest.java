@@ -30,7 +30,7 @@ public class JdbcRequest {
 
     public JdbcRequest(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.nameCache = jdbcTemplate.getName();
+        this.nameCache = jdbcTemplate.getNameCamel();
         listArgs.add(new LinkedHashMap<>());
     }
 
