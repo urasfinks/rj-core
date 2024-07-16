@@ -3,7 +3,7 @@ package ru.jamsys.core.statistic;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.jamsys.core.extension.ByteItem;
+import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.ForwardException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString(callSuper = true)
-public class StatisticSec extends ExpirationMsMutableImpl implements ByteItem, Serializable {
+public class StatisticSec extends ExpirationMsMutableImpl implements ByteTransformer, Serializable {
 
     public List<Statistic> list = new ArrayList<>();
 

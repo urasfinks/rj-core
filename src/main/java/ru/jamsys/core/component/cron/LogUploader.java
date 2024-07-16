@@ -11,7 +11,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Log;
-import ru.jamsys.core.extension.ByteItem;
+import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.ForwardException;
@@ -121,7 +121,7 @@ public class LogUploader extends PropertyConnector implements Cron5s, PromiseGen
             if (broker.getOccupancyPercentage() < 50) {
                 String readyFile = promise.getProperty("readyFile", String.class);
                 if (readyFile != null) {
-                    List<ByteItem> execute = fileByteReaderResource.execute(new FileByteReaderRequest(readyFile, Log.class));
+                    List<ByteTransformer> execute = fileByteReaderResource.execute(new FileByteReaderRequest(readyFile, Log.class));
                     execute.forEach(byteItem -> broker.add((Log) byteItem, 6_000L));
                     try {
                         UtilFile.remove(readyFile);

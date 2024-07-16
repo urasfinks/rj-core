@@ -12,7 +12,7 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.extension.ByteItem;
+import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.ClassName;
 import ru.jamsys.core.extension.ClassNameImpl;
 import ru.jamsys.core.extension.ForwardException;
@@ -143,7 +143,7 @@ public class StatisticUploader extends PropertyConnector implements Cron5s, Prom
                     if (broker.getOccupancyPercentage() < 50) {
                         String readyFile = promise.getProperty("readyFile", String.class);
                         if (readyFile != null) {
-                            List<ByteItem> execute = fileByteReaderResource.execute(
+                            List<ByteTransformer> execute = fileByteReaderResource.execute(
                                     new FileByteReaderRequest(readyFile, StatisticSec.class)
                             );
                             execute.forEach(byteItem -> broker.add((StatisticSec) byteItem, 6_000L));

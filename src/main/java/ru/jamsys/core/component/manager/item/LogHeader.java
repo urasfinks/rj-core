@@ -1,7 +1,7 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.ToString;
-import ru.jamsys.core.extension.ByteItem;
+import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilLog;
 
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @ToString
-public class LogHeader implements ByteItem {
+public class LogHeader implements ByteTransformer {
 
     public Map<String, String> header = new HashMap<>();
 

@@ -1,6 +1,6 @@
 package ru.jamsys.core.extension;
 
-public interface ByteItem {
+public interface ByteTransformer {
 
     byte[] getByteInstance() throws Exception;
 

@@ -3,7 +3,7 @@ package ru.jamsys.core.resource.filebyte.reader;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.ByteItem;
+import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.resource.NamespaceResourceConstructor;
 import ru.jamsys.core.resource.ResourceCheckException;
@@ -22,7 +22,7 @@ import java.util.function.Function;
 public class FileByteReaderResource
         extends ExpirationMsMutableImpl
         implements
-        Resource<FileByteReaderRequest, List<ByteItem>>,
+        Resource<FileByteReaderRequest, List<ByteTransformer>>,
         ResourceCheckException {
 
     @Override
@@ -31,11 +31,11 @@ public class FileByteReaderResource
     }
 
     @Override
-    public List<ByteItem> execute(FileByteReaderRequest arguments) {
-        List<ByteItem> result = new ArrayList<>();
+    public List<ByteTransformer> execute(FileByteReaderRequest arguments) {
+        List<ByteTransformer> result = new ArrayList<>();
         try (BufferedInputStream fis = new BufferedInputStream(new FileInputStream(arguments.getFilePath()))) {
             while (fis.available() > 0) {
-                ByteItem item = arguments.getClsItem().getConstructor().newInstance();
+                ByteTransformer item = arguments.getClsItem().getConstructor().newInstance();
                 int lenData = UtilByte.bytesToInt(fis.readNBytes(4));
                 item.instanceFromByte(fis.readNBytes(lenData));
                 result.add(item);

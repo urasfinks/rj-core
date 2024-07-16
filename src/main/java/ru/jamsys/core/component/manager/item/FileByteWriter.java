@@ -34,7 +34,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         LifeCycleInterface {
 
     @Getter
-    private Broker<ByteItem> broker;
+    private Broker<ByteTransformer> broker;
 
     private String currentFilePath;
 
@@ -71,7 +71,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         if (updatedPropAlias.contains("log.file.name")) {
             broker = App.get(ManagerBroker.class).initAndGet(
                     ClassNameImpl.getClassNameStatic(FileByteWriter.class, property.getFileName(), App.context),
-                    ByteItem.class,
+                    ByteTransformer.class,
                     null
             );
             restoreIndex();
@@ -138,7 +138,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         currentFilePath = property.getFolder() + "/" + property.getFileName() + "." + Util.padLeft(curIndex + "", property.getFileCount().length(), "0") + ".proc.bin";
     }
 
-    public void append(ByteItem log) {
+    public void append(ByteTransformer log) {
         active();
         broker.add(log, 6_000);
     }
@@ -168,9 +168,9 @@ public class FileByteWriter extends ExpirationMsMutableImpl
             try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(currentFilePath, writeByteToCurrentFile.get() > 0))) {
                 while (!broker.isEmpty() && isThreadRun.get()) {
                     try {
-                        ExpirationMsImmutableEnvelope<ByteItem> itemExpirationMsMutableEnvelope = broker.pollFirst();
+                        ExpirationMsImmutableEnvelope<ByteTransformer> itemExpirationMsMutableEnvelope = broker.pollFirst();
                         if (itemExpirationMsMutableEnvelope != null) {
-                            ByteItem item = itemExpirationMsMutableEnvelope.getValue();
+                            ByteTransformer item = itemExpirationMsMutableEnvelope.getValue();
                             byte[] d = item.getByteInstance();
                             fos.write(UtilByte.intToBytes(d.length));
                             writeByteToCurrentFile.addAndGet(4);

@@ -3,7 +3,7 @@ package ru.jamsys.core.component.manager.item;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.jamsys.core.extension.ByteItem;
+import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -14,7 +14,7 @@ import java.io.InputStream;
 
 @ToString
 @Getter
-public class Log implements ByteItem, Correlation {
+public class Log implements ByteTransformer, Correlation {
 
     public long timeAdd = System.currentTimeMillis();
 
