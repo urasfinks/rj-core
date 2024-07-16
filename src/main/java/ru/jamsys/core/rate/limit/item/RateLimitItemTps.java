@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.PropertyConnector;
 import ru.jamsys.core.extension.property.PropertyName;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
@@ -17,7 +18,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RateLimitItemTps extends PropertyConnector implements RateLimitItem, PropertySubscriberNotify {
+public class RateLimitItemTps
+        extends PropertyConnector
+        implements RateLimitItem, PropertySubscriberNotify, LifeCycleInterface {
 
     private final AtomicInteger tps = new AtomicInteger(0);
 
@@ -67,8 +70,14 @@ public class RateLimitItemTps extends PropertyConnector implements RateLimitItem
         this.max.set(Integer.parseInt(propMax));
     }
 
-    public void close() {
-        subscriber.unsubscribe();
+    @Override
+    public void run() {
+        subscriber.run();
+    }
+
+    @Override
+    public void shutdown() {
+        subscriber.shutdown();
     }
 
 }

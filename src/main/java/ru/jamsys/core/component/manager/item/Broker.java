@@ -41,7 +41,6 @@ public class Broker<TEO>
         implements
         ClassName,
         StatisticsFlush,
-        Closable,
         CheckClassItem,
         LifeCycleInterface,
         KeepAlive,
@@ -70,10 +69,10 @@ public class Broker<TEO>
     private Double lastTimeInQueue;
 
     @Getter
-    final PropertyValue maxQueueSize;
+    final PropertyValue propertyBrokerSize;
 
     @Getter
-    final PropertyValue maxTailQueueSize;
+    final PropertyValue propertyBrokerTailSize;
 
     final String index;
 
@@ -88,18 +87,18 @@ public class Broker<TEO>
         this.classItem = classItem;
         this.onDropConsumer = onDropConsumer;
         String clsIndex = getClassName(index, applicationContext);
-        maxQueueSize = new PropertyValue(
+        propertyBrokerSize = new PropertyValue(
                 applicationContext,
                 PropertyType.INTEGER,
                 clsIndex + "." + ValueName.BROKER_SIZE.getName(),
                 "3000"
         );
 
-        maxTailQueueSize = new PropertyValue(
+        propertyBrokerTailSize = new PropertyValue(
                 applicationContext,
                 PropertyType.INTEGER,
                 clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getName(),
-                "3000"
+                "5"
         );
 
         ManagerExpiration managerExpiration = applicationContext.getBean(ManagerExpiration.class);
@@ -142,7 +141,7 @@ public class Broker<TEO>
         // Проблема с производительностью
         // Мы не можем использовать queue.size() для расчёта переполнения
         // пример: вставка 100к записей занимаем 35сек
-        if (queueSize.get() >= maxQueueSize.getAsInt()) {
+        if (queueSize.get() >= propertyBrokerSize.getAsInt()) {
             // Он конечно протух не по своей воле, но что делать...
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
             DisposableExpirationMsImmutableEnvelope<TEO> teoDisposableExpirationMsImmutableEnvelope = queue.removeFirst();
@@ -155,7 +154,7 @@ public class Broker<TEO>
         queue.add(convert);
         queueSize.incrementAndGet();
 
-        if (tailQueueSize.get() >= maxTailQueueSize.getAsInt()) {
+        if (tailQueueSize.get() >= propertyBrokerTailSize.getAsInt()) {
             tailQueue.removeFirst();
         } else {
             tailQueueSize.incrementAndGet();
@@ -225,7 +224,7 @@ public class Broker<TEO>
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x
-        return queueSize.get() * 100 / maxQueueSize.getAsInt();
+        return queueSize.get() * 100 / propertyBrokerSize.getAsInt();
     }
 
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
@@ -242,11 +241,6 @@ public class Broker<TEO>
                 .addFields(flush)
         );
         return result;
-    }
-
-    @Override
-    public void close() {
-        lastTimeInQueue = null;
     }
 
     // Рекомендуется использовать только для тестов
@@ -280,16 +274,6 @@ public class Broker<TEO>
     }
 
     @Override
-    public void run() {
-        // Пока ничего не надо
-    }
-
-    @Override
-    public void shutdown() {
-        // Пока ничего не надо
-    }
-
-    @Override
     public void keepAlive(AtomicBoolean isThreadRun) {
         // Если в очередь добавлять сообщения - будет вызываться active()
         // Брокер будет жить и при переполнении при вставке даже будет чистить очередь с начала
@@ -304,6 +288,19 @@ public class Broker<TEO>
             }
             queue.remove(obj);
         }
+    }
+
+    @Override
+    public void run() {
+        propertyBrokerSize.run();
+        propertyBrokerTailSize.run();
+    }
+
+    @Override
+    public void shutdown() {
+        propertyBrokerSize.shutdown();
+        propertyBrokerTailSize.shutdown();
+        lastTimeInQueue = null;
     }
 
 }

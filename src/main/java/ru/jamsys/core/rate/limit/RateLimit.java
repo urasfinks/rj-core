@@ -21,7 +21,6 @@ public class RateLimit
         extends ExpirationMsMutableImpl
         implements
         StatisticsCollectorMap<RateLimitItem>,
-        Closable,
         CheckClassItem,
         ClassName,
         LifeCycleInterface,
@@ -34,10 +33,6 @@ public class RateLimit
 
     public RateLimit(String index) {
         this.index = index;
-    }
-
-    @Override
-    public void close() {
     }
 
     @Override

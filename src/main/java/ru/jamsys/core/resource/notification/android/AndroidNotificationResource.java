@@ -98,9 +98,16 @@ public class AndroidNotificationResource
     }
 
     @Override
-    public void close() {
+    public void run() {
         if (subscriber != null) {
-            subscriber.unsubscribe();
+            subscriber.run();
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        if (subscriber != null) {
+            subscriber.shutdown();
         }
     }
 

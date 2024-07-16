@@ -56,13 +56,6 @@ public class TelegramNotificationResource
     }
 
     @Override
-    public void close() {
-        if (subscriber != null) {
-            subscriber.unsubscribe();
-        }
-    }
-
-    @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 0;
     }
@@ -70,6 +63,20 @@ public class TelegramNotificationResource
     @Override
     public Function<Throwable, Boolean> getFatalException() {
         return _ -> false;
+    }
+
+    @Override
+    public void run() {
+        if (subscriber != null) {
+            subscriber.run();
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        if (subscriber != null) {
+            subscriber.shutdown();
+        }
     }
 
 }

@@ -47,11 +47,6 @@ public class FileByteReaderResource
     }
 
     @Override
-    public void close() {
-
-    }
-
-    @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 0;
     }
@@ -59,6 +54,16 @@ public class FileByteReaderResource
     @Override
     public Function<Throwable, Boolean> getFatalException() {
         return _ -> false;
+    }
+
+    @Override
+    public void run() {
+
+    }
+
+    @Override
+    public void shutdown() {
+
     }
 
 }

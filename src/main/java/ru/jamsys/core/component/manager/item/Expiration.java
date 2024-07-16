@@ -35,7 +35,6 @@ public class Expiration<V>
                 ExpirationMsImmutableEnvelope<V>,
                 DisposableExpirationMsImmutableEnvelope<V>
                 >,
-        Closable,
         KeepAlive,
         StatisticsFlush,
         CheckClassItem,
@@ -133,12 +132,6 @@ public class Expiration<V>
     }
 
     @Override
-    public void close() {
-        bucket.clear();
-        bucketQueueSize.clear();
-    }
-
-    @Override
     public DisposableExpirationMsImmutableEnvelope<V> add(ExpirationMsImmutableEnvelope<V> obj) {
         return add(DisposableExpirationMsImmutableEnvelope.convert(obj));
     }
@@ -176,7 +169,8 @@ public class Expiration<V>
 
     @Override
     public void shutdown() {
-        // Пока ничего не надо
+        bucket.clear();
+        bucketQueueSize.clear();
     }
 
 }

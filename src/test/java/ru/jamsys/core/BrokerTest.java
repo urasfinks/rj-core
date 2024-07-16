@@ -44,8 +44,8 @@ class BrokerTest {
                     System.out.println("dropped: " + xTest);
                     droped.add(xTest);
                 });
-        broker.getMaxQueueSize().set(10);
-        broker.getMaxTailQueueSize().set(3);
+        broker.getPropertyBrokerSize().set(10);
+        broker.getPropertyBrokerTailSize().set(3);
 
         for (int i = 0; i < 10; i++) {
             broker.add(new XTest(i), 6_000L);
@@ -90,8 +90,8 @@ class BrokerTest {
         Broker<XTest> broker = App.get(ManagerBroker.class)
                 .get(XTest.class.getSimpleName(), XTest.class);
 
-        broker.getMaxQueueSize().set(10);
-        broker.getMaxTailQueueSize().set(3);
+        broker.getPropertyBrokerSize().set(10);
+        broker.getPropertyBrokerTailSize().set(3);
 
         for (int i = 0; i < 10; i++) {
             broker.add(new XTest(i), 6_000L);
@@ -216,16 +216,16 @@ class BrokerTest {
         App.get(ServiceProperty.class).setProperty("Broker.XTest.BrokerSize", "3000");
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
 
-        Assertions.assertEquals(3000, broker.getMaxQueueSize().getAsInt());
-        broker.getMaxQueueSize().set(3001);
-        Assertions.assertEquals(3001, broker.getMaxQueueSize().getAsInt());
+        Assertions.assertEquals(3000, broker.getPropertyBrokerSize().getAsInt());
+        broker.getPropertyBrokerSize().set(3001);
+        Assertions.assertEquals(3001, broker.getPropertyBrokerSize().getAsInt());
     }
 
     @Test
     void testPropertyDo() {
         App.get(ServiceProperty.class).setProperty("Broker.XTest.BrokerSize", "11");
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
-        Assertions.assertEquals(11, broker.getMaxQueueSize().getAsInt());
+        Assertions.assertEquals(11, broker.getPropertyBrokerSize().getAsInt());
     }
 
     @Test

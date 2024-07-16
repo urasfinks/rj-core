@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.property;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.LifeCycleInterface;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -10,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 // Главное не забывать закрывать после использования
 
-public class PropertyValue extends PropertyConnector implements PropertySubscriberNotify {
+public class PropertyValue extends PropertyConnector implements PropertySubscriberNotify, LifeCycleInterface {
 
     private AtomicInteger intValue = null;
 
@@ -65,7 +66,7 @@ public class PropertyValue extends PropertyConnector implements PropertySubscrib
     }
 
     public void set(int value) {
-        subscriber.setProperty("", value+"");
+        subscriber.setProperty("", value + "");
     }
 
     public void set(boolean value) {
@@ -80,8 +81,15 @@ public class PropertyValue extends PropertyConnector implements PropertySubscrib
         }
     }
 
-    public void close() {
-        subscriber.unsubscribe();
+
+    @Override
+    public void run() {
+        subscriber.run();
+    }
+
+    @Override
+    public void shutdown() {
+        subscriber.shutdown();
     }
 
 }

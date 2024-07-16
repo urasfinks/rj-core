@@ -95,37 +95,39 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
         }
     }
 
-    public boolean run() {
+    @Override
+    public void shutdown() {
+        if (!isInit.get()) {
+            raiseUp("Подавление остановки, поток не инициализирован", "shutdown()");
+            //return false;
+        }
+        if (isShutdown.compareAndSet(false, true)) { //Что бы больше никто не смог начать останавливать
+            doShutdown();
+            //return true;
+        } else {
+            raiseUp("Подавление остановки, поток уже остановлен", "shutdown()");
+        }
+        //return false;
+    }
+
+    @Override
+    public void run() {
         if (isShutdown.get()) {
             raiseUp("Подавление запуска, поток остановлен", "run()");
-            return false;
+            //return false;
         } else if (isInit.compareAndSet(false, true)) {
             //Что бы второй раз не получилось запустить поток после остановки проверим на isRun
             if (isRun.compareAndSet(false, true)) {
                 thread.start(); //start() - create new thread / run() - Runnable run in main thread
-                return true;
+                //return true;
             } else {
                 raiseUp("Подавление запуска, поток в работе", "run()");
             }
         } else if (inPark.compareAndSet(true, false)) {
             LockSupport.unpark(thread);
-            return true;
+            //return true;
         }
-        return false;
-    }
-
-    public boolean shutdown() {
-        if (!isInit.get()) {
-            raiseUp("Подавление остановки, поток не инициализирован", "shutdown()");
-            return false;
-        }
-        if (isShutdown.compareAndSet(false, true)) { //Что бы больше никто не смог начать останавливать
-            doShutdown();
-            return true;
-        } else {
-            raiseUp("Подавление остановки, поток уже остановлен", "shutdown()");
-        }
-        return false;
+        //return false;
     }
 
     @SuppressWarnings("all")
@@ -166,13 +168,9 @@ public class ThreadResource extends ExpirationMsMutableImpl implements ClassName
     }
 
     @Override
-    public void close() {
-        shutdown();
-    }
-
-    @Override
     public Function<Throwable, Boolean> getFatalException() {
         return _ -> false;
     }
+
 
 }

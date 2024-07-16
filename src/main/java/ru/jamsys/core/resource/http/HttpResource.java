@@ -27,11 +27,6 @@ public class HttpResource extends ExpirationMsMutableImpl implements Resource<Ht
     }
 
     @Override
-    public void close() {
-
-    }
-
-    @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 0;
     }
@@ -39,6 +34,16 @@ public class HttpResource extends ExpirationMsMutableImpl implements Resource<Ht
     @Override
     public Function<Throwable, Boolean> getFatalException() {
         return _ -> false;
+    }
+
+    @Override
+    public void run() {
+
+    }
+
+    @Override
+    public void shutdown() {
+
     }
 
 }

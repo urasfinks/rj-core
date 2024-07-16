@@ -56,7 +56,7 @@ public class InfluxResource
             return;
         }
         if (client != null) {
-            close();
+            client.close();
         }
         SecurityComponent securityComponent = App.get(SecurityComponent.class);
         client = InfluxDBClientFactory.create(property.getHost(), securityComponent.get(property.getAlias()));
@@ -78,18 +78,6 @@ public class InfluxResource
     }
 
     @Override
-    public void close() {
-        if (subscriber != null) {
-            subscriber.unsubscribe();
-        }
-        try {
-            client.close();
-        } catch (Exception e) {
-            App.error(e);
-        }
-    }
-
-    @Override
     public int getWeight(BalancerAlgorithm balancerAlgorithm) {
         return 0;
     }
@@ -108,6 +96,23 @@ public class InfluxResource
             }
             return false;
         };
+    }
+
+    @Override
+    public void run() {
+        // Автостарт
+    }
+
+    @Override
+    public void shutdown() {
+        if (subscriber != null) {
+            subscriber.shutdown();
+        }
+        try {
+            client.close();
+        } catch (Exception e) {
+            App.error(e);
+        }
     }
 
 }

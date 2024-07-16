@@ -53,7 +53,11 @@ public class JdbcResource
             return;
         }
         if (connection != null) {
-            close();
+            try {
+                connection.close();
+            } catch (Throwable th) {
+                App.error(new ForwardException(th));
+            }
         }
         try {
             SecurityComponent securityComponent = App.get(SecurityComponent.class);
@@ -74,18 +78,6 @@ public class JdbcResource
             throw new RuntimeException("TemplateEnum: " + arguments.getName() + " return null template");
         }
         return execute(connection, template, arguments.getListArgs(), statementControl, arguments.getDebug());
-    }
-
-    @Override
-    public void close() {
-        if (subscriber != null) {
-            subscriber.unsubscribe();
-        }
-        try {
-            connection.close();
-        } catch (Exception e) {
-            App.error(e);
-        }
     }
 
     @Override
@@ -110,6 +102,25 @@ public class JdbcResource
             }
             return false;
         };
+    }
+
+    @Override
+    public void run() {
+        if (subscriber != null) {
+            subscriber.run();
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        if (subscriber != null) {
+            subscriber.shutdown();
+        }
+        try {
+            connection.close();
+        } catch (Exception e) {
+            App.error(e);
+        }
     }
 
 }

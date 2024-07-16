@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FileByteWriter extends ExpirationMsMutableImpl
         implements
         KeepAlive,
-        Closable,
         StatisticsFlush,
         CheckClassItem,
         PropertySubscriberNotify,
@@ -60,7 +59,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         if (broker == null) {
             throw new RuntimeException("broker is null");
         }
-        broker.getMaxQueueSize().set(400_000);
+        broker.getPropertyBrokerSize().set(400_000);
 
         if (property.getFileName() == null || property.getFileName().isEmpty()) {
             throw new RuntimeException("file name is empty");
@@ -200,17 +199,6 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     }
 
     @Override
-    public void close() {
-        // Запишем что накопили
-        keepAlive(new AtomicBoolean(true));
-        // Сначала не хотел закрывать файл, но решил, что надо, для того, что бы система могла уже с ним поработать
-        // Если оставить его не закрытым, то он будет висеть до закрытия программы, что наверное не очень хорошо
-        closeLastFile();
-        // Из менаджера ссылки не исчезают, можно по идеи и не отписываться (Перетекание из map -> mapReserved)
-        subscriber.unsubscribe();
-    }
-
-    @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         return List.of();
     }
@@ -222,7 +210,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     @Override
     public void run() {
-        subscriber.init(false);
+        subscriber.run();
     }
 
     @Override
@@ -230,7 +218,10 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         // Запишем если были накопления в брокере
         keepAlive(new AtomicBoolean(true));
         // Переименуем файл, что бы при следующем старте его не удалили как ошибочный
+        // Сначала не хотел закрывать файл, но решил, что надо, для того, что бы система могла уже с ним поработать
+        // Если оставить его не закрытым, то он будет висеть до закрытия программы, что наверное не очень хорошо
         closeLastFile();
+        subscriber.shutdown();
     }
 
 }

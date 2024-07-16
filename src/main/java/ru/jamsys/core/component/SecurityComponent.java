@@ -351,11 +351,12 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
             String passwordFromInfoJson = getPasswordFromInfoJson(initJson);
             printNotice(passwordFromInfoJson);
         }
+        subscriber.run();
     }
 
     @Override
     public void shutdown() {
-        subscriber.unsubscribe();
+        subscriber.shutdown();
     }
 
     @Override

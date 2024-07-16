@@ -325,6 +325,8 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
             isRun.set(true);
             overclocking(propertyPoolSizeMin.getAsInt());
             restartOperation.set(false);
+            propertyPoolSizeMax.run();
+            propertyPoolSizeMin.run();
         }
     }
 
@@ -338,6 +340,8 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
                     this::removeAndClose
             );
             restartOperation.set(false);
+            propertyPoolSizeMax.shutdown();
+            propertyPoolSizeMin.shutdown();
         }
     }
 

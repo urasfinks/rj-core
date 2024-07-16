@@ -17,8 +17,7 @@ import java.util.function.Supplier;
 
 public abstract class AbstractManager<
         E extends
-                Closable
-                & ExpirationMsMutable
+                ExpirationMsMutable
                 & StatisticsFlush
                 & LifeCycleInterface
                 & CheckClassItem,
@@ -53,7 +52,7 @@ public abstract class AbstractManager<
                 (String key, E element) -> {
                     if (cleanableMap && element.isExpiredWithoutStop()) {
                         mapReserved.put(key, map.remove(key));
-                        element.close();
+                        element.shutdown();
                     } else if (element instanceof KeepAlive) {
                         ((KeepAlive) element).keepAlive(isThreadRun);
                     }

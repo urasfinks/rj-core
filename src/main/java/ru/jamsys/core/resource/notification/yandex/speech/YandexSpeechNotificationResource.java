@@ -43,7 +43,7 @@ public class YandexSpeechNotificationResource
             return;
         }
         if(client != null){
-            close();
+            client.shutdown();
         }
         client = new YandexSpeechClient(
                 property.getHost(),
@@ -65,9 +65,16 @@ public class YandexSpeechNotificationResource
     }
 
     @Override
-    public void close() {
+    public void run() {
         if (subscriber != null) {
-            subscriber.unsubscribe();
+            subscriber.run();
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        if (subscriber != null) {
+            subscriber.shutdown();
         }
         try {
             client.shutdown();

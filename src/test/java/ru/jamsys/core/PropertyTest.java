@@ -51,12 +51,12 @@ class PropertyTest {
         XX xx = new XX();
         Subscriber subscribe = serviceProperty
                 .getSubscriber(xx, xx)
-                .subscribe("run.args.security.path.storage", true)
-                .subscribe("run.args.security.path.storage", true);
+                .subscribe("run.args.security.path.storage", null, true)
+                .subscribe("run.args.security.path.storage", null, true);
 
         Assertions.assertEquals(1, subscribe.getSubscriptions().size());
 
-        subscribe.subscribe("run.args.security.path.public.key", true);
+        subscribe.subscribe("run.args.security.path.public.key", null, true);
 
         Assertions.assertEquals(2, subscribe.getSubscriptions().size());
 
@@ -69,19 +69,19 @@ class PropertyTest {
         serviceProperty.setProperty("run.args.security.path.storage", "xx");
         Assertions.assertEquals(3, xx.c);
 
-        subscribe.unsubscribe();
-        Assertions.assertEquals(0, subscribe.getSubscriptions().size());
+        subscribe.shutdown();
+        Assertions.assertEquals(0, subscribe.getCountSubscribe());
 
         // После отписки мы не должны получать уведомления об изменениях
         serviceProperty.setProperty("run.args.security.path.storage", "x2");
         Assertions.assertEquals(3, xx.c);
 
         // Обратно подписываемся
-        subscribe.subscribe("run.args.security.path.storage", true);
+        subscribe.subscribe("run.args.security.path.storage", null, true);
         // Так как автоматом получим значение при подписке
         Assertions.assertEquals(4, xx.c);
 
-        subscribe.subscribe("run.args.security.path.public.key", true);
+        subscribe.subscribe("run.args.security.path.public.key", null, true);
         // Так как автоматом получим значение при подписке
         Assertions.assertEquals(5, xx.c);
 
@@ -111,7 +111,7 @@ class PropertyTest {
         );
         Assertions.assertEquals(7, xx.c);
 
-        subscribe.subscribe("run.args.security.path.public.key", true);
+        subscribe.subscribe("run.args.security.path.public.key", null,true);
         Assertions.assertEquals(8, xx.c);
 
         //Мульти обновление штатное
@@ -135,11 +135,11 @@ class PropertyTest {
 
         @SuppressWarnings("all")
         @PropertyName("security.path.storage")
-        public String storage="wef";
+        public String storage = "wef";
 
         @SuppressWarnings("all")
         @PropertyName("security.path.public.key")
-        public String publicKey="ppbb";
+        public String publicKey = "ppbb";
 
         @Override
         public void onPropertyUpdate(Set<String> updatedPropAlias) {

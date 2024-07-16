@@ -94,7 +94,7 @@ class FileByteWriterTest {
         test.keepAlive(new AtomicBoolean(true));
 
         Assertions.assertEquals("[/default2.000.proc.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
-        test.close();
+        test.shutdown();
         Assertions.assertEquals("[/default2.000.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
     }
 
@@ -123,7 +123,7 @@ class FileByteWriterTest {
         test.keepAlive(new AtomicBoolean(true));
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
-        test.close();
+        test.shutdown();
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
     }
 
@@ -134,7 +134,7 @@ class FileByteWriterTest {
         FileByteWriter test = new FileByteWriter("checkTime");
         test.getSubscriber().setProperty("log.file.name", "default4");
         //test.getBroker().getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(9999999);
-        test.getBroker().getMaxQueueSize().set(9999999);
+        test.getBroker().getPropertyBrokerSize().set(9999999);
         long start2 = System.currentTimeMillis();
         for (int i = 0; i < 1000000; i++) {
             test.append(new Log(LogType.INFO).setData("LogData" + i));

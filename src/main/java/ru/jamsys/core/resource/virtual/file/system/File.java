@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class File extends ExpirationMsMutableImpl
         implements
-        Closable,
         StatisticsFlush,
         KeepAlive,
         Property<String, Object>,
@@ -159,11 +158,6 @@ public class File extends ExpirationMsMutableImpl
     }
 
     @Override
-    public void close() {
-        reset();
-    }
-
-    @Override
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         return new ArrayList<>();
     }
@@ -187,7 +181,7 @@ public class File extends ExpirationMsMutableImpl
 
     @Override
     public void shutdown() {
-        // Пока ничего не надо
+        reset();
     }
 
 }

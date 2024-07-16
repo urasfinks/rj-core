@@ -2,7 +2,9 @@ package ru.jamsys.core.extension.property;
 
 import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.LifeCycleInterface;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -13,17 +15,17 @@ import java.util.Set;
 // Просто как дворецкий, ни больше не меньше
 
 @Getter
-public class Subscriber {
+public class Subscriber implements LifeCycleInterface {
 
     private final PropertySubscriberNotify subscriber;
 
     private final ServiceProperty serviceProperty;
 
-    private final Set<String> subscriptions = new HashSet<>();
-
     private final PropertyConnector propertyConnector;
 
     private final String ns;
+
+    private final HashMap<String, SubscriberItem> subscriptions = new HashMap<>();
 
     public Subscriber(
             PropertySubscriberNotify subscriber,
@@ -56,7 +58,7 @@ public class Subscriber {
         this.serviceProperty.setProperty(getKeyWithNamespace(key), value);
     }
 
-    public void init(boolean require) {
+    private void init(boolean require) {
         Map<String, String> mapPropValue = this.propertyConnector.getMapPropValue();
         for (String key : mapPropValue.keySet()) {
             subscribe(key, mapPropValue.get(key), require);
@@ -78,28 +80,25 @@ public class Subscriber {
         }
     }
 
-    public Subscriber subscribe(String key, boolean require) {
-        return subscribe(key, null, require);
+    public int getCountSubscribe() {
+        int count = 0;
+        for (String key : subscriptions.keySet()) {
+            if (subscriptions.get(key).isSubscribe()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public Subscriber subscribe(String key, String defValue, boolean require) {
-        if (!subscriptions.contains(key)) {
-            subscriptions.add(key);
-            serviceProperty.subscribe(getKeyWithNamespace(key), this, require, defValue);
-        }
+        subscriptions.computeIfAbsent(key, _ -> new SubscriberItem(defValue, require));
+        serviceProperty.subscribe(getKeyWithNamespace(key), this, require, defValue);
         return this;
     }
 
     public void unsubscribe(String key) {
         subscriptions.remove(key);
         serviceProperty.unsubscribe(getKeyWithNamespace(key), this);
-    }
-
-    public void unsubscribe() {
-        for (String key : subscriptions) {
-            serviceProperty.unsubscribe(getKeyWithNamespace(key), this);
-        }
-        subscriptions.clear();
     }
 
     public void onServicePropertyUpdate(Map<String, String> map) {
@@ -121,6 +120,31 @@ public class Subscriber {
         if (subscriber != null) {
             subscriber.onPropertyUpdate(updatedProp);
         }
+    }
+
+    @Override
+    public void run() {
+        subscriptions.forEach((key, subscriberItem) -> {
+            if (!subscriberItem.isSubscribe()) {
+                serviceProperty.subscribe(
+                        getKeyWithNamespace(key),
+                        this,
+                        subscriberItem.isRequire(),
+                        subscriberItem.getDefValue()
+                );
+                subscriberItem.setSubscribe(true);
+            }
+        });
+    }
+
+    @Override
+    public void shutdown() {
+        subscriptions.forEach((key, subscriberItem) -> {
+            if (subscriberItem.isSubscribe()) {
+                serviceProperty.unsubscribe(getKeyWithNamespace(key), this);
+                subscriberItem.setSubscribe(false);
+            }
+        });
     }
 
 }

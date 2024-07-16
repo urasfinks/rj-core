@@ -5,8 +5,8 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.CheckClassItem;
-import ru.jamsys.core.extension.Closable;
 import ru.jamsys.core.extension.ForwardException;
+import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.promise.PromiseTaskWithResource;
@@ -24,7 +24,7 @@ public class PoolTaskWait<
         PI extends ExpirationMsMutable & Resource<RA, RR>
         >
         extends AbstractPool<RA, RR, PI>
-        implements Closable, CheckClassItem {
+        implements CheckClassItem, LifeCycleInterface {
 
     private final PoolSettings<PI> poolSettings;
 
@@ -54,7 +54,7 @@ public class PoolTaskWait<
 
     @Override
     public void closePoolItem(PI poolItem) {
-        poolItem.close();
+        poolItem.shutdown();
     }
 
     @Override
@@ -63,9 +63,9 @@ public class PoolTaskWait<
     }
 
     @Override
-    public void close() {
+    public void shutdown() {
+        super.shutdown();
         isRun.set(false);
-        shutdown();
     }
 
     @Override
