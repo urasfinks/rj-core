@@ -81,7 +81,6 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                 throw new RuntimeException("log.file.folder: " + property.getFolder() + "; not exist");
             }
         }
-        System.out.println(updatedPropAlias);
     }
 
     public int getIndexFile() {

@@ -35,7 +35,6 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
         long timeout = promiseTask.isTerminated() ? 6_000L : promiseTask.getPromise().getExpiryRemainingMs();
         broker.add(new ExpirationMsImmutableEnvelope<>(promiseTask, timeout));
         addIfPoolEmpty();
-        //System.out.println("LastTimeInQueue: " + broker.getLastTimeInQueue());
         serviceBell();
     }
 
