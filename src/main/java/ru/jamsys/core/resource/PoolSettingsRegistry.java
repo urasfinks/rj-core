@@ -13,7 +13,7 @@ import java.util.function.Function;
 @Component
 public class PoolSettingsRegistry<
         R extends Resource<?, RC> & ResourceCheckException,
-        RC extends NamespaceResourceConstructor
+        RC extends ResourceArguments
         >
         implements UniqueClassName {
 
@@ -28,7 +28,7 @@ public class PoolSettingsRegistry<
             return (PoolSettings<R>) new PoolSettings<>(
                     s,
                     cls,
-                    new NamespaceResourceConstructor(ns),
+                    new ResourceArguments(ns),
                     fn.computeIfAbsent(cls, rClass -> App.get(rClass).getFatalException())
             );
         });

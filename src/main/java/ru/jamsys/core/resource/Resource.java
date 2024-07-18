@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.LifeCycleInterface;
 public interface Resource<A, R> extends BalancerItem, ResourceCheckException, LifeCycleInterface {
 
     // Вызывается при создании экземпляра ресурса
-    void constructor(NamespaceResourceConstructor constructor) throws Throwable;
+    void setArguments(ResourceArguments resourceArguments) throws Throwable;
 
     R execute(A arguments) throws Throwable;
 

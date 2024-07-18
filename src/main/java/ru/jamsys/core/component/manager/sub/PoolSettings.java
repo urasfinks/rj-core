@@ -1,7 +1,7 @@
 package ru.jamsys.core.component.manager.sub;
 
 import lombok.Getter;
-import ru.jamsys.core.resource.NamespaceResourceConstructor;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
 
 import java.util.function.Function;
@@ -13,19 +13,19 @@ public class PoolSettings<T extends Resource<?, ?>> {
 
     private final Class<T> classPoolItem;
 
-    private final NamespaceResourceConstructor resourceConstructor;
+    private final ResourceArguments resourceArguments;
 
     private final Function<Throwable, Boolean> functionCheckFatalException;
 
     public PoolSettings(
             String index,
             Class<T> classPoolItem,
-            NamespaceResourceConstructor resourceConstructor,
+            ResourceArguments resourceArguments,
             Function<Throwable, Boolean> functionCheckFatalException
     ) {
         this.index = index;
         this.classPoolItem = classPoolItem;
-        this.resourceConstructor = resourceConstructor;
+        this.resourceArguments = resourceArguments;
         this.functionCheckFatalException = functionCheckFatalException;
     }
 

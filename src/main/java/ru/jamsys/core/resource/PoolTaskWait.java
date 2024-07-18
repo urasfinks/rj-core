@@ -44,7 +44,8 @@ public class PoolTaskWait<
     public PI createPoolItem() {
         PI newPoolItem = App.context.getBean(poolSettings.getClassPoolItem());
         try {
-            newPoolItem.constructor(poolSettings.getResourceConstructor());
+            newPoolItem.setArguments(poolSettings.getResourceArguments());
+            newPoolItem.run();
             return newPoolItem;
         } catch (Throwable th) {
             App.error(new ForwardException(th));

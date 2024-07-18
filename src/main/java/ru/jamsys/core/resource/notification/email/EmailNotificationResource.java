@@ -9,7 +9,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.Subscriber;
-import ru.jamsys.core.resource.NamespaceResourceConstructor;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
@@ -33,10 +33,10 @@ public class EmailNotificationResource
     private final EmailNotificationProperty property = new EmailNotificationProperty();
 
     @Override
-    public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
+    public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         securityComponent = App.get(SecurityComponent.class);
-        subscriber = serviceProperty.getSubscriber(null, property, constructor.ns);
+        subscriber = serviceProperty.getSubscriber(null, property, resourceArguments.ns);
     }
 
     @Override

@@ -8,7 +8,7 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.util.YandexSpeechClient;
-import ru.jamsys.core.resource.NamespaceResourceConstructor;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -32,9 +32,9 @@ public class YandexSpeechNotificationResource
     private final YandexSpeechNotificationProperty property = new YandexSpeechNotificationProperty();
 
     @Override
-    public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
+    public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        subscriber = serviceProperty.getSubscriber(this, property, constructor.ns);
+        subscriber = serviceProperty.getSubscriber(this, property, resourceArguments.ns);
     }
 
     @Override

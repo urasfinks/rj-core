@@ -11,7 +11,7 @@ import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
-import ru.jamsys.core.resource.NamespaceResourceConstructor;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -41,33 +41,44 @@ public class JdbcResource
     private final JdbcProperty property = new JdbcProperty();
 
     @Override
-    public void constructor(NamespaceResourceConstructor constructor) throws Exception {
+    public void setArguments(ResourceArguments resourceArguments) throws Exception {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        subscriber = serviceProperty.getSubscriber(this, property, constructor.ns);
+        subscriber = serviceProperty.getSubscriber(this, property, resourceArguments.ns);
         this.statementControl = new DefaultStatementControl();
     }
 
     @Override
     public void onPropertyUpdate(Set<String> updatedPropAlias) {
+        down();
         if (property.getUri() == null || property.getUser() == null || property.getSecurityAlias() == null) {
             return;
         }
+        up();
+    }
+
+    private void up() {
+        if (connection == null) {
+            try {
+                SecurityComponent securityComponent = App.get(SecurityComponent.class);
+                this.connection = DriverManager.getConnection(
+                        property.getUri(),
+                        property.getUser(),
+                        new String(securityComponent.get(property.getSecurityAlias()))
+                );
+            } catch (Throwable th) {
+                App.error(new ForwardException(th));
+            }
+        }
+    }
+
+    private void down() {
         if (connection != null) {
             try {
                 connection.close();
             } catch (Throwable th) {
                 App.error(new ForwardException(th));
             }
-        }
-        try {
-            SecurityComponent securityComponent = App.get(SecurityComponent.class);
-            this.connection = DriverManager.getConnection(
-                    property.getUri(),
-                    property.getUser(),
-                    new String(securityComponent.get(property.getSecurityAlias()))
-            );
-        } catch (Throwable th) {
-            App.error(new ForwardException(th));
+            connection = null;
         }
     }
 
@@ -109,6 +120,7 @@ public class JdbcResource
         if (subscriber != null) {
             subscriber.run();
         }
+        up();
     }
 
     @Override
@@ -116,11 +128,7 @@ public class JdbcResource
         if (subscriber != null) {
             subscriber.shutdown();
         }
-        try {
-            connection.close();
-        } catch (Exception e) {
-            App.error(e);
-        }
+        down();
     }
 
 }

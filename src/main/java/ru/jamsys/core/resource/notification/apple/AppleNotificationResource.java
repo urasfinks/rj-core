@@ -7,7 +7,7 @@ import ru.jamsys.core.component.manager.ManagerVirtualFileSystem;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.resource.NamespaceResourceConstructor;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.http.client.HttpClient;
@@ -38,10 +38,10 @@ public class AppleNotificationResource
     private final AppleNotificationProperty property = new AppleNotificationProperty();
 
     @Override
-    public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
+    public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         managerVirtualFileSystem = App.get(ManagerVirtualFileSystem.class);
-        subscriber = serviceProperty.getSubscriber(this, property, constructor.ns);
+        subscriber = serviceProperty.getSubscriber(this, property, resourceArguments.ns);
     }
 
     @Override

@@ -13,7 +13,7 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
-import ru.jamsys.core.resource.NamespaceResourceConstructor;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
@@ -45,28 +45,43 @@ public class InfluxResource
     private final InfluxProperty property = new InfluxProperty();
 
     @Override
-    public void constructor(NamespaceResourceConstructor constructor) {
+    public void setArguments(ResourceArguments resourceArguments) {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        subscriber = serviceProperty.getSubscriber(this, property, constructor.ns);
+        subscriber = serviceProperty.getSubscriber(null, property, resourceArguments.ns);
     }
 
     @Override
     public void onPropertyUpdate(Set<String> updatedPropAlias) {
+        down();
         if (property.getHost() == null || property.getAlias() == null) {
             return;
         }
+        up();
+    }
+
+    private void down() {
         if (client != null) {
-            client.close();
+            try {
+                client.close();
+            } catch (Exception e) {
+                App.error(e);
+            }
+            client = null;
         }
-        SecurityComponent securityComponent = App.get(SecurityComponent.class);
-        client = InfluxDBClientFactory.create(property.getHost(), securityComponent.get(property.getAlias()));
-        client.setLogLevel(LogLevel.NONE);
-        // Как вы поняли) Верхняя строчка не работает
-        Logger.getLogger(AbstractRestClient.class.getName()).setLevel(Level.OFF);
-        if (!client.ping()) {
-            throw new RuntimeException("Ping request wasn't successful");
+    }
+
+    private void up() {
+        if (client == null) {
+            SecurityComponent securityComponent = App.get(SecurityComponent.class);
+            client = InfluxDBClientFactory.create(property.getHost(), securityComponent.get(property.getAlias()));
+            client.setLogLevel(LogLevel.NONE);
+            // Как вы поняли) Верхняя строчка не работает
+            Logger.getLogger(AbstractRestClient.class.getName()).setLevel(Level.OFF);
+            if (!client.ping()) {
+                throw new RuntimeException("Ping request wasn't successful");
+            }
+            writer = client.getWriteApiBlocking();
         }
-        writer = client.getWriteApiBlocking();
     }
 
     @Override
@@ -100,7 +115,10 @@ public class InfluxResource
 
     @Override
     public void run() {
-        // Автостарт
+        if (subscriber != null) {
+            subscriber.run();
+        }
+        up();
     }
 
     @Override
@@ -108,11 +126,7 @@ public class InfluxResource
         if (subscriber != null) {
             subscriber.shutdown();
         }
-        try {
-            client.close();
-        } catch (Exception e) {
-            App.error(e);
-        }
+        down();
     }
 
 }

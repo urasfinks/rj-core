@@ -8,7 +8,7 @@ import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.resource.NamespaceResourceConstructor;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -157,7 +157,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
     }
 
     @Override
-    public void constructor(NamespaceResourceConstructor constructor) {
+    public void setArguments(ResourceArguments resourceArguments) {
 
     }
 

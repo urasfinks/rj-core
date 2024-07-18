@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.flat.util.UtilByte;
-import ru.jamsys.core.resource.NamespaceResourceConstructor;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
@@ -26,7 +26,7 @@ public class FileByteReaderResource
         ResourceCheckException {
 
     @Override
-    public void constructor(NamespaceResourceConstructor constructor) throws Throwable {
+    public void setArguments(ResourceArguments resourceArguments) throws Throwable {
 
     }
 

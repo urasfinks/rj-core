@@ -3,16 +3,16 @@ package ru.jamsys.core.resource;
 import lombok.Setter;
 
 @Setter
-public class NamespaceResourceConstructor {
+public class ResourceArguments {
 
     // Namespace: пространство из *.properties
     public String ns = "default";
 
-    public NamespaceResourceConstructor(String ns) {
+    public ResourceArguments(String ns) {
         this.ns = ns;
     }
 
-    public NamespaceResourceConstructor() {
+    public ResourceArguments() {
     }
 
 }

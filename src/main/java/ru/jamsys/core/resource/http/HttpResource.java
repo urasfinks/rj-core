@@ -2,7 +2,7 @@ package ru.jamsys.core.resource.http;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.resource.NamespaceResourceConstructor;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.resource.http.client.HttpClient;
@@ -16,7 +16,7 @@ import java.util.function.Function;
 public class HttpResource extends ExpirationMsMutableImpl implements Resource<HttpClient, HttpResponse> {
 
     @Override
-    public void constructor(NamespaceResourceConstructor constructor) {
+    public void setArguments(ResourceArguments resourceArguments) {
 
     }
 
