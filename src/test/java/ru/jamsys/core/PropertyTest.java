@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyConnector;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;

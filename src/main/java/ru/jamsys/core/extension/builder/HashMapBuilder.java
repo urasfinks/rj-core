@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension;
+package ru.jamsys.core.extension.builder;
 
 import java.util.HashMap;
 

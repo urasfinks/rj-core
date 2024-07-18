@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.LogType;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.HashMapBuilder;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.extension.line.writer.LineWriterString;

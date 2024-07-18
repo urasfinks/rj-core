@@ -2,7 +2,7 @@ package ru.jamsys.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.extension.HashMapBuilder;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.ListSort;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;

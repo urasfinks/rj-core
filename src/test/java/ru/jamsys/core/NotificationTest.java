@@ -4,7 +4,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import ru.jamsys.core.component.ServicePromise;
-import ru.jamsys.core.extension.HashMapBuilder;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.resource.notification.android.AndroidNotificationRequest;

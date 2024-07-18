@@ -7,7 +7,7 @@ import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.extension.HashMapBuilder;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyConnector;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
