@@ -5,10 +5,9 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.flat.util.UtilByte;
+import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
-import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.io.BufferedInputStream;
@@ -44,11 +43,6 @@ public class FileByteReaderResource
             App.error(e);
         }
         return result;
-    }
-
-    @Override
-    public int getWeight(BalancerAlgorithm balancerAlgorithm) {
-        return 0;
     }
 
     @Override

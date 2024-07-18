@@ -11,9 +11,8 @@ import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
-import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.sql.Connection;
@@ -89,11 +88,6 @@ public class JdbcResource
             throw new RuntimeException("TemplateEnum: " + arguments.getName() + " return null template");
         }
         return execute(connection, template, arguments.getListArgs(), statementControl, arguments.getDebug());
-    }
-
-    @Override
-    public int getWeight(BalancerAlgorithm balancerAlgorithm) {
-        return 0;
     }
 
     @Override

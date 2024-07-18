@@ -3,14 +3,13 @@ package ru.jamsys.core.resource.notification.yandex.speech;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.util.YandexSpeechClient;
-import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.io.File;
@@ -81,11 +80,6 @@ public class YandexSpeechNotificationResource
         } catch (Exception e) {
             App.error(e);
         }
-    }
-
-    @Override
-    public int getWeight(BalancerAlgorithm balancerAlgorithm) {
-        return 0;
     }
 
     @Override

@@ -2,9 +2,8 @@ package ru.jamsys.core.resource.http;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.http.client.HttpClient;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -24,11 +23,6 @@ public class HttpResource extends ExpirationMsMutableImpl implements Resource<Ht
     public HttpResponse execute(HttpClient arguments) {
         arguments.exec();
         return arguments.getHttpResponseEnvelope();
-    }
-
-    @Override
-    public int getWeight(BalancerAlgorithm balancerAlgorithm) {
-        return 0;
     }
 
     @Override

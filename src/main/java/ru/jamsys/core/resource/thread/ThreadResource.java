@@ -2,14 +2,13 @@ package ru.jamsys.core.resource.thread;
 
 import lombok.Getter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
@@ -152,11 +151,6 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
     }
 
     @Override
-    public int getWeight(BalancerAlgorithm balancerAlgorithm) {
-        return 0;
-    }
-
-    @Override
     public void setArguments(ResourceArguments resourceArguments) {
 
     }
@@ -171,6 +165,5 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
     public Function<Throwable, Boolean> getFatalException() {
         return _ -> false;
     }
-
 
 }

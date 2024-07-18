@@ -5,14 +5,13 @@ import org.apache.commons.mail.HtmlEmail;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.Subscriber;
+import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
-import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.function.Function;
@@ -67,11 +66,6 @@ public class EmailNotificationResource
             throw new ForwardException(e);
         }
         return null;
-    }
-
-    @Override
-    public int getWeight(BalancerAlgorithm balancerAlgorithm) {
-        return 0;
     }
 
     @Override

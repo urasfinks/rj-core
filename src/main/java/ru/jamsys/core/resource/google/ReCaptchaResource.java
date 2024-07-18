@@ -6,9 +6,8 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.Subscriber;
-import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.http.client.HttpClientImpl;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -50,11 +49,6 @@ public class ReCaptchaResource
         httpClient.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         httpClient.exec();
         return httpClient.getHttpResponseEnvelope();
-    }
-
-    @Override
-    public int getWeight(BalancerAlgorithm balancerAlgorithm) {
-        return 0;
     }
 
     @Override

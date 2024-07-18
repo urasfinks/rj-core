@@ -7,9 +7,8 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertySubscriberNotify;
 import ru.jamsys.core.extension.property.Subscriber;
 import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.balancer.algorithm.BalancerAlgorithm;
+import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.http.client.HttpClient;
 import ru.jamsys.core.resource.http.client.HttpClientImpl;
 import ru.jamsys.core.resource.http.client.HttpResponse;
@@ -109,11 +108,6 @@ public class AndroidNotificationResource
         if (subscriber != null) {
             subscriber.shutdown();
         }
-    }
-
-    @Override
-    public int getWeight(BalancerAlgorithm balancerAlgorithm) {
-        return 0;
     }
 
     @Override
