@@ -25,7 +25,8 @@ class BrokerTest {
     static void beforeAll() {
         String[] args = new String[]{
                 "-Drun.args.remote.log=false",
-                "-Drun.args.remote.statistic=false"
+                "-Drun.args.remote.statistic=false",
+                "-Drun.web.http=false"
         };
         App.run(args);
         App.get(ManagerBroker.class).initAndGet(XTest.class.getSimpleName(), XTest.class, xTest -> System.out.println("DROP"));
@@ -216,16 +217,16 @@ class BrokerTest {
         App.get(ServiceProperty.class).setProperty("Broker.XTest.BrokerSize", "3000");
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
 
-        Assertions.assertEquals(3000, broker.getPropertyBrokerSize().getAsInt());
+        Assertions.assertEquals(3000, broker.getPropertyBrokerSize().get());
         broker.getPropertyBrokerSize().set(3001);
-        Assertions.assertEquals(3001, broker.getPropertyBrokerSize().getAsInt());
+        Assertions.assertEquals(3001, broker.getPropertyBrokerSize().get());
     }
 
     @Test
     void testPropertyDo() {
         App.get(ServiceProperty.class).setProperty("Broker.XTest.BrokerSize", "11");
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
-        Assertions.assertEquals(11, broker.getPropertyBrokerSize().getAsInt());
+        Assertions.assertEquals(11, broker.getPropertyBrokerSize().get());
     }
 
     @Test

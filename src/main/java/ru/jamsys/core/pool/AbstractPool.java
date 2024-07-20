@@ -5,12 +5,12 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.property.PropertyType;
+import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.property.PropertyValue;
 import ru.jamsys.core.extension.property.ValueName;
+import ru.jamsys.core.extension.property.item.PropertyInteger;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.resource.Resource;
@@ -75,9 +75,9 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     private final AtomicBoolean dynamicPollSize = new AtomicBoolean(false);
 
     @Getter
-    private final PropertyValue propertyPoolSizeMax;
+    private final PropertyValue<Integer> propertyPoolSizeMax;
 
-    private final PropertyValue propertyPoolSizeMin;
+    private final PropertyValue<Integer> propertyPoolSizeMin;
 
     private final Lock lockAddToPark = new ReentrantLock();
 
@@ -86,18 +86,18 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     public AbstractPool(String index) {
         this.index = getClassName(index);
 
-        propertyPoolSizeMax = new PropertyValue(
+        propertyPoolSizeMax = new PropertyValue<>(
                 App.context,
-                PropertyType.INTEGER,
                 this.index + "." + ValueName.POOL_SIZE_MAX.getNameCamel(),
-                "1"
+                new PropertyInteger(1),
+                null
         );
 
-        propertyPoolSizeMin = new PropertyValue(
+        propertyPoolSizeMin = new PropertyValue<>(
                 App.context,
-                PropertyType.INTEGER,
                 this.index + "." + ValueName.POOL_SIZE_MIN.getNameCamel(),
-                "0"
+                new PropertyInteger(0),
+                null
         );
 
     }
@@ -134,13 +134,13 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
             return;
         }
         // Если хотят меньше минимума - очень резко опускаем максимум до минимума
-        if (want < propertyPoolSizeMin.getAsInt()) {
-            getPropertyPoolSizeMax().set(propertyPoolSizeMin.getAsInt());
+        if (want < propertyPoolSizeMin.get()) {
+            getPropertyPoolSizeMax().set(propertyPoolSizeMin.get());
             return;
         }
         // Если желаемое значение элементов в пуле больше минимума, так как return не сработал
-        if (want > propertyPoolSizeMax.getAsInt()) { //Медленно поднимаем
-            getPropertyPoolSizeMax().set(propertyPoolSizeMax.getAsInt() + 1);
+        if (want > propertyPoolSizeMax.get()) { //Медленно поднимаем
+            getPropertyPoolSizeMax().set(propertyPoolSizeMax.get() + 1);
         } else { //Но очень быстро опускаем
             getPropertyPoolSizeMax().set(want);
         }
@@ -148,7 +148,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     // Бассейн может поместить новые объекты для плаванья
     private boolean isSizePoolAllowsExtend() {
-        return isRun.get() && itemQueue.size() < propertyPoolSizeMax.getAsInt();
+        return isRun.get() && itemQueue.size() < propertyPoolSizeMax.get();
     }
 
     // Увеличиваем кол-во объектов для плаванья
@@ -161,7 +161,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     }
 
     public boolean addIfPoolEmpty() {
-        if (propertyPoolSizeMin.getAsInt() == 0 && itemQueue.isEmpty()) {
+        if (propertyPoolSizeMin.get() == 0 && itemQueue.isEmpty()) {
             add();
         }
         return false;
@@ -246,7 +246,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         // Добавлена блокировка, что бы избежать дублей в очереди на удаление
         boolean result = false;
         lockAddToRemove.lock();
-        if (itemQueue.size() > propertyPoolSizeMin.getAsInt()) {
+        if (itemQueue.size() > propertyPoolSizeMin.get()) {
             result = true;
             // Что если объект уже был добавлен в очередь на удаление?
             // Мы должны вернуть result = true по факту удаление состоялось
@@ -323,7 +323,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     public void run() {
         if (restartOperation.compareAndSet(false, true)) {
             isRun.set(true);
-            overclocking(propertyPoolSizeMin.getAsInt());
+            overclocking(propertyPoolSizeMin.get());
             restartOperation.set(false);
             propertyPoolSizeMax.run();
             propertyPoolSizeMin.run();
@@ -369,7 +369,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
                 // Если паркинг был пуст уже больше секунды начнём увеличивать
                 if (getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
                     overclocking(formulaAddCount.apply(1));
-                } else if (itemQueue.size() > propertyPoolSizeMin.getAsInt()) { //Кол-во больше минимума
+                } else if (itemQueue.size() > propertyPoolSizeMin.get()) { //Кол-во больше минимума
                     // закрываем с прошлого раза всех из отставки
                     // так сделано специально, если на следующей итерации будет overclocking
                     // что бы можно было достать кого-то из отставки

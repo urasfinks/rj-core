@@ -6,9 +6,9 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
-import ru.jamsys.core.extension.property.PropertyType;
 import ru.jamsys.core.extension.property.PropertyValue;
 import ru.jamsys.core.extension.property.ValueName;
+import ru.jamsys.core.extension.property.item.PropertyInteger;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
@@ -69,10 +69,10 @@ public class Broker<TEO>
     private Double lastTimeInQueue;
 
     @Getter
-    final PropertyValue propertyBrokerSize;
+    final PropertyValue<Integer> propertyBrokerSize;
 
     @Getter
-    final PropertyValue propertyBrokerTailSize;
+    final PropertyValue<Integer> propertyBrokerTailSize;
 
     final String index;
 
@@ -87,18 +87,18 @@ public class Broker<TEO>
         this.classItem = classItem;
         this.onDropConsumer = onDropConsumer;
         String clsIndex = getClassName(index, applicationContext);
-        propertyBrokerSize = new PropertyValue(
+        propertyBrokerSize = new PropertyValue<>(
                 applicationContext,
-                PropertyType.INTEGER,
                 clsIndex + "." + ValueName.BROKER_SIZE.getNameCamel(),
-                "3000"
+                new PropertyInteger(3000),
+                null
         );
 
         propertyBrokerTailSize = new PropertyValue(
                 applicationContext,
-                PropertyType.INTEGER,
                 clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),
-                "5"
+                new PropertyInteger(5),
+                null
         );
 
         ManagerExpiration managerExpiration = applicationContext.getBean(ManagerExpiration.class);
@@ -141,7 +141,7 @@ public class Broker<TEO>
         // Проблема с производительностью
         // Мы не можем использовать queue.size() для расчёта переполнения
         // пример: вставка 100к записей занимаем 35сек
-        if (queueSize.get() >= propertyBrokerSize.getAsInt()) {
+        if (queueSize.get() >= propertyBrokerSize.get()) {
             // Он конечно протух не по своей воле, но что делать...
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
             DisposableExpirationMsImmutableEnvelope<TEO> teoDisposableExpirationMsImmutableEnvelope = queue.removeFirst();
@@ -154,7 +154,7 @@ public class Broker<TEO>
         queue.add(convert);
         queueSize.incrementAndGet();
 
-        if (tailQueueSize.get() >= propertyBrokerTailSize.getAsInt()) {
+        if (tailQueueSize.get() >= propertyBrokerTailSize.get()) {
             tailQueue.removeFirst();
         } else {
             tailQueueSize.incrementAndGet();
@@ -224,7 +224,7 @@ public class Broker<TEO>
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x
-        return queueSize.get() * 100 / propertyBrokerSize.getAsInt();
+        return queueSize.get() * 100 / propertyBrokerSize.get();
     }
 
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {

@@ -125,7 +125,7 @@ public class Subscriber implements LifeCycleInterface {
                 propertyConnector.setValueByProp(key, map.get(key));
             }
         }
-        if (subscriber != null) {
+        if (subscriber != null && !updatedProp.isEmpty()) {
             subscriber.onPropertyUpdate(updatedProp);
         }
     }

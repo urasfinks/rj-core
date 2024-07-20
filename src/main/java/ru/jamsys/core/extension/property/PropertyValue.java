@@ -5,18 +5,16 @@ import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.property.item.PropertyConverter;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 
 // Главное не забывать закрывать после использования
 
-public class PropertyValue extends PropertyConnector implements PropertySubscriberNotify, LifeCycleInterface {
+public class PropertyValue<T> extends PropertyConnector implements PropertySubscriberNotify, LifeCycleInterface {
 
-    private AtomicInteger intValue = null;
-
-    private AtomicBoolean boolValue = null;
+    private final PropertyConverter<T> value;
 
     @SuppressWarnings("all")
     @PropertyName
@@ -27,20 +25,17 @@ public class PropertyValue extends PropertyConnector implements PropertySubscrib
 
     private final Subscriber subscriber;
 
-    private final PropertyType propertyType;
+    private final BiConsumer<T, T> onUpdate;
 
     public PropertyValue(
             ApplicationContext applicationContext,
-            PropertyType propertyType,
             String ns,
-            String defValue
+            PropertyConverter<T> value,
+            BiConsumer<T, T> onUpdate // 1: oldValue; 2: newValue
     ) {
-        this.propertyType = propertyType;
-        switch (propertyType) {
-            case INTEGER -> intValue = new AtomicInteger(Integer.parseInt(defValue));
-            case BOOLEAN -> boolValue = new AtomicBoolean(Boolean.parseBoolean(defValue));
-        }
-        this.prop = defValue;
+        this.onUpdate = onUpdate;
+        this.value = value;
+        this.prop = value.getAsString();
         this.ns = ns;
         subscriber = applicationContext.getBean(ServiceProperty.class).getSubscriber(
                 this,
@@ -48,18 +43,6 @@ public class PropertyValue extends PropertyConnector implements PropertySubscrib
                 ns,
                 false
         );
-    }
-
-    public int getAsInt() {
-        return intValue.get();
-    }
-
-    public boolean getAsBool() {
-        return boolValue.get();
-    }
-
-    public String getAsString() {
-        return prop;
     }
 
     public void set(String value) {
@@ -74,14 +57,18 @@ public class PropertyValue extends PropertyConnector implements PropertySubscrib
         subscriber.setProperty("", value ? "true" : "false");
     }
 
-    @Override
-    public void onPropertyUpdate(Set<String> updatedPropAlias) {
-        switch (propertyType) {
-            case INTEGER -> intValue.set(Integer.parseInt(prop));
-            case BOOLEAN -> boolValue.set(Boolean.parseBoolean(prop));
-        }
+    public T get() {
+        return value.get();
     }
 
+    @Override
+    public void onPropertyUpdate(Set<String> updatedPropAlias) {
+        T oldValue = get();
+        value.set(prop);
+        if (onUpdate != null) {
+            onUpdate.accept(oldValue, get());
+        }
+    }
 
     @Override
     public void run() {
