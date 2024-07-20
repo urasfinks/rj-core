@@ -1,6 +1,6 @@
 package ru.jamsys.core.extension.property.item;
 
-public class PropertyInteger extends PropertyConverter<Integer> {
+public class PropertyInteger extends PropertyInstance<Integer> {
 
     public PropertyInteger(Integer value) {
         super(value);

@@ -1,6 +1,6 @@
 package ru.jamsys.core.extension.property.item;
 
-public class PropertyString extends PropertyConverter<String>{
+public class PropertyString extends PropertyInstance<String> {
 
     public PropertyString(String value) {
         super(value);

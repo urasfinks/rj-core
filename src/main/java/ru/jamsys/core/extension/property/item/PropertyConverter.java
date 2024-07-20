@@ -1,15 +1,9 @@
 package ru.jamsys.core.extension.property.item;
 
-public abstract class PropertyConverter<T> implements iface {
+public interface PropertyConverter {
 
-    protected T value;
+    void set(String value);
 
-    public PropertyConverter(T value) {
-        this.value = value;
-    }
-
-    public T get() {
-        return value;
-    }
+    String getAsString();
 
 }

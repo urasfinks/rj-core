@@ -5,7 +5,7 @@ import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.item.PropertyConverter;
+import ru.jamsys.core.extension.property.item.PropertyInstance;
 
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -14,7 +14,7 @@ import java.util.function.BiConsumer;
 
 public class PropertyValue<T> extends PropertyConnector implements PropertySubscriberNotify, LifeCycleInterface {
 
-    private final PropertyConverter<T> value;
+    private final PropertyInstance<T> value;
 
     @SuppressWarnings("all")
     @PropertyName
@@ -30,7 +30,7 @@ public class PropertyValue<T> extends PropertyConnector implements PropertySubsc
     public PropertyValue(
             ApplicationContext applicationContext,
             String ns,
-            PropertyConverter<T> value,
+            PropertyInstance<T> value,
             BiConsumer<T, T> onUpdate // 1: oldValue; 2: newValue
     ) {
         this.onUpdate = onUpdate;

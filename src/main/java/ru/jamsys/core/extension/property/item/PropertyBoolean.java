@@ -1,6 +1,6 @@
 package ru.jamsys.core.extension.property.item;
 
-public class PropertyBoolean extends PropertyConverter<Boolean> {
+public class PropertyBoolean extends PropertyInstance<Boolean> {
 
     public PropertyBoolean(Boolean value) {
         super(value);

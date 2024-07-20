@@ -22,6 +22,7 @@ import ru.jamsys.core.extension.property.PropertyValue;
 import ru.jamsys.core.extension.property.item.PropertyBoolean;
 import ru.jamsys.core.extension.property.item.PropertyString;
 
+@SuppressWarnings("unused")
 @Configuration
 @EnableWebSocket
 public class AppConfiguration implements WebSocketConfigurer {
@@ -32,12 +33,12 @@ public class AppConfiguration implements WebSocketConfigurer {
     private static final String USER_CONSTRAINT = "CONFIDENTIAL";
 
     @Autowired
-    private ApplicationContext appContext;
+    private ApplicationContext applicationContext;
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
         new PropertyValue<>(
-                appContext,
+                applicationContext,
                 "run.args.web.socket.path",
                 new PropertyString("/socketDefault/*"),
                 (_, path) -> registry.addHandler(new WebSocket(), path)
@@ -49,7 +50,7 @@ public class AppConfiguration implements WebSocketConfigurer {
     @Bean
     public ServletWebServerFactory servletContainer() {
         PropertyValue<Boolean> webHttp = new PropertyValue<>(
-                appContext,
+                applicationContext,
                 "run.args.web.http",
                 new PropertyBoolean(null),
                 null
