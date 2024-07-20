@@ -49,7 +49,7 @@ public class App {
     }
 
     @SuppressWarnings("all")
-    public static  <T> T get(Class<T> cls) {
+    public static <T> T get(Class<T> cls) {
         return (T) mapBean.computeIfAbsent(cls, aClass -> App.context.getBean(aClass));
     }
 
@@ -61,8 +61,8 @@ public class App {
         if (context == null) {
             context = application.run(args);
             for (String data : args) {
-                if (data.contains("=")) {
-                    String key = data.substring(0, data.indexOf("="));
+                if (data.startsWith("-D") && data.contains("=")) {
+                    String key = data.substring(2, data.indexOf("="));
                     String value = data.substring(data.indexOf("=") + 1);
                     context.getBean(ServiceProperty.class).setProperty(key, value);
                     Util.logConsole("Setup ServiceProperty: " + key + "=" + value);

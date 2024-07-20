@@ -1,5 +1,6 @@
 package ru.jamsys.core.component;
 
+import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.AbstractEnvironment;
@@ -24,6 +25,7 @@ public class ServiceProperty {
 
     final private Map<String, Set<Subscriber>> subscribe = new ConcurrentHashMap<>();
 
+    @Getter
     final private Map<String, String> prop = new HashMap<>();
 
     public ServiceProperty(ApplicationContext applicationContext) {

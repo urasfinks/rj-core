@@ -34,8 +34,8 @@ class PromiseImplTest {
     static void beforeAll() {
         start = System.currentTimeMillis();
         String[] args = new String[]{
-                "run.args.remote.log=false",
-                "run.args.remote.statistic=false"
+                "-Drun.args.remote.log=false",
+                "-Drun.args.remote.statistic=false"
         };
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
