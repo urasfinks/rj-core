@@ -8,7 +8,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.ContextClosedEvent;
 import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
@@ -59,15 +58,9 @@ public class App {
 
     public static void run(String[] args) {
         if (context == null) {
+            Util.logConsole("Run arguments:");
+            Util.printArray(args);
             context = application.run(args);
-            for (String data : args) {
-                if (data.startsWith("-D") && data.contains("=")) {
-                    String key = data.substring(2, data.indexOf("="));
-                    String value = data.substring(data.indexOf("=") + 1);
-                    context.getBean(ServiceProperty.class).setProperty(key, value);
-                    Util.logConsole("Setup ServiceProperty: " + key + "=" + value);
-                }
-            }
             get(Core.class).run();
         }
     }

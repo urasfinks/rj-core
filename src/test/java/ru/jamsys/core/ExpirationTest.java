@@ -29,8 +29,10 @@ class ExpirationTest {
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{
-                "-Drun.args.remote.log=false",
-                "-Drun.args.remote.statistic=false"
+                "--run.args.remote.log=false",
+                "--run.args.remote.statistic=false",
+                "--spring.main.web-application-type=none",
+                "--run.web.http=false"
         };
         //App.main(args); // Если запустить проект получим работу Cron.KeepAliveExpirationManager
         App.context = SpringApplication.run(App.class, args);

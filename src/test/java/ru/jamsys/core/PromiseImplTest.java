@@ -34,8 +34,10 @@ class PromiseImplTest {
     static void beforeAll() {
         start = System.currentTimeMillis();
         String[] args = new String[]{
-                "-Drun.args.remote.log=false",
-                "-Drun.args.remote.statistic=false"
+                "--run.args.remote.log=false",
+                "--run.args.remote.statistic=false",
+                "--spring.main.web-application-type=none",
+                "--run.web.http=false"
         };
         //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
         // который будет сбрасывать счётчики tps и тесты будут разваливаться
@@ -443,47 +445,14 @@ class PromiseImplTest {
         //System.out.println(promise.getLog());
     }
 
-    //@Test
-    void testRealThread() {
-        new Thread(() -> {
-            int counter = 1;
-            while (true) {
-                Promise promise = servicePromise.get("testRealThread", 6_000L);
-                promise.append(new PromiseTask("x1", promise, PromiseTaskExecuteType.COMPUTE, (atomicBoolean, promise1) -> {
-                    Util.sleepMs(500);
-                }));
-                promise.run().await(1000);
-                System.out.println(promise.getLogString());
-                Util.sleepMs(1000);
-                counter++;
-                if (counter > 10) {
-                    break;
-                }
-            }
-        }).run();
-    }
-
-    //@Test
-    void testNotSendStatistic() {
-        Promise promise = servicePromise.get("testRealThread", 6_000L);
-        promise.append(new PromiseTask("x1", promise, PromiseTaskExecuteType.COMPUTE, (atomicBoolean, promise1) -> {
-            //Util.sleepMs(500);
-        }));
-        promise.run().await(1000);
-        System.out.println(promise.getLogString());
-    }
-
     @Test
     void testGoTo() {
         AtomicInteger xx = new AtomicInteger(0);
         Promise promise = servicePromise.get("goTo", 6_000L);
-        promise.then("1task", (_, promise1) -> {
-            promise1.goTo("task3");
-        }).then("task2", (_, _) -> {
-            xx.incrementAndGet();
-        }).then("task3", (_, _) -> {
-            xx.incrementAndGet();
-        });
+        promise
+                .then("1task", (_, promise1) -> promise1.goTo("task3"))
+                .then("task2", (_, _) -> xx.incrementAndGet())
+                .then("task3", (_, _) -> xx.incrementAndGet());
         promise.run().await(1000);
         System.out.println(promise.getLogString());
         Assertions.assertEquals(1, xx.get());
@@ -493,17 +462,12 @@ class PromiseImplTest {
     void testGoTo2() {
         AtomicInteger xx = new AtomicInteger(0);
         Promise promise = servicePromise.get("goTo", 6_000L);
-        promise.then("1task", (_, promise1) -> {
-            promise1.goTo("task5");
-        }).then("task2", (_, _) -> {
-            xx.incrementAndGet();
-        }).then("task3", (_, _) -> {
-            xx.incrementAndGet();
-        }).then("task4", (_, _) -> {
-            xx.incrementAndGet();
-        }).then("task5", (_, _) -> {
-            xx.incrementAndGet();
-        });
+        promise
+                .then("1task", (_, promise1) -> promise1.goTo("task5"))
+                .then("task2", (_, _) -> xx.incrementAndGet())
+                .then("task3", (_, _) -> xx.incrementAndGet())
+                .then("task4", (_, _) -> xx.incrementAndGet())
+                .then("task5", (_, _) -> xx.incrementAndGet());
         promise.run().await(1000);
         System.out.println(promise.getLogString());
         Assertions.assertEquals(1, xx.get());
@@ -518,15 +482,11 @@ class PromiseImplTest {
             // потом пробежим до task5 и выполним
             promise1.goTo("task3");
             promise1.goTo("task5");
-        }).then("task2", (_, _) -> {
-            xx.incrementAndGet();
-        }).then("task3", (_, _) -> {
-            xx.incrementAndGet();
-        }).then("task4", (_, _) -> {
-            xx.incrementAndGet();
-        }).then("task5", (_, _) -> {
-            xx.incrementAndGet();
-        });
+                })
+                .then("task2", (_, _) -> xx.incrementAndGet())
+                .then("task3", (_, _) -> xx.incrementAndGet())
+                .then("task4", (_, _) -> xx.incrementAndGet())
+                .then("task5", (_, _) -> xx.incrementAndGet());
         promise.run().await(1000);
         System.out.println(promise.getLogString());
         Assertions.assertEquals(2, xx.get());
@@ -541,15 +501,11 @@ class PromiseImplTest {
             // потом пробежим до task5 и выполним
             promise1.goTo("task3");
             promise1.goTo("task6");
-        }).then("task2", (_, _) -> {
-            xx.incrementAndGet();
-        }).then("task3", (_, _) -> {
-            xx.incrementAndGet();
-        }).then("task4", (_, _) -> {
-            xx.incrementAndGet();
-        }).then("task5", (_, _) -> {
-            xx.incrementAndGet();
-        });
+                })
+                .then("task2", (_, _) -> xx.incrementAndGet())
+                .then("task3", (_, _) -> xx.incrementAndGet())
+                .then("task4", (_, _) -> xx.incrementAndGet())
+                .then("task5", (_, _) -> xx.incrementAndGet());
         promise.run().await(1000);
         System.out.println(promise.getLogString());
         Assertions.assertEquals(1, xx.get());

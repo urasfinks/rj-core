@@ -24,12 +24,13 @@ class BrokerTest {
     @BeforeAll
     static void beforeAll() {
         String[] args = new String[]{
-                "-Drun.args.remote.log=false",
-                "-Drun.args.remote.statistic=false",
-                "-Drun.web.http=false"
+                "--run.args.remote.log=false",
+                "--run.args.remote.statistic=false",
+                "--spring.main.web-application-type=none",
+                "--run.web.http=false"
         };
         App.run(args);
-        App.get(ManagerBroker.class).initAndGet(XTest.class.getSimpleName(), XTest.class, xTest -> System.out.println("DROP"));
+        App.get(ManagerBroker.class).initAndGet(XTest.class.getSimpleName(), XTest.class, _ -> System.out.println("DROP"));
     }
 
     @AfterAll
