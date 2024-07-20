@@ -26,13 +26,7 @@ class NotificationTest {
 
     @BeforeAll
     static void beforeAll() {
-        String[] args = new String[]{
-                "--run.args.remote.log=false",
-                "--run.args.remote.statistic=false",
-                "--spring.main.web-application-type=none",
-                "--run.web.http=false"
-        };
-        App.run(args);
+        App.getRunBuilder().addTestArguments().runCore();
         servicePromise = App.get(ServicePromise.class);
     }
 
@@ -72,13 +66,17 @@ class NotificationTest {
     void yandexTest() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
-                .appendWithResource("synthesize", YandexSpeechNotificationResource.class, (_, p1, yandexSpeechNotificationResource) -> {
-                    yandexSpeechNotificationResource.execute(new YandexSpeechNotificationRequest(
-                            p1,
-                            "target/result3.wav",
-                            "Саня всё в порядке, всё в порядке Саня!"
-                    ));
-                })
+                .appendWithResource(
+                        "synthesize",
+                        YandexSpeechNotificationResource.class, (_, p1, yandexSpeechNotificationResource) ->
+                                yandexSpeechNotificationResource.execute(
+                                        new YandexSpeechNotificationRequest(
+                                                p1,
+                                                "target/result3.wav",
+                                                "Саня всё в порядке, всё в порядке Саня!"
+                                        )
+                                )
+                )
                 .run()
                 .await(3000);
         System.out.println(promise.getLogString());

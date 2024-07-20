@@ -56,6 +56,10 @@ public class App {
         get(ExceptionHandler.class).handler(th);
     }
 
+    public static AppRunBuilder getRunBuilder() {
+        return new AppRunBuilder();
+    }
+
     public static void run(String[] args) {
         if (context == null) {
             Util.logConsole("Run arguments:");

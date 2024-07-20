@@ -14,7 +14,7 @@ import java.util.function.BiConsumer;
 
 public class PropertyValue<T> extends PropertyConnector implements PropertySubscriberNotify, LifeCycleInterface {
 
-    private final PropertyInstance<T> value;
+    private final PropertyInstance<T> propertyInstance;
 
     @SuppressWarnings("all")
     @PropertyName
@@ -30,12 +30,12 @@ public class PropertyValue<T> extends PropertyConnector implements PropertySubsc
     public PropertyValue(
             ApplicationContext applicationContext,
             String ns,
-            PropertyInstance<T> value,
+            PropertyInstance<T> propertyInstance,
             BiConsumer<T, T> onUpdate // 1: oldValue; 2: newValue
     ) {
         this.onUpdate = onUpdate;
-        this.value = value;
-        this.prop = value.getAsString();
+        this.propertyInstance = propertyInstance;
+        this.prop = propertyInstance.getAsString();
         this.ns = ns;
         subscriber = applicationContext.getBean(ServiceProperty.class).getSubscriber(
                 this,
@@ -58,13 +58,13 @@ public class PropertyValue<T> extends PropertyConnector implements PropertySubsc
     }
 
     public T get() {
-        return value.get();
+        return propertyInstance.get();
     }
 
     @Override
     public void onPropertyUpdate(Set<String> updatedPropAlias) {
         T oldValue = get();
-        value.set(prop);
+        propertyInstance.set(prop);
         if (onUpdate != null) {
             onUpdate.accept(oldValue, get());
         }

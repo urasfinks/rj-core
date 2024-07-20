@@ -12,13 +12,7 @@ import ru.jamsys.core.flat.util.UtilTrend;
 class UtilTrendTest {
     @BeforeAll
     static void beforeAll() {
-        String[] args = new String[]{
-                "--run.args.remote.log=false",
-                "--run.args.remote.statistic=false",
-                "--spring.main.web-application-type=none",
-                "--run.web.http=false"
-        };
-        App.run(args);
+        App.getRunBuilder().addTestArguments().runCore();
     }
 
     @AfterAll

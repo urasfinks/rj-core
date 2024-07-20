@@ -19,8 +19,11 @@ import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import ru.jamsys.core.component.web.socket.WebSocket;
 import ru.jamsys.core.extension.property.PropertyValue;
+import ru.jamsys.core.extension.property.PropertyValueContainer;
 import ru.jamsys.core.extension.property.item.PropertyBoolean;
 import ru.jamsys.core.extension.property.item.PropertyString;
+
+import javax.annotation.PreDestroy;
 
 @SuppressWarnings("unused")
 @Configuration
@@ -32,12 +35,14 @@ public class AppConfiguration implements WebSocketConfigurer {
     private static final String HTTP = "http";
     private static final String USER_CONSTRAINT = "CONFIDENTIAL";
 
+    private final PropertyValueContainer propertyValueContainer = new PropertyValueContainer();
+
     @Autowired
     private ApplicationContext applicationContext;
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
-        new PropertyValue<>(
+        propertyValueContainer.init(
                 applicationContext,
                 "run.args.web.socket.path",
                 new PropertyString("/socketDefault/*"),
@@ -49,12 +54,13 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     @Bean
     public ServletWebServerFactory servletContainer() {
-        PropertyValue<Boolean> webHttp = new PropertyValue<>(
+        PropertyValue<Boolean> webHttp = propertyValueContainer.init(
                 applicationContext,
-                "run.args.web.http",
+                "run.args.web",
                 new PropertyBoolean(null),
                 null
         );
+
         if (webHttp.get()) {
             TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
                 @Override
@@ -90,6 +96,11 @@ public class AppConfiguration implements WebSocketConfigurer {
         factory.setMaxFileSize(DataSize.ofMegabytes(12));
         factory.setMaxRequestSize(DataSize.ofMegabytes(12));
         return factory.createMultipartConfig();
+    }
+
+    @PreDestroy
+    public void onDestroy() {
+        propertyValueContainer.shutdown();
     }
 
 }

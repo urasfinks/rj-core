@@ -4,8 +4,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringApplication;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.component.manager.item.LogType;
@@ -26,17 +24,7 @@ class FileByteWriterTest {
     @BeforeAll
     static void beforeAll() {
         UtilFile.removeAllFilesInFolder("LogManager");
-        String[] args = new String[]{
-                "--run.args.remote.log=false",
-                "--run.args.remote.statistic=false",
-                "--spring.main.web-application-type=none",
-                "--run.web.http=false"
-        };
-        //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
-        // который будет сбрасывать счётчики tps и тесты будут разваливаться
-        //App.main(args);
-        App.context = SpringApplication.run(App.class, args);
-        App.context.getBean(ServiceProperty.class).setProperty("run.args.remote.log", "false");
+        App.getRunBuilder().addTestArguments().runSpring();
     }
 
     @AfterAll

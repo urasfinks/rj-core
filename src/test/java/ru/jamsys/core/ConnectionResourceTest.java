@@ -17,13 +17,7 @@ class ConnectionResourceTest {
 
     @BeforeAll
     static void beforeAll() {
-        String[] args = new String[]{
-                "--run.args.remote.log=false",
-                "--run.args.remote.statistic=false",
-                "--spring.main.web-application-type=none",
-                "--run.web.http=false"
-        };
-        App.run(args);
+        App.getRunBuilder().addTestArguments().runCore();
         servicePromise = App.get(ServicePromise.class);
     }
 
@@ -32,6 +26,9 @@ class ConnectionResourceTest {
         App.shutdown();
     }
 
+    @SuppressWarnings("unused")
+        // Без контекста БД невозможно в тестах запускать
+        //@Test
     void promiseTaskWithPool() {
 
         Promise promise = servicePromise.get("testPromise", 6_000L);

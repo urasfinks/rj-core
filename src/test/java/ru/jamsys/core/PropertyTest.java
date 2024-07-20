@@ -20,15 +20,7 @@ import java.util.Set;
 class PropertyTest {
     @BeforeAll
     static void beforeAll() {
-        String[] args = new String[]{
-                "--run.args.remote.log=false",
-                "--run.args.remote.statistic=false",
-                "--spring.main.web-application-type=none",
-                "--run.web.http=false"
-        };
-        //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
-        // который будет сбрасывать счётчики tps и тесты будут разваливаться
-        App.run(args);
+        App.getRunBuilder().addTestArguments().runCore();
     }
 
     @AfterAll

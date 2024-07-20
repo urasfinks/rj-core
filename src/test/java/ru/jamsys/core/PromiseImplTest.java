@@ -33,17 +33,7 @@ class PromiseImplTest {
     @BeforeAll
     static void beforeAll() {
         start = System.currentTimeMillis();
-        String[] args = new String[]{
-                "--run.args.remote.log=false",
-                "--run.args.remote.statistic=false",
-                "--spring.main.web-application-type=none",
-                "--run.web.http=false"
-        };
-        //App.main(args); мы не можем стартануть проект, так как запустится keepAlive
-        // который будет сбрасывать счётчики tps и тесты будут разваливаться
-        App.run(args);
-        //App.context = SpringApplication.run(App.class, args);
-        //App.context.getBean(ServiceProperty.class).setProperty("run.args.remote.log", "false");
+        App.getRunBuilder().addTestArguments().runCore();
         servicePromise = App.get(ServicePromise.class);
     }
 
