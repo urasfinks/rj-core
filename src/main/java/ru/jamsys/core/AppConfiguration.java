@@ -21,6 +21,7 @@ import ru.jamsys.core.component.web.socket.WebSocket;
 import ru.jamsys.core.extension.property.PropertyValue;
 import ru.jamsys.core.extension.property.PropertyValueContainer;
 import ru.jamsys.core.extension.property.item.PropertyBoolean;
+import ru.jamsys.core.extension.property.item.PropertyInteger;
 import ru.jamsys.core.extension.property.item.PropertyString;
 
 import javax.annotation.PreDestroy;
@@ -30,9 +31,6 @@ import javax.annotation.PreDestroy;
 @EnableWebSocket
 public class AppConfiguration implements WebSocketConfigurer {
 
-    private static final int HTTP_PORT = 80;
-    private static final int HTTPS_PORT = 443;
-    private static final String HTTP = "http";
     private static final String USER_CONSTRAINT = "CONFIDENTIAL";
 
     private final PropertyValueContainer propertyValueContainer = new PropertyValueContainer();
@@ -54,18 +52,43 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     @Bean
     public ServletWebServerFactory servletContainer() {
+        propertyValueContainer.setApplicationContext(applicationContext);
         PropertyValue<Boolean> webHttp = propertyValueContainer.init(
-                applicationContext,
                 "run.args.web",
                 new PropertyBoolean(null),
                 null
         );
 
         if (webHttp.get()) {
+            PropertyValue<Integer> httpPort = propertyValueContainer.init(
+                    "run.args.web.http.port",
+                    new PropertyInteger(80),
+                    null
+            );
+
+            PropertyValue<Integer> httpsPort = propertyValueContainer.init(
+                    "run.args.web.http.port",
+                    new PropertyInteger(443),
+                    null
+            );
+
+            PropertyValue<Boolean> ssl = propertyValueContainer.init(
+                    "run.args.web.ssl",
+                    new PropertyBoolean(false),
+                    null
+            );
+
+            PropertyValue<Boolean> httpRedirectToHttps = propertyValueContainer.init(
+                    applicationContext,
+                    "run.args.web.http.redirect.to.https",
+                    new PropertyBoolean(true),
+                    null
+            );
+
             TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
                 @Override
                 protected void postProcessContext(Context context) {
-                    if (serverSslEnabled) {
+                    if (ssl.get()) {
                         SecurityConstraint securityConstraint = new SecurityConstraint();
                         securityConstraint.setUserConstraint(USER_CONSTRAINT);
                         SecurityCollection collection = new SecurityCollection();
@@ -75,14 +98,13 @@ public class AppConfiguration implements WebSocketConfigurer {
                     }
                 }
             };
-            if (serverSslEnabled) {
+            if (ssl.get() && httpRedirectToHttps.get()) {
                 Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
-                connector.setScheme(HTTP);
-                connector.setPort(HTTP_PORT);
+                connector.setScheme("http");
+                connector.setPort(httpPort.get());
                 connector.setSecure(false);
-                connector.setRedirectPort(HTTPS_PORT);
+                connector.setRedirectPort(httpsPort.get());
                 connector.setAsyncTimeout(1000);
-
                 tomcat.addAdditionalTomcatConnectors(connector);
             }
             return tomcat;
