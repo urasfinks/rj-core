@@ -20,9 +20,6 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import ru.jamsys.core.component.web.socket.WebSocket;
 import ru.jamsys.core.extension.property.PropertyValue;
 import ru.jamsys.core.extension.property.PropertyValueContainer;
-import ru.jamsys.core.extension.property.item.PropertyBoolean;
-import ru.jamsys.core.extension.property.item.PropertyInteger;
-import ru.jamsys.core.extension.property.item.PropertyString;
 
 import javax.annotation.PreDestroy;
 
@@ -33,17 +30,17 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     private static final String USER_CONSTRAINT = "CONFIDENTIAL";
 
-    private final PropertyValueContainer propertyValueContainer = new PropertyValueContainer();
+    private final PropertyValueContainer prop = new PropertyValueContainer();
 
     @Autowired
     private ApplicationContext applicationContext;
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
-        propertyValueContainer.init(
-                applicationContext,
+        prop.init(
+                String.class,
                 "run.args.web.socket.path",
-                new PropertyString("/socketDefault/*"),
+                "/socketDefault/*",
                 (_, path) -> registry.addHandler(new WebSocket(), path)
         );
     }
@@ -52,38 +49,14 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     @Bean
     public ServletWebServerFactory servletContainer() {
-        propertyValueContainer.setApplicationContext(applicationContext);
-        PropertyValue<Boolean> webHttp = propertyValueContainer.init(
-                "run.args.web",
-                new PropertyBoolean(null),
-                null
-        );
+        prop.setApplicationContext(applicationContext);
+        PropertyValue<Boolean> webHttp = prop.init(Boolean.class, "run.args.web", null);
 
         if (webHttp.get()) {
-            PropertyValue<Integer> httpPort = propertyValueContainer.init(
-                    "run.args.web.http.port",
-                    new PropertyInteger(80),
-                    null
-            );
-
-            PropertyValue<Integer> httpsPort = propertyValueContainer.init(
-                    "run.args.web.http.port",
-                    new PropertyInteger(443),
-                    null
-            );
-
-            PropertyValue<Boolean> ssl = propertyValueContainer.init(
-                    "run.args.web.ssl",
-                    new PropertyBoolean(false),
-                    null
-            );
-
-            PropertyValue<Boolean> httpRedirectToHttps = propertyValueContainer.init(
-                    applicationContext,
-                    "run.args.web.http.redirect.to.https",
-                    new PropertyBoolean(true),
-                    null
-            );
+            PropertyValue<Integer> httpPort = prop.init(Integer.class, "run.args.web.http.port", 80);
+            PropertyValue<Integer> httpsPort = prop.init(Integer.class, "run.args.web.https.port", 443);
+            PropertyValue<Boolean> ssl = prop.init(Boolean.class,"run.args.web.ssl",false,null);
+            PropertyValue<Boolean> redirect = prop.init(Boolean.class,"run.args.web.http.redirect.to.https",true);
 
             TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
                 @Override
@@ -98,7 +71,7 @@ public class AppConfiguration implements WebSocketConfigurer {
                     }
                 }
             };
-            if (ssl.get() && httpRedirectToHttps.get()) {
+            if (ssl.get() && redirect.get()) {
                 Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
                 connector.setScheme("http");
                 connector.setPort(httpPort.get());
@@ -122,7 +95,7 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     @PreDestroy
     public void onDestroy() {
-        propertyValueContainer.shutdown();
+        prop.shutdown();
     }
 
 }

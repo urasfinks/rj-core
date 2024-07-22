@@ -3,10 +3,7 @@ package ru.jamsys.core.extension.property;
 import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.property.item.PropertyBoolean;
 import ru.jamsys.core.extension.property.item.PropertyInstance;
-import ru.jamsys.core.extension.property.item.PropertyInteger;
-import ru.jamsys.core.extension.property.item.PropertyString;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,63 +16,15 @@ public class PropertyValueContainer implements LifeCycleInterface {
     @Setter
     private ApplicationContext applicationContext;
 
-    public PropertyValue<Integer> initInt(
-            String ns,
-            Integer defValue,
-            BiConsumer<Integer, Integer> onUpdate
-    ) {
-        PropertyValue<?> propertyValue = map.computeIfAbsent(ns, s -> new PropertyValue<>(
-                applicationContext,
-                s,
-                new PropertyInteger(defValue),
-                onUpdate
-        ));
-        @SuppressWarnings("unchecked")
-        PropertyValue<Integer> result = (PropertyValue<Integer>) propertyValue;
-        return result;
+    public <T> PropertyValue<T> init(Class<T> cls, String key, T defValue) {
+        return init(cls, key, defValue, null);
     }
 
-    public PropertyValue<Boolean> initBoolean(
-            String ns,
-            Boolean defValue,
-            BiConsumer<Boolean, Boolean> onUpdate
-    ) {
-        PropertyValue<?> propertyValue = map.computeIfAbsent(ns, s -> new PropertyValue<>(
+    public <T> PropertyValue<T> init(Class<T> cls, String key, T defValue, BiConsumer<T, T> onUpdate) {
+        PropertyValue<?> propertyValue = map.computeIfAbsent(key, s -> new PropertyValue<>(
                 applicationContext,
                 s,
-                new PropertyBoolean(defValue),
-                onUpdate
-        ));
-        @SuppressWarnings("unchecked")
-        PropertyValue<Boolean> result = (PropertyValue<Boolean>) propertyValue;
-        return result;
-    }
-
-    public PropertyValue<String> initString(
-            String ns,
-            String defValue,
-            BiConsumer<String, String> onUpdate
-    ) {
-        PropertyValue<?> propertyValue = map.computeIfAbsent(ns, s -> new PropertyValue<>(
-                applicationContext,
-                s,
-                new PropertyString(defValue),
-                onUpdate
-        ));
-        @SuppressWarnings("unchecked")
-        PropertyValue<String> result = (PropertyValue<String>) propertyValue;
-        return result;
-    }
-
-    public <T> PropertyValue<T> init(
-            String ns,
-            PropertyInstance<T> propertyInstance,
-            BiConsumer<T, T> onUpdate
-    ) {
-        PropertyValue<?> propertyValue = map.computeIfAbsent(ns, s -> new PropertyValue<>(
-                applicationContext,
-                s,
-                propertyInstance,
+                PropertyInstance.instanceOf(cls, defValue),
                 onUpdate
         ));
         @SuppressWarnings("unchecked")
@@ -83,21 +32,10 @@ public class PropertyValueContainer implements LifeCycleInterface {
         return result;
     }
 
-    public <T> PropertyValue<T> init(
-            ApplicationContext applicationContext,
-            String ns,
-            PropertyInstance<T> propertyInstance,
-            BiConsumer<T, T> onUpdate
-    ) {
-        PropertyValue<?> propertyValue = map.computeIfAbsent(ns, s -> new PropertyValue<>(
-                applicationContext,
-                s,
-                propertyInstance,
-                onUpdate
-        ));
+    public <T> PropertyValue<T> get(String key) {
         @SuppressWarnings("unchecked")
-        PropertyValue<T> result = (PropertyValue<T>) propertyValue;
-        return result;
+        PropertyValue<T> propertyValue = (PropertyValue<T>) map.get(key);
+        return propertyValue;
     }
 
     @Override
