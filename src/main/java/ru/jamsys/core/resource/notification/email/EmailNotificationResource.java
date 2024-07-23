@@ -8,7 +8,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.Subscriber;
+import ru.jamsys.core.extension.property.NameSpaceAgent;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
@@ -27,7 +27,7 @@ public class EmailNotificationResource
 
     private SecurityComponent securityComponent;
 
-    private Subscriber subscriber;
+    private NameSpaceAgent nameSpaceAgent;
 
     private final EmailNotificationProperty property = new EmailNotificationProperty();
 
@@ -35,7 +35,7 @@ public class EmailNotificationResource
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         securityComponent = App.get(SecurityComponent.class);
-        subscriber = serviceProperty.getSubscriber(null, property, resourceArguments.ns);
+        nameSpaceAgent = serviceProperty.getSubscriber(null, property, resourceArguments.ns);
     }
 
     @Override
@@ -75,15 +75,15 @@ public class EmailNotificationResource
 
     @Override
     public void run() {
-        if (subscriber != null) {
-            subscriber.run();
+        if (nameSpaceAgent != null) {
+            nameSpaceAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (subscriber != null) {
-            subscriber.shutdown();
+        if (nameSpaceAgent != null) {
+            nameSpaceAgent.shutdown();
         }
     }
 

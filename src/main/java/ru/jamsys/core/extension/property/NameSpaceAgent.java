@@ -15,9 +15,9 @@ import java.util.Set;
 // Просто как дворецкий, ни больше не меньше
 
 @Getter
-public class Subscriber implements LifeCycleInterface {
+public class NameSpaceAgent implements LifeCycleInterface {
 
-    private final PropertySubscriberNotify subscriber;
+    private final PropertyUpdateNotifier subscriber;
 
     private final ServiceProperty serviceProperty;
 
@@ -25,20 +25,20 @@ public class Subscriber implements LifeCycleInterface {
 
     private final String ns;
 
-    private final HashMap<String, SubscriberItem> subscriptions = new HashMap<>();
+    private final HashMap<String, SubscriberItem> mapListener = new HashMap<>();
 
-    public int getCountSubscribe() {
+    public int getCountListener() {
         int count = 0;
-        for (String key : subscriptions.keySet()) {
-            if (subscriptions.get(key).isSubscribe()) {
+        for (String key : mapListener.keySet()) {
+            if (mapListener.get(key).isSubscribe()) {
                 count++;
             }
         }
         return count;
     }
 
-    public Subscriber(
-            PropertySubscriberNotify subscriber,
+    public NameSpaceAgent(
+            PropertyUpdateNotifier subscriber,
             ServiceProperty serviceProperty,
             PropertyConnector propertyConnector,
             String ns
@@ -50,8 +50,8 @@ public class Subscriber implements LifeCycleInterface {
         init(true);
     }
 
-    public Subscriber(
-            PropertySubscriberNotify subscriber,
+    public NameSpaceAgent(
+            PropertyUpdateNotifier subscriber,
             ServiceProperty serviceProperty,
             PropertyConnector propertyConnector,
             String ns,
@@ -71,7 +71,7 @@ public class Subscriber implements LifeCycleInterface {
     private void init(boolean require) {
         Map<String, String> mapPropValue = this.propertyConnector.getMapPropValue();
         for (String key : mapPropValue.keySet()) {
-            subscribe(key, mapPropValue.get(key), require);
+            add(key, mapPropValue.get(key), require);
         }
     }
 
@@ -90,8 +90,8 @@ public class Subscriber implements LifeCycleInterface {
         }
     }
 
-    public Subscriber subscribe(String key, String defValue, boolean require) {
-        SubscriberItem subscriberItem = subscriptions.computeIfAbsent(key, _ -> new SubscriberItem(defValue, require));
+    public NameSpaceAgent add(String key, String defValue, boolean require) {
+        SubscriberItem subscriberItem = mapListener.computeIfAbsent(key, _ -> new SubscriberItem(defValue, require));
         if (!subscriberItem.isSubscribe()) {
             serviceProperty.subscribe(
                     getKeyWithNamespace(key),
@@ -104,12 +104,12 @@ public class Subscriber implements LifeCycleInterface {
         return this;
     }
 
-    public void unsubscribe(String key) {
-        subscriptions.remove(key);
+    public void remove(String key) {
+        mapListener.remove(key);
         serviceProperty.unsubscribe(getKeyWithNamespace(key), this);
     }
 
-    public void onServicePropertyUpdate(Map<String, String> map) {
+    public void onPropertyUpdate(Map<String, String> map) {
         Set<String> updatedProp = new HashSet<>();
         if (ns != null) {
             for (String key : map.keySet()) {
@@ -132,7 +132,7 @@ public class Subscriber implements LifeCycleInterface {
 
     @Override
     public void run() {
-        subscriptions.forEach((key, subscriberItem) -> {
+        mapListener.forEach((key, subscriberItem) -> {
             if (!subscriberItem.isSubscribe()) {
                 serviceProperty.subscribe(
                         getKeyWithNamespace(key),
@@ -147,7 +147,7 @@ public class Subscriber implements LifeCycleInterface {
 
     @Override
     public void shutdown() {
-        subscriptions.forEach((key, subscriberItem) -> {
+        mapListener.forEach((key, subscriberItem) -> {
             if (subscriberItem.isSubscribe()) {
                 serviceProperty.unsubscribe(getKeyWithNamespace(key), this);
                 subscriberItem.setSubscribe(false);

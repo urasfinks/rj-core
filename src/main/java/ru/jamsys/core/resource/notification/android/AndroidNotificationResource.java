@@ -4,8 +4,8 @@ import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.PropertySubscriberNotify;
-import ru.jamsys.core.extension.property.Subscriber;
+import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
+import ru.jamsys.core.extension.property.NameSpaceAgent;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -27,18 +27,18 @@ public class AndroidNotificationResource
         extends ExpirationMsMutableImpl
         implements
         Resource<AndroidNotificationRequest, HttpResponse>,
-        PropertySubscriberNotify {
+        PropertyUpdateNotifier {
 
     private String accessToken;
 
-    private Subscriber subscriber;
+    private NameSpaceAgent nameSpaceAgent;
 
     private final AndroidNotificationProperty property = new AndroidNotificationProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        subscriber = serviceProperty.getSubscriber(this, property, resourceArguments.ns);
+        nameSpaceAgent = serviceProperty.getSubscriber(this, property, resourceArguments.ns);
     }
 
     @Override
@@ -98,15 +98,15 @@ public class AndroidNotificationResource
 
     @Override
     public void run() {
-        if (subscriber != null) {
-            subscriber.run();
+        if (nameSpaceAgent != null) {
+            nameSpaceAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (subscriber != null) {
-            subscriber.shutdown();
+        if (nameSpaceAgent != null) {
+            nameSpaceAgent.shutdown();
         }
     }
 

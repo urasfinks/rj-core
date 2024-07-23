@@ -10,8 +10,8 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyConnector;
-import ru.jamsys.core.extension.property.PropertySubscriberNotify;
-import ru.jamsys.core.extension.property.Subscriber;
+import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
+import ru.jamsys.core.extension.property.NameSpaceAgent;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Lazy
 public class ServiceProperty {
 
-    final private Map<String, Set<Subscriber>> subscribe = new ConcurrentHashMap<>();
+    final private Map<String, Set<NameSpaceAgent>> subscribe = new ConcurrentHashMap<>();
 
     @Getter
     final private Map<String, String> prop = new HashMap<>();
@@ -50,7 +50,7 @@ public class ServiceProperty {
     }
 
     public void setProperty(Map<String, String> map) {
-        Set<Subscriber> notify = new HashSet<>();
+        Set<NameSpaceAgent> notify = new HashSet<>();
         if (!map.isEmpty()) {
             for (String key : map.keySet()) {
                 String value = map.get(key);
@@ -62,7 +62,7 @@ public class ServiceProperty {
                     notify.addAll(subscribe.get(key));
                 }
             }
-            notify.forEach(subscriber -> subscriber.onServicePropertyUpdate(new HashMap<>(map)));
+            notify.forEach(subscriber -> subscriber.onPropertyUpdate(new HashMap<>(map)));
         }
     }
 
@@ -71,18 +71,18 @@ public class ServiceProperty {
             prop.remove(key);
             if (subscribe.containsKey(key)) {
                 HashMapBuilder<String, String> append = new HashMapBuilder<String, String>().append(key, null);
-                subscribe.get(key).forEach(subscriber -> subscriber.onServicePropertyUpdate(append));
+                subscribe.get(key).forEach(subscriber -> subscriber.onPropertyUpdate(append));
             }
         } else if (!prop.containsKey(key) || !prop.get(key).equals(value)) {
             prop.put(key, value);
             if (subscribe.containsKey(key)) {
                 HashMapBuilder<String, String> append = new HashMapBuilder<String, String>().append(key, value);
-                subscribe.get(key).forEach(subscriber -> subscriber.onServicePropertyUpdate(append));
+                subscribe.get(key).forEach(subscriber -> subscriber.onPropertyUpdate(append));
             }
         }
     }
 
-    public void subscribe(String key, Subscriber subscriber, boolean require, String defValue) {
+    public void subscribe(String key, NameSpaceAgent nameSpaceAgent, boolean require, String defValue) {
         String result = prop.get(key);
         if (require && result == null) {
             throw new RuntimeException("Required key '" + key + "' not found");
@@ -90,36 +90,36 @@ public class ServiceProperty {
         if (result == null) {
             result = prop.computeIfAbsent(key, _ -> defValue);
         }
-        subscribe.computeIfAbsent(key, _ -> new HashSet<>()).add(subscriber);
-        subscriber.onServicePropertyUpdate(new HashMapBuilder<String, String>().append(key, result));
+        subscribe.computeIfAbsent(key, _ -> new HashSet<>()).add(nameSpaceAgent);
+        nameSpaceAgent.onPropertyUpdate(new HashMapBuilder<String, String>().append(key, result));
     }
 
-    public void unsubscribe(String key, Subscriber subscriber) {
-        subscribe.get(key).remove(subscriber);
+    public void unsubscribe(String key, NameSpaceAgent nameSpaceAgent) {
+        subscribe.get(key).remove(nameSpaceAgent);
     }
 
-    public Subscriber getSubscriber(
-            PropertySubscriberNotify propertySubscriberNotify,
+    public NameSpaceAgent getSubscriber(
+            PropertyUpdateNotifier propertyUpdateNotifier,
             PropertyConnector propertyConnector
     ) {
-        return getSubscriber(propertySubscriberNotify, propertyConnector, null, true);
+        return getSubscriber(propertyUpdateNotifier, propertyConnector, null, true);
     }
 
-    public Subscriber getSubscriber(
-            PropertySubscriberNotify propertySubscriberNotify,
+    public NameSpaceAgent getSubscriber(
+            PropertyUpdateNotifier propertyUpdateNotifier,
             PropertyConnector propertyConnector,
             String ns
     ) {
-        return new Subscriber(propertySubscriberNotify, this, propertyConnector, ns, true);
+        return new NameSpaceAgent(propertyUpdateNotifier, this, propertyConnector, ns, true);
     }
 
-    public Subscriber getSubscriber(
-            PropertySubscriberNotify propertySubscriberNotify,
+    public NameSpaceAgent getSubscriber(
+            PropertyUpdateNotifier propertyUpdateNotifier,
             PropertyConnector propertyConnector,
             String ns,
             boolean require
     ) {
-        return new Subscriber(propertySubscriberNotify, this, propertyConnector, ns, require);
+        return new NameSpaceAgent(propertyUpdateNotifier, this, propertyConnector, ns, require);
     }
 
 }

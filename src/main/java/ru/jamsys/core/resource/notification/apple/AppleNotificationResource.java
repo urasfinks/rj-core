@@ -4,8 +4,8 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerVirtualFileSystem;
-import ru.jamsys.core.extension.property.PropertySubscriberNotify;
-import ru.jamsys.core.extension.property.Subscriber;
+import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
+import ru.jamsys.core.extension.property.NameSpaceAgent;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -28,11 +28,11 @@ public class AppleNotificationResource
         extends ExpirationMsMutableImpl
         implements
         Resource<AppleNotificationRequest, HttpResponse>,
-        PropertySubscriberNotify {
+        PropertyUpdateNotifier {
 
     private ManagerVirtualFileSystem managerVirtualFileSystem;
 
-    private Subscriber subscriber;
+    private NameSpaceAgent nameSpaceAgent;
 
     private final AppleNotificationProperty property = new AppleNotificationProperty();
 
@@ -40,7 +40,7 @@ public class AppleNotificationResource
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         managerVirtualFileSystem = App.get(ManagerVirtualFileSystem.class);
-        subscriber = serviceProperty.getSubscriber(this, property, resourceArguments.ns);
+        nameSpaceAgent = serviceProperty.getSubscriber(this, property, resourceArguments.ns);
     }
 
     @Override
@@ -92,15 +92,15 @@ public class AppleNotificationResource
 
     @Override
     public void run() {
-        if (subscriber != null) {
-            subscriber.run();
+        if (nameSpaceAgent != null) {
+            nameSpaceAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (subscriber != null) {
-            subscriber.shutdown();
+        if (nameSpaceAgent != null) {
+            nameSpaceAgent.shutdown();
         }
     }
 

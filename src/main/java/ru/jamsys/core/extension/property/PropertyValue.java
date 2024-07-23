@@ -12,7 +12,7 @@ import java.util.function.BiConsumer;
 
 // Главное не забывать закрывать после использования
 
-public class PropertyValue<T> extends PropertyConnector implements PropertySubscriberNotify, LifeCycleInterface {
+public class PropertyValue<T> extends PropertyConnector implements PropertyUpdateNotifier, LifeCycleInterface {
 
     private final PropertyInstance<T> propertyInstance;
 
@@ -23,7 +23,7 @@ public class PropertyValue<T> extends PropertyConnector implements PropertySubsc
     @Getter
     private final String ns;
 
-    private final Subscriber subscriber;
+    private final NameSpaceAgent nameSpaceAgent;
 
     private final BiConsumer<T, T> onUpdate;
 
@@ -37,7 +37,7 @@ public class PropertyValue<T> extends PropertyConnector implements PropertySubsc
         this.propertyInstance = propertyInstance;
         this.prop = propertyInstance.getAsString();
         this.ns = ns;
-        subscriber = applicationContext.getBean(ServiceProperty.class).getSubscriber(
+        nameSpaceAgent = applicationContext.getBean(ServiceProperty.class).getSubscriber(
                 this,
                 this,
                 ns,
@@ -46,15 +46,15 @@ public class PropertyValue<T> extends PropertyConnector implements PropertySubsc
     }
 
     public void set(String value) {
-        subscriber.setProperty("", value);
+        nameSpaceAgent.setProperty("", value);
     }
 
     public void set(int value) {
-        subscriber.setProperty("", value + "");
+        nameSpaceAgent.setProperty("", value + "");
     }
 
     public void set(boolean value) {
-        subscriber.setProperty("", value ? "true" : "false");
+        nameSpaceAgent.setProperty("", value ? "true" : "false");
     }
 
     public T get() {
@@ -72,12 +72,12 @@ public class PropertyValue<T> extends PropertyConnector implements PropertySubsc
 
     @Override
     public void run() {
-        subscriber.run();
+        nameSpaceAgent.run();
     }
 
     @Override
     public void shutdown() {
-        subscriber.shutdown();
+        nameSpaceAgent.shutdown();
     }
 
 }

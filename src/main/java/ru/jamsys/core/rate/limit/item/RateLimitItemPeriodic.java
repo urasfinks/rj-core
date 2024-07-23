@@ -7,8 +7,8 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.PropertyConnector;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.PropertySubscriberNotify;
-import ru.jamsys.core.extension.property.Subscriber;
+import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
+import ru.jamsys.core.extension.property.NameSpaceAgent;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.Statistic;
@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class RateLimitItemPeriodic
         extends PropertyConnector
-        implements RateLimitItem, PropertySubscriberNotify, LifeCycleInterface {
+        implements RateLimitItem, PropertyUpdateNotifier, LifeCycleInterface {
 
     private final AtomicInteger tpu = new AtomicInteger(0);
 
@@ -42,13 +42,13 @@ public class RateLimitItemPeriodic
     @PropertyName
     private String propMax = "1000";
 
-    private final Subscriber subscriber;
+    private final NameSpaceAgent nameSpaceAgent;
 
     public RateLimitItemPeriodic(ApplicationContext applicationContext, TimeUnit period, String ns) {
         this.ns = ns;
         this.period = period;
         this.periodName = period.getNameCamel();
-        subscriber = applicationContext.getBean(ServiceProperty.class).getSubscriber(
+        nameSpaceAgent = applicationContext.getBean(ServiceProperty.class).getSubscriber(
                 this,
                 this,
                 ns,
@@ -105,12 +105,12 @@ public class RateLimitItemPeriodic
 
     @Override
     public void run() {
-        subscriber.run();
+        nameSpaceAgent.run();
     }
 
     @Override
     public void shutdown() {
-        subscriber.shutdown();
+        nameSpaceAgent.shutdown();
     }
 
 }

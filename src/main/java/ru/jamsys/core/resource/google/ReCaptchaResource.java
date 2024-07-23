@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.Subscriber;
+import ru.jamsys.core.extension.property.NameSpaceAgent;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.http.client.HttpClientImpl;
@@ -25,7 +25,7 @@ public class ReCaptchaResource
 
     private final ReCaptchaProperty property = new ReCaptchaProperty();
 
-    private Subscriber subscriber;
+    private NameSpaceAgent nameSpaceAgent;
 
     public ReCaptchaResource(SecurityComponent securityComponent) {
         this.securityComponent = securityComponent;
@@ -34,7 +34,7 @@ public class ReCaptchaResource
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        subscriber = serviceProperty.getSubscriber(null, property, resourceArguments.ns);
+        nameSpaceAgent = serviceProperty.getSubscriber(null, property, resourceArguments.ns);
     }
 
     @Override
@@ -58,15 +58,15 @@ public class ReCaptchaResource
 
     @Override
     public void run() {
-        if (subscriber != null) {
-            subscriber.run();
+        if (nameSpaceAgent != null) {
+            nameSpaceAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (subscriber != null) {
-            subscriber.shutdown();
+        if (nameSpaceAgent != null) {
+            nameSpaceAgent.shutdown();
         }
     }
 

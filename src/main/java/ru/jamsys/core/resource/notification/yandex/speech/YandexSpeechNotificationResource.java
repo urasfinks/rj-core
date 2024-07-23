@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.PropertySubscriberNotify;
-import ru.jamsys.core.extension.property.Subscriber;
+import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
+import ru.jamsys.core.extension.property.NameSpaceAgent;
 import ru.jamsys.core.flat.util.YandexSpeechClient;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -22,18 +22,18 @@ public class YandexSpeechNotificationResource
         extends ExpirationMsMutableImpl
         implements
         Resource<YandexSpeechNotificationRequest, Void>,
-        PropertySubscriberNotify {
+        PropertyUpdateNotifier {
 
     YandexSpeechClient client = null;
 
-    private Subscriber subscriber;
+    private NameSpaceAgent nameSpaceAgent;
 
     private final YandexSpeechNotificationProperty property = new YandexSpeechNotificationProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        subscriber = serviceProperty.getSubscriber(this, property, resourceArguments.ns);
+        nameSpaceAgent = serviceProperty.getSubscriber(this, property, resourceArguments.ns);
     }
 
     @Override
@@ -65,15 +65,15 @@ public class YandexSpeechNotificationResource
 
     @Override
     public void run() {
-        if (subscriber != null) {
-            subscriber.run();
+        if (nameSpaceAgent != null) {
+            nameSpaceAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (subscriber != null) {
-            subscriber.shutdown();
+        if (nameSpaceAgent != null) {
+            nameSpaceAgent.shutdown();
         }
         try {
             client.shutdown();

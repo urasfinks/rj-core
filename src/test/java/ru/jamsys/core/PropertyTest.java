@@ -8,8 +8,8 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyConnector;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.PropertySubscriberNotify;
-import ru.jamsys.core.extension.property.Subscriber;
+import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
+import ru.jamsys.core.extension.property.NameSpaceAgent;
 
 import java.util.Map;
 import java.util.Set;
@@ -28,7 +28,7 @@ class PropertyTest {
         App.shutdown();
     }
 
-    public static class XX extends PropertyConnector implements PropertySubscriberNotify {
+    public static class XX extends PropertyConnector implements PropertyUpdateNotifier {
 
         int c = 0;
 
@@ -43,16 +43,16 @@ class PropertyTest {
     void test() {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         XX xx = new XX();
-        Subscriber subscribe = serviceProperty
+        NameSpaceAgent subscribe = serviceProperty
                 .getSubscriber(xx, xx)
-                .subscribe("run.args.security.path.storage", null, true)
-                .subscribe("run.args.security.path.storage", null, true);
+                .add("run.args.security.path.storage", null, true)
+                .add("run.args.security.path.storage", null, true);
 
-        Assertions.assertEquals(1, subscribe.getSubscriptions().size());
+        Assertions.assertEquals(1, subscribe.getMapListener().size());
 
-        subscribe.subscribe("run.args.security.path.public.key", null, true);
+        subscribe.add("run.args.security.path.public.key", null, true);
 
-        Assertions.assertEquals(2, subscribe.getSubscriptions().size());
+        Assertions.assertEquals(2, subscribe.getMapListener().size());
 
         Assertions.assertEquals(2, xx.c);
 
@@ -64,25 +64,25 @@ class PropertyTest {
         Assertions.assertEquals(3, xx.c);
 
         subscribe.shutdown();
-        Assertions.assertEquals(0, subscribe.getCountSubscribe());
+        Assertions.assertEquals(0, subscribe.getCountListener());
 
         // После отписки мы не должны получать уведомления об изменениях
         serviceProperty.setProperty("run.args.security.path.storage", "x2");
         Assertions.assertEquals(3, xx.c);
 
         // Обратно подписываемся
-        subscribe.subscribe("run.args.security.path.storage", null, true);
+        subscribe.add("run.args.security.path.storage", null, true);
         // Так как автоматом получим значение при подписке
         Assertions.assertEquals(4, xx.c);
 
-        subscribe.subscribe("run.args.security.path.public.key", null, true);
+        subscribe.add("run.args.security.path.public.key", null, true);
         // Так как автоматом получим значение при подписке
         Assertions.assertEquals(5, xx.c);
 
         serviceProperty.setProperty("run.args.security.path.public.key", "x3");
         Assertions.assertEquals(6, xx.c);
 
-        subscribe.unsubscribe("run.args.security.path.public.key");
+        subscribe.remove("run.args.security.path.public.key");
         serviceProperty.setProperty("run.args.security.path.public.key", "x4");
         Assertions.assertEquals(6, xx.c);
 
@@ -105,7 +105,7 @@ class PropertyTest {
         );
         Assertions.assertEquals(7, xx.c);
 
-        subscribe.subscribe("run.args.security.path.public.key", null,true);
+        subscribe.add("run.args.security.path.public.key", null,true);
         Assertions.assertEquals(8, xx.c);
 
         //Мульти обновление штатное
@@ -125,7 +125,7 @@ class PropertyTest {
     }
 
 
-    static class x2 extends PropertyConnector implements PropertySubscriberNotify {
+    static class x2 extends PropertyConnector implements PropertyUpdateNotifier {
 
         @SuppressWarnings("all")
         @PropertyName("security.path.storage")
@@ -149,9 +149,9 @@ class PropertyTest {
         Map<String, String> mapPropValue = x2.getMapPropValue();
         System.out.println(mapPropValue);
 
-        Subscriber subscribe = serviceProperty.getSubscriber(x2, x2, "run.args");
+        NameSpaceAgent subscribe = serviceProperty.getSubscriber(x2, x2, "run.args");
 
-        Assertions.assertEquals(2, subscribe.getSubscriptions().size());
+        Assertions.assertEquals(2, subscribe.getMapListener().size());
 
         Assertions.assertEquals("security/security.jks", x2.storage);
 
