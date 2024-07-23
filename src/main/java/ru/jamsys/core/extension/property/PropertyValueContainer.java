@@ -3,7 +3,6 @@ package ru.jamsys.core.extension.property;
 import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.property.item.PropertyInstance;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +23,7 @@ public class PropertyValueContainer implements LifeCycleInterface {
         PropertyValue<?> propertyValue = map.computeIfAbsent(key, s -> new PropertyValue<>(
                 applicationContext,
                 s,
-                PropertyInstance.instanceOf(cls, defValue),
+                PropertyFactory.instanceOf(cls, defValue),
                 onUpdate
         ));
         @SuppressWarnings("unchecked")

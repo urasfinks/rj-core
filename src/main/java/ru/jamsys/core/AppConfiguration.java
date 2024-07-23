@@ -28,8 +28,6 @@ import javax.annotation.PreDestroy;
 @EnableWebSocket
 public class AppConfiguration implements WebSocketConfigurer {
 
-    private static final String USER_CONSTRAINT = "CONFIDENTIAL";
-
     private final PropertyValueContainer prop = new PropertyValueContainer();
 
     @Autowired
@@ -55,7 +53,7 @@ public class AppConfiguration implements WebSocketConfigurer {
         if (webHttp.get()) {
             PropertyValue<Integer> httpPort = prop.init(Integer.class, "run.args.web.http.port", 80);
             PropertyValue<Integer> httpsPort = prop.init(Integer.class, "run.args.web.https.port", 443);
-            PropertyValue<Boolean> ssl = prop.init(Boolean.class,"run.args.web.ssl",false,null);
+            PropertyValue<Boolean> ssl = prop.init(Boolean.class,"run.args.web.ssl",false);
             PropertyValue<Boolean> redirect = prop.init(Boolean.class,"run.args.web.http.redirect.to.https",true);
 
             TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
@@ -63,7 +61,7 @@ public class AppConfiguration implements WebSocketConfigurer {
                 protected void postProcessContext(Context context) {
                     if (ssl.get()) {
                         SecurityConstraint securityConstraint = new SecurityConstraint();
-                        securityConstraint.setUserConstraint(USER_CONSTRAINT);
+                        securityConstraint.setUserConstraint("CONFIDENTIAL");
                         SecurityCollection collection = new SecurityCollection();
                         collection.addPattern("/*");
                         securityConstraint.addCollection(collection);
