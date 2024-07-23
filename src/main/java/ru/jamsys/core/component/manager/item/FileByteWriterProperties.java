@@ -2,12 +2,12 @@ package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.extension.property.PropertyRepository;
+import ru.jamsys.core.extension.property.PropertiesRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
-public class FileByteWriterProperty extends PropertyRepository {
+public class FileByteWriterProperties extends PropertiesRepository {
 
     @PropertyName("log.file.folder")
     private String folder = "LogManager";

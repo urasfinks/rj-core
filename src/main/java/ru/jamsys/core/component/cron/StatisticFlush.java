@@ -14,7 +14,7 @@ import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.property.PropertyRepository;
+import ru.jamsys.core.extension.property.PropertiesRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.Util;
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
-public class StatisticFlush extends PropertyRepository implements Cron1s, PromiseGenerator, UniqueClassName {
+public class StatisticFlush extends PropertiesRepository implements Cron1s, PromiseGenerator, UniqueClassName {
 
     final Broker<StatisticSec> broker;
 

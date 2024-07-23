@@ -18,8 +18,8 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import ru.jamsys.core.component.web.socket.WebSocket;
-import ru.jamsys.core.extension.property.PropertyValue;
-import ru.jamsys.core.extension.property.PropertyValueContainer;
+import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.property.PropertiesMap;
 
 import javax.annotation.PreDestroy;
 
@@ -28,7 +28,7 @@ import javax.annotation.PreDestroy;
 @EnableWebSocket
 public class AppConfiguration implements WebSocketConfigurer {
 
-    private final PropertyValueContainer prop = new PropertyValueContainer();
+    private final PropertiesMap prop = new PropertiesMap();
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -49,13 +49,13 @@ public class AppConfiguration implements WebSocketConfigurer {
     @Bean
     public ServletWebServerFactory servletContainer() {
         prop.setApplicationContext(applicationContext);
-        PropertyValue<Boolean> webHttp = prop.init(Boolean.class, "run.args.web", null);
+        Property<Boolean> webHttp = prop.init(Boolean.class, "run.args.web", null);
 
         if (webHttp.get()) {
-            PropertyValue<Integer> httpPort = prop.init(Integer.class, "run.args.web.http.port", 80);
-            PropertyValue<Integer> httpsPort = prop.init(Integer.class, "run.args.web.https.port", 443);
-            PropertyValue<Boolean> ssl = prop.init(Boolean.class,"run.args.web.ssl",false);
-            PropertyValue<Boolean> redirect = prop.init(Boolean.class,"run.args.web.http.redirect.to.https",true);
+            Property<Integer> httpPort = prop.init(Integer.class, "run.args.web.http.port", 80);
+            Property<Integer> httpsPort = prop.init(Integer.class, "run.args.web.https.port", 443);
+            Property<Boolean> ssl = prop.init(Boolean.class,"run.args.web.ssl",false);
+            Property<Boolean> redirect = prop.init(Boolean.class,"run.args.web.http.redirect.to.https",true);
 
             TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
                 @Override

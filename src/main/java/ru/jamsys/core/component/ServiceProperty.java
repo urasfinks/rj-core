@@ -9,9 +9,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.property.PropertyRepository;
-import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
-import ru.jamsys.core.extension.property.PropertyNsAgent;
+import ru.jamsys.core.extension.property.PropertiesRepository;
+import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.PropertiesNsAgent;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Lazy
 public class ServiceProperty {
 
-    final private Map<String, Set<PropertyNsAgent>> subscribe = new ConcurrentHashMap<>();
+    final private Map<String, Set<PropertiesNsAgent>> subscribe = new ConcurrentHashMap<>();
 
     @Getter
     final private Map<String, String> prop = new HashMap<>();
@@ -50,7 +50,7 @@ public class ServiceProperty {
     }
 
     public void setProperty(Map<String, String> map) {
-        Set<PropertyNsAgent> notify = new HashSet<>();
+        Set<PropertiesNsAgent> notify = new HashSet<>();
         if (!map.isEmpty()) {
             for (String key : map.keySet()) {
                 String value = map.get(key);
@@ -82,7 +82,7 @@ public class ServiceProperty {
         }
     }
 
-    public void subscribe(String key, PropertyNsAgent propertyNsAgent, boolean require, String defValue) {
+    public void subscribe(String key, PropertiesNsAgent propertiesNsAgent, boolean require, String defValue) {
         String result = prop.get(key);
         if (require && result == null) {
             throw new RuntimeException("Required key '" + key + "' not found");
@@ -90,36 +90,36 @@ public class ServiceProperty {
         if (result == null) {
             result = prop.computeIfAbsent(key, _ -> defValue);
         }
-        subscribe.computeIfAbsent(key, _ -> new HashSet<>()).add(propertyNsAgent);
-        propertyNsAgent.onPropertyUpdate(new HashMapBuilder<String, String>().append(key, result));
+        subscribe.computeIfAbsent(key, _ -> new HashSet<>()).add(propertiesNsAgent);
+        propertiesNsAgent.onPropertyUpdate(new HashMapBuilder<String, String>().append(key, result));
     }
 
-    public void unsubscribe(String key, PropertyNsAgent propertyNsAgent) {
-        subscribe.get(key).remove(propertyNsAgent);
+    public void unsubscribe(String key, PropertiesNsAgent propertiesNsAgent) {
+        subscribe.get(key).remove(propertiesNsAgent);
     }
 
-    public PropertyNsAgent getPropertyNsAgent(
-            PropertyUpdateNotifier propertyUpdateNotifier,
-            PropertyRepository propertyRepository
+    public PropertiesNsAgent getPropertyNsAgent(
+            PropertyUpdateDelegate propertyUpdateDelegate,
+            PropertiesRepository propertiesRepository
     ) {
-        return getPropertyNsAgent(propertyUpdateNotifier, propertyRepository, null, true);
+        return getPropertyNsAgent(propertyUpdateDelegate, propertiesRepository, null, true);
     }
 
-    public PropertyNsAgent getPropertyNsAgent(
-            PropertyUpdateNotifier propertyUpdateNotifier,
-            PropertyRepository propertyRepository,
+    public PropertiesNsAgent getPropertyNsAgent(
+            PropertyUpdateDelegate propertyUpdateDelegate,
+            PropertiesRepository propertiesRepository,
             String ns
     ) {
-        return new PropertyNsAgent(propertyUpdateNotifier, this, propertyRepository, ns, true);
+        return new PropertiesNsAgent(propertyUpdateDelegate, this, propertiesRepository, ns, true);
     }
 
-    public PropertyNsAgent getPropertyNsAgent(
-            PropertyUpdateNotifier propertyUpdateNotifier,
-            PropertyRepository propertyRepository,
+    public PropertiesNsAgent getPropertyNsAgent(
+            PropertyUpdateDelegate propertyUpdateDelegate,
+            PropertiesRepository propertiesRepository,
             String ns,
             boolean require
     ) {
-        return new PropertyNsAgent(propertyUpdateNotifier, this, propertyRepository, ns, require);
+        return new PropertiesNsAgent(propertyUpdateDelegate, this, propertiesRepository, ns, require);
     }
 
 }

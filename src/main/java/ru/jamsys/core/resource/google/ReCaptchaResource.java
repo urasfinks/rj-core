@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.PropertyNsAgent;
+import ru.jamsys.core.extension.property.PropertiesNsAgent;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.http.client.HttpClientImpl;
@@ -23,9 +23,9 @@ public class ReCaptchaResource
 
     private final SecurityComponent securityComponent;
 
-    private final ReCaptchaProperty property = new ReCaptchaProperty();
+    private final ReCaptchaProperties property = new ReCaptchaProperties();
 
-    private PropertyNsAgent propertyNsAgent;
+    private PropertiesNsAgent propertiesNsAgent;
 
     public ReCaptchaResource(SecurityComponent securityComponent) {
         this.securityComponent = securityComponent;
@@ -34,7 +34,7 @@ public class ReCaptchaResource
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertyNsAgent = serviceProperty.getPropertyNsAgent(null, property, resourceArguments.ns);
+        propertiesNsAgent = serviceProperty.getPropertyNsAgent(null, property, resourceArguments.ns);
     }
 
     @Override
@@ -58,15 +58,15 @@ public class ReCaptchaResource
 
     @Override
     public void run() {
-        if (propertyNsAgent != null) {
-            propertyNsAgent.run();
+        if (propertiesNsAgent != null) {
+            propertiesNsAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertyNsAgent != null) {
-            propertyNsAgent.shutdown();
+        if (propertiesNsAgent != null) {
+            propertiesNsAgent.shutdown();
         }
     }
 

@@ -6,10 +6,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.property.PropertyRepository;
+import ru.jamsys.core.extension.property.PropertiesRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
-import ru.jamsys.core.extension.property.PropertyNsAgent;
+import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.PropertiesNsAgent;
 
 import java.util.Map;
 import java.util.Set;
@@ -28,7 +28,7 @@ class MapRepositoryTest {
         App.shutdown();
     }
 
-    public static class XX extends PropertyRepository implements PropertyUpdateNotifier {
+    public static class XX extends PropertiesRepository implements PropertyUpdateDelegate {
 
         int c = 0;
 
@@ -43,7 +43,7 @@ class MapRepositoryTest {
     void test() {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         XX xx = new XX();
-        PropertyNsAgent subscribe = serviceProperty
+        PropertiesNsAgent subscribe = serviceProperty
                 .getPropertyNsAgent(xx, xx)
                 .add("run.args.security.path.storage", null, true)
                 .add("run.args.security.path.storage", null, true);
@@ -125,7 +125,7 @@ class MapRepositoryTest {
     }
 
 
-    static class x2 extends PropertyRepository implements PropertyUpdateNotifier {
+    static class x2 extends PropertiesRepository implements PropertyUpdateDelegate {
 
         @SuppressWarnings("all")
         @PropertyName("security.path.storage")
@@ -149,7 +149,7 @@ class MapRepositoryTest {
         Map<String, String> mapPropValue = x2.getMapPropValue();
         System.out.println(mapPropValue);
 
-        PropertyNsAgent subscribe = serviceProperty.getPropertyNsAgent(x2, x2, "run.args");
+        PropertiesNsAgent subscribe = serviceProperty.getPropertyNsAgent(x2, x2, "run.args");
 
         Assertions.assertEquals(2, subscribe.getMapListener().size());
 

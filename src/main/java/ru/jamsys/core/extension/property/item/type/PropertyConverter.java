@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension.property.item;
+package ru.jamsys.core.extension.property.item.type;
 
 public interface PropertyConverter {
 

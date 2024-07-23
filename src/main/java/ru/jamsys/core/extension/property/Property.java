@@ -5,29 +5,29 @@ import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.item.PropertyInstance;
+import ru.jamsys.core.extension.property.item.type.PropertyInstance;
 
 import java.util.Set;
 import java.util.function.BiConsumer;
 
 // Главное не забывать закрывать после использования
 
-public class PropertyValue<T> extends PropertyRepository implements PropertyUpdateNotifier, LifeCycleInterface {
+public class Property<T> extends PropertiesRepository implements PropertyUpdateDelegate, LifeCycleInterface {
 
     private final PropertyInstance<T> propertyInstance;
 
     @SuppressWarnings("all")
     @PropertyName
-    private String prop;
+    private String value;
 
     @Getter
     private final String ns;
 
-    private final PropertyNsAgent propertyNsAgent;
+    private final PropertiesNsAgent propertiesNsAgent;
 
     private final BiConsumer<T, T> onUpdate;
 
-    public PropertyValue(
+    public Property(
             ApplicationContext applicationContext,
             String ns,
             PropertyInstance<T> propertyInstance,
@@ -35,9 +35,9 @@ public class PropertyValue<T> extends PropertyRepository implements PropertyUpda
     ) {
         this.onUpdate = onUpdate;
         this.propertyInstance = propertyInstance;
-        this.prop = propertyInstance.getAsString();
+        this.value = propertyInstance.getAsString();
         this.ns = ns;
-        propertyNsAgent = applicationContext.getBean(ServiceProperty.class).getPropertyNsAgent(
+        propertiesNsAgent = applicationContext.getBean(ServiceProperty.class).getPropertyNsAgent(
                 this,
                 this,
                 ns,
@@ -46,15 +46,15 @@ public class PropertyValue<T> extends PropertyRepository implements PropertyUpda
     }
 
     public void set(String value) {
-        propertyNsAgent.setProperty("", value);
+        propertiesNsAgent.setProperty("", value);
     }
 
     public void set(int value) {
-        propertyNsAgent.setProperty("", value + "");
+        propertiesNsAgent.setProperty("", value + "");
     }
 
     public void set(boolean value) {
-        propertyNsAgent.setProperty("", value ? "true" : "false");
+        propertiesNsAgent.setProperty("", value ? "true" : "false");
     }
 
     public T get() {
@@ -64,7 +64,7 @@ public class PropertyValue<T> extends PropertyRepository implements PropertyUpda
     @Override
     public void onPropertyUpdate(Set<String> updatedPropAlias) {
         T oldValue = get();
-        propertyInstance.set(prop);
+        propertyInstance.set(value);
         if (onUpdate != null) {
             onUpdate.accept(oldValue, get());
         }
@@ -72,12 +72,12 @@ public class PropertyValue<T> extends PropertyRepository implements PropertyUpda
 
     @Override
     public void run() {
-        propertyNsAgent.run();
+        propertiesNsAgent.run();
     }
 
     @Override
     public void shutdown() {
-        propertyNsAgent.shutdown();
+        propertiesNsAgent.shutdown();
     }
 
 }

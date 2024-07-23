@@ -8,7 +8,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertyNsAgent;
+import ru.jamsys.core.extension.property.PropertiesNsAgent;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
@@ -27,15 +27,15 @@ public class EmailNotificationResource
 
     private SecurityComponent securityComponent;
 
-    private PropertyNsAgent propertyNsAgent;
+    private PropertiesNsAgent propertiesNsAgent;
 
-    private final EmailNotificationProperty property = new EmailNotificationProperty();
+    private final EmailNotificationProperties property = new EmailNotificationProperties();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         securityComponent = App.get(SecurityComponent.class);
-        propertyNsAgent = serviceProperty.getPropertyNsAgent(null, property, resourceArguments.ns);
+        propertiesNsAgent = serviceProperty.getPropertyNsAgent(null, property, resourceArguments.ns);
     }
 
     @Override
@@ -75,15 +75,15 @@ public class EmailNotificationResource
 
     @Override
     public void run() {
-        if (propertyNsAgent != null) {
-            propertyNsAgent.run();
+        if (propertiesNsAgent != null) {
+            propertiesNsAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertyNsAgent != null) {
-            propertyNsAgent.shutdown();
+        if (propertiesNsAgent != null) {
+            propertiesNsAgent.shutdown();
         }
     }
 

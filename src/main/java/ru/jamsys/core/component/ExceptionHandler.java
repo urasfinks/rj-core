@@ -11,14 +11,14 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.extension.line.writer.LineWriterString;
-import ru.jamsys.core.extension.property.PropertyRepository;
+import ru.jamsys.core.extension.property.PropertiesRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.flat.util.Util;
 
 @Setter
 @Component
 @Lazy
-public class ExceptionHandler extends PropertyRepository {
+public class ExceptionHandler extends PropertiesRepository {
 
     private int maxLine = 50;
 

@@ -6,9 +6,9 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
-import ru.jamsys.core.extension.property.PropertyValue;
-import ru.jamsys.core.extension.property.ValueName;
-import ru.jamsys.core.extension.property.item.PropertyInteger;
+import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.ValueName;
+import ru.jamsys.core.extension.property.item.type.PropertyInteger;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
@@ -69,10 +69,10 @@ public class Broker<TEO>
     private Double lastTimeInQueue;
 
     @Getter
-    final PropertyValue<Integer> propertyBrokerSize;
+    final Property<Integer> propertyBrokerSize;
 
     @Getter
-    final PropertyValue<Integer> propertyBrokerTailSize;
+    final Property<Integer> propertyBrokerTailSize;
 
     final String index;
 
@@ -87,14 +87,14 @@ public class Broker<TEO>
         this.classItem = classItem;
         this.onDropConsumer = onDropConsumer;
         String clsIndex = getClassName(index, applicationContext);
-        propertyBrokerSize = new PropertyValue<>(
+        propertyBrokerSize = new Property<>(
                 applicationContext,
                 clsIndex + "." + ValueName.BROKER_SIZE.getNameCamel(),
                 new PropertyInteger(3000),
                 null
         );
 
-        propertyBrokerTailSize = new PropertyValue(
+        propertyBrokerTailSize = new Property(
                 applicationContext,
                 clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),
                 new PropertyInteger(5),

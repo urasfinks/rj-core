@@ -1,6 +1,4 @@
-package ru.jamsys.core.extension.property;
-
-import ru.jamsys.core.extension.CamelNormalization;
+package ru.jamsys.core.extension;
 
 public enum ValueName implements CamelNormalization {
     POOL_SIZE_MAX,

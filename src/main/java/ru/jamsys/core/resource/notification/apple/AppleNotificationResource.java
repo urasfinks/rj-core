@@ -4,8 +4,8 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerVirtualFileSystem;
-import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
-import ru.jamsys.core.extension.property.PropertyNsAgent;
+import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.PropertiesNsAgent;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -28,19 +28,19 @@ public class AppleNotificationResource
         extends ExpirationMsMutableImpl
         implements
         Resource<AppleNotificationRequest, HttpResponse>,
-        PropertyUpdateNotifier {
+        PropertyUpdateDelegate {
 
     private ManagerVirtualFileSystem managerVirtualFileSystem;
 
-    private PropertyNsAgent propertyNsAgent;
+    private PropertiesNsAgent propertiesNsAgent;
 
-    private final AppleNotificationProperty property = new AppleNotificationProperty();
+    private final AppleNotificationProperties property = new AppleNotificationProperties();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         managerVirtualFileSystem = App.get(ManagerVirtualFileSystem.class);
-        propertyNsAgent = serviceProperty.getPropertyNsAgent(this, property, resourceArguments.ns);
+        propertiesNsAgent = serviceProperty.getPropertyNsAgent(this, property, resourceArguments.ns);
     }
 
     @Override
@@ -92,15 +92,15 @@ public class AppleNotificationResource
 
     @Override
     public void run() {
-        if (propertyNsAgent != null) {
-            propertyNsAgent.run();
+        if (propertiesNsAgent != null) {
+            propertiesNsAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertyNsAgent != null) {
-            propertyNsAgent.shutdown();
+        if (propertiesNsAgent != null) {
+            propertiesNsAgent.shutdown();
         }
     }
 

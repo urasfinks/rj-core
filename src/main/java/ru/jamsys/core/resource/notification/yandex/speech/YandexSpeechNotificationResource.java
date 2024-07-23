@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
-import ru.jamsys.core.extension.property.PropertyNsAgent;
+import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.PropertiesNsAgent;
 import ru.jamsys.core.flat.util.YandexSpeechClient;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -22,18 +22,18 @@ public class YandexSpeechNotificationResource
         extends ExpirationMsMutableImpl
         implements
         Resource<YandexSpeechNotificationRequest, Void>,
-        PropertyUpdateNotifier {
+        PropertyUpdateDelegate {
 
     YandexSpeechClient client = null;
 
-    private PropertyNsAgent propertyNsAgent;
+    private PropertiesNsAgent propertiesNsAgent;
 
-    private final YandexSpeechNotificationProperty property = new YandexSpeechNotificationProperty();
+    private final YandexSpeechNotificationProperties property = new YandexSpeechNotificationProperties();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertyNsAgent = serviceProperty.getPropertyNsAgent(this, property, resourceArguments.ns);
+        propertiesNsAgent = serviceProperty.getPropertyNsAgent(this, property, resourceArguments.ns);
     }
 
     @Override
@@ -65,15 +65,15 @@ public class YandexSpeechNotificationResource
 
     @Override
     public void run() {
-        if (propertyNsAgent != null) {
-            propertyNsAgent.run();
+        if (propertiesNsAgent != null) {
+            propertiesNsAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertyNsAgent != null) {
-            propertyNsAgent.shutdown();
+        if (propertiesNsAgent != null) {
+            propertiesNsAgent.shutdown();
         }
         try {
             client.shutdown();

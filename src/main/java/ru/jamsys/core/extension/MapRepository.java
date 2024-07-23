@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension.property;
+package ru.jamsys.core.extension;
 
 import ru.jamsys.core.component.ServiceClassFinder;
 

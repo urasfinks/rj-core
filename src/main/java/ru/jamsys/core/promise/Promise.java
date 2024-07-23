@@ -5,7 +5,7 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.functional.iface.TriConsumer;
-import ru.jamsys.core.extension.property.MapRepository;
+import ru.jamsys.core.extension.MapRepository;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
 import ru.jamsys.core.resource.Resource;

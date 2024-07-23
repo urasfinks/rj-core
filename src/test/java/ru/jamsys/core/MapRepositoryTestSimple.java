@@ -2,7 +2,7 @@ package ru.jamsys.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.extension.property.MapRepository;
+import ru.jamsys.core.extension.MapRepository;
 
 import java.util.HashMap;
 import java.util.Map;

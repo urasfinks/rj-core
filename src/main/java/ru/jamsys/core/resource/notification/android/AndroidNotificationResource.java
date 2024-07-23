@@ -4,8 +4,8 @@ import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
-import ru.jamsys.core.extension.property.PropertyNsAgent;
+import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.PropertiesNsAgent;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -27,18 +27,18 @@ public class AndroidNotificationResource
         extends ExpirationMsMutableImpl
         implements
         Resource<AndroidNotificationRequest, HttpResponse>,
-        PropertyUpdateNotifier {
+        PropertyUpdateDelegate {
 
     private String accessToken;
 
-    private PropertyNsAgent propertyNsAgent;
+    private PropertiesNsAgent propertiesNsAgent;
 
-    private final AndroidNotificationProperty property = new AndroidNotificationProperty();
+    private final AndroidNotificationProperties property = new AndroidNotificationProperties();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertyNsAgent = serviceProperty.getPropertyNsAgent(this, property, resourceArguments.ns);
+        propertiesNsAgent = serviceProperty.getPropertyNsAgent(this, property, resourceArguments.ns);
     }
 
     @Override
@@ -98,15 +98,15 @@ public class AndroidNotificationResource
 
     @Override
     public void run() {
-        if (propertyNsAgent != null) {
-            propertyNsAgent.run();
+        if (propertiesNsAgent != null) {
+            propertiesNsAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertyNsAgent != null) {
-            propertyNsAgent.shutdown();
+        if (propertiesNsAgent != null) {
+            propertiesNsAgent.shutdown();
         }
     }
 

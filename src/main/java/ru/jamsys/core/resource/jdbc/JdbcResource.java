@@ -6,8 +6,8 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
-import ru.jamsys.core.extension.property.PropertyNsAgent;
+import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.PropertiesNsAgent;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
@@ -29,20 +29,20 @@ public class JdbcResource
         implements
         Resource<JdbcRequest, List<Map<String, Object>>>,
         JdbcExecute,
-        PropertyUpdateNotifier {
+        PropertyUpdateDelegate {
 
     private StatementControl statementControl;
 
     private Connection connection;
 
-    private PropertyNsAgent propertyNsAgent;
+    private PropertiesNsAgent propertiesNsAgent;
 
-    private final JdbcProperty property = new JdbcProperty();
+    private final JdbcProperties property = new JdbcProperties();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Exception {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertyNsAgent = serviceProperty.getPropertyNsAgent(this, property, resourceArguments.ns);
+        propertiesNsAgent = serviceProperty.getPropertyNsAgent(this, property, resourceArguments.ns);
         this.statementControl = new DefaultStatementControl();
     }
 
@@ -111,16 +111,16 @@ public class JdbcResource
 
     @Override
     public void run() {
-        if (propertyNsAgent != null) {
-            propertyNsAgent.run();
+        if (propertiesNsAgent != null) {
+            propertiesNsAgent.run();
         }
         up();
     }
 
     @Override
     public void shutdown() {
-        if (propertyNsAgent != null) {
-            propertyNsAgent.shutdown();
+        if (propertiesNsAgent != null) {
+            propertiesNsAgent.shutdown();
         }
         down();
     }

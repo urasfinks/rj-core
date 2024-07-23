@@ -1,10 +1,10 @@
 package ru.jamsys.core.extension.property;
 
 import ru.jamsys.core.component.ServiceClassFinder;
-import ru.jamsys.core.extension.property.item.PropertyBoolean;
-import ru.jamsys.core.extension.property.item.PropertyInstance;
-import ru.jamsys.core.extension.property.item.PropertyInteger;
-import ru.jamsys.core.extension.property.item.PropertyString;
+import ru.jamsys.core.extension.property.item.type.PropertyBoolean;
+import ru.jamsys.core.extension.property.item.type.PropertyInstance;
+import ru.jamsys.core.extension.property.item.type.PropertyInteger;
+import ru.jamsys.core.extension.property.item.type.PropertyString;
 
 public class PropertyFactory {
 

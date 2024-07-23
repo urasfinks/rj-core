@@ -6,7 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.functional.iface.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.iface.SupplierThrowing;
-import ru.jamsys.core.extension.property.MapRepository;
+import ru.jamsys.core.extension.MapRepository;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.resource.virtual.file.system.view.FileView;
 import ru.jamsys.core.statistic.Statistic;

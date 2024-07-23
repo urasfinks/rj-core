@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.property;
 import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.property.item.SubscriberItem;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,13 +16,13 @@ import java.util.Set;
 // Просто как дворецкий, ни больше не меньше
 
 @Getter
-public class PropertyNsAgent implements LifeCycleInterface {
+public class PropertiesNsAgent implements LifeCycleInterface {
 
-    private final PropertyUpdateNotifier subscriber;
+    private final PropertyUpdateDelegate subscriber;
 
     private final ServiceProperty serviceProperty;
 
-    private final PropertyRepository propertyRepository;
+    private final PropertiesRepository propertiesRepository;
 
     private final String ns;
 
@@ -37,29 +38,29 @@ public class PropertyNsAgent implements LifeCycleInterface {
         return count;
     }
 
-    public PropertyNsAgent(
-            PropertyUpdateNotifier subscriber,
+    public PropertiesNsAgent(
+            PropertyUpdateDelegate subscriber,
             ServiceProperty serviceProperty,
-            PropertyRepository propertyRepository,
+            PropertiesRepository propertiesRepository,
             String ns
     ) {
         this.subscriber = subscriber;
         this.serviceProperty = serviceProperty;
-        this.propertyRepository = propertyRepository;
+        this.propertiesRepository = propertiesRepository;
         this.ns = ns;
         init(true);
     }
 
-    public PropertyNsAgent(
-            PropertyUpdateNotifier subscriber,
+    public PropertiesNsAgent(
+            PropertyUpdateDelegate subscriber,
             ServiceProperty serviceProperty,
-            PropertyRepository propertyRepository,
+            PropertiesRepository propertiesRepository,
             String ns,
             boolean require
     ) {
         this.subscriber = subscriber;
         this.serviceProperty = serviceProperty;
-        this.propertyRepository = propertyRepository;
+        this.propertiesRepository = propertiesRepository;
         this.ns = ns;
         init(require);
     }
@@ -69,7 +70,7 @@ public class PropertyNsAgent implements LifeCycleInterface {
     }
 
     private void init(boolean require) {
-        Map<String, String> mapPropValue = this.propertyRepository.getMapPropValue();
+        Map<String, String> mapPropValue = this.propertiesRepository.getMapPropValue();
         for (String key : mapPropValue.keySet()) {
             add(key, mapPropValue.get(key), require);
         }
@@ -90,7 +91,7 @@ public class PropertyNsAgent implements LifeCycleInterface {
         }
     }
 
-    public PropertyNsAgent add(String key, String defValue, boolean require) {
+    public PropertiesNsAgent add(String key, String defValue, boolean require) {
         SubscriberItem subscriberItem = mapListener.computeIfAbsent(key, _ -> new SubscriberItem(defValue, require));
         if (!subscriberItem.isSubscribe()) {
             serviceProperty.subscribe(
@@ -116,13 +117,13 @@ public class PropertyNsAgent implements LifeCycleInterface {
                 // Бывает такое, что мы можем подписываться на чистый ns, так как не предполагается больше ключей
                 String prop = key.equals(ns) ? "" : key.substring(ns.length() + 1);
                 updatedProp.add(prop);
-                propertyRepository.setValueByProp(prop, map.get(key));
+                propertiesRepository.setValueByProp(prop, map.get(key));
             }
 
         } else {
             for (String key : map.keySet()) {
                 updatedProp.add(key);
-                propertyRepository.setValueByProp(key, map.get(key));
+                propertiesRepository.setValueByProp(key, map.get(key));
             }
         }
         if (subscriber != null && !updatedProp.isEmpty()) {

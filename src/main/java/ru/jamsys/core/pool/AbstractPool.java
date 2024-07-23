@@ -8,9 +8,9 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.UniqueClassName;
-import ru.jamsys.core.extension.property.PropertyValue;
-import ru.jamsys.core.extension.property.ValueName;
-import ru.jamsys.core.extension.property.item.PropertyInteger;
+import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.ValueName;
+import ru.jamsys.core.extension.property.item.type.PropertyInteger;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.resource.Resource;
@@ -75,9 +75,9 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     private final AtomicBoolean dynamicPollSize = new AtomicBoolean(false);
 
     @Getter
-    private final PropertyValue<Integer> propertyPoolSizeMax;
+    private final Property<Integer> propertyPoolSizeMax;
 
-    private final PropertyValue<Integer> propertyPoolSizeMin;
+    private final Property<Integer> propertyPoolSizeMin;
 
     private final Lock lockAddToPark = new ReentrantLock();
 
@@ -86,14 +86,14 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     public AbstractPool(String index) {
         this.index = getClassName(index);
 
-        propertyPoolSizeMax = new PropertyValue<>(
+        propertyPoolSizeMax = new Property<>(
                 App.context,
                 this.index + "." + ValueName.POOL_SIZE_MAX.getNameCamel(),
                 new PropertyInteger(1),
                 null
         );
 
-        propertyPoolSizeMin = new PropertyValue<>(
+        propertyPoolSizeMin = new Property<>(
                 App.context,
                 this.index + "." + ValueName.POOL_SIZE_MIN.getNameCamel(),
                 new PropertyInteger(0),
