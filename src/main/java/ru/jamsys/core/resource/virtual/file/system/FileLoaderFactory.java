@@ -2,7 +2,7 @@ package ru.jamsys.core.resource.virtual.file.system;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.extension.functional.iface.SupplierThrowing;
+import ru.jamsys.core.extension.functional.SupplierThrowing;
 import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.flat.util.UtilFile;

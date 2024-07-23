@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension.functional.iface;
+package ru.jamsys.core.extension.functional;
 
 @SuppressWarnings("unused")
 @FunctionalInterface
