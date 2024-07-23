@@ -17,7 +17,7 @@ import java.util.Set;
 // IO time: 5ms
 // COMPUTE time: 5ms
 
-class PropertyTest {
+class MapRepositoryTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runCore();

@@ -98,7 +98,7 @@ public class LogUploader extends PropertyRepository implements Cron5s, PromiseGe
                     countInsert.incrementAndGet();
                 }
             }
-            promise.setProperty(LogUploaderPromiseProperty.RESERVE_LOG.name(), reserve);
+            promise.setToMapRepository(LogUploaderPromiseProperty.RESERVE_LOG.name(), reserve);
             if (countInsert.get() > 0) {
                 try {
                     influxResource.execute(jdbcRequest);
@@ -115,11 +115,11 @@ public class LogUploader extends PropertyRepository implements Cron5s, PromiseGe
                 }
             }
             if (!restore.isEmpty()) {
-                promise.setProperty("readyFile", getFolder() + ListSort.sort(restore).getFirst());
+                promise.setToMapRepository("readyFile", getFolder() + ListSort.sort(restore).getFirst());
             }
         }).appendWait().appendWithResource("read", FileByteReaderResource.class, (_, promise, fileByteReaderResource) -> {
             if (broker.getOccupancyPercentage() < 50) {
-                String readyFile = promise.getProperty("readyFile", String.class);
+                String readyFile = promise.getFromMapRepository("readyFile", String.class);
                 if (readyFile != null) {
                     List<ByteTransformer> execute = fileByteReaderResource.execute(new FileByteReaderRequest(readyFile, Log.class));
                     execute.forEach(byteItem -> broker.add((Log) byteItem, 6_000L));
@@ -140,7 +140,7 @@ public class LogUploader extends PropertyRepository implements Cron5s, PromiseGe
 
                 if (isFatalExceptionOnComplete.apply(exception)) {
                     // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
-                    List<Log> reserveLog = promise.getProperty(LogUploaderPromiseProperty.RESERVE_LOG.name(), List.class, null);
+                    List<Log> reserveLog = promise.getFromMapRepository(LogUploaderPromiseProperty.RESERVE_LOG.name(), List.class, null);
                     if (reserveLog != null && !reserveLog.isEmpty()) {
                         reserveLog.forEach(log -> broker.add(log, 2_000L));
                     }

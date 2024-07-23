@@ -6,7 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.functional.iface.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.iface.SupplierThrowing;
-import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.property.MapRepository;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.resource.virtual.file.system.view.FileView;
 import ru.jamsys.core.statistic.Statistic;
@@ -25,7 +25,7 @@ public class File extends ExpirationMsMutableImpl
         implements
         StatisticsFlush,
         KeepAlive,
-        Property<String, Object>,
+        MapRepository<String, Object>,
         LifeCycleInterface,
         ClassEquals
 {
@@ -47,7 +47,7 @@ public class File extends ExpirationMsMutableImpl
     Map<Class<? extends FileView>, FileView> view = new ConcurrentHashMap<>();
 
     @Getter
-    Map<String, Object> mapProperty = new ConcurrentHashMap<>();
+    Map<String, Object> mapRepository = new ConcurrentHashMap<>();
 
     @Getter
     private String absolutePath = null;
@@ -75,7 +75,7 @@ public class File extends ExpirationMsMutableImpl
 
     public <T extends FileView> T getView(Class<T> cls, Object... props) {
         for (int i = 0; i < props.length; i += 2) {
-            setProperty(props[i].toString(), props[i + 1]);
+            setToMapRepository(props[i].toString(), props[i + 1]);
         }
         return getView(cls);
     }

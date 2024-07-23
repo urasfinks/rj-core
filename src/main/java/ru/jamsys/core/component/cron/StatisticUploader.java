@@ -119,7 +119,7 @@ public class StatisticUploader extends PropertyRepository implements Cron5s, Pro
                             }
                         }
                     }
-                    promise.setProperty(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), reserve);
+                    promise.setToMapRepository(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), reserve);
 
                     if (countInsert.get() > 0) {
                         influxResource.execute(listPoints);
@@ -135,13 +135,13 @@ public class StatisticUploader extends PropertyRepository implements Cron5s, Pro
                         }
                     }
                     if (!restore.isEmpty()) {
-                        promise.setProperty("readyFile", getFolder() + ListSort.sort(restore).getFirst());
+                        promise.setToMapRepository("readyFile", getFolder() + ListSort.sort(restore).getFirst());
                     }
                 })
                 .appendWait()
                 .appendWithResource("read", FileByteReaderResource.class, (_, promise, fileByteReaderResource) -> {
                     if (broker.getOccupancyPercentage() < 50) {
-                        String readyFile = promise.getProperty("readyFile", String.class);
+                        String readyFile = promise.getFromMapRepository("readyFile", String.class);
                         if (readyFile != null) {
                             List<ByteTransformer> execute = fileByteReaderResource.execute(
                                     new FileByteReaderRequest(readyFile, StatisticSec.class)
@@ -165,7 +165,7 @@ public class StatisticUploader extends PropertyRepository implements Cron5s, Pro
                                 .getFunctionCheckFatalException();
                         if (isFatalExceptionOnComplete.apply(exception)) {
                             // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
-                            List<StatisticSec> reserveStatistic = promise.getProperty(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), List.class, null);
+                            List<StatisticSec> reserveStatistic = promise.getFromMapRepository(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), List.class, null);
                             if (reserveStatistic != null && !reserveStatistic.isEmpty()) {
                                 reserveStatistic.forEach(statisticSec -> broker.add(statisticSec, 2_000L));
                             }

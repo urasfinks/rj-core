@@ -35,6 +35,7 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
+        prop.setApplicationContext(applicationContext);
         prop.init(
                 String.class,
                 "run.args.web.socket.path",

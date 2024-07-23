@@ -74,7 +74,7 @@ class FileTest {
 
         File file = new File("/test.p12", FileLoaderFactory.createKeyStore("one.jks", "test"));
         file.setSaver(FileSaverFactory.writeFile("one.jks"));
-        file.setProperty("securityKey", "test");
+        file.setToMapRepository("securityKey", "test");
         UtilFile.remove("one.jks");
         UtilFile.removeIfExist("unit-test.jks");
     }

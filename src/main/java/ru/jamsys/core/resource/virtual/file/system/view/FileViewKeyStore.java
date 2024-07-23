@@ -38,10 +38,10 @@ public class FileViewKeyStore implements FileView {
     public void set(File file) {
         this.file = file;
         securityComponent = App.get(SecurityComponent.class);
-        typeKeyStorage = file.getProperty(prop.TYPE.name(), String.class, "JCEKS");
-        securityKey = file.getProperty(prop.SECURITY_KEY.name(), String.class, file.getAbsolutePath());
-        if (file.isProperty(prop.TRUST_MANAGER.name())) {
-            trustManager = file.getProperty(prop.TRUST_MANAGER.name(), CustomTrustManager.class, null);
+        typeKeyStorage = file.getFromMapRepository(prop.TYPE.name(), String.class, "JCEKS");
+        securityKey = file.getFromMapRepository(prop.SECURITY_KEY.name(), String.class, file.getAbsolutePath());
+        if (file.mapRepositoryContains(prop.TRUST_MANAGER.name())) {
+            trustManager = file.getFromMapRepository(prop.TRUST_MANAGER.name(), CustomTrustManager.class, null);
         }
     }
 
