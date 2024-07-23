@@ -32,7 +32,7 @@ public class TelegramNotificationResource
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         securityComponent = App.get(SecurityComponent.class);
-        propertiesNsAgent = serviceProperty.getPropertyNsAgent(null, property, resourceArguments.ns);
+        propertiesNsAgent = serviceProperty.getFactory().getNsAgent(null, property, resourceArguments.ns);
     }
 
     @Override

@@ -9,9 +9,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.property.PropertiesRepository;
-import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.PropertiesNsAgent;
+import ru.jamsys.core.extension.property.ServicePropertyFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,9 +25,13 @@ public class ServiceProperty {
     final private Map<String, Set<PropertiesNsAgent>> subscribe = new ConcurrentHashMap<>();
 
     @Getter
+    final private ServicePropertyFactory factory;
+
+    @Getter
     final private Map<String, String> prop = new HashMap<>();
 
     public ServiceProperty(ApplicationContext applicationContext) {
+        factory = new ServicePropertyFactory(this);
         Environment env = applicationContext.getEnvironment();
         MutablePropertySources propertySources = ((AbstractEnvironment) env).getPropertySources();
         for (org.springframework.core.env.PropertySource<?> next : propertySources) {
@@ -96,30 +99,6 @@ public class ServiceProperty {
 
     public void unsubscribe(String key, PropertiesNsAgent propertiesNsAgent) {
         subscribe.get(key).remove(propertiesNsAgent);
-    }
-
-    public PropertiesNsAgent getPropertyNsAgent(
-            PropertyUpdateDelegate propertyUpdateDelegate,
-            PropertiesRepository propertiesRepository
-    ) {
-        return getPropertyNsAgent(propertyUpdateDelegate, propertiesRepository, null, true);
-    }
-
-    public PropertiesNsAgent getPropertyNsAgent(
-            PropertyUpdateDelegate propertyUpdateDelegate,
-            PropertiesRepository propertiesRepository,
-            String ns
-    ) {
-        return new PropertiesNsAgent(propertyUpdateDelegate, this, propertiesRepository, ns, true);
-    }
-
-    public PropertiesNsAgent getPropertyNsAgent(
-            PropertyUpdateDelegate propertyUpdateDelegate,
-            PropertiesRepository propertiesRepository,
-            String ns,
-            boolean require
-    ) {
-        return new PropertiesNsAgent(propertyUpdateDelegate, this, propertiesRepository, ns, require);
     }
 
 }

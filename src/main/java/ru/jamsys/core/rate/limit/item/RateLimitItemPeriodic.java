@@ -48,7 +48,7 @@ public class RateLimitItemPeriodic
         this.ns = ns;
         this.period = period;
         this.periodName = period.getNameCamel();
-        propertiesNsAgent = applicationContext.getBean(ServiceProperty.class).getPropertyNsAgent(
+        propertiesNsAgent = applicationContext.getBean(ServiceProperty.class).getFactory().getNsAgent(
                 this,
                 this,
                 ns,

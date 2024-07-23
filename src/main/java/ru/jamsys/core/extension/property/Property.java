@@ -1,7 +1,6 @@
 package ru.jamsys.core.extension.property;
 
 import lombok.Getter;
-import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
@@ -28,7 +27,7 @@ public class Property<T> extends PropertiesRepository implements PropertyUpdateD
     private final BiConsumer<T, T> onUpdate;
 
     public Property(
-            ApplicationContext applicationContext,
+            ServiceProperty serviceProperty,
             String ns,
             PropertyInstance<T> propertyInstance,
             BiConsumer<T, T> onUpdate // 1: oldValue; 2: newValue
@@ -37,7 +36,7 @@ public class Property<T> extends PropertiesRepository implements PropertyUpdateD
         this.propertyInstance = propertyInstance;
         this.value = propertyInstance.getAsString();
         this.ns = ns;
-        propertiesNsAgent = applicationContext.getBean(ServiceProperty.class).getPropertyNsAgent(
+        propertiesNsAgent = serviceProperty.getFactory().getNsAgent(
                 this,
                 this,
                 ns,

@@ -64,7 +64,7 @@ public class SecurityComponent extends PropertiesRepository implements LifeCycle
     private final PropertiesNsAgent propertiesNsAgent;
 
     public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
-        propertiesNsAgent = serviceProperty.getPropertyNsAgent(null, this);
+        propertiesNsAgent = serviceProperty.getFactory().getNsAgent(null, this);
         this.exceptionHandler = exceptionHandler;
     }
 

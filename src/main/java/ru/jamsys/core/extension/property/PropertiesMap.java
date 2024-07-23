@@ -1,7 +1,6 @@
 package ru.jamsys.core.extension.property;
 
-import lombok.Setter;
-import org.springframework.context.ApplicationContext;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 
 import java.util.Map;
@@ -12,16 +11,18 @@ public class PropertiesMap implements LifeCycleInterface {
 
     private final Map<String, Property<?>> map = new ConcurrentHashMap<>();
 
-    @Setter
-    private ApplicationContext applicationContext;
+    private final ServiceProperty serviceProperty;
+
+    public PropertiesMap(ServiceProperty serviceProperty) {
+        this.serviceProperty = serviceProperty;
+    }
 
     public <T> Property<T> init(Class<T> cls, String key, T defValue) {
         return init(cls, key, defValue, null);
     }
 
     public <T> Property<T> init(Class<T> cls, String key, T defValue, BiConsumer<T, T> onUpdate) {
-        Property<?> property = map.computeIfAbsent(key, s -> new Property<>(
-                applicationContext,
+        Property<?> property = map.computeIfAbsent(key, s -> serviceProperty.getFactory().getProperty(
                 s,
                 PropertyFactory.instanceOf(cls, defValue),
                 onUpdate

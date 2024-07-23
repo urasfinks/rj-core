@@ -3,11 +3,11 @@ package ru.jamsys.core.component.manager.item;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.property.Property;
-import ru.jamsys.core.extension.ValueName;
 import ru.jamsys.core.extension.property.item.type.PropertyInteger;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.AvgMetric;
@@ -87,15 +87,14 @@ public class Broker<TEO>
         this.classItem = classItem;
         this.onDropConsumer = onDropConsumer;
         String clsIndex = getClassName(index, applicationContext);
-        propertyBrokerSize = new Property<>(
-                applicationContext,
+
+        propertyBrokerSize = applicationContext.getBean(ServiceProperty.class).getFactory().getProperty(
                 clsIndex + "." + ValueName.BROKER_SIZE.getNameCamel(),
                 new PropertyInteger(3000),
                 null
         );
 
-        propertyBrokerTailSize = new Property(
-                applicationContext,
+        propertyBrokerTailSize = applicationContext.getBean(ServiceProperty.class).getFactory().getProperty(
                 clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),
                 new PropertyInteger(5),
                 null

@@ -51,7 +51,8 @@ public class ServiceLogger extends PropertiesRepository implements
         }
         applicationContext
                 .getBean(ServiceProperty.class)
-                .getPropertyNsAgent(null, this, null);
+                .getFactory()
+                .getNsAgent(null, this, null);
     }
 
     public DisposableExpirationMsImmutableEnvelope<Log> add(Log log) {

@@ -31,7 +31,8 @@ public class ExceptionHandler extends PropertiesRepository {
     public ExceptionHandler(ApplicationContext applicationContext) {
         applicationContext
                 .getBean(ServiceProperty.class)
-                .getPropertyNsAgent(null, this, null);
+                .getFactory()
+                .getNsAgent(null, this, null);
     }
 
     public void handler(Throwable th) {

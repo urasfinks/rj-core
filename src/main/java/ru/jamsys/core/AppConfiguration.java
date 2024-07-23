@@ -17,9 +17,10 @@ import org.springframework.util.unit.DataSize;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.web.socket.WebSocket;
-import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertiesMap;
+import ru.jamsys.core.extension.property.Property;
 
 import javax.annotation.PreDestroy;
 
@@ -28,14 +29,16 @@ import javax.annotation.PreDestroy;
 @EnableWebSocket
 public class AppConfiguration implements WebSocketConfigurer {
 
-    private final PropertiesMap prop = new PropertiesMap();
+    private PropertiesMap prop = null;
 
     @Autowired
     private ApplicationContext applicationContext;
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
-        prop.setApplicationContext(applicationContext);
+        if (prop == null) {
+            prop = applicationContext.getBean(ServiceProperty.class).getFactory().getMap();
+        }
         prop.init(
                 String.class,
                 "run.args.web.socket.path",
@@ -48,7 +51,9 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     @Bean
     public ServletWebServerFactory servletContainer() {
-        prop.setApplicationContext(applicationContext);
+        if (prop == null) {
+            prop = applicationContext.getBean(ServiceProperty.class).getFactory().getMap();
+        }
         Property<Boolean> webHttp = prop.init(Boolean.class, "run.args.web", null);
 
         if (webHttp.get()) {

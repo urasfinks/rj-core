@@ -44,7 +44,8 @@ class MapRepositoryTest {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         XX xx = new XX();
         PropertiesNsAgent subscribe = serviceProperty
-                .getPropertyNsAgent(xx, xx)
+                .getFactory()
+                .getNsAgent(xx, xx)
                 .add("run.args.security.path.storage", null, true)
                 .add("run.args.security.path.storage", null, true);
 
@@ -149,7 +150,7 @@ class MapRepositoryTest {
         Map<String, String> mapPropValue = x2.getMapPropValue();
         System.out.println(mapPropValue);
 
-        PropertiesNsAgent subscribe = serviceProperty.getPropertyNsAgent(x2, x2, "run.args");
+        PropertiesNsAgent subscribe = serviceProperty.getFactory().getNsAgent(x2, x2, "run.args");
 
         Assertions.assertEquals(2, subscribe.getMapListener().size());
 
