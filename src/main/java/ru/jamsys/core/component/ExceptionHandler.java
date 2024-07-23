@@ -11,14 +11,14 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.extension.line.writer.LineWriterString;
-import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.flat.util.Util;
 
 @Setter
 @Component
 @Lazy
-public class ExceptionHandler extends PropertyConnector {
+public class ExceptionHandler extends PropertyRepository {
 
     private int maxLine = 50;
 
@@ -31,7 +31,7 @@ public class ExceptionHandler extends PropertyConnector {
     public ExceptionHandler(ApplicationContext applicationContext) {
         applicationContext
                 .getBean(ServiceProperty.class)
-                .getSubscriber(null, this, null);
+                .getPropertyNsAgent(null, this, null);
     }
 
     public void handler(Throwable th) {

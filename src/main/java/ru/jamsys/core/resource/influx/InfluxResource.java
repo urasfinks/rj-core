@@ -12,7 +12,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
-import ru.jamsys.core.extension.property.NameSpaceAgent;
+import ru.jamsys.core.extension.property.PropertyNsAgent;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
@@ -39,14 +39,14 @@ public class InfluxResource
 
     private WriteApiBlocking writer;
 
-    private NameSpaceAgent nameSpaceAgent;
+    private PropertyNsAgent propertyNsAgent;
 
     private final InfluxProperty property = new InfluxProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        nameSpaceAgent = serviceProperty.getSubscriber(null, property, resourceArguments.ns);
+        propertyNsAgent = serviceProperty.getPropertyNsAgent(null, property, resourceArguments.ns);
     }
 
     @Override
@@ -109,16 +109,16 @@ public class InfluxResource
 
     @Override
     public void run() {
-        if (nameSpaceAgent != null) {
-            nameSpaceAgent.run();
+        if (propertyNsAgent != null) {
+            propertyNsAgent.run();
         }
         up();
     }
 
     @Override
     public void shutdown() {
-        if (nameSpaceAgent != null) {
-            nameSpaceAgent.shutdown();
+        if (propertyNsAgent != null) {
+            propertyNsAgent.shutdown();
         }
         down();
     }

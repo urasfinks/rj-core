@@ -7,7 +7,7 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
-import ru.jamsys.core.extension.property.NameSpaceAgent;
+import ru.jamsys.core.extension.property.PropertyNsAgent;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
@@ -35,14 +35,14 @@ public class JdbcResource
 
     private Connection connection;
 
-    private NameSpaceAgent nameSpaceAgent;
+    private PropertyNsAgent propertyNsAgent;
 
     private final JdbcProperty property = new JdbcProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Exception {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        nameSpaceAgent = serviceProperty.getSubscriber(this, property, resourceArguments.ns);
+        propertyNsAgent = serviceProperty.getPropertyNsAgent(this, property, resourceArguments.ns);
         this.statementControl = new DefaultStatementControl();
     }
 
@@ -111,16 +111,16 @@ public class JdbcResource
 
     @Override
     public void run() {
-        if (nameSpaceAgent != null) {
-            nameSpaceAgent.run();
+        if (propertyNsAgent != null) {
+            propertyNsAgent.run();
         }
         up();
     }
 
     @Override
     public void shutdown() {
-        if (nameSpaceAgent != null) {
-            nameSpaceAgent.shutdown();
+        if (propertyNsAgent != null) {
+            propertyNsAgent.shutdown();
         }
         down();
     }

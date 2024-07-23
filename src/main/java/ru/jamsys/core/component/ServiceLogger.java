@@ -12,7 +12,7 @@ import ru.jamsys.core.component.manager.item.LogType;
 import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @Lazy
-public class ServiceLogger extends PropertyConnector implements
+public class ServiceLogger extends PropertyRepository implements
         StatisticsFlushComponent,
         LifeCycleComponent {
 
@@ -51,7 +51,7 @@ public class ServiceLogger extends PropertyConnector implements
         }
         applicationContext
                 .getBean(ServiceProperty.class)
-                .getSubscriber(null, this, null);
+                .getPropertyNsAgent(null, this, null);
     }
 
     public DisposableExpirationMsImmutableEnvelope<Log> add(Log log) {

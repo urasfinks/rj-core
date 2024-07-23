@@ -6,10 +6,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
-import ru.jamsys.core.extension.property.NameSpaceAgent;
+import ru.jamsys.core.extension.property.PropertyNsAgent;
 
 import java.util.Map;
 import java.util.Set;
@@ -28,7 +28,7 @@ class PropertyTest {
         App.shutdown();
     }
 
-    public static class XX extends PropertyConnector implements PropertyUpdateNotifier {
+    public static class XX extends PropertyRepository implements PropertyUpdateNotifier {
 
         int c = 0;
 
@@ -43,8 +43,8 @@ class PropertyTest {
     void test() {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         XX xx = new XX();
-        NameSpaceAgent subscribe = serviceProperty
-                .getSubscriber(xx, xx)
+        PropertyNsAgent subscribe = serviceProperty
+                .getPropertyNsAgent(xx, xx)
                 .add("run.args.security.path.storage", null, true)
                 .add("run.args.security.path.storage", null, true);
 
@@ -125,7 +125,7 @@ class PropertyTest {
     }
 
 
-    static class x2 extends PropertyConnector implements PropertyUpdateNotifier {
+    static class x2 extends PropertyRepository implements PropertyUpdateNotifier {
 
         @SuppressWarnings("all")
         @PropertyName("security.path.storage")
@@ -149,7 +149,7 @@ class PropertyTest {
         Map<String, String> mapPropValue = x2.getMapPropValue();
         System.out.println(mapPropValue);
 
-        NameSpaceAgent subscribe = serviceProperty.getSubscriber(x2, x2, "run.args");
+        PropertyNsAgent subscribe = serviceProperty.getPropertyNsAgent(x2, x2, "run.args");
 
         Assertions.assertEquals(2, subscribe.getMapListener().size());
 

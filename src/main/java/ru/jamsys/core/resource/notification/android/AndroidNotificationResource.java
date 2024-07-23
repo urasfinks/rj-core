@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
-import ru.jamsys.core.extension.property.NameSpaceAgent;
+import ru.jamsys.core.extension.property.PropertyNsAgent;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -31,14 +31,14 @@ public class AndroidNotificationResource
 
     private String accessToken;
 
-    private NameSpaceAgent nameSpaceAgent;
+    private PropertyNsAgent propertyNsAgent;
 
     private final AndroidNotificationProperty property = new AndroidNotificationProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        nameSpaceAgent = serviceProperty.getSubscriber(this, property, resourceArguments.ns);
+        propertyNsAgent = serviceProperty.getPropertyNsAgent(this, property, resourceArguments.ns);
     }
 
     @Override
@@ -98,15 +98,15 @@ public class AndroidNotificationResource
 
     @Override
     public void run() {
-        if (nameSpaceAgent != null) {
-            nameSpaceAgent.run();
+        if (propertyNsAgent != null) {
+            propertyNsAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (nameSpaceAgent != null) {
-            nameSpaceAgent.shutdown();
+        if (propertyNsAgent != null) {
+            propertyNsAgent.shutdown();
         }
     }
 

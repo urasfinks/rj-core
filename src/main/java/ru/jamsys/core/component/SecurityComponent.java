@@ -6,9 +6,9 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.LifeCycleComponent;
-import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.NameSpaceAgent;
+import ru.jamsys.core.extension.property.PropertyNsAgent;
 import ru.jamsys.core.flat.util.*;
 
 import javax.crypto.SecretKey;
@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-public class SecurityComponent extends PropertyConnector implements LifeCycleComponent {
+public class SecurityComponent extends PropertyRepository implements LifeCycleComponent {
 
     @Setter
     @PropertyName("run.args.security.path.storage")
@@ -61,10 +61,10 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
 
     private KeyStore.PasswordProtection keyStorePP;
 
-    private final NameSpaceAgent nameSpaceAgent;
+    private final PropertyNsAgent propertyNsAgent;
 
     public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
-        nameSpaceAgent = serviceProperty.getSubscriber(null, this);
+        propertyNsAgent = serviceProperty.getPropertyNsAgent(null, this);
         this.exceptionHandler = exceptionHandler;
     }
 
@@ -351,12 +351,12 @@ public class SecurityComponent extends PropertyConnector implements LifeCycleCom
             String passwordFromInfoJson = getPasswordFromInfoJson(initJson);
             printNotice(passwordFromInfoJson);
         }
-        nameSpaceAgent.run();
+        propertyNsAgent.run();
     }
 
     @Override
     public void shutdown() {
-        nameSpaceAgent.shutdown();
+        propertyNsAgent.shutdown();
     }
 
     @Override

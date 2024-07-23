@@ -15,13 +15,13 @@ import java.util.Set;
 // Просто как дворецкий, ни больше не меньше
 
 @Getter
-public class NameSpaceAgent implements LifeCycleInterface {
+public class PropertyNsAgent implements LifeCycleInterface {
 
     private final PropertyUpdateNotifier subscriber;
 
     private final ServiceProperty serviceProperty;
 
-    private final PropertyConnector propertyConnector;
+    private final PropertyRepository propertyRepository;
 
     private final String ns;
 
@@ -37,45 +37,45 @@ public class NameSpaceAgent implements LifeCycleInterface {
         return count;
     }
 
-    public NameSpaceAgent(
+    public PropertyNsAgent(
             PropertyUpdateNotifier subscriber,
             ServiceProperty serviceProperty,
-            PropertyConnector propertyConnector,
+            PropertyRepository propertyRepository,
             String ns
     ) {
         this.subscriber = subscriber;
         this.serviceProperty = serviceProperty;
-        this.propertyConnector = propertyConnector;
+        this.propertyRepository = propertyRepository;
         this.ns = ns;
         init(true);
     }
 
-    public NameSpaceAgent(
+    public PropertyNsAgent(
             PropertyUpdateNotifier subscriber,
             ServiceProperty serviceProperty,
-            PropertyConnector propertyConnector,
+            PropertyRepository propertyRepository,
             String ns,
             boolean require
     ) {
         this.subscriber = subscriber;
         this.serviceProperty = serviceProperty;
-        this.propertyConnector = propertyConnector;
+        this.propertyRepository = propertyRepository;
         this.ns = ns;
         init(require);
     }
 
     public void setProperty(String key, String value) {
-        this.serviceProperty.setProperty(getKeyWithNamespace(key), value);
+        this.serviceProperty.setProperty(getKeyWithNs(key), value);
     }
 
     private void init(boolean require) {
-        Map<String, String> mapPropValue = this.propertyConnector.getMapPropValue();
+        Map<String, String> mapPropValue = this.propertyRepository.getMapPropValue();
         for (String key : mapPropValue.keySet()) {
             add(key, mapPropValue.get(key), require);
         }
     }
 
-    private String getKeyWithNamespace(String key) {
+    private String getKeyWithNs(String key) {
         if (key.isEmpty()) {
             if (ns == null) {
                 // Не надо таких поворотов, когда и ns = null и ключ пустой
@@ -90,11 +90,11 @@ public class NameSpaceAgent implements LifeCycleInterface {
         }
     }
 
-    public NameSpaceAgent add(String key, String defValue, boolean require) {
+    public PropertyNsAgent add(String key, String defValue, boolean require) {
         SubscriberItem subscriberItem = mapListener.computeIfAbsent(key, _ -> new SubscriberItem(defValue, require));
         if (!subscriberItem.isSubscribe()) {
             serviceProperty.subscribe(
-                    getKeyWithNamespace(key),
+                    getKeyWithNs(key),
                     this,
                     subscriberItem.isRequire(),
                     subscriberItem.getDefValue()
@@ -106,7 +106,7 @@ public class NameSpaceAgent implements LifeCycleInterface {
 
     public void remove(String key) {
         mapListener.remove(key);
-        serviceProperty.unsubscribe(getKeyWithNamespace(key), this);
+        serviceProperty.unsubscribe(getKeyWithNs(key), this);
     }
 
     public void onPropertyUpdate(Map<String, String> map) {
@@ -116,13 +116,13 @@ public class NameSpaceAgent implements LifeCycleInterface {
                 // Бывает такое, что мы можем подписываться на чистый ns, так как не предполагается больше ключей
                 String prop = key.equals(ns) ? "" : key.substring(ns.length() + 1);
                 updatedProp.add(prop);
-                propertyConnector.setValueByProp(prop, map.get(key));
+                propertyRepository.setValueByProp(prop, map.get(key));
             }
 
         } else {
             for (String key : map.keySet()) {
                 updatedProp.add(key);
-                propertyConnector.setValueByProp(key, map.get(key));
+                propertyRepository.setValueByProp(key, map.get(key));
             }
         }
         if (subscriber != null && !updatedProp.isEmpty()) {
@@ -135,7 +135,7 @@ public class NameSpaceAgent implements LifeCycleInterface {
         mapListener.forEach((key, subscriberItem) -> {
             if (!subscriberItem.isSubscribe()) {
                 serviceProperty.subscribe(
-                        getKeyWithNamespace(key),
+                        getKeyWithNs(key),
                         this,
                         subscriberItem.isRequire(),
                         subscriberItem.getDefValue()
@@ -149,7 +149,7 @@ public class NameSpaceAgent implements LifeCycleInterface {
     public void shutdown() {
         mapListener.forEach((key, subscriberItem) -> {
             if (subscriberItem.isSubscribe()) {
-                serviceProperty.unsubscribe(getKeyWithNamespace(key), this);
+                serviceProperty.unsubscribe(getKeyWithNs(key), this);
                 subscriberItem.setSubscribe(false);
             }
         });

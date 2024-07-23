@@ -1,12 +1,12 @@
 package ru.jamsys.core.resource.notification.telegram;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
-public class TelegramNotificationProperty extends PropertyConnector {
+public class TelegramNotificationProperty extends PropertyRepository {
 
     @PropertyName("notification.telegram.security.alias")
     private String securityAlias;

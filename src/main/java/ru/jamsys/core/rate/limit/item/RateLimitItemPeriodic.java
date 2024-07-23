@@ -5,10 +5,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.property.PropertyConnector;
+import ru.jamsys.core.extension.property.PropertyRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
-import ru.jamsys.core.extension.property.NameSpaceAgent;
+import ru.jamsys.core.extension.property.PropertyNsAgent;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.Statistic;
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RateLimitItemPeriodic
-        extends PropertyConnector
+        extends PropertyRepository
         implements RateLimitItem, PropertyUpdateNotifier, LifeCycleInterface {
 
     private final AtomicInteger tpu = new AtomicInteger(0);
@@ -42,13 +42,13 @@ public class RateLimitItemPeriodic
     @PropertyName
     private String propMax = "1000";
 
-    private final NameSpaceAgent nameSpaceAgent;
+    private final PropertyNsAgent propertyNsAgent;
 
     public RateLimitItemPeriodic(ApplicationContext applicationContext, TimeUnit period, String ns) {
         this.ns = ns;
         this.period = period;
         this.periodName = period.getNameCamel();
-        nameSpaceAgent = applicationContext.getBean(ServiceProperty.class).getSubscriber(
+        propertyNsAgent = applicationContext.getBean(ServiceProperty.class).getPropertyNsAgent(
                 this,
                 this,
                 ns,
@@ -105,12 +105,12 @@ public class RateLimitItemPeriodic
 
     @Override
     public void run() {
-        nameSpaceAgent.run();
+        propertyNsAgent.run();
     }
 
     @Override
     public void shutdown() {
-        nameSpaceAgent.shutdown();
+        propertyNsAgent.shutdown();
     }
 
 }

@@ -8,7 +8,7 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyUpdateNotifier;
-import ru.jamsys.core.extension.property.NameSpaceAgent;
+import ru.jamsys.core.extension.property.PropertyNsAgent;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -46,7 +46,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     private final FileByteWriterProperty property = new FileByteWriterProperty();
 
     @Getter
-    private final NameSpaceAgent nameSpaceAgent;
+    private final PropertyNsAgent propertyNsAgent;
 
     private final AtomicBoolean isRunWrite = new AtomicBoolean(false);
 
@@ -55,7 +55,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        nameSpaceAgent = serviceProperty.getSubscriber(this, property, ns, false);
+        propertyNsAgent = serviceProperty.getPropertyNsAgent(this, property, ns, false);
 
         if (broker == null) {
             throw new RuntimeException("broker is null");
@@ -210,7 +210,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     @Override
     public void run() {
-        nameSpaceAgent.run();
+        propertyNsAgent.run();
     }
 
     @Override
@@ -221,7 +221,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         // Сначала не хотел закрывать файл, но решил, что надо, для того, что бы система могла уже с ним поработать
         // Если оставить его не закрытым, то он будет висеть до закрытия программы, что наверное не очень хорошо
         closeLastFile();
-        nameSpaceAgent.shutdown();
+        propertyNsAgent.shutdown();
     }
 
 }

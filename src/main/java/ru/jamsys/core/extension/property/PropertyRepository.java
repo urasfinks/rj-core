@@ -9,13 +9,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Getter
-public class PropertyConnector {
+public class PropertyRepository {
 
     private final Map<String, Field> mapPropField = new HashMap<>();
 
     private final Map<String, String> mapPropValue = new HashMap<>();
 
-    public PropertyConnector() {
+    public PropertyRepository() {
         for (Field field : getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(PropertyName.class)) {
                 // Может такое быть, что value = "", это значит что мы смотрим прямо на корневое значение ns

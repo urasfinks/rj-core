@@ -12,7 +12,7 @@ import java.util.function.BiConsumer;
 
 // Главное не забывать закрывать после использования
 
-public class PropertyValue<T> extends PropertyConnector implements PropertyUpdateNotifier, LifeCycleInterface {
+public class PropertyValue<T> extends PropertyRepository implements PropertyUpdateNotifier, LifeCycleInterface {
 
     private final PropertyInstance<T> propertyInstance;
 
@@ -23,7 +23,7 @@ public class PropertyValue<T> extends PropertyConnector implements PropertyUpdat
     @Getter
     private final String ns;
 
-    private final NameSpaceAgent nameSpaceAgent;
+    private final PropertyNsAgent propertyNsAgent;
 
     private final BiConsumer<T, T> onUpdate;
 
@@ -37,7 +37,7 @@ public class PropertyValue<T> extends PropertyConnector implements PropertyUpdat
         this.propertyInstance = propertyInstance;
         this.prop = propertyInstance.getAsString();
         this.ns = ns;
-        nameSpaceAgent = applicationContext.getBean(ServiceProperty.class).getSubscriber(
+        propertyNsAgent = applicationContext.getBean(ServiceProperty.class).getPropertyNsAgent(
                 this,
                 this,
                 ns,
@@ -46,15 +46,15 @@ public class PropertyValue<T> extends PropertyConnector implements PropertyUpdat
     }
 
     public void set(String value) {
-        nameSpaceAgent.setProperty("", value);
+        propertyNsAgent.setProperty("", value);
     }
 
     public void set(int value) {
-        nameSpaceAgent.setProperty("", value + "");
+        propertyNsAgent.setProperty("", value + "");
     }
 
     public void set(boolean value) {
-        nameSpaceAgent.setProperty("", value ? "true" : "false");
+        propertyNsAgent.setProperty("", value ? "true" : "false");
     }
 
     public T get() {
@@ -72,12 +72,12 @@ public class PropertyValue<T> extends PropertyConnector implements PropertyUpdat
 
     @Override
     public void run() {
-        nameSpaceAgent.run();
+        propertyNsAgent.run();
     }
 
     @Override
     public void shutdown() {
-        nameSpaceAgent.shutdown();
+        propertyNsAgent.shutdown();
     }
 
 }
