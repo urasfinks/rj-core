@@ -20,7 +20,6 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.web.socket.WebSocket;
 import ru.jamsys.core.extension.property.PropertiesMap;
-import ru.jamsys.core.extension.property.Property;
 
 import javax.annotation.PreDestroy;
 
@@ -38,25 +37,27 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
-        prop.init(
-                String.class,
-                "run.args.web.socket.path",
-                "/socketDefault/*",
-                (_, path) -> registry.addHandler(new WebSocket(), path)
-        );
+        if (prop.watch(Boolean.class, "run.args.web", true).get()) {
+            prop.watch(
+                    String.class,
+                    "run.args.web.socket.path",
+                    "/socketDefault/*",
+                    (_, path) -> registry.addHandler(new WebSocket(), path)
+            );
+        }
     }
-
-    public boolean serverSslEnabled = false;
 
     @Bean
     public ServletWebServerFactory servletContainer() {
-        Property<Boolean> webHttp = prop.init(Boolean.class, "run.args.web", null);
-
-        if (webHttp.get()) {
-            Integer httpPort = prop.init(Integer.class, "run.args.web.http.port", 80).get();
-            Integer httpsPort = prop.init(Integer.class, "run.args.web.https.port", 443).get();
-            Boolean ssl = prop.init(Boolean.class, "run.args.web.ssl", false).get();
-            Boolean redirect = prop.init(Boolean.class, "run.args.web.http.redirect.https", true).get();
+        // Функционал runtime я считаю не должен влиять на такие вещи как ssl приклада
+        // По этому логика реализована линейной
+        // Не могу предположить, что вы решите на ходу менять правила игры работать по ssl и редиректам
+        // Как минимум это странно, как максимум - я без понятия как это сделать)))
+        if (prop.watch(Boolean.class, "run.args.web", true).get()) {
+            Integer httpPort = prop.watch(Integer.class, "run.args.web.http.port", 80).get();
+            Integer httpsPort = prop.watch(Integer.class, "run.args.web.https.port", 443).get();
+            Boolean ssl = prop.watch(Boolean.class, "run.args.web.ssl", false).get();
+            Boolean redirect = prop.watch(Boolean.class, "run.args.web.http.redirect.https", true).get();
 
             TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
                 @Override
@@ -88,8 +89,10 @@ public class AppConfiguration implements WebSocketConfigurer {
     @Bean
     MultipartConfigElement multipartConfigElement() {
         MultipartConfigFactory factory = new MultipartConfigFactory();
-        factory.setMaxFileSize(DataSize.ofMegabytes(12));
-        factory.setMaxRequestSize(DataSize.ofMegabytes(12));
+        prop.watch(Integer.class, "run.args.web.multipart.mb.max", 12, (_, newValue)
+                -> factory.setMaxFileSize(DataSize.ofMegabytes(newValue)));
+        prop.watch(Integer.class, "run.args.web.request.mb.max", 12, (_, newValue)
+                -> factory.setMaxRequestSize(DataSize.ofMegabytes(newValue)));
         return factory.createMultipartConfig();
     }
 

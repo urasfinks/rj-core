@@ -17,17 +17,14 @@ public class PropertiesMap implements LifeCycleInterface {
         this.serviceProperty = serviceProperty;
     }
 
-    public <T> Property<T> init(Class<T> cls, String key, T defValue) {
-        return init(cls, key, defValue, null);
+    public <T> Property<T> watch(Class<T> cls, String key, T defValue) {
+        return watch(cls, key, defValue, null);
     }
 
-    public <T> Property<T> init(Class<T> cls, String key, T defValue, BiConsumer<T, T> onUpdate) {
-        Property<?> property = map.computeIfAbsent(key, ns -> serviceProperty.getFactory().getProperty(
-                ns,
-                cls,
-                defValue,
-                onUpdate
-        ));
+    public <T> Property<T> watch(Class<T> cls, String key, T defValue, BiConsumer<T, T> onUpdate) {
+        Property<?> property = map.computeIfAbsent(key, ns
+                -> serviceProperty.getFactory().getProperty(ns, cls, defValue, onUpdate)
+        );
         @SuppressWarnings("unchecked")
         Property<T> result = (Property<T>) property;
         return result;
