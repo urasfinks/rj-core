@@ -32,13 +32,12 @@ public class AppConfiguration implements WebSocketConfigurer {
     private PropertiesMap prop = null;
 
     @Autowired
-    private ApplicationContext applicationContext;
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        prop = applicationContext.getBean(ServiceProperty.class).getFactory().getMap();
+    }
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
-        if (prop == null) {
-            prop = applicationContext.getBean(ServiceProperty.class).getFactory().getMap();
-        }
         prop.init(
                 String.class,
                 "run.args.web.socket.path",
@@ -51,21 +50,18 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     @Bean
     public ServletWebServerFactory servletContainer() {
-        if (prop == null) {
-            prop = applicationContext.getBean(ServiceProperty.class).getFactory().getMap();
-        }
         Property<Boolean> webHttp = prop.init(Boolean.class, "run.args.web", null);
 
         if (webHttp.get()) {
-            Property<Integer> httpPort = prop.init(Integer.class, "run.args.web.http.port", 80);
-            Property<Integer> httpsPort = prop.init(Integer.class, "run.args.web.https.port", 443);
-            Property<Boolean> ssl = prop.init(Boolean.class,"run.args.web.ssl",false);
-            Property<Boolean> redirect = prop.init(Boolean.class,"run.args.web.http.redirect.to.https",true);
+            Integer httpPort = prop.init(Integer.class, "run.args.web.http.port", 80).get();
+            Integer httpsPort = prop.init(Integer.class, "run.args.web.https.port", 443).get();
+            Boolean ssl = prop.init(Boolean.class, "run.args.web.ssl", false).get();
+            Boolean redirect = prop.init(Boolean.class, "run.args.web.http.redirect.https", true).get();
 
             TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
                 @Override
                 protected void postProcessContext(Context context) {
-                    if (ssl.get()) {
+                    if (ssl) {
                         SecurityConstraint securityConstraint = new SecurityConstraint();
                         securityConstraint.setUserConstraint("CONFIDENTIAL");
                         SecurityCollection collection = new SecurityCollection();
@@ -75,12 +71,12 @@ public class AppConfiguration implements WebSocketConfigurer {
                     }
                 }
             };
-            if (ssl.get() && redirect.get()) {
+            if (ssl && redirect) {
                 Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
                 connector.setScheme("http");
-                connector.setPort(httpPort.get());
+                connector.setPort(httpPort);
                 connector.setSecure(false);
-                connector.setRedirectPort(httpsPort.get());
+                connector.setRedirectPort(httpsPort);
                 connector.setAsyncTimeout(1000);
                 tomcat.addAdditionalTomcatConnectors(connector);
             }
