@@ -22,9 +22,10 @@ public class PropertiesMap implements LifeCycleInterface {
     }
 
     public <T> Property<T> init(Class<T> cls, String key, T defValue, BiConsumer<T, T> onUpdate) {
-        Property<?> property = map.computeIfAbsent(key, s -> serviceProperty.getFactory().getProperty(
-                s,
-                PropertyFactory.instanceOf(cls, defValue),
+        Property<?> property = map.computeIfAbsent(key, ns -> serviceProperty.getFactory().getProperty(
+                ns,
+                cls,
+                defValue,
                 onUpdate
         ));
         @SuppressWarnings("unchecked")
