@@ -21,6 +21,10 @@ public class PropertiesMap implements LifeCycleInterface {
         return watch(cls, key, defValue, null);
     }
 
+    public void autoFill(String ns) {
+
+    }
+
     public <T> Property<T> watch(Class<T> cls, String key, T defValue, BiConsumer<T, T> onUpdate) {
         Property<?> property = map.computeIfAbsent(key, ns
                 -> serviceProperty.getFactory().getProperty(ns, cls, defValue, onUpdate)
