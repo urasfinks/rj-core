@@ -63,7 +63,7 @@ public class PropertiesNsAgent implements LifeCycleInterface {
     }
 
     public void setPropertyWithoutNs(String key, String value) {
-        this.serviceProperty.setProperty(getKeyWithNs(key), value);
+        this.serviceProperty.setProperty(getAbsoluteKey(key), value);
     }
 
     public void setProperty(String key, String value) {
@@ -78,7 +78,7 @@ public class PropertiesNsAgent implements LifeCycleInterface {
     }
 
     // Получить ключик с ns
-    private String getKeyWithNs(String key) {
+    private String getAbsoluteKey(String key) {
         if (key.isEmpty()) {
             if (ns == null) {
                 // Не надо таких поворотов, когда и ns = null и ключ пустой
@@ -97,7 +97,7 @@ public class PropertiesNsAgent implements LifeCycleInterface {
         SubscriberItem subscriberItem = mapListener.computeIfAbsent(key, _ -> new SubscriberItem(defValue, require));
         if (!subscriberItem.isSubscribe()) {
             serviceProperty.subscribe(
-                    getKeyWithNs(key),
+                    getAbsoluteKey(key),
                     this,
                     subscriberItem.isRequire(),
                     subscriberItem.getDefValue()
@@ -107,9 +107,18 @@ public class PropertiesNsAgent implements LifeCycleInterface {
         return this;
     }
 
-    public void remove(String key) {
+    public void removeWithoutNs(String key) {
         mapListener.remove(key);
-        serviceProperty.unsubscribe(getKeyWithNs(key), this);
+        serviceProperty.unsubscribe(getAbsoluteKey(key), this);
+    }
+
+    public void remove(String absoluteKey) {
+        if (ns != null) {
+            mapListener.remove(absoluteKey.substring(ns.length() + 1));
+        } else {
+            mapListener.remove(absoluteKey);
+        }
+        serviceProperty.unsubscribe(absoluteKey, this);
     }
 
     public void onPropertyUpdate(Map<String, String> map) {
@@ -138,7 +147,7 @@ public class PropertiesNsAgent implements LifeCycleInterface {
         mapListener.forEach((key, subscriberItem) -> {
             if (!subscriberItem.isSubscribe()) {
                 serviceProperty.subscribe(
-                        getKeyWithNs(key),
+                        getAbsoluteKey(key),
                         this,
                         subscriberItem.isRequire(),
                         subscriberItem.getDefValue()
@@ -152,7 +161,7 @@ public class PropertiesNsAgent implements LifeCycleInterface {
     public void shutdown() {
         mapListener.forEach((key, subscriberItem) -> {
             if (subscriberItem.isSubscribe()) {
-                serviceProperty.unsubscribe(getKeyWithNs(key), this);
+                serviceProperty.unsubscribe(getAbsoluteKey(key), this);
                 subscriberItem.setSubscribe(false);
             }
         });
@@ -161,7 +170,7 @@ public class PropertiesNsAgent implements LifeCycleInterface {
 
     public Set<String> getKeySet() {
         Set<String> result = new LinkedHashSet<>();
-        mapListener.forEach((s, _) -> result.add(getKeyWithNs(s)));
+        mapListener.forEach((s, _) -> result.add(getAbsoluteKey(s)));
         return result;
     }
 
@@ -185,7 +194,7 @@ public class PropertiesNsAgent implements LifeCycleInterface {
     }
 
     public <T> PropertyNs<T> getWithoutNs(Class<T> cls, String relativeKey) {
-        return new PropertyNs<>(cls, getKeyWithNs(relativeKey), this);
+        return new PropertyNs<>(cls, getAbsoluteKey(relativeKey), this);
     }
 
 }

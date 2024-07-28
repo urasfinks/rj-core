@@ -69,36 +69,36 @@ public class ServiceProperty {
         }
     }
 
-    public void setProperty(String key, String value) {
+    public void setProperty(String absoluteKey, String value) {
         if (value == null) {
-            prop.remove(key);
-            if (subscribe.containsKey(key)) {
-                HashMapBuilder<String, String> append = new HashMapBuilder<String, String>().append(key, null);
-                subscribe.get(key).forEach(subscriber -> subscriber.onPropertyUpdate(append));
+            prop.remove(absoluteKey);
+            if (subscribe.containsKey(absoluteKey)) {
+                HashMapBuilder<String, String> append = new HashMapBuilder<String, String>().append(absoluteKey, null);
+                subscribe.get(absoluteKey).forEach(subscriber -> subscriber.onPropertyUpdate(append));
             }
-        } else if (!prop.containsKey(key) || !prop.get(key).equals(value)) {
-            prop.put(key, value);
-            if (subscribe.containsKey(key)) {
-                HashMapBuilder<String, String> append = new HashMapBuilder<String, String>().append(key, value);
-                subscribe.get(key).forEach(subscriber -> subscriber.onPropertyUpdate(append));
+        } else if (!prop.containsKey(absoluteKey) || !prop.get(absoluteKey).equals(value)) {
+            prop.put(absoluteKey, value);
+            if (subscribe.containsKey(absoluteKey)) {
+                HashMapBuilder<String, String> append = new HashMapBuilder<String, String>().append(absoluteKey, value);
+                subscribe.get(absoluteKey).forEach(subscriber -> subscriber.onPropertyUpdate(append));
             }
         }
     }
 
-    public void subscribe(String key, PropertiesNsAgent propertiesNsAgent, boolean require, String defValue) {
-        String result = prop.get(key);
+    public void subscribe(String absoluteKey, PropertiesNsAgent propertiesNsAgent, boolean require, String defValue) {
+        String result = prop.get(absoluteKey);
         if (require && result == null) {
-            throw new RuntimeException("Required key '" + key + "' not found");
+            throw new RuntimeException("Required key '" + absoluteKey + "' not found");
         }
         if (result == null) {
-            result = prop.computeIfAbsent(key, _ -> defValue);
+            result = prop.computeIfAbsent(absoluteKey, _ -> defValue);
         }
-        subscribe.computeIfAbsent(key, _ -> new HashSet<>()).add(propertiesNsAgent);
-        propertiesNsAgent.onPropertyUpdate(new HashMapBuilder<String, String>().append(key, result));
+        subscribe.computeIfAbsent(absoluteKey, _ -> new HashSet<>()).add(propertiesNsAgent);
+        propertiesNsAgent.onPropertyUpdate(new HashMapBuilder<String, String>().append(absoluteKey, result));
     }
 
-    public void unsubscribe(String key, PropertiesNsAgent propertiesNsAgent) {
-        subscribe.get(key).remove(propertiesNsAgent);
+    public void unsubscribe(String absoluteKey, PropertiesNsAgent propertiesNsAgent) {
+        subscribe.get(absoluteKey).remove(propertiesNsAgent);
     }
 
 }

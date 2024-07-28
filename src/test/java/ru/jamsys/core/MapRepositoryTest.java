@@ -83,7 +83,7 @@ class MapRepositoryTest {
         serviceProperty.setProperty("run.args.security.path.public.key", "x3");
         Assertions.assertEquals(6, xx.c);
 
-        subscribe.remove("run.args.security.path.public.key");
+        subscribe.removeWithoutNs("run.args.security.path.public.key");
         serviceProperty.setProperty("run.args.security.path.public.key", "x4");
         Assertions.assertEquals(6, xx.c);
 

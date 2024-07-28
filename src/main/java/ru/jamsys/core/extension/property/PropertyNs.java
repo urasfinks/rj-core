@@ -1,12 +1,13 @@
 package ru.jamsys.core.extension.property;
 
 import lombok.Getter;
+import ru.jamsys.core.extension.LifeCycleInterface;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class PropertyNs<T> {
+public class PropertyNs<T> implements LifeCycleInterface {
 
     public static Map<Class<?>, Function<String, ?>> convertType = new HashMap<>() {{
         this.put(String.class, s -> s);
@@ -15,26 +16,36 @@ public class PropertyNs<T> {
     }};
 
     @Getter
-    private final String key;
+    private final String absoluteKey;
 
     private final PropertiesNsAgent propertiesNsAgent;
 
     private final Class<T> cls;
 
-    protected PropertyNs(Class<T> cls, String key, PropertiesNsAgent propertiesNsAgent) {
+    protected PropertyNs(Class<T> cls, String absoluteKey, PropertiesNsAgent propertiesNsAgent) {
         this.cls = cls;
-        this.key = key;
+        this.absoluteKey = absoluteKey;
         this.propertiesNsAgent = propertiesNsAgent;
     }
 
     public void set(T value) {
-        propertiesNsAgent.setProperty(key, value.toString());
+        propertiesNsAgent.setProperty(absoluteKey, value.toString());
     }
 
     public T get() {
         @SuppressWarnings("unchecked")
-        T t = (T) convertType.get(cls).apply(propertiesNsAgent.getWithoutNs(key));
+        T t = (T) convertType.get(cls).apply(propertiesNsAgent.getWithoutNs(absoluteKey));
         return t;
+    }
+
+    @Override
+    public void run() {
+        propertiesNsAgent.run();
+    }
+
+    @Override
+    public void shutdown() {
+        propertiesNsAgent.remove(absoluteKey);
     }
 
 }
