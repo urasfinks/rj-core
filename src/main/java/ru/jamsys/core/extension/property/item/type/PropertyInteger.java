@@ -2,6 +2,10 @@ package ru.jamsys.core.extension.property.item.type;
 
 public class PropertyInteger extends PropertyInstance<Integer> {
 
+    public PropertyInteger(String value) {
+        super(Integer.parseInt(value));
+    }
+
     public PropertyInteger(Integer value) {
         super(value);
     }

@@ -44,16 +44,8 @@ public class Property<T> extends PropertiesRepository implements PropertyUpdateD
         );
     }
 
-    public void set(String value) {
-        propertiesNsAgent.setProperty("", value);
-    }
-
-    public void set(int value) {
-        propertiesNsAgent.setProperty("", value + "");
-    }
-
-    public void set(boolean value) {
-        propertiesNsAgent.setProperty("", value ? "true" : "false");
+    public void set(T value) {
+        propertiesNsAgent.setProperty("", value.toString());
     }
 
     public T get() {
