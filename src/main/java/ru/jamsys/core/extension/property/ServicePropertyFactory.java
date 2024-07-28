@@ -1,14 +1,18 @@
 package ru.jamsys.core.extension.property;
 
+import org.springframework.lang.NonNull;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.functional.Procedure;
 import ru.jamsys.core.extension.property.item.type.PropertyBoolean;
 import ru.jamsys.core.extension.property.item.type.PropertyInstance;
 import ru.jamsys.core.extension.property.item.type.PropertyInteger;
 import ru.jamsys.core.extension.property.item.type.PropertyString;
+import ru.jamsys.core.flat.util.UtilRisc;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 // Просто позволяет создавать объекты работы с property
 
@@ -44,12 +48,23 @@ public class ServicePropertyFactory {
         return new PropertiesNsAgent(propertyUpdateDelegate, serviceProperty, propertiesRepository, ns, require);
     }
 
-    public PropertiesContainer getContainer() {
-        return new PropertiesContainer(serviceProperty);
+    public PropertiesNsAgent getNsAgent(
+            String ns,
+            boolean require,
+            @NonNull Consumer<Set<String>> onUpdate
+    ) {
+        PropertiesRepository propertiesRepository = new PropertiesRepository(null);
+        Map<String, String> prop = serviceProperty.getProp();
+        UtilRisc.forEach(null, prop, (key, value) -> {
+            if (key.startsWith(ns + ".")) {
+                propertiesRepository.addProp(key.substring(ns.length() + 1), value);
+            }
+        });
+        return new PropertiesNsAgent(onUpdate::accept, serviceProperty, propertiesRepository, ns, require);
     }
 
-    public <T> PropertiesMap<T> getMap(String ns, Class<T> cls, Procedure onUpdate) {
-        return new PropertiesMap<>(serviceProperty, ns, cls, onUpdate);
+    public PropertiesContainer getContainer() {
+        return new PropertiesContainer(serviceProperty);
     }
 
     public <T> Property<T> getProperty(

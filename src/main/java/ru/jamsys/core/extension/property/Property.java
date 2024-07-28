@@ -45,7 +45,7 @@ public class Property<T> extends PropertiesRepository implements PropertyUpdateD
     }
 
     public void set(T value) {
-        propertiesNsAgent.setProperty("", value.toString());
+        propertiesNsAgent.setPropertyWithoutNs("", value.toString());
     }
 
     public T get() {

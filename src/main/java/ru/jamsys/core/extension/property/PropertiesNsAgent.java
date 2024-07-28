@@ -5,10 +5,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.item.SubscriberItem;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 // Посредник между объектом, кто хочет получать уведомления от изменения свойств до ServiceProperty
 // При получении событий по изменению свойств вызывает onPropertyUpdate у хозяина
@@ -26,7 +23,7 @@ public class PropertiesNsAgent implements LifeCycleInterface {
 
     private final String ns;
 
-    private final HashMap<String, SubscriberItem> mapListener = new HashMap<>();
+    private final HashMap<String, SubscriberItem> mapListener = new LinkedHashMap<>();
 
     public int getCountListener() {
         int count = 0;
@@ -65,8 +62,12 @@ public class PropertiesNsAgent implements LifeCycleInterface {
         init(require);
     }
 
-    public void setProperty(String key, String value) {
+    public void setPropertyWithoutNs(String key, String value) {
         this.serviceProperty.setProperty(getKeyWithNs(key), value);
+    }
+
+    public void setProperty(String key, String value) {
+        this.serviceProperty.setProperty(key, value);
     }
 
     private void init(boolean require) {
@@ -154,6 +155,35 @@ public class PropertiesNsAgent implements LifeCycleInterface {
                 subscriberItem.setSubscribe(false);
             }
         });
+    }
+
+
+    public Set<String> getKeySet() {
+        Set<String> result = new LinkedHashSet<>();
+        mapListener.forEach((s, _) -> result.add(ns + "." + s));
+        return result;
+    }
+
+    public Set<String> getKeySetWithoutNs() {
+        Set<String> result = new LinkedHashSet<>();
+        mapListener.forEach((s, _) -> result.add(s));
+        return result;
+    }
+
+    public String get(String key) {
+        return propertiesRepository.getMapPropValue().get(key);
+    }
+
+    public String getWithoutNs(String key) {
+        return propertiesRepository.getMapPropValue().get(key.substring(ns.length() + 1));
+    }
+
+    public <T> PropertyNs<T> get(Class<T> cls, String absoluteKey) {
+        return new PropertyNs<>(cls, absoluteKey, this);
+    }
+
+    public <T> PropertyNs<T> getWithoutNs(Class<T> cls, String relativeKey) {
+        return new PropertyNs<>(cls, ns + "." + relativeKey, this);
     }
 
 }

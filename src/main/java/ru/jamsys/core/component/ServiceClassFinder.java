@@ -16,17 +16,20 @@ public class ServiceClassFinder {
 
     private final List<Class<?>> availableClass;
 
-    // Используется для однозначности имён на графиках в CLassNameTitle
+    // Используется для однозначности имён на графиках в ClassNameTitle
     @Getter
     private final Map<Class<?>, String> uniqueClassName = new HashMap<>();
 
     private final ExceptionHandler exceptionHandler;
 
-    public ServiceClassFinder(ExceptionHandler exceptionHandler) {
+    public ServiceClassFinder(ExceptionHandler exceptionHandler, ServiceProperty serviceProperty) {
         this.exceptionHandler = exceptionHandler;
+
         @SuppressWarnings("SameParameterValue")
         String pkg = "ru.jamsys";
         availableClass = getAvailableClass(pkg);
+
+        //serviceProperty.getFactory().getMap("run.args.IgnoreClassFinder", String.class, this::filter);
         fillUniqueClassName();
     }
 
@@ -150,6 +153,10 @@ public class ServiceClassFinder {
                         break;
                     }
                 }
+//                Property<String> stringProperty = ignoreClassFinderMap.get(aClass.getName());
+//                if (stringProperty != null) {
+//                    findUnusedAnnotation = "true".equals(stringProperty.get());
+//                }
                 if (findUnusedAnnotation) {
                     continue;
                 }

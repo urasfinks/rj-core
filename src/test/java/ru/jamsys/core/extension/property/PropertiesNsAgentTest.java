@@ -9,7 +9,7 @@ import ru.jamsys.core.component.ServiceProperty;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-class PropertiesMapTest {
+class PropertiesNsAgentTest {
 
     @BeforeAll
     static void beforeAll() {
@@ -23,28 +23,32 @@ class PropertiesMapTest {
 
     @Test
     public void collection() {
-        PropertiesMap<String> map = App.get(ServiceProperty.class).getFactory().getMap("run.args.IgnoreClassFinder", String.class, null);
+        PropertiesNsAgent map = App
+                .get(ServiceProperty.class)
+                .getFactory()
+                .getNsAgent("run.args.IgnoreClassFinder", false, _ -> {});
+
         Assertions.assertEquals("[test1, test2]", map.getKeySetWithoutNs().toString());
         Assertions.assertEquals("[run.args.IgnoreClassFinder.test1, run.args.IgnoreClassFinder.test2]", map.getKeySet().toString());
-        Assertions.assertEquals("true", map.getWithoutNs("test1").get());
-        Assertions.assertEquals("false", map.getWithoutNs("test2").get());
-        Assertions.assertEquals("true", map.get("run.args.IgnoreClassFinder.test1").get());
-        Assertions.assertEquals("false", map.get("run.args.IgnoreClassFinder.test2").get());
+        Assertions.assertEquals("true", map.getWithoutNs(String.class, "test1").get());
+        Assertions.assertEquals("false", map.getWithoutNs(String.class, "test2").get());
+        Assertions.assertEquals("true", map.get(String.class, "run.args.IgnoreClassFinder.test1").get());
+        Assertions.assertEquals("false", map.get(String.class, "run.args.IgnoreClassFinder.test2").get());
     }
 
     @Test
     public void onUpdate() {
         AtomicInteger x = new AtomicInteger(0);
-        PropertiesMap<Boolean> map = App
+        PropertiesNsAgent map = App
                 .get(ServiceProperty.class)
                 .getFactory()
-                .getMap(
+                .getNsAgent(
                         "run.args.IgnoreClassFinder",
-                        Boolean.class,
-                        x::incrementAndGet
+                        false,
+                        _ -> x.incrementAndGet()
                 );
         Assertions.assertEquals(2, x.get());
-        Property<Boolean> test1 = map.getWithoutNs("test1");
+        PropertyNs<Boolean> test1 = map.getWithoutNs(Boolean.class, "test1");
         test1.set(false);
         Assertions.assertEquals(3, x.get());
     }
