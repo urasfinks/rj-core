@@ -77,6 +77,7 @@ public class PropertiesNsAgent implements LifeCycleInterface {
         }
     }
 
+    // Получить ключик с ns
     private String getKeyWithNs(String key) {
         if (key.isEmpty()) {
             if (ns == null) {
@@ -160,7 +161,7 @@ public class PropertiesNsAgent implements LifeCycleInterface {
 
     public Set<String> getKeySet() {
         Set<String> result = new LinkedHashSet<>();
-        mapListener.forEach((s, _) -> result.add(ns + "." + s));
+        mapListener.forEach((s, _) -> result.add(getKeyWithNs(s)));
         return result;
     }
 
@@ -175,7 +176,8 @@ public class PropertiesNsAgent implements LifeCycleInterface {
     }
 
     public String getWithoutNs(String key) {
-        return propertiesRepository.getMapPropValue().get(key.substring(ns.length() + 1));
+        String prop = ns == null ? key : key.substring(ns.length() + 1);
+        return propertiesRepository.getMapPropValue().get(prop);
     }
 
     public <T> PropertyNs<T> get(Class<T> cls, String absoluteKey) {
@@ -183,7 +185,7 @@ public class PropertiesNsAgent implements LifeCycleInterface {
     }
 
     public <T> PropertyNs<T> getWithoutNs(Class<T> cls, String relativeKey) {
-        return new PropertyNs<>(cls, ns + "." + relativeKey, this);
+        return new PropertyNs<>(cls, getKeyWithNs(relativeKey), this);
     }
 
 }

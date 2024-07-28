@@ -106,6 +106,25 @@ public class ServicePropertyFactory {
         );
     }
 
+    public <T> PropertyNs<T> getPropertyNs(
+            Class<T> cls,
+            String key,
+            T defValue,
+            boolean require,
+            @NonNull Consumer<Set<String>> onUpdate
+    ) {
+        PropertiesRepository propertiesRepository = new PropertiesRepository(null);
+        propertiesRepository.addProp(key, defValue.toString());
+        PropertiesNsAgent propertiesNsAgent = new PropertiesNsAgent(
+                onUpdate::accept,
+                serviceProperty,
+                propertiesRepository,
+                null,
+                require
+        );
+        return propertiesNsAgent.get(cls, key);
+    }
+
     public <X> PropertyInstance<X> getPropertyInstance(Class<X> cls, X value) {
         PropertyInstance<?> propertyInstance = null;
         if (ServiceClassFinder.instanceOf(cls, String.class)) {
