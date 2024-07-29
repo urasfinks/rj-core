@@ -13,7 +13,7 @@ import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.PropertiesRepositoryField;
+import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.promise.Promise;

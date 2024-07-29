@@ -2,7 +2,7 @@ package ru.jamsys.core.extension.property.item;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.extension.property.PropertyNs;
+import ru.jamsys.core.extension.property.Property;
 
 import java.util.function.Consumer;
 
@@ -30,7 +30,7 @@ public class SubscriberItem<T> {
     public void onUpdate(String value) {
         if (this.onUpdate != null) {
             @SuppressWarnings("unchecked")
-            T val = (T) PropertyNs.convertType.get(cls).apply(value);
+            T val = (T) Property.convertType.get(cls).apply(value);
             this.onUpdate.accept(val);
         }
     }

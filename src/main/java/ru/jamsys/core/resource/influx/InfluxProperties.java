@@ -1,7 +1,7 @@
 package ru.jamsys.core.resource.influx;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.property.PropertiesRepositoryField;
+import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 import ru.jamsys.core.extension.annotation.PropertyName;
 
 @SuppressWarnings({"UnusedDeclaration"})

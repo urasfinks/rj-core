@@ -1,6 +1,4 @@
-package ru.jamsys.core.extension.property;
-
-import ru.jamsys.core.extension.property.item.PropertiesRepository;
+package ru.jamsys.core.extension.property.repository;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 public class PropertiesContainer implements LifeCycleInterface {
 
-    private final Map<String, PropertyNs<?>> map = new LinkedHashMap<>();
+    private final Map<String, Property<?>> map = new LinkedHashMap<>();
 
     private final ServiceProperty serviceProperty;
 
@@ -17,7 +17,7 @@ public class PropertiesContainer implements LifeCycleInterface {
         this.serviceProperty = serviceProperty;
     }
 
-    public <T> PropertyNs<T> getPropertyNs(
+    public <T> Property<T> getProperty(
             Class<T> cls,
             String absoluteKey,
             T defValue,
@@ -25,25 +25,25 @@ public class PropertiesContainer implements LifeCycleInterface {
             Consumer<T> onUpdate
     ) {
         @SuppressWarnings("unchecked")
-        PropertyNs<T> tPropertyNs = (PropertyNs<T>) map.computeIfAbsent(
+        Property<T> tProperty = (Property<T>) map.computeIfAbsent(
                 absoluteKey,
-                _ -> new PropertyNs<>(serviceProperty, cls, absoluteKey, defValue, required, onUpdate)
+                _ -> new Property<>(serviceProperty, cls, absoluteKey, defValue, required, onUpdate)
         );
-        return tPropertyNs;
+        return tProperty;
     }
 
     @Override
     public void run() {
-        map.forEach((_, propertyNs) -> propertyNs.run());
+        map.forEach((_, property) -> property.run());
     }
 
     @Override
     public void shutdown() {
-        map.forEach((_, propertyNs) -> propertyNs.shutdown());
+        map.forEach((_, property) -> property.shutdown());
     }
 
     public void unwatch(String key) {
-        PropertyNs<?> remove = map.remove(key);
+        Property<?> remove = map.remove(key);
         if (remove != null) {
             remove.shutdown();
         }

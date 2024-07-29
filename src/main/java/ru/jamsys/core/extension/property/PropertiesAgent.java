@@ -3,7 +3,7 @@ package ru.jamsys.core.extension.property;
 import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.property.item.PropertiesRepository;
+import ru.jamsys.core.extension.property.repository.PropertiesRepository;
 import ru.jamsys.core.extension.property.item.SubscriberItem;
 import ru.jamsys.core.flat.util.UtilRisc;
 

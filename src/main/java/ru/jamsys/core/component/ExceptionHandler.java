@@ -12,7 +12,7 @@ import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.extension.line.writer.LineWriterString;
-import ru.jamsys.core.extension.property.PropertiesRepositoryField;
+import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 import ru.jamsys.core.flat.util.Util;
 
 @Setter

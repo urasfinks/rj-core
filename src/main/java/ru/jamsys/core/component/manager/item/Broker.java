@@ -7,7 +7,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
-import ru.jamsys.core.extension.property.PropertyNs;
+import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
@@ -68,10 +68,10 @@ public class Broker<TEO>
     private Double lastTimeInQueue;
 
     @Getter
-    final PropertyNs<Integer> propertyBrokerSize;
+    final Property<Integer> propertyBrokerSize;
 
     @Getter
-    final PropertyNs<Integer> propertyBrokerTailSize;
+    final Property<Integer> propertyBrokerTailSize;
 
     final String index;
 
@@ -88,7 +88,7 @@ public class Broker<TEO>
         String clsIndex = getClassName(index, applicationContext);
 
         ServiceProperty serviceProperty = applicationContext.getBean(ServiceProperty.class);
-        propertyBrokerSize = new PropertyNs<>(
+        propertyBrokerSize = new Property<>(
                 serviceProperty,
                 Integer.class,
                 clsIndex + "." + ValueName.BROKER_SIZE.getNameCamel(),
@@ -96,7 +96,7 @@ public class Broker<TEO>
                 false,
                 null
         );
-        propertyBrokerTailSize = new PropertyNs<>(
+        propertyBrokerTailSize = new Property<>(
                 serviceProperty,
                 Integer.class,
                 clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),

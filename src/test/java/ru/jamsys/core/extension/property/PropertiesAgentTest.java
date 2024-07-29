@@ -48,8 +48,8 @@ class PropertiesAgentTest {
                 );
         Assertions.assertEquals(2, x.get());
 
-        PropertyNs<Boolean> test1 = App.get(ServiceProperty.class).getFactory()
-                .getPropertyNs(
+        Property<Boolean> test1 = App.get(ServiceProperty.class).getFactory()
+                .getProperty(
                         Boolean.class,
                         "run.args.IgnoreClassFinder.test1",
                         true,
@@ -64,12 +64,12 @@ class PropertiesAgentTest {
 
     @Test
     @Order(3)
-    public void singlePropertyNsRequire() {
+    public void singlePropertyRequire() {
         AtomicInteger x = new AtomicInteger(0);
-        PropertyNs<String> prop = App
+        Property<String> prop = App
                 .get(ServiceProperty.class)
                 .getFactory()
-                .getPropertyNs(
+                .getProperty(
                         String.class,
                         "run.args.IgnoreClassFinder.test1",
                         "xx",
@@ -88,13 +88,13 @@ class PropertiesAgentTest {
 
     @Test
     @Order(4)
-    public void singlePropertyNsRequireException() {
+    public void singlePropertyRequireException() {
         AtomicInteger x = new AtomicInteger(0);
         try {
             App
                     .get(ServiceProperty.class)
                     .getFactory()
-                    .getPropertyNs(
+                    .getProperty(
                             String.class,
                             "run.args.IgnoreClassFinder.test3",
                             "xx",
@@ -109,12 +109,12 @@ class PropertiesAgentTest {
 
     @Test
     @Order(5)
-    public void singlePropertyNsNotRequire() {
+    public void singlePropertyNotRequire() {
         AtomicInteger x = new AtomicInteger(0);
-        PropertyNs<String> prop = App
+        Property<String> prop = App
                 .get(ServiceProperty.class)
                 .getFactory()
-                .getPropertyNs(
+                .getProperty(
                         String.class,
                         "run.args.IgnoreClassFinder.test3",
                         "xx",

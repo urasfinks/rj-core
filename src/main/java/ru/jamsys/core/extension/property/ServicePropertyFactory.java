@@ -1,7 +1,8 @@
 package ru.jamsys.core.extension.property;
 
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.item.PropertiesRepository;
+import ru.jamsys.core.extension.property.repository.PropertiesRepository;
+import ru.jamsys.core.extension.property.repository.PropertiesRepositoryMap;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.function.Consumer;
@@ -17,14 +18,14 @@ public class ServicePropertyFactory {
     }
 
     // Получить свойство
-    public <T> PropertyNs<T> getPropertyNs(
+    public <T> Property<T> getProperty(
             Class<T> cls,
             String absoluteKey,
             T defValue,
             boolean required,
             Consumer<T> onUpdate
     ) {
-        return new PropertyNs<>(serviceProperty, cls, absoluteKey, defValue, required, onUpdate);
+        return new Property<>(serviceProperty, cls, absoluteKey, defValue, required, onUpdate);
     }
 
     public PropertiesAgent getPropertiesAgent(

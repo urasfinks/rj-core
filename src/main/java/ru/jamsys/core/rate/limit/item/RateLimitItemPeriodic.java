@@ -5,7 +5,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.property.PropertiesRepositoryField;
+import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.PropertiesAgent;

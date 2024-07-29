@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.property.PropertiesRepositoryField;
+import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.PropertiesAgent;

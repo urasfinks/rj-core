@@ -2,7 +2,7 @@ package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.extension.property.PropertiesRepositoryField;
+import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 import ru.jamsys.core.extension.annotation.PropertyName;
 
 @SuppressWarnings({"UnusedDeclaration"})

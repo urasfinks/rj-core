@@ -1,8 +1,7 @@
-package ru.jamsys.core.extension.property;
+package ru.jamsys.core.extension.property.repository;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.item.PropertiesRepository;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

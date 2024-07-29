@@ -12,7 +12,7 @@ import java.util.function.Function;
 // Привязанные объект к ServiceProperty, не имеет никаких оповещений просто даёт возможность прявязаться к property
 // и получить её значение
 
-public class PropertyNs<T> implements PropertyUpdateDelegate, LifeCycleInterface {
+public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
 
     public static Map<Class<?>, Function<String, ?>> convertType = new HashMap<>() {{
         this.put(String.class, s -> s);
@@ -35,7 +35,7 @@ public class PropertyNs<T> implements PropertyUpdateDelegate, LifeCycleInterface
 
     private final Consumer<T> onUpdate;
 
-    public PropertyNs(
+    public Property(
             ServiceProperty serviceProperty,
             Class<T> cls,
             String absoluteKey,
