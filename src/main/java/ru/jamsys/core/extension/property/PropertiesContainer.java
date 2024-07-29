@@ -17,7 +17,7 @@ public class PropertiesContainer implements LifeCycleInterface {
         this.serviceProperty = serviceProperty;
     }
 
-    public <T> Property<T> getProperty(
+    public <T> Property<T> watch(
             Class<T> cls,
             String absoluteKey,
             T defValue,
@@ -32,6 +32,13 @@ public class PropertiesContainer implements LifeCycleInterface {
         return tProperty;
     }
 
+    public void unwatch(String key) {
+        Property<?> remove = map.remove(key);
+        if (remove != null) {
+            remove.shutdown();
+        }
+    }
+
     @Override
     public void run() {
         map.forEach((_, property) -> property.run());
@@ -42,10 +49,4 @@ public class PropertiesContainer implements LifeCycleInterface {
         map.forEach((_, property) -> property.shutdown());
     }
 
-    public void unwatch(String key) {
-        Property<?> remove = map.remove(key);
-        if (remove != null) {
-            remove.shutdown();
-        }
-    }
 }

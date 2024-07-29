@@ -28,6 +28,7 @@ public class ServicePropertyFactory {
         return new Property<>(serviceProperty, cls, absoluteKey, defValue, required, onUpdate);
     }
 
+    // Загружает ключи через PropertiesRepository
     public PropertiesAgent getPropertiesAgent(
             PropertyUpdateDelegate subscriber,
             PropertiesRepository propertiesRepository,
@@ -37,7 +38,8 @@ public class ServicePropertyFactory {
         return new PropertiesAgent(serviceProperty, subscriber, propertiesRepository, ns, require);
     }
 
-    public PropertiesAgent getPropertiesAgentVirtual(
+    //Загружает все ключи из Properties на основе propertiesRepositoryMap
+    public PropertiesAgent getPropertiesAgentMap(
             PropertyUpdateDelegate subscriber,
             String ns,
             boolean require
@@ -50,7 +52,6 @@ public class ServicePropertyFactory {
         });
         return new PropertiesAgent(serviceProperty, subscriber, propertiesRepositoryMap, ns, require);
     }
-
 
     public PropertiesContainer getContainer() {
         return new PropertiesContainer(serviceProperty);

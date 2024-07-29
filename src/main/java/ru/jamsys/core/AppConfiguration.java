@@ -37,8 +37,8 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
-        if (container.getProperty(Boolean.class, "run.args.web", true, true, null).get()) {
-            container.getProperty(
+        if (container.watch(Boolean.class, "run.args.web", true, true, null).get()) {
+            container.watch(
                     String.class,
                     "run.args.web.socket.path",
                     "/socketDefault/*",
@@ -54,12 +54,12 @@ public class AppConfiguration implements WebSocketConfigurer {
         // По этому логика реализована линейной
         // Не могу предположить, что вы решите на ходу менять правила игры работать по ssl и редиректам
         // Как минимум это странно, как максимум - я без понятия как это сделать)))
-        if (container.getProperty(Boolean.class, "run.args.web", true, true, null).get()) {
+        if (container.watch(Boolean.class, "run.args.web", true, true, null).get()) {
 
-            Integer httpPort = container.getProperty(Integer.class, "run.args.web.http.port", 80, true, null).get();
-            Integer httpsPort = container.getProperty(Integer.class, "run.args.web.https.port", 443, true, null).get();
-            Boolean ssl = container.getProperty(Boolean.class, "run.args.web.ssl", false, true, null).get();
-            Boolean redirect = container.getProperty(Boolean.class, "run.args.web.http.redirect.https", true, true, null).get();
+            Integer httpPort = container.watch(Integer.class, "run.args.web.http.port", 80, true, null).get();
+            Integer httpsPort = container.watch(Integer.class, "run.args.web.https.port", 443, true, null).get();
+            Boolean ssl = container.watch(Boolean.class, "run.args.web.ssl", false, true, null).get();
+            Boolean redirect = container.watch(Boolean.class, "run.args.web.http.redirect.https", true, true, null).get();
 
             TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
                 @Override
@@ -91,14 +91,14 @@ public class AppConfiguration implements WebSocketConfigurer {
     @Bean
     MultipartConfigElement multipartConfigElement() {
         MultipartConfigFactory factory = new MultipartConfigFactory();
-        container.getProperty(
+        container.watch(
                 Integer.class,
                 "run.args.web.multipart.mb.max",
                 12,
                 true,
                 (v) -> factory.setMaxFileSize(DataSize.ofMegabytes(v))
         );
-        container.getProperty(
+        container.watch(
                 Integer.class,
                 "run.args.web.request.mb.max",
                 12,

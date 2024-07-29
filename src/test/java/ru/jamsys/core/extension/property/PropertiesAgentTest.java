@@ -25,7 +25,7 @@ class PropertiesAgentTest {
         PropertiesAgent map = App
                 .get(ServiceProperty.class)
                 .getFactory()
-                .getPropertiesAgentVirtual(null, "run.args.IgnoreClassFinder", false);
+                .getPropertiesAgentMap(null, "run.args.IgnoreClassFinder", false);
 
         Assertions.assertEquals("[test1, test2]", map.getKeySetRelative().toString());
         Assertions.assertEquals("[run.args.IgnoreClassFinder.test1, run.args.IgnoreClassFinder.test2]", map.getKeySetAbsolute().toString());
@@ -41,7 +41,7 @@ class PropertiesAgentTest {
         App
                 .get(ServiceProperty.class)
                 .getFactory()
-                .getPropertiesAgentVirtual(
+                .getPropertiesAgentMap(
                         _ -> x.incrementAndGet(),
                         "run.args.IgnoreClassFinder",
                         false
