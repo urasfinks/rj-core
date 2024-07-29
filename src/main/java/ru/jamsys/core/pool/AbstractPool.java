@@ -10,8 +10,7 @@ import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.ValueName;
-import ru.jamsys.core.extension.property.Property;
-import ru.jamsys.core.extension.property.item.type.PropertyInteger;
+import ru.jamsys.core.extension.property.PropertyNs;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.resource.Resource;
@@ -76,9 +75,9 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     private final AtomicBoolean dynamicPollSize = new AtomicBoolean(false);
 
     @Getter
-    private Property<Integer> propertyPoolSizeMax;
+    private PropertyNs<Integer> propertyPoolSizeMax;
 
-    private Property<Integer> propertyPoolSizeMin;
+    private PropertyNs<Integer> propertyPoolSizeMin;
 
     private final Lock lockAddToPark = new ReentrantLock();
 
@@ -86,16 +85,22 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     public AbstractPool(String index) {
         this.index = getClassName(index);
-        propertyPoolSizeMax = App.get(ServiceProperty.class).getFactory().getProperty(
+        propertyPoolSizeMax = App.get(ServiceProperty.class).getFactory().getPropertyNs(
+                Integer.class,
                 this.index + "." + ValueName.POOL_SIZE_MAX.getNameCamel(),
-                new PropertyInteger(1),
-                null
+                1,
+                false,
+                _ -> {
+                }
         );
 
-        propertyPoolSizeMin = App.get(ServiceProperty.class).getFactory().getProperty(
+        propertyPoolSizeMin = App.get(ServiceProperty.class).getFactory().getPropertyNs(
+                Integer.class,
                 this.index + "." + ValueName.POOL_SIZE_MIN.getNameCamel(),
-                new PropertyInteger(0),
-                null
+                0,
+                false,
+                _ -> {
+                }
         );
     }
 

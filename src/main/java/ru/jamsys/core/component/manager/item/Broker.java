@@ -7,9 +7,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
-import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyNs;
-import ru.jamsys.core.extension.property.item.type.PropertyInteger;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
@@ -73,7 +71,7 @@ public class Broker<TEO>
     final PropertyNs<Integer> propertyBrokerSize;
 
     @Getter
-    final Property<Integer> propertyBrokerTailSize;
+    final PropertyNs<Integer> propertyBrokerTailSize;
 
     final String index;
 
@@ -89,12 +87,6 @@ public class Broker<TEO>
         this.onDropConsumer = onDropConsumer;
         String clsIndex = getClassName(index, applicationContext);
 
-//        propertyBrokerSize = applicationContext.getBean(ServiceProperty.class).getFactory().getProperty(
-//                clsIndex + "." + ValueName.BROKER_SIZE.getNameCamel(),
-//                new PropertyInteger(3000),
-//                null
-//        );
-
         propertyBrokerSize = applicationContext.getBean(ServiceProperty.class).getFactory().getPropertyNs(
                 Integer.class,
                 clsIndex + "." + ValueName.BROKER_SIZE.getNameCamel(),
@@ -104,11 +96,13 @@ public class Broker<TEO>
                 }
         );
 
-
-        propertyBrokerTailSize = applicationContext.getBean(ServiceProperty.class).getFactory().getProperty(
+        propertyBrokerTailSize = applicationContext.getBean(ServiceProperty.class).getFactory().getPropertyNs(
+                Integer.class,
                 clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),
-                new PropertyInteger(5),
-                null
+                5,
+                false,
+                _ -> {
+                }
         );
 
         ManagerExpiration managerExpiration = applicationContext.getBean(ManagerExpiration.class);
