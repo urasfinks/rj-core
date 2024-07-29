@@ -25,30 +25,38 @@ class PropertiesAgentTest {
         PropertiesAgent map = App
                 .get(ServiceProperty.class)
                 .getFactory()
-                .getPropertiesAgent("run.args.IgnoreClassFinder", false, _ -> {});
+                .getPropertiesAgentVirtual(null, "run.args.IgnoreClassFinder", false);
 
         Assertions.assertEquals("[test1, test2]", map.getKeySetRelative().toString());
         Assertions.assertEquals("[run.args.IgnoreClassFinder.test1, run.args.IgnoreClassFinder.test2]", map.getKeySetAbsolute().toString());
-        Assertions.assertEquals("true", map.getPropertyRelative(String.class, "test1").get());
-        Assertions.assertEquals("false", map.getPropertyRelative(String.class, "test2").get());
-        Assertions.assertEquals("true", map.getPropertyAbsolute(String.class, "run.args.IgnoreClassFinder.test1").get());
-        Assertions.assertEquals("false", map.getPropertyAbsolute(String.class, "run.args.IgnoreClassFinder.test2").get());
+
+        Assertions.assertEquals("{test1=true, test2=false}", map.getPropertiesRepository().getPropValue().toString());
+
     }
 
     @Test
     @Order(2)
     public void onUpdate() {
         AtomicInteger x = new AtomicInteger(0);
-        PropertiesAgent map = App
+        App
                 .get(ServiceProperty.class)
                 .getFactory()
-                .getNsAgent(
+                .getPropertiesAgentVirtual(
+                        _ -> x.incrementAndGet(),
                         "run.args.IgnoreClassFinder",
-                        false,
-                        _ -> x.incrementAndGet()
+                        false
                 );
         Assertions.assertEquals(2, x.get());
-        PropertyNs<Boolean> test1 = map.getPropertyRelative(Boolean.class, "test1");
+
+        PropertyNs<Boolean> test1 = App.get(ServiceProperty.class).getFactory()
+                .getPropertyNs(
+                        Boolean.class,
+                        "run.args.IgnoreClassFinder.test1",
+                        true,
+                        true,
+                        null
+                );
+
         test1.set(false);
         Assertions.assertEquals(3, x.get());
         test1.set(true);

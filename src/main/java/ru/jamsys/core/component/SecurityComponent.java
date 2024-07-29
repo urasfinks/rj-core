@@ -4,11 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.LifeCycleComponent;
-import ru.jamsys.core.extension.property.PropertiesRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertiesAgent;
+import ru.jamsys.core.extension.property.PropertiesRepositoryField;
 import ru.jamsys.core.flat.util.*;
 
 import javax.crypto.SecretKey;
@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-public class SecurityComponent extends PropertiesRepository implements LifeCycleComponent {
+public class SecurityComponent extends PropertiesRepositoryField implements LifeCycleComponent {
 
     @Setter
     @PropertyName("run.args.security.path.storage")
@@ -64,7 +64,12 @@ public class SecurityComponent extends PropertiesRepository implements LifeCycle
     private final PropertiesAgent propertiesAgent;
 
     public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
-        propertiesAgent = serviceProperty.getFactory().getPropertiesListener(null, this);
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
+                null,
+                this,
+                null,
+                true
+        );
         this.exceptionHandler = exceptionHandler;
     }
 

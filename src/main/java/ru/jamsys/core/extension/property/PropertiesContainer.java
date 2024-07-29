@@ -41,4 +41,11 @@ public class PropertiesContainer implements LifeCycleInterface {
     public void shutdown() {
         map.forEach((_, propertyNs) -> propertyNs.shutdown());
     }
+
+    public void unwatch(String key) {
+        PropertyNs<?> remove = map.remove(key);
+        if (remove != null) {
+            remove.shutdown();
+        }
+    }
 }

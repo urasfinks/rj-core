@@ -7,7 +7,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertiesAgent;
-import ru.jamsys.core.extension.property.PropertiesRepository;
+import ru.jamsys.core.extension.property.PropertiesRepositoryField;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.statistic.Statistic;
 
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RateLimitItemTps
-        extends PropertiesRepository
+        extends PropertiesRepositoryField
         implements RateLimitItem, PropertyUpdateDelegate, LifeCycleInterface {
 
     private final AtomicInteger tps = new AtomicInteger(0);

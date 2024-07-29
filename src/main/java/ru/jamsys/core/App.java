@@ -53,7 +53,11 @@ public class App {
     }
 
     public static void error(Throwable th) {
-        get(ExceptionHandler.class).handler(th);
+        if (context == null) {
+            th.printStackTrace();
+        } else {
+            get(ExceptionHandler.class).handler(th);
+        }
     }
 
     public static AppRunBuilder getRunBuilder() {

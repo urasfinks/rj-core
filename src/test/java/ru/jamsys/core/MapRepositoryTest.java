@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.property.PropertiesRepository;
+import ru.jamsys.core.extension.property.PropertiesRepositoryField;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.PropertiesAgent;
@@ -27,7 +27,7 @@ class MapRepositoryTest {
         App.shutdown();
     }
 
-    public static class XX extends PropertiesRepository implements PropertyUpdateDelegate {
+    public static class XX extends PropertiesRepositoryField implements PropertyUpdateDelegate {
 
         int c = 0;
 
@@ -125,7 +125,7 @@ class MapRepositoryTest {
     }
 
 
-    static class x2 extends PropertiesRepository implements PropertyUpdateDelegate {
+    static class x2 extends PropertiesRepositoryField implements PropertyUpdateDelegate {
 
         @SuppressWarnings("all")
         @PropertyName("security.path.storage")

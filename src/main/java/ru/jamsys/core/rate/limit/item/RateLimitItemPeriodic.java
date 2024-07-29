@@ -5,7 +5,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.property.PropertiesRepository;
+import ru.jamsys.core.extension.property.PropertiesRepositoryField;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.PropertiesAgent;
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RateLimitItemPeriodic
-        extends PropertiesRepository
+        extends PropertiesRepositoryField
         implements RateLimitItem, PropertyUpdateDelegate, LifeCycleInterface {
 
     private final AtomicInteger tpu = new AtomicInteger(0);

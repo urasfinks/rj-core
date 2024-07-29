@@ -1,12 +1,12 @@
 package ru.jamsys.core.resource.jdbc;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.property.PropertiesRepository;
+import ru.jamsys.core.extension.property.PropertiesRepositoryField;
 import ru.jamsys.core.extension.annotation.PropertyName;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
-public class JdbcProperties extends PropertiesRepository {
+public class JdbcProperties extends PropertiesRepositoryField {
 
     @PropertyName("jdbc.uri")
     private String uri;

@@ -28,8 +28,8 @@ class PropertiesContainerTest {
                 .getFactory()
                 .getContainer();
         AtomicInteger x = new AtomicInteger(0);
-        container.watch(String.class, "run.args.IgnoreClassFinder.test1", null, (_, _) -> x.incrementAndGet());
-        Property<String> p1 = container.watch(String.class, "run.args.IgnoreClassFinder.test2", null, (_, _) -> x.incrementAndGet());
+        container.getPropertyNs(String.class, "run.args.IgnoreClassFinder.test1", null, true,  _ -> x.incrementAndGet());
+        PropertyNs<String> p1 = container.getPropertyNs(String.class, "run.args.IgnoreClassFinder.test2", null, true, _ -> x.incrementAndGet());
         Assertions.assertEquals(2, x.get());
         p1.set("1");
         Assertions.assertEquals(3, x.get());

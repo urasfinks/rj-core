@@ -1,6 +1,8 @@
 package ru.jamsys.core.extension.property;
 
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.property.item.PropertiesRepository;
+import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.function.Consumer;
 
@@ -18,8 +20,8 @@ public class ServicePropertyFactory {
     public <T> PropertyNs<T> getPropertyNs(
             Class<T> cls,
             String absoluteKey,
-            boolean required,
             T defValue,
+            boolean required,
             Consumer<T> onUpdate
     ) {
         return new PropertyNs<>(serviceProperty, cls, absoluteKey, defValue, required, onUpdate);
@@ -32,6 +34,20 @@ public class ServicePropertyFactory {
             boolean require
     ) {
         return new PropertiesAgent(serviceProperty, subscriber, propertiesRepository, ns, require);
+    }
+
+    public PropertiesAgent getPropertiesAgentVirtual(
+            PropertyUpdateDelegate subscriber,
+            String ns,
+            boolean require
+    ) {
+        PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
+        UtilRisc.forEach(null, serviceProperty.getProp(), (key, value) -> {
+            if (key.startsWith(ns + ".")) {
+                propertiesRepositoryMap.getPropValue().put(key.substring(ns.length() + 1), value);
+            }
+        });
+        return new PropertiesAgent(serviceProperty, subscriber, propertiesRepositoryMap, ns, require);
     }
 
 

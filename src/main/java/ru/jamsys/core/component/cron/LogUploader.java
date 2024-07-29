@@ -15,7 +15,7 @@ import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertiesRepository;
+import ru.jamsys.core.extension.property.PropertiesRepositoryField;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
 import ru.jamsys.core.flat.util.ListSort;
@@ -37,7 +37,7 @@ import java.util.function.Function;
 
 @Component
 @Lazy
-public class LogUploader extends PropertiesRepository implements Cron5s, PromiseGenerator, UniqueClassName {
+public class LogUploader extends PropertiesRepositoryField implements Cron5s, PromiseGenerator, UniqueClassName {
 
     final Broker<Log> broker;
 
@@ -68,7 +68,7 @@ public class LogUploader extends PropertiesRepository implements Cron5s, Promise
         this.servicePromise = servicePromise;
         this.idx = UniqueClassNameImpl.getClassNameStatic(Log.class, null, applicationContext);
         broker = managerBroker.get(idx, Log.class);
-        serviceProperty.getFactory().getPropertiesListener(null, this, null, false);
+        serviceProperty.getFactory().getPropertiesAgent(null, this, null, false);
     }
 
     @Override

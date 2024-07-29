@@ -6,19 +6,19 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.LogType;
-import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.extension.line.writer.LineWriterString;
-import ru.jamsys.core.extension.property.PropertiesRepository;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.property.PropertiesRepositoryField;
 import ru.jamsys.core.flat.util.Util;
 
 @Setter
 @Component
 @Lazy
-public class ExceptionHandler extends PropertiesRepository {
+public class ExceptionHandler extends PropertiesRepositoryField {
 
     private int maxLine = 50;
 
@@ -32,7 +32,7 @@ public class ExceptionHandler extends PropertiesRepository {
         applicationContext
                 .getBean(ServiceProperty.class)
                 .getFactory()
-                .getPropertiesListener(null, this, null);
+                .getPropertiesAgent(null, this, null, true);
     }
 
     public void handler(Throwable th) {

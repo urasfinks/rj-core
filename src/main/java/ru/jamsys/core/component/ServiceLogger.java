@@ -9,11 +9,11 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.component.manager.item.LogType;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.property.PropertiesRepository;
+import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.property.PropertiesRepositoryField;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.promise.Promise;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @Lazy
-public class ServiceLogger extends PropertiesRepository implements
+public class ServiceLogger extends PropertiesRepositoryField implements
         StatisticsFlushComponent,
         LifeCycleComponent {
 
@@ -52,7 +52,7 @@ public class ServiceLogger extends PropertiesRepository implements
         applicationContext
                 .getBean(ServiceProperty.class)
                 .getFactory()
-                .getPropertiesListener(null, this, null);
+                .getPropertiesAgent(null, this, null, true);
     }
 
     public DisposableExpirationMsImmutableEnvelope<Log> add(Log log) {

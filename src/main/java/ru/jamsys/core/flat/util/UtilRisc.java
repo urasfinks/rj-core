@@ -34,10 +34,9 @@ public class UtilRisc {
                 int index = reverse ? objects.length - 1 : 0;
                 int inc = reverse ? -1 : 1;
                 while (true) {
-                    T value = objects[index];
                     if (isRun == null || isRun.get()) {
                         try {
-                            if (!consumer.apply(value)) {
+                            if (!consumer.apply(objects[index])) {
                                 break;
                             }
                         } catch (Exception e2) {
@@ -73,10 +72,9 @@ public class UtilRisc {
                 int index = reverse ? objects.length - 1 : 0;
                 int inc = reverse ? -1 : 1;
                 while (true) {
-                    T value = objects[index];
                     if (isRun == null || isRun.get()) {
                         try {
-                            consumer.accept(value);
+                            consumer.accept(objects[index]);
                         } catch (Exception e2) {
                             App.error(e2);
                         }
@@ -101,11 +99,8 @@ public class UtilRisc {
                 for (K key : objects) {
                     if (isRun == null || isRun.get()) {
                         try {
-                            V value = map.get(key);
-                            if (value != null) {
-                                if (!consumer.apply(key, value)) {
-                                    break;
-                                }
+                            if (!consumer.apply(key, map.get(key))) {
+                                break;
                             }
                         } catch (Exception e2) {
                             App.error(e2);
@@ -127,10 +122,7 @@ public class UtilRisc {
                 for (K key : objects) {
                     if (isRun == null || isRun.get()) {
                         try {
-                            V value = map.get(key);
-                            if (value != null) {
-                                consumer.accept(key, value);
-                            }
+                            consumer.accept(key, map.get(key));
                         } catch (Exception e2) {
                             App.error(e2);
                         }

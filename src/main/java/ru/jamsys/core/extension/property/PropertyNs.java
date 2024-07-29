@@ -33,7 +33,7 @@ public class PropertyNs<T> implements PropertyUpdateDelegate, LifeCycleInterface
 
     private final boolean required;
 
-    private Consumer<T> onUpdate;
+    private final Consumer<T> onUpdate;
 
     public PropertyNs(
             ServiceProperty serviceProperty,
@@ -64,7 +64,7 @@ public class PropertyNs<T> implements PropertyUpdateDelegate, LifeCycleInterface
     @Override
     public void onPropertyUpdate(Map<String, String> mapAlias) {
         @SuppressWarnings("unchecked")
-        T t = (T) convertType.get(cls).apply(mapAlias.getOrDefault(absoluteKey, defValue.toString()));
+        T t = (T) convertType.get(cls).apply(mapAlias.getOrDefault(absoluteKey, String.valueOf(defValue)));
         this.value = t;
         if (this.onUpdate != null) {
             this.onUpdate.accept(this.value);
@@ -73,7 +73,7 @@ public class PropertyNs<T> implements PropertyUpdateDelegate, LifeCycleInterface
 
     @Override
     public void run() {
-        this.serviceProperty.subscribe(absoluteKey, this, required, defValue.toString());
+        this.serviceProperty.subscribe(absoluteKey, this, required, String.valueOf(defValue));
     }
 
     @Override

@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.property;
 import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.property.item.PropertiesRepository;
 import ru.jamsys.core.extension.property.item.SubscriberItem;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -67,7 +68,7 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
                     getAbsoluteKey(relativeKey),
                     this,
                     subscriberItem.isRequire(),
-                    subscriberItem.getDefValue().toString()
+                    String.valueOf(subscriberItem.getDefValue())
             );
             subscriberItem.setSubscribe(true);
         }
@@ -96,14 +97,17 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
     }
 
     public void onPropertyUpdate(Map<String, String> map) {
+        Map<String, String> withoutNs = new HashMap<>();
         for (String key : map.keySet()) {
             // Бывает такое, что мы можем подписываться на чистый ns, так как не предполагается больше ключей
             String prop = getRelativeKey(key);
-            propertiesRepository.setPropValue(prop, map.get(key));
-            mapListener.get(key).onUpdate(map.get(key));
+            String value = map.get(key);
+            propertiesRepository.setPropValue(prop, value);
+            mapListener.get(prop).onUpdate(value);
+            withoutNs.put(prop, value);
         }
-        if (subscriber != null && !map.isEmpty()) {
-            subscriber.onPropertyUpdate(map);
+        if (subscriber != null && !withoutNs.isEmpty()) {
+            subscriber.onPropertyUpdate(withoutNs);
         }
     }
 
@@ -150,14 +154,21 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
 
     // Получить ключик без ns
     private String getRelativeKey(String absoluteKey) {
-        if (absoluteKey.isEmpty()) {
-            if (ns == null) {
-                throw new RuntimeException("Определитесь либо ns = null либо key.isEmpty()");
-            }
+        if (ns == null && absoluteKey.isEmpty()) {
+            throw new RuntimeException("Определитесь либо ns = null либо key.isEmpty()");
+        } else if (ns == null) {
+            return absoluteKey;
+        } else if (absoluteKey.isEmpty()) {
             return ns;
+        } else if (absoluteKey.equals(ns)) {
+            return "";
         } else {
             return absoluteKey.substring(ns.length() + 1);
         }
+    }
+
+    public void setPropertyWithoutNs(String key, String value) {
+        serviceProperty.setProperty(getAbsoluteKey(key), value);
     }
 
 }
