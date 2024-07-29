@@ -350,8 +350,7 @@ public class Util {
             result = socket.getLocalAddress().toString();
             socket.close();
         } catch (Exception e) {
-            // Нет в этот момент контекста ещё
-            e.printStackTrace();
+            App.error(e);
         }
         return result;
     }
