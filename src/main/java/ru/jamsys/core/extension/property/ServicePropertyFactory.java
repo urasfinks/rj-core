@@ -7,7 +7,7 @@ import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.function.Consumer;
 
-// Просто позволяет создавать объекты работы с property
+// Просто позволяет создавать объекты работы с Property
 
 public class ServicePropertyFactory {
 
@@ -53,6 +53,7 @@ public class ServicePropertyFactory {
         return new PropertiesAgent(serviceProperty, subscriber, propertiesRepositoryMap, ns, require);
     }
 
+    // Контейнер Property
     public PropertiesContainer getContainer() {
         return new PropertiesContainer(serviceProperty);
     }

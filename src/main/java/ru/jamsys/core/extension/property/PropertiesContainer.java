@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+// Контейнер Property, что бы одним движением можно было закрыть подписки на обновления всех Property
+
 public class PropertiesContainer implements LifeCycleInterface {
 
     private final Map<String, Property<?>> map = new LinkedHashMap<>();

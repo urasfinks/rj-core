@@ -9,8 +9,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-// Привязанные объект к ServiceProperty, не имеет никаких оповещений просто даёт возможность прявязаться к property
-// и получить её значение
+// Привязанный объект к ServiceProperty, хранит актуальное значение + имеет возможность хуков обновления
 
 public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
 
@@ -80,4 +79,5 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
     public void shutdown() {
         serviceProperty.unsubscribe(absoluteKey, this);
     }
+
 }

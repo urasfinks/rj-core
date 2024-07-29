@@ -10,10 +10,8 @@ import ru.jamsys.core.flat.util.UtilRisc;
 import java.util.*;
 import java.util.function.Consumer;
 
-// Посредник между объектом, кто хочет получать уведомления от изменения свойств до ServiceProperty
-// При получении событий по изменению свойств вызывает onPropertyUpdate у хозяина
-// Решает проблему ключей с ns или без ns + хранит подписки, что бы в случаи удалении объекта произвести отписку
-// Просто как дворецкий, ни больше не меньше
+// Агент связывает ServiceProperty и Subscriber, задача агента донести изменённые свойства до полей подписчика
+// Агент не обладает функционалом изменять свойства, для изменения используйте Property
 
 @Getter
 public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelegate {
