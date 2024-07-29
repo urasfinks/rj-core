@@ -4,8 +4,8 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerVirtualFileSystem;
+import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.PropertiesNsAgent;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -20,7 +20,6 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 @Component
@@ -32,7 +31,7 @@ public class AppleNotificationResource
 
     private ManagerVirtualFileSystem managerVirtualFileSystem;
 
-    private PropertiesNsAgent propertiesNsAgent;
+    private PropertiesAgent propertiesAgent;
 
     private final AppleNotificationProperties property = new AppleNotificationProperties();
 
@@ -40,11 +39,16 @@ public class AppleNotificationResource
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         managerVirtualFileSystem = App.get(ManagerVirtualFileSystem.class);
-        propertiesNsAgent = serviceProperty.getFactory().getNsAgent(this, property, resourceArguments.ns);
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
+                this,
+                property,
+                resourceArguments.ns,
+                true
+        );
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedPropAlias) {
+    public void onPropertyUpdate(Map<String, String> mapAlias) {
         if (property.getVirtualPath() == null || property.getStorage() == null) {
             return;
         }
@@ -79,7 +83,7 @@ public class AppleNotificationResource
         httpClient.setKeyStore(
                 managerVirtualFileSystem.get(property.getVirtualPath()),
                 FileViewKeyStore.prop.SECURITY_KEY.name(), property.getSecurityAlias(),
-            FileViewKeyStore.prop.TYPE.name(), "PKCS12"
+                FileViewKeyStore.prop.TYPE.name(), "PKCS12"
         );
         httpClient.exec();
         return httpClient.getHttpResponseEnvelope();
@@ -92,15 +96,15 @@ public class AppleNotificationResource
 
     @Override
     public void run() {
-        if (propertiesNsAgent != null) {
-            propertiesNsAgent.run();
+        if (propertiesAgent != null) {
+            propertiesAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertiesNsAgent != null) {
-            propertiesNsAgent.shutdown();
+        if (propertiesAgent != null) {
+            propertiesAgent.shutdown();
         }
     }
 

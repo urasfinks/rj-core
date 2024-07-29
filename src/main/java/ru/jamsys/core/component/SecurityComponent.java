@@ -8,7 +8,7 @@ import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.property.PropertiesRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.PropertiesNsAgent;
+import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.flat.util.*;
 
 import javax.crypto.SecretKey;
@@ -61,10 +61,10 @@ public class SecurityComponent extends PropertiesRepository implements LifeCycle
 
     private KeyStore.PasswordProtection keyStorePP;
 
-    private final PropertiesNsAgent propertiesNsAgent;
+    private final PropertiesAgent propertiesAgent;
 
     public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
-        propertiesNsAgent = serviceProperty.getFactory().getNsAgent(null, this);
+        propertiesAgent = serviceProperty.getFactory().getPropertiesListener(null, this);
         this.exceptionHandler = exceptionHandler;
     }
 
@@ -351,12 +351,12 @@ public class SecurityComponent extends PropertiesRepository implements LifeCycle
             String passwordFromInfoJson = getPasswordFromInfoJson(initJson);
             printNotice(passwordFromInfoJson);
         }
-        propertiesNsAgent.run();
+        propertiesAgent.run();
     }
 
     @Override
     public void shutdown() {
-        propertiesNsAgent.shutdown();
+        propertiesAgent.shutdown();
     }
 
     @Override

@@ -9,10 +9,9 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertiesRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.PropertiesNsAgent;
+import ru.jamsys.core.extension.property.PropertiesAgent;
 
 import java.util.Map;
-import java.util.Set;
 
 // IO time: 5ms
 // COMPUTE time: 5ms
@@ -33,9 +32,9 @@ class MapRepositoryTest {
         int c = 0;
 
         @Override
-        public void onPropertyUpdate(Set<String> updatedPropAlias) {
-            c += updatedPropAlias.size();
-            System.out.println(updatedPropAlias);
+        public void onPropertyUpdate(Map<String, String> mapAlias) {
+            c += mapAlias.size();
+            System.out.println(mapAlias);
         }
     }
 
@@ -43,15 +42,15 @@ class MapRepositoryTest {
     void test() {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         XX xx = new XX();
-        PropertiesNsAgent subscribe = serviceProperty
+        PropertiesAgent subscribe = serviceProperty
                 .getFactory()
-                .getNsAgent(xx, xx)
-                .add("run.args.security.path.storage", null, true)
-                .add("run.args.security.path.storage", null, true);
+                .getPropertiesAgent(xx, xx, null, true)
+                .add(String.class, "run.args.security.path.storage", null, true, null)
+                .add(String.class, "run.args.security.path.storage", null, true, null);
 
         Assertions.assertEquals(1, subscribe.getMapListener().size());
 
-        subscribe.add("run.args.security.path.public.key", null, true);
+        subscribe.add(String.class,"run.args.security.path.public.key", null, true, null);
 
         Assertions.assertEquals(2, subscribe.getMapListener().size());
 
@@ -72,18 +71,18 @@ class MapRepositoryTest {
         Assertions.assertEquals(3, xx.c);
 
         // Обратно подписываемся
-        subscribe.add("run.args.security.path.storage", null, true);
+        subscribe.add(String.class,"run.args.security.path.storage", null, true, null);
         // Так как автоматом получим значение при подписке
         Assertions.assertEquals(4, xx.c);
 
-        subscribe.add("run.args.security.path.public.key", null, true);
+        subscribe.add(String.class,"run.args.security.path.public.key", null, true, null);
         // Так как автоматом получим значение при подписке
         Assertions.assertEquals(5, xx.c);
 
         serviceProperty.setProperty("run.args.security.path.public.key", "x3");
         Assertions.assertEquals(6, xx.c);
 
-        subscribe.removeWithoutNs("run.args.security.path.public.key");
+        subscribe.removeRelative("run.args.security.path.public.key");
         serviceProperty.setProperty("run.args.security.path.public.key", "x4");
         Assertions.assertEquals(6, xx.c);
 
@@ -106,7 +105,7 @@ class MapRepositoryTest {
         );
         Assertions.assertEquals(7, xx.c);
 
-        subscribe.add("run.args.security.path.public.key", null,true);
+        subscribe.add(String.class,"run.args.security.path.public.key", null,true, null);
         Assertions.assertEquals(8, xx.c);
 
         //Мульти обновление штатное
@@ -137,8 +136,8 @@ class MapRepositoryTest {
         public String publicKey = "ppbb";
 
         @Override
-        public void onPropertyUpdate(Set<String> updatedPropAlias) {
-            System.out.println(updatedPropAlias);
+        public void onPropertyUpdate(Map<String, String> mapAlias) {
+            System.out.println(mapAlias);
         }
     }
 
@@ -147,10 +146,10 @@ class MapRepositoryTest {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         x2 x2 = new x2();
 
-        Map<String, String> mapPropValue = x2.getMapPropValue();
+        Map<String, String> mapPropValue = x2.getPropValue();
         System.out.println(mapPropValue);
 
-        PropertiesNsAgent subscribe = serviceProperty.getFactory().getNsAgent(x2, x2, "run.args");
+        PropertiesAgent subscribe = serviceProperty.getFactory().getPropertiesAgent(x2, x2, "run.args", true);
 
         Assertions.assertEquals(2, subscribe.getMapListener().size());
 

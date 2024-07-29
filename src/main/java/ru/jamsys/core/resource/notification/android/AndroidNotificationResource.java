@@ -4,8 +4,8 @@ import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.PropertiesNsAgent;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -19,7 +19,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 @Component
@@ -31,18 +30,23 @@ public class AndroidNotificationResource
 
     private String accessToken;
 
-    private PropertiesNsAgent propertiesNsAgent;
+    private PropertiesAgent propertiesAgent;
 
     private final AndroidNotificationProperties property = new AndroidNotificationProperties();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesNsAgent = serviceProperty.getFactory().getNsAgent(this, property, resourceArguments.ns);
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
+                this,
+                property,
+                resourceArguments.ns,
+                true
+        );
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedPropAlias) {
+    public void onPropertyUpdate(Map<String, String> mapAlias) {
         if (property.getScope() == null || property.getStorageCredentials() == null) {
             return;
         }
@@ -98,15 +102,15 @@ public class AndroidNotificationResource
 
     @Override
     public void run() {
-        if (propertiesNsAgent != null) {
-            propertiesNsAgent.run();
+        if (propertiesAgent != null) {
+            propertiesAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertiesNsAgent != null) {
-            propertiesNsAgent.shutdown();
+        if (propertiesAgent != null) {
+            propertiesAgent.shutdown();
         }
     }
 

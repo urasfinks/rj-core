@@ -32,7 +32,7 @@ public class ExceptionHandler extends PropertiesRepository {
         applicationContext
                 .getBean(ServiceProperty.class)
                 .getFactory()
-                .getNsAgent(null, this, null);
+                .getPropertiesListener(null, this, null);
     }
 
     public void handler(Throwable th) {

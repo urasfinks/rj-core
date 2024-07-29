@@ -9,18 +9,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-// Класс помогает создать 2 map на основе свойств класса родителя помеченных аннотацией PropertyName,
-// Используется как подготовленный кеш на доступ к полям, значение которых при обновлении property нужно изменить
-// Можно использовать как виртуальный кеш без свойств класса
+// Класс помогает изъять аннтоции свойств
 
 @Getter
 public class PropertiesRepository {
 
     private final Map<String, Field> mapPropField = new HashMap<>();
 
-    private final Map<String, String> mapPropValue = new LinkedHashMap<>();
-
-    // Репозиторий на основе полей класса
     public PropertiesRepository() {
         for (Field field : getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(PropertyName.class)) {
@@ -32,37 +27,24 @@ public class PropertiesRepository {
         }
     }
 
-    // Виртуальный репозиторий
-    public PropertiesRepository(Map<String, String> mapPropValue) {
-        if (mapPropValue != null) {
-            this.mapPropValue.putAll(mapPropValue);
-        }
-    }
-
-    public void addProp(String key, String value) {
-        this.mapPropValue.computeIfAbsent(key, _ -> value);
-    }
-
-    public Map<String, String> getMapPropValue(){
-        if (mapPropValue.isEmpty()) {
-            for (Field field : getClass().getDeclaredFields()) {
-                if (field.isAnnotationPresent(PropertyName.class)) {
-                    String prop = field.getAnnotation(PropertyName.class).value();
-                    field.setAccessible(true);
-                    try {
-                        mapPropValue.put(prop, (String) field.get(this));
-                    } catch (Exception e) {
-                        App.error(e);
-                    }
+    public Map<String, String> getPropValue() {
+        Map<String, String> mapPropValue = new LinkedHashMap<>();
+        for (Field field : getClass().getDeclaredFields()) {
+            if (field.isAnnotationPresent(PropertyName.class)) {
+                String prop = field.getAnnotation(PropertyName.class).value();
+                field.setAccessible(true);
+                try {
+                    mapPropValue.put(prop, (String) field.get(this));
+                } catch (Exception e) {
+                    App.error(e);
                 }
             }
         }
         return mapPropValue;
     }
 
-    public void setValueByProp(String prop, String value) {
+    public void setPropValue(String prop, String value) {
         try {
-            mapPropValue.put(prop, value);
             if (mapPropField.containsKey(prop)) {
                 mapPropField.get(prop).set(this, value);
             }

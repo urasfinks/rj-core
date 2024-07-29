@@ -75,7 +75,7 @@ public class StatisticUploader extends PropertiesRepository implements Cron5s, P
                 UniqueClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class
         );
-        serviceProperty.getFactory().getNsAgent(
+        serviceProperty.getFactory().getPropertiesListener(
                 null,
                 this,
                 null,

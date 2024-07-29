@@ -5,16 +5,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.property.PropertiesRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.property.PropertiesAgent;
+import ru.jamsys.core.extension.property.PropertiesRepository;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.PropertiesNsAgent;
 import ru.jamsys.core.statistic.Statistic;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -33,11 +32,11 @@ public class RateLimitItemTps
     @PropertyName
     private String propMax = "1000";
 
-    private final PropertiesNsAgent propertiesNsAgent;
+    private final PropertiesAgent propertiesAgent;
 
     public RateLimitItemTps(ApplicationContext applicationContext, String ns) {
         this.ns = ns;
-        propertiesNsAgent = applicationContext.getBean(ServiceProperty.class).getFactory().getNsAgent(
+        propertiesAgent = applicationContext.getBean(ServiceProperty.class).getFactory().getPropertiesAgent(
                 this,
                 this,
                 ns,
@@ -66,18 +65,18 @@ public class RateLimitItemTps
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedPropAlias) {
+    public void onPropertyUpdate(Map<String, String> mapAlias) {
         this.max.set(Integer.parseInt(propMax));
     }
 
     @Override
     public void run() {
-        propertiesNsAgent.run();
+        propertiesAgent.run();
     }
 
     @Override
     public void shutdown() {
-        propertiesNsAgent.shutdown();
+        propertiesAgent.shutdown();
     }
 
 }

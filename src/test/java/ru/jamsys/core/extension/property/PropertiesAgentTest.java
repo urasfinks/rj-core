@@ -7,7 +7,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class PropertiesNsAgentTest {
+class PropertiesAgentTest {
 
     @BeforeAll
     static void beforeAll() {
@@ -22,24 +22,24 @@ class PropertiesNsAgentTest {
     @Test
     @Order(1)
     public void collection() {
-        PropertiesNsAgent map = App
+        PropertiesAgent map = App
                 .get(ServiceProperty.class)
                 .getFactory()
-                .getNsAgent("run.args.IgnoreClassFinder", false, _ -> {});
+                .getPropertiesAgent("run.args.IgnoreClassFinder", false, _ -> {});
 
-        Assertions.assertEquals("[test1, test2]", map.getKeySetWithoutNs().toString());
-        Assertions.assertEquals("[run.args.IgnoreClassFinder.test1, run.args.IgnoreClassFinder.test2]", map.getKeySet().toString());
-        Assertions.assertEquals("true", map.getWithoutNs(String.class, "test1").get());
-        Assertions.assertEquals("false", map.getWithoutNs(String.class, "test2").get());
-        Assertions.assertEquals("true", map.get(String.class, "run.args.IgnoreClassFinder.test1").get());
-        Assertions.assertEquals("false", map.get(String.class, "run.args.IgnoreClassFinder.test2").get());
+        Assertions.assertEquals("[test1, test2]", map.getKeySetRelative().toString());
+        Assertions.assertEquals("[run.args.IgnoreClassFinder.test1, run.args.IgnoreClassFinder.test2]", map.getKeySetAbsolute().toString());
+        Assertions.assertEquals("true", map.getPropertyRelative(String.class, "test1").get());
+        Assertions.assertEquals("false", map.getPropertyRelative(String.class, "test2").get());
+        Assertions.assertEquals("true", map.getPropertyAbsolute(String.class, "run.args.IgnoreClassFinder.test1").get());
+        Assertions.assertEquals("false", map.getPropertyAbsolute(String.class, "run.args.IgnoreClassFinder.test2").get());
     }
 
     @Test
     @Order(2)
     public void onUpdate() {
         AtomicInteger x = new AtomicInteger(0);
-        PropertiesNsAgent map = App
+        PropertiesAgent map = App
                 .get(ServiceProperty.class)
                 .getFactory()
                 .getNsAgent(
@@ -48,7 +48,7 @@ class PropertiesNsAgentTest {
                         _ -> x.incrementAndGet()
                 );
         Assertions.assertEquals(2, x.get());
-        PropertyNs<Boolean> test1 = map.getWithoutNs(Boolean.class, "test1");
+        PropertyNs<Boolean> test1 = map.getPropertyRelative(Boolean.class, "test1");
         test1.set(false);
         Assertions.assertEquals(3, x.get());
         test1.set(true);

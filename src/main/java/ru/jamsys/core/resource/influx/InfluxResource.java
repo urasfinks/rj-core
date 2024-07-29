@@ -11,15 +11,15 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.PropertiesNsAgent;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,18 +39,23 @@ public class InfluxResource
 
     private WriteApiBlocking writer;
 
-    private PropertiesNsAgent propertiesNsAgent;
+    private PropertiesAgent propertiesAgent;
 
     private final InfluxProperties property = new InfluxProperties();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesNsAgent = serviceProperty.getFactory().getNsAgent(null, property, resourceArguments.ns);
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
+                null,
+                property,
+                resourceArguments.ns,
+                true
+        );
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedPropAlias) {
+    public void onPropertyUpdate(Map<String, String> mapAlias) {
         down();
         if (property.getHost() == null || property.getAlias() == null) {
             return;
@@ -109,16 +114,16 @@ public class InfluxResource
 
     @Override
     public void run() {
-        if (propertiesNsAgent != null) {
-            propertiesNsAgent.run();
+        if (propertiesAgent != null) {
+            propertiesAgent.run();
         }
         up();
     }
 
     @Override
     public void shutdown() {
-        if (propertiesNsAgent != null) {
-            propertiesNsAgent.shutdown();
+        if (propertiesAgent != null) {
+            propertiesAgent.shutdown();
         }
         down();
     }

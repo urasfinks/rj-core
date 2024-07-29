@@ -69,7 +69,7 @@ public class StatisticFlush extends PropertiesRepository implements Cron1s, Prom
         serviceClassFinder.findByInstance(StatisticsFlushComponent.class).forEach(statisticsCollectorClass
                 -> list.add(applicationContext.getBean(statisticsCollectorClass)));
 
-        serviceProperty.getFactory().getNsAgent(
+        serviceProperty.getFactory().getPropertiesListener(
                 null,
                 this,
                 null,

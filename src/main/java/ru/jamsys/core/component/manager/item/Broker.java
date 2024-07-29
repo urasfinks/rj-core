@@ -87,22 +87,22 @@ public class Broker<TEO>
         this.onDropConsumer = onDropConsumer;
         String clsIndex = getClassName(index, applicationContext);
 
-        propertyBrokerSize = applicationContext.getBean(ServiceProperty.class).getFactory().getPropertyNs(
+        ServiceProperty serviceProperty = applicationContext.getBean(ServiceProperty.class);
+        propertyBrokerSize = new PropertyNs<>(
+                serviceProperty,
                 Integer.class,
                 clsIndex + "." + ValueName.BROKER_SIZE.getNameCamel(),
                 3000,
                 false,
-                _ -> {
-                }
+                null
         );
-
-        propertyBrokerTailSize = applicationContext.getBean(ServiceProperty.class).getFactory().getPropertyNs(
+        propertyBrokerTailSize = new PropertyNs<>(
+                serviceProperty,
                 Integer.class,
                 clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),
                 5,
                 false,
-                _ -> {
-                }
+                null
         );
 
         ManagerExpiration managerExpiration = applicationContext.getBean(ManagerExpiration.class);
@@ -302,8 +302,8 @@ public class Broker<TEO>
 
     @Override
     public void shutdown() {
-        propertyBrokerSize.shutdown();
-        propertyBrokerTailSize.shutdown();
+        propertyBrokerSize.run();
+        propertyBrokerTailSize.run();
         lastTimeInQueue = null;
     }
 

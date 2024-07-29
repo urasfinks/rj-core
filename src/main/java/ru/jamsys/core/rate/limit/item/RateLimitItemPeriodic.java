@@ -8,7 +8,7 @@ import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.PropertiesRepository;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.PropertiesNsAgent;
+import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.Statistic;
@@ -42,13 +42,13 @@ public class RateLimitItemPeriodic
     @PropertyName
     private String propMax = "1000";
 
-    private final PropertiesNsAgent propertiesNsAgent;
+    private final PropertiesAgent propertiesAgent;
 
     public RateLimitItemPeriodic(ApplicationContext applicationContext, TimeUnit period, String ns) {
         this.ns = ns;
         this.period = period;
         this.periodName = period.getNameCamel();
-        propertiesNsAgent = applicationContext.getBean(ServiceProperty.class).getFactory().getNsAgent(
+        propertiesAgent = applicationContext.getBean(ServiceProperty.class).getFactory().getPropertiesAgent(
                 this,
                 this,
                 ns,
@@ -99,18 +99,18 @@ public class RateLimitItemPeriodic
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedPropAlias) {
+    public void onPropertyUpdate(Map<String, String> mapAlias) {
         this.max.set(Integer.parseInt(propMax));
     }
 
     @Override
     public void run() {
-        propertiesNsAgent.run();
+        propertiesAgent.run();
     }
 
     @Override
     public void shutdown() {
-        propertiesNsAgent.shutdown();
+        propertiesAgent.shutdown();
     }
 
 }

@@ -7,8 +7,8 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.PropertiesNsAgent;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -22,7 +22,6 @@ import java.io.FileOutputStream;
 import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -46,7 +45,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     private final FileByteWriterProperties property = new FileByteWriterProperties();
 
     @Getter
-    private final PropertiesNsAgent propertiesNsAgent;
+    private final PropertiesAgent propertiesAgent;
 
     private final AtomicBoolean isRunWrite = new AtomicBoolean(false);
 
@@ -55,7 +54,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesNsAgent = serviceProperty.getFactory().getNsAgent(this, property, ns, false);
+        propertiesAgent = serviceProperty.getFactory().getPropertiesListener(this, property, ns, false);
 
         if (broker == null) {
             throw new RuntimeException("broker is null");
@@ -68,8 +67,8 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedPropAlias) {
-        if (updatedPropAlias.contains("log.file.name")) {
+    public void onPropertyUpdate(Map<String, String> mapAlias) {
+        if (mapAlias.containsKey("log.file.name")) {
             broker = App.get(ManagerBroker.class).initAndGet(
                     UniqueClassNameImpl.getClassNameStatic(FileByteWriter.class, property.getFileName(), App.context),
                     ByteTransformer.class,
@@ -77,7 +76,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
             );
             restoreIndex();
         }
-        if (updatedPropAlias.contains("log.file.folder")) {
+        if (mapAlias.containsKey("log.file.folder")) {
             if (!UtilFile.ifExist(property.getFolder())) {
                 throw new RuntimeException("log.file.folder: " + property.getFolder() + "; not exist");
             }
@@ -210,7 +209,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     @Override
     public void run() {
-        propertiesNsAgent.run();
+        propertiesAgent.run();
     }
 
     @Override
@@ -221,7 +220,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         // Сначала не хотел закрывать файл, но решил, что надо, для того, что бы система могла уже с ним поработать
         // Если оставить его не закрытым, то он будет висеть до закрытия программы, что наверное не очень хорошо
         closeLastFile();
-        propertiesNsAgent.shutdown();
+        propertiesAgent.shutdown();
     }
 
 }

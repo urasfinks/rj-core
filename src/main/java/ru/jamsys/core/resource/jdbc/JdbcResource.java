@@ -6,8 +6,8 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.PropertiesNsAgent;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 @Component
@@ -35,19 +34,24 @@ public class JdbcResource
 
     private Connection connection;
 
-    private PropertiesNsAgent propertiesNsAgent;
+    private PropertiesAgent propertiesAgent;
 
     private final JdbcProperties property = new JdbcProperties();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Exception {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesNsAgent = serviceProperty.getFactory().getNsAgent(this, property, resourceArguments.ns);
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
+                this,
+                property,
+                resourceArguments.ns,
+                true
+        );
         this.statementControl = new DefaultStatementControl();
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedPropAlias) {
+    public void onPropertyUpdate(Map<String, String> mapAlias) {
         down();
         if (property.getUri() == null || property.getUser() == null || property.getSecurityAlias() == null) {
             return;
@@ -111,16 +115,16 @@ public class JdbcResource
 
     @Override
     public void run() {
-        if (propertiesNsAgent != null) {
-            propertiesNsAgent.run();
+        if (propertiesAgent != null) {
+            propertiesAgent.run();
         }
         up();
     }
 
     @Override
     public void shutdown() {
-        if (propertiesNsAgent != null) {
-            propertiesNsAgent.shutdown();
+        if (propertiesAgent != null) {
+            propertiesAgent.shutdown();
         }
         down();
     }

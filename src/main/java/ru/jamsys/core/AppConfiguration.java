@@ -37,12 +37,13 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
-        if (container.watch(Boolean.class, "run.args.web", true).get()) {
-            container.watch(
+        if (container.getPropertyNs(Boolean.class, "run.args.web", true, true, null).get()) {
+            container.getPropertyNs(
                     String.class,
                     "run.args.web.socket.path",
                     "/socketDefault/*",
-                    (_, path) -> registry.addHandler(new WebSocket(), path)
+                    true,
+                    s -> registry.addHandler(new WebSocket(), s)
             );
         }
     }
@@ -53,11 +54,12 @@ public class AppConfiguration implements WebSocketConfigurer {
         // По этому логика реализована линейной
         // Не могу предположить, что вы решите на ходу менять правила игры работать по ssl и редиректам
         // Как минимум это странно, как максимум - я без понятия как это сделать)))
-        if (container.watch(Boolean.class, "run.args.web", true).get()) {
-            Integer httpPort = container.watch(Integer.class, "run.args.web.http.port", 80).get();
-            Integer httpsPort = container.watch(Integer.class, "run.args.web.https.port", 443).get();
-            Boolean ssl = container.watch(Boolean.class, "run.args.web.ssl", false).get();
-            Boolean redirect = container.watch(Boolean.class, "run.args.web.http.redirect.https", true).get();
+        if (container.getPropertyNs(Boolean.class, "run.args.web", true, true, null).get()) {
+
+            Integer httpPort = container.getPropertyNs(Integer.class, "run.args.web.http.port", 80, true, null).get();
+            Integer httpsPort = container.getPropertyNs(Integer.class, "run.args.web.https.port", 443, true, null).get();
+            Boolean ssl = container.getPropertyNs(Boolean.class, "run.args.web.ssl", false, true, null).get();
+            Boolean redirect = container.getPropertyNs(Boolean.class, "run.args.web.http.redirect.https", true, true, null).get();
 
             TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
                 @Override
@@ -89,10 +91,20 @@ public class AppConfiguration implements WebSocketConfigurer {
     @Bean
     MultipartConfigElement multipartConfigElement() {
         MultipartConfigFactory factory = new MultipartConfigFactory();
-        container.watch(Integer.class, "run.args.web.multipart.mb.max", 12, (_, newValue)
-                -> factory.setMaxFileSize(DataSize.ofMegabytes(newValue)));
-        container.watch(Integer.class, "run.args.web.request.mb.max", 12, (_, newValue)
-                -> factory.setMaxRequestSize(DataSize.ofMegabytes(newValue)));
+        container.getPropertyNs(
+                Integer.class,
+                "run.args.web.multipart.mb.max",
+                12,
+                true,
+                (v) -> factory.setMaxFileSize(DataSize.ofMegabytes(v))
+        );
+        container.getPropertyNs(
+                Integer.class,
+                "run.args.web.request.mb.max",
+                12,
+                true,
+                (v) -> factory.setMaxRequestSize(DataSize.ofMegabytes(v))
+        );
         return factory.createMultipartConfig();
     }
 

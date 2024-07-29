@@ -75,9 +75,9 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     private final AtomicBoolean dynamicPollSize = new AtomicBoolean(false);
 
     @Getter
-    private PropertyNs<Integer> propertyPoolSizeMax;
+    private final PropertyNs<Integer> propertyPoolSizeMax;
 
-    private PropertyNs<Integer> propertyPoolSizeMin;
+    private final PropertyNs<Integer> propertyPoolSizeMin;
 
     private final Lock lockAddToPark = new ReentrantLock();
 

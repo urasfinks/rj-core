@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.PropertiesNsAgent;
+import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.http.client.HttpClientImpl;
@@ -24,7 +24,7 @@ public class TelegramNotificationResource
 
     private SecurityComponent securityComponent;
 
-    private PropertiesNsAgent propertiesNsAgent;
+    private PropertiesAgent propertiesAgent;
 
     private final TelegramNotificationProperties property = new TelegramNotificationProperties();
 
@@ -32,7 +32,7 @@ public class TelegramNotificationResource
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         securityComponent = App.get(SecurityComponent.class);
-        propertiesNsAgent = serviceProperty.getFactory().getNsAgent(null, property, resourceArguments.ns);
+        propertiesAgent = serviceProperty.getFactory().getPropertiesListener(null, property, resourceArguments.ns);
     }
 
     @Override
@@ -61,15 +61,15 @@ public class TelegramNotificationResource
 
     @Override
     public void run() {
-        if (propertiesNsAgent != null) {
-            propertiesNsAgent.run();
+        if (propertiesAgent != null) {
+            propertiesAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertiesNsAgent != null) {
-            propertiesNsAgent.shutdown();
+        if (propertiesAgent != null) {
+            propertiesAgent.shutdown();
         }
     }
 

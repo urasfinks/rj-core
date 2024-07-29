@@ -1,9 +1,9 @@
 package ru.jamsys.core.extension.property;
 
-import java.util.Set;
+import java.util.Map;
 
 public interface PropertyUpdateDelegate {
 
-    void onPropertyUpdate(Set<String> updatedPropAlias); // Alias - это то что указано в аннотации @PropertyName
+    void onPropertyUpdate(Map<String, String> mapAlias); // Alias - это то что указано в аннотации @PropertyName
 
 }

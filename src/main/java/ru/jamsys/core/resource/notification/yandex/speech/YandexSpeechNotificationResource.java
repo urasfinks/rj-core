@@ -6,14 +6,14 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.PropertiesNsAgent;
+import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.flat.util.YandexSpeechClient;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.io.File;
-import java.util.Set;
+import java.util.Map;
 import java.util.function.Function;
 
 @Component
@@ -26,18 +26,18 @@ public class YandexSpeechNotificationResource
 
     YandexSpeechClient client = null;
 
-    private PropertiesNsAgent propertiesNsAgent;
+    private PropertiesAgent propertiesAgent;
 
     private final YandexSpeechNotificationProperties property = new YandexSpeechNotificationProperties();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesNsAgent = serviceProperty.getFactory().getNsAgent(this, property, resourceArguments.ns);
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(this, property, resourceArguments.ns, true);
     }
 
     @Override
-    public void onPropertyUpdate(Set<String> updatedPropAlias) {
+    public void onPropertyUpdate(Map<String, String> mapAlias) {
         if (property.getHost() == null || property.getPort() == null || property.getAlias() == null) {
             return;
         }
@@ -65,15 +65,15 @@ public class YandexSpeechNotificationResource
 
     @Override
     public void run() {
-        if (propertiesNsAgent != null) {
-            propertiesNsAgent.run();
+        if (propertiesAgent != null) {
+            propertiesAgent.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertiesNsAgent != null) {
-            propertiesNsAgent.shutdown();
+        if (propertiesAgent != null) {
+            propertiesAgent.shutdown();
         }
         try {
             client.shutdown();

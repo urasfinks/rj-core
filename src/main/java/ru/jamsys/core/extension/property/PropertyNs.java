@@ -1,13 +1,18 @@
 package ru.jamsys.core.extension.property;
 
 import lombok.Getter;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class PropertyNs<T> implements LifeCycleInterface {
+// Привязанные объект к ServiceProperty, не имеет никаких оповещений просто даёт возможность прявязаться к property
+// и получить её значение
+
+public class PropertyNs<T> implements PropertyUpdateDelegate, LifeCycleInterface {
 
     public static Map<Class<?>, Function<String, ?>> convertType = new HashMap<>() {{
         this.put(String.class, s -> s);
@@ -18,34 +23,61 @@ public class PropertyNs<T> implements LifeCycleInterface {
     @Getter
     private final String absoluteKey;
 
-    private final PropertiesNsAgent propertiesNsAgent;
+    private final ServiceProperty serviceProperty;
 
     private final Class<T> cls;
 
-    protected PropertyNs(Class<T> cls, String absoluteKey, PropertiesNsAgent propertiesNsAgent) {
+    private final T defValue;
+
+    private T value;
+
+    private final boolean required;
+
+    private Consumer<T> onUpdate;
+
+    public PropertyNs(
+            ServiceProperty serviceProperty,
+            Class<T> cls,
+            String absoluteKey,
+            T defValue,
+            boolean required,
+            Consumer<T> onUpdate
+    ) {
+        this.onUpdate = onUpdate;
+        this.serviceProperty = serviceProperty;
         this.cls = cls;
         this.absoluteKey = absoluteKey;
-        this.propertiesNsAgent = propertiesNsAgent;
+        this.defValue = defValue;
+        this.required = required;
+        run();
     }
 
     public void set(T value) {
-        propertiesNsAgent.setProperty(absoluteKey, value.toString());
+        this.value = value;
+        serviceProperty.setProperty(absoluteKey, value.toString());
     }
 
     public T get() {
+        return this.value;
+    }
+
+    @Override
+    public void onPropertyUpdate(Map<String, String> mapAlias) {
         @SuppressWarnings("unchecked")
-        T t = (T) convertType.get(cls).apply(propertiesNsAgent.getWithoutNs(absoluteKey));
-        return t;
+        T t = (T) convertType.get(cls).apply(mapAlias.getOrDefault(absoluteKey, defValue.toString()));
+        this.value = t;
+        if (this.onUpdate != null) {
+            this.onUpdate.accept(this.value);
+        }
     }
 
     @Override
     public void run() {
-        propertiesNsAgent.run();
+        this.serviceProperty.subscribe(absoluteKey, this, required, defValue.toString());
     }
 
     @Override
     public void shutdown() {
-        propertiesNsAgent.remove(absoluteKey);
+        serviceProperty.unsubscribe(absoluteKey, this);
     }
-
 }
