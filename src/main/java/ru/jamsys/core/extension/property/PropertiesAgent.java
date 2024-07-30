@@ -62,7 +62,7 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
                 _ -> new SubscriberItem<>(cls, defValue, require, onUpdate)
         );
         if (!subscriberItem.isSubscribe()) {
-            serviceProperty.subscribeByKey(
+            serviceProperty.subscribe(
                     getAbsoluteKey(relativeKey),
                     this,
                     subscriberItem.isRequire(),
@@ -113,7 +113,7 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
     public void run() {
         mapListener.forEach((key, subscriberItem) -> {
             if (!subscriberItem.isSubscribe()) {
-                serviceProperty.subscribeByKey(
+                serviceProperty.subscribe(
                         getAbsoluteKey(key),
                         this,
                         subscriberItem.isRequire(),

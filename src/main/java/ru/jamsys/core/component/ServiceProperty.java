@@ -9,27 +9,26 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.property.PropertyFollower;
+import ru.jamsys.core.extension.property.PropertySource;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.ServicePropertyFactory;
-import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Lazy
 public class ServiceProperty {
 
-    final private Map<String, Set<PropertyUpdateDelegate>> subscriberKey = new ConcurrentHashMap<>();
-
-    final private Map<String, Set<PropertyUpdateDelegate>> subscriberRegexp = new ConcurrentHashMap<>();
-
     @Getter
     final private ServicePropertyFactory factory;
 
     @Getter
-    final private Map<String, String> prop = new HashMap<>();
+    final private Map<String, PropertySource> prop = new HashMap<>();
+
+    //Нужен для момента, когда будет добавляться новое Property, что бы можно было к нему навешать старых слушателей
+    final private List<PropertyFollower> listFollower = new ArrayList<>();
 
     public ServiceProperty(ApplicationContext applicationContext) {
         factory = new ServicePropertyFactory(this);
@@ -47,83 +46,91 @@ public class ServiceProperty {
             }
             if (next instanceof EnumerablePropertySource) {
                 for (String prop : ((EnumerablePropertySource<?>) next).getPropertyNames()) {
-                    this.prop.put(prop, env.getProperty(prop));
+                    createIfNotExist(prop, env.getProperty(prop));
                 }
             }
         }
     }
 
+    // Добавляем новое или изменяем значение существующего Property
     public void setProperty(String absoluteKey, String value) {
         setProperty(new HashMapBuilder<String, String>().append(absoluteKey, value));
     }
 
+    // Добавляем новое или изменяем значение существующего Property
     public void setProperty(Map<String, String> map) {
-        Set<PropertyUpdateDelegate> notify = new HashSet<>();
+        Map<PropertyFollower, Map<String, String>> notify = new HashMap<>();
         if (!map.isEmpty()) {
             map.forEach((key, value) -> {
+                PropertySource propertySource = createIfNotExist(key, value);
+                if (propertySource.isUpdateValue()) {
+                    UtilRisc.forEach(null, propertySource.getFollower(), propertyFollower -> {
+                        notify.computeIfAbsent(propertyFollower, _ -> new HashMap<>()).put(key, value);
+                    });
+                }
                 if (value == null) {
-                    prop.remove(key);
-                    if (subscriberKey.containsKey(key)) {
-                        notify.addAll(subscriberKey.get(key));
-                    }
-                } else if (!prop.containsKey(key) || !prop.get(key).equals(value)) {
-                    prop.put(key, value);
-                    if (subscriberKey.containsKey(key)) {
-                        notify.addAll(subscriberKey.get(key));
-                    }
+                    this.prop.remove(key);
                 }
             });
-            notify.forEach(subscriber -> subscriber.onPropertyUpdate(new HashMap<>(map)));
+            notify.forEach(PropertyFollower::onPropertyUpdate);
         }
     }
 
-    public void subscribeByKey(String absoluteKey, PropertyUpdateDelegate propertyUpdateDelegate, boolean require, String defValue) {
-        String result = prop.get(absoluteKey);
+    private PropertySource createIfNotExist(String key, String value) {
+        PropertySource result = this.prop.computeIfAbsent(key, k -> {
+            PropertySource propertySource = new PropertySource(k);
+            UtilRisc.forEach(null, listFollower, propertySource::check);
+            return propertySource;
+        });
+        result.setValue(value);
+        return result;
+    }
+
+    public PropertyFollower subscribe(String absoluteKey, PropertyUpdateDelegate propertyUpdateDelegate, boolean require, String defValue) {
+        PropertyFollower propertyFollower = new PropertyFollower();
+        propertyFollower.setKey(absoluteKey);
+        propertyFollower.setFollower(propertyUpdateDelegate);
+        listFollower.add(propertyFollower);
+
+        PropertySource result = prop.get(absoluteKey);
         if (require && result == null) {
             throw new RuntimeException("Required key '" + absoluteKey + "' not found");
         }
         if (result == null) {
-            result = prop.computeIfAbsent(absoluteKey, _ -> defValue);
+            createIfNotExist(absoluteKey, defValue);
         }
-        subscriberKey.computeIfAbsent(absoluteKey, _ -> new HashSet<>()).add(propertyUpdateDelegate);
-        propertyUpdateDelegate.onPropertyUpdate(new HashMapBuilder<String, String>().append(absoluteKey, result));
+        notifyFollower(propertyFollower);
+        return propertyFollower;
     }
 
-    public void subscribeByRegexp(String pattern, PropertyUpdateDelegate propertyUpdateDelegate) {
-        subscriberRegexp.computeIfAbsent(pattern, _ -> new HashSet<>()).add(propertyUpdateDelegate);
-        propertyUpdateDelegate.onPropertyUpdate(findPropByRegexp(pattern));
+    public PropertyFollower subscribe(String patternRegexp, PropertyUpdateDelegate propertyUpdateDelegate) {
+        PropertyFollower propertyFollower = new PropertyFollower();
+        propertyFollower.setPattern(patternRegexp);
+        propertyFollower.setFollower(propertyUpdateDelegate);
+        listFollower.add(propertyFollower);
+
+        UtilRisc.forEach(null, this.prop, (_, propertySource) -> {
+            propertySource.check(propertyFollower);
+        });
+        notifyFollower(propertyFollower);
+        return propertyFollower;
     }
 
-    private Map<String, String> findPropByRegexp(String pattern) {
-        Map<String, String> result = new LinkedHashMap<>();
-        UtilRisc.forEach(null, prop, (key, value) -> {
-            if (Util.regexpFind(key, pattern) != null) {
-                result.put(key, value);
+    private void notifyFollower(PropertyFollower propertyFollower) {
+        Map<String, String> map = new LinkedHashMap<>();
+        UtilRisc.forEach(null, this.prop, (key, propertySource) -> {
+            if (propertySource.getFollower().contains(propertyFollower)) {
+                map.put(key, propertySource.getValue());
             }
         });
-        return result;
+        propertyFollower.onPropertyUpdate(map);
     }
 
-    private Set<PropertyUpdateDelegate> getRegexpSubscriber(String key) {
-        Set<PropertyUpdateDelegate> fits = new HashSet<>();
-        UtilRisc.forEach(null, subscriberRegexp, (pattern, propertyUpdateDelegates) -> {
-            if (Util.regexpFind(key, pattern) != null) {
-                fits.addAll(propertyUpdateDelegates);
-            }
+    public void unsubscribe(PropertyFollower propertyFollower) {
+        listFollower.remove(propertyFollower);
+        UtilRisc.forEach(null, this.prop, (_, propertySource) -> {
+            propertySource.remove(propertyFollower);
         });
-        return fits;
-    }
-
-    public void unsubscribe(String key, PropertyUpdateDelegate propertyUpdateDelegate) {
-        unsubscribe(key, propertyUpdateDelegate, subscriberKey);
-        unsubscribe(key, propertyUpdateDelegate, subscriberRegexp);
-    }
-
-    private void unsubscribe(String absoluteKey, PropertyUpdateDelegate propertyUpdateDelegate, Map<String, Set<PropertyUpdateDelegate>> map) {
-        Set<PropertyUpdateDelegate> propertyUpdateDelegates = map.get(absoluteKey);
-        if (propertyUpdateDelegates != null) {
-            propertyUpdateDelegates.remove(propertyUpdateDelegate);
-        }
     }
 
 }

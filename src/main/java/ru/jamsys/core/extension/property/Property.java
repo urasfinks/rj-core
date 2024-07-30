@@ -34,6 +34,8 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
 
     private final Consumer<T> onUpdate;
 
+    private PropertyFollower follower;
+
     public Property(
             ServiceProperty serviceProperty,
             Class<T> cls,
@@ -72,12 +74,14 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
 
     @Override
     public void run() {
-        this.serviceProperty.subscribeByKey(absoluteKey, this, required, String.valueOf(defValue));
+        follower = this.serviceProperty.subscribe(absoluteKey, this, required, String.valueOf(defValue));
     }
 
     @Override
     public void shutdown() {
-        serviceProperty.unsubscribe(absoluteKey, this);
+        if(follower != null){
+            serviceProperty.unsubscribe(follower);
+        }
     }
 
 }
