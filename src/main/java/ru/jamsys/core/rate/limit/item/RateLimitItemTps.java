@@ -2,13 +2,12 @@ package ru.jamsys.core.rate.limit.item;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
-import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertiesAgent;
-import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 import ru.jamsys.core.statistic.Statistic;
 
 import java.util.ArrayList;
@@ -45,12 +44,17 @@ public class RateLimitItemTps
     }
 
     @Override
-    public boolean check(@Nullable Integer limit) {
+    public boolean check() {
         return tps.incrementAndGet() <= max.get();
     }
 
     @Override
     public int get() {
+        return max.get();
+    }
+
+    @Override
+    public int max() {
         return max.get();
     }
 

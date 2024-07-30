@@ -52,6 +52,10 @@ public class ServiceProperty {
         }
     }
 
+    public void setProperty(String absoluteKey, String value) {
+        setProperty(new HashMapBuilder<String, String>().append(absoluteKey, value));
+    }
+
     public void setProperty(Map<String, String> map) {
         Set<PropertyUpdateDelegate> notify = new HashSet<>();
         if (!map.isEmpty()) {
@@ -59,29 +63,17 @@ public class ServiceProperty {
                 String value = map.get(key);
                 if (value == null) {
                     prop.remove(key);
-                    notify.addAll(subscribe.get(key));
-                } else if (!prop.get(key).equals(value)) {
+                    if (subscribe.containsKey(key)) {
+                        notify.addAll(subscribe.get(key));
+                    }
+                } else if (!prop.containsKey(key) || !prop.get(key).equals(value)) {
                     prop.put(key, value);
-                    notify.addAll(subscribe.get(key));
+                    if (subscribe.containsKey(key)) {
+                        notify.addAll(subscribe.get(key));
+                    }
                 }
             }
             notify.forEach(subscriber -> subscriber.onPropertyUpdate(new HashMap<>(map)));
-        }
-    }
-
-    public void setProperty(String absoluteKey, String value) {
-        if (value == null) {
-            prop.remove(absoluteKey);
-            if (subscribe.containsKey(absoluteKey)) {
-                HashMapBuilder<String, String> append = new HashMapBuilder<String, String>().append(absoluteKey, null);
-                subscribe.get(absoluteKey).forEach(subscriber -> subscriber.onPropertyUpdate(append));
-            }
-        } else if (!prop.containsKey(absoluteKey) || !prop.get(absoluteKey).equals(value)) {
-            prop.put(absoluteKey, value);
-            if (subscribe.containsKey(absoluteKey)) {
-                HashMapBuilder<String, String> append = new HashMapBuilder<String, String>().append(absoluteKey, value);
-                subscribe.get(absoluteKey).forEach(subscriber -> subscriber.onPropertyUpdate(append));
-            }
         }
     }
 

@@ -2,18 +2,20 @@ package ru.jamsys.core.rate.limit.item;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
-import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.PropertiesAgent;
+import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.Statistic;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -57,12 +59,17 @@ public class RateLimitItemPeriodic
     }
 
     @Override
-    public boolean check(@Nullable Integer limit) {
+    public boolean check() {
         return tpu.incrementAndGet() <= max.get(); // -1 = infinity; 0 = reject
     }
 
     @Override
     public int get() {
+        return tpu.get();
+    }
+
+    @Override
+    public int max() {
         return max.get();
     }
 

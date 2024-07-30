@@ -40,10 +40,10 @@ public class RateLimit
         return map;
     }
 
-    public boolean check(Integer limit) {
+    public boolean check() {
         for (String key : map.keySet()) {
-            if (!map.get(key).check(limit)) {
-                Util.logConsole("RateLimit index: " + index + "; key: " + key + " FAILED (" + map.get(key).get() + " ? " + limit + ")", true);
+            if (!map.get(key).check()) {
+                Util.logConsole("RateLimit [ABORT] index: " + index + "; key: " + key + "; max: " + map.get(key).max()+"; now: "+map.get(key).get()+";", true);
                 return false;
             }
         }

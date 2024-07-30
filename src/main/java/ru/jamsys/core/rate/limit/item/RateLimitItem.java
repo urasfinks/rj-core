@@ -9,9 +9,11 @@ public interface RateLimitItem extends StatisticsFlush {
 
     String getNs(); // Получить пространство Property RateLimit
 
-    boolean check(Integer limit);
+    boolean check();
 
     int get();
+
+    int max();
 
     default void set(int value) {
         App.get(ServiceProperty.class).setProperty(getNs(), value + "");

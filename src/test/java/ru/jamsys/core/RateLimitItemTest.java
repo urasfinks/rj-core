@@ -39,7 +39,7 @@ class RateLimitItemTest {
         rateLimitItemPeriodic.set(999999);
         Assertions.assertEquals("{period=Minute, max=999999, tpu=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime, null, null).getFields().toString());
         Assertions.assertEquals("2024-03-06T17:12:04.056", rateLimitItemPeriodic.getNextTime());
-        rateLimitItemPeriodic.check(null);
+        rateLimitItemPeriodic.check();
         // Тут не должно произойти сброс tpu - так как время сброса 2024-03-06T17:12:04.056
         Assertions.assertEquals("{period=Minute, max=999999, tpu=1, flushed=false}", rateLimitItemPeriodic.flushAndGetStatistic(curTime, null, null).getFields().toString());
         Assertions.assertEquals("2024-03-06T17:12:04.056", rateLimitItemPeriodic.getNextTime());
@@ -63,13 +63,13 @@ class RateLimitItemTest {
         rateLimitItemPeriodic.set(999999);
         Assertions.assertEquals("{period=Month, max=999999, tpu=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime, null, null).getFields().toString());
         Assertions.assertEquals("2024-04-06T17:11:04.056", rateLimitItemPeriodic.getNextTime());
-        rateLimitItemPeriodic.check(null);
+        rateLimitItemPeriodic.check();
         Assertions.assertEquals("{period=Month, max=999999, tpu=1, flushed=false}", rateLimitItemPeriodic.flushAndGetStatistic(curTime, null, null).getFields().toString());
         Assertions.assertEquals("2024-04-06T17:11:04.056", rateLimitItemPeriodic.getNextTime());
-        rateLimitItemPeriodic.check(null);
+        rateLimitItemPeriodic.check();
         Assertions.assertEquals("{period=Month, max=999999, tpu=2, flushed=false}", rateLimitItemPeriodic.flushAndGetStatistic(curTime, null, null).getFields().toString());
         Assertions.assertEquals("2024-04-06T17:11:04.056", rateLimitItemPeriodic.getNextTime());
-        rateLimitItemPeriodic.check(null);
+        rateLimitItemPeriodic.check();
 
         Assertions.assertEquals("2024-03-06T17:12:04.056", Util.msToDataFormat(curTime + (aLong)));
         Assertions.assertEquals("2024-03-06T18:11:04.056", Util.msToDataFormat(curTime + (aLong * 60)));
@@ -96,9 +96,9 @@ class RateLimitItemTest {
     void testTps() {
         RateLimitItem rateLimitTps = new RateLimitItemTps(App.context, "tps");
         rateLimitTps.set(2);
-        Assertions.assertTrue(rateLimitTps.check(null));
-        Assertions.assertTrue(rateLimitTps.check(null));
-        Assertions.assertFalse(rateLimitTps.check(null));
+        Assertions.assertTrue(rateLimitTps.check());
+        Assertions.assertTrue(rateLimitTps.check());
+        Assertions.assertFalse(rateLimitTps.check());
     }
 
 }
