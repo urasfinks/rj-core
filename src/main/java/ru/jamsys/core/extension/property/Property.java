@@ -72,7 +72,7 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
 
     @Override
     public void run() {
-        this.serviceProperty.subscribe(absoluteKey, this, required, String.valueOf(defValue));
+        this.serviceProperty.subscribeByKey(absoluteKey, this, required, String.valueOf(defValue));
     }
 
     @Override

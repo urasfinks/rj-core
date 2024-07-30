@@ -11,11 +11,10 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.ServicePropertyFactory;
+import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilRisc;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -24,7 +23,7 @@ public class ServiceProperty {
 
     final private Map<String, Set<PropertyUpdateDelegate>> subscriberKey = new ConcurrentHashMap<>();
 
-    final private Map<String, Set<PropertyUpdateDelegate>> subscriberContains = new ConcurrentHashMap<>();
+    final private Map<String, Set<PropertyUpdateDelegate>> subscriberRegexp = new ConcurrentHashMap<>();
 
     @Getter
     final private ServicePropertyFactory factory;
@@ -78,7 +77,7 @@ public class ServiceProperty {
         }
     }
 
-    public void subscribe(String absoluteKey, PropertyUpdateDelegate propertyUpdateDelegate, boolean require, String defValue) {
+    public void subscribeByKey(String absoluteKey, PropertyUpdateDelegate propertyUpdateDelegate, boolean require, String defValue) {
         String result = prop.get(absoluteKey);
         if (require && result == null) {
             throw new RuntimeException("Required key '" + absoluteKey + "' not found");
@@ -90,8 +89,41 @@ public class ServiceProperty {
         propertyUpdateDelegate.onPropertyUpdate(new HashMapBuilder<String, String>().append(absoluteKey, result));
     }
 
-    public void unsubscribe(String absoluteKey, PropertyUpdateDelegate propertyUpdateDelegate) {
-        subscriberKey.get(absoluteKey).remove(propertyUpdateDelegate);
+    public void subscribeByRegexp(String pattern, PropertyUpdateDelegate propertyUpdateDelegate) {
+        subscriberRegexp.computeIfAbsent(pattern, _ -> new HashSet<>()).add(propertyUpdateDelegate);
+        propertyUpdateDelegate.onPropertyUpdate(findPropByRegexp(pattern));
+    }
+
+    private Map<String, String> findPropByRegexp(String pattern) {
+        Map<String, String> result = new LinkedHashMap<>();
+        UtilRisc.forEach(null, prop, (key, value) -> {
+            if (Util.regexpFind(key, pattern) != null) {
+                result.put(key, value);
+            }
+        });
+        return result;
+    }
+
+    private Set<PropertyUpdateDelegate> getRegexpSubscriber(String key) {
+        Set<PropertyUpdateDelegate> fits = new HashSet<>();
+        UtilRisc.forEach(null, subscriberRegexp, (pattern, propertyUpdateDelegates) -> {
+            if (Util.regexpFind(key, pattern) != null) {
+                fits.addAll(propertyUpdateDelegates);
+            }
+        });
+        return fits;
+    }
+
+    public void unsubscribe(String key, PropertyUpdateDelegate propertyUpdateDelegate) {
+        unsubscribe(key, propertyUpdateDelegate, subscriberKey);
+        unsubscribe(key, propertyUpdateDelegate, subscriberRegexp);
+    }
+
+    private void unsubscribe(String absoluteKey, PropertyUpdateDelegate propertyUpdateDelegate, Map<String, Set<PropertyUpdateDelegate>> map) {
+        Set<PropertyUpdateDelegate> propertyUpdateDelegates = map.get(absoluteKey);
+        if (propertyUpdateDelegates != null) {
+            propertyUpdateDelegates.remove(propertyUpdateDelegate);
+        }
     }
 
 }
