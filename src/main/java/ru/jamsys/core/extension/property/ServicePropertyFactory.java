@@ -1,8 +1,7 @@
 package ru.jamsys.core.extension.property;
 
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.repository.PropertiesRepository;
-import ru.jamsys.core.extension.property.repository.PropertiesRepositoryMap;
+import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 
 import java.util.function.Consumer;
 
@@ -28,24 +27,13 @@ public class ServicePropertyFactory {
     }
 
     // Загружает ключи через PropertiesRepository
-    public PropertiesAgent getPropertiesAgentField(
+    public PropertiesAgent getPropertiesAgent(
             PropertyUpdateDelegate subscriber,
-            PropertiesRepository propertiesRepository,
+            PropertiesRepositoryField propertiesRepository,
             String ns,
             boolean require
     ) {
         return new PropertiesAgent(serviceProperty, subscriber, propertiesRepository, ns, require);
-    }
-
-    // Отдаёт PropertiesAgent на основе propertiesRepositoryMap, это даёт возможность загружать произвольные propKey
-    // и наблюдать актуальные значения в PropertiesRepository
-    public PropertiesAgent getPropertiesAgentMap(
-            PropertyUpdateDelegate subscriber,
-            String ns,
-            boolean require
-    ) {
-        PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
-        return new PropertiesAgent(serviceProperty, subscriber, propertiesRepositoryMap, ns, require);
     }
 
     // Контейнер Property

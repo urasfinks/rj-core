@@ -64,7 +64,7 @@ public class SecurityComponent extends PropertiesRepositoryField implements Life
     private final PropertiesAgent propertiesAgent;
 
     public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgentField(
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
                 null,
                 this,
                 null,

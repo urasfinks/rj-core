@@ -68,7 +68,7 @@ public class LogUploader extends PropertiesRepositoryField implements Cron5s, Pr
         this.servicePromise = servicePromise;
         this.idx = UniqueClassNameImpl.getClassNameStatic(Log.class, null, applicationContext);
         broker = managerBroker.get(idx, Log.class);
-        serviceProperty.getFactory().getPropertiesAgentField(null, this, null, false);
+        serviceProperty.getFactory().getPropertiesAgent(null, this, null, false);
     }
 
     @Override

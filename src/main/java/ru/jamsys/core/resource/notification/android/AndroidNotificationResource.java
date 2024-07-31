@@ -37,7 +37,7 @@ public class AndroidNotificationResource
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgentField(
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
                 this,
                 property,
                 resourceArguments.ns,

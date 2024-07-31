@@ -34,7 +34,7 @@ public class ReCaptchaResource
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgentField(null, property, resourceArguments.ns, true);
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(null, property, resourceArguments.ns, true);
     }
 
     @Override

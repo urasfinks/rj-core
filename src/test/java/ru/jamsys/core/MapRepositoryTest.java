@@ -46,7 +46,7 @@ class MapRepositoryTest {
         XX xx = new XX();
         PropertiesAgent propertiesAgent = serviceProperty
                 .getFactory()
-                .getPropertiesAgentField(xx, xx, null, true)
+                .getPropertiesAgent(xx, xx, null, true)
                 .add(String.class, "run.args.security.path.storage", null, true, null)
                 .add(String.class, "run.args.security.path.storage", null, true, null);
 
@@ -182,7 +182,7 @@ class MapRepositoryTest {
         Map<String, String> mapPropValue = x2.getProperties();
         System.out.println(mapPropValue);
 
-        PropertiesAgent subscribe = serviceProperty.getFactory().getPropertiesAgentField(x2, x2, "run.args", true);
+        PropertiesAgent subscribe = serviceProperty.getFactory().getPropertiesAgent(x2, x2, "run.args", true);
 
         Assertions.assertEquals(2, subscribe.getMapListener().size());
 

@@ -46,7 +46,7 @@ public class InfluxResource
     @Override
     public void setArguments(ResourceArguments resourceArguments) {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgentField(
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
                 null,
                 property,
                 resourceArguments.ns,

@@ -75,7 +75,7 @@ public class StatisticUploader extends PropertiesRepositoryField implements Cron
                 UniqueClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
                 StatisticSec.class
         );
-        serviceProperty.getFactory().getPropertiesAgentField(
+        serviceProperty.getFactory().getPropertiesAgent(
                 null,
                 this,
                 null,
