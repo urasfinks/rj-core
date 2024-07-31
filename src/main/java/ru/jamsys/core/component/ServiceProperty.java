@@ -28,7 +28,11 @@ public class ServiceProperty {
     final private Map<String, PropertySource> prop = new HashMap<>();
 
     //Нужен для момента, когда будет добавляться новое Property, что бы можно было к нему навешать старых слушателей
-    final private List<PropertyFollower> listFollower = new ArrayList<>();
+    final private Set<PropertyFollower> listFollower = new LinkedHashSet<>();
+
+    public boolean containsFollower(PropertyFollower propertyFollower) {
+        return listFollower.contains(propertyFollower);
+    }
 
     public ServiceProperty(ApplicationContext applicationContext) {
         factory = new ServicePropertyFactory(this);
@@ -86,7 +90,16 @@ public class ServiceProperty {
         return result;
     }
 
+    public PropertyFollower subscribe(PropertyFollower propertyFollower) {
+        if (!listFollower.contains(propertyFollower)) {
+            listFollower.add(propertyFollower);
+            attacheAndNotifyFollower(propertyFollower);
+        }
+        return propertyFollower;
+    }
+
     public PropertyFollower subscribe(String absoluteKey, PropertyUpdateDelegate propertyUpdateDelegate, boolean require, String defValue) {
+
         PropertyFollower propertyFollower = new PropertyFollower();
         propertyFollower.setKey(absoluteKey);
         propertyFollower.setFollower(propertyUpdateDelegate);
@@ -99,7 +112,8 @@ public class ServiceProperty {
         if (result == null) {
             createIfNotExist(absoluteKey, defValue);
         }
-        notifyFollower(propertyFollower);
+
+        attacheAndNotifyFollower(propertyFollower);
         return propertyFollower;
     }
 
@@ -109,16 +123,14 @@ public class ServiceProperty {
         propertyFollower.setFollower(propertyUpdateDelegate);
         listFollower.add(propertyFollower);
 
-        UtilRisc.forEach(null, this.prop, (_, propertySource) -> {
-            propertySource.check(propertyFollower);
-        });
-        notifyFollower(propertyFollower);
+        attacheAndNotifyFollower(propertyFollower);
         return propertyFollower;
     }
 
-    private void notifyFollower(PropertyFollower propertyFollower) {
+    private void attacheAndNotifyFollower(PropertyFollower propertyFollower) {
         Map<String, String> map = new LinkedHashMap<>();
         UtilRisc.forEach(null, this.prop, (key, propertySource) -> {
+            propertySource.check(propertyFollower);
             if (propertySource.getFollower().contains(propertyFollower)) {
                 map.put(key, propertySource.getValue());
             }

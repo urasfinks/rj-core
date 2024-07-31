@@ -3,7 +3,6 @@ package ru.jamsys.core.extension.property;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.repository.PropertiesRepository;
 import ru.jamsys.core.extension.property.repository.PropertiesRepositoryMap;
-import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.function.Consumer;
 
@@ -45,11 +44,14 @@ public class ServicePropertyFactory {
             boolean require
     ) {
         PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
-        UtilRisc.forEach(null, serviceProperty.getProp(), (key, value) -> {
-            if (key.startsWith(ns + ".")) {
-                propertiesRepositoryMap.getPropValue().put(key.substring(ns.length() + 1), value);
-            }
-        });
+//        UtilRisc.forEach(null, serviceProperty.getProp(), (key, value) -> {
+//            if (key.startsWith(ns + ".")) {
+//                propertiesRepositoryMap.getPropValue().put(
+//                        key.substring(ns.length() + 1),
+//                        value.getValue()
+//                );
+//            }
+//        });
         return new PropertiesAgent(serviceProperty, subscriber, propertiesRepositoryMap, ns, require);
     }
 

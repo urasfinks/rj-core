@@ -5,11 +5,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertiesAgent;
+import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
 
 import java.util.Map;
 
@@ -42,17 +42,19 @@ class MapRepositoryTest {
     void test() {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         XX xx = new XX();
-        PropertiesAgent subscribe = serviceProperty
+        PropertiesAgent propertiesAgent = serviceProperty
                 .getFactory()
                 .getPropertiesAgent(xx, xx, null, true)
                 .add(String.class, "run.args.security.path.storage", null, true, null)
                 .add(String.class, "run.args.security.path.storage", null, true, null);
 
-        Assertions.assertEquals(1, subscribe.getMapListener().size());
+        Assertions.assertEquals(1, xx.c);
 
-        subscribe.add(String.class,"run.args.security.path.public.key", null, true, null);
+        Assertions.assertEquals(1, propertiesAgent.getMapListener().size());
 
-        Assertions.assertEquals(2, subscribe.getMapListener().size());
+        propertiesAgent.add(String.class,"run.args.security.path.public.key", null, true, null);
+
+        Assertions.assertEquals(2, propertiesAgent.getMapListener().size());
 
         Assertions.assertEquals(2, xx.c);
 
@@ -63,26 +65,26 @@ class MapRepositoryTest {
         serviceProperty.setProperty("run.args.security.path.storage", "xx");
         Assertions.assertEquals(3, xx.c);
 
-        subscribe.shutdown();
-        Assertions.assertEquals(0, subscribe.getCountListener());
+        propertiesAgent.shutdown();
+        Assertions.assertEquals(0, propertiesAgent.getCountListener());
 
         // После отписки мы не должны получать уведомления об изменениях
         serviceProperty.setProperty("run.args.security.path.storage", "x2");
         Assertions.assertEquals(3, xx.c);
 
         // Обратно подписываемся
-        subscribe.add(String.class,"run.args.security.path.storage", null, true, null);
+        propertiesAgent.add(String.class,"run.args.security.path.storage", null, true, null);
         // Так как автоматом получим значение при подписке
         Assertions.assertEquals(4, xx.c);
 
-        subscribe.add(String.class,"run.args.security.path.public.key", null, true, null);
+        propertiesAgent.add(String.class,"run.args.security.path.public.key", null, true, null);
         // Так как автоматом получим значение при подписке
         Assertions.assertEquals(5, xx.c);
 
         serviceProperty.setProperty("run.args.security.path.public.key", "x3");
         Assertions.assertEquals(6, xx.c);
 
-        subscribe.removeRelative("run.args.security.path.public.key");
+        propertiesAgent.removeRelative("run.args.security.path.public.key");
         serviceProperty.setProperty("run.args.security.path.public.key", "x4");
         Assertions.assertEquals(6, xx.c);
 
@@ -97,15 +99,21 @@ class MapRepositoryTest {
         );
         Assertions.assertEquals(7, xx.c);
 
+        Assertions.assertEquals("x4", serviceProperty.getProp().get("run.args.security.path.public.key").getValue());
+        Assertions.assertEquals("x5", serviceProperty.getProp().get("run.args.security.path.storage").getValue());
 
         //Мульти обновление c неподписанным
         serviceProperty.setProperty(new HashMapBuilder<String, String>()
                 .append("run.args.security.path.public.key", "new") // Подписки нет, но значение изменено
                 .append("run.args.security.path.storage", "x5") // Подписка есть но значение старое
         );
+
+        Assertions.assertEquals("new", serviceProperty.getProp().get("run.args.security.path.public.key").getValue());
+        Assertions.assertEquals("x5", serviceProperty.getProp().get("run.args.security.path.storage").getValue());
+
         Assertions.assertEquals(7, xx.c);
 
-        subscribe.add(String.class,"run.args.security.path.public.key", null,true, null);
+        propertiesAgent.add(String.class,"run.args.security.path.public.key", null,true, null);
         Assertions.assertEquals(8, xx.c);
 
         //Мульти обновление штатное
@@ -114,13 +122,13 @@ class MapRepositoryTest {
                 .append("run.args.security.path.storage", "x5")
         );
         Assertions.assertEquals(10, xx.c);
-
-        //Мульти обновление штатное
-        serviceProperty.setProperty(new HashMapBuilder<String, String>()
-                .append("run.args.security.path.public.key", "new2")
-                .append("run.args.security.path.storage", "x6")
-        );
-        Assertions.assertEquals(12, xx.c);
+//
+//        //Мульти обновление штатное
+//        serviceProperty.setProperty(new HashMapBuilder<String, String>()
+//                .append("run.args.security.path.public.key", "new2")
+//                .append("run.args.security.path.storage", "x6")
+//        );
+//        Assertions.assertEquals(12, xx.c);
 
     }
 

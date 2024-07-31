@@ -4,7 +4,6 @@ import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.repository.PropertiesRepository;
-import ru.jamsys.core.extension.property.item.SubscriberItem;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.*;
@@ -24,12 +23,14 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
 
     private final String ns;
 
-    private final HashMap<String, SubscriberItem<?>> mapListener = new LinkedHashMap<>();
+    private final HashMap<String, PropertyFollower> mapListener = new LinkedHashMap<>();
+
+    private final HashMap<String, OnUpdate<?>> onUpdates = new LinkedHashMap<>();
 
     public int getCountListener() {
         int count = 0;
         for (String key : mapListener.keySet()) {
-            if (mapListener.get(key).isSubscribe()) {
+            if (serviceProperty.containsFollower(mapListener.get(key))) {
                 count++;
             }
         }
@@ -57,25 +58,22 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
     }
 
     public <T> PropertiesAgent add(Class<T> cls, String relativeKey, T defValue, boolean require, Consumer<T> onUpdate) {
-        SubscriberItem<?> subscriberItem = mapListener.computeIfAbsent(
-                relativeKey,
-                _ -> new SubscriberItem<>(cls, defValue, require, onUpdate)
-        );
-        if (!subscriberItem.isSubscribe()) {
-            serviceProperty.subscribe(
-                    getAbsoluteKey(relativeKey),
-                    this,
-                    subscriberItem.isRequire(),
-                    String.valueOf(subscriberItem.getDefValue())
-            );
-            subscriberItem.setSubscribe(true);
+        if (onUpdate != null) {
+            onUpdates.computeIfAbsent(relativeKey, _ -> new OnUpdate<>(cls, onUpdate));
         }
+        PropertyFollower propertyFollower = mapListener.computeIfAbsent(relativeKey, k -> serviceProperty.subscribe(
+                getAbsoluteKey(k),
+                this,
+                require,
+                String.valueOf(defValue)
+        ));
+        serviceProperty.subscribe(propertyFollower);
         return this;
     }
 
     public void removeRelative(String relativeKey) {
-        mapListener.remove(relativeKey);
-        serviceProperty.unsubscribe(getAbsoluteKey(relativeKey), this);
+        PropertyFollower remove = mapListener.remove(relativeKey);
+        serviceProperty.unsubscribe(remove);
     }
 
     public void removeAbsolute(String absoluteKey) {
@@ -101,37 +99,15 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
             String prop = getRelativeKey(key);
             String value = map.get(key);
             propertiesRepository.setPropValue(prop, value);
-            mapListener.get(prop).onUpdate(value);
+            OnUpdate<?> onUpdate = onUpdates.get(prop);
+            if (onUpdate != null) {
+                onUpdate.onUpdate(value);
+            }
             withoutNs.put(prop, value);
         }
         if (subscriber != null && !withoutNs.isEmpty()) {
             subscriber.onPropertyUpdate(withoutNs);
         }
-    }
-
-    @Override
-    public void run() {
-        mapListener.forEach((key, subscriberItem) -> {
-            if (!subscriberItem.isSubscribe()) {
-                serviceProperty.subscribe(
-                        getAbsoluteKey(key),
-                        this,
-                        subscriberItem.isRequire(),
-                        subscriberItem.getDefValue().toString()
-                );
-                subscriberItem.setSubscribe(true);
-            }
-        });
-    }
-
-    @Override
-    public void shutdown() {
-        mapListener.forEach((key, subscriberItem) -> {
-            if (subscriberItem.isSubscribe()) {
-                serviceProperty.unsubscribe(getAbsoluteKey(key), this);
-                subscriberItem.setSubscribe(false);
-            }
-        });
     }
 
     // Получить ключик с ns
@@ -167,6 +143,16 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
 
     public void setPropertyWithoutNs(String key, String value) {
         serviceProperty.setProperty(getAbsoluteKey(key), value);
+    }
+
+    @Override
+    public void run() {
+        mapListener.forEach((_, subscriberItem) -> serviceProperty.subscribe(subscriberItem));
+    }
+
+    @Override
+    public void shutdown() {
+        mapListener.forEach((_, subscriberItem) -> serviceProperty.unsubscribe(subscriberItem));
     }
 
 }
