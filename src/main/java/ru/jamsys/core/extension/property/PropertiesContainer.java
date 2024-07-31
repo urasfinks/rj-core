@@ -21,15 +21,15 @@ public class PropertiesContainer implements LifeCycleInterface {
 
     public <T> Property<T> watch(
             Class<T> cls,
-            String absoluteKey,
+            String propKey,
             T defValue,
             boolean required,
             Consumer<T> onUpdate
     ) {
         @SuppressWarnings("unchecked")
         Property<T> tProperty = (Property<T>) map.computeIfAbsent(
-                absoluteKey,
-                _ -> new Property<>(serviceProperty, cls, absoluteKey, defValue, required, onUpdate)
+                propKey,
+                _ -> new Property<>(serviceProperty, cls, propKey, defValue, required, onUpdate)
         );
         return tProperty;
     }

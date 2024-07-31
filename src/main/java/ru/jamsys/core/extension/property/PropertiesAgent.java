@@ -59,11 +59,11 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
         return list;
     }
 
-    public <T> PropertiesAgent add(Class<T> cls, String relativeKey, T defValue, boolean require, Consumer<T> onUpdate) {
+    public <T> PropertiesAgent add(Class<T> cls, String repositoryKey, T defValue, boolean require, Consumer<T> onUpdate) {
         if (onUpdate != null) {
-            onExclusiveUpdate.computeIfAbsent(relativeKey, _ -> new ExclusiveUpdate<>(cls, onUpdate));
+            onExclusiveUpdate.computeIfAbsent(repositoryKey, _ -> new ExclusiveUpdate<>(cls, onUpdate));
         }
-        PropertyFollower propertyFollower = mapListener.computeIfAbsent(relativeKey, k -> serviceProperty.subscribe(
+        PropertyFollower propertyFollower = mapListener.computeIfAbsent(repositoryKey, k -> serviceProperty.subscribe(
                 getServicePropertyKey(k),
                 this,
                 require,
@@ -73,13 +73,13 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
         return this;
     }
 
-    public void removeByRepositoryKey(String relativeKey) {
-        PropertyFollower remove = mapListener.remove(relativeKey);
+    public void removeByRepositoryKey(String repositoryKey) {
+        PropertyFollower remove = mapListener.remove(repositoryKey);
         serviceProperty.unsubscribe(remove);
     }
 
-    public void removeByServicePropertiesKey(String absoluteKey) {
-        removeByRepositoryKey(getRepositoryKey(absoluteKey));
+    public void removeByServicePropertiesKey(String propKey) {
+        removeByRepositoryKey(getRepositoryKey(propKey));
     }
 
     public Set<String> getServiceProperties() {
@@ -113,8 +113,8 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
     }
 
     // Получить ключик с ns
-    private String getServicePropertyKey(String relativeKey) {
-        if (relativeKey.isEmpty()) {
+    private String getServicePropertyKey(String propKey) {
+        if (propKey.isEmpty()) {
             if (ns == null) {
                 // Не надо таких поворотов, когда и ns = null и ключ пустой
                 // На что это ссылка получается в property? на на что?
@@ -124,22 +124,22 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
             }
             return ns;
         } else {
-            return ns != null ? (ns + "." + relativeKey) : relativeKey;
+            return ns != null ? (ns + "." + propKey) : propKey;
         }
     }
 
     // Получить ключик без ns
-    private String getRepositoryKey(String absoluteKey) {
-        if (ns == null && absoluteKey.isEmpty()) {
+    private String getRepositoryKey(String propKey) {
+        if (ns == null && propKey.isEmpty()) {
             throw new RuntimeException("Определитесь либо ns = null либо key.isEmpty()");
         } else if (ns == null) {
-            return absoluteKey;
-        } else if (absoluteKey.isEmpty()) {
+            return propKey;
+        } else if (propKey.isEmpty()) {
             return ns;
-        } else if (absoluteKey.equals(ns)) {
+        } else if (propKey.equals(ns)) {
             return "";
         } else {
-            return absoluteKey.substring(ns.length() + 1);
+            return propKey.substring(ns.length() + 1);
         }
     }
 

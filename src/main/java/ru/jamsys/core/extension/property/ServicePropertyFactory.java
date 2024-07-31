@@ -16,15 +16,15 @@ public class ServicePropertyFactory {
         this.serviceProperty = serviceProperty;
     }
 
-    // Получить свойство
+    // Получить свойство, в котором значение будет синхронизированно с ServiceProperty
     public <T> Property<T> getProperty(
             Class<T> cls,
-            String absoluteKey,
+            String propKey,
             T defValue,
             boolean required,
             Consumer<T> onUpdate
     ) {
-        return new Property<>(serviceProperty, cls, absoluteKey, defValue, required, onUpdate);
+        return new Property<>(serviceProperty, cls, propKey, defValue, required, onUpdate);
     }
 
     // Загружает ключи через PropertiesRepository
@@ -37,22 +37,14 @@ public class ServicePropertyFactory {
         return new PropertiesAgent(serviceProperty, subscriber, propertiesRepository, ns, require);
     }
 
-    //Загружает все ключи из Properties на основе propertiesRepositoryMap
+    // Отдаёт PropertiesAgent на основе propertiesRepositoryMap, это даёт возможность загружать произвольные propKey
+    // и наблюдать актуальные значения в PropertiesRepository
     public PropertiesAgent getPropertiesAgentMap(
             PropertyUpdateDelegate subscriber,
             String ns,
             boolean require
     ) {
         PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
-
-//        UtilRisc.forEach(null, serviceProperty.getProp(), (key, value) -> {
-//            if (key.startsWith(ns + ".")) {
-//                propertiesRepositoryMap.getPropValue().put(
-//                        key.substring(ns.length() + 1),
-//                        value.getValue()
-//                );
-//            }
-//        });
         return new PropertiesAgent(serviceProperty, subscriber, propertiesRepositoryMap, ns, require);
     }
 
