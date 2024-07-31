@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.property;
 import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.property.item.PropertyFollower;
 import ru.jamsys.core.extension.property.repository.PropertiesRepository;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -11,6 +12,7 @@ import java.util.function.Consumer;
 
 // Агент связывает ServiceProperty и Subscriber, задача агента донести изменённые свойства до полей подписчика
 // Агент не обладает функционалом изменять свойства, для изменения используйте Property
+// Агент - статичен по свойствам, что определено в PropertiesRepository - то и связано, ни больше не меньше
 
 @Getter
 public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelegate {
@@ -25,17 +27,7 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
 
     private final HashMap<String, PropertyFollower> mapListener = new LinkedHashMap<>();
 
-    private final HashMap<String, OnUpdate<?>> onUpdates = new LinkedHashMap<>();
-
-    public int getCountListener() {
-        int count = 0;
-        for (String key : mapListener.keySet()) {
-            if (serviceProperty.containsFollower(mapListener.get(key))) {
-                count++;
-            }
-        }
-        return count;
-    }
+    private final HashMap<String, ExclusiveUpdate<?>> onExclusiveUpdate = new LinkedHashMap<>();
 
     public PropertiesAgent(
             ServiceProperty serviceProperty,
@@ -52,17 +44,27 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
     }
 
     private void init(boolean require) {
-        UtilRisc.forEach(null, this.propertiesRepository.getPropValue(), (key, value) -> {
+        UtilRisc.forEach(null, this.propertiesRepository.getProperties(), (key, value) -> {
             add(String.class, key, value, require, null);
         });
     }
 
+    public List<PropertyFollower> getFollowers() {
+        List<PropertyFollower> list = new ArrayList<>();
+        for (String key : mapListener.keySet()) {
+            if (serviceProperty.containsFollower(mapListener.get(key))) {
+                list.add(mapListener.get(key));
+            }
+        }
+        return list;
+    }
+
     public <T> PropertiesAgent add(Class<T> cls, String relativeKey, T defValue, boolean require, Consumer<T> onUpdate) {
         if (onUpdate != null) {
-            onUpdates.computeIfAbsent(relativeKey, _ -> new OnUpdate<>(cls, onUpdate));
+            onExclusiveUpdate.computeIfAbsent(relativeKey, _ -> new ExclusiveUpdate<>(cls, onUpdate));
         }
         PropertyFollower propertyFollower = mapListener.computeIfAbsent(relativeKey, k -> serviceProperty.subscribe(
-                getAbsoluteKey(k),
+                getServicePropertyKey(k),
                 this,
                 require,
                 String.valueOf(defValue)
@@ -71,22 +73,22 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
         return this;
     }
 
-    public void removeRelative(String relativeKey) {
+    public void removeByRepositoryKey(String relativeKey) {
         PropertyFollower remove = mapListener.remove(relativeKey);
         serviceProperty.unsubscribe(remove);
     }
 
-    public void removeAbsolute(String absoluteKey) {
-        removeRelative(getRelativeKey(absoluteKey));
+    public void removeByServicePropertiesKey(String absoluteKey) {
+        removeByRepositoryKey(getRepositoryKey(absoluteKey));
     }
 
-    public Set<String> getKeySetAbsolute() {
+    public Set<String> getServiceProperties() {
         Set<String> result = new LinkedHashSet<>();
-        mapListener.forEach((s, _) -> result.add(getAbsoluteKey(s)));
+        mapListener.forEach((s, _) -> result.add(getServicePropertyKey(s)));
         return result;
     }
 
-    public Set<String> getKeySetRelative() {
+    public Set<String> getRepositoryProperties() {
         Set<String> result = new LinkedHashSet<>();
         mapListener.forEach((s, _) -> result.add(s));
         return result;
@@ -96,12 +98,12 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
         Map<String, String> withoutNs = new HashMap<>();
         for (String key : map.keySet()) {
             // Бывает такое, что мы можем подписываться на чистый ns, так как не предполагается больше ключей
-            String prop = getRelativeKey(key);
+            String prop = getRepositoryKey(key);
             String value = map.get(key);
-            propertiesRepository.setPropValue(prop, value);
-            OnUpdate<?> onUpdate = onUpdates.get(prop);
-            if (onUpdate != null) {
-                onUpdate.onUpdate(value);
+            propertiesRepository.setProperty(prop, value);
+            ExclusiveUpdate<?> exclusiveUpdate = onExclusiveUpdate.get(prop);
+            if (exclusiveUpdate != null) {
+                exclusiveUpdate.onUpdate(value);
             }
             withoutNs.put(prop, value);
         }
@@ -111,7 +113,7 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
     }
 
     // Получить ключик с ns
-    private String getAbsoluteKey(String relativeKey) {
+    private String getServicePropertyKey(String relativeKey) {
         if (relativeKey.isEmpty()) {
             if (ns == null) {
                 // Не надо таких поворотов, когда и ns = null и ключ пустой
@@ -127,7 +129,7 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
     }
 
     // Получить ключик без ns
-    private String getRelativeKey(String absoluteKey) {
+    private String getRepositoryKey(String absoluteKey) {
         if (ns == null && absoluteKey.isEmpty()) {
             throw new RuntimeException("Определитесь либо ns = null либо key.isEmpty()");
         } else if (ns == null) {
@@ -141,8 +143,8 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
         }
     }
 
-    public void setPropertyWithoutNs(String key, String value) {
-        serviceProperty.setProperty(getAbsoluteKey(key), value);
+    public void setPropertyRepository(String key, String value) {
+        serviceProperty.setProperty(getServicePropertyKey(key), value);
     }
 
     @Override

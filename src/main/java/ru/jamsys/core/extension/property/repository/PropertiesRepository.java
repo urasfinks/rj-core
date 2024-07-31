@@ -4,8 +4,8 @@ import java.util.Map;
 
 public interface PropertiesRepository {
 
-    Map<String, String> getPropValue();
+    Map<String, String> getProperties();
 
-    void setPropValue(String prop, String value);
+    void setProperty(String prop, String value);
 
 }

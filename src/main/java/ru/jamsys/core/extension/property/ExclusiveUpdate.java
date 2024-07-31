@@ -2,13 +2,13 @@ package ru.jamsys.core.extension.property;
 
 import java.util.function.Consumer;
 
-public class OnUpdate<T> {
+public class ExclusiveUpdate<T> {
 
     Class<T> cls;
 
     Consumer<T> onUpdate;
 
-    public OnUpdate(Class<T> cls, Consumer<T> onUpdate) {
+    public ExclusiveUpdate(Class<T> cls, Consumer<T> onUpdate) {
         this.cls = cls;
         this.onUpdate = onUpdate;
     }

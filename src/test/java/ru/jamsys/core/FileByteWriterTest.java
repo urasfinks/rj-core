@@ -37,7 +37,7 @@ class FileByteWriterTest {
     void folderNotExist() {
         try {
             FileByteWriter test = new FileByteWriter("checkOverMaxFileWrite");
-            test.getPropertiesAgent().setPropertyWithoutNs("log.file.folder", "xxkaa");
+            test.getPropertiesAgent().setPropertyRepository("log.file.folder", "xxkaa");
             Assertions.fail();
         } catch (Throwable th) {
             th.printStackTrace();
@@ -49,9 +49,9 @@ class FileByteWriterTest {
         UtilFile.removeAllFilesInFolder("LogManager");
         FileByteWriter test = new FileByteWriter("checkOverMaxFileWrite");
 
-        test.getPropertiesAgent().setPropertyWithoutNs("log.file.size.kb", "1");
-        test.getPropertiesAgent().setPropertyWithoutNs("log.file.count", "2");
-        test.getPropertiesAgent().setPropertyWithoutNs("log.file.name", "default1");
+        test.getPropertiesAgent().setPropertyRepository("log.file.size.kb", "1");
+        test.getPropertiesAgent().setPropertyRepository("log.file.count", "2");
+        test.getPropertiesAgent().setPropertyRepository("log.file.name", "default1");
 
         test.append(new Log(LogType.INFO).setData("LogData1"));
         test.append(new Log(LogType.INFO).setData("LogData2"));
@@ -75,8 +75,8 @@ class FileByteWriterTest {
         UtilFile.removeAllFilesInFolder("LogManager");
         FileByteWriter test = new FileByteWriter("checkNameLog");
 
-        test.getPropertiesAgent().setPropertyWithoutNs("log.file.count", "100");
-        test.getPropertiesAgent().setPropertyWithoutNs("log.file.name", "default2");
+        test.getPropertiesAgent().setPropertyRepository("log.file.count", "100");
+        test.getPropertiesAgent().setPropertyRepository("log.file.name", "default2");
 
         test.append(new Log(LogType.INFO).setData("LogData1"));
         test.append(new Log(LogType.INFO).setData("LogData2"));
@@ -103,7 +103,7 @@ class FileByteWriterTest {
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
         FileByteWriter test = new FileByteWriter("checkRestoreExceptionShutdown");
-        test.getPropertiesAgent().setPropertyWithoutNs("log.file.name", "default3");
+        test.getPropertiesAgent().setPropertyRepository("log.file.name", "default3");
         // Проверяем, что default3.002.proc.bin - удалён
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
@@ -122,7 +122,7 @@ class FileByteWriterTest {
         UtilFile.removeAllFilesInFolder("LogManager");
         long start = System.currentTimeMillis();
         FileByteWriter test = new FileByteWriter("checkTime");
-        test.getPropertiesAgent().setPropertyWithoutNs("log.file.name", "default4");
+        test.getPropertiesAgent().setPropertyRepository("log.file.name", "default4");
         //test.getBroker().getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(9999999);
         test.getBroker().getPropertyBrokerSize().set(9999999);
         long start2 = System.currentTimeMillis();

@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.property;
 import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.property.item.PropertyFollower;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
     }};
 
     @Getter
-    private final String absoluteKey;
+    private final String propKey;
 
     private final ServiceProperty serviceProperty;
 
@@ -39,7 +40,7 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
     public Property(
             ServiceProperty serviceProperty,
             Class<T> cls,
-            String absoluteKey,
+            String propKey,
             T defValue,
             boolean required,
             Consumer<T> onUpdate
@@ -47,7 +48,7 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
         this.onUpdate = onUpdate;
         this.serviceProperty = serviceProperty;
         this.cls = cls;
-        this.absoluteKey = absoluteKey;
+        this.propKey = propKey;
         this.defValue = defValue;
         this.required = required;
         run();
@@ -55,7 +56,7 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
 
     public void set(T value) {
         this.value = value;
-        serviceProperty.setProperty(absoluteKey, value.toString());
+        serviceProperty.setProperty(propKey, value.toString());
     }
 
     public T get() {
@@ -65,7 +66,7 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
     @Override
     public void onPropertyUpdate(Map<String, String> mapAlias) {
         @SuppressWarnings("unchecked")
-        T t = (T) convertType.get(cls).apply(mapAlias.getOrDefault(absoluteKey, String.valueOf(defValue)));
+        T t = (T) convertType.get(cls).apply(mapAlias.getOrDefault(propKey, String.valueOf(defValue)));
         this.value = t;
         if (this.onUpdate != null) {
             this.onUpdate.accept(this.value);
@@ -74,7 +75,7 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
 
     @Override
     public void run() {
-        follower = this.serviceProperty.subscribe(absoluteKey, this, required, String.valueOf(defValue));
+        follower = this.serviceProperty.subscribe(propKey, this, required, String.valueOf(defValue));
     }
 
     @Override

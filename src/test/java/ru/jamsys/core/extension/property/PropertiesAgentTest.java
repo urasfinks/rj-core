@@ -27,10 +27,10 @@ class PropertiesAgentTest {
                 .getFactory()
                 .getPropertiesAgentMap(null, "run.args.IgnoreClassFinder", false);
 
-        Assertions.assertEquals("[test1, test2]", map.getKeySetRelative().toString());
-        Assertions.assertEquals("[run.args.IgnoreClassFinder.test1, run.args.IgnoreClassFinder.test2]", map.getKeySetAbsolute().toString());
+        Assertions.assertEquals("[test1, test2]", map.getRepositoryProperties().toString());
+        Assertions.assertEquals("[run.args.IgnoreClassFinder.test1, run.args.IgnoreClassFinder.test2]", map.getServiceProperties().toString());
 
-        Assertions.assertEquals("{test1=true, test2=false}", map.getPropertiesRepository().getPropValue().toString());
+        Assertions.assertEquals("{test1=true, test2=false}", map.getPropertiesRepository().getProperties().toString());
 
     }
 

@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class PropertiesRepositoryField implements PropertiesRepository {
 
-    private final Map<String, Field> mapProp = new HashMap<>();
+    private final Map<String, Field> mapProperties = new HashMap<>();
 
     public PropertiesRepositoryField() {
         for (Field field : getClass().getDeclaredFields()) {
@@ -20,13 +20,13 @@ public class PropertiesRepositoryField implements PropertiesRepository {
                 // Может такое быть, что value = "", это значит что мы смотрим прямо на корневое значение ns
                 String prop = field.getAnnotation(PropertyName.class).value();
                 field.setAccessible(true);
-                mapProp.put(prop, field);
+                mapProperties.put(prop, field);
             }
         }
     }
 
     @Override
-    public Map<String, String> getPropValue() {
+    public Map<String, String> getProperties() {
         Map<String, String> mapPropValue = new LinkedHashMap<>();
         for (Field field : getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(PropertyName.class)) {
@@ -43,10 +43,10 @@ public class PropertiesRepositoryField implements PropertiesRepository {
     }
 
     @Override
-    public void setPropValue(String prop, String value) {
+    public void setProperty(String prop, String value) {
         try {
-            if (mapProp.containsKey(prop)) {
-                mapProp.get(prop).set(this, value);
+            if (mapProperties.containsKey(prop)) {
+                mapProperties.get(prop).set(this, value);
             }
         } catch (Exception e) {
             App.error(e);

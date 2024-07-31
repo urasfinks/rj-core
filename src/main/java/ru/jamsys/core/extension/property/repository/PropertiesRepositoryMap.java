@@ -5,16 +5,16 @@ import java.util.Map;
 
 public class PropertiesRepositoryMap implements PropertiesRepository {
 
-    private final Map<String, String> mapProp = new LinkedHashMap<>();
+    private final Map<String, String> mapProperties = new LinkedHashMap<>();
 
     @Override
-    public Map<String, String> getPropValue() {
-        return mapProp;
+    public Map<String, String> getProperties() {
+        return mapProperties;
     }
 
     @Override
-    public void setPropValue(String prop, String value) {
-        mapProp.put(prop, value);
+    public void setProperty(String prop, String value) {
+        mapProperties.put(prop, value);
     }
 
 }

@@ -44,6 +44,7 @@ public class ServicePropertyFactory {
             boolean require
     ) {
         PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
+
 //        UtilRisc.forEach(null, serviceProperty.getProp(), (key, value) -> {
 //            if (key.startsWith(ns + ".")) {
 //                propertiesRepositoryMap.getPropValue().put(

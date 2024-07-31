@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension.property;
+package ru.jamsys.core.extension.property.item;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,6 +7,8 @@ import ru.jamsys.core.flat.util.Util;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+// Элемент ServiceProperty, хранит в себе ссылки на подписчиков, кто наблюдает за изменением значений
 
 public class PropertySource {
 
