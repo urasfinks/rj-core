@@ -57,8 +57,8 @@ public class ServiceProperty {
     }
 
     // Добавляем новое или изменяем значение существующего Property
-    public void setProperty(String absoluteKey, String value) {
-        setProperty(new HashMapBuilder<String, String>().append(absoluteKey, value));
+    public void setProperty(String key, String value) {
+        setProperty(new HashMapBuilder<String, String>().append(key, value));
     }
 
     // Добавляем новое или изменяем значение существующего Property
@@ -98,28 +98,28 @@ public class ServiceProperty {
         return propertyFollower;
     }
 
-    public PropertyFollower subscribe(String absoluteKey, PropertyUpdateDelegate propertyUpdateDelegate, boolean require, String defValue) {
+    public PropertyFollower subscribe(String key, PropertyUpdateDelegate propertyUpdateDelegate, boolean require, String defValue) {
 
         PropertyFollower propertyFollower = new PropertyFollower();
-        propertyFollower.setKey(absoluteKey);
+        propertyFollower.setKey(key);
         propertyFollower.setFollower(propertyUpdateDelegate);
         listFollower.add(propertyFollower);
 
-        PropertySource result = prop.get(absoluteKey);
+        PropertySource result = prop.get(key);
         if (require && result == null) {
-            throw new RuntimeException("Required key '" + absoluteKey + "' not found");
+            throw new RuntimeException("Required key '" + key + "' not found");
         }
         if (result == null) {
-            createIfNotExist(absoluteKey, defValue);
+            createIfNotExist(key, defValue);
         }
 
         attacheAndNotifyFollower(propertyFollower);
         return propertyFollower;
     }
 
-    public PropertyFollower subscribe(String patternRegexp, PropertyUpdateDelegate propertyUpdateDelegate) {
+    public PropertyFollower subscribe(String regexp, PropertyUpdateDelegate propertyUpdateDelegate) {
         PropertyFollower propertyFollower = new PropertyFollower();
-        propertyFollower.setPattern(patternRegexp);
+        propertyFollower.setRegexp(regexp);
         propertyFollower.setFollower(propertyUpdateDelegate);
         listFollower.add(propertyFollower);
 

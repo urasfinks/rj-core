@@ -73,6 +73,14 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
         return this;
     }
 
+    public void series(String regexp){
+        PropertyFollower propertyFollower = mapListener.computeIfAbsent(regexp, k -> serviceProperty.subscribe(
+                k,
+                this
+        ));
+        serviceProperty.subscribe(propertyFollower);
+    }
+
     public void removeByRepositoryKey(String repositoryKey) {
         PropertyFollower remove = mapListener.remove(repositoryKey);
         serviceProperty.unsubscribe(remove);
@@ -82,13 +90,13 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
         removeByRepositoryKey(getRepositoryKey(propKey));
     }
 
-    public Set<String> getServiceProperties() {
+    public Set<String> getServicePropertyListeners() {
         Set<String> result = new LinkedHashSet<>();
         mapListener.forEach((s, _) -> result.add(getServicePropertyKey(s)));
         return result;
     }
 
-    public Set<String> getRepositoryProperties() {
+    public Set<String> getRepositoryPropertyListeners() {
         Set<String> result = new LinkedHashSet<>();
         mapListener.forEach((s, _) -> result.add(s));
         return result;

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.repository.PropertiesRepositoryMap;
+import ru.jamsys.core.flat.util.Util;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,15 +25,32 @@ class PropertiesAgentTest {
     @Order(1)
     public void collection() {
         PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
-        PropertiesAgent map = App
+        PropertiesAgent propertiesAgent = App
                 .get(ServiceProperty.class)
                 .getFactory()
                 .getPropertiesAgent(null, propertiesRepositoryMap, "run.args.IgnoreClassFinder", false);
 
-        Assertions.assertEquals("[test1, test2]", map.getRepositoryProperties().toString());
-        Assertions.assertEquals("[run.args.IgnoreClassFinder.test1, run.args.IgnoreClassFinder.test2]", map.getServiceProperties().toString());
+        propertiesAgent.series("run\\.args\\.IgnoreClassFinder.*");
 
-        Assertions.assertEquals("{test1=true, test2=false}", map.getPropertiesRepository().getProperties().toString());
+        Assertions.assertEquals("{test1=true, test2=false}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals("[run\\.args\\.IgnoreClassFinder.*]", propertiesAgent.getRepositoryPropertyListeners().toString());
+
+        // Дребидень полная в случае с regexp
+        Assertions.assertEquals("[run.args.IgnoreClassFinder.run\\.args\\.IgnoreClassFinder.*]", propertiesAgent.getServicePropertyListeners().toString());
+
+        Assertions.assertEquals("{test1=true, test2=false}", propertiesAgent.getPropertiesRepository().getProperties().toString());
+
+        App.get(ServiceProperty.class).setProperty("run.args.IgnoreClassFinder.test1", "false");
+
+        Assertions.assertEquals("{test1=false, test2=false}", propertiesAgent.getPropertiesRepository().getProperties().toString());
+
+        Assertions.assertEquals("false", App.get(ServiceProperty.class).getProp().get("run.args.IgnoreClassFinder.test2").getValue());
+
+        propertiesAgent.setPropertyRepository("test2", "true");
+
+        Assertions.assertEquals("{test1=false, test2=true}", propertiesAgent.getPropertiesRepository().getProperties().toString());
+
+        Assertions.assertEquals("true", App.get(ServiceProperty.class).getProp().get("run.args.IgnoreClassFinder.test2").getValue());
 
     }
 
@@ -41,15 +59,18 @@ class PropertiesAgentTest {
     public void onUpdate() {
         PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
         AtomicInteger x = new AtomicInteger(0);
-        App
+        PropertiesAgent propertiesAgent = App
                 .get(ServiceProperty.class)
                 .getFactory()
                 .getPropertiesAgent(
-                        _ -> x.incrementAndGet(),
+                        mapAlias -> x.addAndGet(mapAlias.size()),
                         propertiesRepositoryMap,
                         "run.args.IgnoreClassFinder",
                         false
                 );
+
+        propertiesAgent.series("run\\.args\\.IgnoreClassFinder.*");
+
         Assertions.assertEquals(2, x.get());
 
         Property<Boolean> test1 = App.get(ServiceProperty.class).getFactory()
@@ -61,9 +82,9 @@ class PropertiesAgentTest {
                         null
                 );
 
-        test1.set(false);
-        Assertions.assertEquals(3, x.get());
         test1.set(true);
+        Assertions.assertEquals(3, x.get());
+
     }
 
     @Test
@@ -126,6 +147,60 @@ class PropertiesAgentTest {
                         _ -> x.incrementAndGet()
                 );
         Assertions.assertEquals("xx", prop.get());
+    }
+
+    @Test
+    @Order(6)
+    public void simpleUpdate() {
+
+        PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
+        AtomicInteger x = new AtomicInteger(0);
+        PropertiesAgent propertiesAgent = App
+                .get(ServiceProperty.class)
+                .getFactory()
+                .getPropertiesAgent(
+                        null,
+                        propertiesRepositoryMap,
+                        null,
+                        true
+                );
+        propertiesAgent.add(
+                Boolean.class,
+                "run.args.IgnoreClassFinder.test1",
+                true,
+                true,
+                aBoolean -> {
+                    Util.logConsole(aBoolean.toString());
+                    x.incrementAndGet();
+                });
+        Assertions.assertEquals(1, x.get());
+
+        propertiesAgent.setPropertyRepository("run.args.IgnoreClassFinder.test1", "false");
+
+        Assertions.assertEquals(2, x.get());
+
+        Assertions.assertEquals("{run.args.IgnoreClassFinder.test1=false}", propertiesAgent.getPropertiesRepository().getProperties().toString());
+
+        Property<Boolean> prop = App
+                .get(ServiceProperty.class)
+                .getFactory()
+                .getProperty(
+                        Boolean.class,
+                        "run.args.IgnoreClassFinder.test1",
+                        true,
+                        true,
+                        null
+                );
+        Assertions.assertEquals(false, prop.get());
+
+        Assertions.assertEquals(2, x.get());
+
+        prop.set(true);
+
+        Assertions.assertEquals(true, prop.get());
+
+        Assertions.assertEquals(3, x.get());
+
     }
 
 }

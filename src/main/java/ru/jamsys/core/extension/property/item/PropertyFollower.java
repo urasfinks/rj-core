@@ -13,7 +13,7 @@ public class PropertyFollower {
 
     private String pattern;
 
-    public PropertyFollower setPattern(String pattern) {
+    public PropertyFollower setRegexp(String pattern) {
         this.pattern = pattern;
         return this;
     }
