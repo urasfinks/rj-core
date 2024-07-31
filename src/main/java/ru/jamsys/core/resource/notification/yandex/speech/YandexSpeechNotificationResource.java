@@ -33,7 +33,7 @@ public class YandexSpeechNotificationResource
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(this, property, resourceArguments.ns, true);
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgentField(this, property, resourceArguments.ns, true);
     }
 
     @Override

@@ -28,7 +28,7 @@ public class ServicePropertyFactory {
     }
 
     // Загружает ключи через PropertiesRepository
-    public PropertiesAgent getPropertiesAgent(
+    public PropertiesAgent getPropertiesAgentField(
             PropertyUpdateDelegate subscriber,
             PropertiesRepository propertiesRepository,
             String ns,

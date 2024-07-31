@@ -54,7 +54,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(this, property, ns, false);
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgentField(this, property, ns, false);
 
         if (broker == null) {
             throw new RuntimeException("broker is null");

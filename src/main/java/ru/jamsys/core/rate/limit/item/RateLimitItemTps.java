@@ -35,7 +35,7 @@ public class RateLimitItemTps
 
     public RateLimitItemTps(ApplicationContext applicationContext, String ns) {
         this.ns = ns;
-        propertiesAgent = applicationContext.getBean(ServiceProperty.class).getFactory().getPropertiesAgent(
+        propertiesAgent = applicationContext.getBean(ServiceProperty.class).getFactory().getPropertiesAgentField(
                 this,
                 this,
                 ns,

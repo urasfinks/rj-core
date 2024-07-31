@@ -35,7 +35,7 @@ public class EmailNotificationResource
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         securityComponent = App.get(SecurityComponent.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
+        propertiesAgent = serviceProperty.getFactory().getPropertiesAgentField(
                 null,
                 property,
                 resourceArguments.ns,

@@ -32,7 +32,7 @@ public class ExceptionHandler extends PropertiesRepositoryField {
         applicationContext
                 .getBean(ServiceProperty.class)
                 .getFactory()
-                .getPropertiesAgent(null, this, null, true);
+                .getPropertiesAgentField(null, this, null, true);
     }
 
     public void handler(Throwable th) {
