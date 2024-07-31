@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.property;
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.property.repository.PropertiesRepositoryMap;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -22,10 +23,11 @@ class PropertiesAgentTest {
     @Test
     @Order(1)
     public void collection() {
+        PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
         PropertiesAgent map = App
                 .get(ServiceProperty.class)
                 .getFactory()
-                .getPropertiesAgentMap(null, "run.args.IgnoreClassFinder", false);
+                .getPropertiesAgent(null, propertiesRepositoryMap, "run.args.IgnoreClassFinder", false);
 
         Assertions.assertEquals("[test1, test2]", map.getRepositoryProperties().toString());
         Assertions.assertEquals("[run.args.IgnoreClassFinder.test1, run.args.IgnoreClassFinder.test2]", map.getServiceProperties().toString());
@@ -37,12 +39,14 @@ class PropertiesAgentTest {
     @Test
     @Order(2)
     public void onUpdate() {
+        PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
         AtomicInteger x = new AtomicInteger(0);
         App
                 .get(ServiceProperty.class)
                 .getFactory()
-                .getPropertiesAgentMap(
+                .getPropertiesAgent(
                         _ -> x.incrementAndGet(),
+                        propertiesRepositoryMap,
                         "run.args.IgnoreClassFinder",
                         false
                 );
