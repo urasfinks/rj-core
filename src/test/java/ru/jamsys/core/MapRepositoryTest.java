@@ -11,6 +11,7 @@ import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.item.PropertyFollower;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
+import ru.jamsys.core.flat.util.Util;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -170,7 +171,7 @@ class MapRepositoryTest {
 
         @Override
         public void onPropertyUpdate(Map<String, String> mapAlias) {
-            System.out.println(mapAlias);
+            Util.logConsole(mapAlias.toString());
         }
     }
 
