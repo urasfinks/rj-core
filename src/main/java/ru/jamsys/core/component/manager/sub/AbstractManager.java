@@ -70,7 +70,7 @@ public abstract class AbstractManager<
     }
 
     // Атомарная операция для map и mapReserved
-    private E restoreFromReserved(String key, Supplier<E> newObject) {
+    private E restoreFromReserved(String key, Supplier<E> supplierNewObject) {
         lockAddFromRemoved.lock();
         E result = null;
         // computeIfAbsent так как заметил использование в других классах использование put
@@ -78,9 +78,14 @@ public abstract class AbstractManager<
         if (mapReserved.containsKey(key)) {
             result = map.computeIfAbsent(key, mapReserved::remove);
             result.run();
-        } else if (newObject != null) {
-            result = map.computeIfAbsent(key, _ -> newObject.get());
-            result.run();
+        } else if (map.containsKey(key)) {
+            result = map.get(key);
+        } else if (supplierNewObject != null) {
+            result = map.computeIfAbsent(key, _ -> {
+                E readyInstance = supplierNewObject.get();
+                readyInstance.run();
+                return readyInstance;
+            });
         }
         lockAddFromRemoved.unlock();
         return result;

@@ -14,7 +14,6 @@ import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -75,7 +74,6 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     private final AtomicBoolean dynamicPollSize = new AtomicBoolean(false);
 
-    @Getter
     private final Property<Integer> propertyPoolSizeMax;
 
     private final Property<Integer> propertyPoolSizeMin;
@@ -84,13 +82,9 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     private final Lock lockAddToRemove = new ReentrantLock();
 
-    public static AvgMetric xx = new AvgMetric();
-
     public AbstractPool(String index) {
         this.index = getClassName(index);
 
-
-        long l = System.currentTimeMillis();
         propertyPoolSizeMax = App.get(ServiceProperty.class).getFactory().getProperty(
                 Integer.class,
                 this.index + "." + ValueName.POOL_SIZE_MAX.getNameCamel(),
@@ -98,7 +92,6 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
                 false,
                 null
         );
-
         propertyPoolSizeMin = App.get(ServiceProperty.class).getFactory().getProperty(
                 Integer.class,
                 this.index + "." + ValueName.POOL_SIZE_MIN.getNameCamel(),
@@ -106,12 +99,6 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
                 false,
                 null
         );
-
-        xx.add(System.currentTimeMillis() - l);
-
-
-//        propertyPoolSizeMax = new PropertyDummy<>(1);
-//        propertyPoolSizeMin = new PropertyDummy<>(0);
     }
 
     public void setDynamicPollSize(boolean dynamic) {
@@ -147,14 +134,14 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         }
         // Если хотят меньше минимума - очень резко опускаем максимум до минимума
         if (want < propertyPoolSizeMin.get()) {
-            getPropertyPoolSizeMax().set(propertyPoolSizeMin.get());
+            propertyPoolSizeMax.set(propertyPoolSizeMin.get());
             return;
         }
         // Если желаемое значение элементов в пуле больше минимума, так как return не сработал
         if (want > propertyPoolSizeMax.get()) { //Медленно поднимаем
-            getPropertyPoolSizeMax().set(propertyPoolSizeMax.get() + 1);
+            propertyPoolSizeMax.set(propertyPoolSizeMax.get() + 1);
         } else { //Но очень быстро опускаем
-            getPropertyPoolSizeMax().set(want);
+            propertyPoolSizeMax.set(want);
         }
     }
 
