@@ -47,7 +47,7 @@ public class File extends ExpirationMsMutableImpl
     Map<Class<? extends FileView>, FileView> view = new ConcurrentHashMap<>();
 
     @Getter
-    Map<String, Object> mapRepository = new ConcurrentHashMap<>();
+    Map<String, Object> repositoryMap = new ConcurrentHashMap<>();
 
     @Getter
     private String absolutePath = null;

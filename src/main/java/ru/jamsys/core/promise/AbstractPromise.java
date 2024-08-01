@@ -41,7 +41,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     @JsonIgnore
     @Getter
-    private final Map<String, Object> mapRepository = new ConcurrentHashMap<>();
+    private final Map<String, Object> repositoryMap = new ConcurrentHashMap<>();
 
     @Getter
     protected volatile Throwable exception = null;
