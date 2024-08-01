@@ -45,13 +45,13 @@ class PropertiesAgentTest {
 
         Assertions.assertEquals("{test1=false, test2=false}", propertiesAgent.getRepositoryProperties().getProperties().toString());
 
-        Assertions.assertEquals("false", App.get(ServiceProperty.class).getProp().get("run.args.IgnoreClassFinder.test2").getValue());
+        Assertions.assertEquals("false", App.get(ServiceProperty.class).getOnlyTest("run.args.IgnoreClassFinder.test2"));
 
         propertiesAgent.setPropertyRepository("test2", "true");
 
         Assertions.assertEquals("{test1=false, test2=true}", propertiesAgent.getRepositoryProperties().getProperties().toString());
 
-        Assertions.assertEquals("true", App.get(ServiceProperty.class).getProp().get("run.args.IgnoreClassFinder.test2").getValue());
+        Assertions.assertEquals("true", App.get(ServiceProperty.class).getOnlyTest("run.args.IgnoreClassFinder.test2"));
 
     }
 

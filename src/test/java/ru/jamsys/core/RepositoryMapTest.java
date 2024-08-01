@@ -102,8 +102,8 @@ class RepositoryMapTest {
         );
         Assertions.assertEquals(7, xx.c);
 
-        Assertions.assertEquals("x4", serviceProperty.getProp().get("run.args.security.path.public.key").getValue());
-        Assertions.assertEquals("x5", serviceProperty.getProp().get("run.args.security.path.storage").getValue());
+        Assertions.assertEquals("x4", serviceProperty.getOnlyTest("run.args.security.path.public.key"));
+        Assertions.assertEquals("x5", serviceProperty.getOnlyTest("run.args.security.path.storage"));
 
         //Мульти обновление c неподписанным
         serviceProperty.setProperty(new HashMapBuilder<String, String>()
@@ -111,8 +111,8 @@ class RepositoryMapTest {
                 .append("run.args.security.path.storage", "x5") // Подписка есть но значение старое
         );
 
-        Assertions.assertEquals("new", serviceProperty.getProp().get("run.args.security.path.public.key").getValue());
-        Assertions.assertEquals("x5", serviceProperty.getProp().get("run.args.security.path.storage").getValue());
+        Assertions.assertEquals("new", serviceProperty.getOnlyTest("run.args.security.path.public.key"));
+        Assertions.assertEquals("x5", serviceProperty.getOnlyTest("run.args.security.path.storage"));
 
         Assertions.assertEquals(1, propertiesAgent.getFollowers().size());
 
@@ -138,8 +138,8 @@ class RepositoryMapTest {
         Assertions.assertEquals(8, xx.c);
 
         // Проверяем исходные значения Property
-        Assertions.assertEquals("new", serviceProperty.getProp().get("run.args.security.path.public.key").getValue());
-        Assertions.assertEquals("x5", serviceProperty.getProp().get("run.args.security.path.storage").getValue());
+        Assertions.assertEquals("new", serviceProperty.getOnlyTest("run.args.security.path.public.key"));
+        Assertions.assertEquals("x5", serviceProperty.getOnlyTest("run.args.security.path.storage"));
 
         //Мульти обновление штатное
         serviceProperty.setProperty(new HashMapBuilder<String, String>()

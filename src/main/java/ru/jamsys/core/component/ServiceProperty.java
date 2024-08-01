@@ -9,14 +9,17 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.property.item.PropertyFollower;
-import ru.jamsys.core.extension.property.item.PropertySource;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.ServicePropertyFactory;
+import ru.jamsys.core.extension.property.item.PropertyFollower;
+import ru.jamsys.core.extension.property.item.PropertySource;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -26,8 +29,12 @@ public class ServiceProperty {
     @Getter
     final private ServicePropertyFactory factory;
 
-    @Getter
     final private Map<String, PropertySource> prop = new ConcurrentHashMap<>();
+
+    @Deprecated
+    public String getOnlyTest(String propKey) {
+        return prop.get(propKey).getValue();
+    }
 
     //Нужен для момента, когда будет добавляться новое Property, что бы можно было к нему навешать старых слушателей
     final private Set<PropertyFollower> listFollower = Util.getConcurrentHashSet();
