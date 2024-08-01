@@ -2,6 +2,7 @@ package ru.jamsys.core;
 
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
@@ -153,7 +154,6 @@ class PropertiesAgentTest {
     @Test
     @Order(6)
     public void simpleUpdate() {
-
         RepositoryPropertiesMap propertiesRepositoryMap = new RepositoryPropertiesMap();
         AtomicInteger x = new AtomicInteger(0);
         PropertiesAgent propertiesAgent = App
@@ -201,6 +201,47 @@ class PropertiesAgentTest {
         Assertions.assertEquals(true, prop.get());
 
         Assertions.assertEquals(3, x.get());
+
+    }
+
+    @Test
+    public void extend() {
+        RepositoryPropertiesMap propertiesRepositoryMap = new RepositoryPropertiesMap();
+        AtomicInteger x = new AtomicInteger(0);
+        PropertiesAgent propertiesAgent = App
+                .get(ServiceProperty.class)
+                .getFactory()
+                .getPropertiesAgent(
+                        mapAlias -> x.addAndGet(mapAlias.size()),
+                        propertiesRepositoryMap,
+                        "extend",
+                        false
+                );
+
+        propertiesAgent.series("extend.*");
+
+        Assertions.assertEquals("{}", propertiesRepositoryMap.getProperties().toString());
+
+        App.get(ServiceProperty.class).setProperty("extend.hello", "world");
+
+        Assertions.assertEquals("{hello=world}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals(1, x.get());
+
+        App.get(ServiceProperty.class).setProperty("extend.hello", "kitty");
+        Assertions.assertEquals("{hello=kitty}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals(2, x.get());
+
+        App.get(ServiceProperty.class).setProperty("extend.secondary", "xxkaa");
+        Assertions.assertEquals("{hello=kitty, secondary=xxkaa}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals(3, x.get());
+
+        App.get(ServiceProperty.class).setProperty(
+                new HashMapBuilder<String, String>()
+                        .append("hello", "x1")
+                        .append("secondary", "x2")
+        );
+        Assertions.assertEquals("{hello=x1, secondary=x2}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals(5, x.get());
 
     }
 
