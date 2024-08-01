@@ -7,7 +7,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.addable.AddToList;
-import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.property.PropertyDummy;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
@@ -68,10 +68,10 @@ public class Broker<TEO>
     private Double lastTimeInQueue;
 
     @Getter
-    final Property<Integer> propertyBrokerSize;
+    final PropertyDummy<Integer> propertyBrokerSize;
 
     @Getter
-    final Property<Integer> propertyBrokerTailSize;
+    final PropertyDummy<Integer> propertyBrokerTailSize;
 
     final String index;
 
@@ -88,22 +88,25 @@ public class Broker<TEO>
         String clsIndex = getClassName(index, applicationContext);
 
         ServiceProperty serviceProperty = applicationContext.getBean(ServiceProperty.class);
-        propertyBrokerSize = new Property<>(
-                serviceProperty,
-                Integer.class,
-                clsIndex + "." + ValueName.BROKER_SIZE.getNameCamel(),
-                3000,
-                false,
-                null
-        );
-        propertyBrokerTailSize = new Property<>(
-                serviceProperty,
-                Integer.class,
-                clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),
-                5,
-                false,
-                null
-        );
+//        propertyBrokerSize = new Property<>(
+//                serviceProperty,
+//                Integer.class,
+//                clsIndex + "." + ValueName.BROKER_SIZE.getNameCamel(),
+//                3000,
+//                false,
+//                null
+//        );
+//        propertyBrokerTailSize = new Property<>(
+//                serviceProperty,
+//                Integer.class,
+//                clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),
+//                5,
+//                false,
+//                null
+//        );
+
+        propertyBrokerSize = new PropertyDummy<>(3000);
+        propertyBrokerTailSize = new PropertyDummy<>(5);
 
         ManagerExpiration managerExpiration = applicationContext.getBean(ManagerExpiration.class);
         expiration = managerExpiration.get(

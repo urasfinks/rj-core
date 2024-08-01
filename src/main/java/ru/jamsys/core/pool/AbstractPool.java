@@ -14,6 +14,7 @@ import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.resource.Resource;
+import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -83,15 +84,19 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     private final Lock lockAddToRemove = new ReentrantLock();
 
+    public static AvgMetric xx = new AvgMetric();
+
     public AbstractPool(String index) {
         this.index = getClassName(index);
+
+
+        long l = System.currentTimeMillis();
         propertyPoolSizeMax = App.get(ServiceProperty.class).getFactory().getProperty(
                 Integer.class,
                 this.index + "." + ValueName.POOL_SIZE_MAX.getNameCamel(),
                 1,
                 false,
-                _ -> {
-                }
+                null
         );
 
         propertyPoolSizeMin = App.get(ServiceProperty.class).getFactory().getProperty(
@@ -99,9 +104,14 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
                 this.index + "." + ValueName.POOL_SIZE_MIN.getNameCamel(),
                 0,
                 false,
-                _ -> {
-                }
+                null
         );
+
+        xx.add(System.currentTimeMillis() - l);
+
+
+//        propertyPoolSizeMax = new PropertyDummy<>(1);
+//        propertyPoolSizeMin = new PropertyDummy<>(0);
     }
 
     public void setDynamicPollSize(boolean dynamic) {

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
@@ -15,6 +16,7 @@ import ru.jamsys.core.resource.jdbc.JdbcResource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,6 +40,8 @@ class PromiseImplTest {
     static void shutdown() {
         App.shutdown();
         System.out.println(System.currentTimeMillis() - start);
+        Map<String, Object> flush = AbstractPool.xx.flush("");
+        System.out.println(flush);
     }
 
     @Test
