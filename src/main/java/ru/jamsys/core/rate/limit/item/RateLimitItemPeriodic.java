@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.Statistic;
@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RateLimitItemPeriodic
-        extends PropertiesRepositoryField
+        extends RepositoryPropertiesField
         implements RateLimitItem, PropertyUpdateDelegate, LifeCycleInterface {
 
     private final AtomicInteger tpu = new AtomicInteger(0);

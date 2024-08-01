@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.item.PropertyFollower;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.flat.util.Util;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.Map;
 // IO time: 5ms
 // COMPUTE time: 5ms
 
-class MapRepositoryTest {
+class RepositoryMapTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runCore();
@@ -30,7 +30,7 @@ class MapRepositoryTest {
         App.shutdown();
     }
 
-    public static class XX extends PropertiesRepositoryField implements PropertyUpdateDelegate {
+    public static class XX extends RepositoryPropertiesField implements PropertyUpdateDelegate {
 
         int c = 0;
 
@@ -159,7 +159,7 @@ class MapRepositoryTest {
     }
 
 
-    static class x2 extends PropertiesRepositoryField implements PropertyUpdateDelegate {
+    static class x2 extends RepositoryPropertiesField implements PropertyUpdateDelegate {
 
         @SuppressWarnings("all")
         @PropertyName("security.path.storage")

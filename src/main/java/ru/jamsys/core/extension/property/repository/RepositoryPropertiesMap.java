@@ -3,7 +3,7 @@ package ru.jamsys.core.extension.property.repository;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class PropertiesRepositoryMap implements PropertiesRepository {
+public class RepositoryPropertiesMap implements RepositoryProperties {
 
     private final Map<String, String> mapProperties = new LinkedHashMap<>();
 

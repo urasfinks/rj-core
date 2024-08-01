@@ -4,7 +4,7 @@ import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.item.PropertyFollower;
-import ru.jamsys.core.extension.property.repository.PropertiesRepository;
+import ru.jamsys.core.extension.property.repository.RepositoryProperties;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.*;
@@ -21,7 +21,7 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
 
     private final ServiceProperty serviceProperty;
 
-    private final PropertiesRepository propertiesRepository;
+    private final RepositoryProperties repositoryProperties;
 
     private final String ns;
 
@@ -32,19 +32,19 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
     public PropertiesAgent(
             ServiceProperty serviceProperty,
             PropertyUpdateDelegate subscriber,
-            PropertiesRepository propertiesRepository,
+            RepositoryProperties repositoryProperties,
             String ns,
             boolean require
     ) {
         this.subscriber = subscriber;
         this.serviceProperty = serviceProperty;
-        this.propertiesRepository = propertiesRepository;
+        this.repositoryProperties = repositoryProperties;
         this.ns = ns;
         init(require);
     }
 
     private void init(boolean require) {
-        UtilRisc.forEach(null, this.propertiesRepository.getProperties(), (key, value) -> {
+        UtilRisc.forEach(null, this.repositoryProperties.getProperties(), (key, value) -> {
             add(String.class, key, value, require, null);
         });
     }
@@ -108,7 +108,7 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
             // Бывает такое, что мы можем подписываться на чистый ns, так как не предполагается больше ключей
             String prop = getRepositoryKey(key);
             String value = map.get(key);
-            propertiesRepository.setProperty(prop, value);
+            repositoryProperties.setProperty(prop, value);
             ExclusiveUpdate<?> exclusiveUpdate = onExclusiveUpdate.get(prop);
             if (exclusiveUpdate != null) {
                 exclusiveUpdate.onUpdate(value);

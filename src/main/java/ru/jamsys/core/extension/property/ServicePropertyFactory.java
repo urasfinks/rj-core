@@ -1,8 +1,7 @@
 package ru.jamsys.core.extension.property;
 
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.repository.PropertiesRepository;
-import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
+import ru.jamsys.core.extension.property.repository.RepositoryProperties;
 
 import java.util.function.Consumer;
 
@@ -30,11 +29,11 @@ public class ServicePropertyFactory {
     // Загружает ключи через PropertiesRepository
     public PropertiesAgent getPropertiesAgent(
             PropertyUpdateDelegate subscriber,
-            PropertiesRepository propertiesRepository,
+            RepositoryProperties repositoryProperties,
             String ns,
             boolean require
     ) {
-        return new PropertiesAgent(serviceProperty, subscriber, propertiesRepository, ns, require);
+        return new PropertiesAgent(serviceProperty, subscriber, repositoryProperties, ns, require);
     }
 
     // Контейнер Property

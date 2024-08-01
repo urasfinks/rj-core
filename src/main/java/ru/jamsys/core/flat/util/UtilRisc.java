@@ -1,6 +1,6 @@
 package ru.jamsys.core.flat.util;
 
-import ru.jamsys.core.App;
+import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,12 +35,8 @@ public class UtilRisc {
                 int inc = reverse ? -1 : 1;
                 while (true) {
                     if (isRun == null || isRun.get()) {
-                        try {
-                            if (!consumer.apply(objects[index])) {
-                                break;
-                            }
-                        } catch (Exception e2) {
-                            App.error(e2);
+                        if (!consumer.apply(objects[index])) {
+                            break;
                         }
                     } else {
                         break;
@@ -50,8 +46,8 @@ public class UtilRisc {
                         break;
                     }
                 }
-            } catch (Exception e) {
-                App.error(e);
+            } catch (Throwable th) {
+                throw new ForwardException(th);
             }
         }
     }
@@ -73,11 +69,7 @@ public class UtilRisc {
                 int inc = reverse ? -1 : 1;
                 while (true) {
                     if (isRun == null || isRun.get()) {
-                        try {
-                            consumer.accept(objects[index]);
-                        } catch (Exception e2) {
-                            App.error(e2);
-                        }
+                        consumer.accept(objects[index]);
                     } else {
                         break;
                     }
@@ -86,8 +78,8 @@ public class UtilRisc {
                         break;
                     }
                 }
-            } catch (Exception e) {
-                App.error(e);
+            } catch (Throwable th) {
+                throw new ForwardException(th);
             }
         }
     }
@@ -98,19 +90,15 @@ public class UtilRisc {
                 K[] objects = map.keySet().toArray(getEmptyType());
                 for (K key : objects) {
                     if (isRun == null || isRun.get()) {
-                        try {
-                            if (!consumer.apply(key, map.get(key))) {
-                                break;
-                            }
-                        } catch (Exception e2) {
-                            App.error(e2);
+                        if (!consumer.apply(key, map.get(key))) {
+                            break;
                         }
                     } else {
                         break;
                     }
                 }
-            } catch (Exception e) {
-                App.error(e);
+            } catch (Throwable th) {
+                throw new ForwardException(th);
             }
         }
     }
@@ -121,17 +109,13 @@ public class UtilRisc {
                 K[] objects = map.keySet().toArray(getEmptyType());
                 for (K key : objects) {
                     if (isRun == null || isRun.get()) {
-                        try {
-                            consumer.accept(key, map.get(key));
-                        } catch (Exception e2) {
-                            App.error(e2);
-                        }
+                        consumer.accept(key, map.get(key));
                     } else {
                         break;
                     }
                 }
-            } catch (Exception e) {
-                App.error(e);
+            } catch (Throwable th) {
+                throw new ForwardException(th);
             }
         }
     }

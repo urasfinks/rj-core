@@ -69,7 +69,7 @@ public class JdbcResource
                         new String(securityComponent.get(property.getSecurityAlias()))
                 );
             } catch (Throwable th) {
-                App.error(new ForwardException(th));
+                throw new ForwardException(th);
             }
         }
     }
@@ -119,6 +119,9 @@ public class JdbcResource
             propertiesAgent.run();
         }
         up();
+        if (connection == null) {
+            throw new RuntimeException("Connection problem");
+        }
     }
 
     @Override

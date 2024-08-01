@@ -3,7 +3,7 @@ package ru.jamsys.core.extension.property;
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.repository.PropertiesRepositoryMap;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
 import ru.jamsys.core.flat.util.Util;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,7 +24,7 @@ class PropertiesAgentTest {
     @Test
     @Order(1)
     public void collection() {
-        PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
+        RepositoryPropertiesMap propertiesRepositoryMap = new RepositoryPropertiesMap();
         PropertiesAgent propertiesAgent = App
                 .get(ServiceProperty.class)
                 .getFactory()
@@ -38,17 +38,17 @@ class PropertiesAgentTest {
         // Дребидень полная в случае с regexp
         Assertions.assertEquals("[run.args.IgnoreClassFinder.run\\.args\\.IgnoreClassFinder.*]", propertiesAgent.getServicePropertyListeners().toString());
 
-        Assertions.assertEquals("{test1=true, test2=false}", propertiesAgent.getPropertiesRepository().getProperties().toString());
+        Assertions.assertEquals("{test1=true, test2=false}", propertiesAgent.getRepositoryProperties().getProperties().toString());
 
         App.get(ServiceProperty.class).setProperty("run.args.IgnoreClassFinder.test1", "false");
 
-        Assertions.assertEquals("{test1=false, test2=false}", propertiesAgent.getPropertiesRepository().getProperties().toString());
+        Assertions.assertEquals("{test1=false, test2=false}", propertiesAgent.getRepositoryProperties().getProperties().toString());
 
         Assertions.assertEquals("false", App.get(ServiceProperty.class).getProp().get("run.args.IgnoreClassFinder.test2").getValue());
 
         propertiesAgent.setPropertyRepository("test2", "true");
 
-        Assertions.assertEquals("{test1=false, test2=true}", propertiesAgent.getPropertiesRepository().getProperties().toString());
+        Assertions.assertEquals("{test1=false, test2=true}", propertiesAgent.getRepositoryProperties().getProperties().toString());
 
         Assertions.assertEquals("true", App.get(ServiceProperty.class).getProp().get("run.args.IgnoreClassFinder.test2").getValue());
 
@@ -57,7 +57,7 @@ class PropertiesAgentTest {
     @Test
     @Order(2)
     public void onUpdate() {
-        PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
+        RepositoryPropertiesMap propertiesRepositoryMap = new RepositoryPropertiesMap();
         AtomicInteger x = new AtomicInteger(0);
         PropertiesAgent propertiesAgent = App
                 .get(ServiceProperty.class)
@@ -153,7 +153,7 @@ class PropertiesAgentTest {
     @Order(6)
     public void simpleUpdate() {
 
-        PropertiesRepositoryMap propertiesRepositoryMap = new PropertiesRepositoryMap();
+        RepositoryPropertiesMap propertiesRepositoryMap = new RepositoryPropertiesMap();
         AtomicInteger x = new AtomicInteger(0);
         PropertiesAgent propertiesAgent = App
                 .get(ServiceProperty.class)
@@ -179,7 +179,7 @@ class PropertiesAgentTest {
 
         Assertions.assertEquals(2, x.get());
 
-        Assertions.assertEquals("{run.args.IgnoreClassFinder.test1=false}", propertiesAgent.getPropertiesRepository().getProperties().toString());
+        Assertions.assertEquals("{run.args.IgnoreClassFinder.test1=false}", propertiesAgent.getRepositoryProperties().getProperties().toString());
 
         Property<Boolean> prop = App
                 .get(ServiceProperty.class)

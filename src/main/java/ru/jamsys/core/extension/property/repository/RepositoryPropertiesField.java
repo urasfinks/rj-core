@@ -10,11 +10,11 @@ import java.util.Map;
 
 // Класс помогает изъять аннтоции свойств
 
-public class PropertiesRepositoryField implements PropertiesRepository {
+public class RepositoryPropertiesField implements RepositoryProperties {
 
     private final Map<String, Field> mapProperties = new HashMap<>();
 
-    public PropertiesRepositoryField() {
+    public RepositoryPropertiesField() {
         for (Field field : getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(PropertyName.class)) {
                 // Может такое быть, что value = "", это значит что мы смотрим прямо на корневое значение ns

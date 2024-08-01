@@ -13,9 +13,11 @@ import ru.jamsys.core.extension.property.item.PropertyFollower;
 import ru.jamsys.core.extension.property.item.PropertySource;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.ServicePropertyFactory;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Lazy
@@ -25,10 +27,10 @@ public class ServiceProperty {
     final private ServicePropertyFactory factory;
 
     @Getter
-    final private Map<String, PropertySource> prop = new HashMap<>();
+    final private Map<String, PropertySource> prop = new ConcurrentHashMap<>();
 
     //Нужен для момента, когда будет добавляться новое Property, что бы можно было к нему навешать старых слушателей
-    final private Set<PropertyFollower> listFollower = new LinkedHashSet<>();
+    final private Set<PropertyFollower> listFollower = Util.getConcurrentHashSet();
 
     public boolean containsFollower(PropertyFollower propertyFollower) {
         return listFollower.contains(propertyFollower);

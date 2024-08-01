@@ -5,7 +5,7 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.functional.TriConsumer;
-import ru.jamsys.core.extension.MapRepository;
+import ru.jamsys.core.extension.RepositoryMap;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
 import ru.jamsys.core.resource.Resource;
@@ -19,7 +19,7 @@ import java.util.function.BiConsumer;
 
 // Цепочка обещаний
 
-public interface Promise extends MapRepository<String, Object>, ExpirationMsImmutable, Correlation {
+public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmutable, Correlation {
 
     String getIndex();
 

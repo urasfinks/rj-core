@@ -8,7 +8,7 @@ import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertiesAgent;
-import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.flat.util.*;
 
 import javax.crypto.SecretKey;
@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-public class SecurityComponent extends PropertiesRepositoryField implements LifeCycleComponent {
+public class SecurityComponent extends RepositoryPropertiesField implements LifeCycleComponent {
 
     @Setter
     @PropertyName("run.args.security.path.storage")

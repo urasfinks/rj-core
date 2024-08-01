@@ -16,7 +16,7 @@ import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
 import ru.jamsys.core.flat.util.ListSort;
@@ -39,7 +39,7 @@ import java.util.function.Function;
 
 @Component
 @Lazy
-public class StatisticUploader extends PropertiesRepositoryField implements Cron5s, PromiseGenerator, UniqueClassName {
+public class StatisticUploader extends RepositoryPropertiesField implements Cron5s, PromiseGenerator, UniqueClassName {
 
     final Broker<StatisticSec> broker;
 
@@ -119,7 +119,7 @@ public class StatisticUploader extends PropertiesRepositoryField implements Cron
                             }
                         }
                     }
-                    promise.setToMapRepository(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), reserve);
+                    promise.setMapRepository(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), reserve);
 
                     if (countInsert.get() > 0) {
                         influxResource.execute(listPoints);
@@ -135,13 +135,13 @@ public class StatisticUploader extends PropertiesRepositoryField implements Cron
                         }
                     }
                     if (!restore.isEmpty()) {
-                        promise.setToMapRepository("readyFile", getFolder() + ListSort.sort(restore).getFirst());
+                        promise.setMapRepository("readyFile", getFolder() + ListSort.sort(restore).getFirst());
                     }
                 })
                 .appendWait()
                 .appendWithResource("read", FileByteReaderResource.class, (_, promise, fileByteReaderResource) -> {
                     if (broker.getOccupancyPercentage() < 50) {
-                        String readyFile = promise.getFromMapRepository("readyFile", String.class);
+                        String readyFile = promise.getRepositoryMap("readyFile", String.class);
                         if (readyFile != null) {
                             List<ByteTransformer> execute = fileByteReaderResource.execute(
                                     new FileByteReaderRequest(readyFile, StatisticSec.class)
@@ -165,7 +165,7 @@ public class StatisticUploader extends PropertiesRepositoryField implements Cron
                                 .getFunctionCheckFatalException();
                         if (isFatalExceptionOnComplete.apply(exception)) {
                             // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
-                            List<StatisticSec> reserveStatistic = promise.getFromMapRepository(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), List.class, null);
+                            List<StatisticSec> reserveStatistic = promise.getRepositoryMap(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), List.class, null);
                             if (reserveStatistic != null && !reserveStatistic.isEmpty()) {
                                 reserveStatistic.forEach(statisticSec -> broker.add(statisticSec, 2_000L));
                             }

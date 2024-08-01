@@ -2,7 +2,7 @@ package ru.jamsys.core.extension.property.repository;
 
 import java.util.Map;
 
-public interface PropertiesRepository {
+public interface RepositoryProperties {
 
     Map<String, String> getProperties();
 

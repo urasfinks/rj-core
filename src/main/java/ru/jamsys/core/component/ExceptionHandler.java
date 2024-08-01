@@ -12,13 +12,13 @@ import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.extension.line.writer.LineWriterString;
-import ru.jamsys.core.extension.property.repository.PropertiesRepositoryField;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.flat.util.Util;
 
 @Setter
 @Component
 @Lazy
-public class ExceptionHandler extends PropertiesRepositoryField {
+public class ExceptionHandler extends RepositoryPropertiesField {
 
     private int maxLine = 50;
 
