@@ -1,11 +1,12 @@
-package ru.jamsys.core.extension.property;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.property.PropertiesContainer;
+import ru.jamsys.core.extension.property.Property;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

@@ -10,7 +10,7 @@ import java.util.Map;
 // IO time: 11ms
 // COMPUTE time: 12ms
 
-class TestRepositoryMapSimple {
+public class TestRepositoryMapSimple {
 
     public static class P implements RepositoryMap<String, Object> {
 
@@ -32,5 +32,4 @@ class TestRepositoryMapSimple {
         Assertions.assertEquals("def", p.getRepositoryMap("x1", String.class, "def"));
 
     }
-
 }

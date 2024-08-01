@@ -1,8 +1,9 @@
-package ru.jamsys.core.extension.property;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.*;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.property.PropertiesAgent;
+import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
 import ru.jamsys.core.flat.util.Util;
 
