@@ -237,8 +237,8 @@ class PropertiesAgentTest {
 
         App.get(ServiceProperty.class).setProperty(
                 new HashMapBuilder<String, String>()
-                        .append("hello", "x1")
-                        .append("secondary", "x2")
+                        .append("extend.hello", "x1")
+                        .append("extend.secondary", "x2")
         );
         Assertions.assertEquals("{hello=x1, secondary=x2}", propertiesRepositoryMap.getProperties().toString());
         Assertions.assertEquals(5, x.get());
