@@ -48,7 +48,12 @@ public class PropertySource {
     }
 
     public void setValue(String value) {
-        if (!value.equals(this.value)) {
+        if (value == null && this.value != null) {
+            this.value = null;
+            setUpdateValue(true);
+        } else if (value == null) {
+            setUpdateValue(false);
+        } else if (!value.equals(this.value)) {
             this.value = value;
             setUpdateValue(true);
         } else {

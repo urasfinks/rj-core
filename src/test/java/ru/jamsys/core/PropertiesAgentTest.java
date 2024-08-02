@@ -243,6 +243,14 @@ class PropertiesAgentTest {
         Assertions.assertEquals("{hello=x1, secondary=x2}", propertiesRepositoryMap.getProperties().toString());
         Assertions.assertEquals(5, x.get());
 
+        App.get(ServiceProperty.class).setProperty("extend.secondary", null);
+        Assertions.assertEquals("{hello=x1, secondary=null}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals(6, x.get());
+
+        // Попытка повторного зануления не должна приводить к выхову onUpdate
+        App.get(ServiceProperty.class).setProperty("extend.secondary", null);
+        Assertions.assertEquals(6, x.get());
+
     }
 
 }
