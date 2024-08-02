@@ -2,7 +2,10 @@ package ru.jamsys.core.rate.limit;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
-import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.ClassEquals;
+import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.StatisticsCollectorMap;
+import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
@@ -56,7 +59,6 @@ public class RateLimit
 
     public RateLimit init(ApplicationContext applicationContext, String name, RateLimitFactory rateLimitFactory) {
         map.computeIfAbsent(name, key -> rateLimitFactory.create(
-                applicationContext,
                 getClassName(applicationContext) + "." + index + "." + key)
         );
         return this;

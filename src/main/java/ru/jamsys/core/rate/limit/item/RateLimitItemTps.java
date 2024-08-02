@@ -1,7 +1,6 @@
 package ru.jamsys.core.rate.limit.item;
 
 import lombok.Getter;
-import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
@@ -34,7 +33,7 @@ public class RateLimitItemTps
 
     private final PropertiesAgent propertiesAgent;
 
-    public RateLimitItemTps(ApplicationContext applicationContext, String ns) {
+    public RateLimitItemTps(String ns) {
         this.ns = ns;
 
         propertiesAgent = App.get(ServiceProperty.class).getFactory().getPropertiesAgent(
@@ -61,7 +60,11 @@ public class RateLimitItemTps
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
+    public List<Statistic> flushAndGetStatistic(
+            Map<String, String> parentTags,
+            Map<String, Object> parentFields,
+            AtomicBoolean isThreadRun
+    ) {
         List<Statistic> result = new ArrayList<>();
         result.add(new Statistic(parentTags, parentFields)
                 .addField("tps", tps.getAndSet(0))

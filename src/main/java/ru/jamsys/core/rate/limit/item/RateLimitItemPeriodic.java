@@ -1,7 +1,7 @@
 package ru.jamsys.core.rate.limit.item;
 
 import lombok.Getter;
-import org.springframework.context.ApplicationContext;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
@@ -46,11 +46,11 @@ public class RateLimitItemPeriodic
 
     private final PropertiesAgent propertiesAgent;
 
-    public RateLimitItemPeriodic(ApplicationContext applicationContext, TimeUnit period, String ns) {
+    public RateLimitItemPeriodic(TimeUnit period, String ns) {
         this.ns = ns;
         this.period = period;
         this.periodName = period.getNameCamel();
-        propertiesAgent = applicationContext.getBean(ServiceProperty.class).getFactory().getPropertiesAgent(
+        propertiesAgent = App.get(ServiceProperty.class).getFactory().getPropertiesAgent(
                 this,
                 this,
                 ns,
