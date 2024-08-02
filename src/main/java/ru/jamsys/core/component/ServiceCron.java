@@ -65,10 +65,7 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
                 } catch (InterruptedException ie) {
                     Util.logConsole("interrupt()");
                 } catch (Throwable th) {
-                    // Может ещё не быть контекста
-                    applicationContext
-                            .getBean(ExceptionHandler.class)
-                            .handler(new ForwardException(th));
+                    App.error(th);
                 }
                 isRun.set(false);
             }
@@ -100,7 +97,7 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
     ) {
         String className = getClassName(applicationContext);
         serviceClassFinder.findByInstance(CronTemplate.class).forEach((Class<CronTemplate> cronTemplateClass) -> {
-            CronTemplate cronTemplate = applicationContext.getBean(cronTemplateClass);
+            CronTemplate cronTemplate = serviceClassFinder.instanceOf(cronTemplateClass);
             if (cronTemplate instanceof PromiseGenerator promiseGenerator) {
                 promiseGenerator.setIndex(
                         className + "." +

@@ -8,6 +8,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.ContextClosedEvent;
 import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
@@ -32,7 +33,7 @@ public class App {
             AtomicBoolean isRun = new AtomicBoolean(true);
 
             Thread shutdownThread = new Thread(() -> {
-                Thread.currentThread().setName("Shutdown");
+                Thread.currentThread().setName("daemon");
                 context.getBean(Core.class).shutdown();
                 isRun.set(false);
             });
@@ -49,7 +50,13 @@ public class App {
 
     @SuppressWarnings("all")
     public static <T> T get(Class<T> cls) {
-        return (T) mapBean.computeIfAbsent(cls, aClass -> App.context.getBean(aClass));
+        return (T) mapBean.computeIfAbsent(cls, aClass -> {
+            T t = App.context.getBean(ServiceClassFinder.class).instanceOf(cls);
+            if (t == null) {
+                Util.logConsole("App.get(" + cls.getName() + ") return null");
+            }
+            return t;
+        });
     }
 
     public static void error(Throwable th) {

@@ -2,6 +2,7 @@ package ru.jamsys.core.rate.limit.item;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
@@ -35,7 +36,8 @@ public class RateLimitItemTps
 
     public RateLimitItemTps(ApplicationContext applicationContext, String ns) {
         this.ns = ns;
-        propertiesAgent = applicationContext.getBean(ServiceProperty.class).getFactory().getPropertiesAgent(
+
+        propertiesAgent = App.get(ServiceProperty.class).getFactory().getPropertiesAgent(
                 this,
                 this,
                 ns,

@@ -1,8 +1,11 @@
 package ru.jamsys.core.component;
 
 import lombok.Getter;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
+import ru.jamsys.core.extension.property.PropertiesAgent;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
 
 import javax.tools.*;
 import java.lang.annotation.Annotation;
@@ -22,15 +25,39 @@ public class ServiceClassFinder {
 
     private final ExceptionHandler exceptionHandler;
 
-    public ServiceClassFinder(ExceptionHandler exceptionHandler, ServiceProperty serviceProperty) {
+    private final RepositoryPropertiesMap ignoredClassMap = new RepositoryPropertiesMap();
+
+    private final ApplicationContext applicationContext;
+
+    public ServiceClassFinder(
+            ApplicationContext applicationContext,
+            ExceptionHandler exceptionHandler,
+            ServiceProperty serviceProperty
+    ) {
+        this.applicationContext = applicationContext;
         this.exceptionHandler = exceptionHandler;
 
         @SuppressWarnings("SameParameterValue")
         String pkg = "ru.jamsys";
         availableClass = getAvailableClass(pkg);
 
-        //serviceProperty.getFactory().getMap("run.args.IgnoreClassFinder", String.class, this::filter);
         fillUniqueClassName();
+
+        PropertiesAgent ignoredClassAgent = serviceProperty
+                .getFactory()
+                .getPropertiesAgent(
+                        mapAlias -> {
+                            System.out.println("onUpdate IgnoreClassFinder: " + mapAlias);
+                            availableClass.clear();
+                            availableClass.addAll(getAvailableClass(pkg));
+                            fillUniqueClassName();
+                        },
+                        ignoredClassMap,
+                        "extend",
+                        false
+                );
+
+        ignoredClassAgent.series("run\\.args\\.IgnoreClassFinder.*");
     }
 
     private void fillUniqueClassName() {
@@ -91,12 +118,19 @@ public class ServiceClassFinder {
         return new ArrayList<>(getActualType(cls.getGenericInterfaces(), fnd));
     }
 
-    public <T> List<Class<T>> findByInstance(Class<T> inst) {
+    public <T> T instanceOf(Class<T> cls) {
+        if (availableClass.contains(cls)) {
+            return applicationContext.getBean(cls);
+        }
+        return null;
+    }
+
+    public <T> List<Class<T>> findByInstance(Class<T> cls) {
         List<Class<T>> result = new ArrayList<>();
-        for (Class<?> cls : availableClass) {
-            if (instanceOf(cls, inst)) {
+        for (Class<?> availableClass : availableClass) {
+            if (instanceOf(availableClass, cls)) {
                 @SuppressWarnings("unchecked")
-                Class<T> tmp = (Class<T>) cls;
+                Class<T> tmp = (Class<T>) availableClass;
                 result.add(tmp);
             }
         }
@@ -153,10 +187,10 @@ public class ServiceClassFinder {
                         break;
                     }
                 }
-//                Property<String> stringProperty = ignoreClassFinderMap.get(aClass.getName());
-//                if (stringProperty != null) {
-//                    findUnusedAnnotation = "true".equals(stringProperty.get());
-//                }
+                String s = ignoredClassMap.getProperties().get(aClass.getName());
+                if (s != null && s.equals("true")) {
+                    findUnusedAnnotation = true;
+                }
                 if (findUnusedAnnotation) {
                     continue;
                 }

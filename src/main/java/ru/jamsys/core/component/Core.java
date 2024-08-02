@@ -68,7 +68,7 @@ public class Core implements LifeCycleInterface {
             long start = System.currentTimeMillis();
             lifeCycleComponent.run();
             Util.logConsole(
-                    "index: " + lifeCycleComponent.getInitializationIndex()
+                    "run index: " + lifeCycleComponent.getInitializationIndex()
                             + "; class: " + lifeCycleComponent.getClass().getName()
                             + "; time: " + (System.currentTimeMillis() - start) + "ms"
             );
@@ -84,7 +84,7 @@ public class Core implements LifeCycleInterface {
                 long start = System.currentTimeMillis();
                 lifeCycleComponent.shutdown();
                 Util.logConsole(
-                        "index: " + lifeCycleComponent.getInitializationIndex()
+                        "shutdown index: " + lifeCycleComponent.getInitializationIndex()
                                 + "; class: " + lifeCycleComponent.getClass().getName()
                                 + "; time: " + (System.currentTimeMillis() - start) + "ms"
                 );

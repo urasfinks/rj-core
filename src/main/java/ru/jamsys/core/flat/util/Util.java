@@ -58,7 +58,7 @@ public class Util {
 
     public static void logConsole(Thread t, String data, boolean err) {
         PrintStream out = err ? System.err : System.out;
-        out.println(Util.msToDataFormat(System.currentTimeMillis()) + " " + t.getName() + " " + data);
+        out.println(Util.msToDataFormat(System.currentTimeMillis()) + " thread: " + t.getName() + "; " + data);
     }
 
     public static long getTimestamp() {
