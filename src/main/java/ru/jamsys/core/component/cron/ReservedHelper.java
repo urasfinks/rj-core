@@ -1,5 +1,6 @@
 package ru.jamsys.core.component.cron;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,7 @@ public class ReservedHelper implements Cron1s, PromiseGenerator, UniqueClassName
     private final List<AbstractManager> list = new ArrayList<>();
 
     @Setter
+    @Getter
     private String index;
 
     private final ServicePromise servicePromise;

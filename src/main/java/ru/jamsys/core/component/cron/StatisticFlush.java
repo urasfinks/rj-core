@@ -44,6 +44,7 @@ public class StatisticFlush extends RepositoryPropertiesField implements Cron1s,
     final ExceptionHandler exceptionHandler;
 
     @Setter
+    @Getter
     private String index;
 
     private final ServicePromise servicePromise;

@@ -1,5 +1,6 @@
 package ru.jamsys.core.component.cron;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ public class ExpirationHelper implements Cron1s, PromiseGenerator, UniqueClassNa
     private final ServicePromise servicePromise;
 
     @Setter
+    @Getter
     private String index;
 
     public ExpirationHelper(

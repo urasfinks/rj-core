@@ -4,6 +4,8 @@ public interface PromiseGenerator {
 
     void setIndex(String index);
 
+    String getIndex();
+
     Promise generate();
 
 }

@@ -42,6 +42,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
     final Broker<Log> broker;
 
     @Setter
+    @Getter
     private String index;
 
     private final ServicePromise servicePromise;
@@ -115,7 +116,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
                 }
             }
             if (!restore.isEmpty()) {
-                promise.setMapRepository("readyFile", getFolder() + ListSort.sort(restore).getFirst());
+                promise.setMapRepository("readyFile", getFolder() + ListSort.sortAsc(restore).getFirst());
             }
         }).appendWait().appendWithResource("read", FileByteReaderResource.class, (_, promise, fileByteReaderResource) -> {
             if (broker.getOccupancyPercentage() < 50) {

@@ -1,5 +1,6 @@
 package ru.jamsys.core.component.cron;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PromiseController implements Cron1s, PromiseGenerator, UniqueClassName {
 
     @Setter
+    @Getter
     private String index;
 
     private final ServicePromise servicePromise;

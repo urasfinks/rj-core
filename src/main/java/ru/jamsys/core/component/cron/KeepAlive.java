@@ -1,5 +1,6 @@
 package ru.jamsys.core.component.cron;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
@@ -25,6 +26,7 @@ public class KeepAlive implements Cron3s, PromiseGenerator, UniqueClassName {
     private final ServicePromise servicePromise;
 
     @Setter
+    @Getter
     private String index;
 
     public KeepAlive(ServiceClassFinder serviceClassFinder, ApplicationContext applicationContext, ServicePromise servicePromise) {

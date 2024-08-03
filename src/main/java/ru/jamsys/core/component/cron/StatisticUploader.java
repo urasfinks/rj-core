@@ -44,6 +44,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
     final Broker<StatisticSec> broker;
 
     @Setter
+    @Getter
     private String index;
 
     private final ServicePromise servicePromise;
@@ -135,7 +136,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
                         }
                     }
                     if (!restore.isEmpty()) {
-                        promise.setMapRepository("readyFile", getFolder() + ListSort.sort(restore).getFirst());
+                        promise.setMapRepository("readyFile", getFolder() + ListSort.sortAsc(restore).getFirst());
                     }
                 })
                 .appendWait()
