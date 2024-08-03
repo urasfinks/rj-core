@@ -20,9 +20,16 @@ public class ListSort<T> {
     }
 
     @SuppressWarnings("all")
-    public static <T extends List<?>> T sort(T list){
+    public static <T extends List<?>> T sortAsc(T list){
         T arrayList = (T) new ArrayList<>(list);
         Collections.sort((List) arrayList);
+        return arrayList;
+    }
+
+    @SuppressWarnings("all")
+    public static <T extends List<?>> T sortDesc(T list){
+        T arrayList = (T) new ArrayList<>(list);
+        Collections.sort((List) arrayList, Collections.reverseOrder());
         return arrayList;
     }
 

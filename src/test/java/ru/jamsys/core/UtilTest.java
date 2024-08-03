@@ -97,13 +97,23 @@ class UtilTest {
     }
 
     @Test
-    void listSort() {
+    void listSortAsc() {
         List<String> list = new ArrayList<>();
         list.add("apple");
         list.add("google");
         list.add("android");
-        List<String> sort = ListSort.sort(list);
+        List<String> sort = ListSort.sortAsc(list);
         Assertions.assertEquals("[android, apple, google]", sort.toString());
+    }
+
+    @Test
+    void listSortDesc() {
+        List<String> list = new ArrayList<>();
+        list.add("apple");
+        list.add("google");
+        list.add("android");
+        List<String> sort = ListSort.sortDesc(list);
+        Assertions.assertEquals("[google, apple, android]", sort.toString());
     }
 
 }
