@@ -11,7 +11,7 @@ import ru.jamsys.core.promise.PromiseGenerator;
 
 @Component
 @SuppressWarnings("unused")
-@RequestMapping("/*")
+@RequestMapping("/**")
 public class FirstHandler implements PromiseGenerator {
 
     @Getter

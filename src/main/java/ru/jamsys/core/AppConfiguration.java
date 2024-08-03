@@ -14,6 +14,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.unit.DataSize;
+import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.resource.EncodedResourceResolver;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
@@ -26,7 +28,7 @@ import javax.annotation.PreDestroy;
 @SuppressWarnings("unused")
 @Configuration
 @EnableWebSocket
-public class AppConfiguration implements WebSocketConfigurer {
+public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
 
     private PropertiesContainer container = null;
 
@@ -54,7 +56,7 @@ public class AppConfiguration implements WebSocketConfigurer {
         // По этому логика реализована линейной
         // Не могу предположить, что вы решите на ходу менять правила игры работать по ssl и редиректам
         // Как минимум это странно, как максимум - я без понятия как это сделать)))
-        if (container.watch(Boolean.class, "run.args.web", true, true, null).get()) {
+        //if (container.watch(Boolean.class, "run.args.web", true, true, null).get()) {
 
             Integer httpPort = container.watch(Integer.class, "run.args.web.http.port", 80, true, null).get();
             Integer httpsPort = container.watch(Integer.class, "run.args.web.https.port", 443, true, null).get();
@@ -84,8 +86,9 @@ public class AppConfiguration implements WebSocketConfigurer {
                 tomcat.addAdditionalTomcatConnectors(connector);
             }
             return tomcat;
-        }
-        return null;
+//        } else {
+//            return new TomcatServletWebServerFactory();
+//        }
     }
 
     @Bean
@@ -111,6 +114,20 @@ public class AppConfiguration implements WebSocketConfigurer {
     @PreDestroy
     public void onDestroy() {
         container.shutdown();
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        if (container.watch(Boolean.class, "run.args.web", true, true, null).get()) {
+            registry
+                    .addResourceHandler("/**.*", "/*/*.*")
+                    //.addResourceHandler("/**.txt")
+                    .addResourceLocations("file:web/")
+                    .setCachePeriod(-1)
+                    .resourceChain(false)
+                    .addResolver(new EncodedResourceResolver());
+            registry.setOrder(-1);
+        }
     }
 
 }

@@ -82,7 +82,6 @@ public class HttpController {
             HttpServletRequest request,
             HttpServletResponse response
     ) throws ServletException, IOException {
-
         PromiseGenerator promiseGenerator = getGeneratorByUri(request.getRequestURI());
         HttpAsyncResponse httpAsyncResponse = new HttpAsyncResponse(new CompletableFuture<>(), request, response);
         if (promiseGenerator == null) {
