@@ -16,6 +16,8 @@ class PropertiesAgentTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runCore();
+        App.get(ServiceProperty.class).setProperty("run.args.IgnoreClassFinder.test1", "true");
+        App.get(ServiceProperty.class).setProperty("run.args.IgnoreClassFinder.test2", "false");
     }
 
     @AfterAll
