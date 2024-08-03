@@ -58,7 +58,7 @@ public class Core implements LifeCycleInterface {
 
         List<LifeCycleComponent> sortedList = new ArrayList<>();
         serviceClassFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
-            if (!serviceClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
+            if (!ServiceClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
                 sortedList.add(serviceClassFinder.instanceOf(runnableComponentClass));
             }
         });
