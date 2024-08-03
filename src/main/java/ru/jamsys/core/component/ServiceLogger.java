@@ -1,5 +1,6 @@
 package ru.jamsys.core.component;
 
+import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -38,6 +39,7 @@ public class ServiceLogger extends RepositoryPropertiesField implements
 
     Broker<Log> broker;
 
+    @Getter
     @PropertyName("run.args.remote.log")
     private String remoteLog = "true";
 

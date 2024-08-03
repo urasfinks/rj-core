@@ -6,8 +6,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.http.HttpRequestReader;
 import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.web.http.lib.HttpRequestReader;
 
 import java.io.IOException;
 import java.util.Map;
@@ -15,11 +15,13 @@ import java.util.concurrent.CompletableFuture;
 
 public class HttpAsyncResponse {
 
+    @Getter
     private final CompletableFuture<Void> completableFuture;
 
     @Getter
     private final HttpServletRequest request;
 
+    @Getter
     private final HttpServletResponse response;
 
     @Setter
@@ -46,6 +48,10 @@ public class HttpAsyncResponse {
         httpRequestReader = new HttpRequestReader(request);
     }
 
+    public void setResponseHeader(String key, String value) {
+        response.setHeader(key, value);
+    }
+
     public void complete() {
         response.setContentType(responseContentType);
         try {
@@ -57,13 +63,10 @@ public class HttpAsyncResponse {
     }
 
     public CompletableFuture<Void> getServletResponse() {
-        String requestURI = request.getRequestURI();
-        new Thread(() -> {
-            //Util.sleepMs(3000);
-            setBodyFromMap(new HashMapBuilder<>().append("x", "y"));
-            complete();
-        }).start();
         return completableFuture;
     }
 
+    public void setError(String cause) {
+        setBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
+    }
 }

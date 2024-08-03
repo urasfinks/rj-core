@@ -39,16 +39,22 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
     Promise onComplete(PromiseTask onComplete);
 
     default Promise onComplete(BiConsumer<AtomicBoolean, Promise> fn) {
-        PromiseTask promiseTask = new PromiseTask("onCompleteTask", this, App.getUsualExecutor(), fn);
+        PromiseTask promiseTask = new PromiseTask("onCompleteTask", this, App.getComputeExecutor(), fn);
         promiseTask.setTerminated(true);
         return onComplete(promiseTask);
     }
+
+    // Проверка, что добавлен обработчик ошибки
+    boolean isSetErrorHandler();
+
+    // Проверка, что добавлен обработчик успешного выполнения
+    boolean isSetCompleteHandler();
 
     // Добавление задачи, которая выполнится после фатального завершения цепочки Promise
     Promise onError(PromiseTask onError);
 
     default Promise onError(BiConsumer<AtomicBoolean, Promise> fn) {
-        PromiseTask promiseTask = new PromiseTask("onErrorTask", this, App.getUsualExecutor(), fn);
+        PromiseTask promiseTask = new PromiseTask("onErrorTask", this, App.getComputeExecutor(), fn);
         promiseTask.setTerminated(true);
         return onError(promiseTask);
     }
@@ -59,7 +65,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
     Promise append(PromiseTask task);
 
     default Promise append(String index, BiConsumer<AtomicBoolean, Promise> fn) {
-        return append(new PromiseTask(getIndex() + "." + index, this, App.getUsualExecutor(), fn));
+        return append(new PromiseTask(getIndex() + "." + index, this, App.getComputeExecutor(), fn));
     }
 
     default <T extends Resource<?, ?>> Promise appendWithResource(
@@ -112,7 +118,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
     }
 
     default Promise then(String index, BiConsumer<AtomicBoolean, Promise> fn) {
-        return then(new PromiseTask(getIndex() + "." + index, this, App.getUsualExecutor(), fn));
+        return then(new PromiseTask(getIndex() + "." + index, this, App.getComputeExecutor(), fn));
     }
 
     default Promise appendWait() {

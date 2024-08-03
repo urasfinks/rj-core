@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@JsonPropertyOrder({"correlation", "index", "addTime", "expTime", "diffTimeMs", "exception", "completed", "trace", "exceptionTrace", "property"})
+@JsonPropertyOrder({"correlation", "index", "addTime", "expTime", "stopTime", "diffTimeMs", "exception", "completed", "trace", "exceptionTrace", "property"})
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
 public abstract class AbstractPromise extends ExpirationMsImmutableImpl implements Promise, Correlation {
 
@@ -130,6 +130,11 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     @JsonProperty
     public long getDiffTimeMs() { //Сократил, что бы время InitTime было ровно над временем ExprTime
         return getInactivityTimeMs();
+    }
+
+    @JsonProperty
+    public String getStopTime() { //Сократил, что бы время InitTime было ровно над временем ExprTime
+        return getStopFormat();
     }
 
     protected void setError(String indexTask, Throwable exception, PromiseTaskExecuteType type) {

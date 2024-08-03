@@ -184,6 +184,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         if (finalAction.compareAndSet(false, true)) {
             ServicePromise.queueMultipleCompleteSet.remove(this);
             App.get(ServicePromise.class).finish(registerInBroker);
+            stop();
             if (fn != null) {
                 fn.prepareLaunch(() -> isRun.set(false));
                 // Дальнейшие действия под капотом
@@ -212,10 +213,13 @@ public class PromiseImpl extends AbstractPromiseBuilder {
 
     private void flushLog() {
         if (isLog()) {
-            App.get(ServiceLogger.class).add(new Log(
-                    isException.get() ? LogType.ERROR : LogType.INFO,
-                    getCorrelation()
-            ).setData(getLogString()));
+            ServiceLogger serviceLogger = App.get(ServiceLogger.class);
+            if (serviceLogger.getRemoteLog().equals("true")) {
+                App.get(ServiceLogger.class).add(new Log(
+                        isException.get() ? LogType.ERROR : LogType.INFO,
+                        getCorrelation()
+                ).setData(getLogString()));
+            }
         }
     }
 

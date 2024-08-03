@@ -1,8 +1,8 @@
 package ru.jamsys.core.extension.builder;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
-public class HashMapBuilder<K, V> extends HashMap<K, V> {
+public class HashMapBuilder<K, V> extends LinkedHashMap<K, V> {
 
     public HashMapBuilder<K, V> append(K key, V value) {
         put(key, value);

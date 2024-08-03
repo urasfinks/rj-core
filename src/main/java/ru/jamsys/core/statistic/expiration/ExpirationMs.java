@@ -62,7 +62,7 @@ public interface ExpirationMs {
         return getInactivityTimeMs(System.currentTimeMillis());
     }
 
-    // Кол-во миллисекунд с момента последней активности
+    // Время последней активности
     default String getLastActivityFormat() {
         return Util.msToDataFormat(getLastActivityMs());
     }
@@ -70,6 +70,11 @@ public interface ExpirationMs {
     // Возвратит время, когда объект будет просрочен
     default String getExpiredFormat() {
         return Util.msToDataFormat(getLastActivityMs() + getKeepAliveOnInactivityMs());
+    }
+
+    // Возвратит время, когда объект будет просрочен
+    default String getStopFormat() {
+        return Util.msToDataFormat(getStopTimeMs());
     }
 
     // Зафиксировать конец активности

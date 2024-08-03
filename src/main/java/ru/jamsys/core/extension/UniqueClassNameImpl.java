@@ -8,12 +8,12 @@ public class UniqueClassNameImpl implements UniqueClassName {
         return new UniqueClassNameImpl().getClassName(cls);
     }
 
-    public static String getClassNameStatic(Class<?> cls, String index) {
-        return new UniqueClassNameImpl().getClassName(cls, index);
+    public static String getClassNameStatic(Class<?> cls, String postfix) {
+        return new UniqueClassNameImpl().getClassName(cls, postfix);
     }
 
-    public static String getClassNameStatic(Class<?> cls, String index, ApplicationContext applicationContext) {
-        return new UniqueClassNameImpl().getClassName(cls, index, applicationContext);
+    public static String getClassNameStatic(Class<?> cls, String postfix, ApplicationContext applicationContext) {
+        return new UniqueClassNameImpl().getClassName(cls, postfix, applicationContext);
     }
 
 }

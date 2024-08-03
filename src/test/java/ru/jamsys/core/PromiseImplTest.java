@@ -48,7 +48,7 @@ class PromiseImplTest {
                     Util.sleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H1");
                     ArrayList<PromiseTask> objects = new ArrayList<>();
-                    objects.add(new PromiseTask("test2", promise, App.getUsualExecutor(), (_, _) -> System.out.println(Thread.currentThread().getName() + " EXTRA")));
+                    objects.add(new PromiseTask("test2", promise, App.getComputeExecutor(), (_, _) -> System.out.println(Thread.currentThread().getName() + " EXTRA")));
                     promise1.addToHead(objects);
                 })
                 .append("test", (_, _) -> {

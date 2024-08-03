@@ -8,7 +8,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.ContextClosedEvent;
 import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
@@ -51,7 +50,7 @@ public class App {
     @SuppressWarnings("all")
     public static <T> T get(Class<T> cls) {
         return (T) mapBean.computeIfAbsent(cls, aClass -> {
-            T t = App.context.getBean(ServiceClassFinder.class).instanceOf(cls);
+            T t = App.context.getBean(cls);
             if (t == null) {
                 Util.logConsole("App.get(" + cls.getName() + ") return null");
             }
@@ -60,11 +59,14 @@ public class App {
     }
 
     public static void error(Throwable th) {
-        if (context == null) {
-            th.printStackTrace();
-        } else {
-            get(ExceptionHandler.class).handler(th);
+        if (context != null) {
+            ExceptionHandler exceptionHandler = get(ExceptionHandler.class);
+            if (exceptionHandler != null) {
+                exceptionHandler.handler(th);
+                return;
+            }
         }
+        th.printStackTrace();
     }
 
     public static AppRunBuilder getRunBuilder() {
@@ -89,7 +91,7 @@ public class App {
         }
     }
 
-    public static PromiseTaskExecuteType getUsualExecutor() {
+    public static PromiseTaskExecuteType getComputeExecutor() {
         return PromiseTaskExecuteType.COMPUTE;
     }
 

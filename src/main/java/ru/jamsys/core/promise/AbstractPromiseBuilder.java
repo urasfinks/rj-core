@@ -29,6 +29,14 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
         return this;
     }
 
+    public boolean isSetErrorHandler() {
+        return this.onError != null;
+    }
+
+    public boolean isSetCompleteHandler() {
+        return this.onComplete != null;
+    }
+
     public Promise append(PromiseTask task) {
         if (task == null) {
             throw new RuntimeException("Promise.append() task is null");

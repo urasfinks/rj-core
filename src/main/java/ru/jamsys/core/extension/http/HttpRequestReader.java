@@ -1,4 +1,4 @@
-package ru.jamsys.core.web.http.lib;
+package ru.jamsys.core.extension.http;
 
 
 import jakarta.servlet.ServletException;
@@ -19,7 +19,6 @@ import java.util.Map;
 @ToString(onlyExplicitlyIncluded = true)
 public class HttpRequestReader {
 
-    @ToString.Exclude
     private static final String[] ipHeaders = {
             "X-Forwarded-For",
             "Proxy-Client-IP",
@@ -52,7 +51,6 @@ public class HttpRequestReader {
     public void read() throws IOException, ServletException {
         String contentType = request.getHeader("content-type");
         request.getParameterMap().forEach((s, strings) -> map.put(s, String.join(", ", strings)));
-        System.out.println(contentType);
         if (contentType == null || contentType.contains("text/plain")) {
             readTextPlain(contentType);
         } else if (contentType.contains("multipart/form-data")) {
