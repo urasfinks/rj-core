@@ -34,7 +34,7 @@ public class App {
 
             Thread shutdownThread = new Thread(() -> {
                 Thread.currentThread().setName("daemon");
-                context.getBean(Core.class).shutdown();
+                get(Core.class).shutdown();
                 isRun.set(false);
             });
             //Запускаем демоническим, что бы если будут зависания в shutdown - мы могли это проигнорировать

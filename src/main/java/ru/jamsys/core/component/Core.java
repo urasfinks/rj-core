@@ -7,9 +7,9 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerFileByteWriter;
 import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.component.manager.item.Log;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.StatisticSec;
 
@@ -59,7 +59,7 @@ public class Core implements LifeCycleInterface {
         List<LifeCycleComponent> sortedList = new ArrayList<>();
         serviceClassFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
             if (!serviceClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
-                sortedList.add(applicationContext.getBean(runnableComponentClass));
+                sortedList.add(serviceClassFinder.instanceOf(runnableComponentClass));
             }
         });
         sortedList.sort(Comparator.comparingInt(LifeCycleComponent::getInitializationIndex));

@@ -81,7 +81,12 @@ public class Broker<TEO>
 
     private final Expiration<DisposableExpirationMsImmutableEnvelope> expiration;
 
-    public Broker(String index, ApplicationContext applicationContext, Class<TEO> classItem, Consumer<TEO> onDropConsumer) {
+    public Broker(
+            String index,
+            ApplicationContext applicationContext,
+            Class<TEO> classItem,
+            Consumer<TEO> onDropConsumer
+    ) {
         this.index = index;
         this.classItem = classItem;
         this.onDropConsumer = onDropConsumer;
