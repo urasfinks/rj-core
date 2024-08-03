@@ -14,8 +14,7 @@ public class AppRunBuilder {
                 .add("run.args.remote.log", false)
                 .add("run.args.remote.statistic", false)
                 .add("run.args.web", false)
-                //.add("spring.main.web-application-type", "none")
-                ;
+                .add("spring.main.web-application-type", "none");
     }
 
     public AppRunBuilder add(String key, Object value) {
