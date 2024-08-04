@@ -11,14 +11,14 @@ import ru.jamsys.core.flat.util.UtilRisc;
 import java.util.*;
 import java.util.function.Consumer;
 
-// Агент связывает ServiceProperty и Subscriber, задача агента донести изменённые свойства до полей подписчика
+// Агент связывает ServiceProperty и RepositoryProperties, задача агента донести изменённые свойства до полей подписчика
 // Агент не обладает функционалом изменять свойства, для изменения используйте Property
 // Агент - статичен по свойствам, что определено в PropertiesRepository - то и связано, ни больше не меньше
 
 @Getter
 public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelegate {
 
-    private final PropertyUpdateDelegate subscriber;
+    private final PropertyUpdateDelegate propertyUpdateDelegate;
 
     private final ServiceProperty serviceProperty;
 
@@ -32,12 +32,12 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
 
     public PropertiesAgent(
             ServiceProperty serviceProperty,
-            PropertyUpdateDelegate subscriber,
+            PropertyUpdateDelegate propertyUpdateDelegate,
             RepositoryProperties repositoryProperties,
             String ns,
             boolean require
     ) {
-        this.subscriber = subscriber;
+        this.propertyUpdateDelegate = propertyUpdateDelegate;
         this.serviceProperty = serviceProperty;
         this.repositoryProperties = repositoryProperties;
         this.ns = ns;
@@ -118,8 +118,8 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
             }
             withoutNs.put(prop, value);
         }
-        if (subscriber != null && !withoutNs.isEmpty()) {
-            subscriber.onPropertyUpdate(withoutNs);
+        if (propertyUpdateDelegate != null && !withoutNs.isEmpty()) {
+            propertyUpdateDelegate.onPropertyUpdate(withoutNs);
         }
     }
 
@@ -160,12 +160,12 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
 
     @Override
     public void run() {
-        mapListener.forEach((_, subscriberItem) -> serviceProperty.subscribe(subscriberItem));
+        mapListener.forEach((_, propertyFollower) -> serviceProperty.subscribe(propertyFollower));
     }
 
     @Override
     public void shutdown() {
-        mapListener.forEach((_, subscriberItem) -> serviceProperty.unsubscribe(subscriberItem));
+        mapListener.forEach((_, propertyFollower) -> serviceProperty.unsubscribe(propertyFollower));
     }
 
 }

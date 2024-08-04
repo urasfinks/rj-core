@@ -28,12 +28,12 @@ public class ServicePropertyFactory {
 
     // Загружает ключи через PropertiesRepository
     public PropertiesAgent getPropertiesAgent(
-            PropertyUpdateDelegate subscriber,
+            PropertyUpdateDelegate propertyUpdateDelegate,
             RepositoryProperties repositoryProperties,
             String ns,
             boolean require
     ) {
-        return new PropertiesAgent(serviceProperty, subscriber, repositoryProperties, ns, require);
+        return new PropertiesAgent(serviceProperty, propertyUpdateDelegate, repositoryProperties, ns, require);
     }
 
     // Контейнер Property
