@@ -1,20 +1,33 @@
 package ru.jamsys.core.extension.property.repository;
 
+import lombok.Getter;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class RepositoryPropertiesMap implements RepositoryProperties {
+@Getter
+public class RepositoryPropertiesMap<T> implements RepositoryProperties {
 
-    private final Map<String, String> mapProperties = new LinkedHashMap<>();
+    private final Map<String, RepositoryMapValue<T>> mapRepository2 = new LinkedHashMap<>();
+
+
+    private final Class<T> cls;
+
+    public RepositoryPropertiesMap(Class<T> cls) {
+        this.cls = cls;
+    }
 
     @Override
-    public Map<String, String> getProperties() {
-        return mapProperties;
+    public Map<String, RepositoryMapValue<?>> getMapRepository() {
+        return new LinkedHashMap<>(mapRepository2);
     }
 
     @Override
     public void setProperty(String prop, String value) {
-        mapProperties.put(prop, value);
+        RepositoryMapValue<?> repositoryMapValue = mapRepository2.computeIfAbsent(prop, _
+                -> new RepositoryMapValue<>(cls, value)
+        );
+        repositoryMapValue.setValue(value);
     }
 
 }

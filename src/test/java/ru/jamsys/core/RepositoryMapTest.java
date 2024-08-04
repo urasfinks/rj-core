@@ -8,8 +8,8 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertiesAgent;
-import ru.jamsys.core.extension.property.item.PropertyFollower;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.item.PropertyFollower;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.flat.util.Util;
 
@@ -180,7 +180,7 @@ class RepositoryMapTest {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         x2 x2 = new x2();
 
-        Map<String, String> mapPropValue = x2.getProperties();
+        Map<String, Object> mapPropValue = x2.getProperties();
         System.out.println(mapPropValue);
 
         PropertiesAgent subscribe = serviceProperty.getFactory().getPropertiesAgent(x2, x2, "run.args", true);

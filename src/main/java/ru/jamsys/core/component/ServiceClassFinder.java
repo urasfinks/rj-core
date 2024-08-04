@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
 import ru.jamsys.core.extension.property.PropertiesAgent;
+import ru.jamsys.core.extension.property.repository.RepositoryMapValue;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
 
 import javax.tools.*;
@@ -25,7 +26,7 @@ public class ServiceClassFinder {
 
     private final ExceptionHandler exceptionHandler;
 
-    private final RepositoryPropertiesMap ignoredClassMap = new RepositoryPropertiesMap();
+    private final RepositoryPropertiesMap<Boolean> ignoredClassMap = new RepositoryPropertiesMap<>(Boolean.class);
 
     private final ApplicationContext applicationContext;
 
@@ -187,8 +188,8 @@ public class ServiceClassFinder {
                         break;
                     }
                 }
-                String s = ignoredClassMap.getProperties().get(aClass.getName());
-                if (s != null && s.equals("true")) {
+                RepositoryMapValue<Boolean> s = ignoredClassMap.getMapRepository2().get(aClass.getName());
+                if (s != null && s.getValue()) {
                     findUnusedAnnotation = true;
                 }
                 if (findUnusedAnnotation) {

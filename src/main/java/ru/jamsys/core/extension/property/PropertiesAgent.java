@@ -4,6 +4,7 @@ import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.item.PropertyFollower;
+import ru.jamsys.core.extension.property.repository.RepositoryMapValue;
 import ru.jamsys.core.extension.property.repository.RepositoryProperties;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -44,8 +45,10 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
     }
 
     private void init(boolean require) {
-        UtilRisc.forEach(null, this.repositoryProperties.getProperties(), (key, value) -> {
-            add(String.class, key, value, require, null);
+        UtilRisc.forEach(null, this.repositoryProperties.getMapRepository(), (key, value) -> {
+            @SuppressWarnings("unchecked")
+            RepositoryMapValue<Object> x = (RepositoryMapValue<Object>) value;
+            add(x.getCls(), key, x.getValue(), require, null);
         });
     }
 

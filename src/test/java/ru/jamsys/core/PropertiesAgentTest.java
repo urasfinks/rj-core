@@ -28,7 +28,7 @@ class PropertiesAgentTest {
     @Test
     @Order(1)
     public void collection() {
-        RepositoryPropertiesMap propertiesRepositoryMap = new RepositoryPropertiesMap();
+        RepositoryPropertiesMap<String> propertiesRepositoryMap = new RepositoryPropertiesMap<>(String.class);
         PropertiesAgent propertiesAgent = App
                 .get(ServiceProperty.class)
                 .getFactory()
@@ -61,7 +61,7 @@ class PropertiesAgentTest {
     @Test
     @Order(2)
     public void onUpdate() {
-        RepositoryPropertiesMap propertiesRepositoryMap = new RepositoryPropertiesMap();
+        RepositoryPropertiesMap<String> propertiesRepositoryMap = new RepositoryPropertiesMap<>(String.class);
         AtomicInteger x = new AtomicInteger(0);
         PropertiesAgent propertiesAgent = App
                 .get(ServiceProperty.class)
@@ -156,7 +156,7 @@ class PropertiesAgentTest {
     @Test
     @Order(6)
     public void simpleUpdate() {
-        RepositoryPropertiesMap propertiesRepositoryMap = new RepositoryPropertiesMap();
+        RepositoryPropertiesMap<String> propertiesRepositoryMap = new RepositoryPropertiesMap<>(String.class);
         AtomicInteger x = new AtomicInteger(0);
         PropertiesAgent propertiesAgent = App
                 .get(ServiceProperty.class)
@@ -208,7 +208,7 @@ class PropertiesAgentTest {
 
     @Test
     public void extend() {
-        RepositoryPropertiesMap propertiesRepositoryMap = new RepositoryPropertiesMap();
+        RepositoryPropertiesMap<String> propertiesRepositoryMap = new RepositoryPropertiesMap<>(String.class);
         AtomicInteger x = new AtomicInteger(0);
         PropertiesAgent propertiesAgent = App
                 .get(ServiceProperty.class)
