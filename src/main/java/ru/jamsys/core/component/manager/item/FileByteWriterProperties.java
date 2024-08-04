@@ -1,27 +1,23 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
-import lombok.Setter;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
 public class FileByteWriterProperties extends RepositoryPropertiesField {
 
     @PropertyName("log.file.folder")
-    private String folder = "LogManager";
+    private String folder;
 
-    @Setter
     @PropertyName("log.file.size.kb")
-    private String fileSizeKb = "20971520";
+    private Integer fileSizeKb;
 
-    @Setter
     @PropertyName("log.file.count")
-    private String fileCount = "100";
+    private Integer fileCount;
 
-    @Setter
     @PropertyName("log.file.name")
-    private String fileName = "log";
+    private String fileName;
 
 }

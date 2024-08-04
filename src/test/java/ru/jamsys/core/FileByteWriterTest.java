@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.component.manager.item.LogType;
@@ -36,6 +37,11 @@ class FileByteWriterTest {
     @Test
     void folderNotExist() {
         try {
+            App.get(ServiceProperty.class).setProperty("checkOverMaxFileWrite.log.file.folder", "LogManager");
+            App.get(ServiceProperty.class).setProperty("checkOverMaxFileWrite.log.file.size.kb", "20971520");
+            App.get(ServiceProperty.class).setProperty("checkOverMaxFileWrite.log.file.count", "100");
+            App.get(ServiceProperty.class).setProperty("checkOverMaxFileWrite.log.file.name", "log");
+
             FileByteWriter test = new FileByteWriter("checkOverMaxFileWrite");
             test.getPropertiesAgent().setPropertyRepository("log.file.folder", "xxkaa");
             Assertions.fail();
@@ -46,6 +52,12 @@ class FileByteWriterTest {
 
     @Test
     void checkOverMaxFileWrite() {
+        App.get(ServiceProperty.class).setProperty("checkOverMaxFileWrite.log.file.folder", "LogManager");
+        App.get(ServiceProperty.class).setProperty("checkOverMaxFileWrite.log.file.size.kb", "20971520");
+        App.get(ServiceProperty.class).setProperty("checkOverMaxFileWrite.log.file.count", "100");
+        App.get(ServiceProperty.class).setProperty("checkOverMaxFileWrite.log.file.name", "log");
+
+
         UtilFile.removeAllFilesInFolder("LogManager");
         FileByteWriter test = new FileByteWriter("checkOverMaxFileWrite");
 
@@ -71,6 +83,10 @@ class FileByteWriterTest {
 
     @Test
     void checkNameLog() {
+        App.get(ServiceProperty.class).setProperty("checkNameLog.log.file.folder", "LogManager");
+        App.get(ServiceProperty.class).setProperty("checkNameLog.log.file.size.kb", "20971520");
+        App.get(ServiceProperty.class).setProperty("checkNameLog.log.file.count", "100");
+        App.get(ServiceProperty.class).setProperty("checkNameLog.log.file.name", "log");
 
         UtilFile.removeAllFilesInFolder("LogManager");
         FileByteWriter test = new FileByteWriter("checkNameLog");
@@ -90,6 +106,11 @@ class FileByteWriterTest {
 
     @Test
     void checkRestoreExceptionShutdown() throws IOException {
+        App.get(ServiceProperty.class).setProperty("checkRestoreExceptionShutdown.log.file.folder", "LogManager");
+        App.get(ServiceProperty.class).setProperty("checkRestoreExceptionShutdown.log.file.size.kb", "20971520");
+        App.get(ServiceProperty.class).setProperty("checkRestoreExceptionShutdown.log.file.count", "100");
+        App.get(ServiceProperty.class).setProperty("checkRestoreExceptionShutdown.log.file.name", "log");
+
         UtilFile.removeAllFilesInFolder("LogManager");
 
         UtilFile.writeBytes("LogManager/default3.000.bin", "hello1".getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
@@ -119,6 +140,11 @@ class FileByteWriterTest {
 
     @Test
     void checkTime() {
+        App.get(ServiceProperty.class).setProperty("checkTime.log.file.folder", "LogManager");
+        App.get(ServiceProperty.class).setProperty("checkTime.log.file.size.kb", "20971520");
+        App.get(ServiceProperty.class).setProperty("checkTime.log.file.count", "100");
+        App.get(ServiceProperty.class).setProperty("checkTime.log.file.name", "log");
+
         UtilFile.removeAllFilesInFolder("LogManager");
         long start = System.currentTimeMillis();
         FileByteWriter test = new FileByteWriter("checkTime");
@@ -163,6 +189,11 @@ class FileByteWriterTest {
 
     @Test
     void serializeStatisticSecToFile() {
+        App.get(ServiceProperty.class).setProperty("default5.log.file.folder", "LogManager");
+        App.get(ServiceProperty.class).setProperty("default5.log.file.size.kb", "20971520");
+        App.get(ServiceProperty.class).setProperty("default5.log.file.count", "100");
+        App.get(ServiceProperty.class).setProperty("default5.log.file.name", "log");
+
         UtilFile.removeAllFilesInFolder("LogManager");
         StatisticSec statisticSec1 = new StatisticSec();
         statisticSec1.getList().add(new Statistic().addField("f1", 1).addTag("t1", "Hello"));

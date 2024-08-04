@@ -133,8 +133,11 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     private void genNextFile() {
         closeLastFile();
-        int curIndex = counter.getAndIncrement() % Integer.parseInt(property.getFileCount());
-        currentFilePath = property.getFolder() + "/" + property.getFileName() + "." + Util.padLeft(curIndex + "", property.getFileCount().length(), "0") + ".proc.bin";
+        int curIndex = counter.getAndIncrement() % property.getFileCount();
+        currentFilePath = property.getFolder()
+                + "/" + property.getFileName()
+                + "." + Util.padLeft(curIndex + "", String.valueOf(property.getFileCount()).length(), "0")
+                + ".proc.bin";
     }
 
     public void append(ByteTransformer log) {
@@ -150,7 +153,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         if (currentFilePath == null) {
             genNextFile();
         }
-        int maxWriteCount = Integer.parseInt(property.getFileCount());
+        int maxWriteCount = property.getFileCount();
         while (!broker.isEmpty() && isThreadRun.get()) {
             if (maxWriteCount <= 0) {
                 break;
@@ -163,7 +166,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     private void write(AtomicBoolean isThreadRun) {
         // Что бы не допустить одновременного выполнения при остановки приложения, когда приходит ContextClosedEvent
         if (isRunWrite.compareAndSet(false, true)) {
-            int tmpSizeKb = Integer.parseInt(property.getFileSizeKb());
+            int tmpSizeKb = property.getFileSizeKb();
             try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(currentFilePath, writeByteToCurrentFile.get() > 0))) {
                 while (!broker.isEmpty() && isThreadRun.get()) {
                     try {

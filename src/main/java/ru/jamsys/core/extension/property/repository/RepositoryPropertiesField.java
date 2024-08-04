@@ -31,9 +31,9 @@ public class RepositoryPropertiesField implements RepositoryProperties {
     // Как будто значения свойств ещё не инициализированны
     @Override
     public Map<String, RepositoryMapValue<?>> getMapRepository() {
-        mapField.forEach((s, field) -> mapRepository.computeIfAbsent(s, _ -> {
+        mapField.forEach((prop, field) -> mapRepository.computeIfAbsent(prop, k -> {
             try {
-                return new RepositoryMapValue(field.getType(), field.get(this));
+                return new RepositoryMapValue(field.getType(), field.get(this), k);
             } catch (Throwable th) {
                 throw new ForwardException(th);
             }

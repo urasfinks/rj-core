@@ -24,8 +24,8 @@ public class RepositoryPropertiesMap<T> implements RepositoryProperties {
 
     @Override
     public void setProperty(String prop, String value) {
-        RepositoryMapValue<?> repositoryMapValue = mapRepository2.computeIfAbsent(prop, _
-                -> new RepositoryMapValue<>(cls, value)
+        RepositoryMapValue<?> repositoryMapValue = mapRepository2.computeIfAbsent(prop, s
+                -> new RepositoryMapValue<>(cls, value, s)
         );
         repositoryMapValue.setValue(value);
     }

@@ -1,22 +1,27 @@
 package ru.jamsys.core.extension.property.repository;
 
 import lombok.Getter;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.Property;
 
 @Getter
 public class RepositoryMapValue<T> {
 
-    Class<T> cls;
+    private final Class<T> cls;
 
-    T value;
+    private T value;
 
-    public RepositoryMapValue(Class<T> cls, T value) {
+    private final String prop;
+
+    public RepositoryMapValue(Class<T> cls, T value, String prop) {
         this.cls = cls;
         this.value = value;
+        this.prop = prop;
     }
 
-    public RepositoryMapValue(Class<T> cls, String value) {
+    public RepositoryMapValue(Class<T> cls, String value, String prop) {
         this.cls = cls;
+        this.prop = prop;
         setValue(value);
     }
 
@@ -25,9 +30,13 @@ public class RepositoryMapValue<T> {
             this.value = null;
             return;
         }
-        @SuppressWarnings("unchecked")
-        T t = (T) Property.convertType.get(cls).apply(value);
-        this.value = t;
+        try {
+            @SuppressWarnings("unchecked")
+            T t = (T) Property.convertType.get(cls).apply(value);
+            this.value = t;
+        } catch (Throwable th) {
+            throw new ForwardException("RepositoryMapValue.setValue('" + value + "') for prop: " + prop, th);
+        }
     }
 
 }

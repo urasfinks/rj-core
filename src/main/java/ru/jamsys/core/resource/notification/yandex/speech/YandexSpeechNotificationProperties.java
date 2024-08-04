@@ -9,12 +9,12 @@ import ru.jamsys.core.extension.annotation.PropertyName;
 public class YandexSpeechNotificationProperties extends RepositoryPropertiesField {
 
     @PropertyName("yandex.speech.kit.host")
-    String host = null;
+    private String host;
 
     @PropertyName("yandex.speech.kit.port")
-    String port = null;
+    private Integer port;
 
     @PropertyName("yandex.speech.kit.security.alias")
-    String alias = null;
+    private String alias;
 
 }

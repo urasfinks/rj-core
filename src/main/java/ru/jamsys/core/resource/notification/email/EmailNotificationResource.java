@@ -49,16 +49,16 @@ public class EmailNotificationResource
         try {
 
             email.setHostName(property.getHost());
-            email.setSmtpPort(Integer.parseInt(property.getPort()));
+            email.setSmtpPort(property.getPort());
             email.setAuthenticator(new DefaultAuthenticator(
                     property.getUser(),
                     new String(securityComponent.get(property.getSecurityAlias())))
             );
-            email.setSSLOnConnect(Boolean.parseBoolean(property.getSsl()));
+            email.setSSLOnConnect(property.getSsl());
             email.setFrom(property.getFrom());
             email.setCharset(property.getCharset());
-            email.setSocketConnectionTimeout(Integer.parseInt(property.getConnectTimeoutMs()));
-            email.setSocketTimeout(Integer.parseInt(property.getConnectTimeoutMs()));
+            email.setSocketConnectionTimeout(property.getConnectTimeoutMs());
+            email.setSocketTimeout(property.getConnectTimeoutMs());
 
             email.addTo(arguments.getTo());
             email.setSubject(arguments.getTitle());

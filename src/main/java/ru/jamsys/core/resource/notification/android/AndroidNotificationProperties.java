@@ -15,7 +15,7 @@ public class AndroidNotificationProperties extends RepositoryPropertiesField {
     private String applicationName;
 
     @PropertyName("notification.android.timeoutMs")
-    private String timeoutMs;
+    private Integer timeoutMs;
 
     @PropertyName("notification.android.messaging.scope")
     private String scope;

@@ -49,15 +49,14 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
 
     @Getter
     @PropertyName("default.log.file.folder")
-    private String folder = "LogManager";
+    private String folder;
 
-    @Getter
     @PropertyName("run.args.remote.log.limit.points")
-    private String limitInsert = "2000";
+    private Integer limitInsert;
 
     @Getter
     @PropertyName("run.args.remote.log")
-    private Boolean remoteLog = true;
+    private Boolean remoteLog;
 
     private final String idx;
 
@@ -78,7 +77,6 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
             return null;
         }
         return servicePromise.get(index, 4_999L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (isThreadRun, promise, influxResource) -> {
-            int limitInsert = Integer.parseInt(this.limitInsert);
             AtomicInteger countInsert = new AtomicInteger(0);
 
             JdbcRequest jdbcRequest = new JdbcRequest(Logger.INSERT);

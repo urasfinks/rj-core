@@ -51,15 +51,15 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
 
     @Getter
     @PropertyName("default.log.file.folder")
-    private String folder = "LogManager";
+    private String folder;
 
     @Getter
     @PropertyName("run.args.remote.statistic.limit.points")
-    private String limitInsert = "10000";
+    private Integer limitInsert;
 
     @Getter
     @PropertyName("run.args.remote.statistic")
-    private Boolean remoteStatistic = true;
+    private Boolean remoteStatistic;
 
     public enum StatisticUploaderPromiseProperty {
         RESERVE_STATISTIC,
@@ -96,7 +96,6 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
                     }
                 })
                 .thenWithResource("sendToInflux", InfluxResource.class, (isThreadRun, promise, influxResource) -> {
-                    int limitInsert = Integer.parseInt(this.limitInsert);
                     AtomicInteger countInsert = new AtomicInteger(0);
                     List<Point> listPoints = new ArrayList<>();
 

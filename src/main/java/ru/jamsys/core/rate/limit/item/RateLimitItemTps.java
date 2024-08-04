@@ -29,7 +29,7 @@ public class RateLimitItemTps
 
     @SuppressWarnings("all")
     @PropertyName
-    private String propMax = "1000";
+    private Integer propMax = 1000;
 
     private final PropertiesAgent propertiesAgent;
 
@@ -75,7 +75,7 @@ public class RateLimitItemTps
 
     @Override
     public void onPropertyUpdate(Map<String, String> mapAlias) {
-        this.max.set(Integer.parseInt(propMax));
+        this.max.set(propMax);
     }
 
     @Override

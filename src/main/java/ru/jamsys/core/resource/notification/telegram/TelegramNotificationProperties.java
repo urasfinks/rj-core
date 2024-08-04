@@ -18,6 +18,6 @@ public class TelegramNotificationProperties extends RepositoryPropertiesField {
     private String idChat;
 
     @PropertyName("notification.telegram.timeoutMs")
-    private String timeoutMs;
+    private Integer timeoutMs;
 
 }

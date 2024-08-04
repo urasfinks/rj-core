@@ -24,12 +24,12 @@ public class EmailNotificationProperties extends RepositoryPropertiesField {
     private String securityAlias;
 
     @PropertyName("notification.email.port")
-    private String port;
+    private Integer port;
 
     @PropertyName("notification.email.timeoutMs")
-    private String connectTimeoutMs;
+    private Integer connectTimeoutMs;
 
     @PropertyName("notification.email.ssl")
-    private String ssl;
+    private Boolean ssl;
 
 }

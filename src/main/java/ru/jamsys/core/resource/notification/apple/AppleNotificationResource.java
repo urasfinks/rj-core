@@ -62,7 +62,7 @@ public class AppleNotificationResource
 
         HttpClient httpClient = new HttpClientImpl();
         httpClient.setUrl(property.getUrl() + arguments.getDevice());
-        httpClient.setTimeoutMs(Integer.parseInt(property.getTimeoutMs()));
+        httpClient.setTimeoutMs(property.getTimeoutMs());
 
         Map<String, Object> root = new LinkedHashMap<>();
         Map<String, Object> aps = new LinkedHashMap<>();

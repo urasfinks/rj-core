@@ -31,7 +31,7 @@ public class AppleNotificationProperties extends RepositoryPropertiesField {
 
 
     @PropertyName("notification.apple.timeoutMs")
-    private String timeoutMs;
+    private Integer timeoutMs;
 
     @PropertyName("notification.apple.storage")
     private String storage;

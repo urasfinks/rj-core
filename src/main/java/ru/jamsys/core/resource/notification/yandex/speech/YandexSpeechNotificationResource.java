@@ -46,7 +46,7 @@ public class YandexSpeechNotificationResource
         }
         client = new YandexSpeechClient(
                 property.getHost(),
-                Integer.parseInt(property.getPort()),
+                property.getPort(),
                 new String(App.get(SecurityComponent.class).get(property.getAlias()))
         );
     }

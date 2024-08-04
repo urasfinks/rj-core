@@ -66,7 +66,7 @@ public class AndroidNotificationResource
     public HttpResponse execute(AndroidNotificationRequest arguments) {
         HttpClient httpClient = new HttpClientImpl();
         httpClient.setUrl(property.getUrl());
-        httpClient.setTimeoutMs(Integer.parseInt(property.getTimeoutMs()));
+        httpClient.setTimeoutMs(property.getTimeoutMs());
         httpClient.setRequestHeader("Content-type", "application/json");
         httpClient.setRequestHeader("Authorization", "Bearer " + accessToken);
         String postData = createPostData(arguments.getTitle(), arguments.getData(), arguments.getToken());
