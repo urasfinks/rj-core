@@ -50,7 +50,7 @@ public class HttpController {
                     PromiseGenerator promiseGenerator = applicationContext.getBean(promiseGeneratorClass);
                     promiseGenerator.setIndex(UniqueClassNameImpl.getClassNameStatic(
                             promiseGeneratorClass,
-                            PromiseGenerator.class.getSimpleName(),
+                            null,
                             applicationContext
                     ));
                     String[] values = promiseGeneratorClass.getAnnotation(RequestMapping.class).value();
