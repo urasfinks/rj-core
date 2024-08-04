@@ -1,4 +1,4 @@
-package ru.jamsys.core;
+package ru.jamsys.core.extension.http;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.http.HttpRequestReader;
 import ru.jamsys.core.flat.util.UtilJson;
 
 import java.io.IOException;

@@ -14,7 +14,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.unit.DataSize;
-import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.EncodedResourceResolver;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -54,9 +55,9 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
     public ServletWebServerFactory servletContainer() {
         // Функционал runtime я считаю не должен влиять на такие вещи как ssl приклада
         // По этому логика реализована линейной
-        // Не могу предположить, что вы решите на ходу менять правила игры работать по ssl и редиректам
+        // Не могу предположить, что есть необходимость на ходу менять правила игры работать по ssl и редиректам
         // Как минимум это странно, как максимум - я без понятия как это сделать)))
-        //if (container.watch(Boolean.class, "run.args.web", true, true, null).get()) {
+        if (container.watch(Boolean.class, "run.args.web", true, true, null).get()) {
 
             Integer httpPort = container.watch(Integer.class, "run.args.web.http.port", 80, true, null).get();
             Integer httpsPort = container.watch(Integer.class, "run.args.web.https.port", 443, true, null).get();
@@ -86,9 +87,8 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
                 tomcat.addAdditionalTomcatConnectors(connector);
             }
             return tomcat;
-//        } else {
-//            return new TomcatServletWebServerFactory();
-//        }
+        }
+        return null;
     }
 
     @Bean
@@ -117,12 +117,12 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
     }
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    public void addResourceHandlers(@NotNull ResourceHandlerRegistry registry) {
         if (container.watch(Boolean.class, "run.args.web", true, true, null).get()) {
+            String location = container.watch(String.class, "run.args.web.resource.location", "file:web/", true, null).get();
             registry
                     .addResourceHandler("/**.*", "/*/*.*")
-                    //.addResourceHandler("/**.txt")
-                    .addResourceLocations("file:web/")
+                    .addResourceLocations(location)
                     .setCachePeriod(-1)
                     .resourceChain(false)
                     .addResolver(new EncodedResourceResolver());

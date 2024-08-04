@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
-import ru.jamsys.core.HttpAsyncResponse;
+import ru.jamsys.core.extension.http.HttpAsyncResponse;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
