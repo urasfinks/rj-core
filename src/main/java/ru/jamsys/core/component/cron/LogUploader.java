@@ -57,7 +57,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
 
     @Getter
     @PropertyName("run.args.remote.log")
-    private String remoteLog = "true";
+    private Boolean remoteLog = true;
 
     private final String idx;
 
@@ -74,7 +74,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
 
     @Override
     public Promise generate() {
-        if (!remoteLog.equals("true")) {
+        if (!remoteLog) {
             return null;
         }
         return servicePromise.get(index, 4_999L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (isThreadRun, promise, influxResource) -> {

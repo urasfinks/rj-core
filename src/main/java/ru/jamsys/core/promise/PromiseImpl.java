@@ -214,7 +214,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     private void flushLog() {
         if (isLog()) {
             ServiceLogger serviceLogger = App.get(ServiceLogger.class);
-            if (serviceLogger.getRemoteLog().equals("true")) {
+            if (serviceLogger.getRemoteLog()) {
                 App.get(ServiceLogger.class).add(new Log(
                         isException.get() ? LogType.ERROR : LogType.INFO,
                         getCorrelation()

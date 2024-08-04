@@ -23,10 +23,10 @@ public class ExceptionHandler extends RepositoryPropertiesField {
     private int maxLine = 50;
 
     @PropertyName("run.args.remote.log")
-    private String remoteLog = "true";
+    private Boolean remoteLog = true;
 
     @PropertyName("run.args.console.output")
-    private String consoleOutput = "true";
+    private Boolean consoleOutput = true;
 
     public ExceptionHandler(ApplicationContext applicationContext) {
         applicationContext
@@ -36,11 +36,11 @@ public class ExceptionHandler extends RepositoryPropertiesField {
     }
 
     public void handler(Throwable th) {
-        if (consoleOutput.equals("true")) {
+        if (consoleOutput) {
             LineWriter lineWriter = new LineWriterString();
             Util.logConsole(getTextException(th, lineWriter));
         }
-        if (remoteLog.equals("true")) {
+        if (remoteLog) {
             LineWriterList lineWriterList = new LineWriterList();
             lineWriterList.addLine(
                     Util.msToDataFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()

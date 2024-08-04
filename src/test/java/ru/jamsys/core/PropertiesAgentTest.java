@@ -1,10 +1,13 @@
 package ru.jamsys.core;
 
+import lombok.Getter;
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
 import ru.jamsys.core.flat.util.Util;
 
@@ -254,5 +257,33 @@ class PropertiesAgentTest {
         Assertions.assertEquals(6, x.get());
 
     }
+
+    public static class TypedProperty extends RepositoryPropertiesField {
+
+        @Getter
+        @PropertyName("run.args.IgnoreClassFinder.test1")
+        private Boolean test = true;
+    }
+
+    @Test
+    @Order(7)
+    public void typedTest() {
+        TypedProperty typedProperty = new TypedProperty();
+        PropertiesAgent propertiesAgent = App
+                .get(ServiceProperty.class)
+                .getFactory()
+                .getPropertiesAgent(
+                        null,
+                        typedProperty,
+                        null,
+                        true
+                );
+        Assertions.assertEquals(true, typedProperty.getTest());
+        propertiesAgent.setPropertyRepository("run.args.IgnoreClassFinder.test1", "false");
+        Assertions.assertEquals(false, typedProperty.getTest());
+        propertiesAgent.setPropertyRepository("run.args.IgnoreClassFinder.test1", "true");
+        Assertions.assertEquals(true, typedProperty.getTest());
+    }
+
 
 }

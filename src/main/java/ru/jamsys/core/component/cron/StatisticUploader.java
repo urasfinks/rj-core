@@ -59,7 +59,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
 
     @Getter
     @PropertyName("run.args.remote.statistic")
-    private String remoteStatistic = "true";
+    private Boolean remoteStatistic = true;
 
     public enum StatisticUploaderPromiseProperty {
         RESERVE_STATISTIC,
@@ -86,7 +86,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
 
     @Override
     public Promise generate() {
-        if (!remoteStatistic.equals("true")) {
+        if (!remoteStatistic) {
             return null;
         }
         return servicePromise.get(index, 4_999L)

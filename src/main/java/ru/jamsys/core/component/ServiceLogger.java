@@ -41,7 +41,7 @@ public class ServiceLogger extends RepositoryPropertiesField implements
 
     @Getter
     @PropertyName("run.args.remote.log")
-    private String remoteLog = "true";
+    private Boolean remoteLog = true;
 
     public ServiceLogger(ManagerBroker managerBroker, ApplicationContext applicationContext) {
         broker = managerBroker.get(
@@ -59,7 +59,7 @@ public class ServiceLogger extends RepositoryPropertiesField implements
 
     public DisposableExpirationMsImmutableEnvelope<Log> add(Log log) {
         stat.get(log.logType.getNameCamel()).incrementAndGet();
-        if (remoteLog.equals("true")) {
+        if (remoteLog) {
             return broker.add(new ExpirationMsImmutableEnvelope<>(log, 6_000));
         }
         return null;
@@ -105,7 +105,7 @@ public class ServiceLogger extends RepositoryPropertiesField implements
 
     @Override
     public void shutdown() {
-        if (remoteLog.equals("true") && !broker.isEmpty()) {
+        if (remoteLog && !broker.isEmpty()) {
             Promise promise = App.get(LogUploader.class).generate();
             if (promise != null) {
                 promise.run().await(5000);

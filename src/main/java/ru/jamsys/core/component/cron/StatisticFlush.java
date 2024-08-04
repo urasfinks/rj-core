@@ -51,7 +51,7 @@ public class StatisticFlush extends RepositoryPropertiesField implements Cron1s,
 
     @Getter
     @PropertyName("run.args.remote.statistic")
-    private String remoteStatistic = "true";
+    private Boolean remoteStatistic = true;
 
     public StatisticFlush(
             ServiceClassFinder serviceClassFinder,
@@ -99,7 +99,7 @@ public class StatisticFlush extends RepositoryPropertiesField implements Cron1s,
                     });
                     // Не смотря на remoteStatistic надо с сервисов сбрасывать статистику
                     // Так что мы будем всё собирать, но отправлять не будем
-                    if (!statisticSec.getList().isEmpty() && remoteStatistic.equals("true")) {
+                    if (!statisticSec.getList().isEmpty() && remoteStatistic) {
                         broker.add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
                     }
                 });
