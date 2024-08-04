@@ -9,28 +9,28 @@ import java.util.Map;
 
 @Getter
 @ToString
-public class PropertyFollower {
+public class PropertySubscriber {
 
     private String pattern;
 
-    public PropertyFollower setRegexp(String pattern) {
+    public PropertySubscriber setRegexp(String pattern) {
         this.pattern = pattern;
         return this;
     }
 
     private String key;
 
-    public PropertyFollower setKey(String key) {
+    public PropertySubscriber setKey(String key) {
         this.key = key;
         return this;
     }
 
     @ToString.Exclude
     @Setter
-    private PropertyUpdateDelegate follower;
+    private PropertyUpdateDelegate propertyUpdateDelegate;
 
     public void onPropertyUpdate(Map<String, String> map){
-        follower.onPropertyUpdate(map);
+        propertyUpdateDelegate.onPropertyUpdate(map);
     }
 
 }

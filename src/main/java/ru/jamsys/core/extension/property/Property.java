@@ -3,7 +3,7 @@ package ru.jamsys.core.extension.property;
 import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.property.item.PropertyFollower;
+import ru.jamsys.core.extension.property.item.PropertySubscriber;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +35,7 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
 
     private final Consumer<T> onUpdate;
 
-    private PropertyFollower follower;
+    private PropertySubscriber propertySubscriber;
 
     public Property(
             ServiceProperty serviceProperty,
@@ -75,13 +75,13 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
 
     @Override
     public void run() {
-        follower = this.serviceProperty.subscribe(propKey, this, required, String.valueOf(defValue));
+        propertySubscriber = this.serviceProperty.subscribe(propKey, this, required, String.valueOf(defValue));
     }
 
     @Override
     public void shutdown() {
-        if(follower != null){
-            serviceProperty.unsubscribe(follower);
+        if(propertySubscriber != null){
+            serviceProperty.unsubscribe(propertySubscriber);
         }
     }
 

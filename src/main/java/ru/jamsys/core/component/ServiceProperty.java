@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.ServicePropertyFactory;
-import ru.jamsys.core.extension.property.item.PropertyFollower;
+import ru.jamsys.core.extension.property.item.PropertySubscriber;
 import ru.jamsys.core.extension.property.item.PropertySource;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -36,10 +36,10 @@ public class ServiceProperty {
     }
 
     //Нужен для момента, когда будет добавляться новое Property, что бы можно было к нему навешать старых слушателей
-    final private Set<PropertyFollower> listFollower = Util.getConcurrentHashSet();
+    final private Set<PropertySubscriber> subscribers = Util.getConcurrentHashSet();
 
-    public boolean containsFollower(PropertyFollower propertyFollower) {
-        return listFollower.contains(propertyFollower);
+    public boolean containsSubscriber(PropertySubscriber propertySubscriber) {
+        return subscribers.contains(propertySubscriber);
     }
 
     public ServiceProperty(ApplicationContext applicationContext) {
@@ -71,47 +71,47 @@ public class ServiceProperty {
 
     // Добавляем новое или изменяем значение существующего Property
     public void setProperty(Map<String, String> map) {
-        Map<PropertyFollower, Map<String, String>> notify = new HashMap<>();
+        Map<PropertySubscriber, Map<String, String>> notify = new HashMap<>();
         if (!map.isEmpty()) {
             map.forEach((key, value) -> {
                 PropertySource propertySource = createIfNotExist(key, value);
                 if (propertySource.isUpdateValue()) {
-                    UtilRisc.forEach(null, propertySource.getFollower(), propertyFollower -> {
-                        notify.computeIfAbsent(propertyFollower, _ -> new HashMap<>()).put(key, value);
+                    UtilRisc.forEach(null, propertySource.getSubscribers(), propertySubscriber -> {
+                        notify.computeIfAbsent(propertySubscriber, _ -> new HashMap<>()).put(key, value);
                     });
                 }
                 if (value == null) {
                     this.prop.remove(key);
                 }
             });
-            notify.forEach(PropertyFollower::onPropertyUpdate);
+            notify.forEach(PropertySubscriber::onPropertyUpdate);
         }
     }
 
     private PropertySource createIfNotExist(String key, String value) {
         PropertySource result = this.prop.computeIfAbsent(key, k -> {
             PropertySource propertySource = new PropertySource(k);
-            UtilRisc.forEach(null, listFollower, propertySource::check);
+            UtilRisc.forEach(null, subscribers, propertySource::check);
             return propertySource;
         });
         result.setValue(value);
         return result;
     }
 
-    public PropertyFollower subscribe(PropertyFollower propertyFollower) {
-        if (!listFollower.contains(propertyFollower)) {
-            listFollower.add(propertyFollower);
-            attacheAndNotifyFollower(propertyFollower);
+    public PropertySubscriber subscribe(PropertySubscriber propertySubscriber) {
+        if (!subscribers.contains(propertySubscriber)) {
+            subscribers.add(propertySubscriber);
+            attacheAndNotifySubscriber(propertySubscriber);
         }
-        return propertyFollower;
+        return propertySubscriber;
     }
 
-    public PropertyFollower subscribe(String key, PropertyUpdateDelegate propertyUpdateDelegate, boolean require, String defValue) {
+    public PropertySubscriber subscribe(String key, PropertyUpdateDelegate propertyUpdateDelegate, boolean require, String defValue) {
 
-        PropertyFollower propertyFollower = new PropertyFollower();
-        propertyFollower.setKey(key);
-        propertyFollower.setFollower(propertyUpdateDelegate);
-        listFollower.add(propertyFollower);
+        PropertySubscriber propertySubscriber = new PropertySubscriber();
+        propertySubscriber.setKey(key);
+        propertySubscriber.setPropertyUpdateDelegate(propertyUpdateDelegate);
+        subscribers.add(propertySubscriber);
 
         PropertySource result = prop.get(key);
         if (require && result == null) {
@@ -121,35 +121,35 @@ public class ServiceProperty {
             createIfNotExist(key, defValue);
         }
 
-        attacheAndNotifyFollower(propertyFollower);
-        return propertyFollower;
+        attacheAndNotifySubscriber(propertySubscriber);
+        return propertySubscriber;
     }
 
-    public PropertyFollower subscribe(String regexp, PropertyUpdateDelegate propertyUpdateDelegate) {
-        PropertyFollower propertyFollower = new PropertyFollower();
-        propertyFollower.setRegexp(regexp);
-        propertyFollower.setFollower(propertyUpdateDelegate);
-        listFollower.add(propertyFollower);
+    public PropertySubscriber subscribe(String regexp, PropertyUpdateDelegate propertyUpdateDelegate) {
+        PropertySubscriber propertySubscriber = new PropertySubscriber();
+        propertySubscriber.setRegexp(regexp);
+        propertySubscriber.setPropertyUpdateDelegate(propertyUpdateDelegate);
+        subscribers.add(propertySubscriber);
 
-        attacheAndNotifyFollower(propertyFollower);
-        return propertyFollower;
+        attacheAndNotifySubscriber(propertySubscriber);
+        return propertySubscriber;
     }
 
-    private void attacheAndNotifyFollower(PropertyFollower propertyFollower) {
+    private void attacheAndNotifySubscriber(PropertySubscriber propertySubscriber) {
         Map<String, String> map = new LinkedHashMap<>();
         UtilRisc.forEach(null, this.prop, (key, propertySource) -> {
-            propertySource.check(propertyFollower);
-            if (propertySource.getFollower().contains(propertyFollower)) {
+            propertySource.check(propertySubscriber);
+            if (propertySource.getSubscribers().contains(propertySubscriber)) {
                 map.put(key, propertySource.getValue());
             }
         });
-        propertyFollower.onPropertyUpdate(map);
+        propertySubscriber.onPropertyUpdate(map);
     }
 
-    public void unsubscribe(PropertyFollower propertyFollower) {
-        listFollower.remove(propertyFollower);
+    public void unsubscribe(PropertySubscriber propertySubscriber) {
+        subscribers.remove(propertySubscriber);
         UtilRisc.forEach(null, this.prop, (_, propertySource) -> {
-            propertySource.remove(propertyFollower);
+            propertySource.remove(propertySubscriber);
         });
     }
 

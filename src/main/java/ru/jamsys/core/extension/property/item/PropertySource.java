@@ -26,24 +26,24 @@ public class PropertySource {
     }
 
     @Getter
-    private final Set<PropertyFollower> follower = new LinkedHashSet<>();
+    private final Set<PropertySubscriber> subscribers = new LinkedHashSet<>();
 
-    public void add(PropertyFollower follower) {
-        this.follower.add(follower);
+    public void add(PropertySubscriber propertySubscriber) {
+        this.subscribers.add(propertySubscriber);
     }
 
-    public void remove(PropertyFollower follower) {
-        this.follower.remove(follower);
+    public void remove(PropertySubscriber propertySubscriber) {
+        this.subscribers.remove(propertySubscriber);
     }
 
-    public void check(PropertyFollower propertyFollower) {
-        String key = propertyFollower.getKey();
+    public void check(PropertySubscriber propertySubscriber) {
+        String key = propertySubscriber.getKey();
         if (this.prop.equals(key)) {
-            add(propertyFollower);
+            add(propertySubscriber);
         }
-        String pattern = propertyFollower.getPattern();
+        String pattern = propertySubscriber.getPattern();
         if (pattern != null && Util.regexpFind(this.prop, pattern) != null) {
-            add(propertyFollower);
+            add(propertySubscriber);
         }
     }
 

@@ -3,7 +3,7 @@ package ru.jamsys.core.extension.property;
 import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.property.item.PropertyFollower;
+import ru.jamsys.core.extension.property.item.PropertySubscriber;
 import ru.jamsys.core.extension.property.repository.RepositoryMapValue;
 import ru.jamsys.core.extension.property.repository.RepositoryProperties;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -26,7 +26,7 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
 
     private final String ns;
 
-    private final HashMap<String, PropertyFollower> mapListener = new LinkedHashMap<>();
+    private final HashMap<String, PropertySubscriber> mapSubscription = new LinkedHashMap<>();
 
     private final HashMap<String, ExclusiveUpdate<?>> onExclusiveUpdate = new LinkedHashMap<>();
 
@@ -52,11 +52,11 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
         });
     }
 
-    public List<PropertyFollower> getFollowers() {
-        List<PropertyFollower> list = new ArrayList<>();
-        for (String key : mapListener.keySet()) {
-            if (serviceProperty.containsFollower(mapListener.get(key))) {
-                list.add(mapListener.get(key));
+    public List<PropertySubscriber> getListSubscriber() {
+        List<PropertySubscriber> list = new ArrayList<>();
+        for (String key : mapSubscription.keySet()) {
+            if (serviceProperty.containsSubscriber(mapSubscription.get(key))) {
+                list.add(mapSubscription.get(key));
             }
         }
         return list;
@@ -66,26 +66,26 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
         if (onUpdate != null) {
             onExclusiveUpdate.computeIfAbsent(repositoryKey, _ -> new ExclusiveUpdate<>(cls, onUpdate));
         }
-        PropertyFollower propertyFollower = mapListener.computeIfAbsent(repositoryKey, k -> serviceProperty.subscribe(
+        PropertySubscriber propertySubscriber = mapSubscription.computeIfAbsent(repositoryKey, k -> serviceProperty.subscribe(
                 getServicePropertyKey(k),
                 this,
                 require,
                 String.valueOf(defValue)
         ));
-        serviceProperty.subscribe(propertyFollower);
+        serviceProperty.subscribe(propertySubscriber);
         return this;
     }
 
     public void series(String regexp){
-        PropertyFollower propertyFollower = mapListener.computeIfAbsent(regexp, k -> serviceProperty.subscribe(
+        PropertySubscriber propertySubscriber = mapSubscription.computeIfAbsent(regexp, k -> serviceProperty.subscribe(
                 k,
                 this
         ));
-        serviceProperty.subscribe(propertyFollower);
+        serviceProperty.subscribe(propertySubscriber);
     }
 
     public void removeByRepositoryKey(String repositoryKey) {
-        PropertyFollower remove = mapListener.remove(repositoryKey);
+        PropertySubscriber remove = mapSubscription.remove(repositoryKey);
         serviceProperty.unsubscribe(remove);
     }
 
@@ -95,13 +95,13 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
 
     public Set<String> getServicePropertyListeners() {
         Set<String> result = new LinkedHashSet<>();
-        mapListener.forEach((s, _) -> result.add(getServicePropertyKey(s)));
+        mapSubscription.forEach((s, _) -> result.add(getServicePropertyKey(s)));
         return result;
     }
 
     public Set<String> getRepositoryPropertyListeners() {
         Set<String> result = new LinkedHashSet<>();
-        mapListener.forEach((s, _) -> result.add(s));
+        mapSubscription.forEach((s, _) -> result.add(s));
         return result;
     }
 
@@ -160,12 +160,12 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
 
     @Override
     public void run() {
-        mapListener.forEach((_, propertyFollower) -> serviceProperty.subscribe(propertyFollower));
+        mapSubscription.forEach((_, propertySubscriber) -> serviceProperty.subscribe(propertySubscriber));
     }
 
     @Override
     public void shutdown() {
-        mapListener.forEach((_, propertyFollower) -> serviceProperty.unsubscribe(propertyFollower));
+        mapSubscription.forEach((_, propertySubscriber) -> serviceProperty.unsubscribe(propertySubscriber));
     }
 
 }

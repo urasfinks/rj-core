@@ -9,7 +9,7 @@ import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.item.PropertyFollower;
+import ru.jamsys.core.extension.property.item.PropertySubscriber;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.flat.util.Util;
 
@@ -53,11 +53,11 @@ class RepositoryMapTest {
 
         Assertions.assertEquals(1, xx.c);
 
-        Assertions.assertEquals(1, propertiesAgent.getMapListener().size());
+        Assertions.assertEquals(1, propertiesAgent.getMapSubscription().size());
 
         propertiesAgent.add(String.class,"run.args.security.path.public.key", null, true, null);
 
-        Assertions.assertEquals(2, propertiesAgent.getMapListener().size());
+        Assertions.assertEquals(2, propertiesAgent.getMapSubscription().size());
 
         Assertions.assertEquals(2, xx.c);
 
@@ -69,7 +69,7 @@ class RepositoryMapTest {
         Assertions.assertEquals(3, xx.c);
 
         propertiesAgent.shutdown();
-        Assertions.assertEquals(0, propertiesAgent.getFollowers().size());
+        Assertions.assertEquals(0, propertiesAgent.getListSubscriber().size());
 
         // После отписки мы не должны получать уведомления об изменениях
         serviceProperty.setProperty("run.args.security.path.storage", "x2");
@@ -114,13 +114,13 @@ class RepositoryMapTest {
         Assertions.assertEquals("new", serviceProperty.unitTestGetProp("run.args.security.path.public.key"));
         Assertions.assertEquals("x5", serviceProperty.unitTestGetProp("run.args.security.path.storage"));
 
-        Assertions.assertEquals(1, propertiesAgent.getFollowers().size());
+        Assertions.assertEquals(1, propertiesAgent.getListSubscriber().size());
 
         Assertions.assertEquals(
                 new ArrayList<>() {{
-                    this.add(new PropertyFollower().setKey("run.args.security.path.storage"));
+                    this.add(new PropertySubscriber().setKey("run.args.security.path.storage"));
                 }}.toString(),
-                propertiesAgent.getFollowers().toString()
+                propertiesAgent.getListSubscriber().toString()
         );
         // Как было 7 onUpdate так 7 и осталось
         Assertions.assertEquals(7, xx.c);
@@ -129,10 +129,10 @@ class RepositoryMapTest {
         propertiesAgent.add(String.class,"run.args.security.path.public.key", null,true, null);
         Assertions.assertEquals(
                 new ArrayList<>() {{
-                    this.add(new PropertyFollower().setKey("run.args.security.path.storage"));
-                    this.add(new PropertyFollower().setKey("run.args.security.path.public.key"));
+                    this.add(new PropertySubscriber().setKey("run.args.security.path.storage"));
+                    this.add(new PropertySubscriber().setKey("run.args.security.path.public.key"));
                 }}.toString(),
-                propertiesAgent.getFollowers().toString()
+                propertiesAgent.getListSubscriber().toString()
         );
         // Пришло 1 onUpdate
         Assertions.assertEquals(8, xx.c);
@@ -185,7 +185,7 @@ class RepositoryMapTest {
 
         PropertiesAgent subscribe = serviceProperty.getFactory().getPropertiesAgent(x2, x2, "run.args", true);
 
-        Assertions.assertEquals(2, subscribe.getMapListener().size());
+        Assertions.assertEquals(2, subscribe.getMapSubscription().size());
 
         Assertions.assertEquals("security/security.jks", x2.storage);
 
