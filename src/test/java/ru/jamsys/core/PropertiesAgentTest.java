@@ -39,25 +39,25 @@ class PropertiesAgentTest {
 
         propertiesAgent.series("run\\.args\\.IgnoreClassFinder.*");
 
-        Assertions.assertEquals("{test1=true, test2=false}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals("{test1=true, test2=false}", propertiesRepositoryMap.unitTestGetProperties().toString());
         Assertions.assertEquals("[run\\.args\\.IgnoreClassFinder.*]", propertiesAgent.getRepositoryPropertyListeners().toString());
 
         // Дребидень полная в случае с regexp
         Assertions.assertEquals("[run.args.IgnoreClassFinder.run\\.args\\.IgnoreClassFinder.*]", propertiesAgent.getServicePropertyListeners().toString());
 
-        Assertions.assertEquals("{test1=true, test2=false}", propertiesAgent.getRepositoryProperties().getProperties().toString());
+        Assertions.assertEquals("{test1=true, test2=false}", propertiesAgent.getRepositoryProperties().unitTestGetProperties().toString());
 
         App.get(ServiceProperty.class).setProperty("run.args.IgnoreClassFinder.test1", "false");
 
-        Assertions.assertEquals("{test1=false, test2=false}", propertiesAgent.getRepositoryProperties().getProperties().toString());
+        Assertions.assertEquals("{test1=false, test2=false}", propertiesAgent.getRepositoryProperties().unitTestGetProperties().toString());
 
-        Assertions.assertEquals("false", App.get(ServiceProperty.class).getOnlyTest("run.args.IgnoreClassFinder.test2"));
+        Assertions.assertEquals("false", App.get(ServiceProperty.class).unitTestGetProp("run.args.IgnoreClassFinder.test2"));
 
         propertiesAgent.setPropertyRepository("test2", "true");
 
-        Assertions.assertEquals("{test1=false, test2=true}", propertiesAgent.getRepositoryProperties().getProperties().toString());
+        Assertions.assertEquals("{test1=false, test2=true}", propertiesAgent.getRepositoryProperties().unitTestGetProperties().toString());
 
-        Assertions.assertEquals("true", App.get(ServiceProperty.class).getOnlyTest("run.args.IgnoreClassFinder.test2"));
+        Assertions.assertEquals("true", App.get(ServiceProperty.class).unitTestGetProp("run.args.IgnoreClassFinder.test2"));
 
     }
 
@@ -185,7 +185,7 @@ class PropertiesAgentTest {
 
         Assertions.assertEquals(2, x.get());
 
-        Assertions.assertEquals("{run.args.IgnoreClassFinder.test1=false}", propertiesAgent.getRepositoryProperties().getProperties().toString());
+        Assertions.assertEquals("{run.args.IgnoreClassFinder.test1=false}", propertiesAgent.getRepositoryProperties().unitTestGetProperties().toString());
 
         Property<Boolean> prop = App
                 .get(ServiceProperty.class)
@@ -225,19 +225,19 @@ class PropertiesAgentTest {
 
         propertiesAgent.series("extend.*");
 
-        Assertions.assertEquals("{}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals("{}", propertiesRepositoryMap.unitTestGetProperties().toString());
 
         App.get(ServiceProperty.class).setProperty("extend.hello", "world");
 
-        Assertions.assertEquals("{hello=world}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals("{hello=world}", propertiesRepositoryMap.unitTestGetProperties().toString());
         Assertions.assertEquals(1, x.get());
 
         App.get(ServiceProperty.class).setProperty("extend.hello", "kitty");
-        Assertions.assertEquals("{hello=kitty}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals("{hello=kitty}", propertiesRepositoryMap.unitTestGetProperties().toString());
         Assertions.assertEquals(2, x.get());
 
         App.get(ServiceProperty.class).setProperty("extend.secondary", "xxkaa");
-        Assertions.assertEquals("{hello=kitty, secondary=xxkaa}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals("{hello=kitty, secondary=xxkaa}", propertiesRepositoryMap.unitTestGetProperties().toString());
         Assertions.assertEquals(3, x.get());
 
         App.get(ServiceProperty.class).setProperty(
@@ -245,11 +245,11 @@ class PropertiesAgentTest {
                         .append("extend.hello", "x1")
                         .append("extend.secondary", "x2")
         );
-        Assertions.assertEquals("{hello=x1, secondary=x2}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals("{hello=x1, secondary=x2}", propertiesRepositoryMap.unitTestGetProperties().toString());
         Assertions.assertEquals(5, x.get());
 
         App.get(ServiceProperty.class).setProperty("extend.secondary", null);
-        Assertions.assertEquals("{hello=x1, secondary=null}", propertiesRepositoryMap.getProperties().toString());
+        Assertions.assertEquals("{hello=x1, secondary=null}", propertiesRepositoryMap.unitTestGetProperties().toString());
         Assertions.assertEquals(6, x.get());
 
         // Попытка повторного зануления не должна приводить к выхову onUpdate
@@ -258,11 +258,12 @@ class PropertiesAgentTest {
 
     }
 
+    @Getter
     public static class TypedProperty extends RepositoryPropertiesField {
 
-        @Getter
         @PropertyName("run.args.IgnoreClassFinder.test1")
-        private Boolean test = true;
+        private Boolean test;
+
     }
 
     @Test

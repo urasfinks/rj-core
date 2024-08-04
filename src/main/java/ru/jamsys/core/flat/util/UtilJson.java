@@ -78,19 +78,6 @@ public class UtilJson {
         return ret;
     }
 
-    @SuppressWarnings("unused")
-    @Deprecated
-    public static <T> JsonEnvelope<T> toObject(String json, Class<T> t) {
-        JsonEnvelope<T> ret = new JsonEnvelope<>();
-        try {
-            ret.setObject(objectMapper.readValue(json, t));
-        } catch (Exception e) {
-            ret.setException(e);
-            App.error(e);
-        }
-        return ret;
-    }
-
     /* Example:
     *   WrapJsonToObject<Map<String, Map<String, Object>>> mapWrapJsonToObject = UtilJson.toMap(message.getBody());
         Map<String, Object> parsedJson = mapWrapJsonToObject.getObject().get("request");

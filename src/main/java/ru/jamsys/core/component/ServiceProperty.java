@@ -31,8 +31,7 @@ public class ServiceProperty {
 
     final private Map<String, PropertySource> prop = new ConcurrentHashMap<>();
 
-    @Deprecated
-    public String getOnlyTest(String propKey) {
+    public String unitTestGetProp(String propKey) {
         return prop.get(propKey).getValue();
     }
 

@@ -102,8 +102,8 @@ class RepositoryMapTest {
         );
         Assertions.assertEquals(7, xx.c);
 
-        Assertions.assertEquals("x4", serviceProperty.getOnlyTest("run.args.security.path.public.key"));
-        Assertions.assertEquals("x5", serviceProperty.getOnlyTest("run.args.security.path.storage"));
+        Assertions.assertEquals("x4", serviceProperty.unitTestGetProp("run.args.security.path.public.key"));
+        Assertions.assertEquals("x5", serviceProperty.unitTestGetProp("run.args.security.path.storage"));
 
         //Мульти обновление c неподписанным
         serviceProperty.setProperty(new HashMapBuilder<String, String>()
@@ -111,8 +111,8 @@ class RepositoryMapTest {
                 .append("run.args.security.path.storage", "x5") // Подписка есть но значение старое
         );
 
-        Assertions.assertEquals("new", serviceProperty.getOnlyTest("run.args.security.path.public.key"));
-        Assertions.assertEquals("x5", serviceProperty.getOnlyTest("run.args.security.path.storage"));
+        Assertions.assertEquals("new", serviceProperty.unitTestGetProp("run.args.security.path.public.key"));
+        Assertions.assertEquals("x5", serviceProperty.unitTestGetProp("run.args.security.path.storage"));
 
         Assertions.assertEquals(1, propertiesAgent.getFollowers().size());
 
@@ -138,8 +138,8 @@ class RepositoryMapTest {
         Assertions.assertEquals(8, xx.c);
 
         // Проверяем исходные значения Property
-        Assertions.assertEquals("new", serviceProperty.getOnlyTest("run.args.security.path.public.key"));
-        Assertions.assertEquals("x5", serviceProperty.getOnlyTest("run.args.security.path.storage"));
+        Assertions.assertEquals("new", serviceProperty.unitTestGetProp("run.args.security.path.public.key"));
+        Assertions.assertEquals("x5", serviceProperty.unitTestGetProp("run.args.security.path.storage"));
 
         //Мульти обновление штатное
         serviceProperty.setProperty(new HashMapBuilder<String, String>()
@@ -180,7 +180,7 @@ class RepositoryMapTest {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         x2 x2 = new x2();
 
-        Map<String, Object> mapPropValue = x2.getProperties();
+        Map<String, Object> mapPropValue = x2.unitTestGetProperties();
         System.out.println(mapPropValue);
 
         PropertiesAgent subscribe = serviceProperty.getFactory().getPropertiesAgent(x2, x2, "run.args", true);

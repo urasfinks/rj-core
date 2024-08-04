@@ -9,7 +9,7 @@ public interface RepositoryProperties {
 
     void setProperty(String prop, String value);
 
-    default Map<String, Object> getProperties() {
+    default Map<String, Object> unitTestGetProperties() {
         Map<String, Object> result = new LinkedHashMap<>();
         getMapRepository().forEach((s, repositoryElement) -> result.put(s, repositoryElement.getValue()));
         return result;
