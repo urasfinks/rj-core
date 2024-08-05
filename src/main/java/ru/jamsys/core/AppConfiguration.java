@@ -13,6 +13,7 @@ import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -29,6 +30,7 @@ import javax.annotation.PreDestroy;
 @SuppressWarnings("unused")
 @Configuration
 @EnableWebSocket
+@PropertySource("global.properties")
 public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
 
     private PropertiesContainer container = null;

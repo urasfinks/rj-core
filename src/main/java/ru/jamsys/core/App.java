@@ -1,31 +1,40 @@
 package ru.jamsys.core;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.ContextClosedEvent;
 import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@PropertySource("global.properties")
-@SpringBootApplication
+//@PropertySource("global.properties")
+//@SpringBootApplication
 public class App {
 
     private static final Map<Class<?>, Object> mapBean = new ConcurrentHashMap<>();
 
     public static ConfigurableApplicationContext context = null;
 
-    public static SpringApplication application = new SpringApplication(App.class);
+    public static SpringApplication application;
+
+    public static void main(String[] args, Class<?> projectApplicationClass) {
+        application = new SpringApplication(projectApplicationClass);
+        main(args);
+    }
+
+    private static void init() {
+        if (application == null) {
+            application = new SpringApplication(App.class);
+        }
+    }
 
     public static void main(String[] args) {
+        init();
         application.addListeners((ApplicationListener<ContextClosedEvent>) _ -> {
             Util.logConsole("App shutdown process...");
 
@@ -74,6 +83,7 @@ public class App {
     }
 
     public static void run(String[] args) {
+        init();
         if (context == null) {
             Util.logConsole("Run arguments:");
             Util.printArray(args);
@@ -89,14 +99,6 @@ public class App {
             context = null;
             mapBean.clear();
         }
-    }
-
-    public static PromiseTaskExecuteType getComputeExecutor() {
-        return PromiseTaskExecuteType.COMPUTE;
-    }
-
-    public static PromiseTaskExecuteType getResourceExecutor() {
-        return PromiseTaskExecuteType.IO;
     }
 
 }

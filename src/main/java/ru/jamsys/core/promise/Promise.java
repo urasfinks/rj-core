@@ -39,7 +39,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
     Promise onComplete(PromiseTask onComplete);
 
     default Promise onComplete(BiConsumer<AtomicBoolean, Promise> fn) {
-        PromiseTask promiseTask = new PromiseTask("onCompleteTask", this, App.getComputeExecutor(), fn);
+        PromiseTask promiseTask = new PromiseTask("onCompleteTask", this, PromiseTaskExecuteType.COMPUTE, fn);
         promiseTask.setTerminated(true);
         return onComplete(promiseTask);
     }
@@ -54,7 +54,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
     Promise onError(PromiseTask onError);
 
     default Promise onError(BiConsumer<AtomicBoolean, Promise> fn) {
-        PromiseTask promiseTask = new PromiseTask("onErrorTask", this, App.getComputeExecutor(), fn);
+        PromiseTask promiseTask = new PromiseTask("onErrorTask", this, PromiseTaskExecuteType.COMPUTE, fn);
         promiseTask.setTerminated(true);
         return onError(promiseTask);
     }
@@ -65,7 +65,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
     Promise append(PromiseTask task);
 
     default Promise append(String index, BiConsumer<AtomicBoolean, Promise> fn) {
-        return append(new PromiseTask(getIndex() + "." + index, this, App.getComputeExecutor(), fn));
+        return append(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
     }
 
     default <T extends Resource<?, ?>> Promise appendWithResource(
@@ -118,7 +118,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
     }
 
     default Promise then(String index, BiConsumer<AtomicBoolean, Promise> fn) {
-        return then(new PromiseTask(getIndex() + "." + index, this, App.getComputeExecutor(), fn));
+        return then(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
     }
 
     default Promise appendWait() {
