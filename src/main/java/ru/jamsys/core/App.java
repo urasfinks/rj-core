@@ -4,7 +4,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.ContextClosedEvent;
 import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ExceptionHandler;
@@ -14,8 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-//@PropertySource("global.properties")
-//@SpringBootApplication
+@SpringBootApplication
 public class App {
 
     private static final Map<Class<?>, Object> mapBean = new ConcurrentHashMap<>();
@@ -24,14 +22,11 @@ public class App {
 
     public static SpringApplication application;
 
-    public static void main(String[] args, Class<?> projectApplicationClass) {
-        application = new SpringApplication(projectApplicationClass);
-        main(args);
-    }
+    public static Class<?> springSource = App.class;
 
     private static void init() {
         if (application == null) {
-            application = new SpringApplication(App.class);
+            application = new SpringApplication(springSource);
         }
     }
 

@@ -3,12 +3,16 @@ package ru.jamsys.core.component;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
+import ru.jamsys.core.extension.builder.HashSetBuilder;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.repository.RepositoryMapValue;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
 
 import javax.tools.*;
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -162,8 +166,15 @@ public class ServiceClassFinder {
         try {
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
             StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+            List<File> lk = new ArrayList<>();
+            new HashSetBuilder<Class<?>>()
+                    .append(App.class)
+                    .append(App.springSource)
+                    .forEach(o -> lk.add(new File(o.getProtectionDomain().getCodeSource().getLocation().getPath())));
 
+            fileManager.setLocation(StandardLocation.CLASS_PATH, lk);
             StandardLocation location = StandardLocation.CLASS_PATH;
+
             Set<JavaFileObject.Kind> kinds = new HashSet<>();
             kinds.add(JavaFileObject.Kind.CLASS);
             Iterable<JavaFileObject> list = fileManager.list(location, packageName, kinds, true);
@@ -172,6 +183,9 @@ public class ServiceClassFinder {
 
             for (JavaFileObject classFile : list) {
                 String pathClass = classFile.getName();
+                if (pathClass.contains("(")) {
+                    pathClass = pathClass.substring(pathClass.indexOf("(") + 1, pathClass.length() - 1);
+                }
                 String className = pathClass.substring(pathClass.indexOf(packageToDir) + packageToDir.length());
                 className = packageName + "." + className.substring(0, className.length() - 6).replace("/", ".");
                 Class<?> aClass = Class.forName(className);
@@ -197,8 +211,8 @@ public class ServiceClassFinder {
                 }
                 listClass.add(aClass);
             }
-        } catch (Exception e) {
-            exceptionHandler.handler(e);
+        } catch (Throwable th) {
+            throw new ForwardException(th);
         }
         return listClass;
     }
