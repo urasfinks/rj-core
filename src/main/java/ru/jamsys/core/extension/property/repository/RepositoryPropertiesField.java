@@ -37,7 +37,7 @@ public class RepositoryPropertiesField implements RepositoryProperties {
     public Map<String, RepositoryMapValue<?>> getMapRepository() {
         mapField.forEach((prop, field) -> mapRepository.computeIfAbsent(prop, k -> {
             try {
-                return new RepositoryMapValue(field.getType(), field.get(this), "infoNs: " + ns + "; key:" + k);
+                return new RepositoryMapValue<>(field.getType(), field.get(this), "ns: " + ns + "; key:" + k);
             } catch (Throwable th) {
                 throw new ForwardException(th);
             }
