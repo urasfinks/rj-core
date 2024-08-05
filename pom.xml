@@ -2,12 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
+		<artifactId>spring-boot-dependencies</artifactId>
 		<version>3.2.5</version>
-		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>ru.jamsys</groupId>
 	<artifactId>core</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
@@ -19,6 +20,8 @@
 		<grpc.version>1.58.1</grpc.version><!--Выше этой версии Exception nio not found public constructor-->
 		<protobuf.version>4.27.0-RC1</protobuf.version>
 		<protoc.version>4.27.0-RC1</protoc.version>
+		<maven.compiler.source>22</maven.compiler.source>
+		<maven.compiler.target>22</maven.compiler.target>
 	</properties>
 
 	<dependencies>
