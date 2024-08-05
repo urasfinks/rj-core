@@ -5,6 +5,8 @@ import java.util.Map;
 
 public interface RepositoryProperties {
 
+    void setNs(String ns);
+
     Map<String, RepositoryMapValue<?>> getMapRepository();
 
     void setProperty(String prop, String value);

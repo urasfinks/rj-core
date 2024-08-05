@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension.property.repository;
 
+import lombok.Setter;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.Util;
@@ -12,6 +13,9 @@ import java.util.Map;
 // Класс помогает изъять аннтоции свойств
 
 public class RepositoryPropertiesField implements RepositoryProperties {
+
+    @Setter
+    private String ns;
 
     private final Map<String, Field> mapField = new HashMap<>();
 
@@ -33,7 +37,7 @@ public class RepositoryPropertiesField implements RepositoryProperties {
     public Map<String, RepositoryMapValue<?>> getMapRepository() {
         mapField.forEach((prop, field) -> mapRepository.computeIfAbsent(prop, k -> {
             try {
-                return new RepositoryMapValue(field.getType(), field.get(this), k);
+                return new RepositoryMapValue(field.getType(), field.get(this), "infoNs: " + ns + "; key:" + k);
             } catch (Throwable th) {
                 throw new ForwardException(th);
             }

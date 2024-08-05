@@ -11,17 +11,17 @@ public class RepositoryMapValue<T> {
 
     private T value;
 
-    private final String prop;
+    private final String info;
 
-    public RepositoryMapValue(Class<T> cls, T value, String prop) {
+    public RepositoryMapValue(Class<T> cls, T value, String info) {
         this.cls = cls;
         this.value = value;
-        this.prop = prop;
+        this.info = info;
     }
 
-    public RepositoryMapValue(Class<T> cls, String value, String prop) {
+    public RepositoryMapValue(Class<T> cls, String value, String info) {
         this.cls = cls;
-        this.prop = prop;
+        this.info = info;
         setValue(value);
     }
 
@@ -35,7 +35,7 @@ public class RepositoryMapValue<T> {
             T t = (T) Property.convertType.get(cls).apply(value);
             this.value = t;
         } catch (Throwable th) {
-            throw new ForwardException("RepositoryMapValue.setValue('" + value + "') for prop: " + prop, th);
+            throw new ForwardException("RepositoryMapValue.setValue('" + value + "') " + info, th);
         }
     }
 

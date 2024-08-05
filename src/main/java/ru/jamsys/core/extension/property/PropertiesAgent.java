@@ -41,6 +41,9 @@ public class PropertiesAgent implements LifeCycleInterface, PropertyUpdateDelega
         this.serviceProperty = serviceProperty;
         this.repositoryProperties = repositoryProperties;
         this.ns = ns;
+        if (repositoryProperties != null) {
+            repositoryProperties.setNs(ns);
+        }
         init(require);
     }
 
