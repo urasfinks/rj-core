@@ -1,132 +1,147 @@
 package ru.jamsys.core.component.web.socket;
 
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import ru.jamsys.core.flat.util.JsonSchema;
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.App;
+import ru.jamsys.core.HttpController;
+import ru.jamsys.core.component.ServiceClassFinder;
+import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.flat.util.*;
+import ru.jamsys.core.promise.Promise;
+import ru.jamsys.core.promise.PromiseGenerator;
+import ru.jamsys.core.statistic.Statistic;
+import ru.jamsys.core.web.socket.WebSocketHandler;
 
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class WebSocket extends TextWebSocketHandler {
+@Component
+public class WebSocket extends TextWebSocketHandler implements StatisticsFlushComponent {
 
-    public static String nameSocketRequestReader = "SocketRequestReader";
+    private final JsonSchema jsonSchema = new JsonSchema();
 
-    public static Map<WebSocketSession, SessionWrap> mapConnection = new ConcurrentHashMap<>();
+    @Setter
+    private WebSocketCheckConnection webSocketCheckConnection;
 
-    @Override
-    protected void handleTextMessage(@NotNull WebSocketSession session, @NotNull TextMessage message) throws Exception {
-        super.handleTextMessage(session, message);
-        RequestMessage requestMessage = new RequestMessage();
-        requestMessage.setBody(message.getPayload());
-        requestMessage.setSessionWrap(mapConnection.get(session));
-        //App.context.getBean(Broker.class).add(RequestMessage.class, requestMessage);
-        //App.context.getBean(ThreadBalancerFactory.class).getThreadBalancer(nameSocketRequestReader).wakeUp();
+    private final Map<String, List<WebSocketSession>> subscription = new ConcurrentHashMap<>();
+
+    private final Set<WebSocketSession> connections = Util.getConcurrentHashSet();
+
+    private final Map<String, PromiseGenerator> path = new LinkedHashMap<>();
+
+    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
+
+    public WebSocket(ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder) {
+        HttpController.fill(path, applicationContext, serviceClassFinder, WebSocketHandler.class);
     }
 
-    @Override
-    public void afterConnectionEstablished(@NotNull WebSocketSession session) throws Exception {
-        super.afterConnectionEstablished(session);
-        InetSocketAddress remoteAddress = session.getRemoteAddress();
-        if (remoteAddress != null) {
-            String host = session.getRemoteAddress().getHostString();
-            if (!checkCountConnectionPerHost(host)) {
-                Util.logConsole("Connection[" + mapConnection.size() + "]; afterConnectionEstablished Overload host connection: " + session);
-                close(session, CloseStatus.SERVICE_OVERLOAD);
-                return;
-            }
-            URI uri = session.getUri();
-            if (uri != null) {
-                String path = uri.getPath();
-                if (path != null && path.startsWith("/socket") && path.length() == 44) { //Ждём uuid устройства
-                    Util.logConsole("Connection[" + mapConnection.size() + "]; afterConnectionEstablished Success: " + session);
-                    UserSessionInfo userSessionInfo = new UserSessionInfo();
-                    userSessionInfo.setDeviceUuid(path.substring(8));
-                    mapConnection.put(session, new SessionWrap(session, userSessionInfo, host));
-                } else {
-                    Util.logConsole("Connection[" + mapConnection.size() + "]; afterConnectionEstablished Error: " + session);
-                    close(session, CloseStatus.POLICY_VIOLATION);
-                }
-            } else {
-                Util.logConsole("Connection[" + mapConnection.size() + "]; afterConnectionEstablished Error read uri: " + session);
-                close(session, CloseStatus.BAD_DATA);
-            }
-        } else {
-            Util.logConsole("Connection[" + mapConnection.size() + "]; afterConnectionEstablished Error read address: " + session);
-            close(session, CloseStatus.BAD_DATA);
+    public void subscribe(String key, WebSocketSession webSocketSession) {
+        subscription.computeIfAbsent(key, _ -> new ArrayList<>()).add(webSocketSession);
+    }
+
+    public void unsubscribe(String key, WebSocketSession webSocketSession) {
+        if (
+                subscription.getOrDefault(key, List.of()).remove(webSocketSession)
+                        && subscription.get(key).isEmpty()
+        ) {
+            subscription.remove(key);
         }
     }
 
-    private boolean checkCountConnectionPerHost(String host) {
-        int countConnectionPerHost = 0;
-        WebSocketSession[] webSocketSessions = mapConnection.keySet().toArray(new WebSocketSession[0]);
-        for (WebSocketSession webSocketSession : webSocketSessions) {
-            SessionWrap sessionWrap = mapConnection.get(webSocketSession);
-            if (sessionWrap != null) {
-                if (sessionWrap.getRemoteAddress().equals(host)) {
-                    countConnectionPerHost++;
-                }
-                if (countConnectionPerHost > 12) { //Наверное 12 человек играть можно в codenames
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public void afterConnectionClosed(@NotNull WebSocketSession session, @NotNull CloseStatus status) throws Exception {
-        super.afterConnectionClosed(session, status);
-        Util.logConsole("Connection[" + mapConnection.size() + "]; afterConnectionClosed: " + session + "; status: " + status);
-        mapConnection.remove(session);
-    }
-
-
-    //Отправка по списку uuidDevice либо сокетам, кто явно подписался на uuidData
-    public void send(List<String> listUuidDevice, String uuidData, String data) {
-        JsonSchema jsonSchema = new JsonSchema();
-        JsonSchema.Result validate = jsonSchema.validate(data, "socket.json");
-        if (validate.isValidate()) {
-            WebSocketSession[] webSocketSessions = mapConnection.keySet().toArray(new WebSocketSession[0]);
-            Util.logConsole(listUuidDevice.toString() + "; data: " + data + "; count connection: " + webSocketSessions.length);
-            for (WebSocketSession webSocketSession : webSocketSessions) {
-                SessionWrap sessionWrap = mapConnection.get(webSocketSession);
-                if (
-                        sessionWrap != null
-                                && (
-                                listUuidDevice.contains(sessionWrap.getUserSessionInfo().getDeviceUuid())
-                                        || sessionWrap.isSubscribed(uuidData)
-                        )
-                ) {
-                    send(webSocketSession, data);
-                }
-            }
-        } else {
-            new RuntimeException(validate.getError()).printStackTrace();
-        }
-    }
-
-    private void send(@NotNull WebSocketSession session, String data) {
-        try {
-            session.sendMessage(new TextMessage(data));
-        } catch (Exception e) {
-            e.printStackTrace();
-            close(session, CloseStatus.SERVER_ERROR);
-        }
+    public void notify(String key, String data) {
+        UtilRisc.forEach(null, subscription.getOrDefault(key, List.of()), webSocketSession -> {
+            send(webSocketSession, data);
+        });
     }
 
     private void close(@NotNull WebSocketSession session, CloseStatus closeStatus) {
         try {
             session.close(closeStatus);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Throwable th) {
+            App.error(th);
         }
-        mapConnection.remove(session);
+        remove(session);
     }
+
+    private void remove(@NotNull WebSocketSession webSocketSession) {
+        connections.remove(webSocketSession);
+        UtilRisc.forEach(null, subscription, (_, webSocketSessions) -> {
+            webSocketSessions.remove(webSocketSession);
+        });
+    }
+
+    private void send(@NotNull WebSocketSession session, String data) {
+        try {
+            session.sendMessage(new TextMessage(data));
+        } catch (Throwable th) {
+            App.error(th);
+            close(session, CloseStatus.SERVER_ERROR);
+        }
+    }
+
+    private PromiseGenerator getGeneratorByHandler(String requestUri) {
+        for (String pattern : path.keySet()) {
+            if (antPathMatcher.match(pattern, requestUri)) {
+                return path.get(pattern);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void afterConnectionClosed(@NotNull WebSocketSession webSocketSession, @NotNull CloseStatus closeStatus) throws Exception {
+        super.afterConnectionClosed(webSocketSession, closeStatus);
+        remove(webSocketSession);
+    }
+
+    @Override
+    protected void handleTextMessage(@NotNull WebSocketSession session, @NotNull TextMessage message) throws Exception {
+        super.handleTextMessage(session, message);
+        String request = message.getPayload();
+        JsonSchema.Result validate = jsonSchema.validate(request, UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"));
+        if (validate.isValidate()) {
+            Map<Object, Object> req = UtilJson.toMap(request).getObject();
+            PromiseGenerator promiseGenerator = getGeneratorByHandler((String) req.get("handler"));
+            if (promiseGenerator == null) {
+                App.error(new RuntimeException("PromiseGenerator not found"));
+                return;
+            }
+            Promise promise = promiseGenerator.generate();
+            if (promise == null) {
+                App.error(new RuntimeException("Promise is null"));
+                return;
+            }
+            promise.setMapRepository("WebSocketSession", session);
+            promise.run();
+        } else {
+            App.error(validate.getException());
+        }
+    }
+
+    @Override
+    public void afterConnectionEstablished(@NotNull WebSocketSession session) throws Exception {
+        super.afterConnectionEstablished(session);
+//        if (webSocketCheckConnection == null || !webSocketCheckConnection.check(session)) {
+//            close(session, CloseStatus.POLICY_VIOLATION);
+//        }
+    }
+
+    @Override
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
+        List<Statistic> result = new ArrayList<>();
+        result.add(new Statistic(parentTags, parentFields)
+                .addField("connections", connections.size())
+                .addField("subscription", subscription.size())
+        );
+        return result;
+    }
+
 }

@@ -14,7 +14,7 @@ import ru.jamsys.core.promise.PromiseGenerator;
 @Component
 @SuppressWarnings("unused")
 @RequestMapping("/**")
-public class FirstHandler implements PromiseGenerator, HttpHandler {
+public class FirstHttpHandler implements PromiseGenerator, HttpHandler {
 
     @Getter
     @Setter
@@ -22,7 +22,7 @@ public class FirstHandler implements PromiseGenerator, HttpHandler {
 
     private final ServicePromise servicePromise;
 
-    public FirstHandler(ServicePromise servicePromise) {
+    public FirstHttpHandler(ServicePromise servicePromise) {
         this.servicePromise = servicePromise;
     }
 

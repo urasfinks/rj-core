@@ -35,8 +35,11 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
 
     private PropertiesContainer container = null;
 
+    private ApplicationContext applicationContext;
+
     @Autowired
     public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
         container = applicationContext.getBean(ServiceProperty.class).getFactory().getContainer();
     }
 
@@ -46,9 +49,10 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
             container.watch(
                     String.class,
                     "run.args.web.socket.path",
-                    "/socketDefault/*",
+                    "/socket/*",
                     true,
-                    s -> registry.addHandler(new WebSocket(), s)
+                    s -> registry.addHandler(applicationContext.getBean(WebSocket.class), s)
+
             );
         }
     }

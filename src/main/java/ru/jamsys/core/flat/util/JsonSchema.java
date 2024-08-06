@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
+import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -51,7 +52,10 @@ public class JsonSchema {
     }
 
     public static class Result {
+
         Set<ValidationMessage> validationResult = null;
+
+        @Getter
         Exception exception = null;
 
         public boolean isValidate() {

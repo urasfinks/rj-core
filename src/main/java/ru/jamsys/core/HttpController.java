@@ -34,6 +34,10 @@ public class HttpController {
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     public HttpController(ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder) {
+        fill(path, applicationContext, serviceClassFinder, HttpHandler.class);
+    }
+
+    public static void fill(Map<String, PromiseGenerator> path, ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder, Class<?> iFaceMatcher) {
         /*
         {
           "[/*]" : "SecondHandler",
@@ -46,7 +50,7 @@ public class HttpController {
         Map<String, String> info = new LinkedHashMap<>();
         Map<String, PromiseGenerator> tmp = new HashMap<>();
         serviceClassFinder.findByInstance(PromiseGenerator.class).forEach(promiseGeneratorClass -> {
-            if (!ServiceClassFinder.instanceOf(promiseGeneratorClass, HttpHandler.class)) {
+            if (!ServiceClassFinder.instanceOf(promiseGeneratorClass, iFaceMatcher)) {
                 return;
             }
             for (Annotation annotation : promiseGeneratorClass.getAnnotations()) {
@@ -70,7 +74,7 @@ public class HttpController {
             path.put(s, tmp.get(s));
         });
 
-        Util.logConsole("RequestMapping info: " + UtilJson.toStringPretty(info, "[]"));
+        Util.logConsole("RequestMapping(" + iFaceMatcher.getSimpleName() + ") : " + UtilJson.toStringPretty(info, "[]"));
     }
 
     private PromiseGenerator getGeneratorByUri(String requestUri) {
