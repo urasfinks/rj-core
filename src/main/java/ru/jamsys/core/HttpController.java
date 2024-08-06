@@ -15,6 +15,7 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
+import ru.jamsys.core.web.http.HttpHandler;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -45,6 +46,9 @@ public class HttpController {
         Map<String, String> info = new LinkedHashMap<>();
         Map<String, PromiseGenerator> tmp = new HashMap<>();
         serviceClassFinder.findByInstance(PromiseGenerator.class).forEach(promiseGeneratorClass -> {
+            if (!ServiceClassFinder.instanceOf(promiseGeneratorClass, HttpHandler.class)) {
+                return;
+            }
             for (Annotation annotation : promiseGeneratorClass.getAnnotations()) {
                 if (ServiceClassFinder.instanceOf(annotation.annotationType(), RequestMapping.class)) {
                     PromiseGenerator promiseGenerator = applicationContext.getBean(promiseGeneratorClass);
