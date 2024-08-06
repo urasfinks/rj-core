@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// TODO: Нужен RateLimit на Http запросы
+
 @SpringBootApplication
 public class App {
 
