@@ -7,31 +7,45 @@
 <body>
 
 <script type="text/javascript">
-    function connect() {
-        var ws = new WebSocket('ws://localhost:8080/socket/fb88cbf8-a959-4eb1-aafd-73c981c4c2e5');
+    var ws = undefined;
+    window.connect = function() {
+        ws = new WebSocket('/socket/fb88cbf8-a959-4eb1-aafd-73c981c4c2e5');
         ws.onmessage = function(data){
             console.log(data);
         }
-        window.send = function() {
-            ws.send(document.getElementById("msg").value);
-        }
     }
-
-    function disconnect() {
+    window.send = function() {
+        ws.send(document.getElementById("msg").value);
+    }
+    window.disconnect = function() {
         if (ws != null) {
             ws.close();
         }
         setConnected(false);
         console.log("Disconnected");
     }
-    connect();
+    window.connect();
 
 </script>
-<textarea id="msg" style="width:300px;height:300px;">{
+<table>
+    <tr>
+        <td>
+            <button onclick="window.connect()">connect</button>
+            <button onclick="window.disconnect()">disconnect</button>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <textarea id="msg" style="width:300px;height:300px;">{
     "handler": "SUBSCRIBE",
     "data": "test"
 }</textarea><br>
-<button onclick="window.send()">send</button>
+            <button onclick="window.send()">send</button>
+        </td>
+    </tr>
+</table>
+
+
 <div id="greetings"></div>
 </body>
 </html>
