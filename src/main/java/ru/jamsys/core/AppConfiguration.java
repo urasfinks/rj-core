@@ -19,6 +19,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.EncodedResourceResolver;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.ServletWebSocketHandlerRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import ru.jamsys.core.component.ServiceProperty;
@@ -52,8 +53,8 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
                     "/socket/*",
                     true,
                     s -> registry.addHandler(applicationContext.getBean(WebSocket.class), s)
-
             );
+            ((ServletWebSocketHandlerRegistry) registry).setOrder(-1);
         }
     }
 
@@ -132,7 +133,7 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
                     .setCachePeriod(-1)
                     .resourceChain(false)
                     .addResolver(new EncodedResourceResolver());
-            registry.setOrder(-1);
+            registry.setOrder(-2);
         }
     }
 

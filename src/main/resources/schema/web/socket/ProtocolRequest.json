@@ -2,11 +2,11 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "handler": {
+    "uri": {
       "type": "string"
     }
   },
   "required": [
-    "handler"
+    "uri"
   ]
 }

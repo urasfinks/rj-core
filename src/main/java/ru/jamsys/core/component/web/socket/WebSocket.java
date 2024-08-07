@@ -109,7 +109,7 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
         JsonSchema.Result validate = jsonSchema.validate(request, UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"));
         if (validate.isValidate()) {
             Map<Object, Object> req = UtilJson.toMap(request).getObject();
-            PromiseGenerator promiseGenerator = getGeneratorByHandler((String) req.get("handler"));
+            PromiseGenerator promiseGenerator = getGeneratorByHandler((String) req.get("uri"));
             if (promiseGenerator == null) {
                 App.error(new RuntimeException("PromiseGenerator not found"));
                 return;
