@@ -8,7 +8,6 @@ import ru.jamsys.core.resource.PoolTaskWait;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
-// RC - ResourceConstructor
 // RA - ResourceArguments
 // RR - ResourceResult
 // PI - PoolItem
