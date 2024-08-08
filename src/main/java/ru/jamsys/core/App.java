@@ -60,7 +60,7 @@ public class App {
         return (T) mapBean.computeIfAbsent(cls, aClass -> {
             T t = App.context.getBean(cls);
             if (t == null) {
-                Util.logConsole("App.get(" + cls.getName() + ") return null");
+                throw new RuntimeException("App.get(" + cls.getName() + ") return null");
             }
             return t;
         });

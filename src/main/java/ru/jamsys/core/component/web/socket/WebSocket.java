@@ -1,8 +1,8 @@
 package ru.jamsys.core.component.web.socket;
 
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.socket.CloseStatus;
@@ -23,13 +23,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Lazy
 @Component
 public class WebSocket extends TextWebSocketHandler implements StatisticsFlushComponent {
 
     private final JsonSchema jsonSchema = new JsonSchema();
 
-    @Setter
-    private WebSocketCheckConnection webSocketCheckConnection;
+    private final WebSocketCheckConnection webSocketCheckConnection;
 
     private final Map<String, List<WebSocketSession>> subscription = new ConcurrentHashMap<>();
 
@@ -40,6 +40,11 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     public WebSocket(ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder) {
+        List<Class<WebSocketCheckConnection>> byInstance = serviceClassFinder.findByInstance(WebSocketCheckConnection.class);
+        if (byInstance.isEmpty()) {
+            throw new RuntimeException("WebSocket not found WebSocketCheckConnection component");
+        }
+        webSocketCheckConnection = serviceClassFinder.instanceOf(byInstance.getFirst());
         HttpController.fill(path, applicationContext, serviceClassFinder, WebSocketHandler.class);
     }
 
@@ -129,9 +134,9 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
     @Override
     public void afterConnectionEstablished(@NotNull WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
-//        if (webSocketCheckConnection == null || !webSocketCheckConnection.check(session)) {
-//            close(session, CloseStatus.POLICY_VIOLATION);
-//        }
+        if (webSocketCheckConnection == null || !webSocketCheckConnection.check(session)) {
+            close(session, CloseStatus.POLICY_VIOLATION);
+        }
     }
 
     @Override

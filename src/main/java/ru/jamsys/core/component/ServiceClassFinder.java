@@ -10,6 +10,7 @@ import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.repository.RepositoryMapValue;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
+import ru.jamsys.core.flat.util.Util;
 
 import javax.tools.*;
 import java.io.File;
@@ -159,6 +160,11 @@ public class ServiceClassFinder {
 
     public static boolean instanceOf(Class<?> cls, Class<?> interfaceRef) {
         return interfaceRef.isAssignableFrom(cls); //!cls.equals(interfaceRef) &&
+    }
+
+    public void removeAvailableClass(Class<?> cls, String cause) {
+        Util.logConsole("removeAvailableClass: " + cls.getName() + "; cause: " + cause, true);
+        availableClass.remove(cls);
     }
 
     private List<Class<?>> getAvailableClass(String packageName) {

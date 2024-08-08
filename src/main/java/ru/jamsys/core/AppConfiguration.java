@@ -22,6 +22,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.ServletWebSocketHandlerRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.web.socket.WebSocket;
 import ru.jamsys.core.extension.property.PropertiesContainer;
@@ -46,7 +47,7 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
-        if (container.watch(Boolean.class, "run.args.web", true, true, null).get()) {
+        if (container.watch(Boolean.class, "run.args.web.socket", true, true, null).get()) {
             container.watch(
                     String.class,
                     "run.args.web.socket.path",
@@ -55,6 +56,11 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
                     s -> registry.addHandler(applicationContext.getBean(WebSocket.class), s)
             );
             ((ServletWebSocketHandlerRegistry) registry).setOrder(-1);
+        } else {
+            applicationContext.getBean(ServiceClassFinder.class).removeAvailableClass(
+                    WebSocket.class,
+                    "run.args.web.socket = false"
+            );
         }
     }
 
