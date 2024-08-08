@@ -38,6 +38,10 @@ import java.util.function.Function;
 // На работу пловцы отправляются из парка с конца очереди
 // Таким образом в парке в начале очереди будут тушиться пловцы без работы до их кончины
 
+// TODO: а что если ресурс не вернуть в пул? Надо сделать какое-то время адекватное - например 1 час
+// и перезагружать, но надо точно знать - что именно ресурс был взять и не возвращён ни разу за последнее время
+
+
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Resource<RA, RR>>
         extends ExpirationMsMutableImpl
@@ -348,7 +352,9 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
         List<Statistic> result = new ArrayList<>();
         int tpsCompleteFlush = tpsComplete.getAndSet(0);
-        if (tpsCompleteFlush > 0) {
+        // Если за последнюю секунду были возвращения элемнтов значит пул активен
+        // Если в пуле есть элементы и они не в паркинге - пул тоже активный
+        if (tpsCompleteFlush > 0 || (!itemQueue.isEmpty() && parkQueue.isEmpty())) {
             active();
         }
         result.add(new Statistic(parentTags, parentFields)
