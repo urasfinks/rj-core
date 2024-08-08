@@ -10,7 +10,6 @@ import ru.jamsys.core.extension.functional.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.PoolTaskWait;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -22,9 +21,9 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
 
     private final TriConsumer<AtomicBoolean, Promise, T> procedure;
 
-    private final PoolTaskWait<?, ?, ?> managerElement;
-
     private final PoolSettings<T> poolSettings;
+
+    private ManagerPoolTaskWait managerPoolTaskWait;
 
     @SuppressWarnings("all")
     public PromiseTaskWithResource(
@@ -36,8 +35,10 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
         super(index, promise, PromiseTaskExecuteType.IO);
         this.poolSettings = poolSettings;
         this.procedure = procedure;
-        ManagerPoolTaskWait managerPoolTaskWait = App.get(ManagerPoolTaskWait.class);
-        managerElement = managerPoolTaskWait.get(poolSettings.getIndex(), poolSettings);
+        managerPoolTaskWait = App.get(ManagerPoolTaskWait.class);
+        // Мы не можем так делать, потому что элемент живёт своей жизнью и гаситься AbstractManager
+        // по истечению времени, мы должны использовать get() что бы остановленный элемент стартовал перед использованием
+        //managerElement = managerPoolTaskWait.get(poolSettings.getIndex(), poolSettings);
     }
 
     // Этот блок вызывается из Promise.loop() и подразумевает запуск ::run из внешнего потока
@@ -47,7 +48,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     public void prepareLaunch(Procedure afterExecuteBlock) {
         this.afterExecuteBlock = afterExecuteBlock;
         getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Subscribe(" + poolSettings.getIndex() + ")", null, null, null));
-        managerElement.addPromiseTaskPool(this);
+        managerPoolTaskWait.get(poolSettings.getIndex(), poolSettings).addPromiseTaskPool(this);
     }
 
     @Override
