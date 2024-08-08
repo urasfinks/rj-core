@@ -151,6 +151,9 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     // Бассейн может поместить новые объекты для плаванья
     private boolean isSizePoolAllowsExtend() {
+        if (!isRun.get()) {
+            App.error(new RuntimeException("Пул " + getIndex() + " не может поместить в себя ничего, так как он выключен"));
+        }
         return isRun.get() && itemQueue.size() < propertyPoolSizeMax.get();
     }
 

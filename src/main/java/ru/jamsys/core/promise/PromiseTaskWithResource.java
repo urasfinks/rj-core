@@ -23,7 +23,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
 
     private final PoolSettings<T> poolSettings;
 
-    private ManagerPoolTaskWait managerPoolTaskWait;
+    private final ManagerPoolTaskWait managerPoolTaskWait;
 
     @SuppressWarnings("all")
     public PromiseTaskWithResource(
