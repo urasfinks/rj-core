@@ -4,6 +4,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceProperty;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -289,12 +290,22 @@ public class Util {
         return false;
     }
 
+    /*Example getResource():
+    @Getter
+    @Value("classpath:.well-known/apple-app-site-association.json")
+    private Resource appleAppSiteAssociation;
+    * */
     public static String getResourceContent(Resource resource, String charset) {
         try (Reader reader = new InputStreamReader(resource.getInputStream(), charset)) {
             return FileCopyUtils.copyToString(reader);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    public static String getWebContent(String relativeWebPath) {
+        String location = App.get(ServiceProperty.class).getProbe("run.args.web.resource.location");
+        return UtilFileResource.getAsStringAny(location + relativeWebPath);
     }
 
     public static void printStackTrace(String label) {
@@ -373,7 +384,7 @@ public class Util {
         return (int) result;
     }
 
-    public static  <T> Set<T> getConcurrentHashSet(){
+    public static <T> Set<T> getConcurrentHashSet() {
         return ConcurrentHashMap.newKeySet();
     }
 

@@ -1,0 +1,18 @@
+{
+  "activitycontinuation": {
+    "apps": [
+      "QVHB6RUQD6.ru.jamsys.fiveGame"
+    ]
+  },
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "QVHB6RUQD6.ru.jamsys.fiveGame",
+        "paths": [
+          "/deeplink/*"
+        ]
+      }
+    ]
+  }
+}

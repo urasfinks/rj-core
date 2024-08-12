@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.ServicePropertyFactory;
-import ru.jamsys.core.extension.property.item.PropertySubscriber;
 import ru.jamsys.core.extension.property.item.PropertySource;
+import ru.jamsys.core.extension.property.item.PropertySubscriber;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -40,6 +40,11 @@ public class ServiceProperty {
 
     public boolean containsSubscriber(PropertySubscriber propertySubscriber) {
         return subscribers.contains(propertySubscriber);
+    }
+
+    // Получить статическую пробу
+    public String getProbe(String key) {
+        return prop.get(key).getValue();
     }
 
     public ServiceProperty(ApplicationContext applicationContext) {
