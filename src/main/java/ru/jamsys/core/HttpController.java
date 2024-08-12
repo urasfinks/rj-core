@@ -62,8 +62,12 @@ public class HttpController {
                             applicationContext
                     ));
                     String[] values = promiseGeneratorClass.getAnnotation(RequestMapping.class).value();
-                    for (String value : values) {
-                        tmp.put(value, promiseGenerator);
+                    if (values.length > 0) {
+                        for (String value : values) {
+                            tmp.put(value, promiseGenerator);
+                        }
+                    } else {
+                        tmp.put("/" + promiseGeneratorClass.getSimpleName(), promiseGenerator);
                     }
                     break;
                 }
