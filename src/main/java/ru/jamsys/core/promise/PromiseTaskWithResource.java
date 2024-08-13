@@ -5,8 +5,8 @@ import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerPoolTaskWait;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
-import ru.jamsys.core.extension.functional.Procedure;
-import ru.jamsys.core.extension.functional.TriConsumer;
+import ru.jamsys.core.extension.functional.ProcedureThrowing;
+import ru.jamsys.core.extension.functional.TriConsumerThrowing;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.resource.Resource;
@@ -19,7 +19,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     @Setter
     private PoolItemEnvelope<?, ?, T> poolItemEnvelope;
 
-    private final TriConsumer<AtomicBoolean, Promise, T> procedure;
+    private final TriConsumerThrowing<AtomicBoolean, Promise, T> procedure;
 
     private final PoolSettings<T> poolSettings;
 
@@ -29,7 +29,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     public PromiseTaskWithResource(
             String index,
             Promise promise,
-            TriConsumer<AtomicBoolean, Promise, T> procedure,
+            TriConsumerThrowing<AtomicBoolean, Promise, T> procedure,
             PoolSettings<T> poolSettings
     ) {
         super(index, promise, PromiseTaskExecuteType.IO);
@@ -45,7 +45,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     // Мы его переопределили, добавляя задачу в Pool, а вот уже когда освободится ресурс в пуле
     // Пул сам вызовет start с передачей туда ресурса, там то мы и вызовем ::run из внешнего потока
     @Override
-    public void prepareLaunch(Procedure afterExecuteBlock) {
+    public void prepareLaunch(ProcedureThrowing afterExecuteBlock) {
         this.afterExecuteBlock = afterExecuteBlock;
         getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Subscribe(" + poolSettings.getIndex() + ")", null, null, null));
         managerPoolTaskWait.get(poolSettings.getIndex(), poolSettings).addPromiseTaskPool(this);

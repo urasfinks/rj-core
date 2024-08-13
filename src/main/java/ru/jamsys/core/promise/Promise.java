@@ -6,7 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.RepositoryMap;
 import ru.jamsys.core.extension.functional.BiConsumerThrowing;
-import ru.jamsys.core.extension.functional.TriConsumer;
+import ru.jamsys.core.extension.functional.TriConsumerThrowing;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
 import ru.jamsys.core.resource.Resource;
@@ -71,7 +71,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
     default <T extends Resource<?, ?>> Promise appendWithResource(
             String index,
             Class<T> classResource,
-            TriConsumer<AtomicBoolean, Promise, T> procedure
+            TriConsumerThrowing<AtomicBoolean, Promise, T> procedure
     ) {
         return appendWithResource(index, classResource, "default", procedure);
     }
@@ -80,7 +80,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
             String index,
             Class<T> classResource,
             String ns,
-            TriConsumer<AtomicBoolean, Promise, T> procedure
+            TriConsumerThrowing<AtomicBoolean, Promise, T> procedure
     ) {
         return append(new PromiseTaskWithResource<>(
                 getIndex() + "." + index,
@@ -93,7 +93,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
     default <T extends Resource<?, ?>> Promise thenWithResource(
             String index,
             Class<T> classResource,
-            TriConsumer<AtomicBoolean, Promise, T> procedure
+            TriConsumerThrowing<AtomicBoolean, Promise, T> procedure
     ) {
         return thenWithResource(index, classResource, "default", procedure);
     }
@@ -102,7 +102,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
             String index,
             Class<T> classResource,
             String ns,
-            TriConsumer<AtomicBoolean, Promise, T> procedure
+            TriConsumerThrowing<AtomicBoolean, Promise, T> procedure
     ) {
         return then(new PromiseTaskWithResource<>(
                 getIndex() + "." + index,

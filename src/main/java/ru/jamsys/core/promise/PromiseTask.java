@@ -7,7 +7,7 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadVirtual;
 import ru.jamsys.core.component.manager.ManagerThreadPool;
 import ru.jamsys.core.extension.functional.BiConsumerThrowing;
-import ru.jamsys.core.extension.functional.Procedure;
+import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
@@ -36,7 +36,7 @@ public class PromiseTask implements Runnable {
     @Getter
     private final String index;
 
-    protected Procedure afterExecuteBlock;
+    protected ProcedureThrowing afterExecuteBlock;
 
     @Setter
     @Getter
@@ -78,7 +78,7 @@ public class PromiseTask implements Runnable {
     }
 
     // execute on another thread
-    public void prepareLaunch(Procedure afterExecuteBlock) {
+    public void prepareLaunch(ProcedureThrowing afterExecuteBlock) {
         this.afterExecuteBlock = afterExecuteBlock;
         switch (type) {
             case IO, ASYNC_NO_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);

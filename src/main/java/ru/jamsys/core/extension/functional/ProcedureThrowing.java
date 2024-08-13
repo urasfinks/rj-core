@@ -2,12 +2,12 @@ package ru.jamsys.core.extension.functional;
 
 @SuppressWarnings("unused")
 @FunctionalInterface
-public interface Procedure {
+public interface ProcedureThrowing {
 
     void run() throws Throwable;
 
     @SuppressWarnings("unused")
-    default Procedure andThen(Procedure after){
+    default ProcedureThrowing andThen(ProcedureThrowing after){
         return () -> {
             this.run();
             after.run();
@@ -15,7 +15,7 @@ public interface Procedure {
     }
 
     @SuppressWarnings("unused")
-    default Procedure compose(Procedure before){
+    default ProcedureThrowing compose(ProcedureThrowing before){
         return () -> {
             before.run();
             this.run();

@@ -7,7 +7,7 @@ import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.functional.Procedure;
+import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationRequest;
 import speechkit.common.v3.Common;
 import syandex.cloud.api.ai.tts.v3.Tts;
@@ -58,7 +58,7 @@ public class YandexSpeechClient {
             String text,
             File output,
             YandexSpeechNotificationRequest settings,
-            Procedure onComplete,
+            ProcedureThrowing onComplete,
             Consumer<Throwable> onError
     ) {
         Tts.UtteranceSynthesisRequest request = Tts.UtteranceSynthesisRequest

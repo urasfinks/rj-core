@@ -1,7 +1,7 @@
 package ru.jamsys.core.extension.functional;
 
 @FunctionalInterface
-public interface TriConsumer<K, V, S> {
+public interface TriConsumerThrowing<K, V, S> {
 
     /**
      * Performs the operation given the specified arguments.
