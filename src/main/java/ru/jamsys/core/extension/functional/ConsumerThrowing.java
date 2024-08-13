@@ -5,6 +5,6 @@ package ru.jamsys.core.extension.functional;
 public interface ConsumerThrowing<T> {
 
     @SuppressWarnings("unused")
-    void accept(T t) throws Exception;
+    void accept(T t) throws Throwable;
 
 }

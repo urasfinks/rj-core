@@ -54,7 +54,13 @@ public class YandexSpeechClient {
         }
     }
 
-    public void synthesize(String text, File output, YandexSpeechNotificationRequest settings, Procedure onComplete, Consumer<Throwable> onError) {
+    public void synthesize(
+            String text,
+            File output,
+            YandexSpeechNotificationRequest settings,
+            Procedure onComplete,
+            Consumer<Throwable> onError
+    ) {
         Tts.UtteranceSynthesisRequest request = Tts.UtteranceSynthesisRequest
                 .newBuilder()
                 .setText(text)
@@ -95,10 +101,10 @@ public class YandexSpeechClient {
                 try {
                     AudioInputStream audioStream = AudioSystem.getAudioInputStream(new ByteArrayInputStream(result.toByteArray()));
                     AudioSystem.write(audioStream, AudioFileFormat.Type.WAVE, output);
-                } catch (Exception e) {
+                    onComplete.run();
+                } catch (Throwable e) {
                     throw new ForwardException(e);
                 }
-                onComplete.run();
             }
         });
     }

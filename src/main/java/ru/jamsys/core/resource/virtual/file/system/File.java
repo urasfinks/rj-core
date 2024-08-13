@@ -145,7 +145,7 @@ public class File extends ExpirationMsMutableImpl
         return UtilBase64.base64Encode(getBytes(), true);
     }
 
-    public void save(byte[] data) throws Exception {
+    public void save(byte[] data) throws Throwable {
         if (saver == null) {
             throw new Exception("Consumer saver not found. File: " + getAbsolutePath());
         }

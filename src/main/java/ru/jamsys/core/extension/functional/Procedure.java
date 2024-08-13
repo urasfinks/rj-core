@@ -4,7 +4,7 @@ package ru.jamsys.core.extension.functional;
 @FunctionalInterface
 public interface Procedure {
 
-    void run();
+    void run() throws Throwable;
 
     @SuppressWarnings("unused")
     default Procedure andThen(Procedure after){

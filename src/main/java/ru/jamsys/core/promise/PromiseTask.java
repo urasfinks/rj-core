@@ -6,13 +6,13 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadVirtual;
 import ru.jamsys.core.component.manager.ManagerThreadPool;
+import ru.jamsys.core.extension.functional.BiConsumerThrowing;
 import ru.jamsys.core.extension.functional.Procedure;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 
 // RA - ResourceArguments
 // RR - ResourceResult
@@ -23,7 +23,7 @@ public class PromiseTask implements Runnable {
     @Getter
     final PromiseTaskExecuteType type;
 
-    private BiConsumer<AtomicBoolean, Promise> procedure;
+    private BiConsumerThrowing<AtomicBoolean, Promise> procedure;
 
     @Getter
     private final Promise promise;
@@ -51,7 +51,7 @@ public class PromiseTask implements Runnable {
         this.type = type;
     }
 
-    public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type, BiConsumer<AtomicBoolean, Promise> procedure) {
+    public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type, BiConsumerThrowing<AtomicBoolean, Promise> procedure) {
         this.index = index;
         this.promise = promise;
         this.type = type;

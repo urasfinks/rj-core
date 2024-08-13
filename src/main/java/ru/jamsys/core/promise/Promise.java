@@ -4,8 +4,9 @@ import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.Correlation;
-import ru.jamsys.core.extension.functional.TriConsumer;
 import ru.jamsys.core.extension.RepositoryMap;
+import ru.jamsys.core.extension.functional.BiConsumerThrowing;
+import ru.jamsys.core.extension.functional.TriConsumer;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
 import ru.jamsys.core.resource.Resource;
@@ -15,7 +16,6 @@ import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 
 // Цепочка обещаний
 
@@ -38,7 +38,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
     // Добавление задачи, которая выполнится после успешного завершения цепочки Promise
     Promise onComplete(PromiseTask onComplete);
 
-    default Promise onComplete(BiConsumer<AtomicBoolean, Promise> fn) {
+    default Promise onComplete(BiConsumerThrowing<AtomicBoolean, Promise> fn) {
         PromiseTask promiseTask = new PromiseTask("onCompleteTask", this, PromiseTaskExecuteType.COMPUTE, fn);
         promiseTask.setTerminated(true);
         return onComplete(promiseTask);
@@ -53,7 +53,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
     // Добавление задачи, которая выполнится после фатального завершения цепочки Promise
     Promise onError(PromiseTask onError);
 
-    default Promise onError(BiConsumer<AtomicBoolean, Promise> fn) {
+    default Promise onError(BiConsumerThrowing<AtomicBoolean, Promise> fn) {
         PromiseTask promiseTask = new PromiseTask("onErrorTask", this, PromiseTaskExecuteType.COMPUTE, fn);
         promiseTask.setTerminated(true);
         return onError(promiseTask);
@@ -64,7 +64,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
 
     Promise append(PromiseTask task);
 
-    default Promise append(String index, BiConsumer<AtomicBoolean, Promise> fn) {
+    default Promise append(String index, BiConsumerThrowing<AtomicBoolean, Promise> fn) {
         return append(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
     }
 
@@ -117,7 +117,7 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
         return this;
     }
 
-    default Promise then(String index, BiConsumer<AtomicBoolean, Promise> fn) {
+    default Promise then(String index, BiConsumerThrowing<AtomicBoolean, Promise> fn) {
         return then(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
     }
 

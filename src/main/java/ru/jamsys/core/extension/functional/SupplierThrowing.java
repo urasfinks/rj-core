@@ -5,6 +5,6 @@ package ru.jamsys.core.extension.functional;
 public interface SupplierThrowing<T> {
 
     @SuppressWarnings("unused")
-    T get() throws Exception;
+    T get() throws Throwable;
 
 }

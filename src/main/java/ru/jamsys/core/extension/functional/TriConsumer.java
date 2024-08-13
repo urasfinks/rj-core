@@ -9,5 +9,5 @@ public interface TriConsumer<K, V, S> {
      * @param v the second input argument
      * @param s the third input argument
      */
-    void accept(K k, V v, S s);
+    void accept(K k, V v, S s) throws Throwable;
 }
