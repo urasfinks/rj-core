@@ -4,10 +4,12 @@ package ru.jamsys.core.extension.http;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
+import lombok.Getter;
 import lombok.ToString;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -35,11 +37,13 @@ public class HttpRequestReader {
 
     private final HttpServletRequest request;
 
+    @Getter
     @ToString.Include
     public String data;
 
+    @Getter
     @ToString.Include
-    Map<String, String> map = new LinkedHashMap<>();
+    public Map<String, String> map = new LinkedHashMap<>();
 
     public byte[] bytes;
 
@@ -75,8 +79,8 @@ public class HttpRequestReader {
         }
     }
 
-    public byte[] getMultiPartFormData(String key) throws ServletException, IOException {
-        return request.getPart(key).getInputStream().readAllBytes();
+    public InputStream getMultiPartFormData(String key) throws ServletException, IOException {
+        return request.getPart(key).getInputStream();
     }
 
     public void readFormUrlEncoded() {
