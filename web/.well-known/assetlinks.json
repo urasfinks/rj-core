@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "ru.jamsys.five_game",
+    "sha256_cert_fingerprints":
+    ["CA:0F:49:5C:42:5D:63:CE:5C:9C:F0:DE:4E:97:A2:54:2A:F6:51:28:2E:46:1B:15:05:8D:B0:66:17:4C:C1:C6"]
+  }
+}]

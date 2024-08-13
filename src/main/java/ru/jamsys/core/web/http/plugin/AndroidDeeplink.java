@@ -15,8 +15,8 @@ import ru.jamsys.core.web.http.HttpHandler;
 @IgnoreClassFinder
 @Component
 @SuppressWarnings("unused")
-@RequestMapping({"/apple-app-site-association.json", "/.well-known/apple-app-site-association"})
-public class AppleDeeplink implements PromiseGenerator, HttpHandler {
+@RequestMapping("/.well-known/assetlinks.json")
+public class AndroidDeeplink implements PromiseGenerator, HttpHandler {
 
     @Getter
     @Setter
@@ -24,7 +24,7 @@ public class AppleDeeplink implements PromiseGenerator, HttpHandler {
 
     private final ServicePromise servicePromise;
 
-    public AppleDeeplink(ServicePromise servicePromise) {
+    public AndroidDeeplink(ServicePromise servicePromise) {
         this.servicePromise = servicePromise;
     }
 
@@ -33,7 +33,7 @@ public class AppleDeeplink implements PromiseGenerator, HttpHandler {
         return servicePromise.get(index, 7_000L)
                 .append("input", (atomicBoolean, promise) -> {
                     HttpAsyncResponse input = promise.getRepositoryMap("HttpAsyncResponse", HttpAsyncResponse.class);
-                    input.setBody(Util.getWebContent(".well-known/apple-app-site-association.json"));
+                    input.setBody(Util.getWebContent(".well-known/assetlinks.json"));
                 });
     }
 

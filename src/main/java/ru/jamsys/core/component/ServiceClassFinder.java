@@ -209,8 +209,8 @@ public class ServiceClassFinder {
                     }
                 }
                 RepositoryMapValue<Boolean> s = ignoredClassMap.getMapRepository2().get(aClass.getName());
-                if (s != null && s.getValue()) {
-                    findUnusedAnnotation = true;
+                if (s != null) {
+                    findUnusedAnnotation = s.getValue();
                 }
                 if (findUnusedAnnotation) {
                     continue;
