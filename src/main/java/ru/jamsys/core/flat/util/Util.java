@@ -5,6 +5,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -304,8 +305,13 @@ public class Util {
     }
 
     public static String getWebContent(String relativeWebPath) {
-        String location = App.get(ServiceProperty.class).getProbe("run.args.web.resource.location");
-        return UtilFileResource.getAsStringAny(location + relativeWebPath);
+        String location = App.get(ServiceProperty.class).get("run.args.web.resource.location");
+        try {
+            byte[] bytes = UtilFile.readBytes(location + relativeWebPath);
+            return new String(bytes);
+        } catch (Throwable th) {
+            throw new ForwardException(th);
+        }
     }
 
     public static void printStackTrace(String label) {

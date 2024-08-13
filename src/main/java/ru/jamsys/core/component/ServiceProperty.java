@@ -9,6 +9,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.ServicePropertyFactory;
 import ru.jamsys.core.extension.property.item.PropertySource;
@@ -42,9 +43,18 @@ public class ServiceProperty {
         return subscribers.contains(propertySubscriber);
     }
 
-    // Получить статическую пробу
-    public String getProbe(String key) {
+    public String get(String key) {
         return prop.get(key).getValue();
+    }
+
+    public <T> T get(Class<T> cls, String key, T defValue) {
+        PropertySource propertySource = prop.get(key);
+        if (propertySource == null) {
+            return defValue;
+        }
+        @SuppressWarnings("unchecked")
+        T t = (T) Property.convertType.get(cls).apply(propertySource.getValue());
+        return t;
     }
 
     public ServiceProperty(ApplicationContext applicationContext) {

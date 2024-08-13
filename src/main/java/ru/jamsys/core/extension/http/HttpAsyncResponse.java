@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.promise.Promise;
 
 import java.io.IOException;
 import java.util.Map;
@@ -68,4 +69,9 @@ public class HttpAsyncResponse {
     public void setError(String cause) {
         setBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
     }
+
+    public void setError(Promise data) {
+        setBody(data.getLogString());
+    }
+
 }

@@ -15,9 +15,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.unit.DataSize;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.resource.EncodedResourceResolver;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.ServletWebSocketHandlerRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -33,7 +30,7 @@ import javax.annotation.PreDestroy;
 @Configuration
 @EnableWebSocket
 @PropertySource("global.properties")
-public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
+public class AppConfiguration implements WebSocketConfigurer {
 
     private PropertiesContainer container = null;
 
@@ -45,9 +42,16 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
         container = applicationContext.getBean(ServiceProperty.class).getFactory().getContainer();
     }
 
+    private ServiceProperty serviceProperty;
+
+    @Autowired
+    public void setServiceProperty(ServiceProperty serviceProperty){
+        this.serviceProperty = serviceProperty;
+    }
+
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
-        if (container.watch(Boolean.class, "run.args.web.socket", true, true, null).get()) {
+        if (serviceProperty.get(Boolean.class, "run.args.web.socket", false)) {
             container.watch(
                     String.class,
                     "run.args.web.socket.path",
@@ -70,12 +74,12 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
         // По этому логика реализована линейной
         // Не могу предположить, что есть необходимость на ходу менять правила игры работать по ssl и редиректам
         // Как минимум это странно, как максимум - я без понятия как это сделать)))
-        if (container.watch(Boolean.class, "run.args.web", true, true, null).get()) {
+        if (serviceProperty.get(Boolean.class, "run.args.web", false)) {
 
-            Integer httpPort = container.watch(Integer.class, "run.args.web.http.port", 80, true, null).get();
-            Integer httpsPort = container.watch(Integer.class, "run.args.web.https.port", 443, true, null).get();
-            Boolean ssl = container.watch(Boolean.class, "run.args.web.ssl", false, true, null).get();
-            Boolean redirect = container.watch(Boolean.class, "run.args.web.http.redirect.https", true, true, null).get();
+            int httpPort = serviceProperty.get(Integer.class, "run.args.web.http.port", 80);
+            int httpsPort = serviceProperty.get(Integer.class, "run.args.web.https.port", 443);
+            boolean ssl = serviceProperty.get(Boolean.class, "run.args.web.ssl", false);
+            boolean redirect = serviceProperty.get(Boolean.class, "run.args.web.http.redirect.https", true);
 
             TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
                 @Override
@@ -127,20 +131,6 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
     @PreDestroy
     public void onDestroy() {
         container.shutdown();
-    }
-
-    @Override
-    public void addResourceHandlers(@NotNull ResourceHandlerRegistry registry) {
-        if (container.watch(Boolean.class, "run.args.web", true, true, null).get()) {
-            String location = container.watch(String.class, "run.args.web.resource.location", "file:web/", true, null).get();
-            registry
-                    .addResourceHandler("/**.*", "/*/*.*")
-                    .addResourceLocations(location)
-                    .setCachePeriod(-1)
-                    .resourceChain(false)
-                    .addResolver(new EncodedResourceResolver());
-            registry.setOrder(-2);
-        }
     }
 
 }

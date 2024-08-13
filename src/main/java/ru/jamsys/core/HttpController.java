@@ -1,5 +1,6 @@
 package ru.jamsys.core;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -8,21 +9,23 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.jamsys.core.component.ServiceClassFinder;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.http.HttpAsyncResponse;
 import ru.jamsys.core.flat.util.ListSort;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.web.http.HttpHandler;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
@@ -31,10 +34,18 @@ public class HttpController {
 
     private final Map<String, PromiseGenerator> path = new LinkedHashMap<>();
 
+    private final Map<String, String> staticFile = new HashMap<>();
+
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
-    public HttpController(ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder) {
+    public HttpController(ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder, ServiceProperty serviceProperty) {
         fill(path, applicationContext, serviceClassFinder, HttpHandler.class);
+        if (serviceProperty.get(Boolean.class, "run.args.web", false)) {
+            String location = serviceProperty.get("run.args.web.resource.location");
+            String absPath = new File(location).getAbsolutePath();
+            List<String> filesRecursive = UtilFile.getFilesRecursive(location);
+            filesRecursive.forEach(s -> staticFile.put(s.substring(absPath.length()), s));
+        }
     }
 
     public static void fill(Map<String, PromiseGenerator> path, ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder, Class<?> iFaceMatcher) {
@@ -95,6 +106,26 @@ public class HttpController {
             HttpServletRequest request,
             HttpServletResponse response
     ) throws ServletException, IOException {
+
+        String uri = request.getRequestURI();
+
+        if (staticFile.containsKey(uri)) {
+            ServletContext context = request.getServletContext();
+            String mimeType = context.getMimeType(uri);
+            response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
+
+            OutputStream out = response.getOutputStream();
+            FileInputStream in = new FileInputStream(staticFile.get(uri));
+            byte[] buffer = new byte[4096];
+            int length;
+            while ((length = in.read(buffer)) > 0) {
+                out.write(buffer, 0, length);
+            }
+            in.close();
+            out.flush();
+            return null;
+        }
+
         PromiseGenerator promiseGenerator = getGeneratorByUri(request.getRequestURI());
         HttpAsyncResponse httpAsyncResponse = new HttpAsyncResponse(new CompletableFuture<>(), request, response);
         if (promiseGenerator == null) {
@@ -113,7 +144,7 @@ public class HttpController {
         if (!promise.isSetErrorHandler()) {
             promise.onError((atomicBoolean, p) -> {
                 HttpAsyncResponse ar = p.getRepositoryMap("HttpAsyncResponse", HttpAsyncResponse.class);
-                ar.setError(p.getException().getMessage());
+                ar.setError(p);
                 ar.complete();
             });
         }
