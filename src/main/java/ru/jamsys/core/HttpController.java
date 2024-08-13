@@ -144,13 +144,16 @@ public class HttpController {
         if (!promise.isSetErrorHandler()) {
             promise.onError((atomicBoolean, p) -> {
                 HttpAsyncResponse ar = p.getRepositoryMap("HttpAsyncResponse", HttpAsyncResponse.class);
-                ar.setError(p);
+                ar.setBody(p.getLogString());
                 ar.complete();
             });
         }
         if (!promise.isSetCompleteHandler()) {
-            promise.onComplete((atomicBoolean, p)
-                    -> p.getRepositoryMap("HttpAsyncResponse", HttpAsyncResponse.class).complete());
+            promise.onComplete((atomicBoolean, p) -> {
+                HttpAsyncResponse resp = p.getRepositoryMap("HttpAsyncResponse", HttpAsyncResponse.class);
+                resp.setBody(p.getLogString());
+                resp.complete();
+            });
         }
         promise.setMapRepository("HttpAsyncResponse", httpAsyncResponse);
         promise.run();
