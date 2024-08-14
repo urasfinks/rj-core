@@ -154,7 +154,11 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         if (!isRun.get()) {
             App.error(new RuntimeException("Пул " + getIndex() + " не может поместить в себя ничего, так как он выключен"));
         }
-        return isRun.get() && itemQueue.size() < propertyPoolSizeMax.get();
+        return isRun.get() && getRealActiveItem() < propertyPoolSizeMax.get();
+    }
+
+    private int getRealActiveItem() {
+        return itemQueue.size() - removeQueue.size();
     }
 
     // Увеличиваем кол-во объектов для плаванья
@@ -167,7 +171,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     }
 
     public boolean addIfPoolEmpty() {
-        if (propertyPoolSizeMin.get() == 0 && itemQueue.isEmpty()) {
+        if (propertyPoolSizeMin.get() == 0 && getRealActiveItem() == 0) {
             add();
         }
         return false;
@@ -252,7 +256,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         // Добавлена блокировка, что бы избежать дублей в очереди на удаление
         boolean result = false;
         lockAddToRemove.lock();
-        if (itemQueue.size() > propertyPoolSizeMin.get()) {
+        if (getRealActiveItem() > propertyPoolSizeMin.get()) {
             result = true;
             // Что если объект уже был добавлен в очередь на удаление?
             // Мы должны вернуть result = true по факту удаление состоялось
@@ -377,7 +381,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
                 // Если паркинг был пуст уже больше секунды начнём увеличивать
                 if (getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
                     overclocking(formulaAddCount.apply(1));
-                } else if (itemQueue.size() > propertyPoolSizeMin.get()) { //Кол-во больше минимума
+                } else if (getRealActiveItem() > propertyPoolSizeMin.get()) { //Кол-во больше минимума
                     // закрываем с прошлого раза всех из отставки
                     // так сделано специально, если на следующей итерации будет overclocking
                     // что бы можно было достать кого-то из отставки
