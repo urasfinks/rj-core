@@ -4,10 +4,7 @@ import ru.jamsys.core.flat.template.jdbc.*;
 import ru.jamsys.core.flat.util.Util;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public interface JdbcExecute {
 
@@ -60,7 +57,7 @@ public interface JdbcExecute {
                     Integer columnCount = null;
                     Map<Integer, String> cacheName = new HashMap<>();
                     while (resultSet.next()) {
-                        Map<String, Object> row = new HashMap<>();
+                        Map<String, Object> row = new LinkedHashMap<>();
                         if (columnCount == null) {
                             ResultSetMetaData metaData = resultSet.getMetaData();
                             columnCount = metaData.getColumnCount();
@@ -80,7 +77,7 @@ public interface JdbcExecute {
                 break;
             case CALL_WITHOUT_AUTO_COMMIT:
             case CALL_WITH_AUTO_COMMIT:
-                Map<String, Object> row = new HashMap<>();
+                Map<String, Object> row = new LinkedHashMap<>();
                 for (Argument argument : compiledSqlTemplate.getListArgument()) {
                     ArgumentDirection direction = argument.getDirection();
                     if (direction == ArgumentDirection.OUT || direction == ArgumentDirection.IN_OUT) {
