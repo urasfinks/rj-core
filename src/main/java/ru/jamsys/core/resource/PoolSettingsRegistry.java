@@ -8,6 +8,7 @@ import ru.jamsys.core.extension.UniqueClassNameImpl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 @Component
@@ -19,7 +20,7 @@ public class PoolSettingsRegistry<
 
     private final Map<Class<R>, Function<Throwable, Boolean>> fn = new HashMap<>();
 
-    private final Map<String, PoolSettings<R>> registry = new HashMap<>();
+    private final Map<String, PoolSettings<R>> registry = new ConcurrentHashMap<>();
 
     @SuppressWarnings("all")
     public PoolSettings<?> get(Class<R> cls, String ns) {
