@@ -1,24 +1,25 @@
 package ru.jamsys.core.component;
 
 import lombok.Getter;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.App;
 import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
-import ru.jamsys.core.extension.builder.HashSetBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.repository.RepositoryMapValue;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
 import ru.jamsys.core.flat.util.Util;
 
-import javax.tools.*;
-import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class ServiceClassFinder {
@@ -35,13 +36,17 @@ public class ServiceClassFinder {
 
     private final ApplicationContext applicationContext;
 
+    private final ConfigurableListableBeanFactory configurableListableBeanFactory;
+
     public ServiceClassFinder(
             ApplicationContext applicationContext,
             ExceptionHandler exceptionHandler,
-            ServiceProperty serviceProperty
+            ServiceProperty serviceProperty,
+            ConfigurableListableBeanFactory configurableListableBeanFactory
     ) {
         this.applicationContext = applicationContext;
         this.exceptionHandler = exceptionHandler;
+        this.configurableListableBeanFactory = configurableListableBeanFactory;
 
         @SuppressWarnings("SameParameterValue")
         String pkg = "ru.jamsys";
@@ -167,34 +172,19 @@ public class ServiceClassFinder {
         availableClass.remove(cls);
     }
 
+
     private List<Class<?>> getAvailableClass(String packageName) {
         List<Class<?>> listClass = new ArrayList<>();
         try {
-            JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-            StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
-            List<File> lk = new ArrayList<>();
-            new HashSetBuilder<Class<?>>()
-                    .append(App.class)
-                    .append(App.springSource)
-                    .forEach(o -> lk.add(new File(o.getProtectionDomain().getCodeSource().getLocation().getPath())));
+            String[] beans = applicationContext.getBeanDefinitionNames();
+            for (String bean : beans) {
 
-            fileManager.setLocation(StandardLocation.CLASS_PATH, lk);
-            StandardLocation location = StandardLocation.CLASS_PATH;
-
-            Set<JavaFileObject.Kind> kinds = new HashSet<>();
-            kinds.add(JavaFileObject.Kind.CLASS);
-            Iterable<JavaFileObject> list = fileManager.list(location, packageName, kinds, true);
-
-            String packageToDir = "/" + packageName.replace(".", "/") + "/";
-
-            for (JavaFileObject classFile : list) {
-                String pathClass = classFile.getName();
-                if (pathClass.contains("(")) {
-                    pathClass = pathClass.substring(pathClass.indexOf("(") + 1, pathClass.length() - 1);
+                BeanDefinition beanDefinition = configurableListableBeanFactory.getBeanDefinition(bean);
+                String clsName = beanDefinition.getBeanClassName();
+                if (clsName == null || !clsName.startsWith(packageName)) {
+                    continue;
                 }
-                String className = pathClass.substring(pathClass.indexOf(packageToDir) + packageToDir.length());
-                className = packageName + "." + className.substring(0, className.length() - 6).replace("/", ".");
-                Class<?> aClass = Class.forName(className);
+                Class<?> aClass = Class.forName(clsName);
                 if (Modifier.isAbstract(aClass.getModifiers())) {
                     continue;
                 }
