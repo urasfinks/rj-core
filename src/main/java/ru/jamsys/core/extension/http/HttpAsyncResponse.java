@@ -27,13 +27,23 @@ public class HttpAsyncResponse {
     private String responseContentType = "application/json";
 
     @Setter
-    private String body = "{}";
+    private String body = "";
 
     @Getter
     private final HttpRequestReader httpRequestReader;
 
     public void setBodyFromMap(Map<?, ?> data) {
         setBody(UtilJson.toStringPretty(data, "{}"));
+    }
+
+    public boolean isEmptyBody() {
+        return this.body.isEmpty();
+    }
+
+    public void setBodyIfEmpty(String body) {
+        if (this.body.isEmpty()) {
+            this.body = body;
+        }
     }
 
     public HttpAsyncResponse(

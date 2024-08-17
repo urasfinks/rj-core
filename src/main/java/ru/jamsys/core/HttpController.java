@@ -19,6 +19,7 @@ import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.web.http.HttpHandler;
+import ru.jamsys.core.web.http.HttpInterceptor;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +39,8 @@ public class HttpController {
 
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
+    private HttpInterceptor httpInterceptor;
+
     public HttpController(ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder, ServiceProperty serviceProperty) {
         fill(path, applicationContext, serviceClassFinder, HttpHandler.class);
         if (serviceProperty.get(Boolean.class, "run.args.web", false)) {
@@ -45,6 +48,10 @@ public class HttpController {
             String absPath = new File(location).getAbsolutePath();
             List<String> filesRecursive = UtilFile.getFilesRecursive(location);
             filesRecursive.forEach(s -> staticFile.put(s.substring(absPath.length()), s));
+        }
+        List<Class<HttpInterceptor>> list = serviceClassFinder.findByInstance(HttpInterceptor.class);
+        if (!list.isEmpty()) {
+            httpInterceptor = serviceClassFinder.instanceOf(list.getFirst());
         }
     }
 
@@ -101,19 +108,26 @@ public class HttpController {
         return null;
     }
 
+    public static void setMimeType(HttpServletRequest request, HttpServletResponse response) {
+        ServletContext context = request.getServletContext();
+        String mimeType = context.getMimeType(request.getRequestURI());
+        response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
+    }
+
     @RequestMapping(value = "/**")
     public CompletableFuture<Void> handler(
             HttpServletRequest request,
             HttpServletResponse response
     ) throws ServletException, IOException {
 
+        if (httpInterceptor != null && !httpInterceptor.handle(request, response)) {
+            return null;
+        }
+
         String uri = request.getRequestURI();
 
         if (staticFile.containsKey(uri)) {
-            ServletContext context = request.getServletContext();
-            String mimeType = context.getMimeType(uri);
-            response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
-
+            setMimeType(request, response);
             OutputStream out = response.getOutputStream();
             FileInputStream in = new FileInputStream(staticFile.get(uri));
             byte[] buffer = new byte[4096];
@@ -151,7 +165,9 @@ public class HttpController {
         if (!promise.isSetCompleteHandler()) {
             promise.onComplete((atomicBoolean, p) -> {
                 HttpAsyncResponse resp = p.getRepositoryMap("HttpAsyncResponse", HttpAsyncResponse.class);
-                resp.setBody(p.getLogString());
+                if (resp.isEmptyBody()) {
+                    resp.setBodyIfEmpty(p.getLogString());
+                }
                 resp.complete();
             });
         }
