@@ -84,8 +84,6 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
             raiseUp("Thread not initialize", "pause()");
             return;
         }
-        // В любом случае поток хотят тормознуть, не важно какие статусы сейчас
-        LockSupport.park(thread);
         if (inPark.compareAndSet(false, true)) {
             if (isShutdown.get()) {
                 pool.remove(this);
@@ -93,6 +91,8 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
                 pool.complete(this, null);
             }
         }
+        // В любом случае поток хотят тормознуть, не важно какие статусы сейчас
+        LockSupport.park(thread);
     }
 
     @Override
