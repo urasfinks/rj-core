@@ -203,7 +203,6 @@ public class ServiceClassFinder {
         } catch (Throwable th) {
             throw new ForwardException(th);
         }
-        System.out.println(UtilJson.toStringPretty(listClass, "{}"));
         return listClass;
     }
 
