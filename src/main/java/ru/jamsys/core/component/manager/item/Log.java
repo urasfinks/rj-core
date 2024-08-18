@@ -3,8 +3,6 @@ package ru.jamsys.core.component.manager.item;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.flat.util.Util;
@@ -16,13 +14,7 @@ import java.io.InputStream;
 
 @ToString
 @Getter
-@Service
-@Component
 public class Log implements ByteTransformer, Correlation {
-
-    public Log() { // Это что бы компонент Spring смог инициализировать
-        // не используйте этот констроктор
-    }
 
     public long timeAdd = System.currentTimeMillis();
 

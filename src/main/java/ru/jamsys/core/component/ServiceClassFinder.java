@@ -1,8 +1,7 @@
 package ru.jamsys.core.component;
 
+import com.google.common.reflect.ClassPath;
 import lombok.Getter;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
@@ -11,6 +10,7 @@ import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.repository.RepositoryMapValue;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilJson;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
@@ -36,17 +36,13 @@ public class ServiceClassFinder {
 
     private final ApplicationContext applicationContext;
 
-    private final ConfigurableListableBeanFactory configurableListableBeanFactory;
-
     public ServiceClassFinder(
             ApplicationContext applicationContext,
             ExceptionHandler exceptionHandler,
-            ServiceProperty serviceProperty,
-            ConfigurableListableBeanFactory configurableListableBeanFactory
+            ServiceProperty serviceProperty
     ) {
         this.applicationContext = applicationContext;
         this.exceptionHandler = exceptionHandler;
-        this.configurableListableBeanFactory = configurableListableBeanFactory;
 
         @SuppressWarnings("SameParameterValue")
         String pkg = "ru.jamsys";
@@ -172,44 +168,42 @@ public class ServiceClassFinder {
         availableClass.remove(cls);
     }
 
-
     private List<Class<?>> getAvailableClass(String packageName) {
         List<Class<?>> listClass = new ArrayList<>();
         try {
-            String[] beans = applicationContext.getBeanDefinitionNames();
-            for (String bean : beans) {
-
-                BeanDefinition beanDefinition = configurableListableBeanFactory.getBeanDefinition(bean);
-                String clsName = beanDefinition.getBeanClassName();
-                if (clsName == null || !clsName.startsWith(packageName)) {
-                    continue;
-                }
-                Class<?> aClass = Class.forName(clsName);
-                if (Modifier.isAbstract(aClass.getModifiers())) {
-                    continue;
-                }
-                if (Modifier.isInterface(aClass.getModifiers())) {
-                    continue;
-                }
-                boolean findUnusedAnnotation = false;
-                for (Annotation annotation : aClass.getAnnotations()) {
-                    if (instanceOf(annotation.annotationType(), IgnoreClassFinder.class)) {
-                        findUnusedAnnotation = true;
-                        break;
+            ClassPath.from(getClass().getClassLoader()).getTopLevelClassesRecursive(packageName).forEach(info -> {
+                try {
+                    Class<?> aClass = Class.forName(info.getName());
+                    if (Modifier.isAbstract(aClass.getModifiers())) {
+                        return;
                     }
+                    if (Modifier.isInterface(aClass.getModifiers())) {
+                        return;
+                    }
+                    boolean findUnusedAnnotation = false;
+                    for (Annotation annotation : aClass.getAnnotations()) {
+                        if (instanceOf(annotation.annotationType(), IgnoreClassFinder.class)) {
+                            findUnusedAnnotation = true;
+                            break;
+                        }
+                    }
+                    RepositoryMapValue<Boolean> s = ignoredClassMap.getMapRepository2().get(aClass.getName());
+                    if (s != null) {
+                        findUnusedAnnotation = s.getValue();
+                    }
+                    if (findUnusedAnnotation) {
+                        return;
+                    }
+                    listClass.add(aClass);
+                } catch (Throwable th) {
+                    throw new ForwardException(th);
                 }
-                RepositoryMapValue<Boolean> s = ignoredClassMap.getMapRepository2().get(aClass.getName());
-                if (s != null) {
-                    findUnusedAnnotation = s.getValue();
-                }
-                if (findUnusedAnnotation) {
-                    continue;
-                }
-                listClass.add(aClass);
-            }
+            });
+
         } catch (Throwable th) {
             throw new ForwardException(th);
         }
+        System.out.println(UtilJson.toStringPretty(listClass, "{}"));
         return listClass;
     }
 
