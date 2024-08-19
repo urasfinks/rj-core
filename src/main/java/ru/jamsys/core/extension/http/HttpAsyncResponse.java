@@ -9,6 +9,8 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilJson;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -65,6 +67,22 @@ public class HttpAsyncResponse {
         response.setContentType(responseContentType);
         try {
             response.getWriter().print(body);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        completableFuture.complete(null);
+    }
+
+    public void complete(InputStream inputStream) {
+        try {
+            OutputStream out = getResponse().getOutputStream();
+            byte[] buffer = new byte[4096];
+            int length;
+            while ((length = inputStream.read(buffer)) > 0) {
+                out.write(buffer, 0, length);
+            }
+            inputStream.close();
+            out.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
