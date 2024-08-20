@@ -6,8 +6,11 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ReadContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.util.List;
 import java.util.Map;
@@ -29,12 +32,26 @@ public class UtilJson {
             if (i == split.length - 1) {
                 return target.get(split[i]);
             } else {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> x = (Map<String, Object>) target.get(split[i]);
-                target = x;
+                try {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> x = (Map<String, Object>) target.get(split[i]);
+                    target = x;
+                } catch (Throwable th) {
+                    throw new ForwardException("selector: " + selector + "; ex: " + split[i], th);
+                }
             }
         }
         return null;
+    }
+
+    public static ReadContext getContext(String json){
+        return JsonPath.parse(json);
+    }
+
+    //https://github.com/json-path/JsonPath
+    public static void selector(String json, Map<String, String> selector, Map<String, Object> res) {
+        ReadContext ctx = getContext(json);
+        selector.forEach((s, s2) -> res.put(s, ctx.read(s2)));
     }
 
     @SuppressWarnings("unused")
