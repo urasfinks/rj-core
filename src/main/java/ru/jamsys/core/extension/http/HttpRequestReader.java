@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+
 @ToString(onlyExplicitlyIncluded = true)
 public class HttpRequestReader {
 
@@ -50,6 +52,12 @@ public class HttpRequestReader {
     public HttpRequestReader(@Nonnull HttpServletRequest request) throws ServletException, IOException {
         this.request = request;
         read();
+    }
+
+    public Map<String, String> getMapEscapedHtmlSpecialChars() {
+        HashMap<String, String> result = new HashMap<>();
+        map.forEach((s, s2) -> result.put(s, escapeHtml4(s2)));
+        return result;
     }
 
     public void read() throws IOException, ServletException {
