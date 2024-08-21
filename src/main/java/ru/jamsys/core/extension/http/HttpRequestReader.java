@@ -87,6 +87,17 @@ public class HttpRequestReader {
         }
     }
 
+    public Map<String, String> getMultiPartFormSubmittedFileName() throws ServletException, IOException {
+        Map<String, String> result = new LinkedHashMap<>();
+        for (Part part : request.getParts()) {
+            result.put(
+                    part.getName(),
+                    part.getSubmittedFileName()
+            );
+        }
+        return result;
+    }
+
     public InputStream getMultiPartFormData(String key) throws ServletException, IOException {
         return request.getPart(key).getInputStream();
     }
