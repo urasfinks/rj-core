@@ -8,6 +8,7 @@ public interface RepositoryMap<K, V> {
 
     Map<K, V> getRepositoryMap();
 
+    // Буд-те внимательны хранилище нельзя перезаписывать по ключу!!!
     default <R> R setMapRepository(K key, R obj) {
         @SuppressWarnings("unchecked")
         R result = (R) getRepositoryMap().computeIfAbsent(key, _ -> (V) obj);
