@@ -44,7 +44,7 @@ class UtilHideTest {
     public void explodeAndReplace(){
         Assertions.assertEquals("P****NAME: Ф***ЛИЯ И*Я О****ТВО; P***OSE: Д*Я Т**ТА; E***UDE_R**S: E***UDE_R**S@I****ANCE_P**S_R*@;", UtilHide.explodeLetterAndMask("PAYERNAME: ФАМИЛИЯ ИМЯ ОТЧЕСТВО; PURPOSE: ДЛЯ ТЕСТА; EXCLUDE_REQS: EXCLUDE_REQS@INSURANCE_PASS_RF@;", 1,4, 40, "*"));
         Assertions.assertEquals("P****NAME: Ф***ЛИЯ И*Я О****ТВО; P***OSE: Д*Я Т**ТА; E***UDE_R**S: C**D: 1*****7890; E***UDE_R**S@I****ANCE_P**S_R*@;", UtilHide.explodeLetterAndMask("PAYERNAME: ФАМИЛИЯ ИМЯ ОТЧЕСТВО; PURPOSE: ДЛЯ ТЕСТА; EXCLUDE_REQS: CARD: 1234567890; EXCLUDE_REQS@INSURANCE_PASS_RF@;", 1,4, 40, "*"));
-        Assertions.assertEquals("О**ов А***сей Т****вич", UtilHide.explodeLetterAndMask("Орлов Алексей Тестович", 1,4, 40, "*"));
+        Assertions.assertEquals("О**ов А***сей Т****вич", UtilHide.explodeLetterAndMask("Орлов Алексей Тестович", 2,3, 40, "*"));
     }
 
 }
