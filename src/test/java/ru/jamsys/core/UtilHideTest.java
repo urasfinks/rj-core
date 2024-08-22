@@ -13,6 +13,7 @@ class UtilHideTest {
 
     @Test
     public void test(){
+        Assertions.assertEquals("H---o", UtilHide.mask("Hello", 3, 4, 50, "-"));
         Assertions.assertEquals("H***o", UtilHide.mask("Hello", 3, 4, 50));
         Assertions.assertEquals("H***o", UtilHide.mask("Hello", 1, 1, 50));
         Assertions.assertEquals("H**lo", UtilHide.mask("Hello", 1, 2, 40));
