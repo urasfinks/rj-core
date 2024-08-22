@@ -7,22 +7,27 @@ import org.apache.tomcat.util.descriptor.web.SecurityCollection;
 import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.Ssl;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.ServletWebSocketHandlerRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.web.socket.WebSocket;
 import ru.jamsys.core.extension.property.PropertiesContainer;
+import ru.jamsys.core.flat.util.Util;
 
 import javax.annotation.PreDestroy;
 
@@ -126,6 +131,36 @@ public class AppConfiguration implements WebSocketConfigurer {
                 (v) -> factory.setMaxRequestSize(DataSize.ofMegabytes(v))
         );
         return factory.createMultipartConfig();
+    }
+
+    // Эта штука запускается перед запуском Tomcat embedded
+    // Что бы не хранить в открытом виде ключик для хранилища web мы его вытащим уже из SecurityComponent
+    @Bean
+    @Primary
+    public ServerProperties serverProperties() {
+        ServiceProperty bean = applicationContext.getBean(ServiceProperty.class);
+        final ServerProperties serverProperties = new ServerProperties();
+        if (bean.get(Boolean.class, "run.args.web.ssl", false)) {
+            String securityAlias = bean.get(String.class, "run.args.web.ssl.security.alias", "");
+            if (!securityAlias.isEmpty()) {
+                Util.logConsole("Init web ssl context");
+                // Так как мы тут лезем в перёд батьки) Извольте - надо подгрузить компонент, который должен был
+                // в своём порядке загрузиться самостоятельно в Core.run()
+                applicationContext.getBean(SecurityKey.class);
+                SecurityComponent securityComponent = applicationContext.getBean(SecurityComponent.class);
+                securityComponent.run();
+                // Считаю это зашкварно, а что делать если оно так работает в Spring
+                // Тем не менее я считаю, что Spring - это хорошо! Я столько раз радовался созданием этого монстра - человеком
+                // Не хочу лишний раз создавать строки хранящие ключи
+                final Ssl ssl = new Ssl();
+                ssl.setKeyPassword(new String(securityComponent.get(securityAlias)));
+                System.setProperty("server.ssl.key-store-password", new String(securityComponent.get(securityAlias)));
+                serverProperties.setSsl(ssl);
+            } else {
+                App.error(new RuntimeException("run.args.web.ssl.security.alias is empty"));
+            }
+        }
+        return serverProperties;
     }
 
     @PreDestroy

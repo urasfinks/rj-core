@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 public class SecurityComponent extends RepositoryPropertiesField implements LifeCycleComponent {
@@ -62,6 +63,8 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
     private KeyStore.PasswordProtection keyStorePP;
 
     private final PropertiesAgent propertiesAgent;
+
+    private final AtomicBoolean isRun = new AtomicBoolean(false);
 
     public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
         propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
@@ -320,43 +323,45 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
 
     @Override
     public void run() {
-        byte[] publicKey = UtilFile.readBytes(pathPublicKey, null);
+        if (isRun.compareAndSet(false, true)) {
+            byte[] publicKey = UtilFile.readBytes(pathPublicKey, null);
 
-        Util.logConsole("Security Check privateKey: " + (privateKey != null && privateKey.length > 0));
-        Util.logConsole("Security Check publicKey: " + (publicKey != null && publicKey.length > 0));
+            Util.logConsole("Security Check privateKey: " + (privateKey != null && privateKey.length > 0));
+            Util.logConsole("Security Check publicKey: " + (publicKey != null && publicKey.length > 0));
 
-        if (publicKey != null && publicKey.length > 0 && privateKey != null && privateKey.length > 0) {
-            // У нас всё установлено можем просто работать
-            byte[] passwordKeyStore = decryptStoragePassword(publicKey);
-            if (passwordKeyStore.length == 0) {
-                throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + pathPublicKey + "]");
-            }
-            try {
-                loadKeyStorage(UtilByte.bytesToChars(passwordKeyStore));
-            } catch (Exception e) {
-                throw new ForwardException(e);
-            }
-            if (UtilFile.ifExist(pathInitAlias)) {
-                System.err.println("Please remove file [" + pathInitAlias + "] with credentials information");
-                insertAliases(UtilByte.bytesToChars(passwordKeyStore));
-            }
-            try {
-                Util.logConsole(
-                        "KeyStore available aliases: "
-                                + UtilJson.toStringPretty(getAvailableAliases(), "[]")
-                );
-            } catch (Exception ignore) {
+            if (publicKey != null && publicKey.length > 0 && privateKey != null && privateKey.length > 0) {
+                // У нас всё установлено можем просто работать
+                byte[] passwordKeyStore = decryptStoragePassword(publicKey);
+                if (passwordKeyStore.length == 0) {
+                    throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + pathPublicKey + "]");
+                }
+                try {
+                    loadKeyStorage(UtilByte.bytesToChars(passwordKeyStore));
+                } catch (Exception e) {
+                    throw new ForwardException(e);
+                }
+                if (UtilFile.ifExist(pathInitAlias)) {
+                    System.err.println("Please remove file [" + pathInitAlias + "] with credentials information");
+                    insertAliases(UtilByte.bytesToChars(passwordKeyStore));
+                }
+                try {
+                    Util.logConsole(
+                            "KeyStore available aliases: "
+                                    + UtilJson.toStringPretty(getAvailableAliases(), "[]")
+                    );
+                } catch (Exception ignore) {
 
+                }
+                setPrivateKey(new char[]{});
+            } else {
+                UtilFile.removeIfExist(pathStorage);
+                //У нас чего-то не хватает выводим предупреждения
+                byte[] initJson = createInitTemplateFile();
+                String passwordFromInfoJson = getPasswordFromInfoJson(initJson);
+                printNotice(passwordFromInfoJson);
             }
-            setPrivateKey(new char[]{});
-        } else {
-            UtilFile.removeIfExist(pathStorage);
-            //У нас чего-то не хватает выводим предупреждения
-            byte[] initJson = createInitTemplateFile();
-            String passwordFromInfoJson = getPasswordFromInfoJson(initJson);
-            printNotice(passwordFromInfoJson);
+            propertiesAgent.run();
         }
-        propertiesAgent.run();
     }
 
     @Override
