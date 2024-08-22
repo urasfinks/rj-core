@@ -8,11 +8,11 @@ import java.util.List;
 
 public class UtilHide {
 
-    public static String mask(String str, int countFirst, int countLast) {
-        return mask(str, countFirst, countLast, 50);
+    public static String mask(String str, int countFirst, int countLast, int maskPrc) {
+        return mask(str, countFirst, countLast, maskPrc, "*");
     }
 
-    public static String mask(String str, int countFirst, int countLast, int maskPrc) {
+    public static String mask(String str, int countFirst, int countLast, int maskPrc, String ch) {
         int countShowCharacter = str.length() - (int) Math.ceil(Double.parseDouble(maskPrc + "") * str.length() / 100);
         //System.out.println("Можно показать: " + countShowCharacter);
 
@@ -36,17 +36,17 @@ public class UtilHide {
             case 0, 1:
                 return str;
             case 2:
-                return str.charAt(0) + "*";
+                return str.charAt(0) + ch;
             case 3:
-                return str.charAt(0) + "*" + str.charAt(2);
+                return str.charAt(0) + ch + str.charAt(2);
         }
         int tail = str.length() - countFirst;
         if (tail >= countLast * 2) {
             int middle = str.length() - countFirst - countLast;
-            return str.substring(0, countFirst) + Util.padLeft("", middle, "*") + str.substring(countFirst + middle);
+            return str.substring(0, countFirst) + Util.padLeft("", middle, ch) + str.substring(countFirst + middle);
         }
         int middle = (int) Math.ceil(Double.parseDouble(tail + "") / 2);
-        return str.substring(0, countFirst) + Util.padLeft("", middle, "*") + str.substring(countFirst + middle);
+        return str.substring(0, countFirst) + Util.padLeft("", middle, ch) + str.substring(countFirst + middle);
     }
 
     @Getter
@@ -84,15 +84,11 @@ public class UtilHide {
         return !ch.toLowerCase().equals(ch.toUpperCase()) || Util.isNumeric(ch);
     }
 
-    public static String explodeLetterAndMask(String str, int countFirst, int countLast) {
-        return explodeLetterAndMask(str, countFirst, countLast, 50);
-    }
-
-    public static String explodeLetterAndMask(String str, int countFirst, int countLast, int maskPrc) {
+    public static String explodeLetterAndMask(String str, int countFirst, int countLast, int maskPrc, String ch) {
         StringBuilder sb = new StringBuilder();
         for (StringItem stringItem : split(str)) {
             if (stringItem.isLetter()) {
-                sb.append(mask(stringItem.getValue().toString(), countFirst, countLast, maskPrc));
+                sb.append(mask(stringItem.getValue().toString(), countFirst, countLast, maskPrc, ch));
             } else {
                 sb.append(stringItem.getValue().toString());
             }
