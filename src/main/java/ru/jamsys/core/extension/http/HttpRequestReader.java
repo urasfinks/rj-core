@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 import lombok.Getter;
 import lombok.ToString;
+import ru.jamsys.core.flat.util.Util;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -56,7 +57,7 @@ public class HttpRequestReader {
 
     public Map<String, String> getMapEscapedHtmlSpecialChars() {
         HashMap<String, String> result = new HashMap<>();
-        map.forEach((s, s2) -> result.put(s, escapeHtml4(s2)));
+        map.forEach((s, s2) -> result.put(s, Util.htmlEntity(s2)));
         return result;
     }
 

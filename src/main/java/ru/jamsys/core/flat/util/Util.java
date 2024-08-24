@@ -31,6 +31,8 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+
 public class Util {
 
     static final String defaultCharset = "UTF-8";
@@ -357,6 +359,10 @@ public class Util {
 
     public static String ucword(String someString) {
         return someString.substring(0, 1).toUpperCase() + someString.substring(1);
+    }
+
+    public static String htmlEntity(String value){
+        return escapeHtml4(value);
     }
 
     public static long zeroLastNDigits(long x, long n) {
