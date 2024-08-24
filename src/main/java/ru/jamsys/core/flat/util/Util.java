@@ -314,6 +314,11 @@ public class Util {
         }
     }
 
+    public static File getWebFile(String relativeWebPath) {
+        String location = App.get(ServiceProperty.class).get("run.args.web.resource.location");
+        return new File(location + relativeWebPath);
+    }
+
     public static void printStackTrace(String label) {
         Exception exception = new Exception(
                 Util.msToDataFormat(System.currentTimeMillis()) + " ["
