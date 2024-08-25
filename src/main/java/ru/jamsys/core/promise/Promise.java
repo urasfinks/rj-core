@@ -5,7 +5,9 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.RepositoryMap;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.BiConsumerThrowing;
+import ru.jamsys.core.extension.functional.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.TriConsumerThrowing;
 import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
@@ -149,5 +151,15 @@ public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmu
     void skipAllStep();
 
     void goTo(String to);
+
+    // Для удобства использования builder, что бы в цепочке можно было навешать promise плюшек)
+    default Promise extension(ConsumerThrowing<Promise> cs) {
+        try {
+            cs.accept(this);
+        } catch (Throwable th) {
+            throw new ForwardException(th);
+        }
+        return this;
+    }
 
 }
