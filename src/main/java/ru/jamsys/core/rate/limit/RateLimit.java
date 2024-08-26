@@ -7,6 +7,7 @@ import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsCollectorMap;
 import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.addable.AddToMap;
+import ru.jamsys.core.extension.exception.RateLimitException;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -27,8 +28,7 @@ public class RateLimit
         ClassEquals,
         UniqueClassName,
         LifeCycleInterface,
-        AddToMap<String, RateLimitItem>
-{
+        AddToMap<String, RateLimitItem> {
 
     final Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
 
@@ -43,10 +43,23 @@ public class RateLimit
         return map;
     }
 
+    public void checkOrThrow() {
+        for (String key : map.keySet()) {
+            RateLimitItem rateLimitItem = map.get(key);
+            if (rateLimitItem.get() >= rateLimitItem.max()) {
+                System.out.println(index+"; "+ rateLimitItem.get() + "  > " + rateLimitItem.max());
+                throw new RateLimitException(
+                        "RateLimit ABORT",
+                        "index: " + index + "; key: " + key + "; max: " + map.get(key).max() + "; now: " + map.get(key).get() + ";"
+                );
+            }
+        }
+    }
+
     public boolean check() {
         for (String key : map.keySet()) {
             if (!map.get(key).check()) {
-                Util.logConsole("RateLimit [ABORT] index: " + index + "; key: " + key + "; max: " + map.get(key).max()+"; now: "+map.get(key).get()+";", true);
+                Util.logConsole("RateLimit [ABORT] index: " + index + "; key: " + key + "; max: " + map.get(key).max() + "; now: " + map.get(key).get() + ";", true);
                 return false;
             }
         }

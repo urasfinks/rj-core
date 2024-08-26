@@ -19,6 +19,8 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
 
     private final Broker<PromiseTask> broker;
 
+    private final RateLimit rateLimit;
+
     public ThreadPool(String index) {
         super(index);
         this.broker = App.get(ManagerBroker.class)
@@ -29,9 +31,12 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
                                         ThreadPool.class.getSimpleName() + ".broker->drop(task)")
                                 )
                 );
+        rateLimit = App.get(ManagerRateLimit.class).get(getIndex());
+        rateLimit.init(App.context, "tps", RateLimitFactory.TPS);
     }
 
     public void addPromiseTask(PromiseTask promiseTask) {
+        rateLimit.checkOrThrow();
         long timeout = promiseTask.isTerminated() ? 6_000L : promiseTask.getPromise().getExpiryRemainingMs();
         broker.add(new ExpirationMsImmutableEnvelope<>(promiseTask, timeout));
         addIfPoolEmpty();
@@ -44,8 +49,6 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
 
     @Override
     public ThreadResource createPoolItem() {
-        RateLimit rateLimit = App.get(ManagerRateLimit.class).get(getIndex());
-        rateLimit.init(App.context, "tps", RateLimitFactory.TPS);
         return new ThreadResource(this.getIndex() + "-" + counter.getAndIncrement(), this);
     }
 

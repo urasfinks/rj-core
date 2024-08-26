@@ -51,7 +51,7 @@ public class RateLimitItemTps
 
     @Override
     public int get() {
-        return max.get();
+        return tps.get();
     }
 
     @Override
