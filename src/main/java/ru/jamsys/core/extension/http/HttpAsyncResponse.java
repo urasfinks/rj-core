@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.http.HttpStatus;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilJson;
 
@@ -95,6 +96,12 @@ public class HttpAsyncResponse {
 
     public void setError(String cause) {
         setBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
+    }
+
+    public void setUnauthorized() throws IOException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setHeader("WWW-Authenticate", "Basic realm=\"JamSys\"");
+        response.getWriter().print("<html><body><h1>401. Unauthorized</h1></body>");
     }
 
 }

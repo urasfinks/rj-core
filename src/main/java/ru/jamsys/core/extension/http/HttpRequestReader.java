@@ -3,9 +3,12 @@ package ru.jamsys.core.extension.http;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import lombok.Getter;
 import lombok.ToString;
+import org.springframework.http.HttpStatus;
+import ru.jamsys.core.extension.functional.BiConsumerThrowing;
 import ru.jamsys.core.flat.util.Util;
 
 import javax.annotation.Nonnull;
@@ -14,12 +17,7 @@ import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+import java.util.*;
 
 @ToString(onlyExplicitlyIncluded = true)
 public class HttpRequestReader {
@@ -148,6 +146,27 @@ public class HttpRequestReader {
             }
         }
         return result;
+    }
+
+    public void basicAuthHandler(BiConsumerThrowing<String, String> handler) throws Throwable {
+        String authorization = request.getHeader("Authorization");
+        basicAuthHandler(authorization, handler);
+    }
+
+    public static void basicAuthHandler(String authorization, BiConsumerThrowing<String, String> handler) throws Throwable {
+        if (authorization == null) {
+            throw new RuntimeException("Authorization header is null");
+        }
+        if (!authorization.startsWith("Basic ")) {
+            throw new RuntimeException("Authorization header is not Basic");
+        }
+        String base64Decoded = new String(Base64.getDecoder().decode(authorization.substring(6)), StandardCharsets.UTF_8);
+        if (!base64Decoded.contains(":")) {
+            throw new RuntimeException("Error parsing");
+        }
+        String user = base64Decoded.substring(0, base64Decoded.indexOf(":"));
+        String password = base64Decoded.substring(base64Decoded.indexOf(":") + 1);
+        handler.accept(user, password);
     }
 
 }
