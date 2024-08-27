@@ -112,6 +112,12 @@ public class UtilJson {
         return ret;
     }
 
+    public static Map<String, Object> getMapOrThrow(String json) throws Throwable {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> map = (Map<String, Object>) objectMapper.readValue(json, Map.class);
+        return map;
+    }
+
     @SuppressWarnings("unused")
     public static <V> JsonEnvelope<List<V>> toList(String json) {
         JsonEnvelope<List<V>> ret = new JsonEnvelope<>();
