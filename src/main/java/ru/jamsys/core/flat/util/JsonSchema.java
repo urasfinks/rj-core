@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
-import lombok.Getter;
+import ru.jamsys.core.extension.exception.JsonSchemaException;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -17,64 +17,34 @@ import java.util.Set;
 
 public class JsonSchema {
 
-    ObjectMapper objectMapper = new ObjectMapper();
-    JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
+    public static ObjectMapper objectMapper = new ObjectMapper();
 
-    @SuppressWarnings("unused")
-    public Result validate(String json, String schema) {
+    public static JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
+
+    public static boolean validate(String json, String schema) throws Exception {
         return validate(json, schema, StandardCharsets.UTF_8);
     }
 
-    public Result validate(String json, String schema, Charset charset) {
+    public static boolean validate(String json, String schema, Charset charset) throws Exception {
         InputStream jsonStream = new ByteArrayInputStream(json.getBytes(charset));
         InputStream schemaStream = new ByteArrayInputStream(schema.getBytes(charset));
         return validate(jsonStream, schemaStream);
     }
 
-    public Result validate(InputStream jsonStream, InputStream schemaStream) {
-        Result result = new Result();
+    public static boolean validate(InputStream jsonStream, InputStream schemaStream) throws Exception {
         if (jsonStream == null) {
-            result.exception = new RuntimeException("json data is null");
-            return result;
+            throw new RuntimeException("json data is null");
         }
         if (schemaStream == null) {
-            result.exception = new RuntimeException("json schema is null");
-            return result;
+            throw new RuntimeException("json schema is null");
         }
-        try {
-            JsonNode jsonObject = objectMapper.readTree(jsonStream);
-            com.networknt.schema.JsonSchema schemaObject = schemaFactory.getSchema(schemaStream);
-            result.validationResult = schemaObject.validate(jsonObject);
-        } catch (Exception e) {
-            result.exception = e;
+        JsonNode jsonObject = objectMapper.readTree(jsonStream);
+
+        Set<ValidationMessage> validate = schemaFactory.getSchema(schemaStream).validate(jsonObject);
+        if (!validate.isEmpty()) {
+            throw new JsonSchemaException(validate);
         }
-        return result;
-    }
-
-    public static class Result {
-
-        Set<ValidationMessage> validationResult = null;
-
-        @Getter
-        Exception exception = null;
-
-        public boolean isValidate() {
-            return exception == null && validationResult != null && validationResult.isEmpty();
-        }
-
-        public String getError() {
-            if (isValidate()) {
-                return null;
-            }
-            StringBuilder sb = new StringBuilder();
-            if (validationResult != null) {
-                validationResult.forEach(vm -> sb.append(vm.getMessage()).append("\n"));
-            }
-            if (exception != null) {
-                sb.append(exception);
-            }
-            return sb.toString().trim();
-        }
+        return true;
     }
 
 }

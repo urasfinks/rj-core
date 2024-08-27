@@ -5,18 +5,39 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.util.JsonSchema;
 import ru.jamsys.core.flat.util.UtilFileResource;
 
-
-import java.io.IOException;
-
 // IO time: 139ms
 // COMPUTE time: 141ms
 
 class JsonSchemaTest {
 
     @Test
-    void validate() throws IOException {
-        JsonSchema jsonSchema = new JsonSchema();
-        JsonSchema.Result validate = jsonSchema.validate(UtilFileResource.get("schema/test/1.json"), UtilFileResource.get("schema/test/1-schema.json"));
-        Assertions.assertEquals("$.code: string found, integer expected", validate.getError(), "#1");
+    void validate() throws Throwable {
+        try {
+            JsonSchema.validate(UtilFileResource.get("schema/test/2.json"), UtilFileResource.get("schema/test/1-schema.json"));
+        } catch (Throwable th) {
+            th.printStackTrace();
+        }
+
+        try {
+            JsonSchema.validate(UtilFileResource.get("schema/test/1.json"), UtilFileResource.get("schema/test/1-schema.json"));
+            Assertions.fail();
+        } catch (Throwable th) {
+            Assertions.assertEquals("$.code: string found, integer expected", th.getMessage(), "#1");
+        }
+
+        // Просто повтор, что статика работает
+        try {
+            JsonSchema.validate(UtilFileResource.get("schema/test/2.json"), UtilFileResource.get("schema/test/1-schema.json"));
+        } catch (Throwable th) {
+            th.printStackTrace();
+        }
+
+        try {
+            JsonSchema.validate(UtilFileResource.get("schema/test/1.json"), UtilFileResource.get("schema/test/1-schema.json"));
+            Assertions.fail();
+        } catch (Throwable th) {
+            Assertions.assertEquals("$.code: string found, integer expected", th.getMessage(), "#1");
+        }
+
     }
 }

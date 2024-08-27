@@ -27,8 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class WebSocket extends TextWebSocketHandler implements StatisticsFlushComponent {
 
-    private final JsonSchema jsonSchema = new JsonSchema();
-
     private final WebSocketCheckConnection webSocketCheckConnection;
 
     private final Map<String, List<WebSocketSession>> subscription = new ConcurrentHashMap<>();
@@ -111,24 +109,21 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
     protected void handleTextMessage(@NotNull WebSocketSession session, @NotNull TextMessage message) throws Exception {
         super.handleTextMessage(session, message);
         String request = message.getPayload();
-        JsonSchema.Result validate = jsonSchema.validate(request, UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"));
-        if (validate.isValidate()) {
-            Map<Object, Object> req = UtilJson.toMap(request).getObject();
-            PromiseGenerator promiseGenerator = getGeneratorByHandler((String) req.get("uri"));
-            if (promiseGenerator == null) {
-                App.error(new RuntimeException("PromiseGenerator not found"));
-                return;
-            }
-            Promise promise = promiseGenerator.generate();
-            if (promise == null) {
-                App.error(new RuntimeException("Promise is null"));
-                return;
-            }
-            promise.setMapRepository("WebSocketSession", session);
-            promise.run();
-        } else {
-            App.error(validate.getException());
+        JsonSchema.validate(request, UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"));
+        Map<Object, Object> req = UtilJson.toMap(request).getObject();
+        PromiseGenerator promiseGenerator = getGeneratorByHandler((String) req.get("uri"));
+        if (promiseGenerator == null) {
+            App.error(new RuntimeException("PromiseGenerator not found"));
+            return;
         }
+        Promise promise = promiseGenerator.generate();
+        if (promise == null) {
+            App.error(new RuntimeException("Promise is null"));
+            return;
+        }
+        promise.setMapRepository("WebSocketSession", session);
+        promise.run();
+
     }
 
     @Override
