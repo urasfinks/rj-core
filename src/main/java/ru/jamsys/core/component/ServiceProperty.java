@@ -8,6 +8,7 @@ import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
@@ -75,6 +76,12 @@ public class ServiceProperty {
                 for (String prop : ((EnumerablePropertySource<?>) next).getPropertyNames()) {
                     createIfNotExist(prop, env.getProperty(prop));
                 }
+            }
+        }
+        if (prop.containsKey("spring.application.name")) {
+            String value = prop.get("spring.application.name").getValue();
+            if (value != null) {
+                App.applicationName = value;
             }
         }
     }

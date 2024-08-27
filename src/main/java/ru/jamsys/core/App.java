@@ -18,6 +18,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SpringBootApplication
 public class App {
 
+    public static String applicationName = App.class.getName(); // Может поменяться при загрузке компонента ServiceProperty
+
     private static final Map<Class<?>, Object> mapBean = new ConcurrentHashMap<>();
 
     public static ConfigurableApplicationContext context = null;
