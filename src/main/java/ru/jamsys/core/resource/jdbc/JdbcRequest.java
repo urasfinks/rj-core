@@ -1,8 +1,8 @@
 package ru.jamsys.core.resource.jdbc;
 
 import lombok.Getter;
+import ru.jamsys.core.flat.template.jdbc.JdbcRequestRepository;
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
-import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -13,7 +13,7 @@ import java.util.Map;
 public class JdbcRequest {
 
     @Getter
-    final JdbcTemplate jdbcTemplate;
+    final JdbcRequestRepository jdbcRequestRepository;
 
     final List<Map<String, Object>> listArgs = new ArrayList<>();
 
@@ -28,9 +28,9 @@ public class JdbcRequest {
 
     private final String nameCache;
 
-    public JdbcRequest(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.nameCache = jdbcTemplate.getNameCamel();
+    public JdbcRequest(JdbcRequestRepository jdbcRequestRepository) {
+        this.jdbcRequestRepository = jdbcRequestRepository;
+        this.nameCache = jdbcRequestRepository.getNameCamel();
         listArgs.add(new LinkedHashMap<>());
     }
 
@@ -49,8 +49,8 @@ public class JdbcRequest {
         return this;
     }
 
-    public TemplateJdbc getTemplate() {
-        return jdbcTemplate.getTemplate();
+    public JdbcTemplate getJdbcTemplate() {
+        return jdbcRequestRepository.getJdbcTemplate();
     }
 
     public String getName() {

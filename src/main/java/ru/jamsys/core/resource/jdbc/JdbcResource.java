@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
-import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
+import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -87,11 +87,11 @@ public class JdbcResource
 
     @Override
     public List<Map<String, Object>> execute(JdbcRequest arguments) throws Throwable {
-        TemplateJdbc template = arguments.getTemplate();
-        if (template == null) {
+        JdbcTemplate jdbcTemplate = arguments.getJdbcTemplate();
+        if (jdbcTemplate == null) {
             throw new RuntimeException("TemplateEnum: " + arguments.getName() + " return null template");
         }
-        return execute(connection, template, arguments.getListArgs(), statementControl, arguments.getDebug());
+        return execute(connection, jdbcTemplate, arguments.getListArgs(), statementControl, arguments.getDebug());
     }
 
     @Override

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.flat.template.jdbc.CompiledSqlTemplate;
 import ru.jamsys.core.flat.template.jdbc.StatementType;
-import ru.jamsys.core.flat.template.jdbc.TemplateJdbc;
+import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
 import ru.jamsys.core.jt.Logger;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.resource.jdbc.JdbcRequest;
@@ -20,7 +20,7 @@ import java.util.Map;
 // IO time: 6ms
 // COMPUTE time: 6ms
 
-class JdbcTemplateTwixTest {
+class JdbcRequestRepositoryTest {
 
     public static ServicePromise servicePromise;
 
@@ -37,7 +37,7 @@ class JdbcTemplateTwixTest {
 
     @Test
     void parseSql2() throws Exception {
-        TemplateJdbc template = new TemplateJdbc("""
+        JdbcTemplate jdbcTemplate = new JdbcTemplate("""
                 SELECT
                     type_data AS key,
                     max(revision_data) AS max
@@ -55,7 +55,7 @@ class JdbcTemplateTwixTest {
         args.put("uuid_device", "a1b2c3");
         args.put("lazy", List.of("Hello", "world", "wfe"));
 
-        CompiledSqlTemplate compiledSqlTemplate = template.compile(args);
+        CompiledSqlTemplate compiledSqlTemplate = jdbcTemplate.compile(args);
         Assertions.assertEquals("""
                 SELECT
                     type_data AS key,
@@ -82,13 +82,13 @@ class JdbcTemplateTwixTest {
                 AND lazy_sync_data IN ('Hello','world','wfe')
                 AND uuid_device_data = 'a1b2c3'
                 GROUP BY type_data;
-                """, template.debug(compiledSqlTemplate), "#2");
+                """, jdbcTemplate.debug(compiledSqlTemplate), "#2");
     }
 
     @Test
     void parseSql() {
-        TemplateJdbc template = new TemplateJdbc("select * from table where c1 = ${IN.name::VARCHAR} and c2 = ${IN.name::VARCHAR}", StatementType.SELECT_WITH_AUTO_COMMIT);
-        Assertions.assertEquals("select * from table where c1 = ? and c2 = ?", template.getSql(), "#1");
+        JdbcTemplate jdbcTemplate = new JdbcTemplate("select * from table where c1 = ${IN.name::VARCHAR} and c2 = ${IN.name::VARCHAR}", StatementType.SELECT_WITH_AUTO_COMMIT);
+        Assertions.assertEquals("select * from table where c1 = ? and c2 = ?", jdbcTemplate.getSql(), "#1");
     }
 
     void testPostgreSql() {
@@ -96,7 +96,7 @@ class JdbcTemplateTwixTest {
         promise
                 .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, jdbcResource) -> {
                     try {
-                        List<Map<String, Object>> execute = jdbcResource.execute(new JdbcRequest(TestJdbcTemplate.GET_LOG));
+                        List<Map<String, Object>> execute = jdbcResource.execute(new JdbcRequest(TestJdbcRequestRepository.GET_LOG));
                         System.out.println(execute);
                     } catch (Throwable th) {
                         App.error(th);

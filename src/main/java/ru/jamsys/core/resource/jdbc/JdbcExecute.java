@@ -10,21 +10,21 @@ public interface JdbcExecute {
 
     default List<Map<String, Object>> execute(
             Connection conn,
-            TemplateJdbc template,
+            JdbcTemplate jdbcTemplate,
             List<Map<String, Object>> argsList,
             StatementControl statementControl,
             boolean debug
     ) throws Exception {
         // Динамичный фрагмент не может использоваться в executeBatch
-        if (template.isDynamicArgument() && argsList.size() > 1) {
+        if (jdbcTemplate.isDynamicArgument() && argsList.size() > 1) {
             throw new Exception("ExecuteBatch not support DynamicArguments");
         }
-        CompiledSqlTemplate compiledSqlTemplate = template.compile(argsList.getFirst());
+        CompiledSqlTemplate compiledSqlTemplate = jdbcTemplate.compile(argsList.getFirst());
         if (debug) {
             Util.logConsole(compiledSqlTemplate.getSql());
-            Util.logConsole(template.debug(compiledSqlTemplate));
+            Util.logConsole(jdbcTemplate.debug(compiledSqlTemplate));
         }
-        StatementType statementType = template.getStatementType();
+        StatementType statementType = jdbcTemplate.getStatementType();
         conn.setAutoCommit(statementType.isAutoCommit());
         PreparedStatement preparedStatement =
                 statementType.isSelect()
@@ -37,7 +37,7 @@ public interface JdbcExecute {
             preparedStatement.execute();
         } else if (!argsList.isEmpty()) {
             for (Map<String, Object> qArgs : argsList) {
-                CompiledSqlTemplate tmp = template.compile(qArgs);
+                CompiledSqlTemplate tmp = jdbcTemplate.compile(qArgs);
                 for (Argument argument : tmp.getListArgument()) {
                     setParam(statementControl, conn, preparedStatement, argument);
                 }
@@ -47,7 +47,7 @@ public interface JdbcExecute {
         }
 
         List<Map<String, Object>> listRet = new ArrayList<>();
-        switch (template.getStatementType()) {
+        switch (jdbcTemplate.getStatementType()) {
             case SELECT_WITHOUT_AUTO_COMMIT:
             case SELECT_WITH_AUTO_COMMIT:
                 try (ResultSet resultSet = preparedStatement.getResultSet()) {
