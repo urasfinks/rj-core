@@ -99,6 +99,10 @@ public class HttpAsyncResponse {
     }
 
     public void setUnauthorized() throws IOException {
+        setUnauthorized(response);
+    }
+
+    public static void setUnauthorized(HttpServletResponse response) throws IOException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setHeader("WWW-Authenticate", "Basic realm=\"JamSys\"");
         response.getWriter().print("<html><body><h1>401. Unauthorized</h1></body>");
