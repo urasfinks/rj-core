@@ -32,4 +32,7 @@ public class EmailNotificationProperties extends RepositoryPropertiesField {
     @PropertyName("notification.email.ssl")
     private Boolean ssl;
 
+    @PropertyName("notification.email.support.address")
+    private String support;
+
 }

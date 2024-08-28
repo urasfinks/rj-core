@@ -31,6 +31,10 @@ public class EmailNotificationResource
 
     private final EmailNotificationProperties property = new EmailNotificationProperties();
 
+    public String getSupport() {
+        return property.getSupport();
+    }
+
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
