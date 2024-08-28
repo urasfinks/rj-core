@@ -65,6 +65,10 @@ public class UtilJson {
         return def;
     }
 
+    public static String toString(Object object) throws Throwable {
+        return objectMapper.writeValueAsString(object);
+    }
+
     @SuppressWarnings("unused")
     @Nullable
     public static String toStringPretty(Object object, String def) {
