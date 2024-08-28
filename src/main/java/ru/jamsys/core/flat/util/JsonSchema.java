@@ -26,6 +26,12 @@ public class JsonSchema {
     }
 
     public static boolean validate(String json, String schema, Charset charset) throws Exception {
+        if (json == null || json.isEmpty()) {
+            throw new RuntimeException("json data is empty");
+        }
+        if (schema == null || schema.isEmpty()) {
+            throw new RuntimeException("json schema is empty");
+        }
         InputStream jsonStream = new ByteArrayInputStream(json.getBytes(charset));
         InputStream schemaStream = new ByteArrayInputStream(schema.getBytes(charset));
         return validate(jsonStream, schemaStream);
