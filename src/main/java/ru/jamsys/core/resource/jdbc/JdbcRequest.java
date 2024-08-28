@@ -39,6 +39,11 @@ public class JdbcRequest {
         return this;
     }
 
+    public JdbcRequest addArg(Map<String, Object> map) {
+        listArgs.getLast().putAll(map);
+        return this;
+    }
+
     public JdbcRequest nextBatch() {
         listArgs.add(new LinkedHashMap<>());
         return this;
