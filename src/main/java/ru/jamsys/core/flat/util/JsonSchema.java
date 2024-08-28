@@ -7,10 +7,7 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import ru.jamsys.core.extension.exception.JsonSchemaException;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 //https://bjdash.github.io/JSON-Schema-Builder/
@@ -21,36 +18,29 @@ public class JsonSchema {
 
     public static JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
 
-    public static boolean validate(String json, String schema) throws Exception {
-        return validate(json, schema, StandardCharsets.UTF_8);
-    }
-
-    public static boolean validate(String json, String schema, Charset charset) throws Exception {
+    public static void validate(String json, String schema, String information) throws Exception {
         if (json == null || json.isEmpty()) {
             throw new RuntimeException("json data is empty");
         }
         if (schema == null || schema.isEmpty()) {
             throw new RuntimeException("json schema is empty");
         }
-        InputStream jsonStream = new ByteArrayInputStream(json.getBytes(charset));
-        InputStream schemaStream = new ByteArrayInputStream(schema.getBytes(charset));
-        return validate(jsonStream, schemaStream);
+        JsonNode jsonObject = objectMapper.readTree(json);
+
+        Set<ValidationMessage> validate = schemaFactory.getSchema(schema).validate(jsonObject);
+        if (!validate.isEmpty()) {
+            throw new JsonSchemaException(validate, information, json, schema);
+        }
     }
 
-    public static boolean validate(InputStream jsonStream, InputStream schemaStream) throws Exception {
-        if (jsonStream == null) {
+    public static void validate(InputStream json, InputStream schema, String information) throws Exception {
+        if (json == null) {
             throw new RuntimeException("json data is null");
         }
-        if (schemaStream == null) {
+        if (schema == null) {
             throw new RuntimeException("json schema is null");
         }
-        JsonNode jsonObject = objectMapper.readTree(jsonStream);
-
-        Set<ValidationMessage> validate = schemaFactory.getSchema(schemaStream).validate(jsonObject);
-        if (!validate.isEmpty()) {
-            throw new JsonSchemaException(validate);
-        }
-        return true;
+        validate(new String(json.readAllBytes()), new String(schema.readAllBytes()), information);
     }
 
 }

@@ -13,13 +13,13 @@ class JsonSchemaTest {
     @Test
     void validate() throws Throwable {
         try {
-            JsonSchema.validate(UtilFileResource.get("schema/test/2.json"), UtilFileResource.get("schema/test/1-schema.json"));
+            JsonSchema.validate(UtilFileResource.get("schema/test/2.json"), UtilFileResource.get("schema/test/1-schema.json"), null);
         } catch (Throwable th) {
             th.printStackTrace();
         }
 
         try {
-            JsonSchema.validate(UtilFileResource.get("schema/test/1.json"), UtilFileResource.get("schema/test/1-schema.json"));
+            JsonSchema.validate(UtilFileResource.get("schema/test/1.json"), UtilFileResource.get("schema/test/1-schema.json"), null);
             Assertions.fail();
         } catch (Throwable th) {
             Assertions.assertEquals("$.code: string found, integer expected", th.getMessage(), "#1");
@@ -27,16 +27,16 @@ class JsonSchemaTest {
 
         // Просто повтор, что статика работает
         try {
-            JsonSchema.validate(UtilFileResource.get("schema/test/2.json"), UtilFileResource.get("schema/test/1-schema.json"));
+            JsonSchema.validate(UtilFileResource.get("schema/test/2.json"), UtilFileResource.get("schema/test/1-schema.json"), null);
         } catch (Throwable th) {
             th.printStackTrace();
         }
 
         try {
-            JsonSchema.validate(UtilFileResource.get("schema/test/1.json"), UtilFileResource.get("schema/test/1-schema.json"));
+            JsonSchema.validate(UtilFileResource.get("schema/test/1.json"), UtilFileResource.get("schema/test/1-schema.json"), "hello");
             Assertions.fail();
         } catch (Throwable th) {
-            Assertions.assertEquals("$.code: string found, integer expected", th.getMessage(), "#1");
+            Assertions.assertEquals("information: hello; cause: $.code: string found, integer expected", th.getMessage(), "#1");
         }
 
     }

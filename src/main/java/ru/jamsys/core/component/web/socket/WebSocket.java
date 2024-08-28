@@ -109,7 +109,7 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
     protected void handleTextMessage(@NotNull WebSocketSession session, @NotNull TextMessage message) throws Exception {
         super.handleTextMessage(session, message);
         String request = message.getPayload();
-        JsonSchema.validate(request, UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"));
+        JsonSchema.validate(request, UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"), null);
         Map<Object, Object> req = UtilJson.toMap(request).getObject();
         PromiseGenerator promiseGenerator = getGeneratorByHandler((String) req.get("uri"));
         if (promiseGenerator == null) {
