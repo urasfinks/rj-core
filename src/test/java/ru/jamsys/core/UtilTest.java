@@ -7,10 +7,7 @@ import ru.jamsys.core.flat.util.ListSort;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // IO time: 13ms
@@ -69,6 +66,15 @@ class UtilTest {
         });
         Assertions.assertEquals(2, counter.get());
         Assertions.assertEquals("test1xy", sb.toString());
+    }
+
+    @Test
+    void anyTest() {
+        Map<String, Object> source = new HashMap<>();
+        source.put("z", 1);
+        Map<String, Object> append = new HashMapBuilder<>(source)
+                .append("x", "y");
+        Assertions.assertEquals("{z=1, x=y}", append.toString());
     }
 
 
