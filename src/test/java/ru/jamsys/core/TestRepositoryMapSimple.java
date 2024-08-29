@@ -26,8 +26,8 @@ public class TestRepositoryMapSimple {
     void test() {
         P p = new P();
 
-        Assertions.assertEquals("y", p.setMapRepository("x", "y"));
-        Assertions.assertEquals("y", p.setMapRepository("x", "y2"));
+        Assertions.assertEquals("y", p.setRepositoryMap("x", "y"));
+        Assertions.assertEquals("y", p.setRepositoryMap("x", "y2"));
         Assertions.assertEquals("y", p.getRepositoryMap("x", String.class, ""));
         Assertions.assertEquals("def", p.getRepositoryMap("x1", String.class, "def"));
 

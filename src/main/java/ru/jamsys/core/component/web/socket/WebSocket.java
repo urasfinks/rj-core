@@ -121,7 +121,7 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
             App.error(new RuntimeException("Promise is null"));
             return;
         }
-        promise.setMapRepository("WebSocketSession", session);
+        promise.setRepositoryMap("WebSocketSession", session);
         promise.run();
 
     }

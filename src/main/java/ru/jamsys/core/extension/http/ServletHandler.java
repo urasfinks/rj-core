@@ -16,7 +16,7 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-public class HttpAsyncResponse {
+public class ServletHandler {
 
     @Getter
     private final CompletableFuture<Void> completableFuture;
@@ -31,26 +31,12 @@ public class HttpAsyncResponse {
     private String responseContentType = "application/json";
 
     @Setter
-    private String body = "";
+    private String responseBody = "";
 
     @Getter
-    private final HttpRequestReader httpRequestReader;
+    private final ServletRequestReader servletRequestReader;
 
-    public void setBodyFromMap(Map<?, ?> data) {
-        setBody(UtilJson.toStringPretty(data, "{}"));
-    }
-
-    public boolean isEmptyBody() {
-        return this.body.isEmpty();
-    }
-
-    public void setBodyIfEmpty(String body) {
-        if (this.body.isEmpty()) {
-            this.body = body;
-        }
-    }
-
-    public HttpAsyncResponse(
+    public ServletHandler(
             CompletableFuture<Void> completableFuture,
             HttpServletRequest request,
             HttpServletResponse response
@@ -58,24 +44,38 @@ public class HttpAsyncResponse {
         this.completableFuture = completableFuture;
         this.request = request;
         this.response = response;
-        httpRequestReader = new HttpRequestReader(request);
+        servletRequestReader = new ServletRequestReader(request);
+    }
+
+    public void setResponseBodyFromMap(Map<?, ?> data) {
+        setResponseBody(UtilJson.toStringPretty(data, "{}"));
+    }
+
+    public boolean isEmptyBody() {
+        return this.responseBody.isEmpty();
+    }
+
+    public void setBodyIfEmpty(String body) {
+        if (this.responseBody.isEmpty()) {
+            this.responseBody = body;
+        }
     }
 
     public void setResponseHeader(String key, String value) {
         response.setHeader(key, value);
     }
 
-    public void complete() {
+    public void responseComplete() {
         response.setContentType(responseContentType);
         try {
-            response.getWriter().print(body);
+            response.getWriter().print(responseBody);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         completableFuture.complete(null);
     }
 
-    public void complete(InputStream inputStream) {
+    public void responseComplete(InputStream inputStream) {
         try {
             OutputStream out = getResponse().getOutputStream();
             byte[] buffer = new byte[4096];
@@ -95,15 +95,15 @@ public class HttpAsyncResponse {
         return completableFuture;
     }
 
-    public void setError(String cause) {
-        setBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
+    public void setResponseError(String cause) {
+        setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
     }
 
-    public void setUnauthorized() {
-        setUnauthorized(response);
+    public void setResponseUnauthorized() {
+        setResponseUnauthorized(response);
     }
 
-    public static void setUnauthorized(HttpServletResponse response) {
+    public static void setResponseUnauthorized(HttpServletResponse response) {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setHeader("WWW-Authenticate", "Basic realm=\"" + App.applicationName + "\"");
         try {

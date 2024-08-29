@@ -3,11 +3,9 @@ package ru.jamsys.core.extension.http;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import lombok.Getter;
 import lombok.ToString;
-import org.springframework.http.HttpStatus;
 import ru.jamsys.core.extension.functional.BiConsumerThrowing;
 import ru.jamsys.core.flat.util.Util;
 
@@ -20,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @ToString(onlyExplicitlyIncluded = true)
-public class HttpRequestReader {
+public class ServletRequestReader {
 
     private static final String[] ipHeaders = {
             "X-Forwarded-For",
@@ -48,7 +46,7 @@ public class HttpRequestReader {
 
     public byte[] bytes;
 
-    public HttpRequestReader(@Nonnull HttpServletRequest request) throws ServletException, IOException {
+    public ServletRequestReader(@Nonnull HttpServletRequest request) throws ServletException, IOException {
         this.request = request;
         read();
     }

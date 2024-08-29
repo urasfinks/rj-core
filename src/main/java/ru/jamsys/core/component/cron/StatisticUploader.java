@@ -119,7 +119,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
                             }
                         }
                     }
-                    promise.setMapRepository(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), reserve);
+                    promise.setRepositoryMap(StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(), reserve);
 
                     if (countInsert.get() > 0) {
                         influxResource.execute(listPoints);
@@ -135,7 +135,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
                         }
                     }
                     if (!restore.isEmpty()) {
-                        promise.setMapRepository("readyFile", getFolder() + ListSort.sortAsc(restore).getFirst());
+                        promise.setRepositoryMap("readyFile", getFolder() + ListSort.sortAsc(restore).getFirst());
                     }
                 })
                 .appendWait()

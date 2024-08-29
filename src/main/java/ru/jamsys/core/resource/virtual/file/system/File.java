@@ -75,7 +75,7 @@ public class File extends ExpirationMsMutableImpl
 
     public <T extends FileView> T getView(Class<T> cls, Object... props) {
         for (int i = 0; i < props.length; i += 2) {
-            setMapRepository(props[i].toString(), props[i + 1]);
+            setRepositoryMap(props[i].toString(), props[i + 1]);
         }
         return getView(cls);
     }

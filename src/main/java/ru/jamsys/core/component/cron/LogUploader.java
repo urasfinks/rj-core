@@ -97,7 +97,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
                     countInsert.incrementAndGet();
                 }
             }
-            promise.setMapRepository(LogUploaderPromiseProperty.RESERVE_LOG.name(), reserve);
+            promise.setRepositoryMap(LogUploaderPromiseProperty.RESERVE_LOG.name(), reserve);
             if (countInsert.get() > 0) {
                 try {
                     jdbcResource.execute(jdbcRequest);
@@ -114,7 +114,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
                 }
             }
             if (!restore.isEmpty()) {
-                promise.setMapRepository("readyFile", getFolder() + ListSort.sortAsc(restore).getFirst());
+                promise.setRepositoryMap("readyFile", getFolder() + ListSort.sortAsc(restore).getFirst());
             }
         }).appendWait().appendWithResource("read", FileByteReaderResource.class, (_, promise, fileByteReaderResource) -> {
             if (broker.getOccupancyPercentage() < 50) {

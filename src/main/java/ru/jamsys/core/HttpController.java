@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.UniqueClassNameImpl;
-import ru.jamsys.core.extension.http.HttpAsyncResponse;
+import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.flat.util.ListSort;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -141,39 +141,39 @@ public class HttpController {
         }
 
         PromiseGenerator promiseGenerator = getGeneratorByUri(request.getRequestURI());
-        HttpAsyncResponse httpAsyncResponse = new HttpAsyncResponse(new CompletableFuture<>(), request, response);
+        ServletHandler servletHandler = new ServletHandler(new CompletableFuture<>(), request, response);
         if (promiseGenerator == null) {
-            httpAsyncResponse.setError("Generator not found");
-            httpAsyncResponse.complete();
-            return httpAsyncResponse.getServletResponse();
+            servletHandler.setResponseError("Generator not found");
+            servletHandler.responseComplete();
+            return servletHandler.getServletResponse();
         }
         Promise promise = promiseGenerator.generate();
 
         if (promise == null) {
-            httpAsyncResponse.setError("Promise is null");
-            httpAsyncResponse.complete();
-            return httpAsyncResponse.getServletResponse();
+            servletHandler.setResponseError("Promise is null");
+            servletHandler.responseComplete();
+            return servletHandler.getServletResponse();
         }
 
         if (!promise.isSetErrorHandler()) {
             promise.onError((atomicBoolean, p) -> {
-                HttpAsyncResponse ar = p.getRepositoryMap("HttpAsyncResponse", HttpAsyncResponse.class);
-                ar.setBody(p.getLogString());
-                ar.complete();
+                ServletHandler ar = p.getRepositoryMap("HttpAsyncResponse", ServletHandler.class);
+                ar.setResponseBody(p.getLogString());
+                ar.responseComplete();
             });
         }
         if (!promise.isSetCompleteHandler()) {
             promise.onComplete((atomicBoolean, p) -> {
-                HttpAsyncResponse resp = p.getRepositoryMap("HttpAsyncResponse", HttpAsyncResponse.class);
+                ServletHandler resp = p.getRepositoryMap("HttpAsyncResponse", ServletHandler.class);
                 if (resp.isEmptyBody()) {
                     resp.setBodyIfEmpty(p.getLogString());
                 }
-                resp.complete();
+                resp.responseComplete();
             });
         }
-        promise.setMapRepository("HttpAsyncResponse", httpAsyncResponse);
+        promise.setRepositoryMap("HttpAsyncResponse", servletHandler);
         promise.run();
-        return httpAsyncResponse.getServletResponse();
+        return servletHandler.getServletResponse();
     }
 
 }

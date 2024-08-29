@@ -9,13 +9,13 @@ public interface RepositoryMap<K, V> {
     Map<K, V> getRepositoryMap();
 
     // Буд-те внимательны хранилище нельзя перезаписывать по ключу!!!
-    default <R> R setMapRepository(K key, R obj) {
+    default <R> R setRepositoryMap(K key, R obj) {
         @SuppressWarnings("unchecked")
         R result = (R) getRepositoryMap().computeIfAbsent(key, _ -> (V) obj);
         return result;
     }
 
-    default RepositoryMap<K, V> setMapRepository(Map<K, V> map) {
+    default RepositoryMap<K, V> setRepositoryMap(Map<K, V> map) {
         getRepositoryMap().putAll(map);
         return this;
     }

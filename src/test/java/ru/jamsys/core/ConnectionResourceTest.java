@@ -37,7 +37,7 @@ class ConnectionResourceTest {
                     JdbcRequest jdbcRequest = new JdbcRequest(TestJdbcRequestRepository.TEST);
                     try {
                         List<Map<String, Object>> execute = jdbcResource.execute(jdbcRequest);
-                        promise.setMapRepository("req1", execute);
+                        promise.setRepositoryMap("req1", execute);
                         //System.out.println(execute);
                     } catch (Throwable e) {
                         throw new ForwardException(e);
