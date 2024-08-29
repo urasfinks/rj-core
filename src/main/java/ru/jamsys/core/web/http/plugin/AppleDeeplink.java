@@ -32,7 +32,7 @@ public class AppleDeeplink implements PromiseGenerator, HttpHandler {
     public Promise generate() {
         return servicePromise.get(index, 7_000L)
                 .append("input", (atomicBoolean, promise) -> {
-                    ServletHandler servletHandler = promise.getRepositoryMap(ServletHandler.class);
+                    ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
                     servletHandler.setResponseBody(Util.getWebContent(".well-known/apple-app-site-association.json"));
                 });
     }

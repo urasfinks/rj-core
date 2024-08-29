@@ -157,21 +157,21 @@ public class HttpController {
 
         if (!promise.isSetErrorHandler()) {
             promise.onError((atomicBoolean, p) -> {
-                ServletHandler srvHandler = p.getRepositoryMap(ServletHandler.class);
+                ServletHandler srvHandler = p.getRepositoryMapClass(ServletHandler.class);
                 srvHandler.setResponseBody(p.getLogString());
                 srvHandler.responseComplete();
             });
         }
         if (!promise.isSetCompleteHandler()) {
             promise.onComplete((atomicBoolean, p) -> {
-                ServletHandler srvHandler = p.getRepositoryMap(ServletHandler.class);
+                ServletHandler srvHandler = p.getRepositoryMapClass(ServletHandler.class);
                 if (srvHandler.isEmptyBody()) {
                     srvHandler.setBodyIfEmpty(p.getLogString());
                 }
                 srvHandler.responseComplete();
             });
         }
-        promise.setRepositoryMap(ServletHandler.class, servletHandler);
+        promise.setRepositoryMapClass(ServletHandler.class, servletHandler);
         promise.run();
         return servletHandler.getServletResponse();
     }
