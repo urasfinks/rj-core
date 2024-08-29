@@ -4,7 +4,6 @@ import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.Correlation;
-import ru.jamsys.core.extension.RepositoryMap;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.BiConsumerThrowing;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
@@ -21,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 // Цепочка обещаний
 
-public interface Promise extends RepositoryMap<String, Object>, ExpirationMsImmutable, Correlation {
+public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutable, Correlation {
 
     String getIndex();
 

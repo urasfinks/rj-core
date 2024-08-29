@@ -30,9 +30,9 @@ public class FirstHttpHandler implements PromiseGenerator, HttpHandler {
     public Promise generate() {
         return servicePromise.get(index, 7_000L)
                 .append("input", (atomicBoolean, promise) -> {
-                    ServletHandler input = promise.getRepositoryMap("HttpAsyncResponse", ServletHandler.class);
-                    input.setResponseBody("Hello world");
-                    input.setResponseHeader("opa", "cha");
+                    ServletHandler servletHandler = promise.getRepositoryMap(ServletHandler.class);
+                    servletHandler.setResponseBody("Hello world");
+                    servletHandler.setResponseHeader("opa", "cha");
                 });
     }
 

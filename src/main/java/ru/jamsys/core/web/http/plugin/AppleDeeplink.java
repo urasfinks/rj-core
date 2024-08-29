@@ -32,8 +32,8 @@ public class AppleDeeplink implements PromiseGenerator, HttpHandler {
     public Promise generate() {
         return servicePromise.get(index, 7_000L)
                 .append("input", (atomicBoolean, promise) -> {
-                    ServletHandler input = promise.getRepositoryMap("HttpAsyncResponse", ServletHandler.class);
-                    input.setResponseBody(Util.getWebContent(".well-known/apple-app-site-association.json"));
+                    ServletHandler servletHandler = promise.getRepositoryMap(ServletHandler.class);
+                    servletHandler.setResponseBody(Util.getWebContent(".well-known/apple-app-site-association.json"));
                 });
     }
 
