@@ -34,7 +34,7 @@ public class ServletHandler {
     private String responseBody = "";
 
     @Getter
-    private final ServletRequestReader servletRequestReader;
+    private final ServletRequestReader requestReader;
 
     public ServletHandler(
             CompletableFuture<Void> completableFuture,
@@ -44,7 +44,7 @@ public class ServletHandler {
         this.completableFuture = completableFuture;
         this.request = request;
         this.response = response;
-        servletRequestReader = new ServletRequestReader(request);
+        requestReader = new ServletRequestReader(request);
     }
 
     public void setResponseBodyFromMap(Map<?, ?> data) {
