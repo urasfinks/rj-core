@@ -38,4 +38,5 @@ public class ManagerBroker extends AbstractManager<Broker<?>, Consumer<?>> imple
     public int getInitializationIndex() {
         return 3;
     }
+
 }
