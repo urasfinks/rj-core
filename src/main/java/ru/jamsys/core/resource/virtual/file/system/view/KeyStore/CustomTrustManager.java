@@ -17,7 +17,7 @@ public class CustomTrustManager {
         }
 
         public X509Certificate[] getAcceptedIssuers() {
-            return null;
+            return new java.security.cert.X509Certificate[0];
         }
     };
 

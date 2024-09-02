@@ -41,7 +41,7 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
 
     @Setter
     @PropertyName("run.args.security.path.init")
-    private String pathInitAlias;
+    private String pathJsonCred;
 
     @Getter
     @SuppressWarnings("all")
@@ -81,9 +81,9 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
         privateKey = newPrivateKey;
     }
 
-    private void insertAliases(char[] password) {
+    private void updateDataFromJsonCred(char[] password) {
         try {
-            byte[] initJson = UtilFile.readBytes(pathInitAlias);
+            byte[] initJson = UtilFile.readBytes(pathJsonCred);
             if (initJson.length > 0) {
                 String initString = new String(initJson, StandardCharsets.UTF_8);
                 JsonEnvelope<Map<String, Object>> mapJsonEnvelope = UtilJson.toMap(initString);
@@ -114,9 +114,9 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
         return new HashSet<>();
     }
 
-    private String getPasswordFromInfoJson(byte[] initJson) {
+    private String getPasswordFromJsonCred(byte[] initJson) {
         if (initJson == null || initJson.length == 0) {
-            throw new RuntimeException("File: [" + pathInitAlias + "] is empty");
+            throw new RuntimeException("File: [" + pathJsonCred + "] is empty");
         }
         String result = null;
         String initString = new String(initJson, StandardCharsets.UTF_8);
@@ -125,7 +125,7 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
             result = (String) mapJsonEnvelope.getObject().get("password");
         }
         if (result == null || result.trim().isEmpty()) {
-            throw new RuntimeException("Password json field from [" + pathInitAlias + "] is empty");
+            throw new RuntimeException("Password json field from [" + pathJsonCred + "] is empty");
         }
         return result;
     }
@@ -147,7 +147,7 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
                 System.err.println("Create file: [" + pathInitSecurityKeyJava + "] please restart application");
             } else {
                 System.err.println("== INIT SECURITY ===========================");
-                System.err.println("** Update file [" + pathInitAlias + "]; password field must not be empty");
+                System.err.println("** Update file [" + pathJsonCred + "]; password field must not be empty");
             }
         } catch (Exception e) {
             throw new ForwardException("Other problem", e);
@@ -156,14 +156,14 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
         throw new RuntimeException("Security.run() failed");
     }
 
-    private byte[] decryptStoragePassword(byte[] token) {
+    private byte[] decryptStoragePassword(byte[] publicKey) {
         byte[] bytesPrivateKey = UtilBase64.base64DecodeResultBytes(UtilByte.charsToBytes(privateKey));
         if (bytesPrivateKey == null || bytesPrivateKey.length == 0) {
             throw new RuntimeException("Private key is empty");
         }
         byte[] bytesPasswordKeyStore;
         try {
-            bytesPasswordKeyStore = UtilRsa.decrypt(UtilRsa.getPrivateKey(bytesPrivateKey), token);
+            bytesPasswordKeyStore = UtilRsa.decrypt(UtilRsa.getPrivateKey(bytesPrivateKey), publicKey);
         } catch (Exception e) {
             UtilFile.removeIfExist(pathPublicKey);
             throw new ForwardException("Decrypt token exception. File: [" + pathPublicKey + "] removed, please restart application", e);
@@ -174,23 +174,23 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
         return bytesPasswordKeyStore;
     }
 
-    private byte[] createInitTemplateFile() {
+    private byte[] getOrCreateJsonCred() {
         byte[] init;
         try {
-            init = UtilFile.readBytes(pathInitAlias);
+            init = UtilFile.readBytes(pathJsonCred);
         } catch (FileNotFoundException | NoSuchFileException exception) {
             //Если нет - создадим
             System.err.println("== NEED INIT SECURITY ===========================");
-            System.err.println("** Update file [" + pathInitAlias + "]");
+            System.err.println("** Update file [" + pathJsonCred + "]");
             System.err.println("== NEED INIT SECURITY ===========================");
             try {
                 init = UtilFileResource.get("security.json").readAllBytes();
-                UtilFile.writeBytes(pathInitAlias, init, FileWriteOptions.CREATE_OR_REPLACE);
+                UtilFile.writeBytes(pathJsonCred, init, FileWriteOptions.CREATE_OR_REPLACE);
             } catch (Exception e) {
                 throw new ForwardException(e);
             }
             //Нет смысла продолжать работу, когда файл инициализации в данный момент пустой
-            throw new RuntimeException("Update file [" + pathInitAlias + "]");
+            throw new RuntimeException("Update file [" + pathJsonCred + "]");
         } catch (IOException e) {
             //Если возникли другие проблемы при чтении файла инициализации прекратим работу
             throw new ForwardException(e);
@@ -340,9 +340,9 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
                 } catch (Exception e) {
                     throw new ForwardException(e);
                 }
-                if (UtilFile.ifExist(pathInitAlias)) {
-                    System.err.println("Please remove file [" + pathInitAlias + "] with credentials information");
-                    insertAliases(UtilByte.bytesToChars(passwordKeyStore));
+                if (UtilFile.ifExist(pathJsonCred)) {
+                    System.err.println("Please remove file [" + pathJsonCred + "] with credentials information");
+                    updateDataFromJsonCred(UtilByte.bytesToChars(passwordKeyStore));
                 }
                 try {
                     Util.logConsole(
@@ -356,8 +356,8 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
             } else {
                 UtilFile.removeIfExist(pathStorage);
                 //У нас чего-то не хватает выводим предупреждения
-                byte[] initJson = createInitTemplateFile();
-                String passwordFromInfoJson = getPasswordFromInfoJson(initJson);
+                byte[] initJson = getOrCreateJsonCred();
+                String passwordFromInfoJson = getPasswordFromJsonCred(initJson);
                 printNotice(passwordFromInfoJson);
             }
             propertiesAgent.run();

@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.SupplierThrowing;
-import ru.jamsys.core.extension.RepositoryMap;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.resource.virtual.file.system.view.FileView;
 import ru.jamsys.core.statistic.Statistic;
@@ -54,15 +54,15 @@ public class File extends ExpirationMsMutableImpl
 
     private <T extends FileView> FileView setView(Class<T> cls) {
         return view.computeIfAbsent(cls, _ -> {
+            FileView fileView;
             try {
-                FileView fileView = cls.getDeclaredConstructor().newInstance();
-                fileView.set(this);
-                fileView.createCache();
-                return fileView;
+                fileView = cls.getDeclaredConstructor().newInstance();
             } catch (Throwable th) {
-                App.error(th);
+                throw new ForwardException(th);
             }
-            return null;
+            fileView.set(this);
+            fileView.createCache();
+            return fileView;
         });
     }
 

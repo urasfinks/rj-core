@@ -1,6 +1,6 @@
 package ru.jamsys.core.resource.virtual.file.system.view;
 
-import ru.jamsys.core.App;
+import ru.jamsys.core.extension.exception.ForwardException;
 
 import javax.net.ssl.SSLContext;
 import java.security.SecureRandom;
@@ -21,10 +21,9 @@ public class FileViewKeyStoreSslContext extends FileViewKeyStore {
                 SSLContext ssl = SSLContext.getInstance(sslContextType);
                 ssl.init(super.getKeyManagers(), super.getTrustManager().getListTrustManager(), new SecureRandom());
                 return ssl;
-            } catch (Exception e) {
-                App.error(e);
+            } catch (Throwable th) {
+                throw new ForwardException(th);
             }
-            return null;
         });
     }
 

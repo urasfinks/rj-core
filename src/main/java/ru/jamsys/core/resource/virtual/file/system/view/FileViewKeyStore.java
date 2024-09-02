@@ -3,6 +3,7 @@ package ru.jamsys.core.resource.virtual.file.system.view;
 import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.view.KeyStore.CustomTrustManager;
 
@@ -47,22 +48,22 @@ public class FileViewKeyStore implements FileView {
 
     @Override
     public void createCache() {
-        try {
-            char[] pass = securityComponent.get(securityKey);
-            try (InputStream stream = file.getInputStream()) {
-                keyStore = KeyStore.getInstance(typeKeyStorage);
-                keyStore.load(stream, pass);
-            } catch (Exception e) {
-                keyStore = null;
-                App.error(e);
-            }
-            if (keyManagers == null) {
+        char[] pass = securityComponent.get(securityKey);
+        try (InputStream stream = file.getInputStream()) {
+            keyStore = KeyStore.getInstance(typeKeyStorage);
+            keyStore.load(stream, pass);
+        } catch (Throwable th) {
+            keyStore = null;
+            throw new ForwardException(th);
+        }
+        if (keyManagers == null) {
+            try {
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 kmf.init(keyStore, pass);
                 keyManagers = kmf.getKeyManagers();
+            } catch (Throwable th) {
+                throw new ForwardException(th);
             }
-        } catch (Exception e) {
-            App.error(e);
         }
     }
 
