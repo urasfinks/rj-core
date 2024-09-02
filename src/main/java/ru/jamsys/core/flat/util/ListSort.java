@@ -33,4 +33,8 @@ public class ListSort<T> {
         return arrayList;
     }
 
+    public static void shuffle(List<?> list){
+        Collections.shuffle(list);
+    }
+
 }
