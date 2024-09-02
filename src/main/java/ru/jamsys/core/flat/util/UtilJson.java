@@ -54,6 +54,17 @@ public class UtilJson {
         selector.forEach((s, s2) -> res.put(s, ctx.read(s2)));
     }
 
+    public static void selector(String json, Map<String, String> selector, Map<String, Object> res, String def) {
+        ReadContext ctx = getContext(json);
+        selector.forEach((s, s2) -> {
+            try {
+                res.put(s, ctx.read(s2));
+            } catch (Throwable th) {
+                res.put(s, def);
+            }
+        });
+    }
+
     @SuppressWarnings("unused")
     @Nullable
     public static String toString(Object object, String def) {
