@@ -17,10 +17,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 public class HttpClientImpl implements HttpClient {
@@ -178,6 +175,11 @@ public class HttpClientImpl implements HttpClient {
     @ToString.Include()
     public String getPostDataString() {
         return postData != null ? new String(postData, StandardCharsets.UTF_8) : "null";
+    }
+
+    public static void disableHostnameVerification() {
+        Properties props = System.getProperties();
+        props.setProperty("jdk.internal.httpclient.disableHostnameVerification", Boolean.TRUE.toString());
     }
 
 }
