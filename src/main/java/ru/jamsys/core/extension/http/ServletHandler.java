@@ -99,6 +99,10 @@ public class ServletHandler {
         setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
     }
 
+    public void setResponseError(Object cause) {
+        setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
+    }
+
     public void setResponseUnauthorized() {
         setResponseUnauthorized(response);
     }

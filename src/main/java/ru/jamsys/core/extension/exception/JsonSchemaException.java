@@ -3,6 +3,8 @@ package ru.jamsys.core.extension.exception;
 import com.networknt.schema.ValidationMessage;
 import lombok.Getter;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -31,6 +33,16 @@ public class JsonSchemaException extends RuntimeException {
         }
         validate.forEach(vm -> sb.append(vm.getMessage()).append("\n"));
         return sb.toString().trim();
+    }
+
+    public Map<String, Object> getResponseError() {
+        Map<String, Object> result = new HashMap<>();
+        if (information != null) {
+            result.put("information", information);
+        }
+        result.put("cause", "JsonSchemaException");
+        result.put("validate", validate);
+        return result;
     }
 
 }
