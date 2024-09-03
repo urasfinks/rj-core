@@ -2,6 +2,8 @@ package ru.jamsys.core.flat.util;
 
 
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.io.File;
 import java.io.IOException;
@@ -127,6 +129,21 @@ public class UtilFile {
             App.error(e);
         }
         return false;
+    }
+
+    public static String getWebContent(String relativeWebPath) {
+        String location = App.get(ServiceProperty.class).get("run.args.web.resource.location");
+        try {
+            byte[] bytes = UtilFile.readBytes(location + relativeWebPath);
+            return new String(bytes);
+        } catch (Throwable th) {
+            throw new ForwardException(th);
+        }
+    }
+
+    public static File getWebFile(String relativeWebPath) {
+        String location = App.get(ServiceProperty.class).get("run.args.web.resource.location");
+        return new File(location + relativeWebPath);
     }
 
 }

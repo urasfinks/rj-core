@@ -7,16 +7,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
 import ru.jamsys.core.extension.http.ServletHandler;
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.web.http.HttpHandler;
 
+/*
+ * Эту драгу опрашивает Google, что бы в телефоне зарегистрировать схему для открытия приложения
+ * */
 @IgnoreClassFinder
 @Component
 @SuppressWarnings("unused")
 @RequestMapping("/.well-known/assetlinks.json")
-public class AndroidDeeplink implements PromiseGenerator, HttpHandler {
+public class DeeplinkSchemaAndroid implements PromiseGenerator, HttpHandler {
 
     @Getter
     @Setter
@@ -24,7 +27,7 @@ public class AndroidDeeplink implements PromiseGenerator, HttpHandler {
 
     private final ServicePromise servicePromise;
 
-    public AndroidDeeplink(ServicePromise servicePromise) {
+    public DeeplinkSchemaAndroid(ServicePromise servicePromise) {
         this.servicePromise = servicePromise;
     }
 
@@ -33,7 +36,7 @@ public class AndroidDeeplink implements PromiseGenerator, HttpHandler {
         return servicePromise.get(index, 7_000L)
                 .append("input", (atomicBoolean, promise) -> {
                     ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
-                    servletHandler.setResponseBody(Util.getWebContent(".well-known/assetlinks.json"));
+                    servletHandler.setResponseBody(UtilFile.getWebContent(".well-known/assetlinks.json"));
                 });
     }
 

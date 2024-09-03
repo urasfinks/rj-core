@@ -1,52 +1,66 @@
 package ru.jamsys.core.flat.util;
 
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.util.ResourceUtils;
-import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.App;
+import ru.jamsys.core.extension.CamelNormalization;
 
-import java.io.*;
-import java.util.stream.Collectors;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class UtilFileResource {
 
-    public static InputStream get(String fileName) throws IOException {
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        return classLoader.getResourceAsStream(fileName);
-    }
+    public enum Direction implements CamelNormalization {
 
-    public static String getAsString(String fileName) throws IOException {
-        //ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        File file = ResourceUtils.getFile("classpath:" + fileName);
-        try (InputStream is = new FileInputStream(file)) {
-            //try (InputStream is = classLoader.getResourceAsStream(fileName)) {
-            try (InputStreamReader isr = new InputStreamReader(is);
-                 BufferedReader reader = new BufferedReader(isr)) {
-                return reader.lines().collect(Collectors.joining(System.lineSeparator()));
+        WEB,
+        CORE,
+        PROJECT;
+
+        public static Direction valueOfCamel(String key) {
+            for (Direction dir : Direction.values()) {
+                if (dir.getNameCamel().equals(key)) {
+                    return dir;
+                }
             }
+            return null;
         }
+
     }
 
-    public static String getAsStringAny(String path) {
-        ResourceLoader resourceLoader = new DefaultResourceLoader();
-        Resource resource = resourceLoader.getResource(path);
-        try {
-            Reader reader = new InputStreamReader(resource.getInputStream());
-            return FileCopyUtils.copyToString(reader);
-        } catch (Throwable th) {
-            throw new ForwardException(th);
-        }
+    public static InputStream get(String path) throws IOException {
+        return get(path, ClassLoader.getSystemClassLoader());
     }
 
-    public static String getAsStringByClassLoader(ClassLoader classLoader, String path) throws IOException {
+    public static InputStream get(String path, ClassLoader classLoader) throws IOException {
+        return classLoader.getResourceAsStream(path);
+    }
+
+    public static InputStream get(String path, Direction direction) throws IOException {
+        return switch (direction) {
+            case WEB -> new FileInputStream(UtilFile.getWebFile(path));
+            case CORE -> get(path, App.class.getClassLoader());
+            case PROJECT -> get(path);
+        };
+    }
+
+    public static String getAsString(String path) throws IOException {
+        return getAsString(path, ClassLoader.getSystemClassLoader());
+    }
+
+    public static String getAsString(String path, ClassLoader classLoader) throws IOException {
         try (InputStream is = classLoader.getResourceAsStream(path)) {
             if (is == null) {
                 throw new RuntimeException("InputStream is null");
             }
             return new String(is.readAllBytes());
         }
+    }
+
+    public static String getAsString(String path, Direction direction) throws IOException {
+        return switch (direction) {
+            case WEB -> UtilFile.getWebContent(path);
+            case CORE -> getAsString(path, App.class.getClassLoader());
+            case PROJECT -> getAsString(path);
+        };
     }
 
 }

@@ -1,13 +1,12 @@
 package ru.jamsys.core.flat.util;
 
-import org.springframework.core.io.Resource;
-import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.exception.ForwardException;
 
-import java.io.*;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLDecoder;
@@ -291,34 +290,6 @@ public class Util {
         } catch (Exception ignored) {
         }
         return false;
-    }
-
-    /*Example getResource():
-    @Getter
-    @Value("classpath:.well-known/apple-app-site-association.json")
-    private Resource appleAppSiteAssociation;
-    * */
-    public static String getResourceContent(Resource resource, String charset) {
-        try (Reader reader = new InputStreamReader(resource.getInputStream(), charset)) {
-            return FileCopyUtils.copyToString(reader);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    public static String getWebContent(String relativeWebPath) {
-        String location = App.get(ServiceProperty.class).get("run.args.web.resource.location");
-        try {
-            byte[] bytes = UtilFile.readBytes(location + relativeWebPath);
-            return new String(bytes);
-        } catch (Throwable th) {
-            throw new ForwardException(th);
-        }
-    }
-
-    public static File getWebFile(String relativeWebPath) {
-        String location = App.get(ServiceProperty.class).get("run.args.web.resource.location");
-        return new File(location + relativeWebPath);
     }
 
     public static void printStackTrace(String label) {
