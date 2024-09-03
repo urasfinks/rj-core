@@ -19,20 +19,20 @@ import java.util.Map;
 public class HttpResponse {
 
     @Setter
-    public String description;
+    private String description;
 
     //Только получение, если хотите изменить статус - вызывайте addException и указывайте причину
-    public boolean status = true;
+    private boolean status = true;
 
     protected List<Trace<String, Throwable>> exception = new ArrayList<>();
 
     @Setter
-    public HttpStatus httpStatus = HttpStatus.OK;
+    private HttpStatus httpStatus = HttpStatus.OK;
 
-    public Map<String, String> headers = new LinkedHashMap<>();
+    private final Map<String, String> headers = new LinkedHashMap<>();
 
     @Setter
-    public String body = null;
+    private String body = null;
 
     public void addHeader(String key, String value) {
         headers.put(key, value);
