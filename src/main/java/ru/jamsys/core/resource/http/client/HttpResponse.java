@@ -1,13 +1,10 @@
 package ru.jamsys.core.resource.http.client;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.UtilJson;
 
@@ -51,27 +48,6 @@ public class HttpResponse {
         status = false;
         httpStatus = HttpStatus.EXPECTATION_FAILED;
         exception.add(new Trace<>(description, e));
-    }
-
-    public void setUnauthorized() {
-        addException(new RuntimeException("Unauthorized"));
-        httpStatus = HttpStatus.UNAUTHORIZED;
-        headers.clear();
-        headers.put("WWW-Authenticate", "Basic realm=\"JamSys\"");
-        setBody("<html><body><h1>401. Unauthorized</h1></body>");
-    }
-
-    // source = true - кишки вернёт
-    // source = false - чистое тело
-    @JsonIgnore
-    public ResponseEntity<?> getResponseEntity(boolean source) {
-        ResponseEntity.BodyBuilder builder = ResponseEntity.status(httpStatus);
-        HttpHeaders httpHeaders = new HttpHeaders();
-        for (String key : headers.keySet()) {
-            httpHeaders.add(key, headers.get(key));
-        }
-        builder.headers(httpHeaders);
-        return builder.body(source ? toString() : body);
     }
 
     @Override
