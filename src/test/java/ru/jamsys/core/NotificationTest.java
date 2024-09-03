@@ -3,6 +3,7 @@ package ru.jamsys.core;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.promise.Promise;
@@ -100,15 +101,19 @@ class NotificationTest {
     }
 
     @SuppressWarnings("unused")
+    @Test
     void emailSend() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
                 .appendWithResource("email", EmailNotificationResource.class, (_, _, emailNotificationResource) -> {
-                    HashMap<String, String> data = new HashMapBuilder<String, String>().append("code", "999");
+                    HashMap<String, String> data = new HashMapBuilder<String, String>()
+                            .append("code", "999")
+                            .append("support", emailNotificationResource.getProperty().getSupport());
                     emailNotificationResource.execute(new EmailTemplateNotificationRequest(
                             "Title",
                             "data",
-                            "static/email.html",
+                            emailNotificationResource.getProperty().getTemplateClassLoader(),
+                            emailNotificationResource.getProperty().getTemplatePath(),
                             data,
                             "urasfinks@yandex.ru"
                     ));

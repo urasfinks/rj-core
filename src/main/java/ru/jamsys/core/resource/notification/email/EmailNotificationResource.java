@@ -1,5 +1,6 @@
 package ru.jamsys.core.resource.notification.email;
 
+import lombok.Getter;
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.HtmlEmail;
 import org.springframework.context.annotation.Scope;
@@ -29,11 +30,8 @@ public class EmailNotificationResource
 
     private PropertiesAgent propertiesAgent;
 
+    @Getter
     private final EmailNotificationProperties property = new EmailNotificationProperties();
-
-    public String getSupport() {
-        return property.getSupport();
-    }
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {

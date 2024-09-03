@@ -40,4 +40,13 @@ public class UtilFileResource {
         }
     }
 
+    public static String getAsStringByClassLoader(ClassLoader classLoader, String path) throws IOException {
+        try (InputStream is = classLoader.getResourceAsStream(path)) {
+            if (is == null) {
+                throw new RuntimeException("InputStream is null");
+            }
+            return new String(is.readAllBytes());
+        }
+    }
+
 }
