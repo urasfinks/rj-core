@@ -8,7 +8,7 @@ import ru.jamsys.core.extension.annotation.PropertyName;
 @Getter
 public class ReCaptchaProperties extends RepositoryPropertiesField {
 
-    @PropertyName("reCaptcha.security.alias")
+    @PropertyName("re.captcha.security.alias")
     private String securityAlias;
 
 }
