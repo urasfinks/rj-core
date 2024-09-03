@@ -108,7 +108,7 @@ class NotificationTest {
                     emailNotificationResource.execute(new EmailTemplateNotificationRequest(
                             "Title",
                             "data",
-                            "template/email.html",
+                            "static/email.html",
                             data,
                             "urasfinks@yandex.ru"
                     ));
