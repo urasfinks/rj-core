@@ -12,8 +12,7 @@ public class RepositoryPropertiesMap<T> implements RepositoryProperties {
     @Setter
     private String ns;
 
-    private final Map<String, RepositoryMapValue<T>> mapRepository2 = new LinkedHashMap<>();
-
+    private final Map<String, RepositoryMapValue<T>> mapRepository = new LinkedHashMap<>();
 
     private final Class<T> cls;
 
@@ -23,12 +22,12 @@ public class RepositoryPropertiesMap<T> implements RepositoryProperties {
 
     @Override
     public Map<String, RepositoryMapValue<?>> getMapRepository() {
-        return new LinkedHashMap<>(mapRepository2);
+        return new LinkedHashMap<>(mapRepository);
     }
 
     @Override
     public void setProperty(String prop, String value) {
-        RepositoryMapValue<?> repositoryMapValue = mapRepository2.computeIfAbsent(prop, s
+        RepositoryMapValue<?> repositoryMapValue = mapRepository.computeIfAbsent(prop, s
                 -> new RepositoryMapValue<>(cls, value, "ns: " + ns + "; key: " + s)
         );
         repositoryMapValue.setValue(value);

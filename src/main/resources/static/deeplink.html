@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Deeplink</title>
+</head>
+<body style="background: #222;">
+<script type="text/javascript">
+    if (iOS() || isMacintosh()) {
+        var sp = location.href.split("/");
+        sp.shift();
+        sp.shift();
+        sp.shift();
+        var deeplink = "${urlSchemes}://domain/"+sp.join("/");
+        window.location.replace(deeplink);
+        setTimeout(function () {
+            window.location.replace("${urlIosAppStore}");
+        }, 2000);
+    } else {
+        window.location.replace("/");
+    }
+    function isMacintosh() {
+      return navigator.platform.indexOf('Mac') > -1
+    }
+    function iOS() {
+      return [
+        'iPad Simulator',
+        'iPhone Simulator',
+        'iPod Simulator',
+        'iPad',
+        'iPhone',
+        'iPod'
+      ].includes(navigator.platform)
+      // iPad on iOS 13 detection
+      || (navigator.userAgent.includes("Mac") && "ontouchend" in document)
+    }
+</script>
+</body>
+</html>

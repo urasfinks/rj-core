@@ -10,7 +10,6 @@ import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.repository.RepositoryMapValue;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
 import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.flat.util.UtilJson;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
@@ -60,7 +59,7 @@ public class ServiceClassFinder {
                             fillUniqueClassName();
                         },
                         ignoredClassMap,
-                        "extend",
+                        "run.args.IgnoreClassFinder",
                         false
                 );
 
@@ -187,9 +186,9 @@ public class ServiceClassFinder {
                             break;
                         }
                     }
-                    RepositoryMapValue<Boolean> s = ignoredClassMap.getMapRepository2().get(aClass.getName());
+                    RepositoryMapValue<?> s = ignoredClassMap.getMapRepository().get(aClass.getName());
                     if (s != null) {
-                        findUnusedAnnotation = s.getValue();
+                        findUnusedAnnotation = (Boolean) s.getValue();
                     }
                     if (findUnusedAnnotation) {
                         return;
