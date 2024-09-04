@@ -1,5 +1,8 @@
 package ru.jamsys.core.flat.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Base64;
 
@@ -56,5 +59,30 @@ public class UtilBase64 {
     public static String base64Decode(String data) {
         return base64Decode(data, Util.defaultCharset);
     }
+
+    // Stream
+
+    public static InputStream base64Decode(InputStream is) {
+        return Base64.getDecoder().wrap(is);
+    }
+
+    public static void base64Decode(InputStream is, OutputStream os) throws IOException {
+        InputStream wrap = Base64.getDecoder().wrap(is);
+        wrap.transferTo(os);
+        wrap.close();
+    }
+
+    public static void base64Encode(InputStream is, OutputStream os) throws IOException {
+        OutputStream wrappedOs = Base64.getEncoder().wrap(os);
+        is.transferTo(wrappedOs);
+        wrappedOs.close();
+    }
+
+    // Не смог сделать base64Encode: InputStream -> InputStream, так как wrap() возвращает OutputStream
+    // А что бы OutputStream превратить в InputStream нужно накопить все байты после записи
+    // Не вижу целесообразности такого метода, но вообще странно, почему нельзя реализовать последовательное чтение
+    // При чтение из выходного стрима - прочитать входной стрим + кодировать и вернуть)
+    // Да при кодировании может увеличиваться кол-во байт, ну сделать буфер и при следующем чтении отдать из буфера
+    // без чтения входного стрима (НЕ ПОНЯТНО)
 
 }
