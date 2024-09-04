@@ -1,6 +1,7 @@
 package ru.jamsys.core.extension.http;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.UtilJson;
 
 import java.io.IOException;
@@ -24,7 +26,6 @@ public class ServletHandler {
     @Getter
     private final HttpServletRequest request;
 
-    @Getter
     private final HttpServletResponse response;
 
     @Setter
@@ -65,19 +66,28 @@ public class ServletHandler {
         response.setHeader(key, value);
     }
 
+    ServletOutputStream servletOutputStream;
+
+    public ServletOutputStream getResponseOutputStream() throws IOException {
+        if (servletOutputStream == null) {
+            servletOutputStream = response.getOutputStream();
+        }
+        return servletOutputStream;
+    }
+
     public void responseComplete() {
         response.setContentType(responseContentType);
         try {
-            response.getWriter().print(responseBody);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            getResponseOutputStream().write(responseBody.getBytes());
+        } catch (Throwable th) {
+            App.error(new ForwardException(th));
         }
         completableFuture.complete(null);
     }
 
     public void responseComplete(InputStream inputStream) {
         try {
-            OutputStream out = getResponse().getOutputStream();
+            OutputStream out = getResponseOutputStream();
             byte[] buffer = new byte[4096];
             int length;
             while ((length = inputStream.read(buffer)) > 0) {
@@ -85,8 +95,8 @@ public class ServletHandler {
             }
             inputStream.close();
             out.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Throwable th) {
+            App.error(new ForwardException(th));
         }
         completableFuture.complete(null);
     }
