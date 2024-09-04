@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.flat.template.twix.TemplateTwix;
@@ -20,7 +21,7 @@ import java.util.Map;
 /*
  * Посадочная web страница, при открытие которой будет попытка открыть приложение по зарегистрированной схеме
  * */
-//@IgnoreClassFinder
+@IgnoreClassFinder
 @Component
 @SuppressWarnings("unused")
 @RequestMapping("/deeplink/**")
