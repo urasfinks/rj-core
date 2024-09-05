@@ -62,18 +62,24 @@ public class UtilBase64 {
 
     // Stream
 
-    public static InputStream base64Decode(InputStream is) {
-        return Base64.getDecoder().wrap(is);
+    public static InputStream base64Decode(InputStream is, boolean multiline) {
+        return multiline
+                ? Base64.getMimeDecoder().wrap(is)
+                : Base64.getDecoder().wrap(is);
     }
 
-    public static void base64Decode(InputStream is, OutputStream os) throws IOException {
-        InputStream wrap = Base64.getDecoder().wrap(is);
+    public static void base64Decode(InputStream is, OutputStream os, boolean multiline) throws IOException {
+        InputStream wrap = multiline
+                ? Base64.getMimeDecoder().wrap(is)
+                : Base64.getDecoder().wrap(is);
         wrap.transferTo(os);
         wrap.close();
     }
 
-    public static void base64Encode(InputStream is, OutputStream os) throws IOException {
-        OutputStream wrappedOs = Base64.getEncoder().wrap(os);
+    public static void base64Encode(InputStream is, OutputStream os, boolean multiline) throws IOException {
+        OutputStream wrappedOs = multiline ?
+                Base64.getMimeEncoder().wrap(os)
+                : Base64.getEncoder().wrap(os);
         is.transferTo(wrappedOs);
         wrappedOs.close();
     }
