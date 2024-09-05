@@ -15,6 +15,7 @@ import ru.jamsys.core.flat.util.UtilJson;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -73,6 +74,10 @@ public class ServletHandler {
             servletOutputStream = response.getOutputStream();
         }
         return servletOutputStream;
+    }
+
+    public Writer getResponseWriter() throws IOException {
+        return response.getWriter();
     }
 
     public void responseComplete() {
