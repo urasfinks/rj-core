@@ -104,9 +104,17 @@ public class JdbcTemplate {
     public String debug(CompiledSqlTemplate compiledSqlTemplate) {
         String[] split = compiledSqlTemplate.getSql().split("\\?");
         StringBuilder sb = new StringBuilder();
+        if (split.length == 1) {
+            sb.append(split[0]);
+            return sb.toString();
+        }
+
         List<Argument> listArgument = compiledSqlTemplate.getListArgument();
         for (int i = 0; i < split.length; i++) {
             sb.append(split[i]);
+            if (i == split.length - 1) { //Пропускаем последний элемент
+                continue;
+            }
             try {
                 Argument argument = listArgument.get(i);
                 Object value = argument.getValue();
