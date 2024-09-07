@@ -14,6 +14,7 @@ import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.extension.line.writer.LineWriterString;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilDate;
 
 @Setter
 @Component
@@ -43,7 +44,7 @@ public class ExceptionHandler extends RepositoryPropertiesField {
         if (remoteLog) {
             LineWriterList lineWriterList = new LineWriterList();
             lineWriterList.addLine(
-                    Util.msToDataFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
+                    UtilDate.msToDataFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
             );
             getTextException(th, lineWriterList);
             App.get(ServiceLogger.class).add(

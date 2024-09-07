@@ -9,7 +9,7 @@ import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.statistic.Statistic;
 
 import java.util.ArrayList;
@@ -95,7 +95,7 @@ public class RateLimitItemPeriodic
             period.addValue(now, 1);
             long timeInMs = now.getTimeInMillis();
             nextTimeFlush.set(timeInMs);
-            nextTimeFlushFormat = Util.msToDataFormat(timeInMs);
+            nextTimeFlushFormat = UtilDate.msToDataFormat(timeInMs);
             statistic.addField("tpu", tpu.getAndSet(0));
             statistic.addField("flushed", true);
         } else {

@@ -1,8 +1,8 @@
 package ru.jamsys.core.flat.template.cron;
 
 import lombok.Getter;
+import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.statistic.AvgMetric;
-import ru.jamsys.core.flat.util.Util;
 
 import java.util.*;
 
@@ -50,17 +50,17 @@ public class TimeVariant {
         }
         for (TimeUnit curEmptyTimeUnit : listEmptyTimeUnit) {
             if (debug) {
-                System.out.println("====EmptyUnit " + curEmptyTimeUnit.getNameCache() + " for time: " + Util.msToDataFormat(curTime));
+                System.out.println("====EmptyUnit " + curEmptyTimeUnit.getNameCache() + " for time: " + UtilDate.msToDataFormat(curTime));
             }
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(curTime);
             resetDynamicUnitBefore(calendar, curEmptyTimeUnit, debug);
             if (debug) {
-                System.out.println("reset: " + Util.msToDataFormat(calendar.getTimeInMillis()));
+                System.out.println("reset: " + UtilDate.msToDataFormat(calendar.getTimeInMillis()));
             }
             timeInsert(calendar);
             if (debug) {
-                System.out.println("timeInsert: " + Util.msToDataFormat(calendar.getTimeInMillis()));
+                System.out.println("timeInsert: " + UtilDate.msToDataFormat(calendar.getTimeInMillis()));
             }
             int count = 0;
             //Если мы сейчас переставляем дни месяца, то надо проверить наличие присутствия дня недели
@@ -77,7 +77,7 @@ public class TimeVariant {
                 now.setTimeInMillis(curTime);
                 curEmptyTimeUnit.setValue(calendar, curEmptyTimeUnit.getValue(now));
                 if (debug) {
-                    System.out.println("preSet: " + curEmptyTimeUnit + " = " + curEmptyTimeUnit.getValue(now) + " " + Util.msToDataFormat(calendar.getTimeInMillis()));
+                    System.out.println("preSet: " + curEmptyTimeUnit + " = " + curEmptyTimeUnit.getValue(now) + " " + UtilDate.msToDataFormat(calendar.getTimeInMillis()));
                 }
             }
 
@@ -85,7 +85,7 @@ public class TimeVariant {
                 long n = calendar.getTimeInMillis();
                 if (n > curTime) {
                     if (debug) {
-                        System.out.println("[" + Util.msToDataFormat(n) + "] because > curTime: " + Util.msToDataFormat(curTime) + " realMs: " + n);
+                        System.out.println("[" + UtilDate.msToDataFormat(n) + "] because > curTime: " + UtilDate.msToDataFormat(curTime) + " realMs: " + n);
                     }
                     avgMetric.add(n);
                     if (listEmptyTimeUnit.size() == 1 && count == 0) {

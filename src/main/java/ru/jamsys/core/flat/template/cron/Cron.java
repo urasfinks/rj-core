@@ -1,7 +1,7 @@
 package ru.jamsys.core.flat.template.cron;
 
 import lombok.Getter;
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.AvgMetricUnit;
 
@@ -101,7 +101,7 @@ public class Cron {
         List<String> result = new ArrayList<>();
         List<Long> series = getSeries(curTime, count);
         for (Long ms : series) {
-            result.add(Util.msToDataFormat(ms));
+            result.add(UtilDate.msToDataFormat(ms));
         }
         return result;
     }
@@ -164,7 +164,7 @@ public class Cron {
             if ((long) flush.get(AvgMetricUnit.SELECTION.getNameCache()) > 0) {
                 if (debug) {
                     System.out.println("Avg min: "
-                            + Util.msToDataFormat((Long) flush.get(AvgMetricUnit.MIN.getNameCache()))
+                            + UtilDate.msToDataFormat((Long) flush.get(AvgMetricUnit.MIN.getNameCache()))
                             + " realMs: "
                             + flush.get(AvgMetricUnit.MIN.getNameCache())
                     );

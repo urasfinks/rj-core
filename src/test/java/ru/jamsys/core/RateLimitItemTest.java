@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
-import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.rate.limit.item.*;
+import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.rate.limit.item.RateLimitItem;
+import ru.jamsys.core.rate.limit.item.RateLimitItemPeriodic;
+import ru.jamsys.core.rate.limit.item.RateLimitItemTps;
 
 // IO time: 6ms
 // COMPUTE time: 5ms
@@ -71,10 +73,10 @@ class RateLimitItemTest {
         Assertions.assertEquals("2024-04-06T17:11:04.056", rateLimitItemPeriodic.getNextTime());
         rateLimitItemPeriodic.check();
 
-        Assertions.assertEquals("2024-03-06T17:12:04.056", Util.msToDataFormat(curTime + (aLong)));
-        Assertions.assertEquals("2024-03-06T18:11:04.056", Util.msToDataFormat(curTime + (aLong * 60)));
-        Assertions.assertEquals("2024-03-07T17:11:04.056", Util.msToDataFormat(curTime + (aLong * 60 * 24)));
-        Assertions.assertEquals("2024-04-07T17:11:04.056", Util.msToDataFormat(curTime + (aLong * 60 * 24 * 32)));
+        Assertions.assertEquals("2024-03-06T17:12:04.056", UtilDate.msToDataFormat(curTime + (aLong)));
+        Assertions.assertEquals("2024-03-06T18:11:04.056", UtilDate.msToDataFormat(curTime + (aLong * 60)));
+        Assertions.assertEquals("2024-03-07T17:11:04.056", UtilDate.msToDataFormat(curTime + (aLong * 60 * 24)));
+        Assertions.assertEquals("2024-04-07T17:11:04.056", UtilDate.msToDataFormat(curTime + (aLong * 60 * 24 * 32)));
 
         Assertions.assertEquals("{period=Month, max=999999, tpu=3, flushed=false}", rateLimitItemPeriodic.flushAndGetStatistic(curTime, null, null).getFields().toString());
         Assertions.assertEquals("2024-04-06T17:11:04.056", rateLimitItemPeriodic.getNextTime());

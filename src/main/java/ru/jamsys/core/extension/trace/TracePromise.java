@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Setter;
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
 @JsonPropertyOrder({"index", "retry", "type", "timeAdd", "timeStop", "value", "class"})
@@ -21,7 +21,7 @@ public class TracePromise<K, V> extends Trace<K, V> {
     public Long timeStop;
 
     public String getTimeStop() {
-        return Util.msToDataFormat(timeStop);
+        return UtilDate.msToDataFormat(timeStop);
     }
 
     @JsonProperty("class")

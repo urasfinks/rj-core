@@ -1,6 +1,6 @@
 package ru.jamsys.core.statistic.expiration;
 
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilDate;
 
 public interface ExpirationMs {
 
@@ -64,17 +64,17 @@ public interface ExpirationMs {
 
     // Время последней активности
     default String getLastActivityFormat() {
-        return Util.msToDataFormat(getLastActivityMs());
+        return UtilDate.msToDataFormat(getLastActivityMs());
     }
 
     // Возвратит время, когда объект будет просрочен
     default String getExpiredFormat() {
-        return Util.msToDataFormat(getLastActivityMs() + getKeepAliveOnInactivityMs());
+        return UtilDate.msToDataFormat(getLastActivityMs() + getKeepAliveOnInactivityMs());
     }
 
     // Возвратит время, когда объект будет просрочен
     default String getStopFormat() {
-        return Util.msToDataFormat(getStopTimeMs());
+        return UtilDate.msToDataFormat(getStopTimeMs());
     }
 
     // Зафиксировать конец активности
