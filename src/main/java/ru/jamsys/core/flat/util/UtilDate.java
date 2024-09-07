@@ -13,7 +13,7 @@ import java.util.Date;
 
 public class UtilDate {
 
-    public static String getDate(String format) {
+    public static String get(String format) {
         Date now = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat(format);
         return formatter.format(now);
@@ -25,11 +25,13 @@ public class UtilDate {
         return d1.getTime() / 1000;
     }
 
-    public static long getTimestampFromPostgreSql(String date) throws Exception {
-        return getTimestamp(date, "yyyy-MM-dd HH:mm:ss.SSSX");
+    public static long getMs(String date, String format) throws Exception {
+        DateFormat dateFormat = new SimpleDateFormat(format);
+        Date d1 = dateFormat.parse(date);
+        return d1.getTime();
     }
 
-    public static boolean dateValidate(String date, String format) {
+    public static boolean validate(String date, String format) {
         DateFormat DATE_FORMAT = new SimpleDateFormat(format);
         DATE_FORMAT.setLenient(true);
         try {
@@ -40,17 +42,29 @@ public class UtilDate {
         return false;
     }
 
-    public static String timestampToDateFormat(long timestamp, String format) {
+    public static String timestampFormat(long timestamp) {
+        return timestampFormat(timestamp, "yyyy-MM-dd'T'HH:mm:ss");
+    }
+
+    public static String timestampFormat(long timestamp, String format) {
         Timestamp stamp = new Timestamp(timestamp * 1000);
         return new SimpleDateFormat(format).format(new Date(stamp.getTime()));
     }
 
-    public static String msToDataFormat(Long ms) {
+    public static String msFormat(Long ms) {
+        return msFormat(ms, "yyyy-MM-dd'T'HH:mm:ss.SSS");
+    }
+
+    public static String msFormat(Long ms, String format) {
         if (ms == null) {
             return "null";
         }
         LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneId.systemDefault());
-        return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"));
+        return date.format(DateTimeFormatter.ofPattern(format));
+    }
+
+    public static long getTimestampFromPostgreSql(String date) throws Exception {
+        return getTimestamp(date, "yyyy-MM-dd HH:mm:ss.SSSX");
     }
 
 }

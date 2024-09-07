@@ -24,7 +24,7 @@ public class Trace<K, V> {
     protected V value;
 
     public String getTimeAdd() {
-        return UtilDate.msToDataFormat(timeAdd);
+        return UtilDate.msFormat(timeAdd);
     }
 
     public Object getValue() {

@@ -64,17 +64,17 @@ public interface ExpirationMs {
 
     // Время последней активности
     default String getLastActivityFormat() {
-        return UtilDate.msToDataFormat(getLastActivityMs());
+        return UtilDate.msFormat(getLastActivityMs());
     }
 
     // Возвратит время, когда объект будет просрочен
     default String getExpiredFormat() {
-        return UtilDate.msToDataFormat(getLastActivityMs() + getKeepAliveOnInactivityMs());
+        return UtilDate.msFormat(getLastActivityMs() + getKeepAliveOnInactivityMs());
     }
 
     // Возвратит время, когда объект будет просрочен
     default String getStopFormat() {
-        return UtilDate.msToDataFormat(getStopTimeMs());
+        return UtilDate.msFormat(getStopTimeMs());
     }
 
     // Зафиксировать конец активности

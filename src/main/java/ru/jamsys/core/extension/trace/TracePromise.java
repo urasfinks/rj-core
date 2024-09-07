@@ -21,7 +21,7 @@ public class TracePromise<K, V> extends Trace<K, V> {
     public Long timeStop;
 
     public String getTimeStop() {
-        return UtilDate.msToDataFormat(timeStop);
+        return UtilDate.msFormat(timeStop);
     }
 
     @JsonProperty("class")

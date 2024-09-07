@@ -16,7 +16,7 @@ public class ExpirationKeepAliveResult {
 
     public List<String> getReadBucketFormat() {
         List<String> result = new ArrayList<>();
-        readBucket.forEach(x -> result.add(UtilDate.msToDataFormat(x)));
+        readBucket.forEach(x -> result.add(UtilDate.msFormat(x)));
         return result;
     }
 }

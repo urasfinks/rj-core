@@ -95,7 +95,7 @@ public class RateLimitItemPeriodic
             period.addValue(now, 1);
             long timeInMs = now.getTimeInMillis();
             nextTimeFlush.set(timeInMs);
-            nextTimeFlushFormat = UtilDate.msToDataFormat(timeInMs);
+            nextTimeFlushFormat = UtilDate.msFormat(timeInMs);
             statistic.addField("tpu", tpu.getAndSet(0));
             statistic.addField("flushed", true);
         } else {

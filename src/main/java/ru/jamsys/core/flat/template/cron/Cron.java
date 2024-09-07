@@ -101,7 +101,7 @@ public class Cron {
         List<String> result = new ArrayList<>();
         List<Long> series = getSeries(curTime, count);
         for (Long ms : series) {
-            result.add(UtilDate.msToDataFormat(ms));
+            result.add(UtilDate.msFormat(ms));
         }
         return result;
     }
@@ -164,7 +164,7 @@ public class Cron {
             if ((long) flush.get(AvgMetricUnit.SELECTION.getNameCache()) > 0) {
                 if (debug) {
                     System.out.println("Avg min: "
-                            + UtilDate.msToDataFormat((Long) flush.get(AvgMetricUnit.MIN.getNameCache()))
+                            + UtilDate.msFormat((Long) flush.get(AvgMetricUnit.MIN.getNameCache()))
                             + " realMs: "
                             + flush.get(AvgMetricUnit.MIN.getNameCache())
                     );

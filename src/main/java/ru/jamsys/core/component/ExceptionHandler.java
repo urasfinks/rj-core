@@ -44,7 +44,7 @@ public class ExceptionHandler extends RepositoryPropertiesField {
         if (remoteLog) {
             LineWriterList lineWriterList = new LineWriterList();
             lineWriterList.addLine(
-                    UtilDate.msToDataFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
+                    UtilDate.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
             );
             getTextException(th, lineWriterList);
             App.get(ServiceLogger.class).add(

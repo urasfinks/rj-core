@@ -54,7 +54,7 @@ public class Util {
 
     public static void logConsole(Thread t, String data, boolean err) {
         PrintStream out = err ? System.err : System.out;
-        out.println(UtilDate.msToDataFormat(System.currentTimeMillis()) + " thread: " + t.getName() + "; " + data);
+        out.println(UtilDate.msFormat(System.currentTimeMillis()) + " thread: " + t.getName() + "; " + data);
     }
 
     public static long getTimestamp() {
@@ -246,7 +246,7 @@ public class Util {
 
     public static void printStackTrace(String label) {
         Exception exception = new Exception(
-                UtilDate.msToDataFormat(System.currentTimeMillis()) + " ["
+                UtilDate.msFormat(System.currentTimeMillis()) + " ["
                         + Thread.currentThread().getName() + "] "
                         + "Util.printStackTrace: " + label + "\r\n"
         );

@@ -67,12 +67,12 @@ class ExpirationTest {
 
         //Проверяем что пока 1 корзина
         Assertions.assertEquals("[1709734265000]", test.getBucketKey().toString());
-        Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msToDataFormat(test.getBucketKey().getFirst()));
+        Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msFormat(test.getBucketKey().getFirst()));
 
         //2024-03-06T17:11:04.056 + 500 => 11:04.556 + 1000 => 11:05.556 => 11:05.000
 
         test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + 500));
-        Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msToDataFormat(test.getBucketKey().getFirst()));
+        Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msFormat(test.getBucketKey().getFirst()));
         //Проверяем что корзина не добавилась
         Assertions.assertEquals("[1709734265000]", test.getBucketKey().toString());
 //
@@ -106,8 +106,8 @@ class ExpirationTest {
         statistics = test.flushAndGetStatistic(null, null, null).getFirst();
         Assertions.assertEquals("{ItemSize=100, BucketSize=50}", statistics.getFields().toString());
 
-        Assertions.assertEquals("2024-03-06T17:11:05.006", UtilDate.msToDataFormat(curTimeMs + 950));
-        Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msToDataFormat(Util.zeroLastNDigits(curTimeMs + 950, 3)));
+        Assertions.assertEquals("2024-03-06T17:11:05.006", UtilDate.msFormat(curTimeMs + 950));
+        Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msFormat(Util.zeroLastNDigits(curTimeMs + 950, 3)));
 
         keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + 950);
         Assertions.assertEquals(2, keepAliveResult.getCountRemove().get());

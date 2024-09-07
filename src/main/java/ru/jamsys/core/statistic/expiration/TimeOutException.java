@@ -15,9 +15,9 @@ public class TimeOutException extends Exception {
 
     @Override
     public String getMessage() {
-        return "TimeOutException lastActivity: " + UtilDate.msToDataFormat(timeStart)
+        return "TimeOutException lastActivity: " + UtilDate.msFormat(timeStart)
                 + "; timeOut: " + timeOut
-                + "; now: " + UtilDate.msToDataFormat(now);
+                + "; now: " + UtilDate.msFormat(now);
     }
 
 }
