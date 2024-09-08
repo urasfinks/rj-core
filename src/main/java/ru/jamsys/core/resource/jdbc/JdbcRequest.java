@@ -39,7 +39,7 @@ public class JdbcRequest {
         return this;
     }
 
-    public JdbcRequest addArg(Map<String, Object> map) {
+    public JdbcRequest addArg(Map<String, ?> map) {
         listArgs.getLast().putAll(map);
         return this;
     }
