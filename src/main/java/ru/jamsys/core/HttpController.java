@@ -12,10 +12,9 @@ import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.http.ServletHandler;
-import ru.jamsys.core.flat.util.ListSort;
-import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.flat.util.UtilFile;
-import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.extension.property.PropertiesAgent;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
+import ru.jamsys.core.flat.util.*;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.web.http.HttpHandler;
@@ -41,18 +40,78 @@ public class HttpController {
 
     private HttpInterceptor httpInterceptor;
 
+    private final RepositoryPropertiesMap<String> ignoreStaticFile = new RepositoryPropertiesMap<>(String.class);
+
+    private final RepositoryPropertiesMap<String> ignoreStaticDir = new RepositoryPropertiesMap<>(String.class);
+
+    private final Set<String> ignoredStaticFile = new HashSet<>();
+
+    private final ServiceProperty serviceProperty;
+
     public HttpController(ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder, ServiceProperty serviceProperty) {
+        this.serviceProperty = serviceProperty;
         fill(path, applicationContext, serviceClassFinder, HttpHandler.class);
         if (serviceProperty.get(Boolean.class, "run.args.web", false)) {
-            String location = serviceProperty.get("run.args.web.resource.location");
-            String absPath = new File(location).getAbsolutePath();
-            List<String> filesRecursive = UtilFile.getFilesRecursive(location);
-            filesRecursive.forEach(s -> staticFile.put(s.substring(absPath.length()), s));
+            updateStaticFile();
+            subscribeIgnoreFile();
+            subscribeIgnoreDir();
+            Util.logConsole("IgnoredStaticFile: " + UtilJson.toStringPretty(ignoredStaticFile, "{}"));
         }
         List<Class<HttpInterceptor>> list = serviceClassFinder.findByInstance(HttpInterceptor.class);
         if (!list.isEmpty()) {
             httpInterceptor = serviceClassFinder.instanceOf(list.getFirst());
         }
+    }
+
+    private void subscribeIgnoreFile() {
+        PropertiesAgent ignoredClassAgent = serviceProperty.getFactory().getPropertiesAgent(
+                mapAlias -> {
+                    Util.logConsole("IgnoreWebStatic.File: " + UtilJson.toStringPretty(mapAlias, "{}"));
+                    updateStaticFile();
+                },
+                ignoreStaticFile,
+                "run.args.web.static.file.ignore.file",
+                false
+        );
+        ignoredClassAgent.series("run\\.args\\.web\\.static\\.file\\.ignore\\.file.*");
+    }
+
+    private void subscribeIgnoreDir() {
+        PropertiesAgent ignoredClassAgent = serviceProperty.getFactory().getPropertiesAgent(
+                mapAlias -> {
+                    Util.logConsole("IgnoreWebStatic.Dir: " + UtilJson.toStringPretty(mapAlias, "{}"));
+                    updateStaticFile();
+                },
+                ignoreStaticDir,
+                "run.args.web.static.file.ignore.dir",
+                false
+        );
+        ignoredClassAgent.series("run\\.args\\.web\\.static\\.file\\.ignore\\.dir.*");
+    }
+
+    private void updateStaticFile() {
+        staticFile.clear();
+        String location = serviceProperty.get("run.args.web.resource.location");
+        String absPath = new File(location).getAbsolutePath();
+        List<String> filesRecursive = UtilFile.getFilesRecursive(location);
+        filesRecursive.forEach(s -> staticFile.put(s.substring(absPath.length()), s));
+
+        UtilRisc.forEach(null, ignoreStaticFile.getMapRepositoryTyped(), (s, stringRepositoryMapValue) -> {
+            String excludeFile = stringRepositoryMapValue.getValue();
+            UtilRisc.forEach(null, staticFile, (key, value) -> {
+                if (key.equals(excludeFile)) {
+                    ignoredStaticFile.add(staticFile.remove(excludeFile));
+                }
+            });
+        });
+        UtilRisc.forEach(null, ignoreStaticDir.getMapRepositoryTyped(), (s, stringRepositoryMapValue) -> {
+            String excludeDir = stringRepositoryMapValue.getValue();
+            UtilRisc.forEach(null, staticFile, (key, value) -> {
+                if (key.startsWith(excludeDir)) {
+                    ignoredStaticFile.add(staticFile.remove(key));
+                }
+            });
+        });
     }
 
     public static void fill(Map<String, PromiseGenerator> path, ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder, Class<?> iFaceMatcher) {

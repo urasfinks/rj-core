@@ -25,6 +25,10 @@ public class RepositoryPropertiesMap<T> implements RepositoryProperties {
         return new LinkedHashMap<>(mapRepository);
     }
 
+    public Map<String, RepositoryMapValue<T>> getMapRepositoryTyped() {
+        return new LinkedHashMap<>(mapRepository);
+    }
+
     @Override
     public void setProperty(String prop, String value) {
         RepositoryMapValue<?> repositoryMapValue = mapRepository.computeIfAbsent(prop, s
