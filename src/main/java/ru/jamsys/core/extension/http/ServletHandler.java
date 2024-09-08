@@ -8,14 +8,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import ru.jamsys.core.App;
+import ru.jamsys.core.HttpController;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.UtilJson;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Writer;
+import java.io.*;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -36,16 +34,19 @@ public class ServletHandler {
     private String responseBody = "";
 
     @Getter
-    private final ServletRequestReader requestReader;
+    private ServletRequestReader requestReader;
 
     public ServletHandler(
             CompletableFuture<Void> completableFuture,
             HttpServletRequest request,
             HttpServletResponse response
-    ) throws ServletException, IOException {
+    ) {
         this.completableFuture = completableFuture;
         this.request = request;
         this.response = response;
+    }
+
+    public void init() throws ServletException, IOException {
         requestReader = new ServletRequestReader(request);
     }
 
@@ -61,6 +62,21 @@ public class ServletHandler {
         if (this.responseBody.isEmpty()) {
             this.responseBody = body;
         }
+    }
+
+    public void writeFileToOutput(File file) throws IOException {
+        String mimeType = HttpController.getMimeType(request.getServletContext(), file.getAbsolutePath());
+        response.setContentType(mimeType);
+        OutputStream out = response.getOutputStream();
+        FileInputStream in = new FileInputStream(file);
+        byte[] buffer = new byte[4096];
+        int length;
+        while ((length = in.read(buffer)) > 0) {
+            out.write(buffer, 0, length);
+        }
+        in.close();
+        out.flush();
+        getCompletableFuture().complete(null);
     }
 
     public void setResponseHeader(String key, String value) {

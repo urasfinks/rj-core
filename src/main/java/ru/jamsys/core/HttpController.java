@@ -1,7 +1,6 @@
 package ru.jamsys.core;
 
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.ApplicationContext;
@@ -21,9 +20,6 @@ import ru.jamsys.core.web.http.HttpHandler;
 import ru.jamsys.core.web.http.HttpInterceptor;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -168,70 +164,68 @@ public class HttpController {
     }
 
     public static void setMimeType(HttpServletRequest request, HttpServletResponse response) {
-        ServletContext context = request.getServletContext();
-        String mimeType = context.getMimeType(request.getRequestURI());
+        String mimeType = getMimeType(request.getServletContext(), request.getRequestURI());
         response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
+    }
+
+    public static String getMimeType(ServletContext context, String path) {
+        return context.getMimeType(path);
     }
 
     @RequestMapping(value = "/**")
     public CompletableFuture<Void> handler(
             HttpServletRequest request,
             HttpServletResponse response
-    ) throws ServletException, IOException {
-
-        if (httpInterceptor != null && !httpInterceptor.handle(request, response)) {
-            return null;
-        }
-
-        String uri = request.getRequestURI();
-
-        if (staticFile.containsKey(uri)) {
-            setMimeType(request, response);
-            OutputStream out = response.getOutputStream();
-            FileInputStream in = new FileInputStream(staticFile.get(uri));
-            byte[] buffer = new byte[4096];
-            int length;
-            while ((length = in.read(buffer)) > 0) {
-                out.write(buffer, 0, length);
-            }
-            in.close();
-            out.flush();
-            return null;
-        }
-
-        PromiseGenerator promiseGenerator = getGeneratorByUri(request.getRequestURI());
+    ) {
         ServletHandler servletHandler = new ServletHandler(new CompletableFuture<>(), request, response);
-        if (promiseGenerator == null) {
-            servletHandler.setResponseError("Generator not found");
-            servletHandler.responseComplete();
-            return servletHandler.getServletResponse();
-        }
-        Promise promise = promiseGenerator.generate();
+        try {
+            if (httpInterceptor != null && !httpInterceptor.handle(request, response)) {
+                return null;
+            }
+            String uri = request.getRequestURI();
+            if (staticFile.containsKey(uri)) {
+                servletHandler.writeFileToOutput(new File(staticFile.get(uri)));
+                return null;
+            }
+            servletHandler.init();
+            PromiseGenerator promiseGenerator = getGeneratorByUri(uri);
+            if (promiseGenerator == null) {
+                servletHandler.setResponseError("Generator not found");
+                servletHandler.responseComplete();
+                return servletHandler.getServletResponse();
+            }
+            Promise promise = promiseGenerator.generate();
 
-        if (promise == null) {
-            servletHandler.setResponseError("Promise is null");
-            servletHandler.responseComplete();
-            return servletHandler.getServletResponse();
-        }
+            if (promise == null) {
+                servletHandler.setResponseError("Promise is null");
+                servletHandler.responseComplete();
+                return servletHandler.getServletResponse();
+            }
 
-        if (!promise.isSetErrorHandler()) {
-            promise.onError((atomicBoolean, p) -> {
-                ServletHandler srvHandler = p.getRepositoryMapClass(ServletHandler.class);
-                srvHandler.setResponseBody(p.getLogString());
-                srvHandler.responseComplete();
-            });
+            if (!promise.isSetErrorHandler()) {
+                promise.onError((atomicBoolean, p) -> {
+                    ServletHandler srvHandler = p.getRepositoryMapClass(ServletHandler.class);
+                    srvHandler.setResponseBody(p.getLogString());
+                    srvHandler.responseComplete();
+                });
+            }
+            if (!promise.isSetCompleteHandler()) {
+                promise.onComplete((atomicBoolean, p) -> {
+                    ServletHandler srvHandler = p.getRepositoryMapClass(ServletHandler.class);
+                    if (srvHandler.isEmptyBody()) {
+                        srvHandler.setBodyIfEmpty(p.getLogString());
+                    }
+                    srvHandler.responseComplete();
+                });
+            }
+            promise.setRepositoryMapClass(ServletHandler.class, servletHandler);
+            promise.run();
+        } catch (Throwable th) {
+            App.error(th);
+            servletHandler.setResponseError(th.getMessage());
+            servletHandler.responseComplete();
+            return null;
         }
-        if (!promise.isSetCompleteHandler()) {
-            promise.onComplete((atomicBoolean, p) -> {
-                ServletHandler srvHandler = p.getRepositoryMapClass(ServletHandler.class);
-                if (srvHandler.isEmptyBody()) {
-                    srvHandler.setBodyIfEmpty(p.getLogString());
-                }
-                srvHandler.responseComplete();
-            });
-        }
-        promise.setRepositoryMapClass(ServletHandler.class, servletHandler);
-        promise.run();
         return servletHandler.getServletResponse();
     }
 
