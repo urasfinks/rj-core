@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 import lombok.Getter;
 import lombok.ToString;
+import ru.jamsys.core.extension.exception.AuthException;
 import ru.jamsys.core.extension.functional.BiConsumerThrowing;
 import ru.jamsys.core.flat.util.Util;
 
@@ -153,14 +154,14 @@ public class ServletRequestReader {
 
     public static void basicAuthHandler(String authorization, BiConsumerThrowing<String, String> handler) throws Throwable {
         if (authorization == null) {
-            throw new RuntimeException("Authorization header is null");
+            throw new AuthException("Authorization header is null");
         }
         if (!authorization.startsWith("Basic ")) {
-            throw new RuntimeException("Authorization header is not Basic");
+            throw new AuthException("Authorization header is not Basic");
         }
         String base64Decoded = new String(Base64.getDecoder().decode(authorization.substring(6)), StandardCharsets.UTF_8);
         if (!base64Decoded.contains(":")) {
-            throw new RuntimeException("Error parsing");
+            throw new AuthException("Error parsing");
         }
         String user = base64Decoded.substring(0, base64Decoded.indexOf(":"));
         String password = base64Decoded.substring(base64Decoded.indexOf(":") + 1);
