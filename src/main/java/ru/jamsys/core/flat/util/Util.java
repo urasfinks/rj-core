@@ -57,10 +57,6 @@ public class Util {
         out.println(UtilDate.msFormat(System.currentTimeMillis()) + " thread: " + t.getName() + "; " + data);
     }
 
-    public static long getTimestamp() {
-        return System.currentTimeMillis() / 1000;
-    }
-
     public static void sleepMs(long ms) {
         try {
             Thread.sleep(ms);

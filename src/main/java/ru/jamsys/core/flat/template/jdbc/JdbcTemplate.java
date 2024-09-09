@@ -101,8 +101,15 @@ public class JdbcTemplate {
     }
 
     @SuppressWarnings("unused")
-    public String debug(CompiledSqlTemplate compiledSqlTemplate) {
-        String[] split = compiledSqlTemplate.getSql().split("\\?");
+    public String getSqlWithArgumentsValue(CompiledSqlTemplate compiledSqlTemplate) {
+        String sqlPrep = compiledSqlTemplate.getSql();
+        String[] split = sqlPrep.split("\\?");
+        if (sqlPrep.endsWith("?")) {
+            ArrayList<String> strings = new ArrayList<>(List.of(split));
+            strings.add("");
+            split = strings.toArray(new String[0]);
+        }
+
         StringBuilder sb = new StringBuilder();
         if (split.length == 1) {
             sb.append(split[0]);

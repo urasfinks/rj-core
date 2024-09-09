@@ -82,7 +82,7 @@ class JdbcRequestRepositoryTest {
                 AND lazy_sync_data IN ('Hello','world','wfe')
                 AND uuid_device_data = 'a1b2c3'
                 GROUP BY type_data;
-                """, jdbcTemplate.debug(compiledSqlTemplate), "#2");
+                """, jdbcTemplate.getSqlWithArgumentsValue(compiledSqlTemplate), "#2");
     }
 
     @Test

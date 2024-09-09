@@ -83,6 +83,10 @@ public class ServletHandler {
         response.setHeader(key, value);
     }
 
+    public void setResponseStatus(int code) {
+        response.setStatus(code);
+    }
+
     ServletOutputStream servletOutputStream;
 
     public ServletOutputStream getResponseOutputStream() throws IOException {

@@ -2,6 +2,7 @@ package ru.jamsys.core.resource.jdbc;
 
 import ru.jamsys.core.flat.template.jdbc.*;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilJson;
 
 import java.sql.*;
 import java.util.*;
@@ -22,7 +23,7 @@ public interface JdbcExecute {
         CompiledSqlTemplate compiledSqlTemplate = jdbcTemplate.compile(argsList.getFirst());
         if (debug) {
             Util.logConsole(compiledSqlTemplate.getSql());
-            Util.logConsole(jdbcTemplate.debug(compiledSqlTemplate));
+            Util.logConsole(jdbcTemplate.getSqlWithArgumentsValue(compiledSqlTemplate));
         }
         StatementType statementType = jdbcTemplate.getStatementType();
         conn.setAutoCommit(statementType.isAutoCommit());
@@ -92,6 +93,9 @@ public interface JdbcExecute {
                 }
                 listRet.add(row);
                 break;
+        }
+        if (debug) {
+            Util.logConsole(UtilJson.toStringPretty(listRet, "[]"));
         }
         return listRet;
     }
