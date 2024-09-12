@@ -19,6 +19,11 @@ public class UtilDate {
         return formatter.format(now);
     }
 
+    public static long getTimestamp() {
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        return timestamp.getTime() / 1000;
+    }
+
     public static long getTimestamp(String date, String format) throws Exception {
         DateFormat dateFormat = new SimpleDateFormat(format);
         Date d1 = dateFormat.parse(date);
