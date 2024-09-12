@@ -10,16 +10,15 @@ public interface RepositoryMap<K, V> {
 
     Map<K, V> getRepositoryMap();
 
-    // Буд-те внимательны хранилище нельзя перезаписывать по ключу!!!
     default <R> R setRepositoryMap(K key, Supplier<R> defSupplier) {
         @SuppressWarnings("unchecked")
-        R result = (R) getRepositoryMap().computeIfAbsent(key, _ -> (V) defSupplier.get());
+        R result = (R) getRepositoryMap().put(key, (V) defSupplier.get());
         return result;
     }
 
     default <R> R setRepositoryMap(K key, R obj) {
         @SuppressWarnings("unchecked")
-        R result = (R) getRepositoryMap().computeIfAbsent(key, _ -> (V) obj);
+        R result = (R) getRepositoryMap().put(key, (V) obj);
         return result;
     }
 
@@ -35,7 +34,7 @@ public interface RepositoryMap<K, V> {
             R r = (R) o;
             return r;
         }
-        return setRepositoryMap(key, def);
+        return def;
     }
 
     default <R> R getRepositoryMap(@NotNull Class<R> cls, K key, Supplier<R> defSupplier) {
@@ -45,7 +44,7 @@ public interface RepositoryMap<K, V> {
             R r = (R) o;
             return r;
         }
-        return setRepositoryMap(key, defSupplier.get());
+        return defSupplier.get();
     }
 
     default <R> R getRepositoryMap(@NotNull Class<R> cls, K key) {
