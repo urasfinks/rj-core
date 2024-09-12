@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension;
 
+import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.component.ServiceClassFinder;
 
 import java.util.Map;
@@ -20,7 +21,7 @@ public interface RepositoryMap<K, V> {
         return this;
     }
 
-    default <R> R getRepositoryMap(K key, Class<R> cls, R def) {
+    default <R> R getRepositoryMap(@NotNull Class<R> cls, K key, R def) {
         Object o = getRepositoryMap().get(key);
         if (o != null && ServiceClassFinder.instanceOf(o.getClass(), cls)) {
             @SuppressWarnings("unchecked")
@@ -30,8 +31,8 @@ public interface RepositoryMap<K, V> {
         return def;
     }
 
-    default <R> R getRepositoryMap(K key, Class<R> cls) {
-        return getRepositoryMap(key, cls, null);
+    default <R> R getRepositoryMap(@NotNull Class<R> cls, K key) {
+        return getRepositoryMap(cls, key, null);
     }
 
     default boolean repositoryMapContains(K key) {

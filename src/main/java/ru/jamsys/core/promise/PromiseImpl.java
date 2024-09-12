@@ -212,13 +212,21 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     private void flushLog() {
+        String logString = null;
+        if (isDebug()) {
+            logString = getLogString();
+            Util.logConsole(logString);
+        }
         if (isLog()) {
             ServiceLogger serviceLogger = App.get(ServiceLogger.class);
             if (serviceLogger.getRemoteLog()) {
+                if (logString == null) {
+                    logString = getLogString();
+                }
                 App.get(ServiceLogger.class).add(new Log(
                         isException.get() ? LogType.ERROR : LogType.INFO,
                         getCorrelation()
-                ).setData(getLogString()));
+                ).setData(logString));
             }
         }
     }

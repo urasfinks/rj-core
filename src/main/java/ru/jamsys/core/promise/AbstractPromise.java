@@ -81,6 +81,14 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     @Getter
     protected Collection<TracePromise<String, TimerNanoEnvelope<String>>> trace = new ConcurrentLinkedQueue<>();
 
+    @Getter
+    private boolean debug;
+
+    public Promise setDebug(boolean tracing) {
+        this.debug = tracing;
+        return this;
+    }
+
     public AbstractPromise(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
         super(keepAliveOnInactivityMs, lastActivityMs);
         this.index = index;

@@ -161,4 +161,8 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
         return this;
     }
 
+    Promise setDebug(boolean debug);
+
+    boolean isDebug();
+
 }

@@ -14,9 +14,9 @@ import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.UniqueClassNameImpl;
+import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
-import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
 import ru.jamsys.core.flat.util.ListSort;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -118,7 +118,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
             }
         }).appendWait().appendWithResource("read", FileByteReaderResource.class, (_, promise, fileByteReaderResource) -> {
             if (broker.getOccupancyPercentage() < 50) {
-                String readyFile = promise.getRepositoryMap("readyFile", String.class);
+                String readyFile = promise.getRepositoryMap(String.class, "readyFile");
                 if (readyFile != null) {
                     List<ByteTransformer> execute = fileByteReaderResource.execute(new FileByteReaderRequest(readyFile, Log.class));
                     execute.forEach(byteItem -> broker.add((Log) byteItem, 6_000L));
@@ -139,7 +139,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
 
                 if (isFatalExceptionOnComplete.apply(exception)) {
                     // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
-                    List<Log> reserveLog = promise.getRepositoryMap(LogUploaderPromiseProperty.RESERVE_LOG.name(), List.class, null);
+                    List<Log> reserveLog = promise.getRepositoryMap(List.class, LogUploaderPromiseProperty.RESERVE_LOG.name(), null);
                     if (reserveLog != null && !reserveLog.isEmpty()) {
                         reserveLog.forEach(log -> broker.add(log, 2_000L));
                     }
