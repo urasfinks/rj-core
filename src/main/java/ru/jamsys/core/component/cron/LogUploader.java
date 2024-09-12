@@ -139,7 +139,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
 
                 if (isFatalExceptionOnComplete.apply(exception)) {
                     // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
-                    List<Log> reserveLog = promise.getRepositoryMap(List.class, LogUploaderPromiseProperty.RESERVE_LOG.name(), null);
+                    List<Log> reserveLog = promise.getRepositoryMap(List.class, LogUploaderPromiseProperty.RESERVE_LOG.name());
                     if (reserveLog != null && !reserveLog.isEmpty()) {
                         reserveLog.forEach(log -> broker.add(log, 2_000L));
                     }

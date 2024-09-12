@@ -167,8 +167,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
                             // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
                             List<StatisticSec> reserveStatistic = promise.getRepositoryMap(
                                     List.class,
-                                    StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name(),
-                                    null
+                                    StatisticUploaderPromiseProperty.RESERVE_STATISTIC.name()
                             );
                             if (reserveStatistic != null && !reserveStatistic.isEmpty()) {
                                 reserveStatistic.forEach(statisticSec -> broker.add(statisticSec, 2_000L));

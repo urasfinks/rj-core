@@ -4,12 +4,19 @@ import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.component.ServiceClassFinder;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 public interface RepositoryMap<K, V> {
 
     Map<K, V> getRepositoryMap();
 
     // Буд-те внимательны хранилище нельзя перезаписывать по ключу!!!
+    default <R> R setRepositoryMap(K key, Supplier<R> defSupplier) {
+        @SuppressWarnings("unchecked")
+        R result = (R) getRepositoryMap().computeIfAbsent(key, _ -> (V) defSupplier.get());
+        return result;
+    }
+
     default <R> R setRepositoryMap(K key, R obj) {
         @SuppressWarnings("unchecked")
         R result = (R) getRepositoryMap().computeIfAbsent(key, _ -> (V) obj);
@@ -28,11 +35,21 @@ public interface RepositoryMap<K, V> {
             R r = (R) o;
             return r;
         }
-        return def;
+        return setRepositoryMap(key, def);
+    }
+
+    default <R> R getRepositoryMap(@NotNull Class<R> cls, K key, Supplier<R> defSupplier) {
+        Object o = getRepositoryMap().get(key);
+        if (o != null && ServiceClassFinder.instanceOf(o.getClass(), cls)) {
+            @SuppressWarnings("unchecked")
+            R r = (R) o;
+            return r;
+        }
+        return setRepositoryMap(key, defSupplier.get());
     }
 
     default <R> R getRepositoryMap(@NotNull Class<R> cls, K key) {
-        return getRepositoryMap(cls, key, null);
+        return getRepositoryMap(cls, key, (R) null);
     }
 
     default boolean repositoryMapContains(K key) {

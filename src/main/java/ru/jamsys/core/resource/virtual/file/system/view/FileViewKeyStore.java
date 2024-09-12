@@ -42,7 +42,7 @@ public class FileViewKeyStore implements FileView {
         typeKeyStorage = file.getRepositoryMap(String.class, prop.TYPE.name(), "JCEKS");
         securityKey = file.getRepositoryMap(String.class, prop.SECURITY_KEY.name(), file.getAbsolutePath());
         if (file.repositoryMapContains(prop.TRUST_MANAGER.name())) {
-            trustManager = file.getRepositoryMap(CustomTrustManager.class, prop.TRUST_MANAGER.name(), null);
+            trustManager = file.getRepositoryMap(CustomTrustManager.class, prop.TRUST_MANAGER.name());
         }
     }
 
