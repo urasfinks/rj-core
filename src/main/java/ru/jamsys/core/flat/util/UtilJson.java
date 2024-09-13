@@ -134,6 +134,12 @@ public class UtilJson {
         return map;
     }
 
+    public static List<Object> getListOrThrow(String json) throws Throwable {
+        @SuppressWarnings("unchecked")
+        List<Object> list = objectMapper.readValue(json, List.class);
+        return list;
+    }
+
     @SuppressWarnings("unused")
     public static <V> JsonEnvelope<List<V>> toList(String json) {
         JsonEnvelope<List<V>> ret = new JsonEnvelope<>();
@@ -167,12 +173,25 @@ public class UtilJson {
         if (json.startsWith("\"")) {
             return json.substring(1, json.length() - 1);
         }
-        try {
-            result.putAll(getMapOrThrow(json));
-        } catch (Throwable th) {
-            result.put("{error parsing}", th.getMessage());
+        if (json.startsWith("[")) {
+            try {
+                return getListOrThrow(json);
+            } catch (Throwable th) {
+                result.put("{error parsing list}", th.getMessage());
+                result.put("origin_object", object);
+                result.put("origin_object_serialize", json);
+            }
+            return result;
+        } else {
+            try {
+                result.putAll(getMapOrThrow(json));
+            } catch (Throwable th) {
+                result.put("{error parsing map}", th.getMessage());
+                result.put("origin_object", object);
+                result.put("origin_object_serialize", json);
+            }
+            return result;
         }
-        return result;
     }
 
 }

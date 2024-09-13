@@ -15,6 +15,7 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 // Цепочка обещаний
@@ -168,5 +169,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     Promise setDebug(boolean debug);
 
     boolean isDebug();
+
+    Map<String, Object> getRepositoryMapWithoutDebug();
 
 }

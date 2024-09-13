@@ -160,4 +160,11 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
         return isDebug() ? new PromiseRepositoryDebug(repositoryMap, this) : repositoryMap;
     }
 
+    // Специально помечаю как упразднённый, что бы не было соблазна его использовать
+    // На самом деле он никогда не будет удалён, просто это чисто системный метод, для решения отладочной информации
+    @Deprecated
+    public Map<String, Object> getRepositoryMapWithoutDebug() {
+        return repositoryMap;
+    }
+
 }

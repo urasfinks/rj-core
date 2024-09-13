@@ -59,7 +59,12 @@ public class PromiseTask implements Runnable {
         this.type = type;
     }
 
-    public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type, BiConsumerThrowing<AtomicBoolean, Promise> procedure) {
+    public PromiseTask(
+            String index,
+            Promise promise,
+            PromiseTaskExecuteType type,
+            BiConsumerThrowing<AtomicBoolean, Promise> procedure
+    ) {
         this.index = index;
         this.promise = promise;
         this.type = type;

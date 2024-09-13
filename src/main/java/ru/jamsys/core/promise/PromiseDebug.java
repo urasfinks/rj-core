@@ -151,6 +151,11 @@ public class PromiseDebug implements Promise {
     }
 
     @Override
+    public Map<String, Object> getRepositoryMapWithoutDebug() {
+        return promise.getRepositoryMapWithoutDebug();
+    }
+
+    @Override
     public String getCorrelation() {
         return promise.getCorrelation();
     }
@@ -163,7 +168,7 @@ public class PromiseDebug implements Promise {
     @Override
     public Map<String, Object> getRepositoryMap() {
         return promise.isDebug()
-                ? new PromiseRepositoryDebug(promise.getRepositoryMap(), this)
+                ? new PromiseRepositoryDebug(promise.getRepositoryMapWithoutDebug(), this)
                 : promise.getRepositoryMap();
     }
 
