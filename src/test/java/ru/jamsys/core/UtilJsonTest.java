@@ -10,6 +10,7 @@ import ru.jamsys.core.flat.util.JsonEnvelope;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.statistic.Statistic;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -93,6 +94,12 @@ class UtilJsonTest {
         Assertions.assertEquals("hello", UtilJson.toLog("hello").toString());
         Assertions.assertEquals("", UtilJson.toLog("").toString());
         Assertions.assertNull(UtilJson.toLog(null));
+        ArrayList<Object> list = new ArrayList<>();
+        Assertions.assertEquals("[]", UtilJson.toLog(list).toString());
+        list.add("hello");
+        Assertions.assertEquals("[hello]", UtilJson.toLog(list).toString());
+        list.add("world");
+        Assertions.assertEquals("[hello, world]", UtilJson.toLog(list).toString());
     }
 
     @Getter
