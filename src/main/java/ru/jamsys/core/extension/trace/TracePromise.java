@@ -12,7 +12,7 @@ import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import java.util.ArrayList;
 import java.util.Collection;
 
-@JsonPropertyOrder({"prepare", "start", "index", "retry", "type", "value", "class", "stop"})
+@JsonPropertyOrder({"prepare", "start", "index", "class", "retry", "type", "value", "stop"})
 //@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TracePromise<K, V> extends Trace<K, V> {
