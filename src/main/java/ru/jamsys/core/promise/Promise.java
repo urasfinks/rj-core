@@ -12,7 +12,6 @@ import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
-import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.Collection;
 import java.util.List;
@@ -114,7 +113,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     }
 
     default Promise then(PromiseTask task) {
-        appendWait().append(task);
+        appendWait(task.getIndex()).append(task);
         return this;
     }
 
@@ -127,11 +126,16 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
         return this;
     }
 
+    default Promise appendWait(String key) {
+        append(new PromiseTask(key, this, PromiseTaskExecuteType.WAIT));
+        return this;
+    }
+
     PromiseTask getLastTask();
 
     List<TracePromise<String, Throwable>> getExceptionTrace();
 
-    Collection<TracePromise<String, TimerNanoEnvelope<String>>> getTrace();
+    Collection<TracePromise<String, ?>> getTrace();
 
     String getLogString();
 

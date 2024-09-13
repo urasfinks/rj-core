@@ -62,7 +62,7 @@ public class UtilDate {
 
     public static String msFormat(Long ms, String format) {
         if (ms == null) {
-            return "null";
+            return null;
         }
         LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneId.systemDefault());
         return date.format(DateTimeFormatter.ofPattern(format));

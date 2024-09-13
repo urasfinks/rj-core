@@ -11,7 +11,6 @@ import ru.jamsys.core.extension.trace.TracePromise;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
-import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,22 +36,21 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     // Первый поток, который зашёл одновременно с выполнением основного loop будет пробовать ждать 5мс
     // Что бы перехватить инициативу крутить основной loop
-    protected AtomicBoolean firstConcurrentCompletionWait = new AtomicBoolean(false);
+    protected AtomicBoolean firstWaiting = new AtomicBoolean(false);
 
     @JsonIgnore
-    @Getter
     private final Map<String, Object> repositoryMap = new ConcurrentHashMap<>();
 
     @Getter
     protected volatile Throwable exception = null;
 
-    protected final AtomicBoolean isRun = new AtomicBoolean(false);
+    protected final AtomicBoolean run = new AtomicBoolean(false);
 
-    protected final AtomicBoolean isWait = new AtomicBoolean(false);
+    protected final AtomicBoolean wait = new AtomicBoolean(false);
 
     protected final AtomicBoolean isException = new AtomicBoolean(false);
 
-    protected final AtomicBoolean isStartLoop = new AtomicBoolean(false);
+    protected final AtomicBoolean startLoop = new AtomicBoolean(false);
 
     // Запущенные задачи, наличие результата, говорит о том, что задача выполнена
     protected final Set<PromiseTask> setRunningTasks = Util.getConcurrentHashSet();
@@ -75,17 +73,17 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     @JsonProperty("exceptionTrace")
     @Getter
-    protected List<TracePromise<String, Throwable>> exceptionTrace = new ArrayList<>();
+    private final List<TracePromise<String, Throwable>> exceptionTrace = new ArrayList<>();
 
     @JsonProperty
     @Getter
-    protected Collection<TracePromise<String, TimerNanoEnvelope<String>>> trace = new ConcurrentLinkedQueue<>();
+    private final Collection<TracePromise<String, ?>> trace = new ConcurrentLinkedQueue<>();
 
     @Getter
     private boolean debug;
 
-    public Promise setDebug(boolean tracing) {
-        this.debug = tracing;
+    public Promise setDebug(boolean debug) {
+        this.debug = debug;
         return this;
     }
 
@@ -101,7 +99,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     @JsonProperty
     public boolean isRun() {
-        return isRun.get();
+        return run.get();
     }
 
     public AbstractPromise setLog(boolean log){
@@ -154,6 +152,12 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     public void setErrorInRunTask(Throwable throwable) {
         this.exception = throwable;
         isException.set(true);
+    }
+
+    // Это для extension, когда ещё promise не запущен, но уже ведутся работа с репозиторием
+    // И как бы надо логировать, если включен debug
+    public Map<String, Object> getRepositoryMap() {
+        return isDebug() ? new HashMapTrace(repositoryMap, this) : repositoryMap;
     }
 
 }

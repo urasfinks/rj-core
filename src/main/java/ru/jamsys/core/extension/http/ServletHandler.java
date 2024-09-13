@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension.http;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,12 +20,15 @@ import java.util.concurrent.CompletableFuture;
 
 public class ServletHandler {
 
+    @JsonIgnore
     @Getter
     private final CompletableFuture<Void> completableFuture;
 
+    @JsonIgnore
     @Getter
     private final HttpServletRequest request;
 
+    @JsonIgnore
     private final HttpServletResponse response;
 
     @Setter
@@ -87,8 +91,9 @@ public class ServletHandler {
         response.setStatus(code);
     }
 
-    ServletOutputStream servletOutputStream;
+    private ServletOutputStream servletOutputStream;
 
+    @JsonIgnore
     public ServletOutputStream getResponseOutputStream() throws IOException {
         if (servletOutputStream == null) {
             servletOutputStream = response.getOutputStream();
@@ -96,6 +101,7 @@ public class ServletHandler {
         return servletOutputStream;
     }
 
+    @JsonIgnore
     public Writer getResponseWriter() throws IOException {
         return response.getWriter();
     }
@@ -126,6 +132,7 @@ public class ServletHandler {
         completableFuture.complete(null);
     }
 
+    @JsonIgnore
     public CompletableFuture<Void> getServletResponse() {
         return completableFuture;
     }

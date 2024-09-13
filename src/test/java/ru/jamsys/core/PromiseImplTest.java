@@ -8,6 +8,7 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.Promise;
+import ru.jamsys.core.promise.PromiseImpl;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import ru.jamsys.core.resource.http.HttpResource;
@@ -297,13 +298,13 @@ class PromiseImplTest {
         promise.append(promiseTask);
         promise.run().await(1000);
 
-        Assertions.assertEquals(1, promise.getTrace().size());
+        Assertions.assertEquals(3, promise.getTrace().size()); // Так как добавился Run
         Assertions.assertEquals(0, promise.getExceptionTrace().size());
         Assertions.assertTrue(promise.isRun());
 
         promiseTask.externalComplete();
         Assertions.assertFalse(promise.isRun());
-        Assertions.assertEquals(2, promise.getTrace().size());
+        Assertions.assertEquals(4, promise.getTrace().size());
 
         System.out.println(promise.getLogString());
     }
@@ -464,6 +465,36 @@ class PromiseImplTest {
         System.out.println(promise.getLogString());
         Assertions.assertEquals(1, xx.get());
         Assertions.assertTrue(promise.isException());
+    }
+
+    @Test
+    void testAppendWait() {
+        Promise promise = servicePromise.get("log", 6_000L);
+        promise.setDebug(true);
+        promise.appendWait();
+        PromiseImpl promiseImpl = (PromiseImpl) promise;
+        Assertions.assertEquals("[]", promiseImpl.getListPendingTasks().toString());
+        promise.then("index", (_, _) -> {});
+        Assertions.assertEquals("[PromiseTask(type=COMPUTE, index=log.index)]", promiseImpl.getListPendingTasks().toString());
+        promise.appendWait();
+        Assertions.assertEquals("[PromiseTask(type=COMPUTE, index=log.index), PromiseTask(type=WAIT, index=Wait)]", promiseImpl.getListPendingTasks().toString());
+        promise.appendWait();
+        Assertions.assertEquals("[PromiseTask(type=COMPUTE, index=log.index), PromiseTask(type=WAIT, index=Wait)]", promiseImpl.getListPendingTasks().toString());
+    }
+
+    @Test
+    void testLog() {
+        Promise promise = servicePromise.get("log", 6_000L);
+        promise.setDebug(true);
+        promise.extension(promise1 -> promise1.setRepositoryMap("fwe", ""));
+        promise.thenWithResource("http", HttpResource.class, (_, _, _) -> {
+                })
+                .then("1task", (_, _) -> {
+                })
+                .then("2task", (_, _) -> {
+                });
+
+        promise.run().await(1000);
     }
 
 }

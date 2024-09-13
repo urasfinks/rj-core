@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension.trace;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
@@ -11,10 +12,11 @@ import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
-@JsonPropertyOrder({"index", "timeAdd", "value"})
+@JsonPropertyOrder({"index", "start", "value"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Trace<K, V> {
 
+    @JsonIgnore
     final public long timeAdd = System.currentTimeMillis();
 
     @Getter
@@ -23,7 +25,7 @@ public class Trace<K, V> {
     @Setter
     protected V value;
 
-    public String getTimeAdd() {
+    public String getStart() {
         return UtilDate.msFormat(timeAdd);
     }
 

@@ -1,6 +1,7 @@
-package ru.jamsys.core.flat.util;
+package ru.jamsys.core;
 
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.flat.util.UtilDate;
 
 class UtilDateTest {
 

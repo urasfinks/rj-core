@@ -10,16 +10,24 @@ public interface RepositoryMap<K, V> {
 
     Map<K, V> getRepositoryMap();
 
+    // Я так полагаю, что если передаётся Supplier - то есть потребность лишний раз не создавать экземпляр value для map
     default <R> R setRepositoryMap(K key, Supplier<R> defSupplier) {
+        V v = getRepositoryMap().computeIfAbsent(key, _ -> {
+            R obj = defSupplier.get();
+            @SuppressWarnings("unchecked")
+            V r2v = (V) obj;
+            return r2v;
+        });
         @SuppressWarnings("unchecked")
-        R result = (R) getRepositoryMap().put(key, (V) defSupplier.get());
-        return result;
+        R v2r = (R) v;
+        return v2r;
     }
 
     default <R> R setRepositoryMap(K key, R obj) {
         @SuppressWarnings("unchecked")
-        R result = (R) getRepositoryMap().put(key, (V) obj);
-        return result;
+        V r2v = (V) obj;
+        getRepositoryMap().put(key, r2v);
+        return obj;
     }
 
     default RepositoryMap<K, V> setRepositoryMap(Map<K, V> map) {

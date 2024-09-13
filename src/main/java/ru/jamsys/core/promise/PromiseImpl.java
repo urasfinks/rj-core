@@ -39,7 +39,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     @Override
     public void timeOut(String cause) {
         // Timeout может прилетать уже после того, как
-        if (isRun.get()) {
+        if (run.get()) {
             setError("TimeOut cause: " + cause, getExpiredException(), null);
             complete();
         }
@@ -58,8 +58,8 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     public void complete() {
-        if (isRun.get()) {
-            if (isStartLoop.compareAndSet(false, true)) {
+        if (run.get()) {
+            if (startLoop.compareAndSet(false, true)) {
                 try {
                     loop();
                 } catch (Throwable th) {
@@ -72,11 +72,16 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                         App.error(th2);
                     }
                 }
-                isStartLoop.set(false);
-            } else if (!Thread.currentThread().equals(loopThread) && firstConcurrentCompletionWait.compareAndSet(false, true)) {
-                Util.await(isStartLoop, 5, null);
-                firstConcurrentCompletionWait.set(false);
-                if (!isStartLoop.get()) {
+                startLoop.set(false);
+            } else if (
+                // Проверяем, что это не мы сами, защита от поедания хвоста змеи - самое змеёй
+                    !Thread.currentThread().equals(loopThread)
+                            // Получаем уникальный доступ на возможность немного подождать исполнение
+                            && firstWaiting.compareAndSet(false, true)
+            ) {
+                Util.await(startLoop, 5, null);
+                firstWaiting.set(false);
+                if (!startLoop.get()) {
                     complete();
                 }
             } else {
@@ -102,10 +107,10 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     private void loop() {
-        if (isWait.get() && isNextLoop()) {
+        if (wait.get() && isNextLoop()) {
             if (setRunningTasks.isEmpty()) {
-                isWait.set(false);
-                //getTrace().add(new TracePromise<>(Thread.currentThread().getName() + " Все запущенные задачи исполнились. Прекращаем сон. (0)", null, null, null));
+                // Все запущенные задачи исполнились
+                wait.set(false);
             } else {
                 return;
             }
@@ -127,33 +132,39 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         }
         // Запускаем задачи из pending
         while (!listPendingTasks.isEmpty() && isNextLoop()) {
-            if (isWait.get()) {
+            if (wait.get()) {
                 if (setRunningTasks.isEmpty()) {
-                    isWait.set(false);
-                    //getTrace().add(new TracePromise<>(Thread.currentThread().getName() + " Все запущенные задачи исполнились. Прекращаем сон. (1)", null, null, null));
+                    // Все запущенные задачи исполнились
+                    wait.set(false);
                 } else {
                     break;
                 }
             }
             PromiseTask poolTask = listPendingTasks.pollFirst();
             if (poolTask != null) {
-                // Мы не должны помешать цепочке ожиданий, если выставлено ожидание, сначала будем ждать,
-                // а только потом перескакивать
+                // Если сейчас команда не "ожидание" и выставлен goTo
+                // А если ожидание - то будем сначала ждать, а только потом прыгать
                 if (poolTask.type != PromiseTaskExecuteType.WAIT && !goTo.isEmpty()) {
+                    // Сначала проверяем, а случаем эта задача не та самая на которую надо скакнуть
+                    // Если нет, то просто логируем, что пропускаем задачу и проворачиваем while
                     if (!goTo.peekFirst().equals(poolTask.getIndex())) {
                         getTrace().add(new TracePromise<>("Skip task: " + poolTask.getIndex() + "; goTo: " + goTo.peek(), null, null, null));
                         continue;
-                    } else {
+                    } else { // Если задача та самая == goTo, то вычленяем из коллекции и идём дальше на исполнение
                         goTo.pollFirst();
                     }
                 }
                 switch (poolTask.type) {
                     case WAIT -> {
-                        isWait.set(true);
-                        getTrace().add(new TracePromise<>("StartWait", null, null, null));
+                        getTrace().add(new TracePromise<>("Wait execute running task before " + poolTask.getIndex(), null, null, null));
+                        wait.set(true);
                     }
-                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> poolTask.prepareLaunch(null);
+                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> {
+                        getTrace().add(new TracePromise<>("PrepareLaunch " + poolTask.getIndex(), null, null, null));
+                        poolTask.prepareLaunch(null);
+                    }
                     default -> {
+                        getTrace().add(new TracePromise<>("PrepareLaunch " + poolTask.getIndex(), null, null, null));
                         setRunningTasks.add(poolTask);
                         poolTask.prepareLaunch(null);
                     }
@@ -162,11 +173,11 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 setError("listPendingTasks.peekFirst() return null value", null, null);
             }
         }
-        if (isRun.get()) {
+        if (run.get()) {
             if (isException.get()) {
                 terminate(onError);
             } else if (
-                    !isWait.get() // Мы не ждём
+                    !wait.get() // Мы не ждём
                             && setRunningTasks.isEmpty() // Список запущенных задач пуст
                             && listPendingTasks.isEmpty() //  Список задач в работу пуст
                             && toHead.isEmpty() // Список добавленных в runTime задача пуст
@@ -186,7 +197,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             App.get(ServicePromise.class).finish(registerInBroker);
             stop();
             if (fn != null) {
-                fn.prepareLaunch(() -> isRun.set(false));
+                fn.prepareLaunch(() -> run.set(false));
                 // Дальнейшие действия под капотом
                 // 1) установится isRun.set(false)
                 // 2) Вызовится complete
@@ -195,7 +206,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 // Тут есть проблема, что лог будет зафиксирован после того, как закончится await
                 // Пока не знаю на сколько это плохо
             } else {
-                isRun.set(false);
+                run.set(false);
                 flushLog();
             }
         }
@@ -232,7 +243,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     public void await(long timeoutMs) {
-        Util.await(isRun, timeoutMs, "Promise not terminated");
+        Util.await(run, timeoutMs, "Promise not terminated");
     }
 
 }

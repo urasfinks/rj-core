@@ -45,7 +45,7 @@ class CronTest {
         Assertions.assertEquals("2024-03-06T18:00:00.000", UtilDate.msFormat(new Cron("0 0 * * *").getNext(curTime)));
         Assertions.assertEquals("2024-03-07T00:00:00.000", UtilDate.msFormat(new Cron("0 0 0 * *").getNext(curTime)));
         Assertions.assertEquals("2024-04-01T00:00:00.000", UtilDate.msFormat(new Cron("0 0 0 1 *").getNext(curTime)));
-        Assertions.assertEquals("null", UtilDate.msFormat(new Cron("0 0 0 1 1").getNext(curTime)));
+        Assertions.assertNull(UtilDate.msFormat(new Cron("0 0 0 1 1").getNext(curTime)));
 
         Assertions.assertEquals("2024-03-06T17:12:01.000", UtilDate.msFormat(new Cron("1 * * * * *").getNext(curTime)));
         Assertions.assertEquals("2024-03-06T17:12:02.000", UtilDate.msFormat(new Cron("2 * * * * *").getNext(curTime)));
@@ -64,7 +64,7 @@ class CronTest {
         Assertions.assertEquals("2024-03-06T18:10:01.000", UtilDate.msFormat(new Cron("1 10 * * 3 *").getNext(curTime)));
         Assertions.assertEquals("2024-03-06T18:10:01.000", UtilDate.msFormat(new Cron("1 10 18 * 3 *").getNext(curTime)));
         Assertions.assertEquals("2024-04-01T17:10:01.000", UtilDate.msFormat(new Cron("1 10 17 * 4 *").getNext(curTime)));
-        Assertions.assertEquals("null", UtilDate.msFormat(new Cron("1 10 17 15 4 *").getNext(curTime)));
+        Assertions.assertNull(UtilDate.msFormat(new Cron("1 10 17 15 4 *").getNext(curTime)));
         Assertions.assertEquals("2024-03-11T00:00:00.000", UtilDate.msFormat(new Cron("* * * * * 1").getNext(curTime)));
         Assertions.assertEquals("2024-03-12T00:00:00.000", UtilDate.msFormat(new Cron("* * * * * 2").getNext(curTime)));
         Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msFormat(new Cron("* * * * * 3").getNext(curTime)));
@@ -79,8 +79,8 @@ class CronTest {
         Assertions.assertEquals("2024-03-10T14:13:19.000", UtilDate.msFormat(new Cron("19-20 13 14 * * 7").getNext(curTime)));
         Assertions.assertEquals("2024-03-10T14:13:19.000", UtilDate.msFormat(new Cron("19-20 13 14 10 * 7").getNext(curTime)));
         Assertions.assertEquals("2024-03-17T14:13:19.000", UtilDate.msFormat(new Cron("19-20 13 14 17 * 7").getNext(curTime)));
-        Assertions.assertEquals("null", UtilDate.msFormat(new Cron("19 13 14 17 3 7").getNext(curTime)));
-        Assertions.assertEquals("null", UtilDate.msFormat(new Cron("19 13 14 17 3 *").getNext(curTime)));
+        Assertions.assertNull(UtilDate.msFormat(new Cron("19 13 14 17 3 7").getNext(curTime)));
+        Assertions.assertNull(UtilDate.msFormat(new Cron("19 13 14 17 3 *").getNext(curTime)));
 
 
         Assertions.assertEquals("[2024-03-06T17:11:05.000, 2024-03-06T17:11:06.000]", new Cron("* * * * * *").getSeriesFormatted(curTime, 2).toString());

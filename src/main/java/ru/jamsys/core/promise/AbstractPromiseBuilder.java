@@ -9,6 +9,8 @@ package ru.jamsys.core.promise;
 // Если за объектом давно никто не наблюдал, мы не понимаем на сколько он норм или нет и выбрасываем его нахер из басика
 // Но бывает условие, что минимум в басике должно плавать N объектов, и их не в праве никто выгнать
 
+import ru.jamsys.core.extension.trace.TracePromise;
+
 public abstract class AbstractPromiseBuilder extends AbstractPromise {
 
     public AbstractPromiseBuilder(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
@@ -41,8 +43,18 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
         if (task == null) {
             throw new RuntimeException("Promise.append() task is null");
         }
-        if (isRun.get()) {
+        if (run.get()) {
             throw new RuntimeException("Promise.append() before run(); index: " + task.getIndex());
+        }
+        if (
+                task.getType() == PromiseTaskExecuteType.WAIT
+                        && (
+                        listPendingTasks.isEmpty() // Если это первая задача - нет смысла никого ждать
+                                // Если последняя задача уже ожидание, то смысла в двойном ожидании никакого нет
+                                || listPendingTasks.peekLast().getType() == PromiseTaskExecuteType.WAIT
+                )
+        ) {
+            return this;
         }
         listPendingTasks.add(task);
         return this;
@@ -51,7 +63,8 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
     //-- Builder Producer
 
     public Promise run() {
-        isRun.set(true);
+        getTrace().add(new TracePromise<>("Run", null, null, null));
+        run.set(true);
         complete();
         return this;
     }

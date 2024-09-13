@@ -1,6 +1,8 @@
 package ru.jamsys.core.extension.http;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
@@ -18,9 +20,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @ToString(onlyExplicitlyIncluded = true)
 public class ServletRequestReader {
 
+    @JsonIgnore
     private static final String[] ipHeaders = {
             "X-Forwarded-For",
             "Proxy-Client-IP",
@@ -35,6 +39,7 @@ public class ServletRequestReader {
             "REMOTE_ADDR"
     };
 
+    @JsonIgnore
     private final HttpServletRequest request;
 
     @Getter
@@ -43,21 +48,32 @@ public class ServletRequestReader {
 
     @Getter
     @ToString.Include
-    public Map<String, String> map = new LinkedHashMap<>();
+    private final Map<String, String> map = new LinkedHashMap<>();
 
+    @Getter
+    private final Map<String, String> headers = new LinkedHashMap<>();
+
+    private final String remoteAddr;
+
+    @JsonIgnore
     public byte[] bytes;
 
+    @JsonIgnore
     public ServletRequestReader(@Nonnull HttpServletRequest request) throws ServletException, IOException {
         this.request = request;
+        remoteAddr = request.getRemoteAddr();
+        readHeaders();
         read();
     }
 
+    @JsonIgnore
     public Map<String, String> getMapEscapedHtmlSpecialChars() {
         HashMap<String, String> result = new HashMap<>();
         map.forEach((s, s2) -> result.put(s, Util.htmlEntity(s2)));
         return result;
     }
 
+    @JsonIgnore
     public void read() throws IOException, ServletException {
         String contentType = request.getHeader("content-type");
         request.getParameterMap().forEach((s, strings) -> map.put(s, String.join(", ", strings)));
@@ -74,6 +90,7 @@ public class ServletRequestReader {
         }
     }
 
+    @JsonIgnore
     public void readMultiPartFormData() throws ServletException, IOException {
         for (Part part : request.getParts()) {
             this.map.put(
@@ -85,6 +102,7 @@ public class ServletRequestReader {
         }
     }
 
+    @JsonIgnore
     public Map<String, String> getMultiPartFormSubmittedFileName() throws ServletException, IOException {
         Map<String, String> result = new LinkedHashMap<>();
         for (Part part : request.getParts()) {
@@ -96,10 +114,12 @@ public class ServletRequestReader {
         return result;
     }
 
+    @JsonIgnore
     public InputStream getMultiPartFormData(String key) throws ServletException, IOException {
         return request.getPart(key).getInputStream();
     }
 
+    @JsonIgnore
     public void readFormUrlEncoded() {
         Enumeration<String> parameterNames = request.getParameterNames();
         while (parameterNames.hasMoreElements()) {
@@ -109,6 +129,7 @@ public class ServletRequestReader {
         }
     }
 
+    @JsonIgnore
     public String getContentCharset(String contentType) {
         String result = "UTF-8";
         if (contentType != null && contentType.contains("charset=")) {
@@ -120,38 +141,39 @@ public class ServletRequestReader {
         return result;
     }
 
+    @JsonIgnore
     public void readTextPlain(String contentType) throws IOException {
         data = new String(request.getInputStream().readAllBytes(), getContentCharset(contentType));
     }
 
     public String getClientIp() {
         for (String header : ipHeaders) {
-            String ip = request.getHeader(header);
+            String ip = headers.get(header);
             if ((ip != null) && (!ip.isEmpty()) && !"unknown".equalsIgnoreCase(ip))
                 return ip;
         }
-        return request.getRemoteAddr();
+        return remoteAddr;
     }
 
-    public Map<String, String> getHeaders() {
-        Map<String, String> result = new HashMap<>();
+    private void readHeaders() {
         Enumeration<String> requestHeader = request.getHeaderNames();
         if (requestHeader != null) {
             while (requestHeader.hasMoreElements()) {
                 String key = requestHeader.nextElement();
                 if (key != null) {
-                    result.put(key, request.getHeader(key));
+                    headers.put(key, request.getHeader(key));
                 }
             }
         }
-        return result;
     }
 
+    @JsonIgnore
     public void basicAuthHandler(BiConsumerThrowing<String, String> handler) throws Throwable {
         String authorization = request.getHeader("Authorization");
         basicAuthHandler(authorization, handler);
     }
 
+    @JsonIgnore
     public static void basicAuthHandler(String authorization, BiConsumerThrowing<String, String> handler) throws Throwable {
         if (authorization == null) {
             throw new AuthException("Authorization header is null");

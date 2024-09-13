@@ -2,6 +2,7 @@ package ru.jamsys.core.promise;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadVirtual;
@@ -17,22 +18,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // RA - ResourceArguments
 // RR - ResourceResult
 // PI - PoolItem
-
+@ToString(onlyExplicitlyIncluded = true)
 public class PromiseTask implements Runnable {
 
+    @ToString.Include
     @Getter
     final PromiseTaskExecuteType type;
 
     private BiConsumerThrowing<AtomicBoolean, Promise> procedure;
 
-    @Getter
     private final Promise promise;
+
+    public Promise getPromise() {
+        return promise.isDebug() ? new PromiseDebug(promise, this) : promise;
+    }
 
     private int retryCount = 0;
 
     @Getter
     private int retryDelayMs = 0;
 
+    @ToString.Include
     @Getter
     private final String index;
 
@@ -89,20 +95,23 @@ public class PromiseTask implements Runnable {
         }
     }
 
+    @Getter
+    private TracePromise<String, TimerNanoEnvelope<String>> activeTrace;
+
     // execute current thread
     @Override
     public void run() {
         TimerNanoEnvelope<String> timerEnvelope = App.get(ServicePromise.class).registrationTimer(index);
-        TracePromise<String, TimerNanoEnvelope<String>> trace = new TracePromise<>(
+        activeTrace = new TracePromise<>(
                 getIndex(),
                 timerEnvelope,
                 type,
                 this.getClass()
         );
         if (retryCount > 0) {
-            trace.setRetry(retryCount);
+            activeTrace.setRetry(retryCount);
         }
-        promise.getTrace().add(trace);
+        promise.getTrace().add(activeTrace);
         Throwable registerThrowable = null;
         boolean retry = false;
         try {
@@ -125,7 +134,7 @@ public class PromiseTask implements Runnable {
             }
         }
         timerEnvelope.stop();
-        trace.setTimeStop(System.currentTimeMillis());
+        activeTrace.setTimeStop(System.currentTimeMillis());
         if (registerThrowable == null) {
             // Если в повтор не вышли
             if (!retry) {
