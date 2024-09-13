@@ -156,15 +156,11 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 }
                 switch (poolTask.type) {
                     case WAIT -> {
-                        getTrace().add(new TracePromise<>("Wait execute running task before " + poolTask.getIndex(), null, null, null));
+                        getTrace().add(new TracePromise<>("Wait (" + poolTask.getIndex() + ")", null, null, null));
                         wait.set(true);
                     }
-                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> {
-                        getTrace().add(new TracePromise<>("PrepareLaunch " + poolTask.getIndex(), null, null, null));
-                        poolTask.prepareLaunch(null);
-                    }
+                    case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> poolTask.prepareLaunch(null);
                     default -> {
-                        getTrace().add(new TracePromise<>("PrepareLaunch " + poolTask.getIndex(), null, null, null));
                         setRunningTasks.add(poolTask);
                         poolTask.prepareLaunch(null);
                     }

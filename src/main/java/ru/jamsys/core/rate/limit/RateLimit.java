@@ -47,7 +47,6 @@ public class RateLimit
         for (String key : map.keySet()) {
             RateLimitItem rateLimitItem = map.get(key);
             if (rateLimitItem.get() >= rateLimitItem.max()) {
-                System.out.println(index+"; "+ rateLimitItem.get() + "  > " + rateLimitItem.max());
                 throw new RateLimitException(
                         "RateLimit ABORT",
                         "index: " + index + "; key: " + key + "; max: " + map.get(key).max() + "; now: " + map.get(key).get() + ";"

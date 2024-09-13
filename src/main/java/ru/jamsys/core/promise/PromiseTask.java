@@ -51,6 +51,8 @@ public class PromiseTask implements Runnable {
     @Setter
     AtomicBoolean isThreadRun;
 
+    private Long prepare;
+
     public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type) {
         this.index = index;
         this.promise = promise;
@@ -85,6 +87,7 @@ public class PromiseTask implements Runnable {
 
     // execute on another thread
     public void prepareLaunch(ProcedureThrowing afterExecuteBlock) {
+        this.prepare = System.currentTimeMillis();
         this.afterExecuteBlock = afterExecuteBlock;
         switch (type) {
             case IO, ASYNC_NO_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);
@@ -108,6 +111,7 @@ public class PromiseTask implements Runnable {
                 type,
                 this.getClass()
         );
+        activeTrace.setPrepare(prepare);
         if (retryCount > 0) {
             activeTrace.setRetry(retryCount);
         }

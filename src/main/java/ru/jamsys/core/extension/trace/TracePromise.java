@@ -12,10 +12,13 @@ import ru.jamsys.core.promise.PromiseTaskExecuteType;
 import java.util.ArrayList;
 import java.util.Collection;
 
-@JsonPropertyOrder({"start", "index", "retry", "type", "value", "class", "stop"})
+@JsonPropertyOrder({"prepare", "start", "index", "retry", "type", "value", "class", "stop"})
 //@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TracePromise<K, V> extends Trace<K, V> {
+
+    @Setter
+    private Long prepare;
 
     @Getter
     final Collection<TracePromise<String, ?>> taskTrace = new ArrayList<>();
@@ -32,6 +35,11 @@ public class TracePromise<K, V> extends Trace<K, V> {
 
     public String getStop() {
         return UtilDate.msFormat(timeStop);
+    }
+
+    @SuppressWarnings("unused")
+    public String getPrepare() {
+        return UtilDate.msFormat(prepare);
     }
 
     @SuppressWarnings("unused")

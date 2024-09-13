@@ -38,7 +38,7 @@ class PromiseImplTest {
     @AfterAll
     static void shutdown() {
         App.shutdown();
-        System.out.println(System.currentTimeMillis() - start);
+        Util.logConsole("Test time: "+(System.currentTimeMillis() - start));
     }
 
     @Test
