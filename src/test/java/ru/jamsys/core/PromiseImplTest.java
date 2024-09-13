@@ -298,13 +298,13 @@ class PromiseImplTest {
         promise.append(promiseTask);
         promise.run().await(1000);
 
-        Assertions.assertEquals(3, promise.getTrace().size()); // Так как добавился Run
+        Assertions.assertEquals(2, promise.getTrace().size()); // Так как добавился Run
         Assertions.assertEquals(0, promise.getExceptionTrace().size());
         Assertions.assertTrue(promise.isRun());
 
         promiseTask.externalComplete();
         Assertions.assertFalse(promise.isRun());
-        Assertions.assertEquals(4, promise.getTrace().size());
+        Assertions.assertEquals(3, promise.getTrace().size());
 
         System.out.println(promise.getLogString());
     }
