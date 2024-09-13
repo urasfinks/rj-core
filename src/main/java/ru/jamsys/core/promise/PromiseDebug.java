@@ -163,7 +163,7 @@ public class PromiseDebug implements Promise {
     @Override
     public Map<String, Object> getRepositoryMap() {
         return promise.isDebug()
-                ? new HashMapTrace(promise.getRepositoryMap(), this)
+                ? new PromiseRepositoryDebug(promise.getRepositoryMap(), this)
                 : promise.getRepositoryMap();
     }
 

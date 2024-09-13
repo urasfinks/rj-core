@@ -1,6 +1,8 @@
 package ru.jamsys.core;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jayway.jsonpath.ReadContext;
+import lombok.Getter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -83,5 +85,19 @@ class UtilJsonTest {
 
         Assertions.assertEquals(x, UtilJson.toString(statistic2, "{}"));
 
+    }
+
+    @Test
+    void logObjectAtTheMoment() {
+        Assertions.assertEquals("{hello=world}", UtilJson.toLog(new X()).toString());
+        Assertions.assertEquals("hello", UtilJson.toLog("hello").toString());
+        Assertions.assertEquals("", UtilJson.toLog("").toString());
+        Assertions.assertNull(UtilJson.toLog(null));
+    }
+
+    @Getter
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public static class X {
+        private final String hello = "world";
     }
 }

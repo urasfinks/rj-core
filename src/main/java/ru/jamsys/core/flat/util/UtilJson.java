@@ -12,6 +12,7 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.exception.ForwardException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -144,6 +145,34 @@ public class UtilJson {
             App.error(e);
         }
         return ret;
+    }
+
+    // Возникла потребность хранить состояние объекта на момент времени
+    // То есть в trace вставляется объект, Json сериализация выполняется в конце, а объект могли в разных местах поменять
+    // Получается на всех инстанция в отладке видим один и тот-же объект, что приводит к сложности анализа
+    public static Object toLog(Object object) {
+        if (object == null) {
+            return null;
+        }
+        Map<String, Object> result = new HashMap<>();
+        if (object instanceof String && object.toString().isEmpty()) {
+            return "";
+        }
+        String json = toString(object, "{}");
+        // Не смогли ничего путного сделать
+        if (json == null) {
+            return object;
+        }
+        // Бывает такое, что объект был строкой, что вернёт двойные апострофы, а нам такое не надо
+        if (json.startsWith("\"")) {
+            return json.substring(1, json.length() - 1);
+        }
+        try {
+            result.putAll(getMapOrThrow(json));
+        } catch (Throwable th) {
+            result.put("{error parsing}", th.getMessage());
+        }
+        return result;
     }
 
 }

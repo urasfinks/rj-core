@@ -157,7 +157,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     // Это для extension, когда ещё promise не запущен, но уже ведутся работа с репозиторием
     // И как бы надо логировать, если включен debug
     public Map<String, Object> getRepositoryMap() {
-        return isDebug() ? new HashMapTrace(repositoryMap, this) : repositoryMap;
+        return isDebug() ? new PromiseRepositoryDebug(repositoryMap, this) : repositoryMap;
     }
 
 }

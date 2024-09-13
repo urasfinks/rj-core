@@ -14,13 +14,13 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class HashMapTrace extends HashMap<String, Object> {
+public class PromiseRepositoryDebug extends HashMap<String, Object> {
 
     private final Promise promise;
 
     private final Map<String, Object> repositoryMap;
 
-    public HashMapTrace(Map<String, Object> repositoryMap, Promise promise) {
+    public PromiseRepositoryDebug(Map<String, Object> repositoryMap, Promise promise) {
         this.repositoryMap = repositoryMap;
         this.promise = promise;
     }
@@ -50,23 +50,12 @@ public class HashMapTrace extends HashMap<String, Object> {
         try {
             String postFix = "";
             if (value == null) {
-                postFix = "::null";
+                postFix = " with null value";
             } else if (value.toString().isEmpty()) {
-                postFix = "::empty";
+                postFix = " with empty value";
             }
-            Object log = value;
-            if(log != null && !log.toString().isEmpty()){
-                String logString = UtilJson.toStringPretty(value, "{}");
-                if (logString != null && !logString.isEmpty()) {
-                    log = UtilJson.getMapOrThrow(logString);
-                }
-            }
-
-            TracePromise<String, Object> trace = new TracePromise<>(
-                    "put " + key + postFix,
-                    log,
-                    null,
-                    RepositoryMap.class
+            TracePromise<String, ?> trace = new TracePromise<>(
+                    "put(" + key + ")" + postFix, UtilJson.toLog(value), null, RepositoryMap.class
             );
             if (promise instanceof PromiseDebug) {
                 ((PromiseDebug) promise).getPromiseTask().getActiveTrace().getTaskTrace().add(trace);
@@ -83,17 +72,13 @@ public class HashMapTrace extends HashMap<String, Object> {
     public void putAll(Map<? extends String, ?> m) {
         String postFix = "";
         if (m == null) {
-            postFix = "::null";
+            postFix = " set null value";
         } else if (m.isEmpty()) {
-            postFix = "::empty";
+            postFix = " set empty value";
         }
-        TracePromise<String, ? extends Map<? extends String, ?>> trace =
-                new TracePromise<>(
-                        "putAll" + postFix,
-                        m,
-                        null,
-                        RepositoryMap.class
-                );
+        TracePromise<String, ?> trace = new TracePromise<>(
+                "putAll " + postFix, UtilJson.toLog(m), null, RepositoryMap.class
+        );
         if (promise instanceof PromiseDebug) {
             ((PromiseDebug) promise).getPromiseTask().getActiveTrace().getTaskTrace().add(trace);
         } else {

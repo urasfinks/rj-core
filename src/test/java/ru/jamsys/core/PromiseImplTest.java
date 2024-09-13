@@ -486,7 +486,8 @@ class PromiseImplTest {
     void testLog() {
         Promise promise = servicePromise.get("log", 6_000L);
         promise.setDebug(true);
-        promise.extension(promise1 -> promise1.setRepositoryMap("fwe", ""));
+        promise.extension(promise1 -> promise1.setRepositoryMap("x", ""));
+        promise.extension(promise1 -> promise1.setRepositoryMap("y", "z"));
         promise.thenWithResource("http", HttpResource.class, (_, _, _) -> {
                 })
                 .then("1task", (_, _) -> {
