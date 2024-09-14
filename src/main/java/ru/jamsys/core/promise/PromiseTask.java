@@ -9,7 +9,8 @@ import ru.jamsys.core.component.ServiceThreadVirtual;
 import ru.jamsys.core.component.manager.ManagerThreadPool;
 import ru.jamsys.core.extension.functional.BiConsumerThrowing;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
-import ru.jamsys.core.extension.trace.TracePromise;
+import ru.jamsys.core.extension.trace.Trace;
+import ru.jamsys.core.extension.trace.TracePromiseTask;
 import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.Objects;
@@ -42,7 +43,10 @@ public class PromiseTask implements Runnable {
     @Getter
     private final String index;
 
-    protected ProcedureThrowing afterExecuteBlock;
+    // Используется, когда вызывается терминальный блок, который фиксирует, что Promise закончен
+    // Но есть ещё функция onComplete/onError которую как бы надо выполнить и до тех пор пока эта функция не выполниться
+    // Нельзя Promise устанавливать run.set(false)
+    protected ProcedureThrowing afterBlockExecution;
 
     @Setter
     @Getter
@@ -52,6 +56,9 @@ public class PromiseTask implements Runnable {
     AtomicBoolean isThreadRun;
 
     private Long prepare;
+
+    @Getter
+    private TracePromiseTask<String, TimerNanoEnvelope<String>> trace;
 
     public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type) {
         this.index = index;
@@ -73,7 +80,8 @@ public class PromiseTask implements Runnable {
 
     public void externalComplete() {
         if (Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT) {
-            promise.getTrace().add(new TracePromise<>(getIndex() + ".complete", null, type, this.getClass()));
+            // Время можно путём вычитания start.start - complete.start
+            promise.getTrace().add(new TracePromiseTask<>(getIndex() + ".complete", null, type, this.getClass()));
             promise.complete(this);
         }
     }
@@ -93,70 +101,79 @@ public class PromiseTask implements Runnable {
     // execute on another thread
     public void prepareLaunch(ProcedureThrowing afterExecuteBlock) {
         this.prepare = System.currentTimeMillis();
-        this.afterExecuteBlock = afterExecuteBlock;
+        this.afterBlockExecution = afterExecuteBlock;
         switch (type) {
             case IO, ASYNC_NO_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);
             case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.get(ManagerThreadPool.class).addPromiseTask(this);
             case EXTERNAL_WAIT -> promise
                     .getTrace()
-                    .add(new TracePromise<>(getIndex() + ".start", null, type, this.getClass()));
+                    .add(new TracePromiseTask<>(getIndex() + ".start", null, type, this.getClass()));
         }
     }
-
-    @Getter
-    private TracePromise<String, TimerNanoEnvelope<String>> activeTrace;
 
     // execute current thread
     @Override
     public void run() {
         TimerNanoEnvelope<String> timerEnvelope = App.get(ServicePromise.class).registrationTimer(index);
-        activeTrace = new TracePromise<>(
-                getIndex(),
-                timerEnvelope,
-                type,
-                this.getClass()
-        );
-        activeTrace.setPrepare(prepare);
+        trace = new TracePromiseTask<>(index, null, type, this.getClass());
+        promise.getTrace().add(trace);
+
+        trace.setNano(timerEnvelope);
+        trace.setPrepare(prepare);
         if (retryCount > 0) {
-            activeTrace.setRetry(retryCount);
+            trace.setRetry(retryCount);
         }
-        promise.getTrace().add(activeTrace);
-        Throwable registerThrowable = null;
-        boolean retry = false;
+
         try {
             executeBlock();
         } catch (Throwable th) {
+            stopTimer(timerEnvelope);
             if (retryCount > 0) {
                 retryCount--;
-                promise.getExceptionTrace().add(new TracePromise<>(index, th, type, this.getClass()));
+                trace.getExceptionTrace().add(new Trace<>(null, th));
                 App.get(ServicePromise.class).addRetryDelay(this);
-                retry = true;
+                // Если мы вышли на повтор, то promise.complete вызывать не надо
             } else {
-                registerThrowable = th;
+                // Если произошла ошибка в основном блоке, мы не будем выполнять afterBlockExecution
+                // Так как нужно придерживаться линейности и быть предсказуемым
+                // По сути afterBlockExecution может хотеть использовать данные созданные в executeBlock
+                // И тогда можем получить двойную ошибку
+                completeThrowable(th);
             }
+            return;
         }
-        if (afterExecuteBlock != null) {
+
+        if (afterBlockExecution != null) {
             try {
-                afterExecuteBlock.run();
+                afterBlockExecution.run();
             } catch (Throwable th) {
-                registerThrowable = th;
+                stopTimer(timerEnvelope);
+                completeThrowable(th);
+                return;
             }
         }
-        timerEnvelope.stop();
-        activeTrace.setTimeStop(System.currentTimeMillis());
-        if (registerThrowable == null) {
-            // Если в повтор не вышли
-            if (!retry) {
-                promise.complete(this);
+
+        stopTimer(timerEnvelope);
+        complete();
+    }
+
+    private void stopTimer(TimerNanoEnvelope<String> timerNanoEnvelope) {
+        timerNanoEnvelope.stop();
+        trace.setTimeStop(System.currentTimeMillis());
+    }
+
+    private void complete() {
+        switch (type) {
+            case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> {
             }
-        } else {
-            switch (type) {
-                // Если это методы без ожидания, нам надо самостоятельно зафиксировать их исключения
-                // так как complete для них не вызывается
-                case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE ->
-                        promise.getExceptionTrace().add(new TracePromise<>(index, registerThrowable, type, this.getClass()));
-                default -> promise.complete(this, registerThrowable);
-            }
+            default -> promise.complete(this);
+        }
+    }
+
+    private void completeThrowable(Throwable th) {
+        switch (type) {
+            case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> trace.getExceptionTrace().add(new Trace<>(null, th));
+            default -> promise.complete(this, th);
         }
     }
 

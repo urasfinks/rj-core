@@ -9,7 +9,7 @@ package ru.jamsys.core.promise;
 // Если за объектом давно никто не наблюдал, мы не понимаем на сколько он норм или нет и выбрасываем его нахер из басика
 // Но бывает условие, что минимум в басике должно плавать N объектов, и их не в праве никто выгнать
 
-import ru.jamsys.core.extension.trace.TracePromise;
+import ru.jamsys.core.extension.trace.Trace;
 
 public abstract class AbstractPromiseBuilder extends AbstractPromise {
 
@@ -63,7 +63,7 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
     //-- Builder Producer
 
     public Promise run() {
-        getTrace().add(new TracePromise<>("Run", null, null, null));
+        getTrace().add(new Trace<>("Run", null));
         run.set(true);
         complete();
         return this;

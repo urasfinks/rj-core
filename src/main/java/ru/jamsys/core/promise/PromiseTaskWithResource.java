@@ -7,7 +7,7 @@ import ru.jamsys.core.component.manager.ManagerPoolTaskWait;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.functional.TriConsumerThrowing;
-import ru.jamsys.core.extension.trace.TracePromise;
+import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.resource.Resource;
 
@@ -46,8 +46,8 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     // Пул сам вызовет start с передачей туда ресурса, там то мы и вызовем ::run из внешнего потока
     @Override
     public void prepareLaunch(ProcedureThrowing afterExecuteBlock) {
-        this.afterExecuteBlock = afterExecuteBlock;
-        getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Subscribe(" + poolSettings.getIndex() + ")", null, null, null));
+        this.afterBlockExecution = afterExecuteBlock;
+        getPromise().getTrace().add(new Trace<>(getIndex() + ".Pool-Subscribe(" + poolSettings.getIndex() + ")", null));
         managerPoolTaskWait.get(poolSettings.getIndex(), poolSettings).addPromiseTaskPool(this);
     }
 
@@ -61,7 +61,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     // Пул вызывает этот метод
     public void start(PoolItemEnvelope<?, ?, T> poolItem) {
         setPoolItemEnvelope(poolItem);
-        getPromise().getTrace().add(new TracePromise<>(getIndex() + ".Pool-Received(" + poolSettings.getIndex() + ")", null, null, null));
+        getPromise().getTrace().add(new Trace<>(getIndex() + ".Pool-Received(" + poolSettings.getIndex() + ")", null));
         super.prepareLaunch(null);
     }
 

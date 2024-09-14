@@ -2,7 +2,7 @@ package ru.jamsys.core.promise;
 
 import lombok.Getter;
 import lombok.NonNull;
-import ru.jamsys.core.extension.trace.TracePromise;
+import ru.jamsys.core.extension.trace.Trace;
 
 import java.util.Collection;
 import java.util.List;
@@ -86,12 +86,12 @@ public class PromiseDebug implements Promise {
     }
 
     @Override
-    public List<TracePromise<String, Throwable>> getExceptionTrace() {
+    public List<Trace<String, Throwable>> getExceptionTrace() {
         return promise.getExceptionTrace();
     }
 
     @Override
-    public Collection<TracePromise<String, ?>> getTrace() {
+    public Collection<Trace<String, ?>> getTrace() {
         return promise.getTrace();
     }
 

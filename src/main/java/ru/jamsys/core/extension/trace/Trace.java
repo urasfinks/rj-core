@@ -7,12 +7,10 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.flat.util.UtilDate;
-import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
-@JsonPropertyOrder({"index", "start", "value"})
+@JsonPropertyOrder({"start", "index", "value"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Trace<K, V> {
 
@@ -23,7 +21,7 @@ public class Trace<K, V> {
     final protected K index;
 
     @Setter
-    protected V value;
+    private V value;
 
     public String getStart() {
         return UtilDate.msFormat(timeAdd);
@@ -35,9 +33,6 @@ public class Trace<K, V> {
                 LineWriterList lineWriterList = new LineWriterList();
                 App.get(ExceptionHandler.class).getTextException((Throwable) value, lineWriterList);
                 return lineWriterList.getResult();
-            } else if (value instanceof TimerNanoEnvelope) {
-                return new HashMapBuilder<String, Object>()
-                        .append("nano", ((TimerNanoEnvelope) value).getOffsetLastActivityNano());
             }
         }
         return value;

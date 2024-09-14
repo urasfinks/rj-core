@@ -8,22 +8,25 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
+import ru.jamsys.core.statistic.timer.nano.TimerNano;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-@JsonPropertyOrder({"prepare", "start", "index", "class", "retry", "type", "value", "stop"})
-//@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder({"prepare", "start", "index", "class", "retry", "type", "value", "taskTrace", "exceptionTrace", "stop", "nano"})
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class TracePromise<K, V> extends Trace<K, V> {
+public class TracePromiseTask<K, V> extends TraceClass<K, V> {
 
     @Setter
     private Long prepare;
 
     @Getter
-    final Collection<TracePromise<String, ?>> taskTrace = new ArrayList<>();
+    final Collection<Trace<String, ?>> taskTrace = new ArrayList<>();
 
-    final Class<?> cls;
+    @JsonProperty("exceptionTrace")
+    @Getter
+    private final List<Trace<String, Throwable>> exceptionTrace = new ArrayList<>();
 
     @JsonProperty
     @Setter
@@ -33,8 +36,17 @@ public class TracePromise<K, V> extends Trace<K, V> {
     @Setter
     public Long timeStop;
 
+    @JsonIgnore
+    @Setter
+    private TimerNano nano;
+
     public String getStop() {
         return UtilDate.msFormat(timeStop);
+    }
+
+    @JsonProperty("nano")
+    public Long getNano() {
+        return nano != null ? nano.getOffsetLastActivityNano() : null;
     }
 
     @SuppressWarnings("unused")
@@ -42,23 +54,13 @@ public class TracePromise<K, V> extends Trace<K, V> {
         return UtilDate.msFormat(prepare);
     }
 
-    @SuppressWarnings("unused")
-    @JsonProperty("class")
-    String getCls() {
-        if (cls != null) {
-            return cls.getSimpleName();
-        }
-        return null;
-    }
-
     @JsonProperty
     @SuppressWarnings("FieldCanBeLocal")
     final private PromiseTaskExecuteType type;
 
-    public TracePromise(K index, V value, PromiseTaskExecuteType type, Class<?> cls) {
-        super(index, value);
+    public TracePromiseTask(K index, V value, PromiseTaskExecuteType type, Class<?> cls) {
+        super(index, value, cls);
         this.type = type;
-        this.cls = cls;
     }
 
 }

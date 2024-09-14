@@ -3,7 +3,7 @@ package ru.jamsys.core.promise;
 import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.RepositoryMap;
-import ru.jamsys.core.extension.trace.TracePromise;
+import ru.jamsys.core.extension.trace.TraceClass;
 import ru.jamsys.core.flat.util.UtilJson;
 
 import java.util.*;
@@ -55,11 +55,11 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
             } else if (value instanceof List && ((List<?>) value).isEmpty()) {
                 postFix = " with empty list";
             }
-            TracePromise<String, ?> trace = new TracePromise<>(
-                    "put(" + key + ")" + postFix, UtilJson.toLog(value), null, RepositoryMap.class
+            TraceClass<String, ?> trace = new TraceClass<>(
+                    "put(" + key + ")" + postFix, UtilJson.toLog(value), RepositoryMap.class
             );
             if (promise instanceof PromiseDebug) {
-                ((PromiseDebug) promise).getPromiseTask().getActiveTrace().getTaskTrace().add(trace);
+                ((PromiseDebug) promise).getPromiseTask().getTrace().getTaskTrace().add(trace);
             } else {
                 promise.getTrace().add(trace);
             }
@@ -77,11 +77,11 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
         } else if (m.isEmpty()) {
             postFix = " set empty value";
         }
-        TracePromise<String, ?> trace = new TracePromise<>(
-                "putAll " + postFix, UtilJson.toLog(m), null, RepositoryMap.class
+        TraceClass<String, ?> trace = new TraceClass<>(
+                "putAll " + postFix, UtilJson.toLog(m), RepositoryMap.class
         );
         if (promise instanceof PromiseDebug) {
-            ((PromiseDebug) promise).getPromiseTask().getActiveTrace().getTaskTrace().add(trace);
+            ((PromiseDebug) promise).getPromiseTask().getTrace().getTaskTrace().add(trace);
         } else {
             promise.getTrace().add(trace);
         }

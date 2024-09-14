@@ -8,7 +8,7 @@ import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.BiConsumerThrowing;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.TriConsumerThrowing;
-import ru.jamsys.core.extension.trace.TracePromise;
+import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
@@ -134,9 +134,9 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
 
     PromiseTask getLastTask();
 
-    List<TracePromise<String, Throwable>> getExceptionTrace();
+    List<Trace<String, Throwable>> getExceptionTrace();
 
-    Collection<TracePromise<String, ?>> getTrace();
+    Collection<Trace<String, ?>> getTrace();
 
     String getLogString();
 

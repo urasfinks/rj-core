@@ -8,7 +8,7 @@ import ru.jamsys.core.component.ServiceLogger;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.component.manager.item.LogType;
-import ru.jamsys.core.extension.trace.TracePromise;
+import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 
@@ -20,7 +20,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
 
     private volatile Thread loopThread;
 
-    private final AtomicBoolean finalAction = new AtomicBoolean(false);
+    private final AtomicBoolean terminateAction = new AtomicBoolean(false);
 
     private final ConcurrentLinkedDeque<String> goTo = new ConcurrentLinkedDeque<>();
 
@@ -40,13 +40,13 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     public void timeOut(String cause) {
         // Timeout может прилетать уже после того, как
         if (run.get()) {
-            setError("TimeOut cause: " + cause, getExpiredException(), null);
+            setError("TimeOut cause: " + cause, getExpiredException());
             complete();
         }
     }
 
     public void complete(@NonNull PromiseTask task, @NonNull Throwable exception) {
-        setError(task.getIndex(), exception, task.getType());
+        setError(task.getIndex(), exception);
         complete();
     }
 
@@ -63,9 +63,10 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 try {
                     loop();
                 } catch (Throwable th) {
-                    // Произошла ошибка, её же никто не обработает
                     App.error(th);
-                    setError("loop", th, null);
+                    setError("loop", th);
+                    // Произошла ошибка, её же никто не обработает
+                    // Самостоятельно сделаем ещё попытку выполнить задачи, в надежде что вызовется терминальный блок
                     try {
                         loop();
                     } catch (Throwable th2) {
@@ -100,7 +101,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             return false;
         }
         if (isExpired()) {
-            setError("TimeOut.onNextLoop()", getExpiredException(), null);
+            setError("TimeOut.onNextLoop()", getExpiredException());
             return false;
         }
         return true;
@@ -148,7 +149,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     // Сначала проверяем, а случаем эта задача не та самая на которую надо скакнуть
                     // Если нет, то просто логируем, что пропускаем задачу и проворачиваем while
                     if (!goTo.peekFirst().equals(poolTask.getIndex())) {
-                        getTrace().add(new TracePromise<>("Skip task: " + poolTask.getIndex() + "; goTo: " + goTo.peek(), null, null, null));
+                        getTrace().add(new Trace<>("Skip task: " + poolTask.getIndex() + "; goTo: " + goTo.peek(), null));
                         continue;
                     } else { // Если задача та самая == goTo, то вычленяем из коллекции и идём дальше на исполнение
                         goTo.pollFirst();
@@ -156,7 +157,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 }
                 switch (poolTask.type) {
                     case WAIT -> {
-                        getTrace().add(new TracePromise<>("Wait (" + poolTask.getIndex() + ")", null, null, null));
+                        getTrace().add(new Trace<>("Wait (" + poolTask.getIndex() + ")", null));
                         wait.set(true);
                     }
                     case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> poolTask.prepareLaunch(null);
@@ -166,7 +167,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     }
                 }
             } else {
-                setError("listPendingTasks.peekFirst() return null value", null, null);
+                setError("listPendingTasks.peekFirst() return null value", null);
             }
         }
         if (run.get()) {
@@ -179,7 +180,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                             && toHead.isEmpty() // Список добавленных в runTime задача пуст
             ) {
                 if (!goTo.isEmpty()) {
-                    setError("goTo is not empty: " + goTo, null, null);
+                    setError("goTo is not empty: " + goTo, null);
                 } else {
                     terminate(onComplete);
                 }
@@ -188,9 +189,9 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     private void terminate(PromiseTask fn) {
-        if (finalAction.compareAndSet(false, true)) {
-            ServicePromise.queueMultipleCompleteSet.remove(this);
+        if (terminateAction.compareAndSet(false, true)) {
             App.get(ServicePromise.class).finish(registerInBroker);
+            ServicePromise.queueMultipleCompleteSet.remove(this);
             stop();
             if (fn != null) {
                 fn.prepareLaunch(() -> run.set(false));

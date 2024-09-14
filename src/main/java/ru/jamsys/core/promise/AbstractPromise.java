@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.Correlation;
-import ru.jamsys.core.extension.trace.TracePromise;
+import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
@@ -73,11 +73,11 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     @JsonProperty("exceptionTrace")
     @Getter
-    private final List<TracePromise<String, Throwable>> exceptionTrace = new ArrayList<>();
+    private final List<Trace<String, Throwable>> exceptionTrace = new ArrayList<>();
 
     @JsonProperty
     @Getter
-    private final Collection<TracePromise<String, ?>> trace = new ConcurrentLinkedQueue<>();
+    private final Collection<Trace<String, ?>> trace = new ConcurrentLinkedQueue<>();
 
     @Getter
     private boolean debug;
@@ -143,9 +143,9 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
         return getStopFormat();
     }
 
-    protected void setError(String indexTask, Throwable exception, PromiseTaskExecuteType type) {
+    protected void setError(String indexTask, Throwable exception) {
         this.exception = exception;
-        this.exceptionTrace.add(new TracePromise<>(indexTask, exception, type, null));
+        this.exceptionTrace.add(new Trace<>(indexTask, exception));
         isException.set(true);
     }
 
