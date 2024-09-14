@@ -32,9 +32,11 @@ public class ServletHandler {
     private final HttpServletResponse response;
 
     @Setter
+    @Getter
     private String responseContentType = "application/json";
 
     @Setter
+    @Getter
     private String responseBody = "";
 
     @Getter
@@ -58,6 +60,7 @@ public class ServletHandler {
         setResponseBody(UtilJson.toStringPretty(data, "{}"));
     }
 
+    @JsonIgnore
     public boolean isEmptyBody() {
         return this.responseBody.isEmpty();
     }
