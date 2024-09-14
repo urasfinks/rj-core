@@ -1,5 +1,7 @@
 package ru.jamsys.core;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -488,14 +490,23 @@ class PromiseImplTest {
         promise.setDebug(true);
         promise.extension(promise1 -> promise1.setRepositoryMap("x", ""));
         promise.extension(promise1 -> promise1.setRepositoryMap("y", "z"));
+        promise.extension(promise1 -> promise1.setRepositoryMapClass(X.class, new X()));
         promise.thenWithResource("http", HttpResource.class, (_, _, _) -> {
                 })
-                .then("1task", (_, _) -> {
+                .then("1task", (_, promise1) -> {
+                    X x = promise1.getRepositoryMapClass(X.class);
+                    x.setValue("Hello world");
                 })
                 .then("2task", (_, _) -> {
                 });
 
         promise.run().await(1000);
+    }
+
+    @Getter
+    @Setter
+    public static class X {
+        private String value;
     }
 
 }

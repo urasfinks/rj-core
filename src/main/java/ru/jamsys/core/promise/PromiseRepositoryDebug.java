@@ -3,6 +3,7 @@ package ru.jamsys.core.promise;
 import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.RepositoryMap;
+import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.extension.trace.TraceClass;
 import ru.jamsys.core.flat.util.UtilJson;
 
@@ -13,6 +14,8 @@ import java.util.function.Function;
 
 public class PromiseRepositoryDebug extends HashMap<String, Object> {
 
+    private final Map<Object, String> cacheOnGet = new HashMap<>();
+
     private final Promise promise;
 
     private final Map<String, Object> repositoryMap;
@@ -20,6 +23,21 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
     public PromiseRepositoryDebug(Map<String, Object> repositoryMap, Promise promise) {
         this.repositoryMap = repositoryMap;
         this.promise = promise;
+    }
+
+    public void flushRepositoryChange() {
+        Collection<Trace<String, ?>> taskTrace = promise instanceof PromiseDebug
+                ? ((PromiseDebug) promise).getPromiseTask().getTracePromiseTask().getTaskTrace()
+                : promise.getTrace();
+        cacheOnGet.forEach((key, cache) -> {
+            Object value = repositoryMap.get(key);
+            String newCache = UtilJson.toString(value, "");
+            if (!cache.equals(newCache)) {
+                taskTrace.add(new TraceClass<>(
+                        "change(" + key + ")", UtilJson.toLog(value), RepositoryMap.class
+                ));
+            }
+        });
     }
 
     @Override
@@ -34,7 +52,9 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
 
     @Override
     public Object get(Object key) {
-        return repositoryMap.get(key);
+        Object o = repositoryMap.get(key);
+        cacheOnGet.computeIfAbsent(key, _ -> UtilJson.toString(o, ""));
+        return o;
     }
 
     @Override
@@ -59,7 +79,7 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
                     "put(" + key + ")" + postFix, UtilJson.toLog(value), RepositoryMap.class
             );
             if (promise instanceof PromiseDebug) {
-                ((PromiseDebug) promise).getPromiseTask().getTrace().getTaskTrace().add(trace);
+                ((PromiseDebug) promise).getPromiseTask().getTracePromiseTask().getTaskTrace().add(trace);
             } else {
                 promise.getTrace().add(trace);
             }
@@ -81,7 +101,7 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
                 "putAll " + postFix, UtilJson.toLog(m), RepositoryMap.class
         );
         if (promise instanceof PromiseDebug) {
-            ((PromiseDebug) promise).getPromiseTask().getTrace().getTaskTrace().add(trace);
+            ((PromiseDebug) promise).getPromiseTask().getTracePromiseTask().getTaskTrace().add(trace);
         } else {
             promise.getTrace().add(trace);
         }

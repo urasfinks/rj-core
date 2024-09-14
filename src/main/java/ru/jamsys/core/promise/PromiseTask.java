@@ -30,9 +30,7 @@ public class PromiseTask implements Runnable {
 
     private final Promise promise;
 
-    public Promise getPromise() {
-        return promise.isDebug() ? new PromiseDebug(promise, this) : promise;
-    }
+    private PromiseDebug promiseDebug;
 
     private int retryCount = 0;
 
@@ -58,7 +56,7 @@ public class PromiseTask implements Runnable {
     private Long prepare;
 
     @Getter
-    private TracePromiseTask<String, TimerNanoEnvelope<String>> trace;
+    private TracePromiseTask<String, TimerNanoEnvelope<String>> tracePromiseTask;
 
     public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type) {
         this.index = index;
@@ -76,6 +74,16 @@ public class PromiseTask implements Runnable {
         this.promise = promise;
         this.type = type;
         this.procedure = procedure;
+    }
+
+    public Promise getPromise() {
+        if (promise.isDebug()) {
+            if (promiseDebug == null) {
+                promiseDebug = new PromiseDebug(promise, this);
+            }
+            return promiseDebug;
+        }
+        return promise;
     }
 
     public void externalComplete() {
@@ -115,22 +123,23 @@ public class PromiseTask implements Runnable {
     @Override
     public void run() {
         TimerNanoEnvelope<String> timerEnvelope = App.get(ServicePromise.class).registrationTimer(index);
-        trace = new TracePromiseTask<>(index, null, type, this.getClass());
-        promise.getTrace().add(trace);
+        tracePromiseTask = new TracePromiseTask<>(index, null, type, this.getClass());
+        promise.getTrace().add(tracePromiseTask);
 
-        trace.setNano(timerEnvelope);
-        trace.setPrepare(prepare);
+        tracePromiseTask.setNano(timerEnvelope);
+        tracePromiseTask.setPrepare(prepare);
         if (retryCount > 0) {
-            trace.setRetry(retryCount);
+            tracePromiseTask.setRetry(retryCount);
         }
-
         try {
             executeBlock();
+            flushRepositoryChange();
         } catch (Throwable th) {
+            flushRepositoryChange();
             stopTimer(timerEnvelope);
             if (retryCount > 0) {
                 retryCount--;
-                trace.getExceptionTrace().add(new Trace<>(null, th));
+                tracePromiseTask.getExceptionTrace().add(new Trace<>(null, th));
                 App.get(ServicePromise.class).addRetryDelay(this);
                 // Если мы вышли на повтор, то promise.complete вызывать не надо
             } else {
@@ -157,9 +166,19 @@ public class PromiseTask implements Runnable {
         complete();
     }
 
+    private void flushRepositoryChange() {
+        if (promise.isDebug()) {
+            Promise promiseSource = getPromise();
+            if (promiseSource instanceof PromiseDebug) {
+                PromiseRepositoryDebug repositoryMap = (PromiseRepositoryDebug) promiseSource.getRepositoryMap();
+                repositoryMap.flushRepositoryChange();
+            }
+        }
+    }
+
     private void stopTimer(TimerNanoEnvelope<String> timerNanoEnvelope) {
         timerNanoEnvelope.stop();
-        trace.setTimeStop(System.currentTimeMillis());
+        tracePromiseTask.setTimeStop(System.currentTimeMillis());
     }
 
     private void complete() {
@@ -172,7 +191,8 @@ public class PromiseTask implements Runnable {
 
     private void completeThrowable(Throwable th) {
         switch (type) {
-            case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> trace.getExceptionTrace().add(new Trace<>(null, th));
+            case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE ->
+                    tracePromiseTask.getExceptionTrace().add(new Trace<>(null, th));
             default -> promise.complete(this, th);
         }
     }

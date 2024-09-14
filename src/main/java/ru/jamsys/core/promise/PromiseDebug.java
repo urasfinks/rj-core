@@ -15,6 +15,8 @@ public class PromiseDebug implements Promise {
     @Getter
     private final PromiseTask promiseTask;
 
+    private PromiseRepositoryDebug promiseRepositoryDebug;
+
     public PromiseDebug(Promise promise, PromiseTask promiseTask) {
         this.promise = promise;
         this.promiseTask = promiseTask;
@@ -167,9 +169,13 @@ public class PromiseDebug implements Promise {
 
     @Override
     public Map<String, Object> getRepositoryMap() {
-        return promise.isDebug()
-                ? new PromiseRepositoryDebug(promise.getRepositoryMapWithoutDebug(), this)
-                : promise.getRepositoryMap();
+        if (promise.isDebug()) {
+            if (promiseRepositoryDebug == null) {
+                promiseRepositoryDebug = new PromiseRepositoryDebug(promise.getRepositoryMapWithoutDebug(), this);
+            }
+            return promiseRepositoryDebug;
+        }
+        return promise.getRepositoryMap();
     }
 
     @Override
