@@ -40,8 +40,7 @@ public class ExceptionHandler extends RepositoryPropertiesField {
     public void handler(Throwable th) {
         if (consoleOutput) {
             LineWriter lineWriter = new LineWriterString();
-            if (th instanceof PromiseException) {
-                PromiseException promiseException = (PromiseException) th;
+            if (th instanceof PromiseException promiseException) {
                 lineWriter.addLine("Promise: " + promiseException.getPromise().getIndex());
                 if (promiseException.getPromiseTask() != null) {
                     lineWriter.addLine("Task: " + promiseException.getPromiseTask().getIndex());
