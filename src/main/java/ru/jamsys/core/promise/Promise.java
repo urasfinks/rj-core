@@ -148,6 +148,8 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
 
     Throwable getException();
 
+    void setError(String index, Throwable throwable);
+
     void setErrorInRunTask(Throwable throwable);
 
     Promise setLog(boolean log);

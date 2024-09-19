@@ -143,9 +143,9 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
         return getStopFormat();
     }
 
-    protected void setError(String indexTask, Throwable exception) {
-        this.exception = exception;
-        this.exceptionTrace.add(new Trace<>(indexTask, exception));
+    public void setError(String index, Throwable throwable) {
+        this.exception = throwable;
+        this.exceptionTrace.add(new Trace<>(index, throwable));
         isException.set(true);
     }
 

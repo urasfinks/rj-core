@@ -3,6 +3,7 @@ package ru.jamsys.core.promise;
 import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.RepositoryMap;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.extension.trace.TraceClass;
 import ru.jamsys.core.flat.util.UtilJson;
