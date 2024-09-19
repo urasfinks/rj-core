@@ -347,7 +347,7 @@ class PromiseImplTest {
         Assertions.assertTrue(promise.isException());
         Assertions.assertEquals(1, counter.get());
         Assertions.assertEquals(1, promise.getExceptionTrace().size());
-        Assertions.assertEquals("Promise: Expiration; TimeOut cause: ServicePromise.onPromiseTaskExpired", promise.getException().getMessage());
+        Assertions.assertEquals("TimeOut cause: ServicePromise.onPromiseTaskExpired", promise.getException().getMessage());
 
     }
 

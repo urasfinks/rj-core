@@ -9,6 +9,7 @@ import ru.jamsys.core.component.manager.item.LogType;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.exception.PromiseException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.extension.line.writer.LineWriterString;
@@ -39,6 +40,14 @@ public class ExceptionHandler extends RepositoryPropertiesField {
     public void handler(Throwable th) {
         if (consoleOutput) {
             LineWriter lineWriter = new LineWriterString();
+            if (th instanceof PromiseException) {
+                PromiseException promiseException = (PromiseException) th;
+                lineWriter.addLine("Promise: " + promiseException.getPromise().getIndex());
+                if (promiseException.getPromiseTask() != null) {
+                    lineWriter.addLine("Task: " + promiseException.getPromiseTask().getIndex());
+                }
+                th = promiseException.getThrowable();
+            }
             Util.logConsole(getTextException(th, lineWriter));
         }
         if (remoteLog) {
