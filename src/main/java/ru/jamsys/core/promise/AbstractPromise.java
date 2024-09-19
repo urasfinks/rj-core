@@ -143,15 +143,19 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
         return getStopFormat();
     }
 
-    public void setError(String index, Throwable throwable) {
+    private void setErrorNative(Throwable throwable) {
         this.exception = throwable;
-        this.exceptionTrace.add(new Trace<>(index, throwable));
         isException.set(true);
     }
 
-    public void setErrorInRunTask(Throwable throwable) {
-        this.exception = throwable;
-        isException.set(true);
+    public void setError(Throwable throwable) {
+        this.exceptionTrace.add(new Trace<>(null, throwable));
+        setErrorNative(throwable);
+    }
+
+    public void setError(PromiseTask promiseTask, Throwable throwable) {
+        promiseTask.getTracePromiseTask().getExceptionTrace().add(new Trace<>(null, throwable));
+        setErrorNative(throwable);
     }
 
     // Это для extension, когда ещё promise не запущен, но уже ведутся работа с репозиторием

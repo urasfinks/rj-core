@@ -8,6 +8,7 @@ import ru.jamsys.core.component.ServiceLogger;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.component.manager.item.LogType;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
@@ -40,13 +41,13 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     public void timeOut(String cause) {
         // Timeout может прилетать уже после того, как
         if (run.get()) {
-            setError("TimeOut cause: " + cause, getExpiredException());
+            setError(getExpiredException());
             complete();
         }
     }
 
     public void complete(@NonNull PromiseTask task, @NonNull Throwable exception) {
-        setError(task.getIndex(), exception);
+        setError(task, exception);
         complete();
     }
 
@@ -63,14 +64,15 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 try {
                     loop();
                 } catch (Throwable th) {
-                    App.error(th);
-                    setError("loop", th);
+                    setError(new ForwardException("loop", th));
+                    App.error(getException());
                     // Произошла ошибка, её же никто не обработает
                     // Самостоятельно сделаем ещё попытку выполнить задачи, в надежде что вызовется терминальный блок
                     try {
                         loop();
                     } catch (Throwable th2) {
-                        App.error(th2);
+                        setError(new ForwardException("loop-retry", th));
+                        App.error(getException());
                     }
                 }
                 startLoop.set(false);
@@ -101,7 +103,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             return false;
         }
         if (isExpired()) {
-            setError("TimeOut.onNextLoop()", getExpiredException());
+            setError(new ForwardException("isNextLoop", getExpiredException()));
             return false;
         }
         return true;
@@ -167,7 +169,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     }
                 }
             } else {
-                setError("listPendingTasks.peekFirst() return null value", null);
+                setError(new RuntimeException("listPendingTasks.peekFirst() return null value"));
             }
         }
         if (run.get()) {
@@ -180,7 +182,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                             && toHead.isEmpty() // Список добавленных в runTime задача пуст
             ) {
                 if (!goTo.isEmpty()) {
-                    setError("goTo is not empty: " + goTo, null);
+                    setError(new RuntimeException("goTo is not empty: " + goTo));
                 } else {
                     terminate(onComplete);
                 }

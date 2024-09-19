@@ -27,7 +27,7 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
                 .initAndGet(this.getIndex(), PromiseTask.class, promiseTask ->
                         promiseTask.
                                 getPromise().
-                                setErrorInRunTask(new RuntimeException(
+                                setError(new RuntimeException(
                                         ThreadPool.class.getSimpleName() + ".broker->drop(task)")
                                 )
                 );

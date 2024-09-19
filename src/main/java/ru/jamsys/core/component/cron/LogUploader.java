@@ -76,7 +76,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
         if (!remoteLog) {
             return null;
         }
-        return servicePromise.get(index, 4_999L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (isThreadRun, _, promise, jdbcResource) -> {
+        return servicePromise.get(index, 4_999L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (isThreadRun, task, promise, jdbcResource) -> {
             AtomicInteger countInsert = new AtomicInteger(0);
 
             JdbcRequest jdbcRequest = new JdbcRequest(Logger.INSERT);
@@ -102,7 +102,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
                 try {
                     jdbcResource.execute(jdbcRequest);
                 } catch (Throwable th) {
-                    promise.setErrorInRunTask(th);
+                    promise.setError(task, th);
                 }
             }
         }).then("readDirectory", (_, _, promise) -> {

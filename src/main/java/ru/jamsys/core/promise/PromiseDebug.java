@@ -123,13 +123,13 @@ public class PromiseDebug implements Promise {
     }
 
     @Override
-    public void setError(String index, Throwable throwable) {
-        promise.setError(index, throwable);
+    public void setError(PromiseTask promiseTask, Throwable throwable) {
+        promise.setError(promiseTask, throwable);
     }
 
     @Override
-    public void setErrorInRunTask(Throwable throwable) {
-        promise.setErrorInRunTask(throwable);
+    public void setError(Throwable throwable) {
+        promise.setError(throwable);
     }
 
     @Override
