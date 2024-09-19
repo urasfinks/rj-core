@@ -1,7 +1,6 @@
 package ru.jamsys.core.promise;
 
 import org.jetbrains.annotations.NotNull;
-import ru.jamsys.core.App;
 import ru.jamsys.core.extension.RepositoryMap;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.extension.trace.TraceClass;
@@ -64,27 +63,23 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
 
     @Override
     public Object put(String key, Object value) {
-        try {
-            String postFix = "";
-            if (value == null) {
-                postFix = " with null value";
-            } else if (value.toString().isEmpty()) {
-                postFix = " with empty value";
-            } else if (value instanceof Map && ((Map<?, ?>) value).isEmpty()) {
-                postFix = " with empty map";
-            } else if (value instanceof List && ((List<?>) value).isEmpty()) {
-                postFix = " with empty list";
-            }
-            TraceClass<String, ?> trace = new TraceClass<>(
-                    "put(" + key + ")" + postFix, UtilJson.toLog(value), RepositoryMap.class
-            );
-            if (promise instanceof PromiseDebug) {
-                ((PromiseDebug) promise).getPromiseTask().getTracePromiseTask().getTaskTrace().add(trace);
-            } else {
-                promise.getTrace().add(trace);
-            }
-        } catch (Throwable th) {
-            App.error(th);
+        String postFix = "";
+        if (value == null) {
+            postFix = " with null value";
+        } else if (value.toString().isEmpty()) {
+            postFix = " with empty value";
+        } else if (value instanceof Map && ((Map<?, ?>) value).isEmpty()) {
+            postFix = " with empty map";
+        } else if (value instanceof List && ((List<?>) value).isEmpty()) {
+            postFix = " with empty list";
+        }
+        TraceClass<String, ?> trace = new TraceClass<>(
+                "put(" + key + ")" + postFix, UtilJson.toLog(value), RepositoryMap.class
+        );
+        if (promise instanceof PromiseDebug) {
+            ((PromiseDebug) promise).getPromiseTask().getTracePromiseTask().getTaskTrace().add(trace);
+        } else {
+            promise.getTrace().add(trace);
         }
         return repositoryMap.put(key, value);
     }

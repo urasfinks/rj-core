@@ -42,8 +42,11 @@ public class ServicePromise implements UniqueClassName, KeepAliveComponent, Stat
     private final ConcurrentLinkedDeque<Statistic> toStatistic = new ConcurrentLinkedDeque<>();
 
     public ServicePromise(ManagerBroker managerBroker, ApplicationContext applicationContext, ManagerExpiration managerExpiration) {
-        this.broker = managerBroker.initAndGet(getClassName("run", applicationContext), Promise.class, promise
-                -> promise.timeOut(getClassName("onPromiseTaskExpired")));
+        this.broker = managerBroker.initAndGet(
+                getClassName("run", applicationContext),
+                Promise.class,
+                promise -> promise.timeOut(getClassName("onPromiseTaskExpired"))
+        );
         promiseTaskRetry = managerExpiration.get("PromiseTaskRetry", PromiseTask.class, this::onPromiseTaskRetry);
     }
 

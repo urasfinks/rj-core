@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.Correlation;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -149,13 +150,20 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     }
 
     public void setError(Throwable throwable) {
+        if (throwable == null) {
+            throwable = new RuntimeException("Throwable is null");
+        }
         this.exceptionTrace.add(new Trace<>(null, throwable));
-        setErrorNative(throwable);
+        String throwableMessage = throwable.getMessage();
+        setErrorNative(new ForwardException(
+                "Promise: " + getIndex() + (throwableMessage != null ? ("; " + throwableMessage) : ""),
+                throwable
+        ));
     }
 
     public void setError(PromiseTask promiseTask, Throwable throwable) {
         promiseTask.getTracePromiseTask().getExceptionTrace().add(new Trace<>(null, throwable));
-        setErrorNative(throwable);
+        setErrorNative(new ForwardException("Promise: " + getIndex() + "." + promiseTask.getIndex(), throwable));
     }
 
     // Это для extension, когда ещё promise не запущен, но уже ведутся работа с репозиторием

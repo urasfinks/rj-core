@@ -41,7 +41,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     public void timeOut(String cause) {
         // Timeout может прилетать уже после того, как
         if (run.get()) {
-            setError(getExpiredException());
+            setError(new ForwardException("TimeOut cause: " + cause, getExpiredException()));
             complete();
         }
     }
