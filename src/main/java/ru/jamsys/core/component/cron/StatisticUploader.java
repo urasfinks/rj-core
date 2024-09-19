@@ -90,12 +90,12 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
             return null;
         }
         return servicePromise.get(index, 4_999L)
-                .append("checkStatistic", (_, promise) -> {
+                .append("checkStatistic", (_, _, promise) -> {
                     if (broker.isEmpty()) {
                         promise.skipAllStep();
                     }
                 })
-                .thenWithResource("sendToInflux", InfluxResource.class, (isThreadRun, promise, influxResource) -> {
+                .thenWithResource("sendToInflux", InfluxResource.class, (isThreadRun, _, promise, influxResource) -> {
                     AtomicInteger countInsert = new AtomicInteger(0);
                     List<Point> listPoints = new ArrayList<>();
 
@@ -125,7 +125,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
                         influxResource.execute(listPoints);
                     }
                 })
-                .then("readDirectory", (_, promise) -> {
+                .then("readDirectory", (_, _, promise) -> {
                     String indexStatistic = UniqueClassNameImpl.getClassNameStatic(StatisticSec.class, null, App.context);
                     List<String> filesRecursive = UtilFile.getFilesRecursive(getFolder(), false);
                     List<String> restore = new ArrayList<>();
@@ -139,7 +139,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
                     }
                 })
                 .appendWait()
-                .appendWithResource("read", FileByteReaderResource.class, (_, promise, fileByteReaderResource) -> {
+                .appendWithResource("read", FileByteReaderResource.class, (_, _, promise, fileByteReaderResource) -> {
                     if (broker.getOccupancyPercentage() < 50) {
                         String readyFile = promise.getRepositoryMap(String.class, "readyFile");
                         if (readyFile != null) {
@@ -155,7 +155,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
                         }
                     }
                 })
-                .onError((_, promise) -> {
+                .onError((_, _, promise) -> {
                     Throwable exception = promise.getException();
                     if (exception != null) {
                         @SuppressWarnings("unchecked")

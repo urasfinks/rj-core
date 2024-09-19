@@ -94,7 +94,7 @@ class JdbcRequestRepositoryTest {
     void testPostgreSql() {
         Promise promise = servicePromise.get("testPromisePosgreSQL", 6_000L);
         promise
-                .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, jdbcResource) -> {
+                .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, _, jdbcResource) -> {
                     try {
                         List<Map<String, Object>> execute = jdbcResource.execute(new JdbcRequest(TestJdbcRequestRepository.GET_LOG));
                         System.out.println(execute);
@@ -110,7 +110,7 @@ class JdbcRequestRepositoryTest {
     void testInsertLog() {
         Promise promise = servicePromise.get("testPromisePosgreSQL", 6_000L);
         promise
-                .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, jdbcResource) -> {
+                .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, _, jdbcResource) -> {
                     try {
                         JdbcRequest jdbcRequest = new JdbcRequest(Logger.INSERT);
                         int idx = 0;

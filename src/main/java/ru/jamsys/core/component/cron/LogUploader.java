@@ -76,7 +76,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
         if (!remoteLog) {
             return null;
         }
-        return servicePromise.get(index, 4_999L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (isThreadRun, promise, jdbcResource) -> {
+        return servicePromise.get(index, 4_999L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (isThreadRun, _, promise, jdbcResource) -> {
             AtomicInteger countInsert = new AtomicInteger(0);
 
             JdbcRequest jdbcRequest = new JdbcRequest(Logger.INSERT);
@@ -105,7 +105,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
                     promise.setErrorInRunTask(th);
                 }
             }
-        }).then("readDirectory", (_, promise) -> {
+        }).then("readDirectory", (_, _, promise) -> {
             List<String> filesRecursive = UtilFile.getFilesRecursive(getFolder(), false);
             List<String> restore = new ArrayList<>();
             for (String filePath : filesRecursive) {
@@ -116,7 +116,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
             if (!restore.isEmpty()) {
                 promise.setRepositoryMap("readyFile", getFolder() + ListSort.sortAsc(restore).getFirst());
             }
-        }).appendWait().appendWithResource("read", FileByteReaderResource.class, (_, promise, fileByteReaderResource) -> {
+        }).appendWait().appendWithResource("read", FileByteReaderResource.class, (_, _, promise, fileByteReaderResource) -> {
             if (broker.getOccupancyPercentage() < 50) {
                 String readyFile = promise.getRepositoryMap(String.class, "readyFile");
                 if (readyFile != null) {
@@ -129,7 +129,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
                     }
                 }
             }
-        }).onError((_, promise) -> {
+        }).onError((_, _, promise) -> {
             Throwable exception = promise.getException();
             if (exception != null) {
                 @SuppressWarnings("unchecked") Function<Throwable, Boolean> isFatalExceptionOnComplete = App

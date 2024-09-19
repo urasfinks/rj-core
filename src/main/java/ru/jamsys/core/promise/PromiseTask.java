@@ -7,8 +7,8 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadVirtual;
 import ru.jamsys.core.component.manager.ManagerThreadPool;
-import ru.jamsys.core.extension.functional.BiConsumerThrowing;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
+import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.extension.trace.TracePromiseTask;
 import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
@@ -26,7 +26,7 @@ public class PromiseTask implements Runnable {
     @Getter
     final PromiseTaskExecuteType type;
 
-    private BiConsumerThrowing<AtomicBoolean, Promise> procedure;
+    private PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> procedure;
 
     private final Promise promise;
 
@@ -68,7 +68,7 @@ public class PromiseTask implements Runnable {
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
-            BiConsumerThrowing<AtomicBoolean, Promise> procedure
+            PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> procedure
     ) {
         this.index = index;
         this.promise = promise;
@@ -198,7 +198,7 @@ public class PromiseTask implements Runnable {
     }
 
     protected void executeBlock() throws Throwable {
-        procedure.accept(isThreadRun, getPromise());
+        procedure.accept(isThreadRun, this, getPromise());
     }
 
 }

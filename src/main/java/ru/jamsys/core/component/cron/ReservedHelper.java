@@ -14,7 +14,6 @@ import ru.jamsys.core.promise.PromiseGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 // Восстановления законсервированных элементов AbstractManager при наличии их повторной активности
 
@@ -38,7 +37,6 @@ public class ReservedHelper implements Cron1s, PromiseGenerator, UniqueClassName
     @Override
     public Promise generate() {
         return servicePromise.get(index, 6_000L)
-                .append("main", (AtomicBoolean _, Promise _)
-                        -> list.forEach(AbstractManager::checkReserved));
+                .append("main", (_, _, _) -> list.forEach(AbstractManager::checkReserved));
     }
 }

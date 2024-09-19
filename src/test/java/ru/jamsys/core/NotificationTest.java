@@ -39,7 +39,7 @@ class NotificationTest {
     void telegramSend() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
-                .appendWithResource("http", TelegramNotificationResource.class, (isThreadRun, _, telegramNotificationResource) -> {
+                .appendWithResource("http", TelegramNotificationResource.class, (_, isThreadRun, _, telegramNotificationResource) -> {
                     HttpResponse execute = telegramNotificationResource.execute(new TelegramNotificationRequest("Привет", "Мир"));
                     System.out.println(execute);
                 })
@@ -52,7 +52,7 @@ class NotificationTest {
     void appleSend() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
-                .appendWithResource("http", AppleNotificationResource.class, (_, _, appleNotificationResource) -> {
+                .appendWithResource("http", AppleNotificationResource.class, (_, _, _, appleNotificationResource) -> {
                     HashMapBuilder<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 123);
                     HttpResponse execute = appleNotificationResource.execute(new AppleNotificationRequest("Привет", data, "e81156eeb16246fd0498c53f55f870dfc5892806dde0a6e073cbf586e761382c"));
                     System.out.println(execute);
@@ -68,7 +68,7 @@ class NotificationTest {
         promise
                 .appendWithResource(
                         "synthesize",
-                        YandexSpeechNotificationResource.class, (_, p1, yandexSpeechNotificationResource) ->
+                        YandexSpeechNotificationResource.class, (_, _, p1, yandexSpeechNotificationResource) ->
                                 yandexSpeechNotificationResource.execute(
                                         new YandexSpeechNotificationRequest(
                                                 p1,
@@ -88,7 +88,7 @@ class NotificationTest {
     void androidTest() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
-                .appendWithResource("push", AndroidNotificationResource.class, (atomicBoolean, promise1, androidNotificationResource) -> {
+                .appendWithResource("push", AndroidNotificationResource.class, (_, atomicBoolean, promise1, androidNotificationResource) -> {
                     HashMap<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 1);
                     androidNotificationResource.execute(new AndroidNotificationRequest("Приветики", data, "fyP9dxiISLW9OLJfsb73kT:APA91bGSXWN4hR9_OdXEi3THPTNs-RAsMjASA9_XXXMpq5yjkUQAG8CUvucSopPb9xcffQgyMG5K-yoA0p5JS3DyMVVTw618a566zQdvVS_a9Tmr_ktHlI5ZY5aQ60HjkhWWzI6AwsdB"));
                 })
@@ -103,7 +103,7 @@ class NotificationTest {
     void emailSend() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
-                .appendWithResource("email", EmailNotificationResource.class, (_, _, emailNotificationResource) -> {
+                .appendWithResource("email", EmailNotificationResource.class, (_, _, _, emailNotificationResource) -> {
                     HashMap<String, String> data = new HashMapBuilder<String, String>()
                             .append("code", "999")
                             .append("support", emailNotificationResource.getProperty().getSupport());

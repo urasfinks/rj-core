@@ -33,7 +33,7 @@ class ConnectionResourceTest {
 
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
-                .appendWithResource("jdbc", JdbcResource.class, (_, _, jdbcResource) -> {
+                .appendWithResource("jdbc", JdbcResource.class, (_, _, _, jdbcResource) -> {
                     JdbcRequest jdbcRequest = new JdbcRequest(TestJdbcRequestRepository.TEST);
                     try {
                         List<Map<String, Object>> execute = jdbcResource.execute(jdbcRequest);

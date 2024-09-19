@@ -203,14 +203,14 @@ public class HttpController {
             }
 
             if (!promise.isSetErrorHandler()) {
-                promise.onError((atomicBoolean, p) -> {
+                promise.onError((_, atomicBoolean, p) -> {
                     ServletHandler srvHandler = p.getRepositoryMapClass(ServletHandler.class);
                     srvHandler.setResponseBody(p.getLogString());
                     srvHandler.responseComplete();
                 });
             }
             if (!promise.isSetCompleteHandler()) {
-                promise.onComplete((atomicBoolean, p) -> {
+                promise.onComplete((_, atomicBoolean, p) -> {
                     ServletHandler srvHandler = p.getRepositoryMapClass(ServletHandler.class);
                     if (srvHandler.isEmptyBody()) {
                         srvHandler.setBodyIfEmpty(p.getLogString());

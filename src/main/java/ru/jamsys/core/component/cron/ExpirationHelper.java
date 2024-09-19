@@ -36,7 +36,7 @@ public class ExpirationHelper implements Cron1s, PromiseGenerator, UniqueClassNa
     @Override
     public Promise generate() {
         return servicePromise.get(index, 6_000L)
-                .append("main", (isThreadRun, _) -> managerExpiration.keepAlive(isThreadRun));
+                .append("main", (isThreadRun, _, _) -> managerExpiration.keepAlive(isThreadRun));
     }
 
 }

@@ -34,7 +34,7 @@ public class DeeplinkSchemaApple implements PromiseGenerator, HttpHandler {
     @Override
     public Promise generate() {
         return servicePromise.get(index, 7_000L)
-                .append("input", (atomicBoolean, promise) -> {
+                .append("input", (_, atomicBoolean, promise) -> {
                     ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
                     servletHandler.setResponseBody(UtilFile.getWebContent(".well-known/apple-app-site-association.json"));
                 });

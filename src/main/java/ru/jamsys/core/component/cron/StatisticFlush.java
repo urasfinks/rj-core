@@ -11,11 +11,11 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
+import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.UniqueClassNameImpl;
-import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
@@ -81,7 +80,7 @@ public class StatisticFlush extends RepositoryPropertiesField implements Cron1s,
     @Override
     public Promise generate() {
         return servicePromise.get(index, 6_000L)
-                .append("main", (AtomicBoolean isThreadRun, Promise _) -> {
+                .append("main", (isThreadRun, _, _) -> {
                     StatisticSec statisticSec = new StatisticSec();
                     UtilRisc.forEach(isThreadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
                         Map<String, String> parentTags = new LinkedHashMap<>();

@@ -5,9 +5,9 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.functional.BiConsumerThrowing;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
-import ru.jamsys.core.extension.functional.TriConsumerThrowing;
+import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
+import ru.jamsys.core.extension.functional.PromiseTaskWithResourceConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
 import ru.jamsys.core.resource.Resource;
@@ -39,7 +39,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     // Добавление задачи, которая выполнится после успешного завершения цепочки Promise
     Promise onComplete(PromiseTask onComplete);
 
-    default Promise onComplete(BiConsumerThrowing<AtomicBoolean, Promise> fn) {
+    default Promise onComplete(PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
         PromiseTask promiseTask = new PromiseTask("onCompleteTask", this, PromiseTaskExecuteType.COMPUTE, fn);
         promiseTask.setTerminated(true);
         return onComplete(promiseTask);
@@ -54,7 +54,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     // Добавление задачи, которая выполнится после фатального завершения цепочки Promise
     Promise onError(PromiseTask onError);
 
-    default Promise onError(BiConsumerThrowing<AtomicBoolean, Promise> fn) {
+    default Promise onError(PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
         PromiseTask promiseTask = new PromiseTask("onErrorTask", this, PromiseTaskExecuteType.COMPUTE, fn);
         promiseTask.setTerminated(true);
         return onError(promiseTask);
@@ -65,14 +65,14 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
 
     Promise append(PromiseTask task);
 
-    default Promise append(String index, BiConsumerThrowing<AtomicBoolean, Promise> fn) {
+    default Promise append(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
         return append(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
     }
 
     default <T extends Resource<?, ?>> Promise appendWithResource(
             String index,
             Class<T> classResource,
-            TriConsumerThrowing<AtomicBoolean, Promise, T> procedure
+            PromiseTaskWithResourceConsumerThrowing<PromiseTask, AtomicBoolean, Promise, T> procedure
     ) {
         return appendWithResource(index, classResource, "default", procedure);
     }
@@ -81,7 +81,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
             String index,
             Class<T> classResource,
             String ns,
-            TriConsumerThrowing<AtomicBoolean, Promise, T> procedure
+            PromiseTaskWithResourceConsumerThrowing<PromiseTask, AtomicBoolean, Promise, T> procedure
     ) {
         return append(new PromiseTaskWithResource<>(
                 getIndex() + "." + index,
@@ -94,7 +94,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     default <T extends Resource<?, ?>> Promise thenWithResource(
             String index,
             Class<T> classResource,
-            TriConsumerThrowing<AtomicBoolean, Promise, T> procedure
+            PromiseTaskWithResourceConsumerThrowing<PromiseTask, AtomicBoolean, Promise, T> procedure
     ) {
         return thenWithResource(index, classResource, "default", procedure);
     }
@@ -103,7 +103,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
             String index,
             Class<T> classResource,
             String ns,
-            TriConsumerThrowing<AtomicBoolean, Promise, T> procedure
+            PromiseTaskWithResourceConsumerThrowing<PromiseTask, AtomicBoolean, Promise, T> procedure
     ) {
         return then(new PromiseTaskWithResource<>(
                 getIndex() + "." + index,
@@ -118,7 +118,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
         return this;
     }
 
-    default Promise then(String index, BiConsumerThrowing<AtomicBoolean, Promise> fn) {
+    default Promise then(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
         return then(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
     }
 

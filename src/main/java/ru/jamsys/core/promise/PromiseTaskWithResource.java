@@ -6,7 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerPoolTaskWait;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
-import ru.jamsys.core.extension.functional.TriConsumerThrowing;
+import ru.jamsys.core.extension.functional.PromiseTaskWithResourceConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.resource.Resource;
@@ -19,7 +19,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     @Setter
     private PoolItemEnvelope<?, ?, T> poolItemEnvelope;
 
-    private final TriConsumerThrowing<AtomicBoolean, Promise, T> procedure;
+    private final PromiseTaskWithResourceConsumerThrowing<PromiseTask, AtomicBoolean, Promise, T> procedure;
 
     private final PoolSettings<T> poolSettings;
 
@@ -29,7 +29,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     public PromiseTaskWithResource(
             String index,
             Promise promise,
-            TriConsumerThrowing<AtomicBoolean, Promise, T> procedure,
+            PromiseTaskWithResourceConsumerThrowing<PromiseTask, AtomicBoolean, Promise, T> procedure,
             PoolSettings<T> poolSettings
     ) {
         super(index, promise, PromiseTaskExecuteType.IO);
@@ -54,7 +54,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     @Override
     protected void executeBlock() throws Throwable {
         try (PoolItemEnvelope<?, ?, T> res = getPoolItemEnvelope()) {
-            procedure.accept(isThreadRun, getPromise(), res.getItem());
+            procedure.accept(isThreadRun, this, getPromise(), res.getItem());
         }
     }
 
