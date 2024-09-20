@@ -1,6 +1,7 @@
 package ru.jamsys.core.flat.util;
 
 
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -144,6 +145,10 @@ public class UtilFile {
     public static File getWebFile(String relativeWebPath) {
         String location = App.get(ServiceProperty.class).get("run.args.web.resource.location");
         return new File(location + relativeWebPath);
+    }
+
+    public static void removeDir(File dir) throws IOException {
+        FileUtils.deleteDirectory(dir);
     }
 
 }
