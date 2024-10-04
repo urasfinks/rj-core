@@ -1,37 +1,48 @@
 {
   "mapEntity" : {
     "k0" : {
-      "data" : "0"
+      "data" : "0",
+      "class" : "ru.jamsys.core.i360.entity.EntityImpl"
     },
     "k1" : {
-      "data" : "1"
+      "data" : "1",
+      "class" : "ru.jamsys.core.i360.entity.EntityImpl"
     },
     "k2" : {
-      "data" : "2"
+      "data" : "2",
+      "class" : "ru.jamsys.core.i360.entity.EntityImpl"
     },
     "k3" : {
-      "data" : "3"
+      "data" : "3",
+      "class" : "ru.jamsys.core.i360.entity.EntityImpl"
     },
     "k4" : {
-      "data" : "4"
+      "data" : "4",
+      "class" : "ru.jamsys.core.i360.entity.EntityImpl"
     },
     "k5" : {
-      "data" : "5"
-    },
-    "k10" : {
-      "data" : "число"
+      "data" : "5",
+      "class" : "ru.jamsys.core.i360.entity.EntityImpl"
     },
     "k6" : {
-      "data" : "6"
+      "data" : "6",
+      "class" : "ru.jamsys.core.i360.entity.EntityImpl"
+    },
+    "k10" : {
+      "data" : "число",
+      "class" : "ru.jamsys.core.i360.entity.EntityImpl"
     },
     "k7" : {
-      "data" : "7"
+      "data" : "7",
+      "class" : "ru.jamsys.core.i360.entity.EntityImpl"
     },
     "k8" : {
-      "data" : "8"
+      "data" : "8",
+      "class" : "ru.jamsys.core.i360.entity.EntityImpl"
     },
     "k9" : {
-      "data" : "9"
+      "data" : "9",
+      "class" : "ru.jamsys.core.i360.entity.EntityImpl"
     }
   },
   "listScale" : [
