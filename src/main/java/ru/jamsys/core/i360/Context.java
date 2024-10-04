@@ -1,6 +1,7 @@
 package ru.jamsys.core.i360;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.ToString;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Getter
 @ToString
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Context {
 
     private final List<Entity> listEntity = new ArrayList<>();

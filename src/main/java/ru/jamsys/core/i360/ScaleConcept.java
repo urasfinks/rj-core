@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class ScaleConcept extends Scale {
 
-    private final Scope scope = new Scope();
+    private final Scope scope = new ScopeImpl();
 
     public boolean check(Scale scale) {
         return false;
