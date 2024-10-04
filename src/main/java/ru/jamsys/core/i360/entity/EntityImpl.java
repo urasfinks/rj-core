@@ -20,6 +20,7 @@ public class EntityImpl implements Entity {
 
     private String data;
 
+    @SuppressWarnings("unused")
     public EntityImpl() {
     }
 
