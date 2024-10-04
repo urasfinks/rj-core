@@ -26,7 +26,7 @@ public class Scope {
                 mapOrThrow,
                 "knowledge",
                 EntityImpl.class.getName(),
-                (s, aClass, _) -> UtilJson.toObject(s, aClass)
+                (s, aClass, _) -> Entity.fromJson(s, aClass)
         ));
         listScale.addAll(keyLoad(
                 mapOrThrow,
