@@ -50,7 +50,7 @@ public class EntityImpl implements Entity {
     @SuppressWarnings("unused")
     @JsonValue
     public Map<String, String> toValue() {
-        return new HashMapBuilder<String, String>().append("data", data).append("class", getClass().getName());
+        return new HashMapBuilder<String, String>().append("data", data);
     }
 
 }
