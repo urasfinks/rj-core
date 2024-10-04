@@ -15,8 +15,8 @@ public class Context {
 
     public static Context load(List<String> listUuid, Scope scope) {
         Context context = new Context();
-        List<Entity> listEntity1 = context.getListEntity();
-        listUuid.forEach(s -> listEntity1.add(scope.getEntityByUuid(s)));
+        List<Entity> list = context.getListEntity();
+        listUuid.forEach(s -> list.add(scope.getEntityByUuid(s)));
         return context;
     }
 }

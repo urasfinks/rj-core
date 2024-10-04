@@ -45,6 +45,12 @@ public class Scope {
                     List<String> right = (List<String>) map.get("right");
                     scale.setRight(Context.load(right, this));
 
+                    if (map.containsKey("classifier")) {
+                        @SuppressWarnings("unchecked")
+                        List<String> classifier = (List<String>) map.get("classifier");
+                        scale.setClassifier(Context.load(classifier, this));
+                    }
+
                     System.out.println(scale);
                     return scale;
                 }
