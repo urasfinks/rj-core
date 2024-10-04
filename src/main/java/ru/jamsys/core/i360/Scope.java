@@ -3,11 +3,14 @@ package ru.jamsys.core.i360;
 import lombok.Getter;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.TriFunctionThrowing;
+import ru.jamsys.core.flat.util.FileWriteOptions;
+import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilFileResource;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.i360.entity.Entity;
 import ru.jamsys.core.i360.entity.EntityImpl;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,17 +23,28 @@ public class Scope {
     final private List<Scale> listScale = new ArrayList<>();
 
     public void load(String path) throws Throwable {
-        String asString = UtilFileResource.getAsString(path, UtilFileResource.Direction.PROJECT);
-        Map<String, Object> mapOrThrow = UtilJson.getMapOrThrow(asString);
+        fromJson(UtilFileResource.getAsString(path, UtilFileResource.Direction.PROJECT));
+    }
+
+    public void save(String path) throws Throwable {
+        UtilFile.writeBytes(path, toJson().getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
+    }
+
+    public String toJson() {
+        return UtilJson.toStringPretty(this, "{}");
+    }
+
+    public void fromJson(String json) throws Throwable {
+        Map<String, Object> mapOrThrow = UtilJson.getMapOrThrow(json);
         listEntity.addAll(keyLoad(
                 mapOrThrow,
-                "knowledge",
+                "listEntity",
                 EntityImpl.class.getName(),
                 (s, aClass, _) -> Entity.fromJson(s, aClass)
         ));
         listScale.addAll(keyLoad(
                 mapOrThrow,
-                "scale",
+                "listScale",
                 Scale.class.getName(),
                 (_, _, map) -> {
                     Scale scale = new Scale();
@@ -50,8 +64,6 @@ public class Scope {
                         List<String> classifier = (List<String>) map.get("classifier");
                         scale.setClassifier(Context.load(classifier, this));
                     }
-
-                    System.out.println(scale);
                     return scale;
                 }
         ));

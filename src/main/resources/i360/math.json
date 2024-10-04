@@ -1,5 +1,5 @@
 {
-  "knowledge": [
+  "listEntity": [
     {
       "uuid": "k0",
       "data": "0"
@@ -45,7 +45,7 @@
       "data": "число"
     }
   ],
-  "scale": [
+  "listScale": [
     {
       "type": "=>",
       "left": ["k0"],

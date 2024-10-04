@@ -1,13 +1,21 @@
 package ru.jamsys.core.i360;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public enum ScaleType {
 
+    @JsonProperty("=")
     EQUALS("="), // Эквиваленция
+    @JsonProperty("=>")
     FOLLOW("=>"), // Следствие
+    @JsonProperty("~>")
     GENERALIZATION("~>"), // Обобщение
 
+    @JsonProperty("!=")
     NOT_EQUALS("!="),
+    @JsonProperty("!=>")
     NOT_FOLLOW("!=>"),
+    @JsonProperty("!~>")
     NOT_GENERALIZATION("!~>");
 
     final String reduction;

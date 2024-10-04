@@ -9,6 +9,6 @@ public class Main {
 
     public static void main(String[] args) throws Throwable {
         scope.load("i360/math.json");
-        System.out.println(scope.getListEntity());
+        scope.save("math.json");
     }
 }
