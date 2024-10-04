@@ -2,44 +2,39 @@ package ru.jamsys.core.i360.scope;
 
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.TriFunctionThrowing;
-import ru.jamsys.core.flat.util.FileWriteOptions;
-import ru.jamsys.core.flat.util.UtilFile;
-import ru.jamsys.core.flat.util.UtilFileResource;
 import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.i360.Context;
-import ru.jamsys.core.i360.scale.Scale;
-import ru.jamsys.core.i360.scale.ScaleType;
 import ru.jamsys.core.i360.entity.Entity;
 import ru.jamsys.core.i360.entity.EntityImpl;
+import ru.jamsys.core.i360.scale.Scale;
+import ru.jamsys.core.i360.scale.ScaleType;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public interface ScopeLoader extends Scope {
-
-    default void load(String path) throws Throwable {
-        fromJson(UtilFileResource.getAsString(path, UtilFileResource.Direction.PROJECT));
-    }
-
-    default void save(String path) throws Throwable {
-        UtilFile.writeBytes(path, toJson().getBytes(StandardCharsets.UTF_8), FileWriteOptions.CREATE_OR_REPLACE);
-    }
-
-    default String toJson() {
-        return UtilJson.toStringPretty(this, "{}");
-    }
+public interface ScopeJsonDeserialize extends Scope {
 
     default void fromJson(String json) throws Throwable {
         Map<String, Object> mapOrThrow = UtilJson.getMapOrThrow(json);
-        getListEntity().addAll(keyLoad(
+        Map<String, Entity> entityRepository = getEntityRepository();
+
+        List<Entity> _ = forEachFilter(
                 mapOrThrow,
-                "listEntity",
+                "entityRepository",
                 EntityImpl.class.getName(),
-                (s, aClass, _) -> Entity.newInstance(s, aClass)
-        ));
-        getListScale().addAll(keyLoad(
+                (jsonBloc, cls, map) -> entityRepository.computeIfAbsent(
+                        (String) map.get("uuid"),
+                        _ -> {
+                            try {
+                                return Entity.newInstance(jsonBloc, cls);
+                            } catch (Throwable th) {
+                                throw new ForwardException(th);
+                            }
+                        }
+                )
+        );
+
+        getListScale().addAll(forEachFilter(
                 mapOrThrow,
                 "listScale",
                 Scale.class.getName(),
@@ -50,23 +45,23 @@ public interface ScopeLoader extends Scope {
 
                     @SuppressWarnings("unchecked")
                     List<String> left = (List<String>) map.get("left");
-                    scale.setLeft(Context.newInstance(left, this));
+                    scale.setLeft(getContext(left));
 
                     @SuppressWarnings("unchecked")
                     List<String> right = (List<String>) map.get("right");
-                    scale.setRight(Context.newInstance(right, this));
+                    scale.setRight(getContext(right));
 
                     if (map.containsKey("classifier")) {
                         @SuppressWarnings("unchecked")
                         List<String> classifier = (List<String>) map.get("classifier");
-                        scale.setClassifier(Context.newInstance(classifier, this));
+                        scale.setClassifier(getContext(classifier));
                     }
                     return scale;
                 }
         ));
     }
 
-    private <T> List<T> keyLoad(
+    private <T> List<T> forEachFilter(
             Map<String, Object> mapOrThrow,
             String key,
             String defClass,
@@ -90,4 +85,5 @@ public interface ScopeLoader extends Scope {
         }
         return result;
     }
+
 }

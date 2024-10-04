@@ -7,6 +7,8 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.flat.util.UtilJson;
 
+import java.util.Objects;
+
 @Getter
 @Setter
 @ToString
@@ -18,8 +20,29 @@ public class EntityImpl implements Entity {
 
     private String data;
 
+    public EntityImpl() {
+    }
+
+    public EntityImpl(String uuid, String data) {
+        this.uuid = uuid;
+        this.data = data;
+    }
+
     public Entity newInstance(String json) throws Throwable {
         return UtilJson.toObject(json, EntityImpl.class);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        EntityImpl entity = (EntityImpl) object;
+        return Objects.equals(uuid, entity.uuid) && Objects.equals(data, entity.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uuid, data);
     }
 
 }

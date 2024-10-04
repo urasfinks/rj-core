@@ -10,7 +10,7 @@ public class Main {
     public static final Scope scope = new ScopeImpl();
 
     public static void main(String[] args) throws Throwable {
-        scope.load("i360/math.json");
-        scope.save("math.json");
+        scope.read("i360/math.json");
+        scope.write("math.json");
     }
 }
