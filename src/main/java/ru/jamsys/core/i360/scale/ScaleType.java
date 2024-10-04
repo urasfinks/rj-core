@@ -1,4 +1,4 @@
-package ru.jamsys.core.i360;
+package ru.jamsys.core.i360.scale;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

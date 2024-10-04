@@ -7,7 +7,7 @@ public interface Entity {
 
     String getUuid();
 
-    static Entity fromJson(String json, Class<? extends Entity> cls) throws Throwable {
+    static Entity newInstance(String json, Class<? extends Entity> cls) throws Throwable {
         return UtilJson.toObject(json, cls);
     }
 

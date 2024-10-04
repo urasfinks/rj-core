@@ -1,10 +1,11 @@
-package ru.jamsys.core.i360;
+package ru.jamsys.core.i360.scale;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import ru.jamsys.core.i360.Context;
 
 @Getter
 @Setter

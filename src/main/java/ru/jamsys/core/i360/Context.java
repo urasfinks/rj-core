@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.ToString;
 import ru.jamsys.core.i360.entity.Entity;
+import ru.jamsys.core.i360.scope.Scope;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ public class Context {
         this.scope = scope;
     }
 
-    public static Context load(List<String> listUuid, Scope scope) {
+    public static Context newInstance(List<String> listUuid, Scope scope) {
         Context context = new Context(scope);
         List<Entity> list = context.getListEntity();
         listUuid.forEach(s -> list.add(scope.getEntityByUuid(s)));

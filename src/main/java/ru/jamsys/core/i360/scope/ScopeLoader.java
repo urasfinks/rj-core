@@ -1,4 +1,4 @@
-package ru.jamsys.core.i360;
+package ru.jamsys.core.i360.scope;
 
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.TriFunctionThrowing;
@@ -6,6 +6,9 @@ import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilFileResource;
 import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.i360.Context;
+import ru.jamsys.core.i360.scale.Scale;
+import ru.jamsys.core.i360.scale.ScaleType;
 import ru.jamsys.core.i360.entity.Entity;
 import ru.jamsys.core.i360.entity.EntityImpl;
 
@@ -34,7 +37,7 @@ public interface ScopeLoader extends Scope {
                 mapOrThrow,
                 "listEntity",
                 EntityImpl.class.getName(),
-                (s, aClass, _) -> Entity.fromJson(s, aClass)
+                (s, aClass, _) -> Entity.newInstance(s, aClass)
         ));
         getListScale().addAll(keyLoad(
                 mapOrThrow,
@@ -47,16 +50,16 @@ public interface ScopeLoader extends Scope {
 
                     @SuppressWarnings("unchecked")
                     List<String> left = (List<String>) map.get("left");
-                    scale.setLeft(Context.load(left, this));
+                    scale.setLeft(Context.newInstance(left, this));
 
                     @SuppressWarnings("unchecked")
                     List<String> right = (List<String>) map.get("right");
-                    scale.setRight(Context.load(right, this));
+                    scale.setRight(Context.newInstance(right, this));
 
                     if (map.containsKey("classifier")) {
                         @SuppressWarnings("unchecked")
                         List<String> classifier = (List<String>) map.get("classifier");
-                        scale.setClassifier(Context.load(classifier, this));
+                        scale.setClassifier(Context.newInstance(classifier, this));
                     }
                     return scale;
                 }

@@ -1,6 +1,8 @@
 package ru.jamsys.core.i360;
 
 import lombok.Getter;
+import ru.jamsys.core.i360.scope.Scope;
+import ru.jamsys.core.i360.scope.ScopeImpl;
 
 @Getter
 public class Main {
