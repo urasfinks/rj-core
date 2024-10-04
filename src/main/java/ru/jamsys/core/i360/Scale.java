@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class Scale {
 
-    private Classifier classifier;
+    private Context classifier;
 
     private Context left;
 
