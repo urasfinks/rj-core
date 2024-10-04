@@ -7,7 +7,8 @@ public class Main {
 
     public static final Scope scope = new Scope();
 
-    public static void main(String[] args) {
-
+    public static void main(String[] args) throws Throwable {
+        scope.load("i360/math.json");
+        System.out.println(scope.getListEntity());
     }
 }
