@@ -1,6 +1,7 @@
 package ru.jamsys.core.i360.entity;
 
 import lombok.Getter;
+import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.i360.Context;
 
 // Преобразователь контекста, должен быть идентпотентен (результат должен быть неизменяемым с течением времени)
@@ -12,6 +13,10 @@ public class Adapter implements Entity {
 
     public Context transform(Context context) {
         return null;
+    }
+
+    public Entity newInstance(String json) throws Throwable {
+        return UtilJson.toObject(json, Adapter.class);
     }
 
 }

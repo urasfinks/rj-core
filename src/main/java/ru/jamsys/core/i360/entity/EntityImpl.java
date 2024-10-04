@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import ru.jamsys.core.flat.util.UtilJson;
 
 @Getter
 @Setter
@@ -16,5 +17,9 @@ public class EntityImpl implements Entity {
     private String uuid;
 
     private String data;
+
+    public Entity newInstance(String json) throws Throwable {
+        return UtilJson.toObject(json, EntityImpl.class);
+    }
 
 }
