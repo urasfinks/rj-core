@@ -9,13 +9,15 @@ import java.util.Map;
 
 public interface Scope {
 
-    Map<String, Entity> getEntityRepository();
+    Map<String, Entity> getMapEntity();
 
     List<Scale> getListScale();
 
-    Map<Context, Context> getContextRepository();
+    Map<Context, Context> getMapContext();
 
     Context getContext(List<String> listUuid);
+
+    boolean containsContext(Context context);
 
     String toJson();
 
@@ -24,5 +26,11 @@ public interface Scope {
     void read(String path) throws Throwable;
 
     void write(String path) throws Throwable;
+
+    List<Scale> getScaleByClassifier(Context context);
+
+    List<Scale> getScaleByLeft(Context context);
+
+    List<Scale> getScaleByRight(Context context);
 
 }

@@ -16,7 +16,7 @@ public interface ScopeJsonDeserialize extends Scope {
 
     default void fromJson(String json) throws Throwable {
         Map<String, Object> mapOrThrow = UtilJson.getMapOrThrow(json);
-        Map<String, Entity> entityRepository = getEntityRepository();
+        Map<String, Entity> entityRepository = getMapEntity();
 
         List<Entity> _ = forEachFilter(
                 mapOrThrow,

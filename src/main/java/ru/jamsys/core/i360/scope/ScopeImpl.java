@@ -12,13 +12,16 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-public class ScopeImpl implements Scope, ScopeJsonDeserialize, ScopeJsonSerialize, ScopeIO, ScopeContextRepository {
+public class ScopeImpl implements Scope, ScopeJsonDeserialize, ScopeJsonSerialize, ScopeIO, ScopeMapContext, ScopeListEntity {
 
-    final private Map<String, Entity> entityRepository = new HashMap<>();
+    // key: uuid; value: Entity
+    final private Map<String, Entity> mapEntity = new HashMap<>();
 
+    // Список весов
     final private List<Scale> listScale = new ArrayList<>();
 
+    // Все контексты уникальны в пределах репозитория
     @JsonIgnore
-    final private Map<Context, Context> contextRepository = new HashMap<>();
+    final private Map<Context, Context> mapContext = new HashMap<>();
 
 }
