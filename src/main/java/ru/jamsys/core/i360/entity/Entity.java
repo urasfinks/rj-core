@@ -7,7 +7,9 @@ public interface Entity {
 
     Entity newInstance(String json) throws Throwable;
 
-    static Entity newInstance(String json, Class<? extends Entity> cls) throws Throwable {
+    static Entity newInstance(String json, String className) throws Throwable {
+        @SuppressWarnings("unchecked")
+        Class<? extends Entity> cls = (Class<? extends Entity>) Class.forName(className);
         return cls.getConstructor().newInstance().newInstance(json);
     }
 

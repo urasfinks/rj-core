@@ -1,14 +1,13 @@
 package ru.jamsys.core.i360.scope;
 
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.functional.TriFunctionThrowing;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.i360.entity.Entity;
 import ru.jamsys.core.i360.entity.EntityImpl;
 import ru.jamsys.core.i360.scale.Scale;
 import ru.jamsys.core.i360.scale.ScaleType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,72 +17,53 @@ public interface ScopeJsonDeserialize extends Scope {
         Map<String, Object> mapOrThrow = UtilJson.getMapOrThrow(json);
         Map<String, Entity> entityRepository = getMapEntity();
 
-        List<Entity> _ = forEachFilter(
-                mapOrThrow,
-                "entityRepository",
-                EntityImpl.class.getName(),
-                (jsonBloc, cls, map) -> entityRepository.computeIfAbsent(
-                        (String) map.get("uuid"),
-                        _ -> {
-                            try {
-                                return Entity.newInstance(jsonBloc, cls);
-                            } catch (Throwable th) {
-                                throw new ForwardException(th);
-                            }
-                        }
-                )
-        );
+        @SuppressWarnings("unchecked")
+        Map<String, Object> jsonEntityRepository = (Map<String, Object>) mapOrThrow.get("mapEntity");
 
-        getListScale().addAll(forEachFilter(
-                mapOrThrow,
-                "listScale",
-                Scale.class.getName(),
-                (_, _, map) -> {
-                    Scale scale = new Scale();
-                    scale.setType(ScaleType.valueOfReduction((String) map.get("type")));
-                    scale.setStability(Double.parseDouble(map.get("stability") + ""));
-
-                    @SuppressWarnings("unchecked")
-                    List<String> left = (List<String>) map.get("left");
-                    scale.setLeft(getContext(left));
-
-                    @SuppressWarnings("unchecked")
-                    List<String> right = (List<String>) map.get("right");
-                    scale.setRight(getContext(right));
-
-                    if (map.containsKey("classifier")) {
+        jsonEntityRepository.forEach((uuid, value) -> {
+            try {
+                entityRepository.computeIfAbsent(uuid, _ -> {
+                    try {
                         @SuppressWarnings("unchecked")
-                        List<String> classifier = (List<String>) map.get("classifier");
-                        scale.setClassifier(getContext(classifier));
+                        Map<String, Object> map = (Map<String, Object>) value;
+                        return Entity.newInstance(
+                                UtilJson.toString(new HashMapBuilder<>(map).append("uuid", uuid)),
+                                (String) map.getOrDefault("class", EntityImpl.class.getName())
+                        );
+                    } catch (Throwable th) {
+                        throw new ForwardException(th);
                     }
-                    return scale;
-                }
-        ));
-    }
+                });
+            } catch (Throwable e) {
+                throw new ForwardException(e);
+            }
+        });
 
-    private <T> List<T> forEachFilter(
-            Map<String, Object> mapOrThrow,
-            String key,
-            String defClass,
-            TriFunctionThrowing<String, Class<? extends T>, Map<String, Object>, T> fn
-    ) {
-        List<T> result = new ArrayList<>();
-        if (mapOrThrow.containsKey(key)) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> jsonListScale = (List<Map<String, Object>>) mapOrThrow.get("listScale");
+
+        List<Scale> listScale = getListScale();
+
+        jsonListScale.forEach(map -> {
+            Scale scale = new Scale();
+            scale.setType(ScaleType.valueOfReduction((String) map.get("type")));
+            scale.setStability(Double.parseDouble(map.get("stability") + ""));
+
             @SuppressWarnings("unchecked")
-            List<Map<String, Object>> list = (List<Map<String, Object>>) mapOrThrow.get(key);
-            list.forEach(stringObjectMap -> {
-                try {
-                    @SuppressWarnings("unchecked")
-                    Class<? extends T> cls = (Class<? extends T>) Class.forName(
-                            (String) stringObjectMap.getOrDefault("class", defClass)
-                    );
-                    result.add(fn.apply(UtilJson.toString(stringObjectMap), cls, stringObjectMap));
-                } catch (Throwable th) {
-                    throw new ForwardException(th);
-                }
-            });
-        }
-        return result;
+            List<String> left = (List<String>) map.get("left");
+            scale.setLeft(getContext(left));
+
+            @SuppressWarnings("unchecked")
+            List<String> right = (List<String>) map.get("right");
+            scale.setRight(getContext(right));
+
+            if (map.containsKey("classifier")) {
+                @SuppressWarnings("unchecked")
+                List<String> classifier = (List<String>) map.get("classifier");
+                scale.setClassifier(getContext(classifier));
+            }
+            listScale.add(scale);
+        });
     }
 
 }

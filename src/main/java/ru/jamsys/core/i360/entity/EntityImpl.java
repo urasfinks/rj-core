@@ -1,19 +1,20 @@
 package ru.jamsys.core.i360.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilJson;
 
+import java.util.Map;
 import java.util.Objects;
 
 @Getter
 @Setter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"uuid", "data"})
 public class EntityImpl implements Entity {
 
     private String uuid;
@@ -44,6 +45,12 @@ public class EntityImpl implements Entity {
     @Override
     public int hashCode() {
         return Objects.hash(uuid, data);
+    }
+
+    @SuppressWarnings("unused")
+    @JsonValue
+    public Map<String, String> toValue() {
+        return new HashMapBuilder<String, String>().append("data", data);
     }
 
 }
