@@ -1,5 +1,7 @@
 package ru.jamsys.core.i360.entity;
 
+import ru.jamsys.core.i360.scope.Scope;
+
 import java.util.Map;
 
 // Единица информации (объект)
@@ -9,11 +11,11 @@ public interface Entity {
 
     String getUuid();
 
-    static Entity newInstance(Map<String, Object> map) throws Throwable {
+    static Entity newInstance(Map<String, Object> map, Scope scope) throws Throwable {
         String className = (String) map.getOrDefault("class", EntityImpl.class.getSimpleName());
         @SuppressWarnings("unchecked")
         Class<? extends Entity> cls = (Class<? extends Entity>) Class.forName(path + className);
-        return cls.getConstructor(Map.class).newInstance(map);
+        return cls.getConstructor(Map.class, Scope.class).newInstance(map, scope);
     }
 
 }

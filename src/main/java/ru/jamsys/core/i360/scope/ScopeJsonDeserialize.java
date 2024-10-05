@@ -25,7 +25,7 @@ public interface ScopeJsonDeserialize extends Scope {
                     try {
                         @SuppressWarnings("unchecked")
                         Map<String, Object> map = (Map<String, Object>) value;
-                        return Entity.newInstance(new HashMapBuilder<>(map).append("uuid", uuid));
+                        return Entity.newInstance(new HashMapBuilder<>(map).append("uuid", uuid), this);
                     } catch (Throwable th) {
                         throw new ForwardException(th);
                     }

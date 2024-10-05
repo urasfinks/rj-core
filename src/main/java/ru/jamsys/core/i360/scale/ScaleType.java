@@ -1,21 +1,15 @@
 package ru.jamsys.core.i360.scale;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ScaleType {
 
-    @JsonProperty("=")
     EQUALS("="), // Эквиваленция
-    @JsonProperty("=>")
     FOLLOW("=>"), // Следствие
-    @JsonProperty("~>")
     GENERALIZATION("~>"), // Обобщение
 
-    @JsonProperty("!=")
     NOT_EQUALS("!="),
-    @JsonProperty("!=>")
     NOT_FOLLOW("!=>"),
-    @JsonProperty("!~>")
     NOT_GENERALIZATION("!~>");
 
     final String reduction;
@@ -31,6 +25,12 @@ public enum ScaleType {
             }
         }
         throw new RuntimeException("ScaleType.valueOf(" + reduction + ") not found");
+    }
+
+    @SuppressWarnings("unused")
+    @JsonValue
+    public String toValue() {
+        return reduction;
     }
 
 }

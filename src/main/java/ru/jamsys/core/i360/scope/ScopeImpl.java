@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-public class ScopeImpl implements Scope, ScopeJsonDeserialize, ScopeJsonSerialize, ScopeIO, ScopeMapContext, ScopeListEntity {
+public class ScopeImpl implements Scope, ScopeJsonDeserialize, ScopeJsonSerialize, ScopeIO, ScopeMapContext, ScopeListScale {
 
     // key: uuid; value: Entity
     final private Map<String, Entity> mapEntity = new HashMap<>();
