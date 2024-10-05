@@ -3,7 +3,6 @@ package ru.jamsys.core.i360.entity.adapter;
 import lombok.Getter;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.i360.Context;
-import ru.jamsys.core.i360.entity.Entity;
 import ru.jamsys.core.i360.scope.Scope;
 
 import java.util.List;
@@ -12,15 +11,15 @@ import java.util.Map;
 @Getter
 public class Selection extends AbstractAdapter {
 
-    private Context entity;
+    private final Context entity;
 
     private Integer min;
 
     private Integer max;
 
-    private SelectionOperationType type;
+    private final SelectionOperationType type;
 
-    private String cls;
+    private final String cls;
 
     public Selection(Map<String, Object> map, Scope scope) {
         super(map, scope);
