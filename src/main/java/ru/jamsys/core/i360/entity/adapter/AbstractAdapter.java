@@ -10,7 +10,7 @@ import java.util.Map;
 @Getter
 public abstract class AbstractAdapter implements Adapter {
 
-    private String uuid;
+    private final String uuid;
 
     public AbstractAdapter(Map<String, Object> map) {
         this.uuid = map.containsKey("uuid") ? (String) map.get("uuid") : java.util.UUID.randomUUID().toString();

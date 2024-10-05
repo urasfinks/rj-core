@@ -16,7 +16,7 @@ import java.util.Objects;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EntityImpl implements Entity {
 
-    private String uuid;
+    final private String uuid;
 
     private String data;
 
