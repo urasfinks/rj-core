@@ -4,7 +4,6 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.i360.entity.Entity;
-import ru.jamsys.core.i360.entity.EntityImpl;
 import ru.jamsys.core.i360.scale.Scale;
 import ru.jamsys.core.i360.scale.ScaleType;
 
@@ -26,10 +25,7 @@ public interface ScopeJsonDeserialize extends Scope {
                     try {
                         @SuppressWarnings("unchecked")
                         Map<String, Object> map = (Map<String, Object>) value;
-                        return Entity.newInstance(
-                                UtilJson.toString(new HashMapBuilder<>(map).append("uuid", uuid)),
-                                (String) map.getOrDefault("class", EntityImpl.class.getName())
-                        );
+                        return Entity.newInstance(new HashMapBuilder<>(map).append("uuid", uuid));
                     } catch (Throwable th) {
                         throw new ForwardException(th);
                     }

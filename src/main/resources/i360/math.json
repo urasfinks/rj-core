@@ -32,9 +32,33 @@
     },
     "k9" : {
       "data" : "9"
+    },
+    "f0": {
+      "class": "Adapter",
+      "subClass": "RemoveEntity",
+      "entity": ["k0"],
+      "min": null,
+      "max": null
+    },
+    "f1": {
+      "class": "Adapter",
+      "subClass": "ForwardEntity",
+      "entity": ["k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8", "k9"],
+      "min": null,
+      "max": null
     }
   },
   "listScale" : [
+    {
+      "type" : "=",
+      "left" : [
+        "f0", "k5"
+      ],
+      "right" : [
+        "k5"
+      ],
+      "stability" : 1.0
+    },
     {
       "type" : "=>",
       "left" : [

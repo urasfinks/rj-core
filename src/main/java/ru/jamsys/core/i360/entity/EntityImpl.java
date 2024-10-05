@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.flat.util.UtilJson;
 
 import java.util.Map;
 import java.util.Objects;
@@ -21,17 +20,14 @@ public class EntityImpl implements Entity {
 
     private String data;
 
-    @SuppressWarnings("unused")
-    public EntityImpl() {
+    public EntityImpl(Map<String, Object> map) {
+        this.uuid = map.containsKey("uuid") ? (String) map.get("uuid") : java.util.UUID.randomUUID().toString();
+        this.data = (String) map.get("data");
     }
 
     public EntityImpl(String uuid, String data) {
         this.uuid = uuid;
         this.data = data;
-    }
-
-    public Entity newInstance(String json) throws Throwable {
-        return UtilJson.toObject(json, EntityImpl.class);
     }
 
     @Override
