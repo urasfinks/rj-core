@@ -16,7 +16,6 @@ class RemoveTest {
 
     @Test
     public void test() {
-        Remove remove = new Remove();
         // Удалить из всего контекста ["0", "0", "1", "2", "0"] mask ["0"] => ["1", "2"]
         Context input = new Context();
         input.getListEntity().add(new EntityImpl(null, "0"));
@@ -32,7 +31,7 @@ class RemoveTest {
         result.getListEntity().add(new EntityImpl(null, "1"));
         result.getListEntity().add(new EntityImpl(null, "2"));
 
-        Assertions.assertEquals(result, remove.transform(input, selection));
+        Assertions.assertEquals(result, new Remove().transform(input, selection));
 
     }
 
