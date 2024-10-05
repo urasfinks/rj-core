@@ -20,6 +20,7 @@ public class EntityImpl implements Entity {
 
     private String data;
 
+    @SuppressWarnings("unused") // Через рефлексию вызывается
     public EntityImpl(Map<String, Object> map) {
         this.uuid = map.containsKey("uuid") ? (String) map.get("uuid") : java.util.UUID.randomUUID().toString();
         this.data = (String) map.get("data");
