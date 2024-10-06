@@ -5,19 +5,19 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.i360.Context;
 import ru.jamsys.core.i360.entity.EntityImpl;
 
-class RemoveWhileTest {
+class RemoveLeftWhileTest {
 
     @Test
     public void test() {
         // Удалять пока встречаются ["0", "0", "1", "2", "0"] mask ["0"] => ["1", "2", "0"]
         Context input = new Context();
         input.getListEntity().add(new EntityImpl(null, "0"));
-        input.getListEntity().add(new EntityImpl(null, "0"));
-        input.getListEntity().add(new EntityImpl(null, "1"));
-        input.getListEntity().add(new EntityImpl(null, "2"));
-        input.getListEntity().add(new EntityImpl(null, "0"));
 
         Context selection = new Context();
+        selection.getListEntity().add(new EntityImpl(null, "0"));
+        selection.getListEntity().add(new EntityImpl(null, "0"));
+        selection.getListEntity().add(new EntityImpl(null, "1"));
+        selection.getListEntity().add(new EntityImpl(null, "2"));
         selection.getListEntity().add(new EntityImpl(null, "0"));
 
         Context result = new Context();
@@ -25,7 +25,7 @@ class RemoveWhileTest {
         result.getListEntity().add(new EntityImpl(null, "2"));
         result.getListEntity().add(new EntityImpl(null, "0"));
 
-        Assertions.assertEquals(result, new RemoveWhile().transform(input, selection));
+        Assertions.assertEquals(result, new RemoveLeftWhile().transform(input, selection));
 
     }
 

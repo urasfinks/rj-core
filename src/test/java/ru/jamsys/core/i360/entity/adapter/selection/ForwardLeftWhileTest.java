@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.i360.Context;
 import ru.jamsys.core.i360.entity.EntityImpl;
 
-class WithoutLeftTest {
+class ForwardLeftWhileTest {
 
     @Test
     public void test() {
-        // ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["4", "5"]
+        // Пробрасывать пока встречаются ["2", "1", "2", "3"] mask ["2", "3"] => ["2"]
         Context input = new Context();
-        input.getListEntity().add(new EntityImpl(null, "0"));
+        input.getListEntity().add(new EntityImpl(null, "2"));
         input.getListEntity().add(new EntityImpl(null, "1"));
         input.getListEntity().add(new EntityImpl(null, "2"));
         input.getListEntity().add(new EntityImpl(null, "3"));
@@ -19,14 +19,11 @@ class WithoutLeftTest {
         Context selection = new Context();
         selection.getListEntity().add(new EntityImpl(null, "2"));
         selection.getListEntity().add(new EntityImpl(null, "3"));
-        selection.getListEntity().add(new EntityImpl(null, "4"));
-        selection.getListEntity().add(new EntityImpl(null, "5"));
 
         Context result = new Context();
-        result.getListEntity().add(new EntityImpl(null, "4"));
-        result.getListEntity().add(new EntityImpl(null, "5"));
+        result.getListEntity().add(new EntityImpl(null, "2"));
 
-        Assertions.assertEquals(result, new WithoutLeft().transform(input, selection));
+        Assertions.assertEquals(result, new ForwardLeftWhile().transform(input, selection));
 
     }
 

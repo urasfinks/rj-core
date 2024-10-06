@@ -5,7 +5,7 @@ import ru.jamsys.core.i360.entity.Entity;
 
 import java.util.List;
 
-public class RemoveWhile implements ContextSelection {
+public class RemoveLeftWhile implements ContextSelection {
 
     @Override
     public Context transform(Context context, Context contextSelection) {
@@ -13,10 +13,10 @@ public class RemoveWhile implements ContextSelection {
         List<Entity> contextSelectionEntity = contextSelection.getListEntity();
         Context result = new Context();
         List<Entity> listEntityResult = result.getListEntity();
-        listEntityResult.addAll(contextEntity);
+        listEntityResult.addAll(contextSelectionEntity);
         Entity[] array = listEntityResult.toArray(new Entity[0]);
         for (Entity entity : array) {
-            if (contextSelectionEntity.contains(entity)) {
+            if (contextEntity.contains(entity)) {
                 listEntityResult.removeFirst();
             } else {
                 break;

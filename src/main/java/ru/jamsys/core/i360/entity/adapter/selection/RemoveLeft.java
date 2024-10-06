@@ -5,7 +5,7 @@ import ru.jamsys.core.i360.entity.Entity;
 
 import java.util.List;
 
-public class WithoutLeft implements ContextSelection {
+public class RemoveLeft implements ContextSelection {
 
     @Override
     public Context transform(Context context, Context contextSelection) {
@@ -13,8 +13,11 @@ public class WithoutLeft implements ContextSelection {
         List<Entity> contextSelectionEntity = contextSelection.getListEntity();
         Context result = new Context();
         List<Entity> listEntityResult = result.getListEntity();
-        listEntityResult.addAll(contextSelectionEntity);
-        contextEntity.forEach(listEntityResult::remove);
+        contextSelectionEntity.forEach(entity -> {
+            if (!contextEntity.contains(entity)) {
+                listEntityResult.add(entity);
+            }
+        });
         return listEntityResult.isEmpty() ? null : result;
     }
 

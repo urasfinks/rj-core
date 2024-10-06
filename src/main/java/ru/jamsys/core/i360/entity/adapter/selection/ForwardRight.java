@@ -5,7 +5,7 @@ import ru.jamsys.core.i360.entity.Entity;
 
 import java.util.List;
 
-public class Remove implements ContextSelection {
+public class ForwardRight implements ContextSelection {
 
     @Override
     public Context transform(Context context, Context contextSelection) {
@@ -13,8 +13,8 @@ public class Remove implements ContextSelection {
         List<Entity> contextSelectionEntity = contextSelection.getListEntity();
         Context result = new Context();
         List<Entity> listEntityResult = result.getListEntity();
-        contextEntity.forEach(entity -> {
-            if (!contextSelectionEntity.contains(entity)) {
+        contextSelectionEntity.forEach(entity -> {
+            if (contextEntity.contains(entity)) {
                 listEntityResult.add(entity);
             }
         });

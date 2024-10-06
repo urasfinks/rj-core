@@ -6,17 +6,21 @@ import ru.jamsys.core.i360.Context;
 import ru.jamsys.core.i360.entity.adapter.selection.*;
 
 public enum SelectionOperationType implements CamelNormalization {
-    REMOVE(new Remove()), // Удалить из всего контекста ["0", "0", "1", "2", "0"] mask ["0"] => ["1", "2"]
-    REMOVE_WHILE(new RemoveWhile()), // Удалять пока встречаются ["0", "0", "1", "2", "0"] mask ["0"] => ["1", "2", "0"]
-    FORWARD(new Forward()), // Пробросить все которые есть ["2", "1", "2", "3"] mask ["2", "3"] => ["2", "2", "3"]
-    FORWARD_WHILE(new ForwardWhile()), // Пробрасывать пока встречаются ["2", "1", "2", "3"] mask ["2", "3"] => ["2"]
-    REVERSE(new Reverse()), // Задом на перёд, для решения задач удаления с конца всех нулей например
-    MAP(new Map()), // Заменить ["2", "1", "2", "3"] mask ["1", "2"]/["!", "-"] => ["-", "!", "-", "3"]
+
+    REMOVE_RIGHT(new RemoveRight()), // Удалить из всего контекста ["0", "0", "1", "2", "0"] mask ["0"] => ["1", "2"]
+    REMOVE_LEFT(new RemoveLeft()), // ["0", "1", "2", "3"] mask ["2", "2", "3", "4", "5"] => ["4", "5"]
+    REMOVE_RIGHT_WHILE(new RemoveRightWhile()), // Удалять пока встречаются ["0", "0", "1", "2", "0"] mask ["0"] => ["1", "2", "0"]
+    REMOVE_LEFT_WHILE(new RemoveLeftWhile()), // ["0"] mask ["0", "0", "1", "2", "0"] => ["1", "2", "0"]
+    FORWARD_LEFT(new ForwardLeft()), // Пробросить все которые есть ["2", "1", "2", "3"] mask ["2", "3"] => ["2", "2", "3"]
+    FORWARD_RIGHT(new ForwardRight()), // ["2", "3"] mask ["2", "1", "2", "3"] => ["2", "2", "3"]
+    FORWARD_LEFT_WHILE(new ForwardLeftWhile()), // ["2", "1", "2", "3"] mask ["2", "3"] => ["2"]
+    FORWARD_RIGHT_WHILE(new ForwardRightWhile()), // ["2", "3"] mask ["2", "1", "2", "3"] => ["2"]
+    MAP_LEFT(new MapLeft()), // Заменить ["2", "1", "2", "3"] mask ["1", "!", "2", "-"] => ["-", "!", "-", "3"]
+    MAP_RIGHT(new MapRight()),   // ["1", "!", "2", "-"] mask ["2", "1", "2", "3"]  => ["-", "!", "-", "3"]
     ADD(new Add()), // Добавить ["1", "2"] mask ["3"] => ["1", "2", "3"]
     INTERSECTION(new Intersection()), // Пересечение множеств ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["2", "3"]
-    WITHOUT_INTERSECTION(null), // Пересечение множеств ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["0", "1", "4","5"]
-    WITHOUT_LEFT(new WithoutLeft()), // ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["4", "5"]
-    WITHOUT_RIGHT(null); // ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["0", "1"]
+    WITHOUT_INTERSECTION(null), // Оба множества без пересечения ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["0", "1", "4","5"]
+    REVERSE(new Reverse()); // Задом на перёд, для решения задач удаления с конца всех нулей например
 
     final private ContextSelection adapter;
 
