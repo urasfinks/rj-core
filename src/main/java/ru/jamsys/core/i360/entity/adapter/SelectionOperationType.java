@@ -13,7 +13,10 @@ public enum SelectionOperationType implements CamelNormalization {
     REVERSE(new Reverse()), // Задом на перёд, для решения задач удаления с конца всех нулей например
     MAP(new Map()), // Заменить ["2", "1", "2", "3"] mask ["1", "2"]/["!", "-"] => ["-", "!", "-", "3"]
     ADD(new Add()), // Добавить ["1", "2"] mask ["3"] => ["1", "2", "3"]
-    INTERSECTION(new Intersection()); // Пересечение множеств ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["2", "3"]
+    INTERSECTION(new Intersection()), // Пересечение множеств ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["2", "3"]
+    WITHOUT_INTERSECTION(null), // Пересечение множеств ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["0", "1", "4","5"]
+    WITHOUT_LEFT(new WithoutLeft()), // ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["4", "5"]
+    WITHOUT_RIGHT(null); // ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["0", "1"]
 
     final private ContextSelection adapter;
 
