@@ -6,7 +6,7 @@ import ru.jamsys.core.i360.entity.Entity;
 import java.util.HashMap;
 import java.util.List;
 
-public class MapLeft implements ContextSelection {
+public class MapLeft implements SetOperator {
 
     @Override
     public Context transform(Context context, Context contextSelection) {

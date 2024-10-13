@@ -5,7 +5,7 @@ import ru.jamsys.core.extension.CamelNormalization;
 import ru.jamsys.core.i360.Context;
 import ru.jamsys.core.i360.entity.adapter.selection.*;
 
-public enum SelectionOperationType implements CamelNormalization {
+public enum SetEntityOperator implements CamelNormalization {
 
     REMOVE_RIGHT(new RemoveRight()), // Удалить из всего контекста ["0", "0", "1", "2", "0"] mask ["0"] => ["1", "2"]
     REMOVE_LEFT(new RemoveLeft()), // ["0", "1", "2", "3"] mask ["2", "2", "3", "4", "5"] => ["4", "5"]
@@ -22,9 +22,9 @@ public enum SelectionOperationType implements CamelNormalization {
     WITHOUT_INTERSECTION(null), // Оба множества без пересечения ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["0", "1", "4","5"]
     REVERSE(new Reverse()); // Задом на перёд, для решения задач удаления с конца всех нулей например
 
-    final private ContextSelection adapter;
+    final private SetOperator adapter;
 
-    SelectionOperationType(ContextSelection adapter) {
+    SetEntityOperator(SetOperator adapter) {
         this.adapter = adapter;
     }
 
@@ -32,11 +32,11 @@ public enum SelectionOperationType implements CamelNormalization {
         return adapter.transform(context, contextSelection);
     }
 
-    static SelectionOperationType valueOfCamelCase(String type) {
-        SelectionOperationType[] values = values();
-        for (SelectionOperationType selectionOperationType : values) {
-            if (selectionOperationType.getNameCamel().equals(type)) {
-                return selectionOperationType;
+    static SetEntityOperator valueOfCamelCase(String type) {
+        SetEntityOperator[] values = values();
+        for (SetEntityOperator setEntityOperator : values) {
+            if (setEntityOperator.getNameCamel().equals(type)) {
+                return setEntityOperator;
             }
         }
         return null;

@@ -34,14 +34,14 @@
       "data" : "9"
     },
     "f0": {
-      "class": "adapter.Selection",
+      "class": "adapter.SetEntity",
       "type": "RemoveWhile",
       "entity": ["k0"],
       "min": null,
       "max": null
     },
     "f1": {
-      "class": "adapter.Selection",
+      "class": "adapter.SetEntity",
       "type": "Forward",
       "entity": ["k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8", "k9"],
       "min": null,

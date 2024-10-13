@@ -5,7 +5,7 @@ import ru.jamsys.core.i360.entity.Entity;
 
 import java.util.List;
 
-public class RemoveLeft implements ContextSelection {
+public class RemoveLeft implements SetOperator {
 
     @Override
     public Context transform(Context context, Context contextSelection) {

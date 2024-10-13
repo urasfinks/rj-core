@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-public class Selection extends AbstractAdapter {
+public class Sequence extends AbstractAdapter {
 
     private final Context entity;
 
@@ -17,11 +17,9 @@ public class Selection extends AbstractAdapter {
 
     private Integer max;
 
-    private final SelectionOperationType type;
-
     private final String cls;
 
-    public Selection(Map<String, Object> map, Scope scope) {
+    public Sequence(Map<String, Object> map, Scope scope) {
         super(map, scope);
 
         @SuppressWarnings("unchecked")
@@ -35,7 +33,6 @@ public class Selection extends AbstractAdapter {
             max = Integer.parseInt(map.get("max") + "");
         }
         this.cls = (String) map.get("class");
-        this.type = SelectionOperationType.valueOfCamelCase((String) map.get("type"));
     }
 
     @Override
@@ -48,9 +45,9 @@ public class Selection extends AbstractAdapter {
         return new HashMapBuilder<String, Object>()
                 .append("class", cls)
                 .append("entity", entity)
-                .append("type", type)
                 .append("min", max)
-                .append("max", max);
+                .append("max", max)
+                ;
     }
 
 }

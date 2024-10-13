@@ -5,7 +5,7 @@ import ru.jamsys.core.i360.entity.Entity;
 
 import java.util.List;
 
-public class ForwardRight implements ContextSelection {
+public class ForwardRight implements SetOperator {
 
     @Override
     public Context transform(Context context, Context contextSelection) {
