@@ -1,4 +1,4 @@
-package ru.jamsys.core.i360.entity.adapter.selection;
+package ru.jamsys.core.i360.entity.adapter.set;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -1,11 +1,11 @@
-package ru.jamsys.core.i360.entity.adapter.selection;
+package ru.jamsys.core.i360.entity.adapter.set;
 
 import ru.jamsys.core.i360.Context;
 import ru.jamsys.core.i360.entity.Entity;
 
 import java.util.List;
 
-public class RemoveLeft implements SetOperator {
+public class RemoveRight implements SetOperator {
 
     @Override
     public Context transform(Context context, Context contextSelection) {
@@ -13,8 +13,8 @@ public class RemoveLeft implements SetOperator {
         List<Entity> contextSelectionEntity = contextSelection.getListEntity();
         Context result = new Context();
         List<Entity> listEntityResult = result.getListEntity();
-        contextSelectionEntity.forEach(entity -> {
-            if (!contextEntity.contains(entity)) {
+        contextEntity.forEach(entity -> {
+            if (!contextSelectionEntity.contains(entity)) {
                 listEntityResult.add(entity);
             }
         });

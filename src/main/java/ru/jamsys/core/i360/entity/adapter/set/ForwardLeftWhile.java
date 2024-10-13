@@ -1,11 +1,11 @@
-package ru.jamsys.core.i360.entity.adapter.selection;
+package ru.jamsys.core.i360.entity.adapter.set;
 
 import ru.jamsys.core.i360.Context;
 import ru.jamsys.core.i360.entity.Entity;
 
 import java.util.List;
 
-public class ForwardRight implements SetOperator {
+public class ForwardLeftWhile implements SetOperator {
 
     @Override
     public Context transform(Context context, Context contextSelection) {
@@ -13,11 +13,13 @@ public class ForwardRight implements SetOperator {
         List<Entity> contextSelectionEntity = contextSelection.getListEntity();
         Context result = new Context();
         List<Entity> listEntityResult = result.getListEntity();
-        contextSelectionEntity.forEach(entity -> {
-            if (contextEntity.contains(entity)) {
+        for (Entity entity : contextEntity) {
+            if (contextSelectionEntity.contains(entity)) {
                 listEntityResult.add(entity);
+            } else {
+                break;
             }
-        });
+        }
         return listEntityResult.isEmpty() ? null : result;
     }
 

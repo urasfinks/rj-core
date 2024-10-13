@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class GenerateTemplate {
+public class GenerateSequence {
     public static void generate(List<Context> listContext) {
         Map<List<Entity>, AtomicInteger> x = new HashMap<>();
         listContext.forEach(context -> {

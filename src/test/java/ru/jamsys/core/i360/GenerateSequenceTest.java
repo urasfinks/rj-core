@@ -7,7 +7,7 @@ import ru.jamsys.core.i360.entity.EntityImpl;
 
 import java.util.ArrayList;
 
-class GenerateTemplateTest {
+class GenerateSequenceTest {
 
     @Test
     void generate() {
@@ -42,7 +42,7 @@ class GenerateTemplateTest {
         listContext.add(ctx2);
         listContext.add(ctx3);
         listContext.add(ctx4);
-        GenerateTemplate.generate(listContext);
+        GenerateSequence.generate(listContext);
 
     }
 
@@ -55,8 +55,8 @@ class GenerateTemplateTest {
         ArrayList<Entity> l2 = new ArrayList<>();
         l2.add(new EntityImpl(null, "0"));
 
-        Assertions.assertEquals(2, GenerateTemplate.removeContains(l1, l2));
-        Assertions.assertNull(GenerateTemplate.removeContains(l2, l1));
+        Assertions.assertEquals(2, GenerateSequence.removeContains(l1, l2));
+        Assertions.assertNull(GenerateSequence.removeContains(l2, l1));
 
     }
 
@@ -68,8 +68,8 @@ class GenerateTemplateTest {
         ArrayList<String> l2 = new ArrayList<>();
         l2.add("b");
         l2.add("c");
-        Assertions.assertEquals("[[a, b], [a, c]]", GenerateTemplate.cartesian(ArrayList::new, l1, l2).toString());
-        Assertions.assertEquals("[[b, b], [b, c], [c, b], [c, c]]",GenerateTemplate.cartesian(ArrayList::new, l2, l2).toString());
+        Assertions.assertEquals("[[a, b], [a, c]]", GenerateSequence.cartesian(ArrayList::new, l1, l2).toString());
+        Assertions.assertEquals("[[b, b], [b, c], [c, b], [c, c]]", GenerateSequence.cartesian(ArrayList::new, l2, l2).toString());
 
     }
 }
