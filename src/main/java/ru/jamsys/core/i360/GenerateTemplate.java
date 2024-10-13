@@ -20,28 +20,6 @@ public class GenerateTemplate {
                 atomicInteger.incrementAndGet();
             });
         });
-        //System.out.println(listContext.size());
-        UtilRisc.forEach(null, x, (entities, atomicInteger) -> {
-            if (atomicInteger.get() >= listContext.size()) {
-                //System.out.println(entities);
-                //System.out.println(atomicInteger.get());
-            }
-        });
-
-
-//        List<List<List<Entity>>> cartesian = cartesian(ArrayList::new, lists, lists);
-//        for (List<List<Entity>> e : cartesian) {
-//            List<Entity> first = e.getFirst();
-//            List<Entity> last = e.getLast();
-//            if (!first.equals(last)) {
-//                Integer i = removeContains(first, last);
-//                if (i != null) {
-//                    System.out.println("---");
-//                    System.out.println(first);
-//                    System.out.println(last);
-//                }
-//            }
-//        }
 
         System.out.println(UtilJson.toStringPretty(x, "[]"));
         ArrayList<List<Entity>> lists = new ArrayList<>(x.keySet());
