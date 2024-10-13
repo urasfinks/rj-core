@@ -56,7 +56,7 @@ class GenerateTemplateTest {
         l2.add(new EntityImpl(null, "0"));
 
         Assertions.assertEquals(2, GenerateTemplate.removeContains(l1, l2));
-        Assertions.assertEquals(null, GenerateTemplate.removeContains(l2, l1));
+        Assertions.assertNull(GenerateTemplate.removeContains(l2, l1));
 
     }
 
