@@ -23,15 +23,14 @@ public class GenerateTemplate {
         System.out.println(UtilJson.toStringPretty(x, "[]"));
         ArrayList<List<Entity>> lists = new ArrayList<>(x.keySet());
         for (int i = 0; i < lists.size(); i++) {
-            for (int j = 0; j < lists.size(); j++) {
+            for (List<Entity> list : lists) {
                 List<Entity> first = lists.get(i);
-                List<Entity> last = lists.get(j);
-                if (!first.equals(last)) {
-                    Integer is = removeContains(first, last);
+                if (!first.equals(list)) {
+                    Integer is = removeContains(first, list);
                     if (is != null) {
                         System.out.println("---");
                         System.out.println(first);
-                        System.out.println(last);
+                        System.out.println(list);
                     }
                 }
             }
