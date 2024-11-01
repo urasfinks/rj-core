@@ -52,11 +52,11 @@ public interface ScopeJsonDeserialize extends Scope {
 
             @SuppressWarnings("unchecked")
             List<String> left = (List<String>) map.get("left");
-            scale.setLeft(getEntityChainByUuids(left));
+            scale.setLeft(getRepositoryEntityChain().getByUuids(left));
 
             @SuppressWarnings("unchecked")
             List<String> right = (List<String>) map.get("right");
-            scale.setRight(getEntityChainByUuids(right));
+            scale.setRight(getRepositoryEntityChain().getByUuids(right));
 
             listScale.add(scale);
         });

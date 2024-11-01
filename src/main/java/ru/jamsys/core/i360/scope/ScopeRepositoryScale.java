@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ScopeRepositoryScale extends Scope {
 
-    default List<Scale> getListScale(EntityChain entityChain) {
+    default List<Scale> get(EntityChain entityChain) {
         List<Scale> result = new ArrayList<>();
         getListScale().forEach(scale -> {
             if (scale.getLeft().equals(entityChain) || scale.getRight().equals(entityChain)) {
@@ -18,7 +18,7 @@ public interface ScopeRepositoryScale extends Scope {
         return result;
     }
 
-    default List<Scale> getListScaleByLeft(EntityChain entityChain) {
+    default List<Scale> getByLeft(EntityChain entityChain) {
         List<Scale> result = new ArrayList<>();
         getListScale().forEach(scale -> {
             if (scale.getLeft().equals(entityChain)) {
@@ -28,7 +28,7 @@ public interface ScopeRepositoryScale extends Scope {
         return result;
     }
 
-    default List<Scale> getListScaleByRight(EntityChain entityChain) {
+    default List<Scale> getByRight(EntityChain entityChain) {
         List<Scale> result = new ArrayList<>();
         getListScale().forEach(scale -> {
             if (scale.getRight().equals(entityChain)) {

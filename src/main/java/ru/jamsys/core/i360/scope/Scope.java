@@ -27,7 +27,7 @@ public interface Scope {
         return (ScopeJsonSerialize) this;
     }
 
-    default ScopeRepositoryEntityChain getScopeRepositoryEntityChain() {
+    default ScopeRepositoryEntityChain getRepositoryEntityChain() {
         return (ScopeRepositoryEntityChain) this;
     }
 

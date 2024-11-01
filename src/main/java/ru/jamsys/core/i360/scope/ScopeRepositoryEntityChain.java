@@ -8,8 +8,7 @@ import java.util.Map;
 
 public interface ScopeRepositoryEntityChain extends Scope {
 
-    @Override
-    default EntityChain getEntityChainByUuids(List<String> listUuid) {
+    default EntityChain getByUuids(List<String> listUuid) {
         EntityChain entityChain = new EntityChain();
         List<Entity> listEntity = entityChain.getListEntity();
         Map<String, Entity> entityRepository = getMapEntity();
