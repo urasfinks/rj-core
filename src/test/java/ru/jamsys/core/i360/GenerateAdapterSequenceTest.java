@@ -2,8 +2,9 @@ package ru.jamsys.core.i360;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.i360.entity.EntityChain;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.i360.entity.Entity;
+import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.EntityImpl;
 
 import java.util.ArrayList;
@@ -69,8 +70,8 @@ class GenerateAdapterSequenceTest {
         ArrayList<String> l2 = new ArrayList<>();
         l2.add("b");
         l2.add("c");
-        Assertions.assertEquals("[[a, b], [a, c]]", GenerateSequence.cartesian(ArrayList::new, l1, l2).toString());
-        Assertions.assertEquals("[[b, b], [b, c], [c, b], [c, c]]", GenerateSequence.cartesian(ArrayList::new, l2, l2).toString());
+        Assertions.assertEquals("[[a, b], [a, c]]", Util.cartesian(ArrayList::new, l1, l2).toString());
+        Assertions.assertEquals("[[b, b], [b, c], [c, b], [c, c]]", Util.cartesian(ArrayList::new, l2, l2).toString());
 
     }
 }

@@ -20,8 +20,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
@@ -338,6 +341,31 @@ public class Util {
         } else {
             return true;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <R extends Collection<?>> R cartesian(Supplier nCol, Collection<?>... cols) {
+        // проверка supplier не есть null
+        if (nCol == null) return null;
+        return (R) Arrays.stream(cols)
+                // ненулевые и непустые коллекции
+                .filter(col -> col != null && !col.isEmpty())
+                // представить каждый элемент коллекции как одноэлементную коллекцию
+                .map(col -> (Collection<Collection<?>>) col.stream()
+                        .map(e -> Stream.of(e).collect(Collectors.toCollection(nCol)))
+                        .collect(Collectors.toCollection(nCol)))
+                // суммирование пар вложенных коллекций
+                .reduce((col1, col2) -> (Collection<Collection<?>>) col1.stream()
+                        // комбинации вложенных коллекций
+                        .flatMap(inner1 -> col2.stream()
+                                // объединить в одну коллекцию
+                                .map(inner2 -> Stream.of(inner1, inner2)
+                                        .flatMap(Collection::stream)
+                                        .collect(Collectors.toCollection(nCol))))
+                        // коллекция комбинаций
+                        .collect(Collectors.toCollection(nCol)))
+                // иначе пустая коллекция
+                .orElse((Collection<Collection<?>>) nCol.get());
     }
 
 }
