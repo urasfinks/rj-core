@@ -14,8 +14,6 @@ import ru.jamsys.core.i360.Context;
 @JsonPropertyOrder({"type", "left", "right", "stability"})
 public class Scale {
 
-    private Context classifier;
-
     private Context left;
 
     private Context right;

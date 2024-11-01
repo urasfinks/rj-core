@@ -8,16 +8,6 @@ import java.util.List;
 
 public interface ScopeListScale extends Scope {
 
-    default List<Scale> getScaleByClassifier(Context context) {
-        List<Scale> result = new ArrayList<>();
-        getListScale().forEach(scale -> {
-            if (scale.getClassifier().equals(context)) {
-                result.add(scale);
-            }
-        });
-        return result;
-    }
-
     default List<Scale> getScaleByLeft(Context context) {
         List<Scale> result = new ArrayList<>();
         getListScale().forEach(scale -> {
