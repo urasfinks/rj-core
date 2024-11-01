@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import ru.jamsys.core.extension.CamelNormalization;
 import ru.jamsys.core.i360.entity.adapter.relation.Relation;
-import ru.jamsys.core.i360.entity.adapter.relation.normal.*;
 
 @Getter
 public enum RelationType implements CamelNormalization {
