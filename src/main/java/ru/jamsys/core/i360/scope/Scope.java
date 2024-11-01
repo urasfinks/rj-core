@@ -27,8 +27,6 @@ public interface Scope {
 
     void write(String path) throws Throwable;
 
-    List<Scale> getScaleByClassifier(EntityChain entityChain);
-
     List<Scale> getScaleByLeft(EntityChain entityChain);
 
     List<Scale> getScaleByRight(EntityChain entityChain);
