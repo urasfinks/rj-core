@@ -5,7 +5,7 @@ import lombok.Getter;
 import ru.jamsys.core.extension.CamelNormalization;
 
 @Getter
-public enum RelationsType implements CamelNormalization {
+public enum RelationType implements CamelNormalization {
 
     REMOVE_RIGHT(new RemoveRight()), // Удалить из всего контекста ["0", "0", "1", "2", "0"] mask ["0"] => ["1", "2"]
     REMOVE_LEFT(new RemoveLeft()), // ["0", "1", "2", "3"] mask ["2", "2", "3", "4", "5"] => ["4", "5"]
@@ -19,19 +19,19 @@ public enum RelationsType implements CamelNormalization {
     MAP_RIGHT(new MapRight()),   // ["1", "!", "2", "-"] mask ["2", "1", "2", "3"]  => ["-", "!", "-", "3"]
     ADD(new Add()), // Добавить ["1", "2"] mask ["3"] => ["1", "2", "3"]
     INTERSECTION(new Intersection()), // Пересечение множеств ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["2", "3"]
-    WITHOUT_INTERSECTION(null); // Оба множества без пересечения ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["0", "1", "4","5"]
+    WITHOUT_INTERSECTION(new IntersectionWithout()); // Оба множества без пересечения ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["0", "1", "4","5"]
 
     final private Relation relation;
 
-    RelationsType(Relation relation) {
+    RelationType(Relation relation) {
         this.relation = relation;
     }
 
-    public static RelationsType valueOfCamelCase(String type) {
-        RelationsType[] values = values();
-        for (RelationsType relationsType : values) {
-            if (relationsType.getNameCamel().equals(type)) {
-                return relationsType;
+    public static RelationType valueOfCamelCase(String type) {
+        RelationType[] values = values();
+        for (RelationType relationType : values) {
+            if (relationType.getNameCamel().equals(type)) {
+                return relationType;
             }
         }
         return null;

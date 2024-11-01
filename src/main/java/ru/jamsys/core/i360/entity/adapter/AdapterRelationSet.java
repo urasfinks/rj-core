@@ -3,7 +3,7 @@ package ru.jamsys.core.i360.entity.adapter;
 import lombok.Getter;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.i360.entity.EntityChain;
-import ru.jamsys.core.i360.entity.adapter.relation.RelationsType;
+import ru.jamsys.core.i360.entity.adapter.relation.RelationType;
 import ru.jamsys.core.i360.scope.Scope;
 
 import java.util.List;
@@ -17,7 +17,7 @@ public class AdapterRelationSet extends AbstractAdapter {
 
     private final EntityChain entityChain;
 
-    private final RelationsType type;
+    private final RelationType type;
 
     private final String cls;
 
@@ -35,7 +35,7 @@ public class AdapterRelationSet extends AbstractAdapter {
         }
 
         this.cls = (String) map.get("class");
-        this.type = RelationsType.valueOfCamelCase((String) map.get("type"));
+        this.type = RelationType.valueOfCamelCase((String) map.get("type"));
     }
 
     @Override
