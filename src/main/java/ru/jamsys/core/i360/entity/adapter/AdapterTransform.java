@@ -3,11 +3,9 @@ package ru.jamsys.core.i360.entity.adapter;
 import lombok.Getter;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.i360.entity.EntityChain;
-import ru.jamsys.core.i360.entity.adapter.relation.RelationsType;
 import ru.jamsys.core.i360.entity.adapter.transform.TransformType;
 import ru.jamsys.core.i360.scope.Scope;
 
-import java.util.List;
 import java.util.Map;
 
 // Трансформация цепочки

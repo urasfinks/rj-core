@@ -22,7 +22,7 @@ class ReverseTest {
         result.getListEntity().add(new EntityImpl(null, "2"));
         result.getListEntity().add(new EntityImpl(null, "1"));
 
-        Assertions.assertEquals(result, new Reverse().relation(input, null));
+        Assertions.assertEquals(result, new Reverse().transform(input));
 
     }
 
