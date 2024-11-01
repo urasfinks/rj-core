@@ -3,23 +3,25 @@ package ru.jamsys.core.i360.entity.adapter;
 import lombok.Getter;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.i360.entity.EntityChain;
+import ru.jamsys.core.i360.entity.adapter.relation.RelationsType;
 import ru.jamsys.core.i360.scope.Scope;
 
 import java.util.List;
 import java.util.Map;
 
+// Отношение множеств - Диаграммы Эйлера
+// Аргументы - две последовательности сущностей
+
 @Getter
-public class AdapterSequence extends AbstractAdapter {
+public class AdapterRelationSet extends AbstractAdapter {
 
     private final EntityChain entityChain;
 
-    private Integer min;
-
-    private Integer max;
+    private final RelationsType type;
 
     private final String cls;
 
-    public AdapterSequence(Map<String, Object> map, Scope scope) {
+    public AdapterRelationSet(Map<String, Object> map, Scope scope) {
         super(map, scope);
 
         if (map.containsKey("entity")) {
@@ -32,18 +34,13 @@ public class AdapterSequence extends AbstractAdapter {
             throw new RuntimeException("Undefined entity context");
         }
 
-        if (map.containsKey("min") && map.get("min") != null) {
-            min = Integer.parseInt(map.get("min") + "");
-        }
-        if (map.containsKey("max") && map.get("max") != null) {
-            max = Integer.parseInt(map.get("max") + "");
-        }
         this.cls = (String) map.get("class");
+        this.type = RelationsType.valueOfCamelCase((String) map.get("type"));
     }
 
     @Override
     public EntityChain transform(EntityChain entityChain) {
-        return null;
+        return type.getRelation().relation(entityChain, this.entityChain);
     }
 
     @Override
@@ -51,8 +48,7 @@ public class AdapterSequence extends AbstractAdapter {
         return new HashMapBuilder<String, Object>()
                 .append("class", cls)
                 .append("entity", entityChain)
-                .append("min", max)
-                .append("max", max)
+                .append("type", type)
                 ;
     }
 
