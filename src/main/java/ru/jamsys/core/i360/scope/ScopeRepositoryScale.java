@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface ScopeRepositoryScale extends Scope {
 
+    List<Scale> getListScale();
+
     default List<Scale> get(EntityChain entityChain) {
         List<Scale> result = new ArrayList<>();
         getListScale().forEach(scale -> {

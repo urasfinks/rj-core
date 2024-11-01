@@ -1,19 +1,17 @@
 package ru.jamsys.core.i360.scope;
 
 import ru.jamsys.core.i360.entity.Entity;
-import ru.jamsys.core.i360.entity.EntityChain;
-import ru.jamsys.core.i360.scale.Scale;
 
-import java.util.List;
 import java.util.Map;
+
+// Область знаний, состоит из
+// 1) Сущности
+// 2) Весы
+// 3) Цепочки сущностей
 
 public interface Scope {
 
     Map<String, Entity> getMapEntity();
-
-    List<Scale> getListScale();
-
-    Map<EntityChain, EntityChain> getMapEntityChain();
 
     default ScopeRepositoryScale getRepositoryScale() {
         return (ScopeRepositoryScale) this;

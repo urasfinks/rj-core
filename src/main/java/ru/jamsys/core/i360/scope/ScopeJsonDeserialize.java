@@ -43,7 +43,7 @@ public interface ScopeJsonDeserialize extends Scope {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> jsonListScale = (List<Map<String, Object>>) mapOrThrow.get("listScale");
 
-        List<Scale> listScale = getListScale();
+        List<Scale> listScale = getRepositoryScale().getListScale();
 
         jsonListScale.forEach(map -> {
             Scale scale = new Scale();

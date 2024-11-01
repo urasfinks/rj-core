@@ -8,19 +8,21 @@ import java.util.Map;
 
 public interface ScopeRepositoryEntityChain extends Scope {
 
+    Map<EntityChain, EntityChain> getMapEntityChain();
+
     default EntityChain getByUuids(List<String> listUuid) {
         EntityChain entityChain = new EntityChain();
         List<Entity> listEntity = entityChain.getListEntity();
-        Map<String, Entity> entityRepository = getMapEntity();
-        listUuid.forEach(s -> {
-            if (entityRepository.containsKey(s)) {
-                listEntity.add(entityRepository.get(s));
+        Map<String, Entity> mapEntity = getMapEntity();
+        listUuid.forEach(uuid -> {
+            if (mapEntity.containsKey(uuid)) {
+                listEntity.add(mapEntity.get(uuid));
             }
         });
         return getMapEntityChain().computeIfAbsent(entityChain, _ -> entityChain);
     }
 
-    default boolean containsEntityChain(EntityChain entityChain) {
+    default boolean contains(EntityChain entityChain) {
         return getMapEntityChain().containsKey(entityChain);
     }
 
