@@ -19,6 +19,8 @@ public interface ScopeRepositoryEntityChain extends Scope {
         listUuid.forEach(uuid -> {
             if (mapEntity.containsKey(uuid)) {
                 listEntity.add(mapEntity.get(uuid));
+            } else {
+                throw new RuntimeException("MapEntity not exist: " + uuid);
             }
         });
         return getMapEntityChain().computeIfAbsent(entityChain, _ -> entityChain);

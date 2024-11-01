@@ -27,6 +27,9 @@ public interface ScopeJsonDeserialize extends Scope {
         Map<String, Object> jsonEntityRepository = (Map<String, Object>) mapOrThrow.get("mapEntity");
 
         jsonEntityRepository.forEach((uuid, value) -> {
+            if (uuid.startsWith("_")) {
+                return;
+            }
             try {
                 entityRepository.computeIfAbsent(uuid, _ -> {
                     try {
