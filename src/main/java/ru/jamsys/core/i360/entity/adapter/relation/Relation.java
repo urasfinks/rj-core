@@ -4,6 +4,6 @@ import ru.jamsys.core.i360.entity.EntityChain;
 
 public interface Relation {
 
-    EntityChain relation(EntityChain leftEntityChain, EntityChain rightEntityChain);
+    EntityChain compute(EntityChain leftEntityChain, EntityChain rightEntityChain);
 
 }

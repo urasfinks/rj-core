@@ -4,7 +4,8 @@ import ru.jamsys.core.i360.scope.Scope;
 
 import java.util.Map;
 
-// Единица информации (объект)
+// Сущность - единица информации (объект)
+
 public interface Entity {
 
     String path = Entity.class.getName().substring(0, Entity.class.getName().length() - Entity.class.getSimpleName().length());

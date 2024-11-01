@@ -6,6 +6,8 @@ import ru.jamsys.core.i360.entity.EntityChain;
 import java.util.List;
 import java.util.Map;
 
+// Репозиторий цепочек (весы ссылаются на цепочки)
+
 public interface ScopeRepositoryEntityChain extends Scope {
 
     Map<EntityChain, EntityChain> getMapEntityChain();

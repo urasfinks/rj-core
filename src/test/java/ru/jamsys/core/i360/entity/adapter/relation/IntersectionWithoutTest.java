@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.EntityImpl;
+import ru.jamsys.core.i360.entity.adapter.relation.normal.IntersectionWithout;
 
 class IntersectionWithoutTest {
 
@@ -28,7 +29,7 @@ class IntersectionWithoutTest {
         result.getListEntity().add(new EntityImpl(null, "4"));
         result.getListEntity().add(new EntityImpl(null, "5"));
 
-        Assertions.assertEquals(result, new IntersectionWithout().relation(input, selection));
+        Assertions.assertEquals(result, new IntersectionWithout().compute(input, selection));
 
     }
 

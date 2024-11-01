@@ -11,6 +11,8 @@ import ru.jamsys.core.i360.scale.ScaleType;
 import java.util.List;
 import java.util.Map;
 
+// Загрузка области знаний с файловой системы
+
 public interface ScopeJsonDeserialize extends Scope {
 
     default void read(String path) throws Throwable {

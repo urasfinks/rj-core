@@ -6,6 +6,8 @@ import ru.jamsys.core.flat.util.UtilJson;
 
 import java.nio.charset.StandardCharsets;
 
+// Сохранение области знаний на файловую систему
+
 public interface ScopeJsonSerialize extends Scope {
 
     default void write(String path) throws Throwable {

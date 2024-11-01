@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.EntityImpl;
+import ru.jamsys.core.i360.entity.adapter.relation.reverse.ForwardLeftWhile;
 
 class ForwardLeftWhileTest {
 
@@ -23,7 +24,7 @@ class ForwardLeftWhileTest {
         EntityChain result = new EntityChain();
         result.getListEntity().add(new EntityImpl(null, "2"));
 
-        Assertions.assertEquals(result, new ForwardLeftWhile().relation(input, selection));
+        Assertions.assertEquals(result, new ForwardLeftWhile().compute(input, selection));
 
     }
 

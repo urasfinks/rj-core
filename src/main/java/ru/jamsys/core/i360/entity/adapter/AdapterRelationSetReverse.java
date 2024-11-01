@@ -3,17 +3,17 @@ package ru.jamsys.core.i360.entity.adapter;
 import lombok.Getter;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.i360.entity.EntityChain;
-import ru.jamsys.core.i360.entity.adapter.relation.RelationType;
+import ru.jamsys.core.i360.entity.adapter.relation.reverse.RelationType;
 import ru.jamsys.core.i360.scope.Scope;
 
 import java.util.List;
 import java.util.Map;
 
 // Отношение множеств - Диаграммы Эйлера
-// Аргументы - две последовательности сущностей
+// Аргументы - две цепочки сущностей
 
 @Getter
-public class AdapterRelationSet extends AbstractAdapter {
+public class AdapterRelationSetReverse extends AbstractAdapter {
 
     private final EntityChain entityChain;
 
@@ -21,18 +21,15 @@ public class AdapterRelationSet extends AbstractAdapter {
 
     private final String cls;
 
-    public AdapterRelationSet(Map<String, Object> map, Scope scope) {
+    public AdapterRelationSetReverse(Map<String, Object> map, Scope scope) {
         super(map, scope);
 
-        if (map.containsKey("entity")) {
-            @SuppressWarnings("unchecked")
-            List<String> listEntity = (List<String>) map.get("entity");
-            entityChain = scope.getRepositoryEntityChain().getByUuids(listEntity);
-        } else if (map.containsKey("entityChain")) {
-            entityChain = (EntityChain) map.get("entityChain");
-        } else {
+        if (!map.containsKey("entityChain")) {
             throw new RuntimeException("Undefined entity context");
         }
+        @SuppressWarnings("unchecked")
+        List<String> listEntity = (List<String>) map.get("entityChain");
+        entityChain = scope.getRepositoryEntityChain().getByUuids(listEntity);
 
         this.cls = (String) map.get("class");
         this.type = RelationType.valueOfCamelCase((String) map.get("type"));
@@ -40,14 +37,14 @@ public class AdapterRelationSet extends AbstractAdapter {
 
     @Override
     public EntityChain transform(EntityChain entityChain) {
-        return type.getRelation().relation(entityChain, this.entityChain);
+        return type.getRelation().compute(entityChain, this.entityChain);
     }
 
     @Override
     public Map<String, Object> toValue() {
         return new HashMapBuilder<String, Object>()
                 .append("class", cls)
-                .append("entity", entityChain)
+                .append("entityChain", entityChain)
                 .append("type", type)
                 ;
     }

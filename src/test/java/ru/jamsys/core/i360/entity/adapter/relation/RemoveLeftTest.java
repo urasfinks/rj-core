@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.EntityImpl;
+import ru.jamsys.core.i360.entity.adapter.relation.reverse.RemoveLeft;
 
 class RemoveLeftTest {
 
@@ -27,7 +28,7 @@ class RemoveLeftTest {
         result.getListEntity().add(new EntityImpl(null, "4"));
         result.getListEntity().add(new EntityImpl(null, "5"));
 
-        Assertions.assertEquals(result, new RemoveLeft().relation(input, selection));
+        Assertions.assertEquals(result, new RemoveLeft().compute(input, selection));
 
     }
 

@@ -34,16 +34,16 @@
       "data" : "9"
     },
     "f0": {
-      "class": "adapter.AdapterRelationSet",
+      "class": "adapter.AdapterRelationSetNormal",
       "type": "RemoveWhile",
-      "entity": ["k0"],
+      "entityChain": ["k0"],
       "min": null,
       "max": null
     },
     "f1": {
-      "class": "adapter.AdapterRelationSet",
+      "class": "adapter.AdapterRelationSetNormal",
       "type": "Forward",
-      "entity": ["k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8", "k9"],
+      "entityChain": ["k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8", "k9"],
       "min": null,
       "max": null
     }

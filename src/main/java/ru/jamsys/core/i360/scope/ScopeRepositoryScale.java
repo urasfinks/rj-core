@@ -6,6 +6,8 @@ import ru.jamsys.core.i360.scale.Scale;
 import java.util.ArrayList;
 import java.util.List;
 
+// Репозиторий весов
+
 public interface ScopeRepositoryScale extends Scope {
 
     List<Scale> getListScale();

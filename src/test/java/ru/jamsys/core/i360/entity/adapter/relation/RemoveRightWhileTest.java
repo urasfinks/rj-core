@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.EntityImpl;
+import ru.jamsys.core.i360.entity.adapter.relation.normal.RemoveRightWhile;
 
 class RemoveRightWhileTest {
 
@@ -25,7 +26,7 @@ class RemoveRightWhileTest {
         result.getListEntity().add(new EntityImpl(null, "2"));
         result.getListEntity().add(new EntityImpl(null, "0"));
 
-        Assertions.assertEquals(result, new RemoveRightWhile().relation(input, selection));
+        Assertions.assertEquals(result, new RemoveRightWhile().compute(input, selection));
 
     }
 
