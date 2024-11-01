@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.jamsys.core.i360.Context;
+import ru.jamsys.core.i360.entity.EntityChain;
 
 @Getter
 @Setter
@@ -14,9 +14,9 @@ import ru.jamsys.core.i360.Context;
 @JsonPropertyOrder({"type", "left", "right", "stability"})
 public class Scale {
 
-    private Context left;
+    private EntityChain left;
 
-    private Context right;
+    private EntityChain right;
 
     private ScaleType type;
 

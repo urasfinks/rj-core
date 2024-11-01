@@ -2,7 +2,7 @@ package ru.jamsys.core.i360.entity.adapter;
 
 import lombok.Getter;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.i360.Context;
+import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.scope.Scope;
 
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.Map;
 @Getter
 public class SetEntity extends AbstractAdapter {
 
-    private final Context entity;
+    private final EntityChain entity;
 
     private final SetEntityOperator type;
 
@@ -25,7 +25,7 @@ public class SetEntity extends AbstractAdapter {
             List<String> listEntity = (List<String>) map.get("entity");
             entity = scope.getContextByUuid(listEntity);
         } else if (map.containsKey("entityContext")) {
-            entity = (Context) map.get("entityContext");
+            entity = (EntityChain) map.get("entityContext");
         } else {
             throw new RuntimeException("Undefined entity context");
         }
@@ -35,7 +35,7 @@ public class SetEntity extends AbstractAdapter {
     }
 
     @Override
-    public Context transform(Context context) {
+    public EntityChain transform(EntityChain entityChain) {
         return null;
     }
 

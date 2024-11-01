@@ -1,6 +1,6 @@
 package ru.jamsys.core.i360.scope;
 
-import ru.jamsys.core.i360.Context;
+import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.Entity;
 import ru.jamsys.core.i360.scale.Scale;
 
@@ -13,11 +13,11 @@ public interface Scope {
 
     List<Scale> getListScale();
 
-    Map<Context, Context> getMapContext();
+    Map<EntityChain, EntityChain> getMapContext();
 
-    Context getContextByUuid(List<String> listUuid);
+    EntityChain getContextByUuid(List<String> listUuid);
 
-    boolean containsContext(Context context);
+    boolean containsContext(EntityChain entityChain);
 
     String toJson();
 
@@ -27,10 +27,10 @@ public interface Scope {
 
     void write(String path) throws Throwable;
 
-    List<Scale> getScaleByClassifier(Context context);
+    List<Scale> getScaleByClassifier(EntityChain entityChain);
 
-    List<Scale> getScaleByLeft(Context context);
+    List<Scale> getScaleByLeft(EntityChain entityChain);
 
-    List<Scale> getScaleByRight(Context context);
+    List<Scale> getScaleByRight(EntityChain entityChain);
 
 }

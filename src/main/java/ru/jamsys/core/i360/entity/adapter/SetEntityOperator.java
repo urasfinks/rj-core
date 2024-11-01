@@ -2,7 +2,7 @@ package ru.jamsys.core.i360.entity.adapter;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import ru.jamsys.core.extension.CamelNormalization;
-import ru.jamsys.core.i360.Context;
+import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.adapter.set.*;
 
 public enum SetEntityOperator implements CamelNormalization {
@@ -28,8 +28,8 @@ public enum SetEntityOperator implements CamelNormalization {
         this.adapter = adapter;
     }
 
-    public Context transform(Context context, Context contextSelection) {
-        return adapter.transform(context, contextSelection);
+    public EntityChain transform(EntityChain entityChain, EntityChain entityChainSelection) {
+        return adapter.transform(entityChain, entityChainSelection);
     }
 
     static SetEntityOperator valueOfCamelCase(String type) {

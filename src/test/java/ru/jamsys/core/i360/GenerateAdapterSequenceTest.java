@@ -2,47 +2,48 @@ package ru.jamsys.core.i360;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.Entity;
 import ru.jamsys.core.i360.entity.EntityImpl;
 
 import java.util.ArrayList;
 
-class GenerateSequenceTest {
+class GenerateAdapterSequenceTest {
 
     @Test
     void generate() {
-        Context ctx0 = new Context();
+        EntityChain ctx0 = new EntityChain();
         ctx0.getListEntity().add(new EntityImpl(null, "9"));
 
-        Context ctx1 = new Context();
+        EntityChain ctx1 = new EntityChain();
         ctx1.getListEntity().add(new EntityImpl(null, "0"));
         ctx1.getListEntity().add(new EntityImpl(null, "0"));
         ctx1.getListEntity().add(new EntityImpl(null, "9"));
 
-        Context ctx2 = new Context();
+        EntityChain ctx2 = new EntityChain();
         ctx2.getListEntity().add(new EntityImpl(null, "0"));
         ctx2.getListEntity().add(new EntityImpl(null, "9"));
 
-        Context ctx3 = new Context();
+        EntityChain ctx3 = new EntityChain();
         ctx3.getListEntity().add(new EntityImpl(null, "0"));
         ctx3.getListEntity().add(new EntityImpl(null, "0"));
         ctx3.getListEntity().add(new EntityImpl(null, "0"));
         ctx3.getListEntity().add(new EntityImpl(null, "9"));
 
-        Context ctx4 = new Context();
+        EntityChain ctx4 = new EntityChain();
         ctx4.getListEntity().add(new EntityImpl(null, "0"));
         ctx4.getListEntity().add(new EntityImpl(null, "0"));
         ctx4.getListEntity().add(new EntityImpl(null, "0"));
         ctx4.getListEntity().add(new EntityImpl(null, "0"));
         ctx4.getListEntity().add(new EntityImpl(null, "9"));
 
-        ArrayList<Context> listContext = new ArrayList<>();
-        listContext.add(ctx0);
-        listContext.add(ctx1);
-        listContext.add(ctx2);
-        listContext.add(ctx3);
-        listContext.add(ctx4);
-        GenerateSequence.generate(listContext);
+        ArrayList<EntityChain> listEntityChain = new ArrayList<>();
+        listEntityChain.add(ctx0);
+        listEntityChain.add(ctx1);
+        listEntityChain.add(ctx2);
+        listEntityChain.add(ctx3);
+        listEntityChain.add(ctx4);
+        GenerateSequence.generate(listEntityChain);
 
     }
 

@@ -1,20 +1,21 @@
 package ru.jamsys.core.i360;
 
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.EntityImpl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-class ContextTest {
+class EntityChainTest {
 
     @Test
     public void testHashCode(){
-        Context ctx1 = new Context();
+        EntityChain ctx1 = new EntityChain();
         ctx1.getListEntity().add(new EntityImpl("x1", "Hello"));
         ctx1.getListEntity().add(new EntityImpl("x2", "world"));
 
-        Context ctx2 = new Context();
+        EntityChain ctx2 = new EntityChain();
         ctx2.getListEntity().add(new EntityImpl("x1", "Hello"));
         ctx2.getListEntity().add(new EntityImpl("x2", "world"));
 

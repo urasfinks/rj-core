@@ -2,7 +2,7 @@ package ru.jamsys.core.i360.scope;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
-import ru.jamsys.core.i360.Context;
+import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.Entity;
 import ru.jamsys.core.i360.scale.Scale;
 
@@ -22,6 +22,6 @@ public class ScopeImpl implements Scope, ScopeJsonDeserialize, ScopeJsonSerializ
 
     // Все контексты уникальны в пределах репозитория
     @JsonIgnore
-    final private Map<Context, Context> mapContext = new HashMap<>();
+    final private Map<EntityChain, EntityChain> mapContext = new HashMap<>();
 
 }

@@ -2,8 +2,9 @@ package ru.jamsys.core.i360;
 
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.Entity;
-import ru.jamsys.core.i360.entity.adapter.Sequence;
+import ru.jamsys.core.i360.entity.adapter.AdapterSequence;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,9 +13,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class GenerateSequence {
-    public static void generate(List<Context> listContext) {
+    public static void generate(List<EntityChain> listEntityChain) {
         Map<List<Entity>, AtomicInteger> x = new HashMap<>();
-        listContext.forEach(context -> {
+        listEntityChain.forEach(context -> {
             List<List<Entity>> evclid = evclid(context);
             evclid.forEach(list -> {
                 AtomicInteger atomicInteger = x.computeIfAbsent(list, _ -> new AtomicInteger());
@@ -48,7 +49,7 @@ public class GenerateSequence {
                 }
             }
         });
-        Map<List<Entity>, Sequence> seq = new HashMap<>();
+        Map<List<Entity>, AdapterSequence> seq = new HashMap<>();
         seqSource.forEach((key, value) -> {
             int min = Integer.MAX_VALUE;
             int max = Integer.MIN_VALUE;
@@ -60,13 +61,13 @@ public class GenerateSequence {
                     min = entities.size();
                 }
             }
-            Sequence sequence = new Sequence(new HashMapBuilder<String, Object>()
+            AdapterSequence adapterSequence = new AdapterSequence(new HashMapBuilder<String, Object>()
                     .append("entity", key)
                     .append("min", min + "")
                     .append("max", max + ""),
                     null
             );
-            seq.put(key, sequence);
+            seq.put(key, adapterSequence);
 //            System.out.println(key);
 //            System.out.println("min: " + min + "; max: " + max);
 
@@ -95,8 +96,8 @@ public class GenerateSequence {
         }
     }
 
-    public static List<List<Entity>> evclid(Context context) {
-        List<Entity> listEntity = context.getListEntity();
+    public static List<List<Entity>> evclid(EntityChain entityChain) {
+        List<Entity> listEntity = entityChain.getListEntity();
         //System.out.println("> " + listEntity);
         /*
          * 0 0 9
