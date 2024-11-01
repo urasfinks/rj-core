@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-public class ScopeImpl implements Scope, ScopeJsonDeserialize, ScopeJsonSerialize, ScopeIO, ScopeMapContext, ScopeListScale {
+public class ScopeImpl implements Scope, ScopeJsonDeserialize, ScopeJsonSerialize, ScopeRepositoryEntityChain, ScopeRepositoryScale {
 
     // key: uuid; value: Entity
     final private Map<String, Entity> mapEntity = new HashMap<>();
@@ -20,8 +20,8 @@ public class ScopeImpl implements Scope, ScopeJsonDeserialize, ScopeJsonSerializ
     // Список весов
     final private List<Scale> listScale = new ArrayList<>();
 
-    // Все контексты уникальны в пределах репозитория
+    // Все контексты уникальны в пределах Scope
     @JsonIgnore
-    final private Map<EntityChain, EntityChain> mapContext = new HashMap<>();
+    final private Map<EntityChain, EntityChain> mapEntityChain = new HashMap<>();
 
 }

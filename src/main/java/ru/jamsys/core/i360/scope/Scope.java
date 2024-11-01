@@ -13,11 +13,11 @@ public interface Scope {
 
     List<Scale> getListScale();
 
-    Map<EntityChain, EntityChain> getMapContext();
+    Map<EntityChain, EntityChain> getMapEntityChain();
 
-    EntityChain getContextByUuid(List<String> listUuid);
+    EntityChain getEntityChainByUuids(List<String> listUuid);
 
-    boolean containsContext(EntityChain entityChain);
+    boolean containsEntityChain(EntityChain entityChain);
 
     String toJson();
 

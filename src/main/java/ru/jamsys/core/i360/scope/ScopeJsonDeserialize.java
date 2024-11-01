@@ -2,6 +2,7 @@ package ru.jamsys.core.i360.scope;
 
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.flat.util.UtilFileResource;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.i360.entity.Entity;
 import ru.jamsys.core.i360.scale.Scale;
@@ -11,6 +12,10 @@ import java.util.List;
 import java.util.Map;
 
 public interface ScopeJsonDeserialize extends Scope {
+
+    default void read(String path) throws Throwable {
+        fromJson(UtilFileResource.getAsString(path, UtilFileResource.Direction.PROJECT));
+    }
 
     default void fromJson(String json) throws Throwable {
         Map<String, Object> mapOrThrow = UtilJson.getMapOrThrow(json);
@@ -47,11 +52,11 @@ public interface ScopeJsonDeserialize extends Scope {
 
             @SuppressWarnings("unchecked")
             List<String> left = (List<String>) map.get("left");
-            scale.setLeft(getContextByUuid(left));
+            scale.setLeft(getEntityChainByUuids(left));
 
             @SuppressWarnings("unchecked")
             List<String> right = (List<String>) map.get("right");
-            scale.setRight(getContextByUuid(right));
+            scale.setRight(getEntityChainByUuids(right));
 
             listScale.add(scale);
         });

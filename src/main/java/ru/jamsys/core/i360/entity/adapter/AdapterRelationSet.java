@@ -27,7 +27,7 @@ public class AdapterRelationSet extends AbstractAdapter {
         if (map.containsKey("entity")) {
             @SuppressWarnings("unchecked")
             List<String> listEntity = (List<String>) map.get("entity");
-            entityChain = scope.getContextByUuid(listEntity);
+            entityChain = scope.getEntityChainByUuids(listEntity);
         } else if (map.containsKey("entityChain")) {
             entityChain = (EntityChain) map.get("entityChain");
         } else {
