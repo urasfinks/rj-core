@@ -52,12 +52,12 @@ public class GenerateSequence {
         seqSource.forEach((key, value) -> {
             int min = Integer.MAX_VALUE;
             int max = Integer.MIN_VALUE;
-            for (int i = 0; i < value.size(); i++) {
-                if (max < value.get(i).size()) {
-                    max = value.get(i).size();
+            for (List<Entity> entities : value) {
+                if (max < entities.size()) {
+                    max = entities.size();
                 }
-                if (min > value.get(i).size()) {
-                    min = value.get(i).size();
+                if (min > entities.size()) {
+                    min = entities.size();
                 }
             }
             Sequence sequence = new Sequence(new HashMapBuilder<String, Object>()
