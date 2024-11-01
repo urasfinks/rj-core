@@ -15,7 +15,7 @@ public interface Scope {
 
     Map<Context, Context> getMapContext();
 
-    Context getContext(List<String> listUuid);
+    Context getContextByUuid(List<String> listUuid);
 
     boolean containsContext(Context context);
 

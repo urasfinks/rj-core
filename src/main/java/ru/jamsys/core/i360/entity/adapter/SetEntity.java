@@ -20,9 +20,15 @@ public class SetEntity extends AbstractAdapter {
     public SetEntity(Map<String, Object> map, Scope scope) {
         super(map, scope);
 
-        @SuppressWarnings("unchecked")
-        List<String> listEntity = (List<String>) map.get("entity");
-        entity = scope.getContext(listEntity);
+        if (map.containsKey("entity")) {
+            @SuppressWarnings("unchecked")
+            List<String> listEntity = (List<String>) map.get("entity");
+            entity = scope.getContextByUuid(listEntity);
+        } else if (map.containsKey("entityContext")) {
+            entity = (Context) map.get("entityContext");
+        } else {
+            throw new RuntimeException("Undefined entity context");
+        }
 
         this.cls = (String) map.get("class");
         this.type = SetEntityOperator.valueOfCamelCase((String) map.get("type"));

@@ -47,16 +47,16 @@ public interface ScopeJsonDeserialize extends Scope {
 
             @SuppressWarnings("unchecked")
             List<String> left = (List<String>) map.get("left");
-            scale.setLeft(getContext(left));
+            scale.setLeft(getContextByUuid(left));
 
             @SuppressWarnings("unchecked")
             List<String> right = (List<String>) map.get("right");
-            scale.setRight(getContext(right));
+            scale.setRight(getContextByUuid(right));
 
             if (map.containsKey("classifier")) {
                 @SuppressWarnings("unchecked")
                 List<String> classifier = (List<String>) map.get("classifier");
-                scale.setClassifier(getContext(classifier));
+                scale.setClassifier(getContextByUuid(classifier));
             }
             listScale.add(scale);
         });

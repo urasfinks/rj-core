@@ -1,7 +1,9 @@
 package ru.jamsys.core.i360;
 
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.i360.entity.Entity;
+import ru.jamsys.core.i360.entity.adapter.Sequence;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,19 +24,54 @@ public class GenerateSequence {
 
         System.out.println(UtilJson.toStringPretty(x, "[]"));
         ArrayList<List<Entity>> lists = new ArrayList<>(x.keySet());
+        Map<List<Entity>, List<List<Entity>>> seqSource = new HashMap<>();
         for (int i = 0; i < lists.size(); i++) {
             for (List<Entity> list : lists) {
                 List<Entity> first = lists.get(i);
-                if (!first.equals(list)) {
-                    Integer is = removeContains(first, list);
-                    if (is != null) {
-                        System.out.println("---");
-                        System.out.println(first);
-                        System.out.println(list);
-                    }
+                Integer is = removeContains(first, list);
+                if (is != null) {
+                    List<List<Entity>> lists1 = seqSource.computeIfAbsent(list, _ -> new ArrayList<>());
+                    lists1.add(first);
                 }
             }
         }
+        // Если ключ встречается в подмножестве существующего ключа - удалим ключ
+        List<List<Entity>> lists1 = new ArrayList<>(seqSource.keySet());
+        lists1.forEach(key -> {
+            ArrayList<List<Entity>> lists2 = new ArrayList<>(seqSource.keySet());
+            for (List<Entity> fv : lists2) {
+                if (seqSource.get(fv) != null && (
+                        (seqSource.get(fv).contains(key) && !fv.equals(key))
+                                || (seqSource.get(fv).size() == 1 && fv.equals(key))
+                )) {
+                    seqSource.remove(key);
+                }
+            }
+        });
+        Map<List<Entity>, Sequence> seq = new HashMap<>();
+        seqSource.forEach((key, value) -> {
+            int min = Integer.MAX_VALUE;
+            int max = Integer.MIN_VALUE;
+            for (int i = 0; i < value.size(); i++) {
+                if (max < value.get(i).size()) {
+                    max = value.get(i).size();
+                }
+                if (min > value.get(i).size()) {
+                    min = value.get(i).size();
+                }
+            }
+            Sequence sequence = new Sequence(new HashMapBuilder<String, Object>()
+                    .append("entity", key)
+                    .append("min", min + "")
+                    .append("max", max + ""),
+                    null
+            );
+            seq.put(key, sequence);
+//            System.out.println(key);
+//            System.out.println("min: " + min + "; max: " + max);
+
+        });
+        System.out.println(UtilJson.toStringPretty(seq, "[]"));
     }
 
     public static Integer removeContains(List<Entity> l1, List<Entity> l2) {

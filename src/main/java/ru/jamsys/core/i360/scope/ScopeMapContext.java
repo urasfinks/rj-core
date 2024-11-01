@@ -9,7 +9,7 @@ import java.util.Map;
 public interface ScopeMapContext extends Scope {
 
     @Override
-    default Context getContext(List<String> listUuid) {
+    default Context getContextByUuid(List<String> listUuid) {
         Context context = new Context();
         List<Entity> listEntity = context.getListEntity();
         Map<String, Entity> entityRepository = getMapEntity();
