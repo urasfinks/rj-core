@@ -9,12 +9,12 @@ public class RemoveLeft implements Relation {
 
     @Override
     public EntityChain relation(EntityChain leftEntityChain, EntityChain rightEntityChain) {
-        List<Entity> contextEntity = leftEntityChain.getListEntity();
-        List<Entity> contextSelectionEntity = rightEntityChain.getListEntity();
+        List<Entity> leftEntityChainListEntity = leftEntityChain.getListEntity();
+        List<Entity> rightEntityChainListEntity = rightEntityChain.getListEntity();
         EntityChain result = new EntityChain();
         List<Entity> listEntityResult = result.getListEntity();
-        contextSelectionEntity.forEach(entity -> {
-            if (!contextEntity.contains(entity)) {
+        rightEntityChainListEntity.forEach(entity -> {
+            if (!leftEntityChainListEntity.contains(entity)) {
                 listEntityResult.add(entity);
             }
         });

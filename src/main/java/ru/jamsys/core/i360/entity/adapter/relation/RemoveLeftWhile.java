@@ -9,14 +9,14 @@ public class RemoveLeftWhile implements Relation {
 
     @Override
     public EntityChain relation(EntityChain leftEntityChain, EntityChain rightEntityChain) {
-        List<Entity> contextEntity = leftEntityChain.getListEntity();
-        List<Entity> contextSelectionEntity = rightEntityChain.getListEntity();
+        List<Entity> leftEntityChainListEntity = leftEntityChain.getListEntity();
+        List<Entity> rightEntityChainListEntity = rightEntityChain.getListEntity();
         EntityChain result = new EntityChain();
         List<Entity> listEntityResult = result.getListEntity();
-        listEntityResult.addAll(contextSelectionEntity);
+        listEntityResult.addAll(rightEntityChainListEntity);
         Entity[] array = listEntityResult.toArray(new Entity[0]);
         for (Entity entity : array) {
-            if (contextEntity.contains(entity)) {
+            if (leftEntityChainListEntity.contains(entity)) {
                 listEntityResult.removeFirst();
             } else {
                 break;

@@ -9,12 +9,12 @@ public class ForwardLeft implements Relation {
 
     @Override
     public EntityChain relation(EntityChain leftEntityChain, EntityChain rightEntityChain) {
-        List<Entity> contextEntity = leftEntityChain.getListEntity();
-        List<Entity> contextSelectionEntity = rightEntityChain.getListEntity();
+        List<Entity> leftEntityChainListEntity = leftEntityChain.getListEntity();
+        List<Entity> rightEntityChainListEntity = rightEntityChain.getListEntity();
         EntityChain result = new EntityChain();
         List<Entity> listEntityResult = result.getListEntity();
-        contextEntity.forEach(entity -> {
-            if (contextSelectionEntity.contains(entity)) {
+        leftEntityChainListEntity.forEach(entity -> {
+            if (rightEntityChainListEntity.contains(entity)) {
                 listEntityResult.add(entity);
             }
         });

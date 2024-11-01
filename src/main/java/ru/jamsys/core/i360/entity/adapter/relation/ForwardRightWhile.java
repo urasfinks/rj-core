@@ -9,12 +9,12 @@ public class ForwardRightWhile implements Relation {
 
     @Override
     public EntityChain relation(EntityChain leftEntityChain, EntityChain rightEntityChain) {
-        List<Entity> contextEntity = leftEntityChain.getListEntity();
-        List<Entity> contextSelectionEntity = rightEntityChain.getListEntity();
+        List<Entity> leftEntityChainListEntity = leftEntityChain.getListEntity();
+        List<Entity> rightEntityChainListEntity = rightEntityChain.getListEntity();
         EntityChain result = new EntityChain();
         List<Entity> listEntityResult = result.getListEntity();
-        for (Entity entity : contextSelectionEntity) {
-            if (contextEntity.contains(entity)) {
+        for (Entity entity : rightEntityChainListEntity) {
+            if (leftEntityChainListEntity.contains(entity)) {
                 listEntityResult.add(entity);
             } else {
                 break;

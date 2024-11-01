@@ -10,10 +10,10 @@ public class MapRight implements Relation {
 
     @Override
     public EntityChain relation(EntityChain leftEntityChain, EntityChain rightEntityChain) {
-        List<Entity> contextEntity = leftEntityChain.getListEntity();
+        List<Entity> leftEntityChainListEntity = leftEntityChain.getListEntity();
         java.util.Map<Entity, Entity> map = new HashMap<>();
-        for (int i = 0; i < contextEntity.size(); i += 2) {
-            map.put(contextEntity.get(i), contextEntity.get(i + 1));
+        for (int i = 0; i < leftEntityChainListEntity.size(); i += 2) {
+            map.put(leftEntityChainListEntity.get(i), leftEntityChainListEntity.get(i + 1));
         }
         EntityChain result = new EntityChain();
         List<Entity> listEntityResult = result.getListEntity();
