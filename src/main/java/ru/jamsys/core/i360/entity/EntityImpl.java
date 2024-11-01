@@ -64,23 +64,15 @@ public class EntityImpl implements Entity {
     public void getVariant(ScaleType type, Set<EntityChain> result) {
         result.add(new EntityChain(this));
         switch (type) {
-            case EQUALS -> {
-                scope.getRepositoryScale().getByLeft(new EntityChain(this), ScaleType.EQUALS).forEach(scale -> {
-                    result.add(scale.getRight());
-                });
-            }
-            case GENERALIZATION -> {
-                scope.getRepositoryScale().getByLeft(new EntityChain(this), ScaleType.GENERALIZATION).forEach(scale -> {
-                    scope.getRepositoryScale().getByRight(scale.getRight(), ScaleType.GENERALIZATION).forEach(scale1 -> {
-                        result.add(scale1.getLeft());
-                    });
-                });
-            }
-            case CONSEQUENCE -> {
-                scope.getRepositoryScale().getByLeft(new EntityChain(this), ScaleType.CONSEQUENCE).forEach(scale -> {
-                    result.add(scale.getRight());
-                });
-            }
+            case EQUALS -> scope.getRepositoryScale().getByLeft(new EntityChain(this), ScaleType.EQUALS)
+                    .forEach(scale -> result.add(scale.getRight()));
+            case GENERALIZATION -> scope.getRepositoryScale().getByLeft(new EntityChain(this), ScaleType.GENERALIZATION)
+                    .forEach(
+                            scale -> scope.getRepositoryScale().getByRight(scale.getRight(), ScaleType.GENERALIZATION)
+                                    .forEach(scale1 -> result.add(scale1.getLeft()))
+                    );
+            case CONSEQUENCE -> scope.getRepositoryScale().getByLeft(new EntityChain(this), ScaleType.CONSEQUENCE)
+                    .forEach(scale -> result.add(scale.getRight()));
         }
     }
 
