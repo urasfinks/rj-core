@@ -7,7 +7,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 public class UtilRsa {
 
     public static String alg = "RSA";
-    public static int size = 512;
+    public static String signAlg = "MD5withRSA";
+    public static int size = 2048;
 
     public static KeyPair genPair(int size) throws NoSuchAlgorithmException {
         KeyPairGenerator generator = KeyPairGenerator.getInstance(alg);
@@ -39,15 +40,15 @@ public class UtilRsa {
     }
 
     public static String sign(String message, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        Signature signature = Signature.getInstance("SHA256withRSA");
+        Signature signature = Signature.getInstance(signAlg);
         SecureRandom secureRandom = new SecureRandom();
         signature.initSign(privateKey, secureRandom);
         signature.update(message.getBytes());
-        return UtilBase64.base64Encode(signature.sign(), true);
+        return UtilBase64.base64Encode(signature.sign(), false);
     }
 
     public static boolean verify(String message, String signature, PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        Signature publicSignature = Signature.getInstance("SHA256withRSA");
+        Signature publicSignature = Signature.getInstance(signAlg);
         publicSignature.initVerify(publicKey);
         publicSignature.update(message.getBytes());
         return publicSignature.verify(UtilBase64.base64DecodeResultBytes(signature));
