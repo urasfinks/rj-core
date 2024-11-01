@@ -1,12 +1,12 @@
-package ru.jamsys.core.i360.entity.adapter.relation.normal;
+package ru.jamsys.core.i360.entity.adapter.relation;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import ru.jamsys.core.extension.CamelNormalization;
-import ru.jamsys.core.i360.entity.adapter.relation.Relation;
+import ru.jamsys.core.i360.entity.adapter.relation.normal.*;
 
 @Getter
-public enum RelationType implements CamelNormalization {
+public enum RelationTypeNormal implements CamelNormalization {
 
     REMOVE(new RemoveRight()), // Удалить из всего контекста ["0", "0", "1", "2", "0"] mask ["0"] => ["1", "2"]
     REMOVE_WHILE(new RemoveRightWhile()), // Удалять пока встречаются ["0", "0", "1", "2", "0"] mask ["0"] => ["1", "2", "0"]
@@ -19,13 +19,13 @@ public enum RelationType implements CamelNormalization {
 
     final private Relation relation;
 
-    RelationType(Relation relation) {
+    RelationTypeNormal(Relation relation) {
         this.relation = relation;
     }
 
-    public static RelationType valueOfCamelCase(String type) {
-        RelationType[] values = values();
-        for (RelationType relationType : values) {
+    public static RelationTypeNormal valueOfCamelCase(String type) {
+        RelationTypeNormal[] values = values();
+        for (RelationTypeNormal relationType : values) {
             if (relationType.getNameCamel().equals(type)) {
                 return relationType;
             }
