@@ -9,8 +9,8 @@ import ru.jamsys.core.flat.util.UtilRsa;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 
-// IO time: 65ms
-// COMPUTE time: 61ms
+// IO time: ms
+// COMPUTE time: ms
 
 class UtilRsaTest {
 
@@ -22,6 +22,15 @@ class UtilRsaTest {
         byte[] bytes = UtilBase64.base64DecodeResultBytes(UtilByte.charsToBytes(privateKey.toCharArray()));
         String resultDecode = new String(UtilRsa.decrypt(UtilRsa.getPrivateKey(bytes), secretByte), StandardCharsets.UTF_8);
         Assertions.assertEquals("12345", resultDecode);
+    }
+
+    @Test
+    public void sign() throws Exception {
+        KeyPair keyPair = UtilRsa.genPair();
+        String msg = "Hello world Hello world Hello world Hello world Hello world Hello world";
+        String sig = UtilRsa.sign(msg, keyPair.getPrivate());
+        System.out.println(sig);
+        Assertions.assertTrue(UtilRsa.verify(msg, sig, keyPair.getPublic()));
     }
 
 }

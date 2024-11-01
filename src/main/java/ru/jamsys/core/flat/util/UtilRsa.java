@@ -38,4 +38,19 @@ public class UtilRsa {
         return keyFactory.generatePrivate(keySpec);
     }
 
+    public static String sign(String message, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        SecureRandom secureRandom = new SecureRandom();
+        signature.initSign(privateKey, secureRandom);
+        signature.update(message.getBytes());
+        return UtilBase64.base64Encode(signature.sign(), true);
+    }
+
+    public static boolean verify(String message, String signature, PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        Signature publicSignature = Signature.getInstance("SHA256withRSA");
+        publicSignature.initVerify(publicKey);
+        publicSignature.update(message.getBytes());
+        return publicSignature.verify(UtilBase64.base64DecodeResultBytes(signature));
+    }
+
 }
