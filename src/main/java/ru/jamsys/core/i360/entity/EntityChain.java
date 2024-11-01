@@ -16,6 +16,13 @@ public class EntityChain {
 
     private final List<Entity> listEntity = new ArrayList<>();
 
+    public EntityChain() {
+    }
+
+    public EntityChain(Entity entity) {
+        listEntity.add(entity);
+    }
+
     @SuppressWarnings("unused")
     @JsonValue
     public List<String> toValue() {

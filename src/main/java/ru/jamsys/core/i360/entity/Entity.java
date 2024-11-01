@@ -1,8 +1,10 @@
 package ru.jamsys.core.i360.entity;
 
+import ru.jamsys.core.i360.scale.ScaleType;
 import ru.jamsys.core.i360.scope.Scope;
 
 import java.util.Map;
+import java.util.Set;
 
 // Сущность - единица информации (объект)
 
@@ -17,6 +19,11 @@ public interface Entity {
         @SuppressWarnings("unchecked")
         Class<? extends Entity> cls = (Class<? extends Entity>) Class.forName(path + className);
         return cls.getConstructor(Map.class, Scope.class).newInstance(map, scope);
+    }
+
+    // Поучить варианты на основе следствия
+    default void getVariant(ScaleType type, Set<EntityChain> result) {
+        result.add(new EntityChain(this));
     }
 
 }

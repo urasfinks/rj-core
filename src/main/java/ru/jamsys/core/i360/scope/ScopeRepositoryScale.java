@@ -23,20 +23,20 @@ public interface ScopeRepositoryScale extends Scope {
         return result;
     }
 
-    default List<Scale> getByLeft(EntityChain entityChain) {
+    default List<Scale> getByLeft(EntityChain entityChain, ScaleType type) {
         List<Scale> result = new ArrayList<>();
         getListScale().forEach(scale -> {
-            if (scale.getLeft().equals(entityChain)) {
+            if (scale.getLeft().equals(entityChain) && scale.getType().equals(type)) {
                 result.add(scale);
             }
         });
         return result;
     }
 
-    default List<Scale> getByRight(EntityChain entityChain) {
+    default List<Scale> getByRight(EntityChain entityChain, ScaleType type) {
         List<Scale> result = new ArrayList<>();
         getListScale().forEach(scale -> {
-            if (scale.getRight().equals(entityChain)) {
+            if (scale.getRight().equals(entityChain) && scale.getType().equals(type)) {
                 result.add(scale);
             }
         });

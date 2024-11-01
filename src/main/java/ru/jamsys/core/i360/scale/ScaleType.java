@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum ScaleType {
 
     EQUALS("="), // Эквиваленция
-    FOLLOW("=>"), // Следствие
+    CONSEQUENCE("=>"), // Следствие
     GENERALIZATION("~>"), // Обобщение
 
     NOT_EQUALS("!="),
-    NOT_FOLLOW("!=>"),
+    NOT_CONSEQUENCE("!=>"),
     NOT_GENERALIZATION("!~>");
 
     final String reduction;
