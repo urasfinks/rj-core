@@ -1,7 +1,7 @@
 package ru.jamsys.core.i360.scope;
 
-import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.Entity;
+import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.scale.Scale;
 
 import java.util.List;
@@ -15,20 +15,20 @@ public interface Scope {
 
     Map<EntityChain, EntityChain> getMapEntityChain();
 
-    EntityChain getEntityChainByUuids(List<String> listUuid);
+    default ScopeRepositoryScale getRepositoryScale() {
+        return (ScopeRepositoryScale) this;
+    }
 
-    boolean containsEntityChain(EntityChain entityChain);
+    default ScopeJsonDeserialize getJsonDeserialize() {
+        return (ScopeJsonDeserialize) this;
+    }
 
-    String toJson();
+    default ScopeJsonSerialize getJsonSerialize() {
+        return (ScopeJsonSerialize) this;
+    }
 
-    void fromJson(String json) throws Throwable;
-
-    void read(String path) throws Throwable;
-
-    void write(String path) throws Throwable;
-
-    List<Scale> getScaleByLeft(EntityChain entityChain);
-
-    List<Scale> getScaleByRight(EntityChain entityChain);
+    default ScopeRepositoryEntityChain getScopeRepositoryEntityChain() {
+        return (ScopeRepositoryEntityChain) this;
+    }
 
 }
