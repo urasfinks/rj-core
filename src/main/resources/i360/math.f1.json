@@ -9,8 +9,43 @@
     "k2" : {
       "data" : "2"
     },
+    "k3" : {
+      "data" : "3"
+    },
+    "k4" : {
+      "data" : "4"
+    },
+    "k5" : {
+      "data" : "5"
+    },
     "k10" : {
       "data" : "число"
+    },
+    "k6" : {
+      "data" : "6"
+    },
+    "k7" : {
+      "data" : "7"
+    },
+    "k8" : {
+      "data" : "8"
+    },
+    "k9" : {
+      "data" : "9"
+    },
+    "_f0": {
+      "class": "adapter.AdapterRelationSetNormal",
+      "type": "RemoveWhile",
+      "entityChain": ["k0"],
+      "min": null,
+      "max": null
+    },
+    "_f1": {
+      "class": "adapter.AdapterRelationSetNormal",
+      "type": "Forward",
+      "entityChain": ["k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8", "k9"],
+      "min": null,
+      "max": null
     }
   },
   "listScale" : [
@@ -18,10 +53,112 @@
       "type" : "=",
       "left" : [
         "k0",
-        "k1"
+        "k5"
+      ],
+      "right" : [
+        "k5"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "=",
+      "left" : [
+        "k0",
+        "k0",
+        "k5"
+      ],
+      "right" : [
+        "k5"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "=>",
+      "left" : [
+        "k0"
       ],
       "right" : [
         "k1"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "=>",
+      "left" : [
+        "k1"
+      ],
+      "right" : [
+        "k2"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "=>",
+      "left" : [
+        "k2"
+      ],
+      "right" : [
+        "k3"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "=>",
+      "left" : [
+        "k3"
+      ],
+      "right" : [
+        "k4"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "=>",
+      "left" : [
+        "k4"
+      ],
+      "right" : [
+        "k5"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "=>",
+      "left" : [
+        "k5"
+      ],
+      "right" : [
+        "k6"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "=>",
+      "left" : [
+        "k6"
+      ],
+      "right" : [
+        "k7"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "=>",
+      "left" : [
+        "k7"
+      ],
+      "right" : [
+        "k8"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "=>",
+      "left" : [
+        "k8"
+      ],
+      "right" : [
+        "k9"
       ],
       "stability" : 1.0
     },
@@ -49,6 +186,76 @@
       "type" : "~>",
       "left" : [
         "k2"
+      ],
+      "right" : [
+        "k10"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "~>",
+      "left" : [
+        "k3"
+      ],
+      "right" : [
+        "k10"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "~>",
+      "left" : [
+        "k4"
+      ],
+      "right" : [
+        "k10"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "~>",
+      "left" : [
+        "k5"
+      ],
+      "right" : [
+        "k10"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "~>",
+      "left" : [
+        "k6"
+      ],
+      "right" : [
+        "k10"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "~>",
+      "left" : [
+        "k7"
+      ],
+      "right" : [
+        "k10"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "~>",
+      "left" : [
+        "k8"
+      ],
+      "right" : [
+        "k10"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "~>",
+      "left" : [
+        "k9"
       ],
       "right" : [
         "k10"
