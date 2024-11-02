@@ -1,0 +1,35 @@
+{
+  "mapEntity" : {
+    "k0" : {
+      "data" : "0"
+    },
+    "k1" : {
+      "data" : "1"
+    },
+    "k10" : {
+      "data" : "число"
+    }
+  },
+  "listScale" : [
+    {
+      "type" : "=>",
+      "left" : [
+        "k0"
+      ],
+      "right" : [
+        "k1"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "~>",
+      "left" : [
+        "k0"
+      ],
+      "right" : [
+        "k10"
+      ],
+      "stability" : 1.0
+    }
+  ]
+}
