@@ -12,6 +12,7 @@ import ru.jamsys.core.i360.scope.ScopeImpl;
 import java.util.List;
 
 class InvestigationTest {
+
     @Test
     public void test() throws Throwable {
         Scope scope = new ScopeImpl("i360/investigation/1.json");
@@ -21,7 +22,8 @@ class InvestigationTest {
                 .setRight(new EntityChain().add(scope.getMapEntity().get("k10")))
                 .setType(ScaleType.GENERALIZATION)
                 .setStability(1);
-        ;
+
         Assertions.assertEquals(new ArrayListBuilder<>().append(scale), research);
     }
+
 }
