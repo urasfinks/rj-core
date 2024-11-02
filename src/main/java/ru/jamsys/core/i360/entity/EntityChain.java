@@ -19,6 +19,11 @@ public class EntityChain {
     public EntityChain() {
     }
 
+    public EntityChain add(Entity entity) {
+        listEntity.add(entity);
+        return this;
+    }
+
     public EntityChain(Entity entity) {
         listEntity.add(entity);
     }
