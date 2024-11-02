@@ -19,6 +19,13 @@ public class ScopeImpl implements
         ScopeJsonDeserialize,
         ScopeJsonSerialize {
 
+    public ScopeImpl() {
+    }
+
+    public ScopeImpl(String path) throws Throwable {
+        getJsonDeserialize().read(path);
+    }
+
     // key: uuid; value: Entity
     final private Map<String, Entity> mapEntity = new HashMap<>();
 
