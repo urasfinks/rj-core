@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.ToString;
 import ru.jamsys.core.i360.entity.EntityChain;
-import ru.jamsys.core.i360.scale.operation.GeneralizationOperation;
 
 import java.util.Objects;
 
@@ -13,7 +12,7 @@ import java.util.Objects;
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"type", "left", "right", "stability"})
-public class ScaleImpl implements Scale, GeneralizationOperation {
+public class ScaleImpl implements Scale {
 
     private EntityChain left;
 

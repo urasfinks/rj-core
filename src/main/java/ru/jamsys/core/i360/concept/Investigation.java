@@ -4,24 +4,21 @@ import ru.jamsys.core.extension.builder.ArrayListBuilder;
 import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.scale.ScaleImpl;
 import ru.jamsys.core.i360.scale.ScaleType;
+import ru.jamsys.core.i360.scale.operation.GeneralizationTree;
 import ru.jamsys.core.i360.scope.Scope;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /*
- * Весы равенства/следствия с большой вероятностью имеют одинаковые классы объектов
+ * Концепт однотипности обобщения равных или следственных объектов
+ * Весы равенства/следствия имеют одинаковые классы объектов
  * */
 
 public class Investigation {
 
     public static List<ScaleImpl> research(Scope scope) {
-        Map<EntityChain, EntityChain> generalization = new HashMap<>();
-        scope.getRepositoryScale().getByType(ScaleType.GENERALIZATION).forEach(
-                scale -> generalization.put(scale.getLeft(), scale.getRight())
-        );
+
         List<ScaleImpl> concept = new ArrayList<>();
         // Предположение следствия/равенства, что оно того-же класса
         scope.getRepositoryScale().getByTypes(new ArrayListBuilder<ScaleType>()
@@ -32,8 +29,9 @@ public class Investigation {
              * Если мы знаем, что левая часть это некоторый класс
              * Смеем предположить, что правая часть это тот же класс
              * */
-            if (generalization.containsKey(scale.getLeft())) {
-                EntityChain leftGen = generalization.get(scale.getLeft());
+            GeneralizationTree generalizationTree = new GeneralizationTree(scope, scale.getLeft());
+            if (!generalizationTree.getParent().isEmpty()) {
+                EntityChain leftGen = generalizationTree.getParent().firstEntry().getKey();
                 if (scope
                         .getRepositoryScale()
                         .getByLeft(scale.getRight(), ScaleType.NOT_GENERALIZATION)

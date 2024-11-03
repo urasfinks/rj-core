@@ -6,6 +6,7 @@ import ru.jamsys.core.extension.builder.ArrayListBuilder;
 import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.scale.ScaleImpl;
 import ru.jamsys.core.i360.scale.ScaleType;
+import ru.jamsys.core.i360.scale.operation.GeneralizationTree;
 import ru.jamsys.core.i360.scope.Scope;
 import ru.jamsys.core.i360.scope.ScopeImpl;
 
@@ -28,10 +29,10 @@ class InvestigationTest {
     @Test
     public void test2() throws Throwable {
         Scope scope = new ScopeImpl("i360/investigation/2.json");
-        ScaleImpl scale = scope.getRepositoryScale().getListScale().getFirst();
+        GeneralizationTree generalizationTree = new GeneralizationTree(scope, scope.getRepositoryScale().getListScale().getFirst().getLeft());
         Assertions.assertEquals(
                 new EntityChain().add(scope.getMapEntity().get("k1")),
-                scale.getGeneralizationOperation().get(scope).getParent().firstEntry().getKey()
+                generalizationTree.getParent().firstEntry().getKey()
         );
     }
 

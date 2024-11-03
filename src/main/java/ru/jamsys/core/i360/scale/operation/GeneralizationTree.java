@@ -30,15 +30,15 @@ public class GeneralizationTree {
 
     private void clearCycleReference() {
         List<EntityChain> remove = new ArrayList<>();
-        parent.forEach((_, tree) -> remove.addAll(tree.getParents()));
+        parent.forEach((_, tree) -> remove.addAll(tree.getParentRecursive()));
         remove.forEach(parent::remove);
     }
 
-    public List<EntityChain> getParents() {
+    public List<EntityChain> getParentRecursive() {
         List<EntityChain> result = new ArrayList<>();
         parent.forEach((entityChain, tree) -> {
             result.add(entityChain);
-            result.addAll(tree.getParents());
+            result.addAll(tree.getParentRecursive());
         });
         return result;
     }
