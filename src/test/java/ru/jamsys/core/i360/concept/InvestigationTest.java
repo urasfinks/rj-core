@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.builder.ArrayListBuilder;
 import ru.jamsys.core.i360.entity.EntityChain;
+import ru.jamsys.core.i360.scale.Scale;
 import ru.jamsys.core.i360.scale.ScaleImpl;
 import ru.jamsys.core.i360.scale.ScaleType;
 import ru.jamsys.core.i360.scale.operation.GeneralizationTree;
@@ -17,7 +18,7 @@ class InvestigationTest {
     @Test
     public void test() throws Throwable {
         Scope scope = new ScopeImpl("i360/investigation/1.json");
-        List<ScaleImpl> research = Investigation.research(scope);
+        List<Scale> research = Investigation.research(scope);
         ScaleImpl scale = new ScaleImpl()
                 .setLeft(new EntityChain().add(scope.getMapEntity().get("k1")))
                 .setRight(new EntityChain().add(scope.getMapEntity().get("k10")))
