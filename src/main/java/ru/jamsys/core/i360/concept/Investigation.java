@@ -2,6 +2,7 @@ package ru.jamsys.core.i360.concept;
 
 import ru.jamsys.core.extension.builder.ArrayListBuilder;
 import ru.jamsys.core.i360.entity.EntityChain;
+import ru.jamsys.core.i360.scale.Scale;
 import ru.jamsys.core.i360.scale.ScaleImpl;
 import ru.jamsys.core.i360.scale.ScaleType;
 import ru.jamsys.core.i360.scale.operation.GeneralizationTree;
@@ -17,20 +18,14 @@ import java.util.List;
 
 public class Investigation {
 
-    public static List<ScaleImpl> research(Scope scope) {
-
-        List<ScaleImpl> concept = new ArrayList<>();
-        // Предположение следствия/равенства, что оно того-же класса
+    public static List<Scale> research(Scope scope) {
+        List<Scale> concept = new ArrayList<>();
         scope.getRepositoryScale().getByTypes(new ArrayListBuilder<ScaleType>()
                 .append(ScaleType.CONSEQUENCE)
                 .append(ScaleType.EQUALS)
         ).forEach(scale -> {
-            /*
-             * Если мы знаем, что левая часть это некоторый класс
-             * Смеем предположить, что правая часть это тот же класс
-             * */
-            GeneralizationTree generalizationTree = new GeneralizationTree(scope, scale.getLeft());
-            if (!generalizationTree.getParent().isEmpty()) {
+            GeneralizationTree generalizationTree = scope.getGeneralizationTree(scale.getLeft());
+            if (!generalizationTree.getParent().isEmpty()) { // Если у левой части есть определённое обобщение
                 EntityChain leftGen = generalizationTree.getParent().firstEntry().getKey();
                 if (scope
                         .getRepositoryScale()

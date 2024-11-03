@@ -2,6 +2,8 @@ package ru.jamsys.core.i360.scope;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import ru.jamsys.core.i360.entity.Entity;
+import ru.jamsys.core.i360.entity.EntityChain;
+import ru.jamsys.core.i360.scale.operation.GeneralizationTree;
 
 import java.util.Map;
 
@@ -32,6 +34,11 @@ public interface Scope {
     @JsonIgnore
     default ScopeRepositoryEntityChain getRepositoryEntityChain() {
         return (ScopeRepositoryEntityChain) this;
+    }
+
+    @JsonIgnore
+    default GeneralizationTree getGeneralizationTree(EntityChain entityChain) {
+        return new GeneralizationTree(this, entityChain);
     }
 
 }
