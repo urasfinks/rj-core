@@ -17,6 +17,9 @@ class InvestigationTest {
 
     @Test
     public void test() throws Throwable {
+        // 1 - число
+        // 1 следует 2
+        // Концепт: 2 - число
         Scope scope = new ScopeImpl("i360/investigation/1.json");
         List<Scale> research = Investigation.research(scope);
         ScaleImpl scale = new ScaleImpl()
@@ -29,11 +32,15 @@ class InvestigationTest {
 
     @Test
     public void test2() throws Throwable {
+        // Щенок ~> Млекопитающее
+        // Щенок ~> Собака
+        // Собака ~> Млекопитающее
+        // Для щенка первое обобщение - Собака, а не Млекопитающее
         Scope scope = new ScopeImpl("i360/investigation/2.json");
         GeneralizationTree generalizationTree = new GeneralizationTree(scope, scope.getRepositoryScale().getListScale().getFirst().getLeft());
         Assertions.assertEquals(
                 new EntityChain().add(scope.getMapEntity().get("k1")),
-                generalizationTree.getParent().firstEntry().getKey()
+                generalizationTree.getGeneralization().firstEntry().getKey()
         );
     }
 

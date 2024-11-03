@@ -25,8 +25,8 @@ public class Investigation {
                 .append(ScaleType.EQUALS)
         ).forEach(scale -> {
             GeneralizationTree generalizationTree = scope.getGeneralizationTree(scale.getLeft());
-            if (!generalizationTree.getParent().isEmpty()) { // Если у левой части есть определённое обобщение
-                EntityChain leftGen = generalizationTree.getParent().firstEntry().getKey();
+            if (!generalizationTree.getGeneralization().isEmpty()) { // Если у левой части есть определённое обобщение
+                EntityChain leftGen = generalizationTree.getGeneralization().firstEntry().getKey();
                 if (scope
                         .getRepositoryScale()
                         .getByLeft(scale.getRight(), ScaleType.NOT_GENERALIZATION)

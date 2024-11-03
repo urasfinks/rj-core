@@ -14,7 +14,7 @@ import java.util.*;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class GeneralizationTree {
 
-    public final LinkedHashMap<EntityChain, GeneralizationTree> parent = new LinkedHashMap<>();
+    public final LinkedHashMap<EntityChain, GeneralizationTree> generalization = new LinkedHashMap<>();
 
     public GeneralizationTree(Scope scope, EntityChain ref) {
         fill(scope, ref);
@@ -24,21 +24,21 @@ public class GeneralizationTree {
     private void fill(Scope scope, EntityChain ref) {
         scope.getRepositoryScale().getByLeft(ref, ScaleType.GENERALIZATION).forEach(scale -> {
             GeneralizationTree tree = new GeneralizationTree(scope, scale.getRight());
-            parent.put(scale.getRight(), tree);
+            generalization.put(scale.getRight(), tree);
         });
     }
 
     private void clearCycleReference() {
         List<EntityChain> remove = new ArrayList<>();
-        parent.forEach((_, tree) -> remove.addAll(tree.getParentRecursive()));
-        remove.forEach(parent::remove);
+        generalization.forEach((_, tree) -> remove.addAll(tree.getGeneralizationRecursive()));
+        remove.forEach(generalization::remove);
     }
 
-    public List<EntityChain> getParentRecursive() {
+    public List<EntityChain> getGeneralizationRecursive() {
         List<EntityChain> result = new ArrayList<>();
-        parent.forEach((entityChain, tree) -> {
+        generalization.forEach((entityChain, tree) -> {
             result.add(entityChain);
-            result.addAll(tree.getParentRecursive());
+            result.addAll(tree.getGeneralizationRecursive());
         });
         return result;
     }
