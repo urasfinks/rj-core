@@ -25,7 +25,7 @@ public class Main {
         List<List<EntityChain>> res = new ArrayList<>();
         // entityChain.getListEntity() = ["0", "1"]
         // ("0" => [chain,chain,chain]) Set<EntityChain> result = [[chain,chain,chain], [chain,chain,chain]]
-        entityChain.getListEntity().forEach(entity -> {
+        entityChain.getChain().forEach(entity -> {
             Set<EntityChain> result = new HashSet<>();
             entity.getVariant(ScaleType.EQUALS, result);
             entity.getVariant(ScaleType.GENERALIZATION, result);
@@ -37,7 +37,7 @@ public class Main {
             EntityChain entityChain1 = new EntityChain();
             @SuppressWarnings("unchecked")
             List<EntityChain> list = (List<EntityChain>) object;
-            list.forEach(entityChain2 -> entityChain1.getListEntity().addAll(entityChain2.getListEntity()));
+            list.forEach(entityChain2 -> entityChain1.getChain().addAll(entityChain2.getChain()));
         });
     }
 

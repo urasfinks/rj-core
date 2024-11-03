@@ -10,29 +10,29 @@ import java.util.List;
 import java.util.Objects;
 
 @Getter
-@ToString
+@ToString(includeFieldNames = false, doNotUseGetters = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EntityChain {
 
-    private final List<Entity> listEntity = new ArrayList<>();
+    private final List<Entity> chain = new ArrayList<>();
 
     public EntityChain() {
     }
 
     public EntityChain add(Entity entity) {
-        listEntity.add(entity);
+        chain.add(entity);
         return this;
     }
 
     public EntityChain(Entity entity) {
-        listEntity.add(entity);
+        chain.add(entity);
     }
 
     @SuppressWarnings("unused")
     @JsonValue
     public List<String> toValue() {
         List<String> result = new ArrayList<>();
-        listEntity.forEach(entity -> result.add(entity.getUuid()));
+        chain.forEach(entity -> result.add(entity.getUuid()));
         return result;
     }
 
@@ -41,12 +41,12 @@ public class EntityChain {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         EntityChain entityChain = (EntityChain) object;
-        return Objects.equals(listEntity, entityChain.listEntity);
+        return Objects.equals(chain, entityChain.chain);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(listEntity);
+        return Objects.hashCode(chain);
     }
 
 }

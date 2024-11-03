@@ -10,10 +10,10 @@ public class Add implements Relation {
 
     @Override
     public EntityChain compute(EntityChain leftEntityChain, EntityChain rightEntityChain) {
-        List<Entity> leftEntityChainListEntity = leftEntityChain.getListEntity();
-        List<Entity> rightEntityChainListEntity = rightEntityChain.getListEntity();
+        List<Entity> leftEntityChainListEntity = leftEntityChain.getChain();
+        List<Entity> rightEntityChainListEntity = rightEntityChain.getChain();
         EntityChain result = new EntityChain();
-        List<Entity> listEntityResult = result.getListEntity();
+        List<Entity> listEntityResult = result.getChain();
         listEntityResult.addAll(leftEntityChainListEntity);
         listEntityResult.addAll(rightEntityChainListEntity);
         return listEntityResult.isEmpty() ? null : result;

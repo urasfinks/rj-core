@@ -1,0 +1,45 @@
+{
+  "mapEntity" : {
+    "k0" : {
+      "data" : "Щенок"
+    },
+    "k1" : {
+      "data" : "Собака"
+    },
+    "k2" : {
+      "data" : "Млекопитающее"
+    }
+  },
+  "listScale" : [
+    {
+      "type" : "~>",
+      "left" : [
+        "k0"
+      ],
+      "right" : [
+        "k1"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "~>",
+      "left" : [
+        "k1"
+      ],
+      "right" : [
+        "k2"
+      ],
+      "stability" : 1.0
+    },
+    {
+      "type" : "~>",
+      "left" : [
+        "k0"
+      ],
+      "right" : [
+        "k2"
+      ],
+      "stability" : 1.0
+    }
+  ]
+}

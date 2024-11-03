@@ -1,7 +1,7 @@
 package ru.jamsys.core.i360.scope;
 
 import ru.jamsys.core.i360.entity.EntityChain;
-import ru.jamsys.core.i360.scale.Scale;
+import ru.jamsys.core.i360.scale.ScaleImpl;
 import ru.jamsys.core.i360.scale.ScaleType;
 
 import java.util.ArrayList;
@@ -11,10 +11,10 @@ import java.util.List;
 
 public interface ScopeRepositoryScale extends Scope {
 
-    List<Scale> getListScale();
+    List<ScaleImpl> getListScale();
 
-    default List<Scale> get(EntityChain entityChain) {
-        List<Scale> result = new ArrayList<>();
+    default List<ScaleImpl> get(EntityChain entityChain) {
+        List<ScaleImpl> result = new ArrayList<>();
         getListScale().forEach(scale -> {
             if (scale.getLeft().equals(entityChain) || scale.getRight().equals(entityChain)) {
                 result.add(scale);
@@ -23,8 +23,8 @@ public interface ScopeRepositoryScale extends Scope {
         return result;
     }
 
-    default List<Scale> getByLeft(EntityChain entityChain, ScaleType type) {
-        List<Scale> result = new ArrayList<>();
+    default List<ScaleImpl> getByLeft(EntityChain entityChain, ScaleType type) {
+        List<ScaleImpl> result = new ArrayList<>();
         getListScale().forEach(scale -> {
             if (scale.getLeft().equals(entityChain) && scale.getType().equals(type)) {
                 result.add(scale);
@@ -33,8 +33,8 @@ public interface ScopeRepositoryScale extends Scope {
         return result;
     }
 
-    default List<Scale> getByRight(EntityChain entityChain, ScaleType type) {
-        List<Scale> result = new ArrayList<>();
+    default List<ScaleImpl> getByRight(EntityChain entityChain, ScaleType type) {
+        List<ScaleImpl> result = new ArrayList<>();
         getListScale().forEach(scale -> {
             if (scale.getRight().equals(entityChain) && scale.getType().equals(type)) {
                 result.add(scale);
@@ -43,10 +43,20 @@ public interface ScopeRepositoryScale extends Scope {
         return result;
     }
 
-    default List<Scale> getByType(ScaleType type) {
-        List<Scale> result = new ArrayList<>();
+    default List<ScaleImpl> getByType(ScaleType type) {
+        List<ScaleImpl> result = new ArrayList<>();
         getListScale().forEach(scale -> {
-            if (scale.getType().equals(type)) {
+            if (type.equals(scale.getType())) {
+                result.add(scale);
+            }
+        });
+        return result;
+    }
+
+    default List<ScaleImpl> getByTypes(List<ScaleType> types) {
+        List<ScaleImpl> result = new ArrayList<>();
+        getListScale().forEach(scale -> {
+            if (types.contains(scale.getType())) {
                 result.add(scale);
             }
         });

@@ -97,7 +97,7 @@ public class GenerateSequence {
     }
 
     public static List<List<Entity>> evclid(EntityChain entityChain) {
-        List<Entity> listEntity = entityChain.getListEntity();
+        List<Entity> listEntity = entityChain.getChain();
         //System.out.println("> " + listEntity);
         /*
          * 0 0 9

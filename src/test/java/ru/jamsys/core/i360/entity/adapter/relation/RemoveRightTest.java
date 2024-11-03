@@ -19,18 +19,18 @@ class RemoveRightTest {
     public void test() {
         // Удалить из всего контекста ["0", "0", "1", "2", "0"] mask ["0"] => ["1", "2"]
         EntityChain input = new EntityChain();
-        input.getListEntity().add(new EntityImpl(null, "0"));
-        input.getListEntity().add(new EntityImpl(null, "0"));
-        input.getListEntity().add(new EntityImpl(null, "1"));
-        input.getListEntity().add(new EntityImpl(null, "2"));
-        input.getListEntity().add(new EntityImpl(null, "0"));
+        input.getChain().add(new EntityImpl(null, "0"));
+        input.getChain().add(new EntityImpl(null, "0"));
+        input.getChain().add(new EntityImpl(null, "1"));
+        input.getChain().add(new EntityImpl(null, "2"));
+        input.getChain().add(new EntityImpl(null, "0"));
 
         EntityChain selection = new EntityChain();
-        selection.getListEntity().add(new EntityImpl(null, "0"));
+        selection.getChain().add(new EntityImpl(null, "0"));
 
         EntityChain result = new EntityChain();
-        result.getListEntity().add(new EntityImpl(null, "1"));
-        result.getListEntity().add(new EntityImpl(null, "2"));
+        result.getChain().add(new EntityImpl(null, "1"));
+        result.getChain().add(new EntityImpl(null, "2"));
 
         Assertions.assertEquals(result, new RemoveRight().compute(input, selection));
 
@@ -40,20 +40,20 @@ class RemoveRightTest {
     public void test2() {
         // ["0", "1", "2", "3"] mask ["2", "3", "4", "5"] => ["0", "1"]
         EntityChain input = new EntityChain();
-        input.getListEntity().add(new EntityImpl(null, "0"));
-        input.getListEntity().add(new EntityImpl(null, "1"));
-        input.getListEntity().add(new EntityImpl(null, "2"));
-        input.getListEntity().add(new EntityImpl(null, "3"));
+        input.getChain().add(new EntityImpl(null, "0"));
+        input.getChain().add(new EntityImpl(null, "1"));
+        input.getChain().add(new EntityImpl(null, "2"));
+        input.getChain().add(new EntityImpl(null, "3"));
 
         EntityChain selection = new EntityChain();
-        selection.getListEntity().add(new EntityImpl(null, "2"));
-        selection.getListEntity().add(new EntityImpl(null, "3"));
-        selection.getListEntity().add(new EntityImpl(null, "4"));
-        selection.getListEntity().add(new EntityImpl(null, "5"));
+        selection.getChain().add(new EntityImpl(null, "2"));
+        selection.getChain().add(new EntityImpl(null, "3"));
+        selection.getChain().add(new EntityImpl(null, "4"));
+        selection.getChain().add(new EntityImpl(null, "5"));
 
         EntityChain result = new EntityChain();
-        result.getListEntity().add(new EntityImpl(null, "0"));
-        result.getListEntity().add(new EntityImpl(null, "1"));
+        result.getChain().add(new EntityImpl(null, "0"));
+        result.getChain().add(new EntityImpl(null, "1"));
 
         Assertions.assertEquals(result, new RemoveRight().compute(input, selection));
 

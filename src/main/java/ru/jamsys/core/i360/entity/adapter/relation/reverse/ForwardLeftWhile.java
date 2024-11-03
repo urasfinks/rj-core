@@ -10,10 +10,10 @@ public class ForwardLeftWhile implements Relation {
 
     @Override
     public EntityChain compute(EntityChain leftEntityChain, EntityChain rightEntityChain) {
-        List<Entity> leftEntityChainListEntity = leftEntityChain.getListEntity();
-        List<Entity> rightEntityChainListEntity = rightEntityChain.getListEntity();
+        List<Entity> leftEntityChainListEntity = leftEntityChain.getChain();
+        List<Entity> rightEntityChainListEntity = rightEntityChain.getChain();
         EntityChain result = new EntityChain();
-        List<Entity> listEntityResult = result.getListEntity();
+        List<Entity> listEntityResult = result.getChain();
         for (Entity entity : leftEntityChainListEntity) {
             if (rightEntityChainListEntity.contains(entity)) {
                 listEntityResult.add(entity);

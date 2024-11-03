@@ -14,29 +14,29 @@ class GenerateAdapterSequenceTest {
     @Test
     void generate() {
         EntityChain ctx0 = new EntityChain();
-        ctx0.getListEntity().add(new EntityImpl(null, "9"));
+        ctx0.getChain().add(new EntityImpl(null, "9"));
 
         EntityChain ctx1 = new EntityChain();
-        ctx1.getListEntity().add(new EntityImpl(null, "0"));
-        ctx1.getListEntity().add(new EntityImpl(null, "0"));
-        ctx1.getListEntity().add(new EntityImpl(null, "9"));
+        ctx1.getChain().add(new EntityImpl(null, "0"));
+        ctx1.getChain().add(new EntityImpl(null, "0"));
+        ctx1.getChain().add(new EntityImpl(null, "9"));
 
         EntityChain ctx2 = new EntityChain();
-        ctx2.getListEntity().add(new EntityImpl(null, "0"));
-        ctx2.getListEntity().add(new EntityImpl(null, "9"));
+        ctx2.getChain().add(new EntityImpl(null, "0"));
+        ctx2.getChain().add(new EntityImpl(null, "9"));
 
         EntityChain ctx3 = new EntityChain();
-        ctx3.getListEntity().add(new EntityImpl(null, "0"));
-        ctx3.getListEntity().add(new EntityImpl(null, "0"));
-        ctx3.getListEntity().add(new EntityImpl(null, "0"));
-        ctx3.getListEntity().add(new EntityImpl(null, "9"));
+        ctx3.getChain().add(new EntityImpl(null, "0"));
+        ctx3.getChain().add(new EntityImpl(null, "0"));
+        ctx3.getChain().add(new EntityImpl(null, "0"));
+        ctx3.getChain().add(new EntityImpl(null, "9"));
 
         EntityChain ctx4 = new EntityChain();
-        ctx4.getListEntity().add(new EntityImpl(null, "0"));
-        ctx4.getListEntity().add(new EntityImpl(null, "0"));
-        ctx4.getListEntity().add(new EntityImpl(null, "0"));
-        ctx4.getListEntity().add(new EntityImpl(null, "0"));
-        ctx4.getListEntity().add(new EntityImpl(null, "9"));
+        ctx4.getChain().add(new EntityImpl(null, "0"));
+        ctx4.getChain().add(new EntityImpl(null, "0"));
+        ctx4.getChain().add(new EntityImpl(null, "0"));
+        ctx4.getChain().add(new EntityImpl(null, "0"));
+        ctx4.getChain().add(new EntityImpl(null, "9"));
 
         ArrayList<EntityChain> listEntityChain = new ArrayList<>();
         listEntityChain.add(ctx0);

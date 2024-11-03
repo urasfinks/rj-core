@@ -12,16 +12,16 @@ class AddTest {
     public void test() {
         // Добавить ["1", "2"] mask ["3"] => ["1", "2", "3"]
         EntityChain input = new EntityChain();
-        input.getListEntity().add(new EntityImpl(null, "1"));
-        input.getListEntity().add(new EntityImpl(null, "2"));
+        input.getChain().add(new EntityImpl(null, "1"));
+        input.getChain().add(new EntityImpl(null, "2"));
 
         EntityChain selection = new EntityChain();
-        selection.getListEntity().add(new EntityImpl(null, "3"));
+        selection.getChain().add(new EntityImpl(null, "3"));
 
         EntityChain result = new EntityChain();
-        result.getListEntity().add(new EntityImpl(null, "1"));
-        result.getListEntity().add(new EntityImpl(null, "2"));
-        result.getListEntity().add(new EntityImpl(null, "3"));
+        result.getChain().add(new EntityImpl(null, "1"));
+        result.getChain().add(new EntityImpl(null, "2"));
+        result.getChain().add(new EntityImpl(null, "3"));
 
         Assertions.assertEquals(result, new Add().compute(input, selection));
 

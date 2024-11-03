@@ -1,63 +1,22 @@
 package ru.jamsys.core.i360.scale;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import ru.jamsys.core.i360.entity.EntityChain;
+import ru.jamsys.core.i360.scale.operation.GeneralizationOperation;
 
-import java.util.Objects;
+public interface Scale {
 
-@Getter
-@Setter
-@ToString
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"type", "left", "right", "stability"})
-public class Scale {
+    EntityChain getLeft();
 
-    private EntityChain left;
+    EntityChain getRight();
 
-    private EntityChain right;
+    ScaleType getType();
 
-    private ScaleType type;
+    double getStability();
 
-    private double stability = 0; // [0-1]
-
-    public Scale setLeft(EntityChain left) {
-        this.left = left;
-        return this;
-    }
-
-    public Scale setRight(EntityChain right) {
-        this.right = right;
-        return this;
-    }
-
-    public Scale setType(ScaleType type) {
-        this.type = type;
-        return this;
-    }
-
-    public Scale setStability(double stability) {
-        this.stability = stability;
-        return this;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) return true;
-        if (object == null || getClass() != object.getClass()) return false;
-        Scale scale = (Scale) object;
-        return Double.compare(stability, scale.stability) == 0
-                && Objects.equals(left, scale.left)
-                && Objects.equals(right, scale.right)
-                && type == scale.type;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(left, right, type, stability);
+    @JsonIgnore
+    default GeneralizationOperation getGeneralizationOperation() {
+        return (GeneralizationOperation) this;
     }
 
 }

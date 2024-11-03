@@ -5,7 +5,7 @@ import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.UtilFileResource;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.i360.entity.Entity;
-import ru.jamsys.core.i360.scale.Scale;
+import ru.jamsys.core.i360.scale.ScaleImpl;
 import ru.jamsys.core.i360.scale.ScaleType;
 
 import java.util.List;
@@ -48,10 +48,10 @@ public interface ScopeJsonDeserialize extends Scope {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> jsonListScale = (List<Map<String, Object>>) mapOrThrow.get("listScale");
 
-        List<Scale> listScale = getRepositoryScale().getListScale();
+        List<ScaleImpl> listScale = getRepositoryScale().getListScale();
 
         jsonListScale.forEach(map -> {
-            Scale scale = new Scale();
+            ScaleImpl scale = new ScaleImpl();
             scale.setType(ScaleType.valueOfReduction((String) map.get("type")));
             scale.setStability(Double.parseDouble(map.get("stability") + ""));
 

@@ -14,7 +14,7 @@ public interface ScopeRepositoryEntityChain extends Scope {
 
     default EntityChain getByUuids(List<String> listUuid) {
         EntityChain entityChain = new EntityChain();
-        List<Entity> listEntity = entityChain.getListEntity();
+        List<Entity> listEntity = entityChain.getChain();
         Map<String, Entity> mapEntity = getMapEntity();
         listUuid.forEach(uuid -> {
             if (mapEntity.containsKey(uuid)) {

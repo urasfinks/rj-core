@@ -9,9 +9,9 @@ public class Reverse implements Transform {
 
     @Override
     public EntityChain transform(EntityChain leftEntityChain) {
-        List<Entity> contextEntity = leftEntityChain.getListEntity();
+        List<Entity> contextEntity = leftEntityChain.getChain();
         EntityChain result = new EntityChain();
-        List<Entity> listEntityResult = result.getListEntity();
+        List<Entity> listEntityResult = result.getChain();
         for (int i = contextEntity.size() - 1; i >= 0; i--) {
             listEntityResult.add(contextEntity.get(i));
         }

@@ -11,11 +11,11 @@ import ru.jamsys.core.i360.scope.ScopeImpl;
 // следствия и так для всех типов (справедливость утверждения).
 @Getter
 @Setter
-public class ScaleConcept extends Scale {
+public class ScaleImplConcept extends ScaleImpl {
 
     private final Scope scope = new ScopeImpl();
 
-    public boolean check(Scale scale) {
+    public boolean check(ScaleImpl scale) {
         return false;
     }
 

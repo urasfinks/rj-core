@@ -12,22 +12,22 @@ class MapLeftTest {
     public void test() {
         // Заменить ["2", "1", "2", "3"] mask ["1", "2"]/["!", "-"] => ["-", "!", "-", "3"]
         EntityChain input = new EntityChain();
-        input.getListEntity().add(new EntityImpl(null, "2"));
-        input.getListEntity().add(new EntityImpl(null, "1"));
-        input.getListEntity().add(new EntityImpl(null, "2"));
-        input.getListEntity().add(new EntityImpl(null, "3"));
+        input.getChain().add(new EntityImpl(null, "2"));
+        input.getChain().add(new EntityImpl(null, "1"));
+        input.getChain().add(new EntityImpl(null, "2"));
+        input.getChain().add(new EntityImpl(null, "3"));
 
         EntityChain selection = new EntityChain();
-        selection.getListEntity().add(new EntityImpl(null, "1"));
-        selection.getListEntity().add(new EntityImpl(null, "!"));
-        selection.getListEntity().add(new EntityImpl(null, "2"));
-        selection.getListEntity().add(new EntityImpl(null, "-"));
+        selection.getChain().add(new EntityImpl(null, "1"));
+        selection.getChain().add(new EntityImpl(null, "!"));
+        selection.getChain().add(new EntityImpl(null, "2"));
+        selection.getChain().add(new EntityImpl(null, "-"));
 
         EntityChain result = new EntityChain();
-        result.getListEntity().add(new EntityImpl(null, "-"));
-        result.getListEntity().add(new EntityImpl(null, "!"));
-        result.getListEntity().add(new EntityImpl(null, "-"));
-        result.getListEntity().add(new EntityImpl(null, "3"));
+        result.getChain().add(new EntityImpl(null, "-"));
+        result.getChain().add(new EntityImpl(null, "!"));
+        result.getChain().add(new EntityImpl(null, "-"));
+        result.getChain().add(new EntityImpl(null, "3"));
 
         Assertions.assertEquals(result, new MapLeft().compute(input, selection));
 

@@ -13,22 +13,22 @@ class MapRightTest {
         // Заменить ["1", "!", "2", "-"] mask ["2", "1", "2", "3"]  => ["-", "!", "-", "3"]
 
         EntityChain input = new EntityChain();
-        input.getListEntity().add(new EntityImpl(null, "1"));
-        input.getListEntity().add(new EntityImpl(null, "!"));
-        input.getListEntity().add(new EntityImpl(null, "2"));
-        input.getListEntity().add(new EntityImpl(null, "-"));
+        input.getChain().add(new EntityImpl(null, "1"));
+        input.getChain().add(new EntityImpl(null, "!"));
+        input.getChain().add(new EntityImpl(null, "2"));
+        input.getChain().add(new EntityImpl(null, "-"));
 
         EntityChain selection = new EntityChain();
-        selection.getListEntity().add(new EntityImpl(null, "2"));
-        selection.getListEntity().add(new EntityImpl(null, "1"));
-        selection.getListEntity().add(new EntityImpl(null, "2"));
-        selection.getListEntity().add(new EntityImpl(null, "3"));
+        selection.getChain().add(new EntityImpl(null, "2"));
+        selection.getChain().add(new EntityImpl(null, "1"));
+        selection.getChain().add(new EntityImpl(null, "2"));
+        selection.getChain().add(new EntityImpl(null, "3"));
 
         EntityChain result = new EntityChain();
-        result.getListEntity().add(new EntityImpl(null, "-"));
-        result.getListEntity().add(new EntityImpl(null, "!"));
-        result.getListEntity().add(new EntityImpl(null, "-"));
-        result.getListEntity().add(new EntityImpl(null, "3"));
+        result.getChain().add(new EntityImpl(null, "-"));
+        result.getChain().add(new EntityImpl(null, "!"));
+        result.getChain().add(new EntityImpl(null, "-"));
+        result.getChain().add(new EntityImpl(null, "3"));
 
         Assertions.assertEquals(result, new MapRight().compute(input, selection));
 

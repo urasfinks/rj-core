@@ -12,16 +12,16 @@ class EntityChainTest {
     @Test
     public void testHashCode(){
         EntityChain ctx1 = new EntityChain();
-        ctx1.getListEntity().add(new EntityImpl("x1", "Hello"));
-        ctx1.getListEntity().add(new EntityImpl("x2", "world"));
+        ctx1.getChain().add(new EntityImpl("x1", "Hello"));
+        ctx1.getChain().add(new EntityImpl("x2", "world"));
 
         EntityChain ctx2 = new EntityChain();
-        ctx2.getListEntity().add(new EntityImpl("x1", "Hello"));
-        ctx2.getListEntity().add(new EntityImpl("x2", "world"));
+        ctx2.getChain().add(new EntityImpl("x1", "Hello"));
+        ctx2.getChain().add(new EntityImpl("x2", "world"));
 
         assertEquals(ctx1, ctx2);
 
-        ctx2.getListEntity().add(new EntityImpl("x3", "!"));
+        ctx2.getChain().add(new EntityImpl("x3", "!"));
 
         assertNotEquals(ctx1, ctx2);
 
