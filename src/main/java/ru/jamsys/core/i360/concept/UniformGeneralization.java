@@ -16,7 +16,7 @@ import java.util.List;
  * Весы равенства/следствия имеют одинаковые классы объектов
  * */
 
-public class Investigation {
+public class UniformGeneralization {
 
     public static List<Scale> research(Scope scope) {
         List<Scale> concept = new ArrayList<>();
@@ -50,7 +50,6 @@ public class Investigation {
                 }
             }
         });
-        // Дерево зависимостей в линейные зависимости
         return concept;
     }
 

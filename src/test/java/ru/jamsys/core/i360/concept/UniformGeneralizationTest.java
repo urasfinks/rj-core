@@ -13,7 +13,7 @@ import ru.jamsys.core.i360.scope.ScopeImpl;
 
 import java.util.List;
 
-class InvestigationTest {
+class UniformGeneralizationTest {
 
     @Test
     public void test() throws Throwable {
@@ -21,7 +21,7 @@ class InvestigationTest {
         // 1 следует 2
         // Концепт: 2 - число
         Scope scope = new ScopeImpl("i360/investigation/1.json");
-        List<Scale> research = Investigation.research(scope);
+        List<Scale> research = UniformGeneralization.research(scope);
         ScaleImpl scale = new ScaleImpl()
                 .setLeft(new EntityChain().add(scope.getMapEntity().get("k1")))
                 .setRight(new EntityChain().add(scope.getMapEntity().get("k10")))
@@ -31,7 +31,7 @@ class InvestigationTest {
     }
 
     @Test
-    public void test2() throws Throwable {
+    public void getFirstGeneralization() throws Throwable {
         // Щенок ~> Млекопитающее
         // Щенок ~> Собака
         // Собака ~> Млекопитающее
