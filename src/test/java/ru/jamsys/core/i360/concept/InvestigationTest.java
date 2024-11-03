@@ -35,7 +35,7 @@ class InvestigationTest {
         // Щенок ~> Млекопитающее
         // Щенок ~> Собака
         // Собака ~> Млекопитающее
-        // Для щенка первое обобщение - Собака, а не Млекопитающее
+        // Для щенка первое обобщение - Собака, а не Млекопитающее, так как Щенок ~> Собака ~> Млекопитающее
         Scope scope = new ScopeImpl("i360/investigation/2.json");
         GeneralizationTree generalizationTree = new GeneralizationTree(scope, scope.getRepositoryScale().getListScale().getFirst().getLeft());
         Assertions.assertEquals(
