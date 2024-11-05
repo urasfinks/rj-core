@@ -22,7 +22,7 @@ public class ScaleImpl implements Scale {
 
     private EntityChain right;
 
-    private double stability = 0; // [0-1]
+    private double stability = 0; // [0-1] // В случаях умозаключений стабильность, это то как прошла практика
 
     public ScaleImpl(ScaleType type, ScaleTypeRelation typeRelation) {
         this.type = type;
