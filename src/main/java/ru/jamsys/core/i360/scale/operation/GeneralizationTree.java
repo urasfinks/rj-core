@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.ToString;
 import ru.jamsys.core.i360.entity.EntityChain;
-import ru.jamsys.core.i360.scale.ScaleType;
+import ru.jamsys.core.i360.scale.ScaleTypeRelation;
 import ru.jamsys.core.i360.scope.Scope;
 
 import java.util.*;
@@ -22,7 +22,7 @@ public class GeneralizationTree {
     }
 
     private void fill(Scope scope, EntityChain ref) {
-        scope.getRepositoryScale().getByLeft(ref, ScaleType.GENERALIZATION).forEach(scale -> {
+        scope.getRepositoryScale().getByLeft(ref, ScaleTypeRelation.GENERALIZATION).forEach(scale -> {
             GeneralizationTree tree = new GeneralizationTree(scope, scale.getRight());
             generalization.put(scale.getRight(), tree);
         });

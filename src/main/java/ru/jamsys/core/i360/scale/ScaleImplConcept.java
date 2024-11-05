@@ -15,6 +15,10 @@ public class ScaleImplConcept extends ScaleImpl {
 
     private final Scope scope = new ScopeImpl();
 
+    public ScaleImplConcept(ScaleType type, ScaleTypeRelation typeRelation) {
+        super(type, typeRelation);
+    }
+
     public boolean check(ScaleImpl scale) {
         return false;
     }

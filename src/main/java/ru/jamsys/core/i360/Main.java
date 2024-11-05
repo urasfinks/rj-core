@@ -3,7 +3,7 @@ package ru.jamsys.core.i360;
 import lombok.Getter;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.i360.entity.EntityChain;
-import ru.jamsys.core.i360.scale.ScaleType;
+import ru.jamsys.core.i360.scale.ScaleTypeRelation;
 import ru.jamsys.core.i360.scope.Scope;
 import ru.jamsys.core.i360.scope.ScopeImpl;
 
@@ -27,9 +27,9 @@ public class Main {
         // ("0" => [chain,chain,chain]) Set<EntityChain> result = [[chain,chain,chain], [chain,chain,chain]]
         entityChain.getChain().forEach(entity -> {
             Set<EntityChain> result = new HashSet<>();
-            entity.getVariant(ScaleType.EQUALS, result);
-            entity.getVariant(ScaleType.GENERALIZATION, result);
-            entity.getVariant(ScaleType.CONSEQUENCE, result);
+            entity.getVariant(ScaleTypeRelation.EQUALS, result);
+            entity.getVariant(ScaleTypeRelation.GENERALIZATION, result);
+            entity.getVariant(ScaleTypeRelation.CONSEQUENCE, result);
             res.add(new ArrayList<>(result));
         });
         Collection<?> cartesian = Util.cartesian(ArrayList::new, res.toArray(new List[0]));

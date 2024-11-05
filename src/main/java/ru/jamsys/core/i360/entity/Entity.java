@@ -1,6 +1,6 @@
 package ru.jamsys.core.i360.entity;
 
-import ru.jamsys.core.i360.scale.ScaleType;
+import ru.jamsys.core.i360.scale.ScaleTypeRelation;
 import ru.jamsys.core.i360.scope.Scope;
 
 import java.util.Map;
@@ -22,7 +22,7 @@ public interface Entity {
     }
 
     // Поучить варианты на основе следствия
-    default void getVariant(ScaleType type, Set<EntityChain> result) {
+    default void getVariant(ScaleTypeRelation type, Set<EntityChain> result) {
         result.add(new EntityChain(this));
     }
 

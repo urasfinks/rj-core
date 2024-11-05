@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.i360.scale.ScaleType;
+import ru.jamsys.core.i360.scale.ScaleTypeRelation;
 import ru.jamsys.core.i360.scope.Scope;
 
 import java.util.Map;
@@ -61,17 +61,17 @@ public class EntityImpl implements Entity {
 
     @JsonIgnore
     @Override
-    public void getVariant(ScaleType type, Set<EntityChain> result) {
+    public void getVariant(ScaleTypeRelation type, Set<EntityChain> result) {
         result.add(new EntityChain(this));
         switch (type) {
-            case EQUALS -> scope.getRepositoryScale().getByLeft(new EntityChain(this), ScaleType.EQUALS)
+            case EQUALS -> scope.getRepositoryScale().getByLeft(new EntityChain(this), ScaleTypeRelation.EQUALS)
                     .forEach(scale -> result.add(scale.getRight()));
-            case GENERALIZATION -> scope.getRepositoryScale().getByLeft(new EntityChain(this), ScaleType.GENERALIZATION)
+            case GENERALIZATION -> scope.getRepositoryScale().getByLeft(new EntityChain(this), ScaleTypeRelation.GENERALIZATION)
                     .forEach(
-                            scale -> scope.getRepositoryScale().getByRight(scale.getRight(), ScaleType.GENERALIZATION)
+                            scale -> scope.getRepositoryScale().getByRight(scale.getRight(), ScaleTypeRelation.GENERALIZATION)
                                     .forEach(scale1 -> result.add(scale1.getLeft()))
                     );
-            case CONSEQUENCE -> scope.getRepositoryScale().getByLeft(new EntityChain(this), ScaleType.CONSEQUENCE)
+            case CONSEQUENCE -> scope.getRepositoryScale().getByLeft(new EntityChain(this), ScaleTypeRelation.CONSEQUENCE)
                     .forEach(scale -> result.add(scale.getRight()));
         }
     }

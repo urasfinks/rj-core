@@ -14,13 +14,20 @@ import java.util.Objects;
 @JsonPropertyOrder({"type", "left", "right", "stability"})
 public class ScaleImpl implements Scale {
 
+    private final ScaleTypeRelation typeRelation;
+
+    private final ScaleType type;
+
     private EntityChain left;
 
     private EntityChain right;
 
-    private ScaleType type;
-
     private double stability = 0; // [0-1]
+
+    public ScaleImpl(ScaleType type, ScaleTypeRelation typeRelation) {
+        this.type = type;
+        this.typeRelation = typeRelation;
+    }
 
     public ScaleImpl setLeft(EntityChain left) {
         this.left = left;
@@ -29,11 +36,6 @@ public class ScaleImpl implements Scale {
 
     public ScaleImpl setRight(EntityChain right) {
         this.right = right;
-        return this;
-    }
-
-    public ScaleImpl setType(ScaleType type) {
-        this.type = type;
         return this;
     }
 
@@ -50,12 +52,12 @@ public class ScaleImpl implements Scale {
         return Double.compare(stability, scale.stability) == 0
                 && Objects.equals(left, scale.left)
                 && Objects.equals(right, scale.right)
-                && type == scale.type;
+                && typeRelation == scale.typeRelation;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(left, right, type, stability);
+        return Objects.hash(left, right, typeRelation, stability);
     }
 
 }

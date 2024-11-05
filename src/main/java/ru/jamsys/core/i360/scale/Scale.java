@@ -8,7 +8,7 @@ public interface Scale {
 
     EntityChain getRight();
 
-    ScaleType getType();
+    ScaleTypeRelation getTypeRelation();
 
     double getStability();
 

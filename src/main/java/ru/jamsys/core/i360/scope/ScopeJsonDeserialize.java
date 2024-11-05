@@ -7,6 +7,7 @@ import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.i360.entity.Entity;
 import ru.jamsys.core.i360.scale.ScaleImpl;
 import ru.jamsys.core.i360.scale.ScaleType;
+import ru.jamsys.core.i360.scale.ScaleTypeRelation;
 
 import java.util.List;
 import java.util.Map;
@@ -51,8 +52,7 @@ public interface ScopeJsonDeserialize extends Scope {
         List<ScaleImpl> listScale = getRepositoryScale().getListScale();
 
         jsonListScale.forEach(map -> {
-            ScaleImpl scale = new ScaleImpl();
-            scale.setType(ScaleType.valueOfReduction((String) map.get("type")));
+            ScaleImpl scale = new ScaleImpl(ScaleType.STATEMENT, ScaleTypeRelation.valueOfReduction((String) map.get("type")));
             scale.setStability(Double.parseDouble(map.get("stability") + ""));
 
             @SuppressWarnings("unchecked")
