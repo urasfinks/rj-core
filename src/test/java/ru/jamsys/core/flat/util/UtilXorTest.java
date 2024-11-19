@@ -2,6 +2,7 @@ package ru.jamsys.core.flat.util;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.flat.util.crypto.UtilXor;
 
 class UtilXorTest {
 

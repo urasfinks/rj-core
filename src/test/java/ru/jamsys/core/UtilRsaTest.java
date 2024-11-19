@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.flat.util.UtilByte;
-import ru.jamsys.core.flat.util.UtilRsa;
+import ru.jamsys.core.flat.util.crypto.UtilRsa;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;

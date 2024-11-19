@@ -1,4 +1,4 @@
-package ru.jamsys.core.flat.util;
+package ru.jamsys.core.flat.util.crypto;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;

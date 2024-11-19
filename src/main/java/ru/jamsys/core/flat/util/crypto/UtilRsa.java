@@ -1,4 +1,6 @@
-package ru.jamsys.core.flat.util;
+package ru.jamsys.core.flat.util.crypto;
+
+import ru.jamsys.core.flat.util.UtilBase64;
 
 import javax.crypto.Cipher;
 import java.security.*;
