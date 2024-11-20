@@ -134,8 +134,8 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
     private void printNotice(String password) {
         try {
             if (password != null && !password.trim().isEmpty()) {
-                KeyPair keyPair = UtilRsa.genPair();
-                byte[] token = UtilRsa.encrypt(keyPair, password.getBytes(StandardCharsets.UTF_8));
+                KeyPair keyPair = UtilRsa.genKeyPair();
+                byte[] token = UtilRsa.encrypt(password.getBytes(StandardCharsets.UTF_8), keyPair);
                 UtilFile.writeBytes(pathPublicKey, token, FileWriteOptions.CREATE_OR_REPLACE);
                 String privateKey = UtilBase64.base64Encode(keyPair.getPrivate().getEncoded(), true);
                 System.err.println("== INIT SECURITY ===========================");
@@ -157,14 +157,14 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
         throw new RuntimeException("Security.run() failed");
     }
 
-    private byte[] decryptStoragePassword(byte[] publicKey) {
+    private byte[] decryptStoragePassword(byte[] input) {
         byte[] bytesPrivateKey = UtilBase64.base64DecodeResultBytes(UtilByte.charsToBytes(privateKey));
         if (bytesPrivateKey == null || bytesPrivateKey.length == 0) {
             throw new RuntimeException("Private key is empty");
         }
         byte[] bytesPasswordKeyStore;
         try {
-            bytesPasswordKeyStore = UtilRsa.decrypt(UtilRsa.getPrivateKey(bytesPrivateKey), publicKey);
+            bytesPasswordKeyStore = UtilRsa.decrypt(input, UtilRsa.getPrivateKey(bytesPrivateKey));
         } catch (Exception e) {
             UtilFile.removeIfExist(pathPublicKey);
             throw new ForwardException("Decrypt token exception. File: [" + pathPublicKey + "] removed, please restart application", e);
