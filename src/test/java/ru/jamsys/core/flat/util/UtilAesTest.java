@@ -11,7 +11,7 @@ class UtilAesTest {
 
     @Test
     public void test1() throws Exception {
-        String input = "Hello world";
+        String input = "100776404158ZNSW&2024-10-10T15:28";
         SecretKey key = UtilAes.generateKey(128);
         IvParameterSpec ivParameterSpec = UtilAes.generateIv();
         byte[] encrypt = UtilAes.encrypt(UtilAes.algorithm, input.getBytes(), key, ivParameterSpec);

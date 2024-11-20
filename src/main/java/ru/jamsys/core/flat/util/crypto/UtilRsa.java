@@ -41,12 +41,12 @@ public class UtilRsa {
         return keyFactory.generatePrivate(keySpec);
     }
 
-    public static String sign(String message, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    public static byte[] sign(String message, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Signature signature = Signature.getInstance(signAlg);
         SecureRandom secureRandom = new SecureRandom();
         signature.initSign(privateKey, secureRandom);
         signature.update(message.getBytes());
-        return UtilBase64.base64Encode(signature.sign(), false);
+        return signature.sign();
     }
 
     public static boolean verify(String message, String signature, PublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
