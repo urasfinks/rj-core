@@ -2,6 +2,7 @@ package ru.jamsys.core.flat.util.crypto;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,6 +17,10 @@ public class UtilAes {
 
     public static SecretKey generateKey(int n) throws NoSuchAlgorithmException {
         return generateKey(n, "AES");
+    }
+
+    public static SecretKey generateKey(byte[] encodedKey, String alg) {
+        return new SecretKeySpec(encodedKey, 0, encodedKey.length, alg);
     }
 
     public static SecretKey generateKey(int n, String alg) throws NoSuchAlgorithmException {
