@@ -10,22 +10,22 @@ class UtilCompressTest {
     @Test
     void gzip() throws IOException {
         String data = "Hello world";
-        byte[] bytes = UtilCompress.compressGzip(data.getBytes());
-        Assertions.assertEquals(data, new String(UtilCompress.decompressGzip(bytes)));
+        byte[] bytes = UtilCompress.gzip(data.getBytes());
+        Assertions.assertEquals(data, new String(UtilCompress.unGzip(bytes)));
     }
 
     @Test
     void zip() throws IOException {
         String data = "Hello world";
-        byte[] bytes = UtilCompress.compressZip(data.getBytes(), "1.txt");
-        Assertions.assertEquals(data, new String(UtilCompress.decompressZip(bytes, "1.txt")));
+        byte[] bytes = UtilCompress.zip(data.getBytes(), "1.txt");
+        Assertions.assertEquals(data, new String(UtilCompress.unZip(bytes, "1.txt")));
     }
 
     @Test
     void base() throws IOException {
         String data = "Hello world";
-        byte[] bytes = UtilCompress.compressBase(data.getBytes());
-        Assertions.assertEquals(data, new String(UtilCompress.decompressBase(bytes)));
+        byte[] bytes = UtilCompress.base(data.getBytes());
+        Assertions.assertEquals(data, new String(UtilCompress.unBase(bytes)));
     }
 
 }
