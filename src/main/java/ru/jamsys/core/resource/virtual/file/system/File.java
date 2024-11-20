@@ -142,7 +142,7 @@ public class File extends ExpirationMsMutableImpl
     }
 
     public String getBase64() throws Exception {
-        return UtilBase64.base64Encode(getBytes(), true);
+        return UtilBase64.encode(getBytes(), true);
     }
 
     public void save(byte[] data) throws Throwable {

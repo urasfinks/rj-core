@@ -9,66 +9,66 @@ import java.util.Base64;
 @SuppressWarnings("unused")
 public class UtilBase64 {
 
-    public static byte[] base64EncodeResultBytes(byte[] data) {
+    public static byte[] encodeResultBytes(byte[] data) {
         return Base64.getEncoder().encode(data);
     }
 
-    public static byte[] base64EncodeResultBytes(String data, String dataCharset) {
-        return base64EncodeResultBytes(data.getBytes(Charset.forName(dataCharset)));
+    public static byte[] encodeResultBytes(String data, String dataCharset) {
+        return encodeResultBytes(data.getBytes(Charset.forName(dataCharset)));
     }
 
-    public static byte[] base64EncodeResultBytes(String data) {
-        return base64EncodeResultBytes(data, Util.defaultCharset);
+    public static byte[] encodeResultBytes(String data) {
+        return encodeResultBytes(data, Util.defaultCharset);
     }
 
-    public static String base64Encode(byte[] data, boolean multiline) {
+    public static String encode(byte[] data, boolean multiline) {
         return multiline
                 ? Base64.getMimeEncoder().encodeToString(data)
-                : new String(base64EncodeResultBytes(data), Charset.forName(Util.defaultCharset));
+                : new String(encodeResultBytes(data), Charset.forName(Util.defaultCharset));
     }
 
-    public static String base64Encode(String data, String dataCharset, boolean multiline) {
+    public static String encode(String data, String dataCharset, boolean multiline) {
         byte[] bytes = data.getBytes(Charset.forName(dataCharset));
-        return base64Encode(bytes, multiline);
+        return encode(bytes, multiline);
     }
 
-    public static String base64Encode(String data, boolean multiline) {
-        return base64Encode(data, Util.defaultCharset, multiline);
+    public static String encode(String data, boolean multiline) {
+        return encode(data, Util.defaultCharset, multiline);
     }
 
-    public static byte[] base64DecodeResultBytes(byte[] data) {
+    public static byte[] decodeResultBytes(byte[] data) {
         return Base64.getMimeDecoder().decode(data);
     }
 
-    public static byte[] base64DecodeResultBytes(String data, String dataCharset) {
-        return base64DecodeResultBytes(data.getBytes(Charset.forName(dataCharset)));
+    public static byte[] decodeResultBytes(String data, String dataCharset) {
+        return decodeResultBytes(data.getBytes(Charset.forName(dataCharset)));
     }
 
-    public static byte[] base64DecodeResultBytes(String data) {
-        return base64DecodeResultBytes(data, Util.defaultCharset);
+    public static byte[] decodeResultBytes(String data) {
+        return decodeResultBytes(data, Util.defaultCharset);
     }
 
-    public static String base64Decode(byte[] data) {
-        return new String(base64DecodeResultBytes(data), Charset.forName(Util.defaultCharset));
+    public static String decode(byte[] data) {
+        return new String(decodeResultBytes(data), Charset.forName(Util.defaultCharset));
     }
 
-    public static String base64Decode(String data, String dataCharset) {
-        return base64Decode(data.getBytes(Charset.forName(dataCharset)));
+    public static String decode(String data, String dataCharset) {
+        return decode(data.getBytes(Charset.forName(dataCharset)));
     }
 
-    public static String base64Decode(String data) {
-        return base64Decode(data, Util.defaultCharset);
+    public static String decode(String data) {
+        return decode(data, Util.defaultCharset);
     }
 
     // Stream
 
-    public static InputStream base64Decode(InputStream is, boolean multiline) {
+    public static InputStream decode(InputStream is, boolean multiline) {
         return multiline
                 ? Base64.getMimeDecoder().wrap(is)
                 : Base64.getDecoder().wrap(is);
     }
 
-    public static void base64Decode(InputStream is, OutputStream os, boolean multiline) throws IOException {
+    public static void decode(InputStream is, OutputStream os, boolean multiline) throws IOException {
         InputStream wrap = multiline
                 ? Base64.getMimeDecoder().wrap(is)
                 : Base64.getDecoder().wrap(is);
@@ -76,7 +76,7 @@ public class UtilBase64 {
         wrap.close();
     }
 
-    public static void base64Encode(InputStream is, OutputStream os, boolean multiline) throws IOException {
+    public static void encode(InputStream is, OutputStream os, boolean multiline) throws IOException {
         OutputStream wrappedOs = multiline ?
                 Base64.getMimeEncoder().wrap(os)
                 : Base64.getEncoder().wrap(os);

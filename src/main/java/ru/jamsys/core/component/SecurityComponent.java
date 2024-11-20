@@ -137,7 +137,7 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
                 KeyPair keyPair = UtilRsa.genKeyPair();
                 byte[] token = UtilRsa.encrypt(password.getBytes(StandardCharsets.UTF_8), keyPair);
                 UtilFile.writeBytes(pathPublicKey, token, FileWriteOptions.CREATE_OR_REPLACE);
-                String privateKey = UtilBase64.base64Encode(keyPair.getPrivate().getEncoded(), true);
+                String privateKey = UtilBase64.encode(keyPair.getPrivate().getEncoded(), true);
                 System.err.println("== INIT SECURITY ===========================");
                 byte[] securityKeyJava = UtilFileResource.get("SecurityKey.java").readAllBytes();
                 UtilFile.writeBytes(
@@ -158,7 +158,7 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
     }
 
     private byte[] decryptStoragePassword(byte[] input) {
-        byte[] bytesPrivateKey = UtilBase64.base64DecodeResultBytes(UtilByte.charsToBytes(privateKey));
+        byte[] bytesPrivateKey = UtilBase64.decodeResultBytes(UtilByte.charsToBytes(privateKey));
         if (bytesPrivateKey == null || bytesPrivateKey.length == 0) {
             throw new RuntimeException("Private key is empty");
         }

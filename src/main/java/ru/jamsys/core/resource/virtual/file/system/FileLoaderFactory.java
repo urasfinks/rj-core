@@ -20,7 +20,7 @@ public class FileLoaderFactory {
     }
 
     public static SupplierThrowing<byte[]> fromBase64(String base64decoded, String charset) {
-        return () -> UtilBase64.base64DecodeResultBytes(base64decoded, charset);
+        return () -> UtilBase64.decodeResultBytes(base64decoded, charset);
     }
 
     public static SupplierThrowing<byte[]> fromString(String data, String charset) {

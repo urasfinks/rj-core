@@ -40,7 +40,7 @@ public interface HttpClient {
     }
 
     default HttpClient setBasicAuth(String user, String pass, String charset) {
-        return setRequestHeader("Authorization", "Basic " + UtilBase64.base64Encode(user + ":" + pass, charset, false));
+        return setRequestHeader("Authorization", "Basic " + UtilBase64.encode(user + ":" + pass, charset, false));
     }
 
     String getSslContextType();

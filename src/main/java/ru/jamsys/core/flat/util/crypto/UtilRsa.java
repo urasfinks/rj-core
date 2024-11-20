@@ -53,7 +53,7 @@ public class UtilRsa {
         Signature publicSignature = Signature.getInstance(signAlg);
         publicSignature.initVerify(publicKey);
         publicSignature.update(message.getBytes());
-        return publicSignature.verify(UtilBase64.base64DecodeResultBytes(signature));
+        return publicSignature.verify(UtilBase64.decodeResultBytes(signature));
     }
 
 }

@@ -25,7 +25,7 @@ class UtilXorTest {
         String value = "SampleStringToBeEncrypted";
         String key = "thisIsAKey";
         byte[] bytes = UtilXor.encrypt(value.getBytes(), key);
-        Assertions.assertEquals("JwkEAyUWEj8XEBoPPRwLFgQlBgsNGB0WLQ==", UtilBase64.base64Encode(bytes, false));
+        Assertions.assertEquals("JwkEAyUWEj8XEBoPPRwLFgQlBgsNGB0WLQ==", UtilBase64.encode(bytes, false));
 
         Assertions.assertEquals(value, new String(UtilXor.decrypt(bytes, key)));
     }
