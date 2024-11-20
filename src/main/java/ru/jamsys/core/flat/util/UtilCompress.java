@@ -5,17 +5,9 @@ import java.util.zip.*;
 
 public class UtilCompress {
 
-    private static void swap(InputStream input, OutputStream output) throws IOException {
-        byte[] buffer = new byte[1024];
-        int totalSize;
-        while ((totalSize = input.read(buffer)) > 0) {
-            output.write(buffer, 0, totalSize);
-        }
-    }
-
     public static void compressGzip(InputStream input, OutputStream output) throws IOException {
         try (GZIPOutputStream gzip = new GZIPOutputStream(output)) {
-            swap(input, gzip);
+            input.transferTo(gzip);
         }
     }
 
@@ -29,7 +21,7 @@ public class UtilCompress {
 
     public static void decompressGzip(InputStream input, OutputStream os) throws IOException {
         try (GZIPInputStream is = new GZIPInputStream(input)) {
-            swap(is, os);
+            is.transferTo(os);
         }
     }
 
@@ -44,7 +36,7 @@ public class UtilCompress {
     public static void compressZip(InputStream input, String fileName, OutputStream output) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(output)) {
             zos.putNextEntry(new ZipEntry(fileName));
-            swap(input, zos);
+            input.transferTo(zos);
             zos.closeEntry();
         }
     }
@@ -62,7 +54,7 @@ public class UtilCompress {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
                 if (entry.getName().equals(fileName)) {
-                    swap(zis, output);
+                    zis.transferTo(output);
                 }
             }
         }
@@ -78,7 +70,7 @@ public class UtilCompress {
 
     public static void compressBase(InputStream input, OutputStream output) throws IOException {
         try (DeflaterOutputStream dos = new DeflaterOutputStream(output)) {
-            swap(input, dos);
+            input.transferTo(dos);
         }
     }
 
@@ -92,7 +84,7 @@ public class UtilCompress {
 
     public static void decompressBase(InputStream input, OutputStream output) throws IOException {
         try (OutputStream ios = new InflaterOutputStream(output)) {
-            swap(input, ios);
+            input.transferTo(ios);
         }
     }
 
