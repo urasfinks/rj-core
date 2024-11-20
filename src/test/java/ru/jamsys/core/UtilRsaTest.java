@@ -6,12 +6,8 @@ import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.crypto.UtilRsa;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 // IO time: ms
 // COMPUTE time: ms
@@ -36,17 +32,6 @@ class UtilRsaTest {
         String sig = UtilBase64.base64Encode(UtilRsa.sign(msg, keyPair.getPrivate()), false);
         System.out.println(sig);
         Assertions.assertTrue(UtilRsa.verify(msg, sig, keyPair.getPublic()));
-    }
-
-    private static byte[] zipB64(String x) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-            zos.putNextEntry(new ZipEntry(""));
-            byte[] bytes = x.getBytes();
-            zos.write(bytes, 0, bytes.length);
-            zos.closeEntry();
-        }
-        return baos.toByteArray();
     }
 
 }
