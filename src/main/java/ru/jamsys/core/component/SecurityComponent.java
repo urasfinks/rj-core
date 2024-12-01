@@ -342,7 +342,7 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
                     throw new ForwardException(e);
                 }
                 if (UtilFile.ifExist(pathJsonCred)) {
-                    System.err.println("Please remove file [" + pathJsonCred + "] with credentials information");
+                    Util.logConsole("Please remove file [" + pathJsonCred + "] with credentials information", true);
                     updateDataFromJsonCred(UtilByte.bytesToChars(passwordKeyStore));
                 }
                 try {

@@ -82,7 +82,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                             // Получаем уникальный доступ на возможность немного подождать исполнение
                             && firstWaiting.compareAndSet(false, true)
             ) {
-                Util.await(startLoop, 5, null);
+                Util.await(startLoop, 5L, (String) null);
                 firstWaiting.set(false);
                 if (!startLoop.get()) {
                     complete();

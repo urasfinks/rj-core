@@ -2,6 +2,7 @@ package ru.jamsys.core.flat.util;
 
 import org.springframework.util.StringUtils;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.functional.ProcedureThrowing;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -55,9 +56,21 @@ public class Util {
         logConsole(Thread.currentThread(), data, err);
     }
 
+    public static void logConsole(String data, boolean err, boolean newLine) {
+        logConsole(Thread.currentThread(), data, err, newLine);
+    }
+
     public static void logConsole(Thread t, String data, boolean err) {
+        logConsole(t, data, err, true);
+    }
+
+    public static void logConsole(Thread t, String data, boolean err, boolean newLine) {
         PrintStream out = err ? System.err : System.out;
-        out.println(UtilDate.msFormat(System.currentTimeMillis()) + " thread: " + t.getName() + "; " + data);
+        if (newLine) {
+            out.println(UtilDate.msFormat(System.currentTimeMillis()) + " thread: " + t.getName() + "; " + data);
+        } else {
+            out.print(UtilDate.msFormat(System.currentTimeMillis()) + " thread: " + t.getName() + "; " + data);
+        }
     }
 
     public static void sleepMs(long ms) {
@@ -328,14 +341,26 @@ public class Util {
     }
 
     public static boolean await(AtomicBoolean isRun, long timeoutMs, String exceptionMessage) {
+        return await(isRun, timeoutMs, () -> {
+            if (exceptionMessage != null) {
+                logConsole(exceptionMessage, true);
+            }
+        });
+    }
+
+    public static boolean await(AtomicBoolean isRun, long timeoutMs, ProcedureThrowing procedure) {
         long start = System.currentTimeMillis();
         long expiredTime = start + timeoutMs;
         while (isRun.get() && expiredTime >= System.currentTimeMillis()) {
             Thread.onSpinWait();
         }
         if (isRun.get()) {
-            if (exceptionMessage != null) {
-                logConsole(exceptionMessage, true);
+            if (procedure != null) {
+                try {
+                    procedure.run();
+                } catch (Throwable e) {
+                    App.error(e);
+                }
             }
             return false;
         } else {

@@ -30,6 +30,8 @@ public class Core implements LifeCycleInterface {
 
     private final ManagerBroker managerBroker;
 
+    public static String lastOperation;
+
     private final ConcurrentLinkedDeque<LifeCycleComponent> runComponent = new ConcurrentLinkedDeque<>();
 
     public Core(
@@ -81,12 +83,14 @@ public class Core implements LifeCycleInterface {
         while (!runComponent.isEmpty()) {
             LifeCycleComponent lifeCycleComponent = runComponent.pollLast();
             if (lifeCycleComponent != null) {
+                lastOperation = lifeCycleComponent.getClass().getName();
                 long start = System.currentTimeMillis();
                 lifeCycleComponent.shutdown();
                 Util.logConsole(
                         "shutdown index: " + lifeCycleComponent.getInitializationIndex()
                                 + "; class: " + lifeCycleComponent.getClass().getName()
                                 + "; time: " + (System.currentTimeMillis() - start) + "ms"
+
                 );
             }
         }
