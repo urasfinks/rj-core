@@ -7,9 +7,10 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Expiration;
-import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.extension.UniqueClassName;
+import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
@@ -48,6 +49,10 @@ public class ServicePromise implements UniqueClassName, KeepAliveComponent, Stat
                 promise -> promise.timeOut(getClassName("onPromiseTaskExpired"))
         );
         promiseTaskRetry = managerExpiration.get("PromiseTaskRetry", PromiseTask.class, this::onPromiseTaskRetry);
+    }
+
+    public Promise get(Class<?> cls, long timeOutMs) {
+        return get(UniqueClassNameImpl.getClassNameStatic(cls), timeOutMs);
     }
 
     public Promise get(String index, long timeOutMs) {
