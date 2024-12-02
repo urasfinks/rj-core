@@ -50,9 +50,9 @@ public class ServicePromise implements UniqueClassName, KeepAliveComponent, Stat
         promiseTaskRetry = managerExpiration.get("PromiseTaskRetry", PromiseTask.class, this::onPromiseTaskRetry);
     }
 
-    public Promise get(String index, long timeout) {
-        PromiseImpl promise = new PromiseImpl(index, timeout);
-        promise.setRegisterInBroker(broker.add(promise, timeout));
+    public Promise get(String index, long timeOutMs) {
+        PromiseImpl promise = new PromiseImpl(index, timeOutMs);
+        promise.setRegisterInBroker(broker.add(promise, timeOutMs));
         return promise;
     }
 
