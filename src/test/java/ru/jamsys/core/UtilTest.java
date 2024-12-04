@@ -3,7 +3,7 @@ package ru.jamsys.core;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.flat.util.ListSort;
+import ru.jamsys.core.flat.util.UtilListSort;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -108,7 +108,7 @@ class UtilTest {
         list.add("apple");
         list.add("google");
         list.add("android");
-        List<String> sort = ListSort.sortAsc(list);
+        List<String> sort = UtilListSort.sortAsc(list);
         Assertions.assertEquals("[android, apple, google]", sort.toString());
     }
 
@@ -118,7 +118,7 @@ class UtilTest {
         list.add("apple");
         list.add("google");
         list.add("android");
-        List<String> sort = ListSort.sortDesc(list);
+        List<String> sort = UtilListSort.sortDesc(list);
         Assertions.assertEquals("[google, apple, android]", sort.toString());
     }
 

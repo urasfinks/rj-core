@@ -2,7 +2,7 @@ package ru.jamsys.core.flat.util;
 
 import java.util.*;
 
-public class ListSort<T> {
+public class UtilListSort<T> {
 
     Map<Integer, T> map = new HashMap<>();
 

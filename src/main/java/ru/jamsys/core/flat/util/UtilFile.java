@@ -106,14 +106,14 @@ public class UtilFile {
         File file = new File(path);
         listFilesForFolder(file, result);
         if (absolutePath) {
-            return ListSort.sortAsc(result);
+            return UtilListSort.sortAsc(result);
         } else {
             List<String> result2 = new ArrayList<>();
             int offset = file.getAbsolutePath().length();
             for (String p : result) {
                 result2.add(p.substring(offset));
             }
-            return ListSort.sortAsc(result2);
+            return UtilListSort.sortAsc(result2);
         }
     }
 
