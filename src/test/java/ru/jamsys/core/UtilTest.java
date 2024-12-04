@@ -3,8 +3,8 @@ package ru.jamsys.core;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.flat.util.UtilListSort;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilListSort;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.*;
@@ -108,7 +108,7 @@ class UtilTest {
         list.add("apple");
         list.add("google");
         list.add("android");
-        List<String> sort = UtilListSort.sortAsc(list);
+        List<String> sort = UtilListSort.sort(list, UtilListSort.Type.ASC);
         Assertions.assertEquals("[android, apple, google]", sort.toString());
     }
 
@@ -118,8 +118,40 @@ class UtilTest {
         list.add("apple");
         list.add("google");
         list.add("android");
-        List<String> sort = UtilListSort.sortDesc(list);
+        List<String> sort = UtilListSort.sort(list, UtilListSort.Type.DESC);
         Assertions.assertEquals("[google, apple, android]", sort.toString());
+    }
+
+    @Test
+    void listSortFieldAsc() {
+        List<Map<String, Object>> list = new ArrayList<>();
+        list.add(new HashMapBuilder<String, Object>().append("title", "apple").append("index", 2L));
+        list.add(new HashMapBuilder<String, Object>().append("title", "google").append("index", 1L));
+        list.add(new HashMapBuilder<String, Object>().append("title", "android").append("index", 3L));
+
+        List<Map<String, Object>> sort = UtilListSort.sort(list, UtilListSort.Type.ASC, map -> (Long) map.get("index"));
+        Assertions.assertEquals("[{title=google, index=1}, {title=apple, index=2}, {title=android, index=3}]", sort.toString());
+    }
+
+    @Test
+    void listSortFieldDesc() {
+        List<Map<String, Object>> list = new ArrayList<>();
+        list.add(new HashMapBuilder<String, Object>().append("title", "apple").append("index", 2L));
+        list.add(new HashMapBuilder<String, Object>().append("title", "google").append("index", 1L));
+        list.add(new HashMapBuilder<String, Object>().append("title", "android").append("index", 3L));
+
+        List<Map<String, Object>> sort = UtilListSort.sort(list, UtilListSort.Type.DESC, map -> (Long) map.get("index"));
+        Assertions.assertEquals("[{title=android, index=3}, {title=apple, index=2}, {title=google, index=1}]", sort.toString());
+    }
+
+    @Test
+    void shuffle() {
+        List<String> list = new ArrayList<>();
+        list.add("apple");
+        list.add("google");
+        list.add("android");
+        UtilListSort.shuffle(list);
+        System.out.println(list);
     }
 
 }

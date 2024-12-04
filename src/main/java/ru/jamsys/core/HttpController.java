@@ -146,7 +146,7 @@ public class HttpController {
                 }
             }
         });
-        UtilListSort.sortDesc(new ArrayList<>(tmp.keySet())).forEach(s -> {
+        UtilListSort.sort(new ArrayList<>(tmp.keySet()), UtilListSort.Type.DESC).forEach(s -> {
             info.put(s, tmp.get(s).getIndex());
             path.put(s, tmp.get(s));
         });

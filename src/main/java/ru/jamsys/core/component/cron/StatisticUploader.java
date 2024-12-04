@@ -19,8 +19,8 @@ import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
-import ru.jamsys.core.flat.util.UtilListSort;
 import ru.jamsys.core.flat.util.UtilFile;
+import ru.jamsys.core.flat.util.UtilListSort;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
@@ -135,7 +135,10 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
                         }
                     }
                     if (!restore.isEmpty()) {
-                        promise.setRepositoryMap("readyFile", getFolder() + UtilListSort.sortAsc(restore).getFirst());
+                        promise.setRepositoryMap(
+                                "readyFile",
+                                getFolder() + UtilListSort.sort(restore, UtilListSort.Type.ASC).getFirst()
+                        );
                     }
                 })
                 .appendWait()

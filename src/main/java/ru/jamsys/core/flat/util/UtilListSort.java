@@ -1,35 +1,36 @@
 package ru.jamsys.core.flat.util;
 
 import java.util.*;
+import java.util.function.Function;
 
-public class UtilListSort<T> {
+public class UtilListSort {
 
-    Map<Integer, T> map = new HashMap<>();
-
-    public void add(Integer index, T object) {
-        map.put(index, object);
-    }
-
-    public List<T> getSorted() {
-        List<T> result = new ArrayList<>();
-        SortedSet<Integer> keys = new TreeSet<>(map.keySet());
-        for (Integer key : keys) {
-            result.add(map.get(key));
-        }
-        return result;
+    public enum Type {
+        ASC,
+        DESC
     }
 
     @SuppressWarnings("all")
-    public static <T extends List<?>> T sortAsc(T list){
+    public static <T extends List> T sort(T list, Type type){
         T arrayList = (T) new ArrayList<>(list);
-        Collections.sort((List) arrayList);
+        switch (type){
+            case ASC -> Collections.sort(arrayList);
+            case DESC -> Collections.sort(arrayList, Collections.reverseOrder());
+        }
         return arrayList;
     }
 
     @SuppressWarnings("all")
-    public static <T extends List<?>> T sortDesc(T list){
+    public static <X extends Map, T extends List<X>> T sort(T list, Type type, Function<X, Long> fn) {
         T arrayList = (T) new ArrayList<>(list);
-        Collections.sort((List) arrayList, Collections.reverseOrder());
+        Collections.sort(arrayList, (o1, o2) -> {
+            Long a = fn.apply(o1);
+            Long b = fn.apply(o2);
+            return switch (type) {
+                default -> a.compareTo(b);
+                case DESC -> b.compareTo(a);
+            };
+        });
         return arrayList;
     }
 
