@@ -1,4 +1,4 @@
-package ru.jamsys.core.web.socket;
+package ru.jamsys.core.handler.web.socket;
 
 import lombok.Getter;
 import lombok.Setter;

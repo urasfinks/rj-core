@@ -1,4 +1,4 @@
-package ru.jamsys.core.web.http.plugin;
+package ru.jamsys.core.handler.web.http.plugin;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,9 +12,9 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.flat.template.twix.TemplateTwix;
 import ru.jamsys.core.flat.util.UtilFileResource;
+import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
-import ru.jamsys.core.web.http.HttpHandler;
 
 import java.util.Map;
 

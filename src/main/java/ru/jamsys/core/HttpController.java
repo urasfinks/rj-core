@@ -18,8 +18,8 @@ import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
-import ru.jamsys.core.web.http.HttpHandler;
-import ru.jamsys.core.web.http.HttpInterceptor;
+import ru.jamsys.core.handler.web.http.HttpHandler;
+import ru.jamsys.core.handler.web.http.HttpInterceptor;
 
 import java.io.File;
 import java.util.*;

@@ -1,4 +1,4 @@
-package ru.jamsys.core.web.http;
+package ru.jamsys.core.handler.web.http;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
