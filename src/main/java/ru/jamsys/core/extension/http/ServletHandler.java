@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.http.HttpStatus;
 import ru.jamsys.core.App;
 import ru.jamsys.core.HttpController;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -149,17 +148,7 @@ public class ServletHandler {
     }
 
     public void setResponseUnauthorized() {
-        setResponseUnauthorized(response);
-    }
-
-    public static void setResponseUnauthorized(HttpServletResponse response) {
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setHeader("WWW-Authenticate", "Basic realm=\"" + App.applicationName + "\"");
-        try {
-            response.getWriter().print("<html><body><h1>401. Unauthorized</h1></body>");
-        } catch (Throwable th) {
-            App.error(th);
-        }
+        ServletResponseWriter.setResponseUnauthorized(response);
     }
 
 }
