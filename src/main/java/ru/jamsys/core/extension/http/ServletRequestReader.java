@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 import lombok.Getter;
 import lombok.ToString;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.jamsys.core.extension.exception.AuthException;
 import ru.jamsys.core.extension.functional.BiConsumerThrowing;
 import ru.jamsys.core.flat.util.Util;
@@ -188,6 +189,10 @@ public class ServletRequestReader {
         String user = base64Decoded.substring(0, base64Decoded.indexOf(":"));
         String password = base64Decoded.substring(base64Decoded.indexOf(":") + 1);
         handler.accept(user, password);
+    }
+
+    public static Map<String, List<String>> parseUriParameters(String uri) {
+        return new LinkedHashMap<>(UriComponentsBuilder.fromUriString(uri).build().getQueryParams());
     }
 
 }

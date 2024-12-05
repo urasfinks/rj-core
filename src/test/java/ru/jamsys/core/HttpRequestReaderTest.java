@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.http.ServletRequestReader;
 
+import java.util.List;
+import java.util.Map;
+
 class HttpRequestReaderTest {
 
     @Test
@@ -35,6 +38,12 @@ class HttpRequestReaderTest {
         } catch (Throwable th) {
             Assertions.assertNotEquals(th.getMessage(), "NO");
         }
+    }
+
+    @Test
+    void parseUri(){
+        Map<String, List<String>> stringListMap = ServletRequestReader.parseUriParameters("https://host.org/?x=y&a=1&a=2");
+        Assertions.assertEquals("{x=[y], a=[1, 2]}", stringListMap.toString());
     }
 
 }
