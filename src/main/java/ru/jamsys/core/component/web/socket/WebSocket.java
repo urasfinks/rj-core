@@ -1,17 +1,16 @@
 package ru.jamsys.core.component.web.socket;
 
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import ru.jamsys.core.App;
-import ru.jamsys.core.HttpController;
+import ru.jamsys.core.component.RouteGenerator;
 import ru.jamsys.core.component.ServiceClassFinder;
+import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.flat.util.*;
 import ru.jamsys.core.promise.Promise;
@@ -28,22 +27,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class WebSocket extends TextWebSocketHandler implements StatisticsFlushComponent {
 
     private final WebSocketCheckConnection webSocketCheckConnection;
-
     private final Map<String, List<WebSocketSession>> subscription = new ConcurrentHashMap<>();
-
     private final Set<WebSocketSession> connections = Util.getConcurrentHashSet();
+    private final RouteGeneratorRepository routeGeneratorRepository;
 
-    private final Map<String, PromiseGenerator> path = new LinkedHashMap<>();
-
-    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
-
-    public WebSocket(ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder) {
+    public WebSocket( ServiceClassFinder serviceClassFinder, RouteGenerator routeGenerator) {
         List<Class<WebSocketCheckConnection>> byInstance = serviceClassFinder.findByInstance(WebSocketCheckConnection.class);
         if (byInstance.isEmpty()) {
             throw new RuntimeException("WebSocket not found WebSocketCheckConnection component");
         }
         webSocketCheckConnection = serviceClassFinder.instanceOf(byInstance.getFirst());
-        HttpController.fill(path, applicationContext, serviceClassFinder, WebSocketHandler.class);
+        routeGeneratorRepository = routeGenerator.getRouterRepository(WebSocketHandler.class);
     }
 
     public void subscribe(String key, WebSocketSession webSocketSession) {
@@ -90,15 +84,6 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
         }
     }
 
-    private PromiseGenerator getGeneratorByHandler(String requestUri) {
-        for (String pattern : path.keySet()) {
-            if (antPathMatcher.match(pattern, requestUri)) {
-                return path.get(pattern);
-            }
-        }
-        return null;
-    }
-
     @Override
     public void afterConnectionClosed(@NotNull WebSocketSession webSocketSession, @NotNull CloseStatus closeStatus) throws Exception {
         super.afterConnectionClosed(webSocketSession, closeStatus);
@@ -111,7 +96,7 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
         String request = message.getPayload();
         JsonSchema.validate(request, UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"), null);
         Map<Object, Object> req = UtilJson.toMap(request).getObject();
-        PromiseGenerator promiseGenerator = getGeneratorByHandler((String) req.get("uri"));
+        PromiseGenerator promiseGenerator = routeGeneratorRepository.match((String) req.get("uri"));
         if (promiseGenerator == null) {
             App.error(new RuntimeException("PromiseGenerator not found"));
             return;

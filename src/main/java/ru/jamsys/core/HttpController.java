@@ -3,24 +3,25 @@ package ru.jamsys.core;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.context.ApplicationContext;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.jamsys.core.component.RouteGenerator;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
+import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
 import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
-import ru.jamsys.core.flat.util.*;
+import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilFile;
+import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.web.http.HttpHandler;
 import ru.jamsys.core.web.http.HttpInterceptor;
 
 import java.io.File;
-import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -28,11 +29,7 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 public class HttpController {
 
-    private final Map<String, PromiseGenerator> path = new LinkedHashMap<>();
-
     private final Map<String, String> staticFile = new HashMap<>();
-
-    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     private HttpInterceptor httpInterceptor;
 
@@ -44,9 +41,16 @@ public class HttpController {
 
     private final ServiceProperty serviceProperty;
 
-    public HttpController(ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder, ServiceProperty serviceProperty) {
+    private final RouteGeneratorRepository routeGeneratorRepository;
+
+    public HttpController(
+            ServiceClassFinder serviceClassFinder,
+            ServiceProperty serviceProperty,
+            RouteGenerator routeGenerator
+    ) {
         this.serviceProperty = serviceProperty;
-        fill(path, applicationContext, serviceClassFinder, HttpHandler.class);
+        routeGeneratorRepository = routeGenerator.getRouterRepository(HttpHandler.class);
+
         if (serviceProperty.get(Boolean.class, "run.args.web", false)) {
             updateStaticFile();
             subscribeIgnoreFile();
@@ -110,59 +114,6 @@ public class HttpController {
         });
     }
 
-    public static void fill(Map<String, PromiseGenerator> path, ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder, Class<?> iFaceMatcher) {
-        /*
-        {
-          "[/*]" : "SecondHandler",
-          "[/hello/*]" : "FirstHandler"
-        }
-
-        При таком раскладе первое правило будет подходить для всех типов запросов, поэтому результирующую выборку
-        отсортируем
-        * */
-        Map<String, String> info = new LinkedHashMap<>();
-        Map<String, PromiseGenerator> tmp = new HashMap<>();
-        serviceClassFinder.findByInstance(PromiseGenerator.class).forEach(promiseGeneratorClass -> {
-            if (!ServiceClassFinder.instanceOf(promiseGeneratorClass, iFaceMatcher)) {
-                return;
-            }
-            for (Annotation annotation : promiseGeneratorClass.getAnnotations()) {
-                if (ServiceClassFinder.instanceOf(annotation.annotationType(), RequestMapping.class)) {
-                    PromiseGenerator promiseGenerator = applicationContext.getBean(promiseGeneratorClass);
-                    promiseGenerator.setIndex(UniqueClassNameImpl.getClassNameStatic(
-                            promiseGeneratorClass,
-                            null,
-                            applicationContext
-                    ));
-                    String[] values = promiseGeneratorClass.getAnnotation(RequestMapping.class).value();
-                    if (values.length > 0) {
-                        for (String value : values) {
-                            tmp.put(value, promiseGenerator);
-                        }
-                    } else {
-                        tmp.put("/" + promiseGeneratorClass.getSimpleName(), promiseGenerator);
-                    }
-                    break;
-                }
-            }
-        });
-        UtilListSort.sort(new ArrayList<>(tmp.keySet()), UtilListSort.Type.DESC).forEach(s -> {
-            info.put(s, tmp.get(s).getIndex());
-            path.put(s, tmp.get(s));
-        });
-
-        Util.logConsole("RequestMapping(" + iFaceMatcher.getSimpleName() + ") : " + UtilJson.toStringPretty(info, "[]"));
-    }
-
-    private PromiseGenerator getGeneratorByUri(String requestUri) {
-        for (String pattern : path.keySet()) {
-            if (antPathMatcher.match(pattern, requestUri)) {
-                return path.get(pattern);
-            }
-        }
-        return null;
-    }
-
     public static void setMimeType(HttpServletRequest request, HttpServletResponse response) {
         String mimeType = getMimeType(request.getServletContext(), request.getRequestURI());
         response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
@@ -188,7 +139,7 @@ public class HttpController {
                 return null;
             }
             servletHandler.init();
-            PromiseGenerator promiseGenerator = getGeneratorByUri(uri);
+            PromiseGenerator promiseGenerator = routeGeneratorRepository.match(uri);
             if (promiseGenerator == null) {
                 servletHandler.setResponseError("Generator not found");
                 servletHandler.responseComplete();
