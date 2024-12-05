@@ -4,6 +4,7 @@ import ru.jamsys.core.App;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -70,6 +71,10 @@ public class UtilDate {
 
     public static long getTimestampFromPostgreSql(String date) throws Exception {
         return getTimestamp(date, "yyyy-MM-dd HH:mm:ss.SSSX");
+    }
+
+    public static String format(String date, String format, String newFormat) throws ParseException {
+        return new SimpleDateFormat(newFormat).format(new SimpleDateFormat(format).parse(date));
     }
 
 }
