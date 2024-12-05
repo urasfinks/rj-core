@@ -49,6 +49,8 @@ class HttpRequestReaderTest {
     @Test
     void getPath(){
         Assertions.assertEquals("/po/pt.html", ServletRequestReader.getPath("https://host.org/po/pt.html?x=y&a=1&a=2"));
+        Assertions.assertEquals("/po/pt.html", ServletRequestReader.getPath("https://host.org/po/pt.html/?x=y&a=1&a=2"));
+        Assertions.assertEquals("/po", ServletRequestReader.getPath("https://host.org/po/?x=y&a=1&a=2"));
     }
 
 }

@@ -196,7 +196,11 @@ public class ServletRequestReader {
     }
 
     public static String getPath(String uri) {
-        return UriComponentsBuilder.fromUriString(uri).build().getPath();
+        String path = UriComponentsBuilder.fromUriString(uri).build().getPath();
+        if (path == null) {
+            return null;
+        }
+        return path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
     }
 
 }
