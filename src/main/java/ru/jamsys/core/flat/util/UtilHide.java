@@ -14,8 +14,6 @@ public class UtilHide {
 
     public static String mask(String str, int countFirst, int countLast, int maskPrc, String ch) {
         int countShowCharacter = str.length() - (int) Math.ceil(Double.parseDouble(maskPrc + "") * str.length() / 100);
-        //System.out.println("Можно показать: " + countShowCharacter);
-
         if (countFirst + countLast > countShowCharacter) {
             double fPrc = Double.parseDouble(countFirst + "") * 100 / (countFirst + countLast);
 
@@ -27,9 +25,6 @@ public class UtilHide {
             if (countLast < 0) {
                 countLast = 0;
             }
-//            System.out.println("prc f: " + fPrc + " = " + countFirst);
-//            System.out.println("prc e: " + " = " + countLast);
-
         }
 
         switch (str.length()) {
@@ -47,6 +42,13 @@ public class UtilHide {
         }
         int middle = (int) Math.ceil(Double.parseDouble(tail + "") / 2);
         return str.substring(0, countFirst) + Util.padLeft("", middle, ch) + str.substring(countFirst + middle);
+    }
+
+    public static String replaceEncode(String input, String ch) {
+        if (ch.equals("*")) {
+            ch = "\\*";
+        }
+        return input.replaceAll(ch + "+", "*");
     }
 
     @Getter
