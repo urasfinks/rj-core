@@ -16,16 +16,28 @@ import java.util.Map;
 @ToString(onlyExplicitlyIncluded = true)
 public class ServletResponseWriter {
 
-    public static String buildUrlQuery(String path, Map<String, List<String>> getParameters) {
+    public static String buildUrlQuery(String path, Map<String, ?> getParameters) {
         List<String> part = new ArrayList<>();
         if (!getParameters.isEmpty()) {
-            getParameters.forEach((s, strings) -> strings.forEach(s1 -> {
-                try {
-                    part.add(s + "=" + Util.urlEncode(s1));
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+            getParameters.forEach((key, element) -> {
+                if (element instanceof List) {
+                    @SuppressWarnings("all")
+                    List<Object> list = (List<Object>) element;
+                    list.forEach(s1 -> {
+                        try {
+                            part.add(key + "=" + Util.urlEncode(String.valueOf(s1)));
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }else{
+                    try {
+                        part.add(key + "=" + Util.urlEncode(String.valueOf(element)));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-            }));
+            });
         }
         return path + (
                 getParameters.isEmpty()

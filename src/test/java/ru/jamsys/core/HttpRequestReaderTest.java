@@ -66,6 +66,9 @@ class HttpRequestReaderTest {
     void buildUrlQuery(){
         Map<String, List<String>> stringListMap = ServletRequestReader.parseUriParameters("https://host.org/?x=y&a=1&a=2");
         Assertions.assertEquals("/po/pt.html?x=y&a=1&a=2", ServletResponseWriter.buildUrlQuery("/po/pt.html", stringListMap));
+
+        Map<String, String> stringStringMap = ServletRequestReader.parseUriParameters("https://host.org/?x=y&a=1&a=2", List::getFirst);
+        Assertions.assertEquals("/po/pt.html?x=y&a=1", ServletResponseWriter.buildUrlQuery("/po/pt.html", stringStringMap));
     }
 
 }
