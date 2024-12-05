@@ -20,6 +20,7 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ToString(onlyExplicitlyIncluded = true)
@@ -193,6 +194,16 @@ public class ServletRequestReader {
 
     public static Map<String, List<String>> parseUriParameters(String uri) {
         return new LinkedHashMap<>(UriComponentsBuilder.fromUriString(uri).build().getQueryParams());
+    }
+
+    public static Map<String, String> parseUriParameters(String uri, Function<List<String>, String> reduce) {
+        Map<String, String> result = new LinkedHashMap<>();
+        UriComponentsBuilder
+                .fromUriString(uri)
+                .build()
+                .getQueryParams()
+                .forEach((key, listString) -> result.put(key, reduce.apply(listString)));
+        return result;
     }
 
     public static String getPath(String uri) {

@@ -48,6 +48,14 @@ class HttpRequestReaderTest {
     }
 
     @Test
+    void parseUriReduce(){
+        Map<String, String> stringListMap = ServletRequestReader.parseUriParameters("https://host.org/?x=y&a=1&a=2", strings -> String.join(", ",strings));
+        Assertions.assertEquals("{x=y, a=1, 2}", stringListMap.toString());
+        Assertions.assertEquals("{x=, a=1, 2}", ServletRequestReader.parseUriParameters("https://host.org/?x=&a=1&a=2", strings -> String.join(", ",strings)).toString());
+        Assertions.assertEquals("{x=, a=1}", ServletRequestReader.parseUriParameters("https://host.org/?x=&a=1&a=2", List::getFirst).toString());
+    }
+
+    @Test
     void getPath(){
         Assertions.assertEquals("/po/pt.html", ServletRequestReader.getPath("https://host.org/po/pt.html?x=y&a=1&a=2"));
         Assertions.assertEquals("/po/pt.html", ServletRequestReader.getPath("https://host.org/po/pt.html/?x=y&a=1&a=2"));
