@@ -2,6 +2,8 @@ package ru.jamsys.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.jamsys.core.extension.http.ServletRequestReader;
 
 import java.util.List;
@@ -44,6 +46,11 @@ class HttpRequestReaderTest {
     void parseUri(){
         Map<String, List<String>> stringListMap = ServletRequestReader.parseUriParameters("https://host.org/?x=y&a=1&a=2");
         Assertions.assertEquals("{x=[y], a=[1, 2]}", stringListMap.toString());
+    }
+
+    @Test
+    void getPath(){
+        Assertions.assertEquals("/po/pt.html", ServletRequestReader.getPath("https://host.org/po/pt.html?x=y&a=1&a=2"));
     }
 
 }

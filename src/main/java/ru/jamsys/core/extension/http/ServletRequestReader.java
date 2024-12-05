@@ -195,4 +195,8 @@ public class ServletRequestReader {
         return new LinkedHashMap<>(UriComponentsBuilder.fromUriString(uri).build().getQueryParams());
     }
 
+    public static String getPath(String uri) {
+        return UriComponentsBuilder.fromUriString(uri).build().getPath();
+    }
+
 }
