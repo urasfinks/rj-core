@@ -20,4 +20,9 @@ class UtilDateTest {
         Assertions.assertEquals("03.03.2025", UtilDate.format("20250303", "yyyyMMdd", "dd.MM.yyyy"));
     }
 
+    @Test
+    void formatUTC() {
+        Assertions.assertEquals("2024-11-29 19:00:00", UtilDate.timestampFormatUTC(1732906800, "yyyy-MM-dd HH:mm:ss"));
+    }
+
 }

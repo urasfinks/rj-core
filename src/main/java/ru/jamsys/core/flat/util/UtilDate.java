@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class UtilDate {
 
@@ -55,6 +56,13 @@ public class UtilDate {
     public static String timestampFormat(long timestamp, String format) {
         Timestamp stamp = new Timestamp(timestamp * 1000);
         return new SimpleDateFormat(format).format(new Date(stamp.getTime()));
+    }
+
+    public static String timestampFormatUTC(long timestamp, String format) {
+        Timestamp ts = new Timestamp(timestamp * 1000);
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return sdf.format(ts);
     }
 
     public static String msFormat(Long ms) {
