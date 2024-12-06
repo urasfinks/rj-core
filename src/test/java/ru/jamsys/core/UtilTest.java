@@ -154,4 +154,9 @@ class UtilTest {
         System.out.println(list);
     }
 
+    @Test
+    void readUntil() {
+        Assertions.assertEquals("00", Util.readUntil("00p", Util::isNumeric));
+    }
+
 }

@@ -393,4 +393,16 @@ public class Util {
                 .orElse((Collection<Collection<?>>) nCol.get());
     }
 
+    public static String readUntil(String data, Function<String, Boolean> fn) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < data.length(); i++) {
+            if (fn.apply(data.charAt(i) + "")) {
+                sb.append(data.charAt(i));
+                continue;
+            }
+            break;
+        }
+        return sb.toString();
+    }
+
 }
