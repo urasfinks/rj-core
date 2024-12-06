@@ -6,9 +6,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
@@ -30,6 +28,14 @@ public class UtilDate {
         DateFormat dateFormat = new SimpleDateFormat(format);
         Date d1 = dateFormat.parse(date);
         return d1.getTime() / 1000;
+    }
+
+    public static long getTimestampWithoutSystemZone(String dateStr, String dateFormat) throws Exception {
+        long timestamp = getTimestamp(dateStr, dateFormat);
+        ZoneId systemZone = ZoneId.systemDefault();
+        ZonedDateTime now = ZonedDateTime.now(systemZone);
+        ZoneOffset offset = now.getOffset();
+        return timestamp - offset.getTotalSeconds();
     }
 
     public static long getMs(String date, String format) throws Exception {
