@@ -65,6 +65,13 @@ public class UtilDate {
         return sdf.format(ts);
     }
 
+    public static String timestampFormatUTCOffset(long timestamp, String format, long offsetSec) {
+        Timestamp ts = new Timestamp((timestamp + offsetSec) * 1000);
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return sdf.format(ts);
+    }
+
     public static String msFormat(Long ms) {
         return msFormat(ms, "yyyy-MM-dd'T'HH:mm:ss.SSS");
     }
