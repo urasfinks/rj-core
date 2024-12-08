@@ -7,6 +7,8 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilListSort;
 import ru.jamsys.core.flat.util.UtilRisc;
 
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -157,6 +159,12 @@ class UtilTest {
     @Test
     void readUntil() {
         Assertions.assertEquals("00", Util.readUntil("00p", Util::isNumeric));
+    }
+
+    @Test
+    void hashMd5() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        Assertions.assertEquals("3e25960a79dbc69b674cd4ec67a72c62", Util.getHash("Hello world", "md5"));
+        Assertions.assertEquals("2bf4d19c4f4cda4262b00c773779fced", Util.getHash("Привет страна", "md5"));
     }
 
 }

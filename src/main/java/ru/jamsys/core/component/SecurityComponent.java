@@ -204,7 +204,7 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
             return hashPassword != null
                     && hashPassword.equals(
                     new String(
-                            Util.getHash(UtilByte.charsToBytes(password), hashPasswordType),
+                            Util.getHashByte(UtilByte.charsToBytes(password), hashPasswordType),
                             StandardCharsets.UTF_8
                     ));
         } catch (Exception e) {
@@ -217,7 +217,7 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
         if (password == null || password.length == 0) {
             throw new RuntimeException("Password is empty; Change/remove token file: [" + pathPublicKey + "]");
         }
-        hashPassword = new String(Util.getHash(UtilByte.charsToBytes(password), hashPasswordType), StandardCharsets.UTF_8);
+        hashPassword = new String(Util.getHashByte(UtilByte.charsToBytes(password), hashPasswordType), StandardCharsets.UTF_8);
         keyStorePP = new KeyStore.PasswordProtection(password);
         File f = new File(pathStorage);
         if (!f.exists()) {

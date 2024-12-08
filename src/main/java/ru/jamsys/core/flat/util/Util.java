@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLDecoder;
@@ -197,7 +198,7 @@ public class Util {
         return urlDecode(data, defaultCharset);
     }
 
-    public static byte[] getHash(byte[] bytes, String hashType) throws NoSuchAlgorithmException {
+    public static byte[] getHashByte(byte[] bytes, String hashType) throws NoSuchAlgorithmException {
         // MD2, MD5, SHA1, SHA-256, SHA-384, SHA-512
         java.security.MessageDigest crypt2 = java.security.MessageDigest.getInstance(hashType);
         crypt2.reset();
@@ -205,12 +206,26 @@ public class Util {
         return crypt2.digest();
     }
 
-    public static byte[] getHash(String data, String hashType, String charset) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        return getHash(data.getBytes(charset), hashType);
+    public static byte[] getHashByte(String data, String hashType, String charset) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        return getHashByte(data.getBytes(charset), hashType);
     }
 
     public static String getHash(String data, String hashType) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        return new String(getHash(data, hashType, defaultCharset), defaultCharset);
+        BigInteger bigInt = new BigInteger(1, getHashByte(data, hashType, defaultCharset));
+        StringBuilder result = new StringBuilder(bigInt.toString(16));
+        while (result.length() < 32) {
+            result.insert(0, "0");
+        }
+        return result.toString();
+    }
+
+    public static String getHash(String data, String hashType, String charset) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        BigInteger bigInt = new BigInteger(1, getHashByte(data, hashType, charset));
+        StringBuilder result = new StringBuilder(bigInt.toString(16));
+        while (result.length() < 32) {
+            result.insert(0, "0");
+        }
+        return result.toString();
     }
 
     public static Integer random(Integer minimum, Integer maximum) {
