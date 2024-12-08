@@ -30,6 +30,17 @@ public class UtilDate {
         return d1.getTime() / 1000;
     }
 
+    public static long getTimestamp(String date, String format, long def) {
+        try {
+            DateFormat dateFormat = new SimpleDateFormat(format);
+            Date d1 = dateFormat.parse(date);
+            return d1.getTime() / 1000;
+        } catch (Exception e) {
+            App.error(e);
+        }
+        return def;
+    }
+
     public static long getTimestampWithoutSystemZone(String dateStr, String dateFormat) throws Exception {
         long timestamp = getTimestamp(dateStr, dateFormat);
         ZoneId systemZone = ZoneId.systemDefault();
@@ -99,13 +110,12 @@ public class UtilDate {
     }
 
     public static String format(String date, String format, String newFormat, String def) {
-        String result = null;
         try {
-            result = new SimpleDateFormat(newFormat).format(new SimpleDateFormat(format).parse(date));
+            return new SimpleDateFormat(newFormat).format(new SimpleDateFormat(format).parse(date));
         } catch (Exception e) {
             App.error(e);
         }
-        return result == null ? def : result;
+        return def;
     }
 
 }
