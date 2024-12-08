@@ -98,4 +98,14 @@ public class UtilDate {
         return new SimpleDateFormat(newFormat).format(new SimpleDateFormat(format).parse(date));
     }
 
+    public static String format(String date, String format, String newFormat, String def) {
+        String result = null;
+        try {
+            result = new SimpleDateFormat(newFormat).format(new SimpleDateFormat(format).parse(date));
+        } catch (Exception e) {
+            App.error(e);
+        }
+        return result == null ? def : result;
+    }
+
 }
