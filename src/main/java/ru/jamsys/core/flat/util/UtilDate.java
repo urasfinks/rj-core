@@ -49,7 +49,7 @@ public class UtilDate {
         return timestamp - offset.getTotalSeconds();
     }
 
-    public static long getTimestampWithoutSystemZone(String dateStr, String dateFormat, long def) throws Exception {
+    public static long getTimestampWithoutSystemZone(String dateStr, String dateFormat, long def) {
         try {
             long timestamp = getTimestamp(dateStr, dateFormat);
             ZoneId systemZone = ZoneId.systemDefault();
