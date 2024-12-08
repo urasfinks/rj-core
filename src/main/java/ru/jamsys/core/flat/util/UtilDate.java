@@ -41,25 +41,11 @@ public class UtilDate {
         return def;
     }
 
-    public static long getTimestampWithoutSystemZone(String dateStr, String dateFormat) throws Exception {
-        long timestamp = getTimestamp(dateStr, dateFormat);
+    public static long getTimestampOffsetUTC() {
         ZoneId systemZone = ZoneId.systemDefault();
         ZonedDateTime now = ZonedDateTime.now(systemZone);
         ZoneOffset offset = now.getOffset();
-        return timestamp - offset.getTotalSeconds();
-    }
-
-    public static long getTimestampWithoutSystemZone(String dateStr, String dateFormat, long def) {
-        try {
-            long timestamp = getTimestamp(dateStr, dateFormat);
-            ZoneId systemZone = ZoneId.systemDefault();
-            ZonedDateTime now = ZonedDateTime.now(systemZone);
-            ZoneOffset offset = now.getOffset();
-            return timestamp - offset.getTotalSeconds();
-        } catch (Exception e) {
-            App.error(e);
-        }
-        return def;
+        return offset.getTotalSeconds();
     }
 
     public static long getMs(String date, String format) throws Exception {

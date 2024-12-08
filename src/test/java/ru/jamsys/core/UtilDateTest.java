@@ -34,9 +34,4 @@ class UtilDateTest {
         ));
     }
 
-    @Test
-    void formatTimestampUTC() throws Exception {
-        Assertions.assertEquals(1732885200L, UtilDate.getTimestampWithoutSystemZone("2024-11-29 19:00:00", "yyyy-MM-dd HH:mm:ss"));
-    }
-
 }
