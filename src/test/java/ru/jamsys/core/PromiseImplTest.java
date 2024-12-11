@@ -511,4 +511,24 @@ class PromiseImplTest {
         private String value;
     }
 
+    @Test
+    void testGoToAndSkippAll() {
+        Promise promise = servicePromise.get("log", 6_000L);
+        promise.setDebug(true);
+        promise.then("index", (_, _, promise1) -> {
+                    promise1.goTo("NotExist");
+                    promise1.skipAllStep("system");
+                })
+                .then("index2", (_, _, _) -> {
+
+                })
+                .onError((_, _, _) -> {
+                })
+                .onComplete((_, _, _) -> {
+                    Assertions.fail();
+                    System.out.println("NO");
+                })
+                .run().await(7000);
+    }
+
 }
