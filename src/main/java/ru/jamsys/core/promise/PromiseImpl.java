@@ -183,6 +183,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             ) {
                 if (!goTo.isEmpty()) {
                     setError(new RuntimeException("goTo is not empty: " + goTo));
+                    terminate(onError);
                 } else {
                     terminate(onComplete);
                 }
