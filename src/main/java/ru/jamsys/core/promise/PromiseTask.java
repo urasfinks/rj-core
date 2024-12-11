@@ -46,6 +46,7 @@ public class PromiseTask implements Runnable {
     // Нельзя Promise устанавливать run.set(false)
     protected ProcedureThrowing afterBlockExecution;
 
+    // Терминальный блок onComplete или onError - особый вид поведения afterBlockExecution при ошибках
     @Setter
     @Getter
     private boolean terminated = false;
@@ -136,20 +137,28 @@ public class PromiseTask implements Runnable {
             flushRepositoryChange();
         } catch (Throwable th) {
             flushRepositoryChange();
-            stopTimer(timerEnvelope);
-            if (retryCount > 0) {
-                retryCount--;
-                tracePromiseTask.getExceptionTrace().add(new Trace<>(null, th));
-                App.get(ServicePromise.class).addRetryDelay(this);
-                // Если мы вышли на повтор, то promise.complete вызывать не надо
+            // Если не терминальный блок
+            if (!isTerminated()) {
+                stopTimer(timerEnvelope);
+                if (retryCount > 0) {
+                    retryCount--;
+                    tracePromiseTask.getExceptionTrace().add(new Trace<>(null, th));
+                    App.get(ServicePromise.class).addRetryDelay(this);
+                    // Если мы вышли на повтор, то promise.complete вызывать не надо
+                } else {
+                    // Если произошла ошибка в основном блоке, мы не будем выполнять afterBlockExecution
+                    // Так как нужно придерживаться линейности и быть предсказуемым
+                    // По сути afterBlockExecution может хотеть использовать данные созданные в executeBlock
+                    // И тогда можем получить двойную ошибку
+                    completeThrowable(th);
+                }
+                return;
             } else {
-                // Если произошла ошибка в основном блоке, мы не будем выполнять afterBlockExecution
-                // Так как нужно придерживаться линейности и быть предсказуемым
-                // По сути afterBlockExecution может хотеть использовать данные созданные в executeBlock
-                // И тогда можем получить двойную ошибку
-                completeThrowable(th);
+                // Если терминальный, то просто фиксируем ошибку и всё, тут уже ничего не поделать
+                // Ну допустим onComplete вызывает ошибку - ну ведь мы ничего не можем с этим сделать
+                // Аналогично с onError - ну ошибка, ну дальше-то что?
+                promise.setError(th);
             }
-            return;
         }
 
         if (afterBlockExecution != null) {

@@ -523,6 +523,7 @@ class PromiseImplTest {
 
                 })
                 .onError((_, _, _) -> {
+                    throw new RuntimeException("OPA BUG");
                 })
                 .onComplete((_, _, _) -> {
                     Assertions.fail();
