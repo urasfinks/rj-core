@@ -158,6 +158,8 @@ public class PromiseTask implements Runnable {
                 // Ну допустим onComplete вызывает ошибку - ну ведь мы ничего не можем с этим сделать
                 // Аналогично с onError - ну ошибка, ну дальше-то что?
                 promise.setError(th);
+                // Так как можем не увидеть ошибку, дополнительно её выведем
+                App.error(th);
             }
         }
 
