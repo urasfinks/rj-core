@@ -154,7 +154,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
 
     Promise setLog(boolean log);
 
-    void skipAllStep();
+    void skipAllStep(String cause);
 
     void goTo(String to);
 

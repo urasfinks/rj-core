@@ -13,7 +13,7 @@ import java.util.function.Function;
 
 public class PromiseRepositoryDebug extends HashMap<String, Object> {
 
-    private final Map<Object, String> cacheOnGet = new HashMap<>();
+    private final Map<Object, String> usage = new HashMap<>();
 
     private final Promise promise;
 
@@ -28,7 +28,7 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
         Collection<Trace<String, ?>> taskTrace = promise instanceof PromiseDebug
                 ? ((PromiseDebug) promise).getPromiseTask().getTracePromiseTask().getTaskTrace()
                 : promise.getTrace();
-        cacheOnGet.forEach((key, cache) -> {
+        usage.forEach((key, cache) -> {
             Object value = repositoryMap.get(key);
             String newCache = UtilJson.toString(value, "");
             if (!cache.equals(newCache)) {
@@ -52,7 +52,7 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
     @Override
     public Object get(Object key) {
         Object o = repositoryMap.get(key);
-        cacheOnGet.computeIfAbsent(key, _ -> UtilJson.toString(o, ""));
+        usage.computeIfAbsent(key, _ -> UtilJson.toString(o, ""));
         return o;
     }
 
@@ -81,6 +81,7 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
         } else {
             promise.getTrace().add(trace);
         }
+        usage.computeIfAbsent(key, _ -> UtilJson.toString(value, ""));
         return repositoryMap.put(key, value);
     }
 

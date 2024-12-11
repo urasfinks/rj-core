@@ -92,7 +92,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
         return servicePromise.get(index, 4_999L)
                 .append("checkStatistic", (_, _, promise) -> {
                     if (broker.isEmpty()) {
-                        promise.skipAllStep();
+                        promise.skipAllStep("broker.isEmpty()");
                     }
                 })
                 .thenWithResource("sendToInflux", InfluxResource.class, (isThreadRun, _, promise, influxResource) -> {

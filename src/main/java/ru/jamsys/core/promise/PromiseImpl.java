@@ -212,12 +212,14 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     @Override
-    public void skipAllStep() {
+    public void skipAllStep(String cause) {
+        getTrace().add(new Trace<>("skipAllStep " + cause, null));
         listPendingTasks.clear();
     }
 
     @Override
     public void goTo(String to) {
+        getTrace().add(new Trace<>("goTo " + to, null));
         goTo.add(getIndex() + "." + to);
     }
 

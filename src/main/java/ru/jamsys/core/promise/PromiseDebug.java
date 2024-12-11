@@ -138,8 +138,8 @@ public class PromiseDebug implements Promise {
     }
 
     @Override
-    public void skipAllStep() {
-        promise.skipAllStep();
+    public void skipAllStep(String cause) {
+        promise.skipAllStep(cause);
     }
 
     @Override
