@@ -35,7 +35,7 @@ class UtilDateTest {
     }
 
     @Test
-    void diffSecond() {
+    void diffSecond() throws ParseException {
         Assertions.assertEquals(60L, UtilDate.diffSecond("3:18", "03:19", "H:mm"));
     }
 
