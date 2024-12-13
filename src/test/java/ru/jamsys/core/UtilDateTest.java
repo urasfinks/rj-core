@@ -34,4 +34,9 @@ class UtilDateTest {
         ));
     }
 
+    @Test
+    void diffSecond() {
+        Assertions.assertEquals(60L, UtilDate.diffSecond("3:18", "03:19", "H:mm"));
+    }
+
 }

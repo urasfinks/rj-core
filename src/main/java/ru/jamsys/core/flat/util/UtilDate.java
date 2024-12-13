@@ -69,6 +69,14 @@ public class UtilDate {
         return timestampFormat(timestamp, "yyyy-MM-dd'T'HH:mm:ss");
     }
 
+    public static long diffSecond(String t1, String t2, String format) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+        return Duration.between(
+                LocalTime.parse(t1, formatter),
+                LocalTime.parse(t2, formatter)
+        ).getSeconds();
+    }
+
     public static String timestampFormat(long timestamp, String format) {
         Timestamp stamp = new Timestamp(timestamp * 1000);
         return new SimpleDateFormat(format).format(new Date(stamp.getTime()));
