@@ -26,7 +26,7 @@ public class PromiseTask implements Runnable {
     @Getter
     final PromiseTaskExecuteType type;
 
-    private PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> procedure;
+    private final PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> procedure;
 
     private final Promise promise;
 
@@ -59,12 +59,6 @@ public class PromiseTask implements Runnable {
     @Getter
     private TracePromiseTask<String, TimerNanoEnvelope<String>> tracePromiseTask;
 
-    public PromiseTask(String index, Promise promise, PromiseTaskExecuteType type) {
-        this.index = index;
-        this.promise = promise;
-        this.type = type;
-    }
-
     public PromiseTask(
             String index,
             Promise promise,
@@ -88,15 +82,20 @@ public class PromiseTask implements Runnable {
     }
 
     public void externalComplete() {
-        if (Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT) {
+        if (isExternal()) {
             // Время можно путём вычитания start.start - complete.start
             promise.getTrace().add(new TracePromiseTask<>(getIndex() + ".complete", null, type, this.getClass()));
             promise.complete(this);
         }
     }
 
+    public boolean isExternal() {
+        return Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT_IO
+                || Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE;
+    }
+
     public void externalError(Throwable th) {
-        if (Objects.requireNonNull(type) == PromiseTaskExecuteType.EXTERNAL_WAIT) {
+        if (isExternal()) {
             promise.complete(this, th);
         }
     }
@@ -111,12 +110,15 @@ public class PromiseTask implements Runnable {
     public void prepareLaunch(ProcedureThrowing afterExecuteBlock) {
         this.prepare = System.currentTimeMillis();
         this.afterBlockExecution = afterExecuteBlock;
-        switch (type) {
-            case IO, ASYNC_NO_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);
-            case COMPUTE, ASYNC_NO_WAIT_COMPUTE -> App.get(ManagerThreadPool.class).addPromiseTask(this);
-            case EXTERNAL_WAIT -> promise
-                    .getTrace()
-                    .add(new TracePromiseTask<>(getIndex() + ".start", null, type, this.getClass()));
+        if (procedure != null) {
+            switch (type) {
+                case IO, ASYNC_NO_WAIT_IO, EXTERNAL_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);
+                case COMPUTE, ASYNC_NO_WAIT_COMPUTE, EXTERNAL_WAIT_COMPUTE ->
+                        App.get(ManagerThreadPool.class).addPromiseTask(this);
+            }
+        } else {
+            // Исполняемого блока нет, в этом же потоке провернём, что бы статистику записать и всё
+            run();
         }
     }
 
@@ -174,7 +176,9 @@ public class PromiseTask implements Runnable {
         }
 
         stopTimer(timerEnvelope);
-        complete();
+        if (!isExternal()) {
+            complete();
+        }
     }
 
     private void flushRepositoryChange() {
@@ -209,7 +213,9 @@ public class PromiseTask implements Runnable {
     }
 
     protected void executeBlock() throws Throwable {
-        procedure.accept(isThreadRun, this, getPromise());
+        if (procedure != null) {
+            procedure.accept(isThreadRun, this, getPromise());
+        }
     }
 
 }

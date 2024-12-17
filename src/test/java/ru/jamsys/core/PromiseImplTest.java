@@ -9,10 +9,7 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseImpl;
-import ru.jamsys.core.promise.PromiseTask;
-import ru.jamsys.core.promise.PromiseTaskExecuteType;
+import ru.jamsys.core.promise.*;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
 
@@ -296,7 +293,12 @@ class PromiseImplTest {
     @Test
     void testExternalWait() {
         Promise promise = servicePromise.get("Async", 6_000L);
-        PromiseTask promiseTask = new PromiseTask("test", promise, PromiseTaskExecuteType.EXTERNAL_WAIT);
+        PromiseTask promiseTask = new PromiseTask(
+                "test",
+                promise,
+                PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
+                null
+        );
         promise.append(promiseTask);
         promise.run().await(1000);
 
@@ -385,11 +387,12 @@ class PromiseImplTest {
                     PromiseTask asyncPromiseTask = new PromiseTask(
                             "async",
                             promise1,
-                            PromiseTaskExecuteType.EXTERNAL_WAIT
+                            PromiseTaskExecuteType.EXTERNAL_WAIT_IO,
+                            null
                     );
                     List<PromiseTask> add = new ArrayList<>();
                     add.add(asyncPromiseTask);
-                    add.add(new PromiseTask(PromiseTaskExecuteType.WAIT.getNameCamel(), promise1, PromiseTaskExecuteType.WAIT));
+                    add.add(new PromiseTaskWait(promise1));
                     promise1.addToHead(add);
                 })
                 .run()
@@ -481,9 +484,9 @@ class PromiseImplTest {
         });
         Assertions.assertEquals("[PromiseTask(type=COMPUTE, index=log.index)]", promiseImpl.getListPendingTasks().toString());
         promise.appendWait();
-        Assertions.assertEquals("[PromiseTask(type=COMPUTE, index=log.index), PromiseTask(type=WAIT, index=Wait)]", promiseImpl.getListPendingTasks().toString());
+        Assertions.assertEquals("[PromiseTask(type=COMPUTE, index=log.index), PromiseTaskWait()]", promiseImpl.getListPendingTasks().toString());
         promise.appendWait();
-        Assertions.assertEquals("[PromiseTask(type=COMPUTE, index=log.index), PromiseTask(type=WAIT, index=Wait)]", promiseImpl.getListPendingTasks().toString());
+        Assertions.assertEquals("[PromiseTask(type=COMPUTE, index=log.index), PromiseTaskWait()]", promiseImpl.getListPendingTasks().toString());
     }
 
     @Test
@@ -530,6 +533,43 @@ class PromiseImplTest {
                     System.out.println("NO");
                 })
                 .run().await(7000);
+    }
+
+    @Test
+    void testThenPromise() {
+        Promise promise = servicePromise.get("testThenPromise", 6_000L);
+        promise.setDebug(true);
+        List<Integer> list = new ArrayList<>();
+        promise.then("index0", (_, _, _) -> list.add(0))
+                .then("index1", servicePromise.get("log2", 6_000L)
+                        .then("sub1", (_, _, _) -> {
+                            Util.sleepMs(300);
+                            list.add(1);
+                        })
+                        .then("sub1", (_, _, _) -> list.add(2))
+                )
+                .then("index2", (_, _, _) -> list.add(3))
+                .run().await(7000);
+        Assertions.assertEquals("[0, 1, 2, 3]", list.toString());
+    }
+
+    @Test
+    void testThenPromise2() {
+        Promise promise = servicePromise.get("testThenPromise2", 6_000L);
+        promise.setDebug(true);
+        List<Integer> list = new ArrayList<>();
+        promise.then("index0", (_, _, _) -> list.add(0))
+                .append("index1", servicePromise.get("log2", 6_000L)
+                        .then("sub1", (_, _, _) -> {
+                            Util.sleepMs(300);
+                            list.add(1);
+                        })
+                        .then("sub1", (_, _, _) -> list.add(2))
+                )
+                .append("index2", (_, _, _) -> list.add(3))
+                .then("index3", (_, _, _) -> list.add(4))
+                .run().await(7000);
+        Assertions.assertEquals("[0, 3, 1, 2, 4]", list.toString());
     }
 
 }

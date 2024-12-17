@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.Correlation;
+import ru.jamsys.core.extension.builder.ArrayListBuilder;
 import ru.jamsys.core.extension.exception.PromiseException;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
@@ -116,6 +117,10 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
 
     public void addToHead(List<PromiseTask> append) {
         toHead.add(append);
+    }
+
+    public void addToHead(PromiseTask append) {
+        toHead.add(new ArrayListBuilder<PromiseTask>().append(append));
     }
 
     @JsonProperty

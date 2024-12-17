@@ -32,7 +32,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
             PromiseTaskWithResourceConsumerThrowing<PromiseTask, AtomicBoolean, Promise, T> procedure,
             PoolSettings<T> poolSettings
     ) {
-        super(index, promise, PromiseTaskExecuteType.IO);
+        super(index, promise, PromiseTaskExecuteType.IO, null);
         this.poolSettings = poolSettings;
         this.procedure = procedure;
         managerPoolTaskWait = App.get(ManagerPoolTaskWait.class);

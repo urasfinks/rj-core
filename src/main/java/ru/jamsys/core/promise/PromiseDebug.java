@@ -78,6 +78,11 @@ public class PromiseDebug implements Promise {
     }
 
     @Override
+    public void addToHead(PromiseTask append) {
+        promise.addToHead(append);
+    }
+
+    @Override
     public Promise append(PromiseTask task) {
         return promise.append(task);
     }

@@ -63,6 +63,8 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     // Если в цепочку надо внедрить дополнительные задачи в runTime исполнения
     void addToHead(List<PromiseTask> append);
 
+    void addToHead(PromiseTask append);
+
     Promise append(PromiseTask task);
 
     default Promise append(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
@@ -113,6 +115,33 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
         ));
     }
 
+    default Promise then(String index, Promise externalPromise) {
+        then(new PromiseTask(
+                        getIndex() + "." + index,
+                        this,
+                        PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
+                        (_, promiseTask, _) -> externalPromise
+                                .onError((_, _, promise) -> promiseTask.externalError(promise.getException()))
+                                .onComplete((_, _, _) -> promiseTask.externalComplete())
+                                .run()
+                )
+        );
+        return this;
+    }
+
+    default Promise append(String index, Promise externalPromise) {
+        append(new PromiseTask(
+                getIndex() + "." + index,
+                this,
+                PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
+                (_, promiseTask, _) -> externalPromise
+                        .onError((_, _, promise) -> promiseTask.externalError(promise.getException()))
+                        .onComplete((_, _, _) -> promiseTask.externalComplete())
+                        .run())
+        );
+        return this;
+    }
+
     default Promise then(PromiseTask task) {
         appendWait(task.getIndex()).append(task);
         return this;
@@ -123,12 +152,12 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     }
 
     default Promise appendWait() {
-        append(new PromiseTask(PromiseTaskExecuteType.WAIT.getNameCamel(), this, PromiseTaskExecuteType.WAIT));
+        append(new PromiseTaskWait(this));
         return this;
     }
 
     default Promise appendWait(String key) {
-        append(new PromiseTask(key, this, PromiseTaskExecuteType.WAIT));
+        append(new PromiseTaskWait(key, this));
         return this;
     }
 

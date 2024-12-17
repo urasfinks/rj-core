@@ -6,6 +6,7 @@ import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
+import ru.jamsys.core.promise.PromiseTaskWait;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +23,6 @@ public class YandexSpeechNotificationRequest {
     @Setter
     private String role = "neutral";
 
-    final private Promise promise;
-
     private final PromiseTask asyncPromiseTask;
 
     private final String filePath;
@@ -32,16 +31,16 @@ public class YandexSpeechNotificationRequest {
 
     public YandexSpeechNotificationRequest(Promise promise, String filePath, String text) {
         this.text = text;
-        this.promise = promise;
         this.filePath = filePath;
         List<PromiseTask> add = new ArrayList<>();
         asyncPromiseTask = new PromiseTask(
                 UniqueClassNameImpl.getClassNameStatic(getClass()),
                 promise,
-                PromiseTaskExecuteType.EXTERNAL_WAIT
+                PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
+                null
         );
         add.add(asyncPromiseTask);
-        add.add(new PromiseTask(PromiseTaskExecuteType.WAIT.getNameCamel(), getPromise(), PromiseTaskExecuteType.WAIT));
+        add.add(new PromiseTaskWait(promise));
         promise.addToHead(add);
     }
 

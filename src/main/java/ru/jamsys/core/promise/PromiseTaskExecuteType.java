@@ -9,7 +9,8 @@ public enum PromiseTaskExecuteType implements CamelNormalization {
     WAIT, // Ждём когда все предыдущие запущенные задачи будут исполнены
     IO, //Запускаем эту задачу в VirtualThread
     COMPUTE, //Запускаем эту задачу в RealThread
-    EXTERNAL_WAIT, // Внешняя задача, complete будет вызван сторонними средствами
+    EXTERNAL_WAIT_IO, // complete будет вызван сторонними средствами
+    EXTERNAL_WAIT_COMPUTE, // complete будет вызван сторонними средствами
 
     // Результат задачи не интересен, ошибка или успешное выполнение не повлияет на жизненный цикл обещания
     // Запуск будет осуществлён в VirtualThread
