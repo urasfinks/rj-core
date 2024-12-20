@@ -360,6 +360,7 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
                 byte[] initJson = getOrCreateJsonCred();
                 String passwordFromInfoJson = getPasswordFromJsonCred(initJson);
                 printNotice(passwordFromInfoJson);
+                System.exit(0);
             }
             propertiesAgent.run();
         }
