@@ -27,6 +27,11 @@ public class Trace<K, V> {
         return UtilDate.msFormat(timeAdd);
     }
 
+    @JsonIgnore
+    public V getValueRaw() {
+        return value;
+    }
+
     public Object getValue() {
         if (value != null) {
             if (value instanceof Throwable) {
