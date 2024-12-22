@@ -38,7 +38,7 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
             ServiceClassFinder serviceClassFinder,
             ApplicationContext applicationContext
     ) {
-        initList(serviceClassFinder, applicationContext, exceptionHandler);
+        initList(serviceClassFinder, exceptionHandler);
         thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -92,17 +92,11 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
 
     private void initList(
             ServiceClassFinder serviceClassFinder,
-            ApplicationContext applicationContext,
             ExceptionHandler exceptionHandler
     ) {
-        String className = getClassName(applicationContext);
         serviceClassFinder.findByInstance(CronTemplate.class).forEach((Class<CronTemplate> cronTemplateClass) -> {
             CronTemplate cronTemplate = serviceClassFinder.instanceOf(cronTemplateClass);
             if (cronTemplate instanceof PromiseGenerator promiseGenerator) {
-                promiseGenerator.setIndex(
-                        className + "." +
-                                getClassName(promiseGenerator.getClass(), null, applicationContext)
-                );
                 listItem.add(new CronPromise(new Cron(cronTemplate.getCronTemplate()), promiseGenerator));
             } else {
                 exceptionHandler.handler(new RuntimeException(

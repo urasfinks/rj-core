@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilListSort;
@@ -55,11 +54,6 @@ public class RouteGenerator {
             for (Annotation annotation : promiseGeneratorClass.getAnnotations()) {
                 if (ServiceClassFinder.instanceOf(annotation.annotationType(), clsAnnotation)) {
                     PromiseGenerator promiseGenerator = applicationContext.getBean(promiseGeneratorClass);
-                    promiseGenerator.setIndex(UniqueClassNameImpl.getClassNameStatic(
-                            promiseGeneratorClass,
-                            null,
-                            applicationContext
-                    ));
                     String[] values = promiseGeneratorClass.getAnnotation(clsAnnotation).value();
                     if (values.length > 0) {
                         for (String value : values) {
@@ -73,7 +67,7 @@ public class RouteGenerator {
             }
         });
         UtilListSort.sort(new ArrayList<>(tmp.keySet()), UtilListSort.Type.DESC).forEach(s -> {
-            info.put(s, tmp.get(s).getIndex());
+            info.put(s, tmp.get(s).getClass().getSimpleName());
             repository.put(s, tmp.get(s));
         });
 
