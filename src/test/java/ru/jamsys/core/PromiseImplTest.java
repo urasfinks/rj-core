@@ -37,7 +37,7 @@ class PromiseImplTest {
     @AfterAll
     static void shutdown() {
         App.shutdown();
-        Util.logConsole("Test time: "+(System.currentTimeMillis() - start));
+        Util.logConsole("Test time: " + (System.currentTimeMillis() - start));
     }
 
     @Test
@@ -439,10 +439,10 @@ class PromiseImplTest {
         AtomicInteger xx = new AtomicInteger(0);
         Promise promise = servicePromise.get("goTo", 6_000L);
         promise.then("1task", (_, _, promise1) -> {
-            // Сначала добежим до task3 и выполним
-            // потом пробежим до task5 и выполним
-            promise1.goTo("task3");
-            promise1.goTo("task5");
+                    // Сначала добежим до task3 и выполним
+                    // потом пробежим до task5 и выполним
+                    promise1.goTo("task3");
+                    promise1.goTo("task5");
                 })
                 .then("task2", (_, _, _) -> xx.incrementAndGet())
                 .then("task3", (_, _, _) -> xx.incrementAndGet())
@@ -458,10 +458,10 @@ class PromiseImplTest {
         AtomicInteger xx = new AtomicInteger(0);
         Promise promise = servicePromise.get("goTo", 6_000L);
         promise.then("1task", (_, _, promise1) -> {
-            // Сначала добежим до task3 и выполним
-            // потом пробежим до task5 и выполним
-            promise1.goTo("task3");
-            promise1.goTo("task6");
+                    // Сначала добежим до task3 и выполним
+                    // потом пробежим до task5 и выполним
+                    promise1.goTo("task3");
+                    promise1.goTo("task6");
                 })
                 .then("task2", (_, _, _) -> xx.incrementAndGet())
                 .then("task3", (_, _, _) -> xx.incrementAndGet())
@@ -570,6 +570,27 @@ class PromiseImplTest {
                 .then("index3", (_, _, _) -> list.add(4))
                 .run().await(7000);
         Assertions.assertEquals("[0, 3, 1, 2, 4]", list.toString());
+    }
+
+    @Test
+    void testThenPromise3() {
+        Promise promise = servicePromise.get("testThenPromise3", 6_000L);
+        promise.setDebug(false);
+        AtomicInteger x = new AtomicInteger(0);
+        promise
+                .then("subPromise", servicePromise.get("log2", 6_000L)
+                        .then("sub1", (_, _, promise1)
+                                -> promise1.setRepositoryMap("hello", "world"))
+                )
+                .then("getResultSubPromise", (_, _, promise1) -> {
+                    Promise subPromise = promise1.getRepositoryMapClass(Promise.class, "subPromise");
+                    String hello = subPromise.getRepositoryMap(String.class, "hello");
+                    if (hello.equals("world")) {
+                        x.incrementAndGet();
+                    }
+                })
+                .run().await(7000);
+        Assertions.assertEquals(1, x.get());
     }
 
 }
