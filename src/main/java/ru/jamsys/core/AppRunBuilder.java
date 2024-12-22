@@ -11,6 +11,7 @@ public class AppRunBuilder {
 
     public AppRunBuilder addTestArguments() {
         return this
+                .add("run.mode", "test")
                 .add("run.args.remote.log", false)
                 .add("run.args.remote.statistic", false)
                 .add("run.args.web", false)
