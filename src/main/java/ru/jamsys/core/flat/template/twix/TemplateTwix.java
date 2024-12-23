@@ -34,19 +34,36 @@ public class TemplateTwix {
     }
 
     public static String template(List<TemplateItemTwix> parsedTemplate, Map<String, String> args) {
+        return template(parsedTemplate, args, false);
+    }
+
+    public static String template(List<TemplateItemTwix> parsedTemplate, Map<String, String> args, boolean forwardVariableIfNull) {
         StringBuilder sb = new StringBuilder();
         for (TemplateItemTwix templateItemTwix : parsedTemplate) {
             if (templateItemTwix.isStatic()) {
                 sb.append(templateItemTwix.getValue());
             } else {
-                sb.append(args.get(templateItemTwix.getValue()));
+                String value = args.get(templateItemTwix.getValue());
+                if (forwardVariableIfNull && value == null) {
+                    sb
+                            .append("${")
+                            .append(templateItemTwix.getValue())
+                            .append("}");
+                } else {
+                    sb.append(value);
+                }
+
             }
         }
         return sb.toString();
     }
 
     public static String template(String template, Map<String, String> args) {
-        return template(getParsedTemplate(template), args);
+        return template(template, args, false);
+    }
+
+    public static String template(String template, Map<String, String> args, boolean forwardVariableIfNull) {
+        return template(getParsedTemplate(template), args, forwardVariableIfNull);
     }
 
     private static List<TemplateItemTwix> merge(List<TemplateItemTwix> input) {

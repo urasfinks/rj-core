@@ -13,7 +13,7 @@ import java.util.Map;
 class TwixTest {
 
     @Test
-    void template(){
+    void template() {
         Map<String, String> args = new HashMap<>();
         args.put("name", "Ura");
         Assertions.assertEquals("Hello Ura", TemplateTwix.template("Hello ${name}", args));
@@ -49,4 +49,11 @@ class TwixTest {
         Assertions.assertEquals("[TemplateItemTwix(isStatic=true, value=${fwe)]", TemplateTwix.getParsedTemplate("${fwe").toString(), "#24");
         //Assertions.assertEquals("", Template.parse("").toString(), "#");
     }
+
+    @Test
+    void templateNull() {
+        Map<String, String> args = new HashMap<>();
+        Assertions.assertEquals("Hello ${name}", TemplateTwix.template("Hello ${name}", args, true));
+    }
+
 }
