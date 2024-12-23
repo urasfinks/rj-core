@@ -52,7 +52,7 @@ public class PromiseTask implements Runnable {
     private boolean terminated = false;
 
     @Setter
-    AtomicBoolean isThreadRun;
+    protected AtomicBoolean threadRun;
 
     private Long prepare;
 
@@ -214,7 +214,7 @@ public class PromiseTask implements Runnable {
 
     protected void executeBlock() throws Throwable {
         if (procedure != null) {
-            procedure.accept(isThreadRun, this, getPromise());
+            procedure.accept(threadRun, this, getPromise());
         }
     }
 

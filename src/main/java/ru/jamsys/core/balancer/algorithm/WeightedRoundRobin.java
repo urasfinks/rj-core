@@ -37,7 +37,7 @@ public class WeightedRoundRobin implements BalancerAlgorithm {
     }
 
     @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
+    public void keepAlive(AtomicBoolean threadRun) {
 
     }
 

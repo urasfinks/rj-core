@@ -122,7 +122,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
                         this,
                         PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
                         (_, promiseTask, _) -> externalPromise
-                                .onError((_, _, promise) -> promiseTask.externalError(promise.getException()))
+                                .onError((_, _, promise) -> promiseTask.externalError(promise.getExceptionSource()))
                                 .onComplete((_, _, _) -> promiseTask.externalComplete())
                                 .run()
                 )
@@ -137,7 +137,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
                 this,
                 PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
                 (_, promiseTask, _) -> externalPromise
-                        .onError((_, _, promise) -> promiseTask.externalError(promise.getException()))
+                        .onError((_, _, promise) -> promiseTask.externalError(promise.getExceptionSource()))
                         .onComplete((_, _, _) -> promiseTask.externalComplete())
                         .run())
         );
@@ -177,7 +177,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
 
     void timeOut(String cause);
 
-    Throwable getException();
+    Throwable getExceptionSource();
 
     void setError(PromiseTask promiseTask, Throwable throwable);
 

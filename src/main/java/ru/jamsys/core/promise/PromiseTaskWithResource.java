@@ -54,7 +54,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     @Override
     protected void executeBlock() throws Throwable {
         try (PoolItemEnvelope<?, ?, T> res = getPoolItemEnvelope()) {
-            procedure.accept(isThreadRun, this, getPromise(), res.getItem());
+            procedure.accept(threadRun, this, getPromise(), res.getItem());
         }
     }
 

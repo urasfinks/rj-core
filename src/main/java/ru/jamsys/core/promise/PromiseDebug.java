@@ -123,8 +123,8 @@ public class PromiseDebug implements Promise {
     }
 
     @Override
-    public Throwable getException() {
-        return promise.getException();
+    public Throwable getExceptionSource() {
+        return promise.getExceptionSource();
     }
 
     @Override

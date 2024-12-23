@@ -236,7 +236,7 @@ public class Broker<TEO>
         return queueSize.get() * 100 / propertyBrokerSize.get();
     }
 
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
         List<Statistic> result = new ArrayList<>();
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
         int tpsDropFlush = tpsDrop.getAndSet(0);
@@ -263,16 +263,16 @@ public class Broker<TEO>
 
     // Отладочная
 
-    public List<TEO> getTailQueue(@Nullable AtomicBoolean isRun) {
+    public List<TEO> getTailQueue(@Nullable AtomicBoolean run) {
         final List<TEO> ret = new ArrayList<>();
-        UtilRisc.forEach(isRun, tailQueue, (ExpirationMsImmutableEnvelope<TEO> envelope) ->
+        UtilRisc.forEach(run, tailQueue, (ExpirationMsImmutableEnvelope<TEO> envelope) ->
                 ret.add(envelope.getValue()));
         return ret;
     }
 
-    public List<TEO> getCloneQueue(@Nullable AtomicBoolean isRun) {
+    public List<TEO> getCloneQueue(@Nullable AtomicBoolean run) {
         final List<TEO> cloned = new ArrayList<>();
-        UtilRisc.forEach(isRun, queue, (DisposableExpirationMsImmutableEnvelope<TEO> envelope)
+        UtilRisc.forEach(run, queue, (DisposableExpirationMsImmutableEnvelope<TEO> envelope)
                 -> cloned.add(envelope.revert().getValue()));
         return cloned;
     }
@@ -283,13 +283,13 @@ public class Broker<TEO>
     }
 
     @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
+    public void keepAlive(AtomicBoolean threadRun) {
         // Если в очередь добавлять сообщения - будет вызываться active()
         // Брокер будет жить и при переполнении при вставке даже будет чистить очередь с начала
         // Но если очистка будет из вне при помощи remove или onDrop, да объекты будут обезврежены от
         // повторного использования, но ссылки в очереди останутся
         // Как решение пробегать с начала очереди, до момента получения не нейтрализованного объекта
-        while (isThreadRun.get()) {
+        while (threadRun.get()) {
             // так как ConcurrentLinkedDeque.remove() идёт с first() - будем тоже работать с конца
             DisposableExpirationMsImmutableEnvelope<TEO> obj = queue.peekFirst();
             if (obj == null || !obj.isNeutralized()) {

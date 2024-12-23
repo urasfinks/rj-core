@@ -17,18 +17,18 @@ public abstract class AbstractPoolPublic<RA, RR, PI extends ExpirationMsMutable 
     }
 
     public PI getPoolItem() {
-        if (!isRun.get()) {
+        if (!run.get()) {
             return null;
         }
         return getFromPark();
     }
 
-    public PI getPoolItem(long timeOutMs, AtomicBoolean isThreadRun) {
-        if (!isRun.get()) {
+    public PI getPoolItem(long timeOutMs, AtomicBoolean threadRun) {
+        if (!run.get()) {
             return null;
         }
         long finishTimeMs = System.currentTimeMillis() + timeOutMs;
-        while (isRun.get() && isThreadRun.get() && finishTimeMs > System.currentTimeMillis()) {
+        while (run.get() && threadRun.get() && finishTimeMs > System.currentTimeMillis()) {
             PI poolItem = getFromPark();
             if (poolItem != null) {
                 return poolItem;

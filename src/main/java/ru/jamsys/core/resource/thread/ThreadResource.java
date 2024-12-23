@@ -23,16 +23,16 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
     @Getter
     private final String name;
 
-    private final AtomicBoolean isInit = new AtomicBoolean(false);
+    private final AtomicBoolean init = new AtomicBoolean(false);
 
-    protected final AtomicBoolean isRun = new AtomicBoolean(false);
+    protected final AtomicBoolean run = new AtomicBoolean(false);
 
     @Getter
-    private final AtomicBoolean isWhile = new AtomicBoolean(true);
+    private final AtomicBoolean spin = new AtomicBoolean(true);
 
     private final AtomicBoolean inPark = new AtomicBoolean(false);
 
-    private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+    private final AtomicBoolean shutdown = new AtomicBoolean(false);
 
     private final ThreadPool pool;
 
@@ -42,7 +42,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
         this.name = name;
 
         thread = new Thread(() -> {
-            while (isWhile.get() && isNotInterrupted() && !isShutdown.get()) {
+            while (spin.get() && isNotInterrupted() && !shutdown.get()) {
                 active();
                 if (!rateLimit.check()) {
                     goToTheParking();
@@ -52,7 +52,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
                 if (promiseTaskEnvelope != null) {
                     try {
                         PromiseTask promiseTask = promiseTaskEnvelope.getValue();
-                        promiseTask.setIsThreadRun(isWhile);
+                        promiseTask.setThreadRun(spin);
                         promiseTask.run();
                     } catch (Exception e) {
                         App.error(e);
@@ -62,13 +62,13 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
                 //Конец итерации цикла -> всегда pause()
                 goToTheParking();
             }
-            isRun.set(false);
+            run.set(false);
         });
         thread.setName(name);
     }
 
     public boolean isInit() {
-        return isInit.get();
+        return init.get();
     }
 
     public boolean isNotInterrupted() {
@@ -80,12 +80,12 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
     }
 
     private void goToTheParking() {
-        if (!isInit.get()) {
+        if (!init.get()) {
             raiseUp("Thread not initialize", "pause()");
             return;
         }
         if (inPark.compareAndSet(false, true)) {
-            if (isShutdown.get()) {
+            if (shutdown.get()) {
                 pool.remove(this);
             } else {
                 pool.complete(this, null);
@@ -97,11 +97,11 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
 
     @Override
     public void shutdown() {
-        if (!isInit.get()) {
+        if (!init.get()) {
             raiseUp("Подавление остановки, поток не инициализирован", "shutdown()");
             //return false;
         }
-        if (isShutdown.compareAndSet(false, true)) { //Что бы больше никто не смог начать останавливать
+        if (shutdown.compareAndSet(false, true)) { //Что бы больше никто не смог начать останавливать
             doShutdown();
             //return true;
         } else {
@@ -112,12 +112,12 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
 
     @Override
     public void run() {
-        if (isShutdown.get()) {
+        if (shutdown.get()) {
             raiseUp("Подавление запуска, поток остановлен", "run()");
             //return false;
-        } else if (isInit.compareAndSet(false, true)) {
+        } else if (init.compareAndSet(false, true)) {
             //Что бы второй раз не получилось запустить поток после остановки проверим на isRun
-            if (isRun.compareAndSet(false, true)) {
+            if (run.compareAndSet(false, true)) {
                 thread.start(); //start() - create new thread / run() - Runnable run in main thread
                 //return true;
             } else {
@@ -133,22 +133,22 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
     @SuppressWarnings("all")
     private void doShutdown() {
         //#1
-        isWhile.set(false); //Говорим закончить
+        spin.set(false); //Говорим закончить
         //#2
         if (inPark.compareAndSet(true, false)) {
             LockSupport.unpark(thread);
         }
-        Util.await(isRun, 1500, "Поток не закончил работу после isWhile.set(false)");
-        if (isRun.get()) {
+        Util.await(run, 1500, "Поток не закончил работу после isWhile.set(false)");
+        if (run.get()) {
             // Мы сами не реализуем sleep, но внутренние процеесы его могут реализовать
             thread.interrupt();
         }
-        Util.await(isRun, 1500, "Поток не закончил работу после interrupt()");
+        Util.await(run, 1500, "Поток не закончил работу после interrupt()");
         // Так как мы не можем больше повлиять на остановку
         // В java 22 борльше нет функционала принудительной остановки thread.stop()
         // Таску мы не будем удалять из тайминга - пусть растёт время, а то слишком круто будет новым житься
         pool.remove(this);
-        isRun.set(false);
+        run.set(false);
     }
 
     @Override

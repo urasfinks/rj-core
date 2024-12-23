@@ -47,7 +47,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     @Getter
     private final PropertiesAgent propertiesAgent;
 
-    private final AtomicBoolean isRunWrite = new AtomicBoolean(false);
+    private final AtomicBoolean runWrite = new AtomicBoolean(false);
 
     public FileByteWriter(String ns) {
         ns = ns != null ? ns : "default";
@@ -146,7 +146,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     }
 
     @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
+    public void keepAlive(AtomicBoolean threadRun) {
         if (broker == null || broker.isEmpty()) {
             return;
         }
@@ -154,21 +154,21 @@ public class FileByteWriter extends ExpirationMsMutableImpl
             genNextFile();
         }
         int maxWriteCount = property.getFileCount();
-        while (!broker.isEmpty() && isThreadRun.get()) {
+        while (!broker.isEmpty() && threadRun.get()) {
             if (maxWriteCount <= 0) {
                 break;
             }
-            write(isThreadRun);
+            write(threadRun);
             maxWriteCount--;
         }
     }
 
-    private void write(AtomicBoolean isThreadRun) {
+    private void write(AtomicBoolean threadRun) {
         // Что бы не допустить одновременного выполнения при остановки приложения, когда приходит ContextClosedEvent
-        if (isRunWrite.compareAndSet(false, true)) {
+        if (runWrite.compareAndSet(false, true)) {
             int tmpSizeKb = property.getFileSizeKb();
             try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(currentFilePath, writeByteToCurrentFile.get() > 0))) {
-                while (!broker.isEmpty() && isThreadRun.get()) {
+                while (!broker.isEmpty() && threadRun.get()) {
                     try {
                         ExpirationMsImmutableEnvelope<ByteTransformer> itemExpirationMsMutableEnvelope = broker.pollFirst();
                         if (itemExpirationMsMutableEnvelope != null) {
@@ -196,12 +196,12 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                 genNextFile();
                 App.error(e);
             }
-            isRunWrite.set(false);
+            runWrite.set(false);
         }
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
         return List.of();
     }
 

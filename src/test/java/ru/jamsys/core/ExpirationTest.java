@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class ExpirationTest {
 
-    AtomicBoolean isThreadRun = new AtomicBoolean(true);
+    AtomicBoolean threadRun = new AtomicBoolean(true);
 
     @BeforeAll
     static void beforeAll() {
@@ -49,7 +49,7 @@ class ExpirationTest {
         ExpirationMsImmutableEnvelope<XItem> add = test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
         //Стопаем задачу, что не выполнилсмя onExpired
         add.stop();
-        ExpirationKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + 1001);
+        ExpirationKeepAliveResult keepAliveResult = test.keepAlive(threadRun, curTimeMs + 1001);
         Assertions.assertEquals(1, keepAliveResult.getCountRemove().get());
 
         Assertions.assertEquals(0, counterExpired.get());
@@ -92,7 +92,7 @@ class ExpirationTest {
         statistics = test.flushAndGetStatistic(null, null, null).getFirst();
         Assertions.assertEquals("{ItemSize=100, BucketSize=50}", statistics.getFields().toString());
 
-        ExpirationKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, curTimeMs);
+        ExpirationKeepAliveResult keepAliveResult = test.keepAlive(threadRun, curTimeMs);
         // Никаких обработок пачек не должно быть, так как
         Assertions.assertEquals("[]", keepAliveResult.getReadBucket().toString());
         Assertions.assertEquals(0, keepAliveResult.getCountRemove().get());
@@ -100,7 +100,7 @@ class ExpirationTest {
         statistics = test.flushAndGetStatistic(null, null, null).getFirst();
         Assertions.assertEquals("{ItemSize=100, BucketSize=50}", statistics.getFields().toString());
 
-        keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + 100);
+        keepAliveResult = test.keepAlive(threadRun, curTimeMs + 100);
         Assertions.assertEquals(0, keepAliveResult.getCountRemove().get());
         Assertions.assertEquals("[]", keepAliveResult.getReadBucket().toString());
         statistics = test.flushAndGetStatistic(null, null, null).getFirst();
@@ -109,13 +109,13 @@ class ExpirationTest {
         Assertions.assertEquals("2024-03-06T17:11:05.006", UtilDate.msFormat(curTimeMs + 950));
         Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msFormat(Util.zeroLastNDigits(curTimeMs + 950, 3)));
 
-        keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + 950);
+        keepAliveResult = test.keepAlive(threadRun, curTimeMs + 950);
         Assertions.assertEquals(2, keepAliveResult.getCountRemove().get());
         Assertions.assertEquals("[2024-03-06T17:11:05.000]", keepAliveResult.getReadBucketFormat().toString());
         statistics = test.flushAndGetStatistic(null, null, null).getFirst();
         Assertions.assertEquals("{ItemSize=98, BucketSize=49}", statistics.getFields().toString());
 
-        keepAliveResult = test.keepAlive(isThreadRun, curTimeMs + (500 * 10));
+        keepAliveResult = test.keepAlive(threadRun, curTimeMs + (500 * 10));
         // 8 потому что 2 уже были удалены до этого
         Assertions.assertEquals(8, keepAliveResult.getCountRemove().get());
         // Это значит пробежка была от 2024-03-06T17:11:05.000 до 2024-03-06T17:11:05.999
@@ -135,17 +135,17 @@ class ExpirationTest {
                 avgMetric.add(env.getExpiryRemainingMs() * -1);
             }
         });
-        AtomicBoolean isRun = new AtomicBoolean(true);
-        AtomicBoolean isRun2 = new AtomicBoolean(true);
+        AtomicBoolean run = new AtomicBoolean(true);
+        AtomicBoolean run2 = new AtomicBoolean(true);
 
         //Сначала надо запустить keepAlive потому что старт потоков будет медленный и мы начнём терять секунды так как не запущенны
 
         Thread ka = new Thread(() -> {
             Thread.currentThread().setName("TMP KeepAlive");
-            while (isRun2.get()) {
+            while (run2.get()) {
                 try {
                     long cur = System.currentTimeMillis();
-                    ExpirationKeepAliveResult keepAliveResult = test.keepAlive(isThreadRun, cur);
+                    ExpirationKeepAliveResult keepAliveResult = test.keepAlive(threadRun, cur);
                     System.out.println(keepAliveResult);
                     Util.sleepMs(sleepKeepAlive);
                 } catch (Exception e) {
@@ -161,7 +161,7 @@ class ExpirationTest {
             new Thread(() -> {
                 Thread.currentThread().setName("IOSIF " + x);
                 try {
-                    while (isRun.get()) {
+                    while (run.get()) {
                         for (int j = 0; j < 1000; j++) {
                             test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), timeoutMs));
                         }
@@ -176,9 +176,9 @@ class ExpirationTest {
 
 
         Util.sleepMs(5000);
-        isRun.set(false);
+        run.set(false);
         Util.sleepMs(timeoutMs + sleepKeepAlive);
-        isRun2.set(false);
+        run2.set(false);
         Map<String, Object> flush = avgMetric.flush("");
         Map<String, Object> fields = test.flushAndGetStatistic(null, null, null).getFirst().getFields();
         flush.putAll(fields);

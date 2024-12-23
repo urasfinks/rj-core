@@ -160,12 +160,12 @@ public class File extends ExpirationMsMutableImpl
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
         return new ArrayList<>();
     }
 
     @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
+    public void keepAlive(AtomicBoolean threadRun) {
         if (isExpired()) {
             reset();
         }

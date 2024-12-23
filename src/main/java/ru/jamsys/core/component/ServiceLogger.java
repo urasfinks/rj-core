@@ -83,7 +83,7 @@ public class ServiceLogger extends RepositoryPropertiesField implements
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
         List<Statistic> result = new ArrayList<>();
         Statistic statistic = new Statistic(parentTags, parentFields);
         for (String key : stat.keySet()) {

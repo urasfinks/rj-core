@@ -44,13 +44,13 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     private final Map<String, Object> repositoryMap = new ConcurrentHashMap<>();
 
     @Getter
-    protected volatile Throwable exception = null;
+    protected volatile Throwable exceptionSource = null;
 
     protected final AtomicBoolean run = new AtomicBoolean(false);
 
     protected final AtomicBoolean wait = new AtomicBoolean(false);
 
-    protected final AtomicBoolean isException = new AtomicBoolean(false);
+    protected final AtomicBoolean exception = new AtomicBoolean(false);
 
     protected final AtomicBoolean startLoop = new AtomicBoolean(false);
 
@@ -126,7 +126,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     @JsonProperty
     @Override
     public boolean isException() {
-        return isException.get();
+        return exception.get();
     }
 
     @JsonProperty
@@ -150,8 +150,8 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     }
 
     private void setErrorNative(PromiseException throwable) {
-        this.exception = throwable;
-        isException.set(true);
+        this.exceptionSource = throwable;
+        exception.set(true);
     }
 
     public void setError(Throwable throwable) {

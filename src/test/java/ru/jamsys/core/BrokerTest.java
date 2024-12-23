@@ -149,7 +149,7 @@ class BrokerTest {
 
     @Test
     void testReference2() {
-        AtomicBoolean isRun = new AtomicBoolean(true);
+        AtomicBoolean run = new AtomicBoolean(true);
 
         Broker<XTest> broker = App.get(ManagerBroker.class)
                 .get(XTest.class.getSimpleName(), XTest.class);
@@ -163,7 +163,7 @@ class BrokerTest {
         }
         DisposableExpirationMsImmutableEnvelope<XTest> o2 = broker.add(obj2, 6_000L);
 
-        List<XTest> cloneQueue = broker.getCloneQueue(isRun);
+        List<XTest> cloneQueue = broker.getCloneQueue(run);
         Assertions.assertEquals(obj.hashCode(), cloneQueue.get(0).hashCode(), "#1");
         Assertions.assertEquals(obj2.hashCode(), cloneQueue.get(1).hashCode(), "#2");
         broker.remove(o1);

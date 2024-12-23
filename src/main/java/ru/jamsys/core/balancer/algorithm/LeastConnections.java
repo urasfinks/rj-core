@@ -23,7 +23,7 @@ public class LeastConnections implements BalancerAlgorithm {
     }
 
     @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
+    public void keepAlive(AtomicBoolean threadRun) {
 
     }
 

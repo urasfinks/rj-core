@@ -95,12 +95,12 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
                         promise.skipAllStep("broker.isEmpty()");
                     }
                 })
-                .thenWithResource("sendToInflux", InfluxResource.class, (isThreadRun, _, promise, influxResource) -> {
+                .thenWithResource("sendToInflux", InfluxResource.class, (threadRun, _, promise, influxResource) -> {
                     AtomicInteger countInsert = new AtomicInteger(0);
                     List<Point> listPoints = new ArrayList<>();
 
                     List<StatisticSec> reserve = new ArrayList<>();
-                    while (!broker.isEmpty() && isThreadRun.get() && countInsert.get() < limitInsert) {
+                    while (!broker.isEmpty() && threadRun.get() && countInsert.get() < limitInsert) {
                         ExpirationMsImmutableEnvelope<StatisticSec> envelope = broker.pollFirst();
                         if (envelope != null) {
                             StatisticSec statisticSec = envelope.getValue();
@@ -159,7 +159,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
                     }
                 })
                 .onError((_, _, promise) -> {
-                    Throwable exception = promise.getException();
+                    Throwable exception = promise.getExceptionSource();
                     if (exception != null) {
                         @SuppressWarnings("unchecked")
                         Function<Throwable, Boolean> isFatalExceptionOnComplete = App

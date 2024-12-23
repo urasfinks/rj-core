@@ -66,7 +66,7 @@ public class PoolTaskWait<
     @Override
     public void shutdown() {
         super.shutdown();
-        isRun.set(false);
+        run.set(false);
     }
 
     @Override

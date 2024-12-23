@@ -83,9 +83,9 @@ public class ServicePromise implements UniqueClassName, KeepAliveComponent, Stat
     }
 
     @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
+    public void keepAlive(AtomicBoolean threadRun) {
         Map<String, AvgMetric> mapMetricNano = new HashMap<>();
-        UtilRisc.forEach(isThreadRun, queueTimer, (TimerNanoEnvelope<String> timer) -> {
+        UtilRisc.forEach(threadRun, queueTimer, (TimerNanoEnvelope<String> timer) -> {
             mapMetricNano.computeIfAbsent(timer.getValue(), _ -> new AvgMetric())
                     .add(timer.getOffsetLastActivityNano());
             if (timer.isStop()) {
@@ -103,7 +103,7 @@ public class ServicePromise implements UniqueClassName, KeepAliveComponent, Stat
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
         List<Statistic> result = new ArrayList<>();
         while (!toStatistic.isEmpty()) {
             Statistic statistic = toStatistic.pollFirst();

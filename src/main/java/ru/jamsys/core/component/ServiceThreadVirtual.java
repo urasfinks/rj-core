@@ -22,10 +22,10 @@ public class ServiceThreadVirtual implements LifeCycleComponent {
 
     private final ExecutorService executorService = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("v-thread-", 0).factory());
 
-    private final AtomicBoolean isThreadRun = new AtomicBoolean(true);
+    private final AtomicBoolean run = new AtomicBoolean(true);
 
     public void execute(PromiseTask arguments) {
-        arguments.setIsThreadRun(isThreadRun);
+        arguments.setThreadRun(run);
         executorService.submit(arguments);
     }
 

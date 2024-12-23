@@ -63,7 +63,7 @@ public class RateLimitItemTps
     public List<Statistic> flushAndGetStatistic(
             Map<String, String> parentTags,
             Map<String, Object> parentFields,
-            AtomicBoolean isThreadRun
+            AtomicBoolean threadRun
     ) {
         List<Statistic> result = new ArrayList<>();
         result.add(new Statistic(parentTags, parentFields)

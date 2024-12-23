@@ -44,17 +44,17 @@ public abstract class AbstractManager<
     }
 
     @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
+    public void keepAlive(AtomicBoolean threadRun) {
         lockAddFromRemoved.lock();
         UtilRisc.forEach(
-                isThreadRun,
+                threadRun,
                 map,
                 (String key, E element) -> {
                     if (cleanableMap && element.isExpiredWithoutStop()) {
                         mapReserved.put(key, map.remove(key));
                         element.shutdown();
                     } else if (element instanceof KeepAlive) {
-                        ((KeepAlive) element).keepAlive(isThreadRun);
+                        ((KeepAlive) element).keepAlive(threadRun);
                     }
                 }
         );

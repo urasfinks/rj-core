@@ -30,9 +30,9 @@ public class PromiseController implements Cron1s, PromiseGenerator, UniqueClassN
     @Override
     public Promise generate() {
         return servicePromise.get(index,6_000L)
-                .append("main", (isThreadRun, _, _) -> {
+                .append("main", (threadRun, _, _) -> {
                     AtomicInteger count = new AtomicInteger(0);
-                    UtilRisc.forEach(isThreadRun, ServicePromise.queueMultipleCompleteSet, promise -> {
+                    UtilRisc.forEach(threadRun, ServicePromise.queueMultipleCompleteSet, promise -> {
                         assert promise != null;
                         promise.complete();
                         count.incrementAndGet();

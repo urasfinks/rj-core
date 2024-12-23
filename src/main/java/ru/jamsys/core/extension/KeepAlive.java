@@ -6,6 +6,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // Тут можно сбросить кеши / перепланировать работу - так что бы не сдохнуть)
 public interface KeepAlive {
 
-    void keepAlive(AtomicBoolean isThreadRun);
+    void keepAlive(AtomicBoolean threadRun);
 
 }

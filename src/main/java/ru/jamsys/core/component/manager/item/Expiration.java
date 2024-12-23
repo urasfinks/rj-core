@@ -72,14 +72,14 @@ public class Expiration<V>
         return bucket.keySet().stream().toList();
     }
 
-    public ExpirationKeepAliveResult keepAlive(AtomicBoolean isThreadRun, long curTimeMs) {
+    public ExpirationKeepAliveResult keepAlive(AtomicBoolean threadRun, long curTimeMs) {
         ExpirationKeepAliveResult keepAliveResult = new ExpirationKeepAliveResult();
-        UtilRisc.forEach(isThreadRun, bucket, (Long time, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>> queue) -> {
+        UtilRisc.forEach(threadRun, bucket, (Long time, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>> queue) -> {
             if (time > curTimeMs) {
                 return false;
             }
             keepAliveResult.getReadBucket().add(time);
-            UtilRisc.forEach(isThreadRun, queue, (DisposableExpirationMsImmutableEnvelope<V> envelope) -> {
+            UtilRisc.forEach(threadRun, queue, (DisposableExpirationMsImmutableEnvelope<V> envelope) -> {
                 if (envelope.isNeutralized() || envelope.isStop()) {
                     queue.remove(envelope);
                     keepAliveResult.getCountRemove().incrementAndGet();
@@ -100,17 +100,17 @@ public class Expiration<V>
     }
 
     @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
-        keepAlive(isThreadRun, System.currentTimeMillis());
+    public void keepAlive(AtomicBoolean threadRun) {
+        keepAlive(threadRun, System.currentTimeMillis());
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
         List<Statistic> result = new ArrayList<>();
         AtomicInteger summaryCountItem = new AtomicInteger(0);
         AtomicInteger countBucket = new AtomicInteger(0);
         UtilRisc.forEach(
-                isThreadRun,
+                threadRun,
                 bucket,
                 (Long time, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>> _) -> {
                     countBucket.incrementAndGet();

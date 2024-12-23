@@ -39,19 +39,19 @@ public class App {
         application.addListeners((ApplicationListener<ContextClosedEvent>) _ -> {
             Util.logConsole("App shutdown process...");
 
-            AtomicBoolean isRun = new AtomicBoolean(true);
+            AtomicBoolean run = new AtomicBoolean(true);
 
             Thread shutdownThread = new Thread(() -> {
                 Thread.currentThread().setName("daemon");
                 get(Core.class).shutdown();
-                isRun.set(false);
+                run.set(false);
             });
             //Запускаем демоническим, что бы если будут зависания в shutdown - мы могли это проигнорировать
             shutdownThread.setDaemon(true);
             shutdownThread.start();
 
             if (Util.await(
-                    isRun,
+                    run,
                     5000,
                     () -> Util.logConsole(
                             "App stop with error timeout shutdown; last running: " + Core.lastOperation,

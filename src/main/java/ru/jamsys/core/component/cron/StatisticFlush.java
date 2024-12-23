@@ -80,9 +80,9 @@ public class StatisticFlush extends RepositoryPropertiesField implements Cron1s,
     @Override
     public Promise generate() {
         return servicePromise.get(index, 6_000L)
-                .append("main", (isThreadRun, _, _) -> {
+                .append("main", (threadRun, _, _) -> {
                     StatisticSec statisticSec = new StatisticSec();
-                    UtilRisc.forEach(isThreadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
+                    UtilRisc.forEach(threadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
                         Map<String, String> parentTags = new LinkedHashMap<>();
                         String measurement = UniqueClassNameImpl.getClassNameStatic(statisticsFlushComponent.getClass(), null);
                         parentTags.put("measurement", measurement);
@@ -90,7 +90,7 @@ public class StatisticFlush extends RepositoryPropertiesField implements Cron1s,
                         List<Statistic> statistics = statisticsFlushComponent.flushAndGetStatistic(
                                 parentTags,
                                 null,
-                                isThreadRun
+                                threadRun
                         );
                         if (statistics != null && !statistics.isEmpty()) {
                             statisticSec.getList().addAll(statistics);

@@ -74,7 +74,7 @@ public class RateLimitItemPeriodic
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
         long curTime = System.currentTimeMillis();
         List<Statistic> result = new ArrayList<>();
         result.add(flushAndGetStatistic(curTime, parentTags, parentFields));

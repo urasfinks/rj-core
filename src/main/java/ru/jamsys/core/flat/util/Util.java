@@ -355,21 +355,21 @@ public class Util {
         return ConcurrentHashMap.newKeySet();
     }
 
-    public static boolean await(AtomicBoolean isRun, long timeoutMs, String exceptionMessage) {
-        return await(isRun, timeoutMs, () -> {
+    public static boolean await(AtomicBoolean run, long timeoutMs, String exceptionMessage) {
+        return await(run, timeoutMs, () -> {
             if (exceptionMessage != null) {
                 logConsole(exceptionMessage, true);
             }
         });
     }
 
-    public static boolean await(AtomicBoolean isRun, long timeoutMs, ProcedureThrowing procedure) {
+    public static boolean await(AtomicBoolean run, long timeoutMs, ProcedureThrowing procedure) {
         long start = System.currentTimeMillis();
         long expiredTime = start + timeoutMs;
-        while (isRun.get() && expiredTime >= System.currentTimeMillis()) {
+        while (run.get() && expiredTime >= System.currentTimeMillis()) {
             Thread.onSpinWait();
         }
-        if (isRun.get()) {
+        if (run.get()) {
             if (procedure != null) {
                 try {
                     procedure.run();

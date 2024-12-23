@@ -18,12 +18,12 @@ public class UtilRisc {
         return Arrays.copyOf(array, 0);
     }
 
-    public static <T> void forEach(AtomicBoolean isRun, Collection<T> collection, Function<T, Boolean> consumer) {
-        forEach(isRun, collection, consumer, false);
+    public static <T> void forEach(AtomicBoolean run, Collection<T> collection, Function<T, Boolean> consumer) {
+        forEach(run, collection, consumer, false);
     }
 
     @SuppressWarnings("ConstantConditions")
-    public static <T> void forEach(AtomicBoolean isRun, Collection<T> collection, Function<T, Boolean> consumer, boolean reverse) {
+    public static <T> void forEach(AtomicBoolean run, Collection<T> collection, Function<T, Boolean> consumer, boolean reverse) {
         if (collection != null && !collection.isEmpty()) {
             try {
                 T[] objects = collection.toArray(getEmptyType());
@@ -34,7 +34,7 @@ public class UtilRisc {
                 int index = reverse ? objects.length - 1 : 0;
                 int inc = reverse ? -1 : 1;
                 while (true) {
-                    if (isRun == null || isRun.get()) {
+                    if (run == null || run.get()) {
                         if (!consumer.apply(objects[index])) {
                             break;
                         }
@@ -52,12 +52,12 @@ public class UtilRisc {
         }
     }
 
-    public static <T> void forEach(AtomicBoolean isRun, Collection<T> collection, Consumer<T> consumer) {
-        forEach(isRun, collection, consumer, false);
+    public static <T> void forEach(AtomicBoolean run, Collection<T> collection, Consumer<T> consumer) {
+        forEach(run, collection, consumer, false);
     }
 
     @SuppressWarnings("ConstantConditions")
-    public static <T> void forEach(AtomicBoolean isRun, Collection<T> collection, Consumer<T> consumer, boolean reverse) {
+    public static <T> void forEach(AtomicBoolean run, Collection<T> collection, Consumer<T> consumer, boolean reverse) {
         if (collection != null && !collection.isEmpty()) {
             try {
                 T[] objects = collection.toArray(getEmptyType());
@@ -68,7 +68,7 @@ public class UtilRisc {
                 int index = reverse ? objects.length - 1 : 0;
                 int inc = reverse ? -1 : 1;
                 while (true) {
-                    if (isRun == null || isRun.get()) {
+                    if (run == null || run.get()) {
                         consumer.accept(objects[index]);
                     } else {
                         break;
@@ -84,12 +84,12 @@ public class UtilRisc {
         }
     }
 
-    public static <K, V> void forEach(AtomicBoolean isRun, Map<K, V> map, BiFunction<K, V, Boolean> consumer) {
+    public static <K, V> void forEach(AtomicBoolean run, Map<K, V> map, BiFunction<K, V, Boolean> consumer) {
         if (map != null && !map.isEmpty()) {
             try {
                 K[] objects = map.keySet().toArray(getEmptyType());
                 for (K key : objects) {
-                    if (isRun == null || isRun.get()) {
+                    if (run == null || run.get()) {
                         if (!consumer.apply(key, map.get(key))) {
                             break;
                         }
@@ -103,12 +103,12 @@ public class UtilRisc {
         }
     }
 
-    public static <K, V> void forEach(AtomicBoolean isRun, Map<K, V> map, BiConsumer<K, V> consumer) {
+    public static <K, V> void forEach(AtomicBoolean run, Map<K, V> map, BiConsumer<K, V> consumer) {
         if (map != null && !map.isEmpty()) {
             try {
                 K[] objects = map.keySet().toArray(getEmptyType());
                 for (K key : objects) {
-                    if (isRun == null || isRun.get()) {
+                    if (run == null || run.get()) {
                         consumer.accept(key, map.get(key));
                     } else {
                         break;

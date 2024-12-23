@@ -16,9 +16,9 @@ public interface PromiseTaskConsumerThrowing<T, A, P> {
      * что-то я не хочу обёрток, не хочу кучи ссылок - пусть будут просто аргументы promiseTask и promise
      * ----
      * Performs the operation given the specified arguments.
-     * @param isThreadRun the first input argument
+     * @param threadRun the first input argument
      * @param promiseTask the first input argument
      * @param promise the second input argument
      */
-    void accept(A isThreadRun, T promiseTask, P promise) throws Throwable;
+    void accept(A threadRun, T promiseTask, P promise) throws Throwable;
 }

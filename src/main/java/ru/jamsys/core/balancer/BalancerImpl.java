@@ -33,8 +33,8 @@ public class BalancerImpl<T> implements Balancer {
     }
 
     @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
-        balancerAlgorithm.keepAlive(isThreadRun);
+    public void keepAlive(AtomicBoolean threadRun) {
+        balancerAlgorithm.keepAlive(threadRun);
     }
 
 }

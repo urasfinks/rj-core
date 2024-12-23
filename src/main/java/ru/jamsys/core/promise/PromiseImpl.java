@@ -65,14 +65,14 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     loop();
                 } catch (Throwable th) {
                     setError(new ForwardException("loop", th));
-                    App.error(getException());
+                    App.error(getExceptionSource());
                     // Произошла ошибка, её же никто не обработает
                     // Самостоятельно сделаем ещё попытку выполнить задачи, в надежде что вызовется терминальный блок
                     try {
                         loop();
                     } catch (Throwable th2) {
                         setError(new ForwardException("loop-retry", th));
-                        App.error(getException());
+                        App.error(getExceptionSource());
                     }
                 }
                 startLoop.set(false);
@@ -99,7 +99,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
     }
 
     private boolean isNextLoop() {
-        if (isException.get()) {
+        if (exception.get()) {
             return false;
         }
         if (isExpired()) {
@@ -173,7 +173,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             }
         }
         if (run.get()) {
-            if (isException.get()) {
+            if (exception.get()) {
                 terminate(onError);
             } else if (
                     !wait.get() // Мы не ждём
@@ -237,7 +237,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     logString = getLogString();
                 }
                 App.get(ServiceLogger.class).add(new Log(
-                        isException.get() ? LogType.ERROR : LogType.INFO,
+                        exception.get() ? LogType.ERROR : LogType.INFO,
                         getCorrelation()
                 ).setData(logString));
             }

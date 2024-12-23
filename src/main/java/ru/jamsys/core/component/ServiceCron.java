@@ -28,9 +28,9 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
 
     final private List<CronPromise> listItem = new ArrayList<>();
 
-    final private AtomicBoolean isWhile = new AtomicBoolean(true);
+    final private AtomicBoolean spin = new AtomicBoolean(true);
 
-    final private AtomicBoolean isRun = new AtomicBoolean(true);
+    final private AtomicBoolean run = new AtomicBoolean(true);
 
     @SuppressWarnings("all")
     public ServiceCron(
@@ -44,13 +44,13 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
             public void run() {
                 long nextStartMs = System.currentTimeMillis();
                 try {
-                    while (isWhile.get() && !thread.isInterrupted()) {
+                    while (spin.get() && !thread.isInterrupted()) {
                         nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
                         long curTimeMs = System.currentTimeMillis();
 
                         runCronTask(curTimeMs);
 
-                        if (isWhile.get()) {
+                        if (spin.get()) {
                             long calcSleepMs = nextStartMs - System.currentTimeMillis();
                             if (calcSleepMs > 0) {
                                 Thread.sleep(calcSleepMs);
@@ -67,7 +67,7 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
                 } catch (Throwable th) {
                     App.error(th);
                 }
-                isRun.set(false);
+                run.set(false);
             }
         });
         thread.setName(UniqueClassNameImpl.getClassNameStatic(getClass(), null, applicationContext));
@@ -117,9 +117,9 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
 
     @Override
     public void shutdown() {
-        isWhile.set(false);
+        spin.set(false);
         thread.interrupt();
-        Util.await(isRun, 1500, getClass().getSimpleName() + " not stop interrupt");
+        Util.await(run, 1500, getClass().getSimpleName() + " not stop interrupt");
     }
 
     @Override

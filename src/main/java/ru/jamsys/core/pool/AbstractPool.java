@@ -60,7 +60,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     // Общая очередь, где находятся все объекты
     protected final Set<PI> itemQueue = Util.getConcurrentHashSet();
 
-    protected final AtomicBoolean isRun = new AtomicBoolean(false);
+    protected final AtomicBoolean run = new AtomicBoolean(false);
 
     private final AtomicBoolean restartOperation = new AtomicBoolean(false);
 
@@ -151,10 +151,10 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     // Бассейн может поместить новые объекты для плаванья
     private boolean isSizePoolAllowsExtend() {
-        if (!isRun.get()) {
+        if (!run.get()) {
             App.error(new RuntimeException("Пул " + getIndex() + " не может поместить в себя ничего, так как он выключен"));
         }
-        return isRun.get() && getRealActiveItem() < propertyPoolSizeMax.get();
+        return run.get() && getRealActiveItem() < propertyPoolSizeMax.get();
     }
 
     private int getRealActiveItem() {
@@ -285,7 +285,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     // Не конкурентный вызов
     private void removeInactive() {
-        if (isRun.get()) {
+        if (run.get()) {
             final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
             // ЧТо бы избежать расползание ссылок будем изымать и если всё "ок" добавлять обратно
@@ -332,7 +332,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     @Override
     public void run() {
         if (restartOperation.compareAndSet(false, true)) {
-            isRun.set(true);
+            run.set(true);
             overclocking(propertyPoolSizeMin.get());
             restartOperation.set(false);
             propertyPoolSizeMax.run();
@@ -343,7 +343,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     @Override
     public void shutdown() {
         if (restartOperation.compareAndSet(false, true)) {
-            isRun.set(false);
+            run.set(false);
             UtilRisc.forEach(
                     null,
                     itemQueue,
@@ -356,7 +356,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean isThreadRun) {
+    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
         List<Statistic> result = new ArrayList<>();
         int tpsCompleteFlush = tpsComplete.getAndSet(0);
         // Если за последнюю секунду были возвращения элемнтов значит пул активен
@@ -375,8 +375,8 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     // Этот метод нельзя вызывать под бизнес задачи, система сама должна это контролировать
     @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
-        if (isRun.get()) {
+    public void keepAlive(AtomicBoolean threadRun) {
+        if (run.get()) {
             try {
                 // Если паркинг был пуст уже больше секунды начнём увеличивать
                 if (getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty()) {

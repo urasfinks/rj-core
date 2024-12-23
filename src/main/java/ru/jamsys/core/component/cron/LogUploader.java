@@ -76,13 +76,13 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
         if (!remoteLog) {
             return null;
         }
-        return servicePromise.get(index, 4_999L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (isThreadRun, task, promise, jdbcResource) -> {
+        return servicePromise.get(index, 4_999L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (threadRun, task, promise, jdbcResource) -> {
             AtomicInteger countInsert = new AtomicInteger(0);
 
             JdbcRequest jdbcRequest = new JdbcRequest(Logger.INSERT);
             List<Log> reserve = new ArrayList<>();
 
-            while (!broker.isEmpty() && isThreadRun.get() && countInsert.get() < limitInsert) {
+            while (!broker.isEmpty() && threadRun.get() && countInsert.get() < limitInsert) {
                 ExpirationMsImmutableEnvelope<Log> envelope = broker.pollFirst();
                 if (envelope != null) {
                     Log log = envelope.getValue();
@@ -133,7 +133,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
                 }
             }
         }).onError((_, _, promise) -> {
-            Throwable exception = promise.getException();
+            Throwable exception = promise.getExceptionSource();
             if (exception != null) {
                 @SuppressWarnings("unchecked") Function<Throwable, Boolean> isFatalExceptionOnComplete = App
                         .get(PoolSettingsRegistry.class)

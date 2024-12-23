@@ -2,14 +2,13 @@ package ru.jamsys.core.balancer.algorithm;
 
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.balancer.BalancerItem;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableEnvelope;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableEnvelope;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -57,8 +56,8 @@ public class StickySessions implements BalancerAlgorithm {
     }
 
     @Override
-    public void keepAlive(AtomicBoolean isThreadRun) {
-        UtilRisc.forEach(isThreadRun, map, (String key, ExpirationMsMutableEnvelope<BalancerItem> expiredMsMutableEnvelope) -> {
+    public void keepAlive(AtomicBoolean threadRun) {
+        UtilRisc.forEach(threadRun, map, (String key, ExpirationMsMutableEnvelope<BalancerItem> expiredMsMutableEnvelope) -> {
             if (expiredMsMutableEnvelope.isExpired()) {
                 map.remove(key);
             }

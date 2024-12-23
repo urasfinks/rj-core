@@ -39,7 +39,7 @@ class NotificationTest {
     void telegramSend() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
-                .appendWithResource("http", TelegramNotificationResource.class, (_, isThreadRun, _, telegramNotificationResource) -> {
+                .appendWithResource("http", TelegramNotificationResource.class, (_, threadRun, _, telegramNotificationResource) -> {
                     HttpResponse execute = telegramNotificationResource.execute(new TelegramNotificationRequest("Привет", "Мир"));
                     System.out.println(execute);
                 })

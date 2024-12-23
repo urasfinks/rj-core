@@ -65,7 +65,7 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
 
     private final PropertiesAgent propertiesAgent;
 
-    private final AtomicBoolean isRun = new AtomicBoolean(false);
+    private final AtomicBoolean run = new AtomicBoolean(false);
 
     public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
         propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
@@ -324,7 +324,7 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
 
     @Override
     public void run() {
-        if (isRun.compareAndSet(false, true)) {
+        if (run.compareAndSet(false, true)) {
             byte[] publicKey = UtilFile.readBytes(pathPublicKey, null);
 
             Util.logConsole("Security Check privateKey: " + (privateKey != null && privateKey.length > 0));
