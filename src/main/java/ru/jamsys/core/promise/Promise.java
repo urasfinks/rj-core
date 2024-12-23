@@ -116,6 +116,9 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     }
 
     default Promise then(String index, Promise externalPromise) {
+        if (externalPromise == null) {
+            return this;
+        }
         this.setRepositoryMapClass(Promise.class, index, externalPromise);
         then(new PromiseTask(
                         getIndex() + "." + index,
@@ -131,6 +134,9 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     }
 
     default Promise append(String index, Promise externalPromise) {
+        if (externalPromise == null) {
+            return this;
+        }
         this.setRepositoryMapClass(Promise.class, index, externalPromise);
         append(new PromiseTask(
                 getIndex() + "." + index,
