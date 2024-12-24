@@ -191,13 +191,13 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         }
     }
 
-    private void terminate(PromiseTask fn) {
+    private void terminate(PromiseTask promiseTask) {
         if (terminateAction.compareAndSet(false, true)) {
             App.get(ServicePromise.class).finish(registerInBroker);
             ServicePromise.queueMultipleCompleteSet.remove(this);
             stop();
-            if (fn != null) {
-                fn.prepareLaunch(() -> run.set(false));
+            if (promiseTask != null) {
+                promiseTask.prepareLaunch(() -> run.set(false));
                 // Дальнейшие действия под капотом
                 // 1) установится isRun.set(false)
                 // 2) Вызовится complete

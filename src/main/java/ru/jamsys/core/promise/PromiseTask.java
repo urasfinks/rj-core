@@ -110,7 +110,7 @@ public class PromiseTask implements Runnable {
     public void prepareLaunch(ProcedureThrowing afterExecuteBlock) {
         this.prepare = System.currentTimeMillis();
         this.afterBlockExecution = afterExecuteBlock;
-        if (procedure != null) {
+        if (!isExecuteBlockEmpty()) {
             switch (type) {
                 case IO, ASYNC_NO_WAIT_IO, EXTERNAL_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);
                 case COMPUTE, ASYNC_NO_WAIT_COMPUTE, EXTERNAL_WAIT_COMPUTE ->
@@ -216,6 +216,12 @@ public class PromiseTask implements Runnable {
         if (procedure != null) {
             procedure.accept(threadRun, this, getPromise());
         }
+    }
+
+    // Так как может быть наследование от этого класса, то исполняемый блок может быть переопределён
+    // Как это уже сделано в PromiseTaskWithResource, дадим потомкам переопределить поведение
+    protected boolean isExecuteBlockEmpty() {
+        return procedure == null;
     }
 
 }

@@ -58,6 +58,11 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
         }
     }
 
+    @Override
+    protected boolean isExecuteBlockEmpty() {
+        return procedure == null;
+    }
+
     // Пул вызывает этот метод
     public void start(PoolItemEnvelope<?, ?, T> poolItem) {
         setPoolItemEnvelope(poolItem);
