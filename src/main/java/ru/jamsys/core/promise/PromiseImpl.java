@@ -244,8 +244,9 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         }
     }
 
-    public void await(long timeoutMs) {
+    public Promise await(long timeoutMs) {
         Util.await(run, timeoutMs, "Promise not terminated");
+        return this;
     }
 
 }
