@@ -26,7 +26,7 @@ public class FirstWebSocketHandler implements PromiseGenerator, WebSocketHandler
     @Override
     public Promise generate() {
         return servicePromise.get(index, 7_000L)
-                .append("input", (_, atomicBoolean, promise) -> System.out.println("Hello world"));
+                .append("input", (_, _, promise) -> System.out.println("Hello world"));
     }
 
 }

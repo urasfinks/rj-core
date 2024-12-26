@@ -45,7 +45,7 @@ public class UtilJson {
         return null;
     }
 
-    public static ReadContext getContext(String json){
+    public static ReadContext getContext(String json) {
         return JsonPath.parse(json);
     }
 
@@ -53,6 +53,11 @@ public class UtilJson {
     public static void selector(String json, Map<String, String> selector, Map<String, Object> res) {
         ReadContext ctx = getContext(json);
         selector.forEach((s, s2) -> res.put(s, ctx.read(s2)));
+    }
+
+    public static Object selector(String json, String selector) {
+        ReadContext ctx = getContext(json);
+        return ctx.read(selector);
     }
 
     public static void selector(String json, Map<String, String> selector, Map<String, Object> res, String def) {

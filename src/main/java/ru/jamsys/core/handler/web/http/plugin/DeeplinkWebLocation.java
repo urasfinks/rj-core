@@ -40,7 +40,7 @@ public class DeeplinkWebLocation implements PromiseGenerator, HttpHandler {
     @Override
     public Promise generate() {
         return servicePromise.get(index, 7_000L)
-                .append("input", (_, atomicBoolean, promise) -> {
+                .append("input", (_, _, promise) -> {
                     ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
                     servletHandler.setResponseContentType("text/html");
                     Map<String, String> args = new HashMapBuilder<String, String>()

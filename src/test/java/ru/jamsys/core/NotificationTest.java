@@ -88,7 +88,7 @@ class NotificationTest {
     void androidTest() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
-                .appendWithResource("push", AndroidNotificationResource.class, (_, atomicBoolean, promise1, androidNotificationResource) -> {
+                .appendWithResource("push", AndroidNotificationResource.class, (_, _, promise1, androidNotificationResource) -> {
                     HashMap<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 1);
                     androidNotificationResource.execute(new AndroidNotificationRequest("Приветики", data, "fyP9dxiISLW9OLJfsb73kT:APA91bGSXWN4hR9_OdXEi3THPTNs-RAsMjASA9_XXXMpq5yjkUQAG8CUvucSopPb9xcffQgyMG5K-yoA0p5JS3DyMVVTw618a566zQdvVS_a9Tmr_ktHlI5ZY5aQ60HjkhWWzI6AwsdB"));
                 })
