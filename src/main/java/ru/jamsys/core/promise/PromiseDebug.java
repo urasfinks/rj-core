@@ -48,6 +48,11 @@ public class PromiseDebug implements Promise {
     }
 
     @Override
+    public Promise await(long timeoutMs, int sleepIterationMs) {
+        return promise.await(timeoutMs, sleepIterationMs);
+    }
+
+    @Override
     public Promise run() {
         return promise.run();
     }

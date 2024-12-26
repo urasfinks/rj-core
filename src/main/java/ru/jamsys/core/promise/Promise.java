@@ -33,6 +33,9 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     // Синхронное ожидание выполнения Promise
     Promise await(long timeoutMs);
 
+    // Синхронное ожидание выполнения Promise
+    Promise await(long timeoutMs, int sleepIterationMs);
+
     // Запускаем цепочку задач от текущего потока
     Promise run();
 

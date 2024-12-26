@@ -311,7 +311,7 @@ public class Util {
         return someString.substring(0, 1).toUpperCase() + someString.substring(1);
     }
 
-    public static String htmlEntity(String value){
+    public static String htmlEntity(String value) {
         return escapeHtml4(value);
     }
 
@@ -360,14 +360,32 @@ public class Util {
             if (exceptionMessage != null) {
                 logConsole(exceptionMessage, true);
             }
-        });
+        }, 0);
     }
 
-    public static boolean await(AtomicBoolean run, long timeoutMs, ProcedureThrowing procedure) {
+    public static boolean await(AtomicBoolean run, long timeoutMs, String exceptionMessage, int sleepIterationMs) {
+        return await(run, timeoutMs, () -> {
+            if (exceptionMessage != null) {
+                logConsole(exceptionMessage, true);
+            }
+        }, sleepIterationMs);
+    }
+
+    public static boolean await(AtomicBoolean run, long timeoutMs, ProcedureThrowing procedure, int sleepIterationMs) {
         long start = System.currentTimeMillis();
         long expiredTime = start + timeoutMs;
-        while (run.get() && expiredTime >= System.currentTimeMillis()) {
-            Thread.onSpinWait();
+        if (sleepIterationMs > 0) {
+            while (run.get() && expiredTime >= System.currentTimeMillis()) {
+                try {
+                    Thread.sleep(sleepIterationMs);
+                } catch (InterruptedException ie) {
+                    break;
+                }
+            }
+        } else {
+            while (run.get() && expiredTime >= System.currentTimeMillis()) {
+                Thread.onSpinWait();
+            }
         }
         if (run.get()) {
             if (procedure != null) {

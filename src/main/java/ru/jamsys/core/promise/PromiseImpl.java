@@ -249,4 +249,10 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         return this;
     }
 
+    @Override
+    public Promise await(long timeoutMs, int sleepIterationMs) {
+        Util.await(run, timeoutMs, "Promise not terminated", sleepIterationMs);
+        return this;
+    }
+
 }
