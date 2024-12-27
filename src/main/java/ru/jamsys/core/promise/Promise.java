@@ -224,4 +224,8 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
         return new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE, fn);
     }
 
+    default PromiseTask createTaskWait(String index) {
+        return new PromiseTaskWait(index, this);
+    }
+
 }
