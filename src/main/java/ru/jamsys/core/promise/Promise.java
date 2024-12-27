@@ -22,6 +22,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutable, Correlation {
 
+    Promise setDebug(boolean debug);
+
+    boolean isDebug();
+
     String getIndex();
 
     void complete(@NonNull PromiseTask task, @NonNull Throwable exception);
@@ -43,7 +47,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     Promise onComplete(PromiseTask onComplete);
 
     default Promise onComplete(PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
-        PromiseTask promiseTask = new PromiseTask("onCompleteTask", this, PromiseTaskExecuteType.COMPUTE, fn);
+        PromiseTask promiseTask = createTaskCompute("onCompleteTask", fn);
         promiseTask.setTerminated(true);
         return onComplete(promiseTask);
     }
@@ -58,7 +62,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     Promise onError(PromiseTask onError);
 
     default Promise onError(PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
-        PromiseTask promiseTask = new PromiseTask("onErrorTask", this, PromiseTaskExecuteType.COMPUTE, fn);
+        PromiseTask promiseTask = createTaskCompute("onErrorTask", fn);
         promiseTask.setTerminated(true);
         return onError(promiseTask);
     }
@@ -76,7 +80,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     }
 
     default Promise append(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
-        return append(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
+        return append(createTaskCompute(index, fn));
     }
 
     default <T extends Resource<?, ?>> Promise appendWithResource(
@@ -128,15 +132,10 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
             return null;
         }
         this.setRepositoryMapClass(Promise.class, index, externalPromise);
-        return new PromiseTask(
-                getIndex() + "." + index,
-                this,
-                PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
-                (_, promiseTask, _) -> externalPromise
-                        .onError((_, _, promise) -> promiseTask.externalError(promise.getExceptionSource()))
-                        .onComplete((_, _, _) -> promiseTask.externalComplete())
-                        .run()
-        );
+        return createTaskExternal(index, (_, promiseTask, _) -> externalPromise
+                .onError((_, _, promise) -> promiseTask.externalError(promise.getExceptionSource()))
+                .onComplete((_, _, _) -> promiseTask.externalComplete())
+                .run());
     }
 
     default Promise then(String index, Promise externalPromise) {
@@ -162,7 +161,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     }
 
     default Promise then(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
-        return then(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
+        return then(createTaskCompute(index, fn));
     }
 
     default Promise appendWait() {
@@ -211,10 +210,18 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
         return this;
     }
 
-    Promise setDebug(boolean debug);
-
-    boolean isDebug();
-
     Map<String, Object> getRepositoryMapWithoutDebug();
+
+    default PromiseTask createTaskCompute(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
+        return new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn);
+    }
+
+    default PromiseTask createTaskIo(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
+        return new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.IO, fn);
+    }
+
+    default PromiseTask createTaskExternal(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
+        return new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE, fn);
+    }
 
 }
