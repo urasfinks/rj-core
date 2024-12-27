@@ -50,14 +50,10 @@ public class App {
             shutdownThread.setDaemon(true);
             shutdownThread.start();
 
-            if (Util.await(
-                    run,
-                    5000,
-                    () -> Util.logConsole(
-                            "App stop with error timeout shutdown; last running: " + Core.lastOperation,
-                            true
-                    )
-            )) {
+            if (Util.await(run, 5000, 0, () -> Util.logConsole(
+                    "App stop with error timeout shutdown; last running: " + Core.lastOperation,
+                    true
+            ))) {
                 Util.logConsole("App stop. I wish you good luck, see you soon!");
             }
         });

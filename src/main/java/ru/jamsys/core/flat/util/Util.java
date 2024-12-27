@@ -356,22 +356,22 @@ public class Util {
     }
 
     public static boolean await(AtomicBoolean run, long timeoutMs, String exceptionMessage) {
-        return await(run, timeoutMs, () -> {
+        return await(run, timeoutMs, 0, () -> {
             if (exceptionMessage != null) {
                 logConsole(exceptionMessage, true);
             }
-        }, 0);
+        });
     }
 
-    public static boolean await(AtomicBoolean run, long timeoutMs, String exceptionMessage, int sleepIterationMs) {
-        return await(run, timeoutMs, () -> {
+    public static boolean await(AtomicBoolean run, long timeoutMs, int sleepIterationMs, String exceptionMessage) {
+        return await(run, timeoutMs, sleepIterationMs, () -> {
             if (exceptionMessage != null) {
                 logConsole(exceptionMessage, true);
             }
-        }, sleepIterationMs);
+        });
     }
 
-    public static boolean await(AtomicBoolean run, long timeoutMs, ProcedureThrowing procedure, int sleepIterationMs) {
+    public static boolean await(AtomicBoolean run, long timeoutMs, int sleepIterationMs, ProcedureThrowing procedure) {
         long start = System.currentTimeMillis();
         long expiredTime = start + timeoutMs;
         if (sleepIterationMs > 0) {
