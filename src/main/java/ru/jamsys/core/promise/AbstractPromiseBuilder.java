@@ -41,8 +41,9 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
 
     public Promise append(PromiseTask task) {
         if (task == null) {
-            throw new RuntimeException("Promise.append() task is null");
+            return this;
         }
+        // Иначе skipAll как-то плохо вяжется
         if (run.get()) {
             throw new RuntimeException("Promise.append() before run(); index: " + task.getIndex());
         }

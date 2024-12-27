@@ -70,6 +70,11 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
 
     Promise append(PromiseTask task);
 
+    default Promise append(List<PromiseTask> listPromiseTask) {
+        listPromiseTask.forEach(this::append);
+        return this;
+    }
+
     default Promise append(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
         return append(new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn));
     }
@@ -118,21 +123,28 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
         ));
     }
 
+    default PromiseTask promiseToTask(String index, Promise externalPromise) {
+        if (externalPromise == null) {
+            return null;
+        }
+        this.setRepositoryMapClass(Promise.class, index, externalPromise);
+        return new PromiseTask(
+                getIndex() + "." + index,
+                this,
+                PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
+                (_, promiseTask, _) -> externalPromise
+                        .onError((_, _, promise) -> promiseTask.externalError(promise.getExceptionSource()))
+                        .onComplete((_, _, _) -> promiseTask.externalComplete())
+                        .run()
+        );
+    }
+
     default Promise then(String index, Promise externalPromise) {
         if (externalPromise == null) {
             return this;
         }
-        this.setRepositoryMapClass(Promise.class, index, externalPromise);
-        then(new PromiseTask(
-                        getIndex() + "." + index,
-                        this,
-                        PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
-                        (_, promiseTask, _) -> externalPromise
-                                .onError((_, _, promise) -> promiseTask.externalError(promise.getExceptionSource()))
-                                .onComplete((_, _, _) -> promiseTask.externalComplete())
-                                .run()
-                )
-        );
+        append(new PromiseTaskWait(index, this));
+        append(promiseToTask(index, externalPromise));
         return this;
     }
 
@@ -140,16 +152,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
         if (externalPromise == null) {
             return this;
         }
-        this.setRepositoryMapClass(Promise.class, index, externalPromise);
-        append(new PromiseTask(
-                getIndex() + "." + index,
-                this,
-                PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
-                (_, promiseTask, _) -> externalPromise
-                        .onError((_, _, promise) -> promiseTask.externalError(promise.getExceptionSource()))
-                        .onComplete((_, _, _) -> promiseTask.externalComplete())
-                        .run())
-        );
+        append(promiseToTask(index, externalPromise));
         return this;
     }
 
