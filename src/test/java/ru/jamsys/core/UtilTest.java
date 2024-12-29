@@ -167,4 +167,32 @@ class UtilTest {
         Assertions.assertEquals("2bf4d19c4f4cda4262b00c773779fced", Util.getHash("Привет страна", "md5"));
     }
 
+    @Test
+    void digitTranslate(){
+        Assertions.assertEquals("коров", Util.digitTranslate(5, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(25, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(35, "корова", "коровы", "коров"));
+
+        Assertions.assertEquals("корова", Util.digitTranslate(1, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коровы", Util.digitTranslate(2, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коровы", Util.digitTranslate(3, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коровы", Util.digitTranslate(4, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(6, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(7, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(8, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(9, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(10, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(11, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(12, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(13, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(14, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(15, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(16, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(17, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(18, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(19, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", Util.digitTranslate(20, "корова", "коровы", "коров"));
+        Assertions.assertEquals("корова", Util.digitTranslate(21, "корова", "коровы", "коров"));
+    }
+
 }
