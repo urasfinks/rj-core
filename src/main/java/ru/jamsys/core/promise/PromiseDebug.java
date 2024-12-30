@@ -163,6 +163,11 @@ public class PromiseDebug implements Promise {
     }
 
     @Override
+    public Promise setPrintError(boolean printError) {
+        return promise.setPrintError(printError);
+    }
+
+    @Override
     public boolean isDebug() {
         return promise.isDebug();
     }

@@ -175,6 +175,9 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         if (run.get()) {
             if (exception.get()) {
                 terminate(onError);
+                if (isPrintError()) {
+                    Util.logConsole(getLogString());
+                }
             } else if (
                     !wait.get() // Мы не ждём
                             && setRunningTasks.isEmpty() // Список запущенных задач пуст
@@ -184,6 +187,9 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 if (!goTo.isEmpty()) {
                     setError(new RuntimeException("goTo is not empty: " + goTo));
                     terminate(onError);
+                    if (isPrintError()) {
+                        Util.logConsole(getLogString());
+                    }
                 } else {
                     terminate(onComplete);
                 }

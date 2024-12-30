@@ -24,6 +24,8 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
 
     Promise setDebug(boolean debug);
 
+    Promise setPrintError(boolean printError);
+
     boolean isDebug();
 
     String getIndex();

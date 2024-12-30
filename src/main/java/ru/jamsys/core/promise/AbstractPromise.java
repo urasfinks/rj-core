@@ -84,8 +84,18 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     @Getter
     private boolean debug;
 
+    @Getter
+    private boolean printError = true;
+
+    @Override
     public Promise setDebug(boolean debug) {
         this.debug = debug;
+        return this;
+    }
+
+    @Override
+    public Promise setPrintError(boolean printError) {
+        this.printError = printError;
         return this;
     }
 
@@ -104,7 +114,7 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
         return run.get();
     }
 
-    public AbstractPromise setLog(boolean log){
+    public AbstractPromise setLog(boolean log) {
         this.log = log;
         return this;
     }
