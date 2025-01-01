@@ -96,4 +96,17 @@ public class PromiseTest {
         return result;
     }
 
+
+    public PromiseTask get(String index, PromiseTaskExecuteType type) {
+        PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
+        abstractPromise.listPendingTasks.clear();
+        index = abstractPromise.getComplexIndex(index);
+        for (PromiseTask promiseTask : array) {
+            if (promiseTask.getIndex().equals(index) && promiseTask.getType().equals(type)) {
+                return promiseTask;
+            }
+        }
+        return null;
+    }
+
 }
