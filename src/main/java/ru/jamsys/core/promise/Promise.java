@@ -248,4 +248,12 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
         );
     }
 
+    default <T extends Resource<?, ?>> PromiseTask createTaskResource(
+            String index,
+            Class<T> classResource,
+            PromiseTaskWithResourceConsumerThrowing<PromiseTask, AtomicBoolean, Promise, T> procedure
+    ) {
+        return createTaskResource(index, classResource, "default", procedure);
+    }
+
 }
