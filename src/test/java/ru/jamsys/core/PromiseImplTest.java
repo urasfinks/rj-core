@@ -593,4 +593,21 @@ class PromiseImplTest {
         Assertions.assertEquals(1, x.get());
     }
 
+    @Test
+    void testPromise() {
+        Promise promise = servicePromise.get("testThenPromise4", 6_000L);
+        promise.setDebug(false);
+        AtomicInteger x = new AtomicInteger(0);
+        promise
+                .then("i1", (_, _, _) -> x.incrementAndGet())
+                .then("i2", (_, _, _) -> x.incrementAndGet())
+                .then("i3", (_, _, _) -> x.incrementAndGet());
+
+        new PromiseTest(promise)
+                .remove("i1")
+                .replace("i2", promise.createTaskCompute("i2_2", (_, _, _) -> x.addAndGet(4)));
+        promise.run().await(7000);
+        Assertions.assertEquals(5, x.get());
+    }
+
 }

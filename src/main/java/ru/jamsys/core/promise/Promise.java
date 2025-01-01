@@ -100,7 +100,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
             PromiseTaskWithResourceConsumerThrowing<PromiseTask, AtomicBoolean, Promise, T> procedure
     ) {
         return append(new PromiseTaskWithResource<>(
-                getIndex() + "." + index,
+                getComplexIndex(index),
                 this,
                 procedure,
                 App.get(PoolSettingsRegistry.class).get(classResource, ns)
@@ -122,7 +122,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
             PromiseTaskWithResourceConsumerThrowing<PromiseTask, AtomicBoolean, Promise, T> procedure
     ) {
         return then(new PromiseTaskWithResource<>(
-                getIndex() + "." + index,
+                getComplexIndex(index),
                 this,
                 procedure,
                 App.get(PoolSettingsRegistry.class).get(classResource, ns)
@@ -214,16 +214,20 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
 
     Map<String, Object> getRepositoryMapWithoutDebug();
 
+    default String getComplexIndex(String index){
+        return getIndex() + "." + index;
+    }
+
     default PromiseTask createTaskCompute(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
-        return new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.COMPUTE, fn);
+        return new PromiseTask(getComplexIndex(index), this, PromiseTaskExecuteType.COMPUTE, fn);
     }
 
     default PromiseTask createTaskIo(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
-        return new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.IO, fn);
+        return new PromiseTask(getComplexIndex(index), this, PromiseTaskExecuteType.IO, fn);
     }
 
     default PromiseTask createTaskExternal(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
-        return new PromiseTask(getIndex() + "." + index, this, PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE, fn);
+        return new PromiseTask(getComplexIndex(index), this, PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE, fn);
     }
 
     default PromiseTask createTaskWait(String index) {
