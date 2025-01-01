@@ -626,8 +626,8 @@ class PromiseImplTest {
 
         PromiseTest promiseTest = new PromiseTest(promise);
 
-        Assertions.assertEquals("[i3, i3, i4, i4, i5, i5, i6, i6]", promiseTest.removeBefore("i3").getIndex().toString());
-        Assertions.assertEquals("[i3, i3, i4, i4, i5]", promiseTest.removeAfter("i5").getIndex().toString());
+        Assertions.assertEquals("[i3::WAIT, i3::COMPUTE, i4::WAIT, i4::COMPUTE, i5::WAIT, i5::COMPUTE, i6::WAIT, i6::COMPUTE]", promiseTest.removeBefore("i3").getIndex().toString());
+        Assertions.assertEquals("[i3::WAIT, i3::COMPUTE, i4::WAIT, i4::COMPUTE, i5::WAIT, i5::COMPUTE]", promiseTest.removeAfter("i5").getIndex().toString());
     }
 
 }

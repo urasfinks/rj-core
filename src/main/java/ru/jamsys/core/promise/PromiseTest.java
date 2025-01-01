@@ -48,13 +48,21 @@ public class PromiseTest {
         PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
         abstractPromise.listPendingTasks.clear();
         index = abstractPromise.getComplexIndex(index);
-        boolean remove = false;
+        PromiseTask removeTask = null;
         for (PromiseTask promiseTask : array) {
-            if (!remove) {
-                abstractPromise.listPendingTasks.add(promiseTask);
-            }
             if (promiseTask.getIndex().equals(index)) {
-                remove = true;
+                removeTask = promiseTask;
+            }
+        }
+        if (removeTask != null) {
+            boolean remove = false;
+            for (PromiseTask promiseTask : array) {
+                if (!remove) {
+                    abstractPromise.listPendingTasks.add(promiseTask);
+                }
+                if (promiseTask.equals(removeTask)) {
+                    remove = true;
+                }
             }
         }
         return this;
@@ -81,7 +89,10 @@ public class PromiseTest {
         List<String> result = new ArrayList<>();
         PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
         for (PromiseTask promiseTask : array) {
-            result.add(promiseTask.getIndex().substring(abstractPromise.getIndex().length() + 1));
+            result.add(
+                    promiseTask.getIndex().substring(abstractPromise.getIndex().length() + 1)
+                            + "::" + promiseTask.getType().toString()
+            );
         }
         return result;
     }
