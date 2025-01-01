@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @Accessors(chain = true)
@@ -39,6 +42,48 @@ public class PromiseTest {
             }
         }
         return this;
+    }
+
+    public PromiseTest removeAfter(String index) {
+        PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
+        abstractPromise.listPendingTasks.clear();
+        index = abstractPromise.getComplexIndex(index);
+        boolean remove = false;
+        for (PromiseTask promiseTask : array) {
+            if (!remove) {
+                abstractPromise.listPendingTasks.add(promiseTask);
+            }
+            if (promiseTask.getIndex().equals(index)) {
+                remove = true;
+            }
+        }
+        return this;
+    }
+
+    public PromiseTest removeBefore(String index) {
+        PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
+        abstractPromise.listPendingTasks.clear();
+        index = abstractPromise.getComplexIndex(index);
+        boolean remove = true;
+        for (PromiseTask promiseTask : array) {
+            if (promiseTask.getIndex().equals(index)) {
+                System.out.println(index);
+                remove = false;
+            }
+            if (!remove) {
+                abstractPromise.listPendingTasks.add(promiseTask);
+            }
+        }
+        return this;
+    }
+
+    public List<String> getIndex() {
+        List<String> result = new ArrayList<>();
+        PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
+        for (PromiseTask promiseTask : array) {
+            result.add(promiseTask.getIndex());
+        }
+        return result;
     }
 
 }

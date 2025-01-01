@@ -610,4 +610,24 @@ class PromiseImplTest {
         Assertions.assertEquals(5, x.get());
     }
 
+    @Test
+    void testPromiseAfter() {
+        Promise promise = servicePromise.get("testThenPromise4", 6_000L);
+        promise.setDebug(false);
+        AtomicInteger x = new AtomicInteger(0);
+        promise
+                .then("i1", (_, _, _) -> x.incrementAndGet())
+                .then("i2", (_, _, _) -> x.incrementAndGet())
+                .then("i3", (_, _, _) -> x.incrementAndGet())
+                .then("i4", (_, _, _) -> x.incrementAndGet())
+                .then("i5", (_, _, _) -> x.incrementAndGet())
+                .then("i6", (_, _, _) -> x.incrementAndGet())
+        ;
+
+        PromiseTest promiseTest = new PromiseTest(promise);
+
+        Assertions.assertEquals("[testThenPromise4.i3, testThenPromise4.i3, testThenPromise4.i4, testThenPromise4.i4, testThenPromise4.i5, testThenPromise4.i5, testThenPromise4.i6, testThenPromise4.i6]", promiseTest.removeBefore("i3").getIndex().toString());
+        Assertions.assertEquals("[testThenPromise4.i3, testThenPromise4.i3, testThenPromise4.i4, testThenPromise4.i4, testThenPromise4.i5]", promiseTest.removeAfter("i5").getIndex().toString());
+    }
+
 }
