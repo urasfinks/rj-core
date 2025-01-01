@@ -214,7 +214,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
 
     Map<String, Object> getRepositoryMapWithoutDebug();
 
-    default String getComplexIndex(String index){
+    default String getComplexIndex(String index) {
         return getIndex() + "." + index;
     }
 
@@ -232,6 +232,20 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
 
     default PromiseTask createTaskWait(String index) {
         return new PromiseTaskWait(index, this);
+    }
+
+    default <T extends Resource<?, ?>> PromiseTask createTaskResource(
+            String index,
+            Class<T> classResource,
+            String ns,
+            PromiseTaskWithResourceConsumerThrowing<PromiseTask, AtomicBoolean, Promise, T> procedure
+    ) {
+        return new PromiseTaskWithResource<>(
+                getComplexIndex(index),
+                this,
+                procedure,
+                App.get(PoolSettingsRegistry.class).get(classResource, ns)
+        );
     }
 
 }
