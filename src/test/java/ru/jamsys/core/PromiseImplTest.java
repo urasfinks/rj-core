@@ -626,8 +626,8 @@ class PromiseImplTest {
 
         PromiseTest promiseTest = new PromiseTest(promise);
 
-        Assertions.assertEquals("[testThenPromise4.i3, testThenPromise4.i3, testThenPromise4.i4, testThenPromise4.i4, testThenPromise4.i5, testThenPromise4.i5, testThenPromise4.i6, testThenPromise4.i6]", promiseTest.removeBefore("i3").getIndex().toString());
-        Assertions.assertEquals("[testThenPromise4.i3, testThenPromise4.i3, testThenPromise4.i4, testThenPromise4.i4, testThenPromise4.i5]", promiseTest.removeAfter("i5").getIndex().toString());
+        Assertions.assertEquals("[i3, i3, i4, i4, i5, i5, i6, i6]", promiseTest.removeBefore("i3").getIndex().toString());
+        Assertions.assertEquals("[i3, i3, i4, i4, i5]", promiseTest.removeAfter("i5").getIndex().toString());
     }
 
 }

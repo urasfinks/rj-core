@@ -81,7 +81,7 @@ public class PromiseTest {
         List<String> result = new ArrayList<>();
         PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
         for (PromiseTask promiseTask : array) {
-            result.add(promiseTask.getIndex());
+            result.add(promiseTask.getIndex().substring(abstractPromise.getIndex().length() + 1));
         }
         return result;
     }
