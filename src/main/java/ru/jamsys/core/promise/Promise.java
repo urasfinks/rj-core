@@ -144,7 +144,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
         if (externalPromise == null) {
             return this;
         }
-        append(new PromiseTaskWait(index, this));
+        append(new PromiseTaskWait(getComplexIndex(index), this));
         append(promiseToTask(index, externalPromise));
         return this;
     }

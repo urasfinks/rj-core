@@ -75,7 +75,6 @@ public class PromiseTest {
         boolean remove = true;
         for (PromiseTask promiseTask : array) {
             if (promiseTask.getIndex().equals(index)) {
-                System.out.println(index);
                 remove = false;
             }
             if (!remove) {

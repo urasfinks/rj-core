@@ -595,7 +595,7 @@ class PromiseImplTest {
 
     @Test
     void testPromise() {
-        Promise promise = servicePromise.get("testThenPromise4", 6_000L);
+        Promise promise = servicePromise.get("testPromise", 6_000L);
         promise.setDebug(false);
         AtomicInteger x = new AtomicInteger(0);
         promise
@@ -612,7 +612,7 @@ class PromiseImplTest {
 
     @Test
     void testPromiseAfter() {
-        Promise promise = servicePromise.get("testThenPromise4", 6_000L);
+        Promise promise = servicePromise.get("testPromiseAfter", 6_000L);
         promise.setDebug(false);
         AtomicInteger x = new AtomicInteger(0);
         promise
@@ -628,6 +628,21 @@ class PromiseImplTest {
 
         Assertions.assertEquals("[i3::WAIT, i3::COMPUTE, i4::WAIT, i4::COMPUTE, i5::WAIT, i5::COMPUTE, i6::WAIT, i6::COMPUTE]", promiseTest.removeBefore("i3").getIndex().toString());
         Assertions.assertEquals("[i3::WAIT, i3::COMPUTE, i4::WAIT, i4::COMPUTE, i5::WAIT, i5::COMPUTE]", promiseTest.removeAfter("i5").getIndex().toString());
+    }
+
+    @Test
+    void testPromiseExternal() {
+        Promise promise = servicePromise.get("testPromiseExternal", 6_000L);
+        promise.setDebug(false);
+        promise
+                .then("i1", (_, _, _) -> {
+                })
+                .then("subPromise", servicePromise.get("log", 6_000L))
+        ;
+
+        PromiseTest promiseTest = new PromiseTest(promise);
+
+        Assertions.assertEquals("[i1::COMPUTE, subPromise::WAIT, subPromise::EXTERNAL_WAIT_COMPUTE]", promiseTest.getIndex().toString());
     }
 
 }
