@@ -13,11 +13,21 @@ public class UtilFileResource {
     public enum Direction {
         WEB,
         CORE,
-        PROJECT;
+        PROJECT
     }
 
     public static InputStream get(String path) throws IOException {
         return get(path, App.springSource.getClassLoader());
+    }
+
+    @SuppressWarnings("unused")
+    public static boolean isFile(String path, Direction direction) {
+        try {
+            InputStream inputStream = get(path, direction);
+            return inputStream != null;
+        } catch (Throwable th) {
+            return false;
+        }
     }
 
     public static InputStream get(String path, ClassLoader classLoader) throws IOException {
