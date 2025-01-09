@@ -1,6 +1,9 @@
 package ru.jamsys.core.extension.exception;
 
 import lombok.Getter;
+import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.extension.line.writer.LineWriter;
+import ru.jamsys.core.extension.line.writer.LineWriterString;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
 
@@ -39,7 +42,12 @@ public class PromiseException extends RuntimeException {
 
     @Override
     public String toString() {
-        return throwable.toString();
+        LineWriter lineWriter = new LineWriterString();
+        lineWriter.addLine("Promise: " + getPromise().getIndex());
+        if (getPromiseTask() != null) {
+            lineWriter.addLine("Task: " + getPromiseTask().getIndex());
+        }
+        return ExceptionHandler.getTextException(getThrowable(), lineWriter);
     }
 
     @Override

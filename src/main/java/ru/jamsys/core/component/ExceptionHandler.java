@@ -22,7 +22,7 @@ import ru.jamsys.core.flat.util.UtilDate;
 @Lazy
 public class ExceptionHandler extends RepositoryPropertiesField {
 
-    private int maxLine = 50;
+    private static int maxLine = 50;
 
     @PropertyName("run.args.remote.log")
     private Boolean remoteLog = true;
@@ -41,13 +41,10 @@ public class ExceptionHandler extends RepositoryPropertiesField {
         if (consoleOutput) {
             LineWriter lineWriter = new LineWriterString();
             if (th instanceof PromiseException promiseException) {
-                lineWriter.addLine("Promise: " + promiseException.getPromise().getIndex());
-                if (promiseException.getPromiseTask() != null) {
-                    lineWriter.addLine("Task: " + promiseException.getPromiseTask().getIndex());
-                }
-                th = promiseException.getThrowable();
+                Util.logConsole(promiseException.toString());
+            } else {
+                Util.logConsole(getTextException(th, lineWriter));
             }
-            Util.logConsole(getTextException(th, lineWriter));
         }
         if (remoteLog) {
             LineWriterList lineWriterList = new LineWriterList();
@@ -65,7 +62,7 @@ public class ExceptionHandler extends RepositoryPropertiesField {
 
     }
 
-    public String getTextException(Throwable th, LineWriter sw) {
+    public static String getTextException(Throwable th, LineWriter sw) {
         printStackTrace(th, sw, (th instanceof ForwardException) ? 1 : null);
         Throwable cause = th.getCause();
         if (cause != null) {
@@ -75,7 +72,7 @@ public class ExceptionHandler extends RepositoryPropertiesField {
         return sw.toString();
     }
 
-    private void printStackTrace(Throwable th, LineWriter sw, Integer count) {
+    private static void printStackTrace(Throwable th, LineWriter sw, Integer count) {
         StackTraceElement[] elements = th.getStackTrace();
         sw.addLine(th.getClass().getName() + ": " + th.getMessage());
         int m = count != null ? count : maxLine;
