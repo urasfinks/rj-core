@@ -35,6 +35,32 @@ class UtilTest {
     }
 
     @Test
+    void firstCharToUpperCase(){
+        Assertions.assertEquals("HelloWorld", Util.firstCharToUpperCase("HelloWorld"));
+        Assertions.assertEquals("HelloWorld", Util.firstCharToUpperCase("helloWorld"));
+        Assertions.assertEquals("", Util.firstCharToUpperCase(""));
+        Assertions.assertEquals("U", Util.firstCharToUpperCase("u"));
+        Assertions.assertEquals("Ur", Util.firstCharToUpperCase("ur"));
+        Assertions.assertEquals("U", Util.firstCharToUpperCase("U"));
+        Assertions.assertEquals("UR", Util.firstCharToUpperCase("UR"));
+        Assertions.assertEquals("URa", Util.firstCharToUpperCase("URa"));
+        Assertions.assertNull(Util.firstCharToUpperCase(null));
+    }
+
+    @Test
+    void firstCharToLowerCase(){
+        Assertions.assertEquals("helloWorld", Util.firstCharToLowerCase("HelloWorld"));
+        Assertions.assertEquals("helloWorld", Util.firstCharToLowerCase("helloWorld"));
+        Assertions.assertEquals("", Util.firstCharToLowerCase(""));
+        Assertions.assertEquals("u", Util.firstCharToLowerCase("U"));
+        Assertions.assertEquals("ur", Util.firstCharToLowerCase("Ur"));
+        Assertions.assertEquals("u", Util.firstCharToLowerCase("u"));
+        Assertions.assertEquals("ur", Util.firstCharToLowerCase("ur"));
+        Assertions.assertEquals("urA", Util.firstCharToLowerCase("urA"));
+        Assertions.assertNull(Util.firstCharToLowerCase(null));
+    }
+
+    @Test
     void testRiscCollection() {
         List<String> list = new ArrayList<>();
 

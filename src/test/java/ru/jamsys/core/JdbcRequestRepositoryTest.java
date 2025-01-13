@@ -1,18 +1,23 @@
 package ru.jamsys.core;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.flat.template.jdbc.JdbcDataImportExport;
 import ru.jamsys.core.flat.template.jdbc.CompiledSqlTemplate;
-import ru.jamsys.core.flat.template.jdbc.StatementType;
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
+import ru.jamsys.core.flat.template.jdbc.StatementType;
 import ru.jamsys.core.jt.Logger;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.resource.jdbc.JdbcRequest;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,4 +140,22 @@ class JdbcRequestRepositoryTest {
                 .await(2000);
         //System.out.println(promise.getLog());
     }
+
+    @Getter
+    @Setter
+    public static class Test1 extends JdbcDataImportExport<Test1> {
+        int id;
+        String dataType;
+    }
+
+    @Test
+    void testBridgeData() {
+        Test1 test1 = new Test1().fromMap(new HashMapBuilder<String, Object>()
+                .append("id", new BigDecimal(1))
+                .append("data_type", "hey")
+        );
+        Assertions.assertEquals("hey", test1.getDataType());
+        Assertions.assertEquals("{id=1, data_type=hey}", test1.toMap().toString());
+    }
+
 }

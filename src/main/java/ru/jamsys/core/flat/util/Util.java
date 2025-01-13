@@ -310,7 +310,23 @@ public class Util {
         return sb.toString().toUpperCase();
     }
 
-    public static String ucword(String someString) {
+    public static String firstCharToLowerCase(String someString) {
+        if (someString == null || someString.isEmpty()) {
+            return someString;
+        }
+        if (someString.length() == 1) {
+            return someString.toLowerCase();
+        }
+        return someString.substring(0, 1).toLowerCase() + someString.substring(1);
+    }
+
+    public static String firstCharToUpperCase(String someString) {
+        if (someString == null || someString.isEmpty()) {
+            return someString;
+        }
+        if (someString.length() == 1) {
+            return someString.toUpperCase();
+        }
         return someString.substring(0, 1).toUpperCase() + someString.substring(1);
     }
 
