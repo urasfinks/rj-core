@@ -24,14 +24,22 @@ class UtilTest {
         Assertions.assertEquals("HelloWorld", Util.snakeToCamel("HELLO_WORLD"));
         Assertions.assertEquals("HelloWorld1", Util.snakeToCamel("HELLO_WORLD1"));
         Assertions.assertEquals("HelloWorld1", Util.snakeToCamel("HELLO_WORLD_1"));
+        Assertions.assertEquals("HelloWorld1_", Util.snakeToCamel("HELLO_WORLD_1_"));
+        Assertions.assertEquals("_HelloWorld1_", Util.snakeToCamel("_HELLO_WORLD_1_"));
         Assertions.assertEquals("Helloworld", Util.snakeToCamel("HELLOWORLD"));
+        Assertions.assertEquals("DataType", Util.snakeToCamel("dataType"));
+        Assertions.assertEquals("DataType", Util.snakeToCamel("DataType"));
+        Assertions.assertEquals("DataType", Util.snakeToCamel("data_Type"));
+        Assertions.assertEquals("DataType", Util.snakeToCamel("data_type"));
     }
 
     @Test
     void camelToSnake() {
         Assertions.assertEquals("HELLO_WORLD", Util.camelToSnake("HelloWorld"));
+        Assertions.assertEquals("_HELLOWORLD", Util.camelToSnake("_HelloWorld"));
         Assertions.assertEquals("HELLO_WORLD1", Util.camelToSnake("HelloWorld1"));
         Assertions.assertEquals("HELLOWORLD", Util.camelToSnake("Helloworld"));
+        Assertions.assertEquals("HELLO_WORLD", Util.camelToSnake("Hello_world"));
     }
 
     @Test

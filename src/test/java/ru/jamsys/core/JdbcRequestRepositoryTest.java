@@ -8,8 +8,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.flat.template.jdbc.JdbcDataImportExport;
 import ru.jamsys.core.flat.template.jdbc.CompiledSqlTemplate;
+import ru.jamsys.core.flat.template.jdbc.DataMapper;
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
 import ru.jamsys.core.flat.template.jdbc.StatementType;
 import ru.jamsys.core.jt.Logger;
@@ -143,19 +143,48 @@ class JdbcRequestRepositoryTest {
 
     @Getter
     @Setter
-    public static class Test1 extends JdbcDataImportExport<Test1> {
+    public static class Test1 extends DataMapper<Test1> {
         int id;
         String dataType;
     }
 
     @Test
-    void testBridgeData() {
+    void testBridgeData() throws Throwable {
         Test1 test1 = new Test1().fromMap(new HashMapBuilder<String, Object>()
                 .append("id", new BigDecimal(1))
-                .append("data_type", "hey")
+                        .append("data_type", "hey"),
+                DataMapper.Transform.SNAKE_TO_CAMEL
         );
         Assertions.assertEquals("hey", test1.getDataType());
-        Assertions.assertEquals("{id=1, data_type=hey}", test1.toMap().toString());
+        Assertions.assertEquals("{id=1, data_type=hey}", test1.toMap(DataMapper.Transform.CAMEL_TO_SNAKE).toString());
+        Assertions.assertEquals("{id=1, dataType=hey}", test1.toMap(DataMapper.Transform.SNAKE_TO_CAMEL).toString());
+        Assertions.assertEquals("{id=1, dataType=hey}", test1.toMap(DataMapper.Transform.NONE).toString());
+        Assertions.assertEquals("""
+                {"id":1,"dataType":"hey"}""", test1.toJson(false, DataMapper.Transform.NONE));
+        Assertions.assertEquals("""
+                {
+                  "id" : 1,
+                  "dataType" : "hey"
+                }""", test1.toJson(true, DataMapper.Transform.NONE));
+        Assertions.assertEquals("""
+                {
+                  "id" : 1,
+                  "data_type" : "hey"
+                }""", test1.toJson(true, DataMapper.Transform.CAMEL_TO_SNAKE));
+
+        Test1 test2 = new Test1().fromJson("""
+                {
+                  "id" : 1,
+                  "data_type" : "hey"
+                }""", DataMapper.Transform.SNAKE_TO_CAMEL);
+        Assertions.assertEquals("hey", test2.getDataType());
+
+        Test1 test3 = new Test1().fromJson("""
+                {
+                  "id" : 1,
+                  "dataType" : "hey"
+                }""", DataMapper.Transform.NONE);
+        Assertions.assertEquals("hey", test3.getDataType());
     }
 
 }
