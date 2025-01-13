@@ -1,6 +1,8 @@
 package ru.jamsys.core.resource.jdbc;
 
 import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import ru.jamsys.core.flat.template.jdbc.JdbcRequestRepository;
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
 
@@ -15,22 +17,33 @@ public class JdbcRequest {
     @Getter
     final JdbcRequestRepository jdbcRequestRepository;
 
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    boolean batchMaybeEmpty = true;
+
+    @Getter
+    boolean debug = false;
+
+    @Getter
+    private final String name;
+
     final List<Map<String, Object>> listArgs = new ArrayList<>();
 
     public List<Map<String, Object>> getListArgs() {
+        // Просто отрезаем пустой элемент, если он был сформирован nextBatch() заканчивающим пачку
         if (listArgs.size() > 1 && listArgs.getLast().isEmpty()) {
             listArgs.removeLast();
+        }
+        if (listArgs.size() == 1 && listArgs.getFirst().isEmpty() && !isBatchMaybeEmpty()) {
+            return null;
         }
         return listArgs;
     }
 
-    boolean debug = false;
-
-    private final String nameCache;
-
     public JdbcRequest(JdbcRequestRepository jdbcRequestRepository) {
         this.jdbcRequestRepository = jdbcRequestRepository;
-        this.nameCache = jdbcRequestRepository.getNameCamel();
+        this.name = jdbcRequestRepository.getNameCamel();
         listArgs.add(new LinkedHashMap<>());
     }
 
@@ -45,6 +58,9 @@ public class JdbcRequest {
     }
 
     public JdbcRequest nextBatch() {
+        if (!isBatchMaybeEmpty() && listArgs.getLast().isEmpty()) {
+            return this;
+        }
         listArgs.add(new LinkedHashMap<>());
         return this;
     }
@@ -56,14 +72,6 @@ public class JdbcRequest {
 
     public JdbcTemplate getJdbcTemplate() {
         return jdbcRequestRepository.getJdbcTemplate();
-    }
-
-    public String getName() {
-        return nameCache;
-    }
-
-    public boolean getDebug() {
-        return debug;
     }
 
 }

@@ -16,6 +16,10 @@ public interface JdbcExecute {
             StatementControl statementControl,
             boolean debug
     ) throws Exception {
+        List<Map<String, Object>> result = new ArrayList<>();
+        if (argsList == null) {
+            return result;
+        }
         // Динамичный фрагмент не может использоваться в executeBatch
         if (jdbcTemplate.isDynamicArgument() && argsList.size() > 1) {
             throw new Exception("ExecuteBatch not support DynamicArguments");
@@ -47,13 +51,12 @@ public interface JdbcExecute {
             preparedStatement.executeBatch();
         }
 
-        List<Map<String, Object>> listRet = new ArrayList<>();
         switch (jdbcTemplate.getStatementType()) {
             case SELECT_WITHOUT_AUTO_COMMIT:
             case SELECT_WITH_AUTO_COMMIT:
                 try (ResultSet resultSet = preparedStatement.getResultSet()) {
                     if (resultSet == null) {
-                        return listRet;
+                        return result;
                     }
                     Integer columnCount = null;
                     Map<Integer, String> cacheName = new HashMap<>();
@@ -72,7 +75,7 @@ public interface JdbcExecute {
                                 row.put(cacheName.get(i), resultSet.getObject(i));
                             }
                         }
-                        listRet.add(row);
+                        result.add(row);
                     }
                 }
                 break;
@@ -91,13 +94,13 @@ public interface JdbcExecute {
                         );
                     }
                 }
-                listRet.add(row);
+                result.add(row);
                 break;
         }
         if (debug) {
-            Util.logConsole(UtilJson.toStringPretty(listRet, "[]"));
+            Util.logConsole(UtilJson.toStringPretty(result, "[]"));
         }
-        return listRet;
+        return result;
     }
 
     private static void setParam(

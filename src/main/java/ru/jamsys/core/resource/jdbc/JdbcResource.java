@@ -8,15 +8,17 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.flat.template.jdbc.DataMapper;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
-import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
+import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -91,7 +93,25 @@ public class JdbcResource
         if (jdbcTemplate == null) {
             throw new RuntimeException("TemplateEnum: " + arguments.getName() + " return null template");
         }
-        return execute(connection, jdbcTemplate, arguments.getListArgs(), statementControl, arguments.getDebug());
+        return execute(connection, jdbcTemplate, arguments.getListArgs(), statementControl, arguments.isDebug());
+    }
+
+    public <T extends DataMapper<T>> List<T> execute(JdbcRequest arguments, Class<T> cls) throws Throwable {
+        JdbcTemplate jdbcTemplate = arguments.getJdbcTemplate();
+        if (jdbcTemplate == null) {
+            throw new RuntimeException("TemplateEnum: " + arguments.getName() + " return null template");
+        }
+        List<Map<String, Object>> execute = execute(connection, jdbcTemplate, arguments.getListArgs(), statementControl, arguments.isDebug());
+        List<T> result = new ArrayList<>();
+        execute.forEach(map -> {
+            try {
+                T t = cls.getDeclaredConstructor().newInstance();
+                result.add(t.fromMap(map, DataMapper.Transform.SNAKE_TO_CAMEL));
+            } catch (Throwable th) {
+                throw new RuntimeException(th);
+            }
+        });
+        return result;
     }
 
     @Override
