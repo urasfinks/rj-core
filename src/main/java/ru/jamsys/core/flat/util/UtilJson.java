@@ -18,7 +18,6 @@ import java.util.Map;
 
 public class UtilJson {
 
-    static ObjectMapper objectMapper = new ObjectMapper();
     static ObjectMapper objectMapperPretty;
     static ObjectMapper objectMapper2 = new ObjectMapper();
 
@@ -75,7 +74,7 @@ public class UtilJson {
     @Nullable
     public static String toString(Object object, String def) {
         try {
-            return objectMapper.writeValueAsString(object);
+            return Util.objectMapper.writeValueAsString(object);
         } catch (Exception e) {
             App.error(e);
         }
@@ -83,7 +82,7 @@ public class UtilJson {
     }
 
     public static String toString(Object object) throws Throwable {
-        return objectMapper.writeValueAsString(object);
+        return Util.objectMapper.writeValueAsString(object);
     }
 
     @SuppressWarnings("unused")
@@ -96,7 +95,7 @@ public class UtilJson {
             objectMapperPretty.enable(SerializationFeature.INDENT_OUTPUT);
         }
         try {
-            return objectMapper.writer(prettyPrinter).writeValueAsString(object);
+            return Util.objectMapper.writer(prettyPrinter).writeValueAsString(object);
         } catch (Exception e) {
             App.error(e);
         }
@@ -129,7 +128,7 @@ public class UtilJson {
     public static <K, V> JsonEnvelope<Map<K, V>> toMap(String json) {
         JsonEnvelope<Map<K, V>> ret = new JsonEnvelope<>();
         try {
-            ret.setObject(objectMapper.readValue(json, new TypeReference<>() {
+            ret.setObject(Util.objectMapper.readValue(json, new TypeReference<>() {
             }));
         } catch (Exception e) {
             ret.setException(e);
@@ -140,13 +139,13 @@ public class UtilJson {
 
     public static Map<String, Object> getMapOrThrow(String json) throws Throwable {
         @SuppressWarnings("unchecked")
-        Map<String, Object> map = (Map<String, Object>) objectMapper.readValue(json, Map.class);
+        Map<String, Object> map = (Map<String, Object>) Util.objectMapper.readValue(json, Map.class);
         return map;
     }
 
     public static List<Object> getListOrThrow(String json) throws Throwable {
         @SuppressWarnings("unchecked")
-        List<Object> list = objectMapper.readValue(json, List.class);
+        List<Object> list = Util.objectMapper.readValue(json, List.class);
         return list;
     }
 
@@ -154,7 +153,7 @@ public class UtilJson {
     public static <V> JsonEnvelope<List<V>> toList(String json) {
         JsonEnvelope<List<V>> ret = new JsonEnvelope<>();
         try {
-            ret.setObject(objectMapper.readValue(json, new TypeReference<>() {
+            ret.setObject(Util.objectMapper.readValue(json, new TypeReference<>() {
             }));
         } catch (Exception e) {
             ret.setException(e);
@@ -163,8 +162,8 @@ public class UtilJson {
         return ret;
     }
 
-    // Возникла потребность хранить состояние объекта на момент времени
-    // То есть в trace вставляется объект, Json сериализация выполняется в конце, а объект могли в разных местах поменять
+    // Возникла потребность хранить состояние объекта на момент времени.
+    // То есть в trace вставляется объект, Json сериализация выполняется в конце, а объект могли в разных местах поменять.
     // Получается на всех инстанция в отладке видим один и тот-же объект, что приводит к сложности анализа
     public static Object toLog(Object object) {
         if (object == null) {
@@ -191,7 +190,6 @@ public class UtilJson {
                 result.put("origin_object", object);
                 result.put("origin_object_serialize", json);
             }
-            return result;
         } else {
             try {
                 result.putAll(getMapOrThrow(json));
@@ -200,8 +198,8 @@ public class UtilJson {
                 result.put("origin_object", object);
                 result.put("origin_object_serialize", json);
             }
-            return result;
         }
+        return result;
     }
 
 }

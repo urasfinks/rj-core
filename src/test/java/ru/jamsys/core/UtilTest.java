@@ -1,5 +1,7 @@
 package ru.jamsys.core;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -193,6 +195,21 @@ class UtilTest {
         Assertions.assertEquals("коров", Util.digitTranslate(19, "корова", "коровы", "коров"));
         Assertions.assertEquals("коров", Util.digitTranslate(20, "корова", "коровы", "коров"));
         Assertions.assertEquals("корова", Util.digitTranslate(21, "корова", "коровы", "коров"));
+    }
+
+    @Getter
+    @Setter
+    public static class Tmp {
+        String y;
+    }
+
+    @Test
+    void mapToObject() {
+        Tmp tmp = Util.mapToObject(new HashMapBuilder<String, Object>()
+                        .append("y", "x"),
+                Tmp.class
+        );
+        Assertions.assertEquals("x", tmp.getY());
     }
 
 }

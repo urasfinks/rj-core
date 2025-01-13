@@ -1,5 +1,6 @@
 package ru.jamsys.core.flat.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.StringUtils;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
@@ -31,6 +32,8 @@ import java.util.stream.Stream;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 public class Util {
+
+    public static final ObjectMapper objectMapper = new ObjectMapper();
 
     static final String defaultCharset = "UTF-8";
 
@@ -452,6 +455,10 @@ public class Util {
         } else {
             return five;
         }
+    }
+
+    public static <T> T mapToObject(Map<String, Object> map, Class<T> cls) {
+        return objectMapper.convertValue(map, cls);
     }
 
 }
