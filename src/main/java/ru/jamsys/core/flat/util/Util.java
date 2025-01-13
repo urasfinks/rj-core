@@ -52,6 +52,10 @@ public class Util {
         return list;
     }
 
+    public static void logConsoleJson(Object data) {
+        logConsole(UtilJson.toStringPretty(data, "--"), false);
+    }
+
     public static void logConsole(String data) {
         logConsole(data, false);
     }
