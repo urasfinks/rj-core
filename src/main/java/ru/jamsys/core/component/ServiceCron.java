@@ -4,13 +4,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.cron.CronPromise;
+import ru.jamsys.core.component.cron.CronTask;
+import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.flat.template.cron.Cron;
-import ru.jamsys.core.flat.template.cron.release.CronTemplate;
+import ru.jamsys.core.flat.template.cron.release.CronConfigurator;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
@@ -27,7 +27,7 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
 
     final private Thread thread;
 
-    final private List<CronPromise> listItem = new ArrayList<>();
+    final private List<CronTask> listItem = new ArrayList<>();
 
     final private AtomicBoolean spin = new AtomicBoolean(true);
 
@@ -75,11 +75,12 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
     }
 
     private void runCronTask(long curTimeMs) {
-        listItem.forEach((CronPromise cronPromise) -> {
-            if (cronPromise.getCron().compile(curTimeMs).isTimeHasCome()) {
+        listItem.forEach((CronTask cronTask) -> {
+            Cron.CompileResult compile = cronTask.getCron().compile(curTimeMs);
+            if (compile.isTimeHasCome() && cronTask.getCronConfigurator().isRun(compile)) {
                 String indexPromise = null;
                 try {
-                    Promise promise = cronPromise.getPromiseGenerator().generate();
+                    Promise promise = cronTask.getPromiseGenerator().generate();
                     if (promise != null) {
                         indexPromise = promise.getIndex();
                         promise.run();
@@ -95,14 +96,18 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
             ServiceClassFinder serviceClassFinder,
             ExceptionHandler exceptionHandler
     ) {
-        serviceClassFinder.findByInstance(CronTemplate.class).forEach((Class<CronTemplate> cronTemplateClass) -> {
-            CronTemplate cronTemplate = serviceClassFinder.instanceOf(cronTemplateClass);
-            if (cronTemplate instanceof PromiseGenerator promiseGenerator) {
-                listItem.add(new CronPromise(new Cron(cronTemplate.getCronTemplate()), promiseGenerator));
+        serviceClassFinder.findByInstance(CronConfigurator.class).forEach((Class<CronConfigurator> cronTemplateClass) -> {
+            CronConfigurator cronConfigurator = serviceClassFinder.instanceOf(cronTemplateClass);
+            if (cronConfigurator instanceof PromiseGenerator promiseGenerator) {
+                listItem.add(new CronTask(
+                        new Cron(cronConfigurator.getCronTemplate()),
+                        promiseGenerator,
+                        cronConfigurator
+                ));
             } else {
                 exceptionHandler.handler(new RuntimeException(
                         "CronTemplate class: "
-                                + cronTemplate.getClass().getName()
+                                + cronConfigurator.getClass().getName()
                                 + " not realise "
                                 + PromiseGenerator.class.getName()
                                 + " interface"

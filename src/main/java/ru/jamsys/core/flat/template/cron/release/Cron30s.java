@@ -1,6 +1,7 @@
 package ru.jamsys.core.flat.template.cron.release;
 
-public interface Cron30s extends CronTemplate {
+@SuppressWarnings("unused")
+public interface Cron30s extends CronConfigurator {
 
     @Override
     default String getCronTemplate() {

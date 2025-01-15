@@ -140,8 +140,18 @@ public class Cron {
     @Setter
     @Accessors(chain = true)
     public static class CompileResult {
-        boolean timeHasCome;
-        Long nextTimestamp;
+
+        Long beforeTimestamp; //Время до компиляции
+
+        Long nextTimestamp; // Время после компиляции
+
+        public boolean isTimeHasCome() {
+            if (nextTimestamp == null) {
+                return false;
+            }
+            return !nextTimestamp.equals(beforeTimestamp);
+        }
+
     }
 
     public CompileResult compile(long curTime) {
@@ -150,9 +160,9 @@ public class Cron {
 
     public CompileResult compile(long curTime, boolean debug) {
         // Если занулен либо где-то дальше от текущего момента - закончили
+        CompileResult compileResult = new CompileResult().setBeforeTimestamp(nextTimestamp);
         if (nextTimestamp == null || nextTimestamp > curTime) {
-            return new CompileResult()
-                    .setTimeHasCome(false)
+            return compileResult
                     .setNextTimestamp(nextTimestamp);
         }
         AvgMetric avgMetric = new AvgMetric();
@@ -166,17 +176,13 @@ public class Cron {
             // Если по каким-то причинам не было определено ни одного варианта в будущем
             // Этого момента не настанет, зануляем и compile больше никогда не вызовется
             nextTimestamp = null;
-            return new CompileResult()
-                    .setTimeHasCome(false)
-                    .setNextTimestamp(null);
+            return compileResult.setNextTimestamp(null);
         }
         if (debug) {
             Util.logConsole("Avg min: " + UtilDate.msFormat(flush.getMin()) + " realMs: " + flush.getMin());
         }
         nextTimestamp = flush.getMin();
-        return new CompileResult()
-                .setTimeHasCome(true)
-                .setNextTimestamp(nextTimestamp);
+        return compileResult.setNextTimestamp(nextTimestamp);
     }
 
     @Override
