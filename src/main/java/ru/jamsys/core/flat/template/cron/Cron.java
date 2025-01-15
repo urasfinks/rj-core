@@ -145,6 +145,16 @@ public class Cron {
 
         Long nextTimestamp; // Время после компиляции
 
+        @SuppressWarnings("unused")
+        public String getFormatBeforeTimestamp() {
+            return UtilDate.msFormat(beforeTimestamp);
+        }
+
+        @SuppressWarnings("unused")
+        public String getFormatNextTimestamp() {
+            return UtilDate.msFormat(nextTimestamp);
+        }
+
         public boolean isTimeHasCome() {
             if (nextTimestamp == null) {
                 return false;
