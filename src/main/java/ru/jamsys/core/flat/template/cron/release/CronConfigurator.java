@@ -6,7 +6,7 @@ public interface CronConfigurator {
 
     String getCronTemplate();
 
-    default boolean isRun(Cron.CompileResult compileResult) {
+    default boolean isTimeHasCome(Cron.CompileResult compileResult) {
         return true;
     }
 
