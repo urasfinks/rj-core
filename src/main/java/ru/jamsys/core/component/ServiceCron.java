@@ -76,7 +76,7 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
 
     private void runCronTask(long curTimeMs) {
         listItem.forEach((CronPromise cronPromise) -> {
-            if (cronPromise.getCron().compile(curTimeMs, false).isTimeHasCome()) {
+            if (cronPromise.getCron().compile(curTimeMs).isTimeHasCome()) {
                 String indexPromise = null;
                 try {
                     Promise promise = cronPromise.getPromiseGenerator().generate();
