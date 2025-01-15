@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 // S - Service
+@SuppressWarnings("unused")
 @Component
 @Lazy
 public class ServiceCron implements LifeCycleComponent, UniqueClassName {
