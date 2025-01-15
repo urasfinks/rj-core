@@ -144,6 +144,10 @@ public class Cron {
         Long nextTimestamp;
     }
 
+    public CompileResult compile(long curTime) {
+        return compile(curTime, false);
+    }
+
     public CompileResult compile(long curTime, boolean debug) {
         // Если занулен либо где-то дальше от текущего момента - закончили
         if (nextTimestamp == null || nextTimestamp > curTime) {
