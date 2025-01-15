@@ -105,7 +105,7 @@ public class TimeVariant {
 
     public void resetDynamicUnitBefore(Calendar calendar, TimeUnit curTimeUnit, boolean debug) {
         TimeUnit.MILLISECOND.setValue(calendar, 0);
-        for (TimeUnit vectorTimeUnit : Cron.getVector()) {
+        for (TimeUnit vectorTimeUnit : Cron.getSequenceTimeUnit()) {
             if (vectorTimeUnit.equals(curTimeUnit)) {
                 break;
             }

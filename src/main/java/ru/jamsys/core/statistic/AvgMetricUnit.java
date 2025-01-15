@@ -5,7 +5,7 @@ import ru.jamsys.core.extension.CamelNormalization;
 
 @Getter
 public enum AvgMetricUnit implements CamelNormalization {
-    SELECTION,
+    COUNT,
     MIN,
     MAX,
     SUM,

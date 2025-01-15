@@ -7,17 +7,17 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Getter
-public class TemplateItemCron {
+public class TimeUnitContainer {
 
     final Set<Integer> list = new LinkedHashSet<>();
 
-    TimeUnit timeUnit;
+    final TimeUnit timeUnit;
 
     public String getName() {
         return timeUnit.getNameCache();
     }
 
-    public TemplateItemCron(TimeUnit timeUnit) {
+    public TimeUnitContainer(TimeUnit timeUnit) {
         this.timeUnit = timeUnit;
     }
 

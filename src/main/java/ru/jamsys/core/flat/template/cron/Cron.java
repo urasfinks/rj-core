@@ -1,16 +1,18 @@
 package ru.jamsys.core.flat.template.cron;
 
 import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.statistic.AvgMetric;
-import ru.jamsys.core.statistic.AvgMetricUnit;
 
 import java.util.*;
 
 public class Cron {
 
     @Getter
-    public static List<TimeUnit> vector = Arrays.asList(
+    public static List<TimeUnit> sequenceTimeUnit = Arrays.asList(
             TimeUnit.SECOND,
             TimeUnit.MINUTE,
             TimeUnit.HOUR_OF_DAY,
@@ -19,36 +21,34 @@ public class Cron {
             TimeUnit.DAY_OF_WEEK
     );
 
-    private final Map<Integer, TemplateItemCron> templateMap = new LinkedHashMap<>();
+    private final Map<Integer, TimeUnitContainer> fields = new LinkedHashMap<>(); //key: index sequence; value: TemplateTimeUnit
 
     @Getter
     private final Set<TimeVariant> listTimeVariant = new LinkedHashSet<>();
 
-    private Long next = 0L;
-
-    private final String template;
+    @Getter
+    private Long nextTimestamp = 0L;
 
     public Cron(String template) {
-        this.template = template;
-        for (int i = 0; i < vector.size(); i++) {
-            templateMap.put(i, new TemplateItemCron(vector.get(i)));
+        for (int i = 0; i < sequenceTimeUnit.size(); i++) {
+            fields.put(i, new TimeUnitContainer(sequenceTimeUnit.get(i)));
         }
-        parseTemplate();
-        init();
+        parseTemplate(template);
+        initListTimeVariant();
     }
 
-    private void parseTemplate() {
-        String[] s = this.template.split(" ");
+    private void parseTemplate(String template) {
+        String[] s = template.split(" ");
         for (int i = 0; i < s.length; i++) {
-            parseItem(s[i], templateMap.get(i));
+            parseTemplateItem(s[i], fields.get(i));
         }
     }
 
-    private void parseItem(String template, TemplateItemCron templateItemCron) {
+    private void parseTemplateItem(String template, TimeUnitContainer timeUnitContainer) {
         if (template.indexOf(",") > 0) {
             String[] split = template.split(",");
             for (String s : split) {
-                parseItem(s, templateItemCron);
+                parseTemplateItem(s, timeUnitContainer);
             }
         } else {
             if (template.startsWith("*/")) {
@@ -56,12 +56,12 @@ public class Cron {
                 if (inc == 1) {
                     return;
                 }
-                int start = templateItemCron.getTimeUnit().getMin();
+                int start = timeUnitContainer.getTimeUnit().getMin();
                 int count = 0;
                 while (true) {
-                    templateItemCron.add(start);
+                    timeUnitContainer.add(start);
                     start += inc;
-                    if (start > templateItemCron.getTimeUnit().getMax()) {
+                    if (start > timeUnitContainer.getTimeUnit().getMax()) {
                         break;
                     }
                     count++;
@@ -74,27 +74,12 @@ public class Cron {
                 int start = Integer.parseInt(split[0]);
                 int end = Integer.parseInt(split[1]);
                 for (int i = start; i <= end; i++) {
-                    templateItemCron.add(i);
+                    timeUnitContainer.add(i);
                 }
             } else if (!"*".equals(template)) {
-                templateItemCron.add(Integer.parseInt(template));
+                timeUnitContainer.add(Integer.parseInt(template));
             }
         }
-    }
-
-    public boolean isTimeHasCome(long curTime) {
-        boolean result = next <= curTime;
-        compile(curTime, false);
-        return result;
-    }
-
-    public Long getNext(long curTime, boolean debug) {
-        compile(curTime, debug);
-        return next;
-    }
-
-    public Long getNext(long curTime) {
-        return getNext(curTime, false);
     }
 
     public List<String> getSeriesFormatted(long curTime, int count) {
@@ -109,28 +94,28 @@ public class Cron {
     public List<Long> getSeries(long curTime, int count) {
         List<Long> result = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            long x = getNext(curTime, false);
-            result.add(x);
-            curTime = x;
+            CompileResult compile = compile(curTime, false);
+            if (!compile.isTimeHasCome()) {
+                break;
+            }
+            curTime = compile.getNextTimestamp();
+            result.add(curTime);
         }
         return result;
     }
 
-    private void init() {
-
-        listTimeVariant.clear();
+    private void initListTimeVariant() {
         List<TimeUnit> listEmptyTimeUnit = new ArrayList<>();
         List<List<Integer>> tmpList = new ArrayList<>();
-        for (Integer index : templateMap.keySet()) {
-            TemplateItemCron templateItemCron = templateMap.get(index);
-            List<Integer> list = new ArrayList<>(templateItemCron.getList());
+        for (Integer index : fields.keySet()) {
+            TimeUnitContainer timeUnitContainer = fields.get(index);
+            List<Integer> list = new ArrayList<>(timeUnitContainer.getList());
             if (list.isEmpty()) {
-                listEmptyTimeUnit.add(templateItemCron.getTimeUnit());
+                listEmptyTimeUnit.add(timeUnitContainer.getTimeUnit());
                 list.add(null);
             }
             tmpList.add(list);
         }
-
         tmpList.get(0).forEach((Integer second)
                 -> tmpList.get(1).forEach((Integer minute)
                 -> tmpList.get(2).forEach((Integer hour)
@@ -138,51 +123,66 @@ public class Cron {
                 -> tmpList.get(4).forEach((Integer monthOfYear)
                 -> tmpList.get(5).forEach((Integer dayOfWeek) -> {
                     TimeVariant timeVariant = new TimeVariant(listEmptyTimeUnit);
-                    timeVariant.set(templateMap.get(0).getTimeUnit(), second);
-                    timeVariant.set(templateMap.get(1).getTimeUnit(), minute);
-                    timeVariant.set(templateMap.get(2).getTimeUnit(), hour);
-                    timeVariant.set(templateMap.get(3).getTimeUnit(), dayOfMonth);
-                    timeVariant.set(templateMap.get(4).getTimeUnit(), monthOfYear);
-                    timeVariant.set(templateMap.get(5).getTimeUnit(), dayOfWeek);
+                    timeVariant.set(fields.get(0).getTimeUnit(), second);
+                    timeVariant.set(fields.get(1).getTimeUnit(), minute);
+                    timeVariant.set(fields.get(2).getTimeUnit(), hour);
+                    timeVariant.set(fields.get(3).getTimeUnit(), dayOfMonth);
+                    timeVariant.set(fields.get(4).getTimeUnit(), monthOfYear);
+                    timeVariant.set(fields.get(5).getTimeUnit(), dayOfWeek);
                     timeVariant.init();
 
                     listTimeVariant.add(timeVariant);
                 }
         ))))));
-
     }
 
-    public void compile(long curTime, boolean debug) {
-        if (next != null && next <= curTime) {
-            AvgMetric avgMetric = new AvgMetric();
-            for (TimeVariant timeVariant : listTimeVariant) {
-                if (timeVariant.getNext(curTime, avgMetric, debug) == 0) {
-                    break;
-                }
-            }
-            Map<String, Object> flush = avgMetric.flush("");
-            if ((long) flush.get(AvgMetricUnit.SELECTION.getNameCache()) > 0) {
-                if (debug) {
-                    System.out.println("Avg min: "
-                            + UtilDate.msFormat((Long) flush.get(AvgMetricUnit.MIN.getNameCache()))
-                            + " realMs: "
-                            + flush.get(AvgMetricUnit.MIN.getNameCache())
-                    );
-                }
-                next = (long) flush.get(AvgMetricUnit.MIN.getNameCache());
-            } else {
-                next = null;
+    @Getter
+    @Setter
+    @Accessors(chain = true)
+    public static class CompileResult {
+        boolean timeHasCome;
+        Long nextTimestamp;
+    }
+
+    public CompileResult compile(long curTime, boolean debug) {
+        // Если занулен либо где-то дальше от текущего момента - закончили
+        if (nextTimestamp == null || nextTimestamp > curTime) {
+            return new CompileResult()
+                    .setTimeHasCome(false)
+                    .setNextTimestamp(nextTimestamp);
+        }
+        AvgMetric avgMetric = new AvgMetric();
+        for (TimeVariant timeVariant : listTimeVariant) {
+            if (timeVariant.getNext(curTime, avgMetric, debug) == 0) {
+                break;
             }
         }
+        AvgMetric.Flush flush = avgMetric.flushInstance();
+        if (flush.getCount() == 0) {
+            // Если по каким-то причинам не было определено ни одного варианта в будущем
+            // Этого момента не настанет, зануляем и compile больше никогда не вызовется
+            nextTimestamp = null;
+            return new CompileResult()
+                    .setTimeHasCome(false)
+                    .setNextTimestamp(null);
+        }
+        if (debug) {
+            Util.logConsole("Avg min: " + UtilDate.msFormat(flush.getMin()) + " realMs: " + flush.getMin());
+        }
+        nextTimestamp = flush.getMin();
+        return new CompileResult()
+                .setTimeHasCome(true)
+                .setNextTimestamp(nextTimestamp);
     }
 
     @Override
     public String toString() {
-        Map<String, TemplateItemCron> result = new LinkedHashMap<>();
-        for (Integer key : templateMap.keySet()) {
-            TemplateItemCron templateItemCron = templateMap.get(key);
-            result.put(templateItemCron.getName(), templateItemCron);
+        Map<String, TimeUnitContainer> result = new LinkedHashMap<>();
+        for (Integer key : fields.keySet()) {
+            TimeUnitContainer timeUnitContainer = fields.get(key);
+            result.put(timeUnitContainer.getName(), timeUnitContainer);
         }
         return "Template(" + result + ")";
     }
+
 }
