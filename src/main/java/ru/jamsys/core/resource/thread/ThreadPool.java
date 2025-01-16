@@ -7,7 +7,6 @@ import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ClassEquals;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.PromiseTask;
-import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.rate.limit.RateLimitFactory;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
@@ -19,8 +18,6 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
 
     private final Broker<PromiseTask> broker;
 
-    private final RateLimit rateLimit;
-
     public ThreadPool(String index) {
         super(index);
         this.broker = App.get(ManagerBroker.class)
@@ -31,9 +28,9 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
                                         ThreadPool.class.getSimpleName() + ".broker->drop(task)")
                                 )
                 );
-        rateLimit = App.get(ManagerRateLimit.class).get(getIndex());
-        // Это сколько может обрабатывать PromiseTask весь пул потоков
-        rateLimit.init(App.context, "tps", RateLimitFactory.TPS);
+        App.get(ManagerRateLimit.class).get(getIndex())
+                // Это сколько может обрабатывать PromiseTask весь пул потоков
+                .init(App.context, "tps", RateLimitFactory.TPS);
     }
 
     public void addPromiseTask(PromiseTask promiseTask) {
