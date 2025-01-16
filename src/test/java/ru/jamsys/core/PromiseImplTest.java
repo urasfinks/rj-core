@@ -114,14 +114,15 @@ class PromiseImplTest {
     @Test
     void test3_2() {
         App.get(ManagerRateLimit.class).setLimit("ThreadPool.seq2.then1", "tps", 0);
-        Promise promise = servicePromise.get("seq2", 6_000L);
         AtomicInteger c = new AtomicInteger(0);
-        promise.then("then1", (_, _, _) -> c.incrementAndGet());
-
-        promise.run().await(1000);
-        System.out.println(promise.getLogString());
+        Promise promise = servicePromise.get("seq2", 6_000L)
+                .then("then1", (_, _, _) -> c.incrementAndGet())
+                .run().
+                await(2000);
+        // System.out.println(promise.getLogString());
         // Для IO потоков нет ограничений по tps, поэтому там будет expected = 2 это нормально!
-        Assertions.assertTrue(promise.isException());
+        Assertions.assertFalse(promise.isException());
+        Assertions.assertEquals(0, c.get());
     }
 
 

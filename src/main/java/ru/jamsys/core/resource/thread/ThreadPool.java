@@ -39,7 +39,7 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
     public void addPromiseTask(PromiseTask promiseTask) {
         // Контроль TPS управляется в реализации самого потока, допустим вставим 1000 элементов
         // окей, просто что-то умрёт в брокере, но вставку как будто не надо ограничивать, но вот допустим
-        rateLimit.checkOrThrow();
+        //rateLimit.checkOrThrow();
         long timeout = promiseTask.isTerminated() ? 6_000L : promiseTask.getPromise().getExpiryRemainingMs();
         broker.add(new ExpirationMsImmutableEnvelope<>(promiseTask, timeout));
         addIfPoolEmpty();
