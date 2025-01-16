@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 // Задача в виртуальном потоке может вызваться непонятно когда и так же исполнится непонятно когда
 // В task.run() должно контролироваться, что Promise как бы ещё готов исполнятся, а то зачем всё это
+// Контроль исполнения по tps тут сомнителен + сервис глобальный (нет разделения по задачам)
 
 @Component
 public class ServiceThreadVirtual implements LifeCycleComponent {
