@@ -17,6 +17,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * }</pre>
  */
 
+// Задача в виртуальном потоке может вызваться непонятно когда и так же исполнится непонятно когда
+// В task.run() должно контролироваться, что Promise как бы ещё готов исполнятся, а то зачем всё это
+
 @Component
 public class ServiceThreadVirtual implements LifeCycleComponent {
 
@@ -36,11 +39,12 @@ public class ServiceThreadVirtual implements LifeCycleComponent {
 
     @Override
     public void run() {
-
+        run.set(true);
     }
 
     @Override
     public void shutdown() {
+        run.set(false);
         executorService.shutdown();
     }
 

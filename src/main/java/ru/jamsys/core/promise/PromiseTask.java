@@ -125,6 +125,10 @@ public class PromiseTask implements Runnable {
     // execute current thread
     @Override
     public void run() {
+        // Мы должны проверить, что Promise к которому принадлежит это задание ещё не остановлено
+        if (!promise.isRun()) {
+            completeThrowable(new RuntimeException("Promise is not run"));
+        }
         TimerNanoEnvelope<String> timerEnvelope = App.get(ServicePromise.class).registrationTimer(index);
         tracePromiseTask = new TracePromiseTask<>(index, null, type, this.getClass());
         promise.getTrace().add(tracePromiseTask);
