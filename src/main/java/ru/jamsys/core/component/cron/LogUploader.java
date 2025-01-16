@@ -41,10 +41,6 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
 
     final Broker<Log> broker;
 
-    @Setter
-    @Getter
-    private String index;
-
     private final ServicePromise servicePromise;
 
     @Getter
@@ -76,7 +72,7 @@ public class LogUploader extends RepositoryPropertiesField implements Cron5s, Pr
         if (!remoteLog) {
             return null;
         }
-        return servicePromise.get(index, 4_999L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (threadRun, task, promise, jdbcResource) -> {
+        return servicePromise.get(getClass().getSimpleName(), 4_999L).appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (threadRun, task, promise, jdbcResource) -> {
             AtomicInteger countInsert = new AtomicInteger(0);
 
             JdbcRequest jdbcRequest = new JdbcRequest(Logger.INSERT);

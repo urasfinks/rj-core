@@ -1,7 +1,5 @@
 package ru.jamsys.core.component.cron;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ServicePromise;
@@ -13,13 +11,10 @@ import ru.jamsys.core.promise.PromiseGenerator;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SuppressWarnings("unused")
 @Component
 @Lazy
 public class PromiseController implements Cron1s, PromiseGenerator, UniqueClassName {
-
-    @Setter
-    @Getter
-    private String index;
 
     private final ServicePromise servicePromise;
 
@@ -29,7 +24,7 @@ public class PromiseController implements Cron1s, PromiseGenerator, UniqueClassN
 
     @Override
     public Promise generate() {
-        return servicePromise.get(index,6_000L)
+        return servicePromise.get(getClass().getSimpleName(), 6_000L)
                 .append("main", (threadRun, _, _) -> {
                     AtomicInteger count = new AtomicInteger(0);
                     UtilRisc.forEach(threadRun, ServicePromise.queueMultipleCompleteSet, promise -> {

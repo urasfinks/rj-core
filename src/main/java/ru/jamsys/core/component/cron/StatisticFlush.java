@@ -1,7 +1,6 @@
 package ru.jamsys.core.component.cron;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -42,10 +41,6 @@ public class StatisticFlush extends RepositoryPropertiesField implements Cron1s,
 
     final ExceptionHandler exceptionHandler;
 
-    @Setter
-    @Getter
-    private String index;
-
     private final ServicePromise servicePromise;
 
     @Getter
@@ -79,7 +74,7 @@ public class StatisticFlush extends RepositoryPropertiesField implements Cron1s,
 
     @Override
     public Promise generate() {
-        return servicePromise.get(index, 6_000L)
+        return servicePromise.get(getClass().getSimpleName(), 6_000L)
                 .append("main", (threadRun, _, _) -> {
                     StatisticSec statisticSec = new StatisticSec();
                     UtilRisc.forEach(threadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
@@ -96,7 +91,7 @@ public class StatisticFlush extends RepositoryPropertiesField implements Cron1s,
                             statisticSec.getList().addAll(statistics);
                         }
                     });
-                    // Не смотря на remoteStatistic надо с сервисов сбрасывать статистику
+                    // Несмотря на remoteStatistic надо с сервисов сбрасывать статистику
                     // Так что мы будем всё собирать, но отправлять не будем
                     if (!statisticSec.getList().isEmpty() && remoteStatistic) {
                         broker.add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));

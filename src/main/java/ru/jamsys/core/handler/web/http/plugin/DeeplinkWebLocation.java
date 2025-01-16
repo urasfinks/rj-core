@@ -1,7 +1,5 @@
 package ru.jamsys.core.handler.web.http.plugin;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.jamsys.core.App;
@@ -19,17 +17,13 @@ import ru.jamsys.core.promise.PromiseGenerator;
 import java.util.Map;
 
 /*
- * Посадочная web страница, при открытие которой будет попытка открыть приложение по зарегистрированной схеме
+ * Посадочная web страница, при открытии которой будет попытка открыть приложение по зарегистрированной схеме
  * */
 @IgnoreClassFinder
 @Component
 @SuppressWarnings("unused")
 @RequestMapping("/deeplink/**")
 public class DeeplinkWebLocation implements PromiseGenerator, HttpHandler {
-
-    @Getter
-    @Setter
-    private String index;
 
     private final ServicePromise servicePromise;
 
@@ -39,7 +33,7 @@ public class DeeplinkWebLocation implements PromiseGenerator, HttpHandler {
 
     @Override
     public Promise generate() {
-        return servicePromise.get(index, 7_000L)
+        return servicePromise.get(getClass().getSimpleName(), 7_000L)
                 .append("input", (_, _, promise) -> {
                     ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
                     servletHandler.setResponseContentType("text/html");

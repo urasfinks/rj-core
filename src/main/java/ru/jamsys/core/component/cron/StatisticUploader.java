@@ -3,7 +3,6 @@ package ru.jamsys.core.component.cron;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -42,10 +41,6 @@ import java.util.function.Function;
 public class StatisticUploader extends RepositoryPropertiesField implements Cron5s, PromiseGenerator, UniqueClassName {
 
     final Broker<StatisticSec> broker;
-
-    @Setter
-    @Getter
-    private String index;
 
     private final ServicePromise servicePromise;
 
@@ -89,7 +84,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
         if (!remoteStatistic) {
             return null;
         }
-        return servicePromise.get(index, 4_999L)
+        return servicePromise.get(getClass().getSimpleName(), 4_999L)
                 .append("checkStatistic", (_, _, promise) -> {
                     if (broker.isEmpty()) {
                         promise.skipAllStep("broker.isEmpty()");

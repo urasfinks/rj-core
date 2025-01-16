@@ -1,7 +1,5 @@
 package ru.jamsys.core.handler.web.socket;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.jamsys.core.component.ServicePromise;
@@ -13,10 +11,6 @@ import ru.jamsys.core.promise.PromiseGenerator;
 @RequestMapping("/**")
 public class FirstWebSocketHandler implements PromiseGenerator, WebSocketHandler {
 
-    @Getter
-    @Setter
-    private String index;
-
     private final ServicePromise servicePromise;
 
     public FirstWebSocketHandler(ServicePromise servicePromise) {
@@ -25,7 +19,7 @@ public class FirstWebSocketHandler implements PromiseGenerator, WebSocketHandler
 
     @Override
     public Promise generate() {
-        return servicePromise.get(index, 7_000L)
+        return servicePromise.get(getClass().getSimpleName(), 7_000L)
                 .append("input", (_, _, promise) -> System.out.println("Hello world"));
     }
 

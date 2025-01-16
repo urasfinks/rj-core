@@ -1,7 +1,5 @@
 package ru.jamsys.core.component.cron;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ServicePromise;
@@ -13,6 +11,7 @@ import ru.jamsys.core.promise.PromiseGenerator;
 
 // Нам надо вызывать KeepAlive у ExpiredManager 1 раз в секунду, а не 1раз в 3сек
 
+@SuppressWarnings("unused")
 @Component
 @Lazy
 public class ExpirationHelper implements Cron1s, PromiseGenerator, UniqueClassName {
@@ -20,10 +19,6 @@ public class ExpirationHelper implements Cron1s, PromiseGenerator, UniqueClassNa
     private final ManagerExpiration managerExpiration;
 
     private final ServicePromise servicePromise;
-
-    @Setter
-    @Getter
-    private String index;
 
     public ExpirationHelper(
             ServicePromise servicePromise,
@@ -35,7 +30,7 @@ public class ExpirationHelper implements Cron1s, PromiseGenerator, UniqueClassNa
 
     @Override
     public Promise generate() {
-        return servicePromise.get(index, 6_000L)
+        return servicePromise.get(getClass().getSimpleName(), 6_000L)
                 .append("main", (threadRun, _, _) -> managerExpiration.keepAlive(threadRun));
     }
 

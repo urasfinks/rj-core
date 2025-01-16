@@ -1,7 +1,5 @@
 package ru.jamsys.core.component.cron;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -24,10 +22,6 @@ public class KeepAlive implements Cron3s, PromiseGenerator, UniqueClassName {
 
     private final ServicePromise servicePromise;
 
-    @Setter
-    @Getter
-    private String index;
-
     public KeepAlive(ServiceClassFinder serviceClassFinder, ApplicationContext applicationContext, ServicePromise servicePromise) {
         this.servicePromise = servicePromise;
         serviceClassFinder.findByInstance(KeepAliveComponent.class).forEach((Class<KeepAliveComponent> keepAliveClass)
@@ -36,7 +30,7 @@ public class KeepAlive implements Cron3s, PromiseGenerator, UniqueClassName {
 
     @Override
     public Promise generate() {
-        return servicePromise.get(index,6_000L)
+        return servicePromise.get(getClass().getSimpleName(), 6_000L)
                 .append("main", (threadRun, _, _)
                         -> list.forEach((KeepAliveComponent keepAliveComponent)
                         -> keepAliveComponent.keepAlive(threadRun)));

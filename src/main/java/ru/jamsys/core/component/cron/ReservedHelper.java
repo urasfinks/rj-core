@@ -1,7 +1,5 @@
 package ru.jamsys.core.component.cron;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ServiceClassFinder;
@@ -17,14 +15,11 @@ import java.util.List;
 
 // Восстановления законсервированных элементов AbstractManager при наличии их повторной активности
 
+@SuppressWarnings("unused")
 @Component
 public class ReservedHelper implements Cron1s, PromiseGenerator, UniqueClassName {
 
     private final List<AbstractManager> list = new ArrayList<>();
-
-    @Setter
-    @Getter
-    private String index;
 
     private final ServicePromise servicePromise;
 
@@ -36,7 +31,7 @@ public class ReservedHelper implements Cron1s, PromiseGenerator, UniqueClassName
 
     @Override
     public Promise generate() {
-        return servicePromise.get(index, 6_000L)
+        return servicePromise.get(getClass().getSimpleName(), 6_000L)
                 .append("main", (_, _, _) -> list.forEach(AbstractManager::checkReserved));
     }
 }
