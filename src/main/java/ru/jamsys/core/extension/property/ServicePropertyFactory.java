@@ -2,7 +2,6 @@ package ru.jamsys.core.extension.property;
 
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.repository.RepositoryProperties;
-import ru.jamsys.core.flat.util.Util;
 
 import java.util.function.Consumer;
 
@@ -24,9 +23,7 @@ public class ServicePropertyFactory {
             boolean required,
             Consumer<T> onUpdate
     ) {
-        Property<T> tProperty = new Property<>(serviceProperty, cls, propKey, defValue, required, onUpdate);
-        Util.logConsoleJson(tProperty);
-        return tProperty;
+        return new Property<>(serviceProperty, cls, propKey, defValue, required, onUpdate);
     }
 
     // Загружает ключи через PropertiesRepository
