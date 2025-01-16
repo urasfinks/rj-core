@@ -22,11 +22,14 @@ public interface StatisticsCollectorMap<E extends StatisticsFlush> extends Stati
                 threadRun,
                 map,
                 (String key, E element) -> {
-                    LinkedHashMap<String, String> newParentTags = new LinkedHashMap<>(parentTags);
-                    newParentTags.put(clsName, key);
-                    List<Statistic> statistics = element.flushAndGetStatistic(newParentTags, parentFields, threadRun);
-                    if (statistics != null) {
-                        result.addAll(statistics);
+                    //TODO: почему то element бывает = null
+                    if(element != null){
+                        LinkedHashMap<String, String> newParentTags = new LinkedHashMap<>(parentTags);
+                        newParentTags.put(clsName, key);
+                        List<Statistic> statistics = element.flushAndGetStatistic(newParentTags, parentFields, threadRun);
+                        if (statistics != null) {
+                            result.addAll(statistics);
+                        }
                     }
                 }
         );
