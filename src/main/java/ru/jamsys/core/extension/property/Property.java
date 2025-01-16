@@ -27,10 +27,13 @@ public class Property<T> implements PropertyUpdateDelegate, LifeCycleInterface {
 
     private final Class<T> cls;
 
+    @Getter
     private final T defValue;
 
+    @Getter
     private T value;
 
+    @Getter
     private final boolean required;
 
     private final Consumer<T> onUpdate;
