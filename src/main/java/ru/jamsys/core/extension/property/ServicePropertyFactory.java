@@ -23,6 +23,9 @@ public class ServicePropertyFactory {
             boolean required,
             Consumer<T> onUpdate
     ) {
+//        Property<T> tProperty = new Property<>(serviceProperty, cls, propKey, defValue, required, onUpdate);
+//        Util.logConsoleJson(tProperty);
+//        return tProperty;
         return new Property<>(serviceProperty, cls, propKey, defValue, required, onUpdate);
     }
 

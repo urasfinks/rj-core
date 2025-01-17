@@ -37,6 +37,12 @@ public class ServiceProperty {
         return prop.get(propKey).getValue();
     }
 
+    public Map<String, String> getProp() {
+        HashMap<String, String> result = new HashMap<>();
+        prop.forEach((s, propertySource) -> result.put(s, propertySource.getValue()));
+        return result;
+    }
+
     //Нужен для момента, когда будет добавляться новое Property, что бы можно было к нему навешать старых слушателей
     final private Set<PropertySubscriber> subscribers = Util.getConcurrentHashSet();
 
