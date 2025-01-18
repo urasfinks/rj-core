@@ -96,6 +96,7 @@ public interface HttpClient {
                 responseEnvelope.addException(e);
             }
         }
+        responseEnvelope.setTiming(System.currentTimeMillis() - responseEnvelope.getTiming());
         return responseEnvelope;
     }
 

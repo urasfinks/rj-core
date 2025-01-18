@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-@JsonPropertyOrder({"status", "description", "httpStatus", "headers", "body", "exception"})
+@JsonPropertyOrder({"status", "description", "httpStatus", "headers", "body", "exception", "timing"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class HttpResponse {
 
@@ -33,6 +33,9 @@ public class HttpResponse {
 
     @Setter
     private String body = null;
+
+    @Setter
+    private long timing = System.currentTimeMillis();
 
     public void addHeader(String key, String value) {
         headers.put(key, value);
