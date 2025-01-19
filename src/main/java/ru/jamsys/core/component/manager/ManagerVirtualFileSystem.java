@@ -2,6 +2,7 @@ package ru.jamsys.core.component.manager;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.resource.virtual.file.system.File;
@@ -15,12 +16,16 @@ public class ManagerVirtualFileSystem extends AbstractManager<File, Void> implem
     }
 
     public void add(File file) {
-        map.put(file.getAbsolutePath(), file);
+        if (file == null) {
+            App.error(new RuntimeException("file is null"));
+            return;
+        }
+        externalMapPut(file.getAbsolutePath(), file);
     }
 
     // setCleanableMap(false) - можем себе позволить прихранивать объекты
     public File get(String key) {
-        return map.get(key);
+        return externalMapGet(key);
     }
 
     @Override

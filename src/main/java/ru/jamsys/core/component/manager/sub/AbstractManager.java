@@ -1,10 +1,12 @@
 package ru.jamsys.core.component.manager.sub;
 
 import lombok.Setter;
+import ru.jamsys.core.App;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,6 +16,11 @@ import java.util.function.Supplier;
 
 // E - Element
 // EBA - ElementBuilderArgument
+
+// Менаджер объектов, которые могут прекращать свою жизнидеятельность по ExpirationMsMutable
+// Если объектом не пользуются - он будет выпадать из жизни, и мы не будем тратить время на сбор статистики этого
+// объекта + так же будем его останавливать (shutdown), но ссылку на объект будем прихранивать в mapReserved
+// и при повторной попытке получить объект - мы его восттановим из mapReserved в map и запустим (run)
 
 public abstract class AbstractManager<
         E extends
@@ -29,9 +36,9 @@ public abstract class AbstractManager<
         LifeCycleComponent,
         ManagerElementBuilder<E, EBA> {
 
-    protected final Map<String, E> map = new ConcurrentHashMap<>();
+    private final Map<String, E> map = new ConcurrentHashMap<>();
 
-    protected final Map<String, E> mapReserved = new ConcurrentHashMap<>();
+    private final Map<String, E> mapReserved = new ConcurrentHashMap<>();
 
     @Setter
     protected boolean cleanableMap = true;
@@ -40,6 +47,9 @@ public abstract class AbstractManager<
 
     @Override
     public Map<String, E> getMapForFlushStatistic() {
+        // Логичнее сделать было new HashMap<>(map)
+        // но каждый раз копировать карту - такое себе, контролируйте вызов метода getMapForFlushStatistic
+        // что бы там не было никаких корректировок карты - иначе могут быть непредвиденные обстоятельства
         return map;
     }
 
@@ -62,11 +72,25 @@ public abstract class AbstractManager<
     }
 
     public void checkReserved() {
-        for (String key : mapReserved.keySet()) {
-            if (!mapReserved.get(key).isExpiredWithoutStop()) {
+        UtilRisc.forEach(new AtomicBoolean(true), mapReserved, (key, element) -> {
+            if (!element.isExpiredWithoutStop()) {
                 restoreFromReserved(key, null);
             }
+        });
+    }
+
+    public E externalMapGet(String key) {
+        return map.get(key);
+    }
+
+    public void externalMapPut(String key, E element) {
+        if (element == null) {
+            App.error(new RuntimeException("externalMapPut " + key + "; element is null"));
+            return;
         }
+        lockAddFromRemoved.lock();
+        map.put(key, element);
+        lockAddFromRemoved.unlock();
     }
 
     // Атомарная операция для map и mapReserved
@@ -74,18 +98,27 @@ public abstract class AbstractManager<
         lockAddFromRemoved.lock();
         E result = null;
         // computeIfAbsent так как заметил использование в других классах использование put
-        // хотя бы тут попробуем выдерживать консистентность
+        // 19.01.2025 сделал map приватным, полагаю put больше не должен использоваться в других классах
+        // поэтому убрал реализацию computeIfAbsent
+        // Проблема пошла, потому что появились null в map
         if (mapReserved.containsKey(key)) {
-            result = map.computeIfAbsent(key, mapReserved::remove);
-            result.run();
+            result = mapReserved.remove(key);
+            if (result == null) {
+                App.error(new RuntimeException("mapReserved.remove(key), where key = " + key + "; return null"));
+            } else {
+                map.put(key, result);
+                result.run();
+            }
         } else if (map.containsKey(key)) {
             result = map.get(key);
         } else if (supplierNewObject != null) {
-            result = map.computeIfAbsent(key, _ -> {
-                E readyInstance = supplierNewObject.get();
-                readyInstance.run();
-                return readyInstance;
-            });
+            result = supplierNewObject.get();
+            if (result == null) {
+                App.error(new RuntimeException("supplierNewObject.get() for key = " + key + " return null"));
+            } else {
+                map.put(key, result);
+                result.run();
+            }
         }
         lockAddFromRemoved.unlock();
         return result;

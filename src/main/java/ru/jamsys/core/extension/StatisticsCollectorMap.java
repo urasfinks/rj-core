@@ -15,12 +15,11 @@ public interface StatisticsCollectorMap<E extends StatisticsFlush> extends Stati
 
     @Override
     default List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
-        Map<String, E> map = getMapForFlushStatistic();
         List<Statistic> result = new ArrayList<>();
         String clsName = UniqueClassNameImpl.getClassNameStatic(getClass(), null);
         UtilRisc.forEach(
                 threadRun,
-                map,
+                getMapForFlushStatistic(),
                 (String key, E element) -> {
                     //TODO: почему то element бывает = null
                     if(element != null){
