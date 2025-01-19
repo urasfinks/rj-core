@@ -211,7 +211,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
             return;
         }
         //Объект, который возвращают в пул не может попасть на удаление, его как бы только что использовали! Алё?
-        poolItem.active();
+        poolItem.setActivity();
         addToPark(poolItem);
         tpsComplete.incrementAndGet();
     }
@@ -362,7 +362,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         // Если за последнюю секунду были возвращения элемнтов значит пул активен
         // Если в пуле есть элементы и они не в паркинге - пул тоже активный
         if (tpsCompleteFlush > 0 || (!itemQueue.isEmpty() && parkQueue.isEmpty())) {
-            active();
+            setActivity();
         }
         result.add(new Statistic(parentTags, parentFields)
                 .addField("tpsComplete", tpsCompleteFlush)

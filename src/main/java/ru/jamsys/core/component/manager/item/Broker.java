@@ -145,7 +145,7 @@ public class Broker<TEO>
         if (envelope == null || envelope.isExpired()) {
             return null;
         }
-        active();
+        setActivity();
         DisposableExpirationMsImmutableEnvelope<TEO> convert = DisposableExpirationMsImmutableEnvelope.convert(envelope);
         // Проблема с производительностью
         // Мы не можем использовать queue.size() для расчёта переполнения

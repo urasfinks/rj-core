@@ -43,7 +43,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
 
         thread = new Thread(() -> {
             while (spin.get() && isNotInterrupted() && !shutdown.get()) {
-                active();
+                setActivity();
                 if (!rateLimit.check()) {
                     goToTheParking();
                     continue;

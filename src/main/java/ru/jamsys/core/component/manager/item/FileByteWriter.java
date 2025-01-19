@@ -141,7 +141,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     }
 
     public void append(ByteTransformer log) {
-        active();
+        setActivity();
         broker.add(log, 6_000);
     }
 

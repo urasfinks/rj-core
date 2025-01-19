@@ -125,7 +125,7 @@ public class Expiration<V>
                 .addField("BucketSize", countBucket.get())
         );
         if (!bucket.isEmpty()) {
-            active();
+            setActivity();
         }
         return result;
     }
@@ -136,7 +136,7 @@ public class Expiration<V>
     }
 
     public DisposableExpirationMsImmutableEnvelope<V> add(DisposableExpirationMsImmutableEnvelope<V> obj) {
-        active();
+        setActivity();
         long timeMsExpiredFloor = Util.zeroLastNDigits(obj.getExpiredMs(), 3);
         bucket.computeIfAbsent(timeMsExpiredFloor, _ -> new ConcurrentLinkedQueue<>())
                 .add(obj);

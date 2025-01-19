@@ -51,7 +51,7 @@ public class StickySessions implements BalancerAlgorithm {
             return balancerItemExpirationMsMutableEnvelope;
         });
         ExpirationMsMutableEnvelope<BalancerItem> balancerItemExpirationMsMutableEnvelope = map.get(index);
-        balancerItemExpirationMsMutableEnvelope.active();
+        balancerItemExpirationMsMutableEnvelope.setActivity();
         return balancerItemExpirationMsMutableEnvelope.getValue();
     }
 

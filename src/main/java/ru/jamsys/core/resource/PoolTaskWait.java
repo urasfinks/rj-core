@@ -75,7 +75,7 @@ public class PoolTaskWait<
     }
 
     public void addPromiseTaskPool(PromiseTaskWithResource<?> promiseTaskWithResource) {
-        active();
+        setActivity();
         broker.add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));
         // Если пул был пустой, создаётся ресурс и вызывается onParkUpdate()
         // Если же в пуле были ресурсы, то вернётся false и мы самостоятельно запустим onParkUpdate()

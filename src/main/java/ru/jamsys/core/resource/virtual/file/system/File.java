@@ -91,7 +91,7 @@ public class File extends ExpirationMsMutableImpl
 
     private void init(String path, SupplierThrowing<byte[]> loader) {
         this.loader = loader;
-        active();
+        setActivity();
         parsePath(path);
     }
 
@@ -100,7 +100,7 @@ public class File extends ExpirationMsMutableImpl
             if (fileData == null) {
                 fileData = loader.get();
             }
-            active();
+            setActivity();
         } catch (Throwable th) {
             App.error(th);
         }
