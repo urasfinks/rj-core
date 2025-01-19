@@ -1,7 +1,8 @@
 package ru.jamsys.core.extension;
 
-import ru.jamsys.core.statistic.Statistic;
+import ru.jamsys.core.App;
 import ru.jamsys.core.flat.util.UtilRisc;
+import ru.jamsys.core.statistic.Statistic;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -29,6 +30,8 @@ public interface StatisticsCollectorMap<E extends StatisticsFlush> extends Stati
                         if (statistics != null) {
                             result.addAll(statistics);
                         }
+                    } else {
+                        App.error(new RuntimeException("element is null; class: " + clsName));
                     }
                 }
         );
