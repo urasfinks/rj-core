@@ -22,7 +22,7 @@ public class HttpResource extends ExpirationMsMutableImpl implements Resource<Ht
     @Override
     public HttpResponse execute(HttpClient arguments) {
         arguments.exec();
-        return arguments.getHttpResponseEnvelope();
+        return arguments.getHttpResponse();
     }
 
     @Override

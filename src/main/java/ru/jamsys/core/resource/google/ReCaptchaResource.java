@@ -46,9 +46,9 @@ public class ReCaptchaResource
         httpClient.setPostData(body.getBytes(StandardCharsets.UTF_8));
 
         httpClient.setTimeoutMs(3000);
-        httpClient.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        httpClient.putRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         httpClient.exec();
-        return httpClient.getHttpResponseEnvelope();
+        return httpClient.getHttpResponse();
     }
 
     @Override

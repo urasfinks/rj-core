@@ -56,7 +56,7 @@ public class TelegramNotificationResource
         );
         httpClient.setTimeoutMs(property.getTimeoutMs());
         httpClient.exec();
-        return httpClient.getHttpResponseEnvelope();
+        return httpClient.getHttpResponse();
     }
 
     @Override

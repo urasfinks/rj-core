@@ -64,17 +64,16 @@ public class AndroidNotificationResource
 
     @Override
     public HttpResponse execute(AndroidNotificationRequest arguments) {
-        HttpClient httpClient = new HttpClientImpl();
-        httpClient.setUrl(property.getUrl());
-        httpClient.setTimeoutMs(property.getTimeoutMs());
-        httpClient.setRequestHeader("Content-type", "application/json");
-        httpClient.setRequestHeader("Authorization", "Bearer " + accessToken);
         String postData = createPostData(arguments.getTitle(), arguments.getData(), arguments.getToken());
-
-        httpClient.setPostData(postData.getBytes(StandardCharsets.UTF_8));
+        HttpClient httpClient = new HttpClientImpl()
+                .setUrl(property.getUrl())
+                .setTimeoutMs(property.getTimeoutMs())
+                .putRequestHeader("Content-type", "application/json")
+                .putRequestHeader("Authorization", "Bearer " + accessToken)
+                .setPostData(postData.getBytes(StandardCharsets.UTF_8));
         httpClient.exec();
 
-        return httpClient.getHttpResponseEnvelope();
+        return httpClient.getHttpResponse();
 
     }
 

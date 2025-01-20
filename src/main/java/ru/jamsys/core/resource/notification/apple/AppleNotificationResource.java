@@ -75,10 +75,10 @@ public class AppleNotificationResource
             httpClient.setPostData(postData.getBytes(StandardCharsets.UTF_8));
         }
 
-        httpClient.setRequestHeader("apns-push-type", property.getPushType());
-        httpClient.setRequestHeader("apns-expiration", property.getExpiration());
-        httpClient.setRequestHeader("apns-priority", property.getPriority());
-        httpClient.setRequestHeader("apns-topic", property.getTopic());
+        httpClient.putRequestHeader("apns-push-type", property.getPushType());
+        httpClient.putRequestHeader("apns-expiration", property.getExpiration());
+        httpClient.putRequestHeader("apns-priority", property.getPriority());
+        httpClient.putRequestHeader("apns-topic", property.getTopic());
 
         httpClient.setKeyStore(
                 managerVirtualFileSystem.get(property.getVirtualPath()),
@@ -86,7 +86,7 @@ public class AppleNotificationResource
                 FileViewKeyStore.prop.TYPE.name(), "PKCS12"
         );
         httpClient.exec();
-        return httpClient.getHttpResponseEnvelope();
+        return httpClient.getHttpResponse();
     }
 
     @Override

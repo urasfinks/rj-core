@@ -25,7 +25,7 @@ public interface HttpClient {
 
     HttpClient setKeyStore(File keyStore, Object... props);
 
-    HttpClient setRequestHeader(String name, String value);
+    HttpClient putRequestHeader(String name, String value);
 
     HttpClient setPostData(byte[] postData);
 
@@ -40,7 +40,7 @@ public interface HttpClient {
     }
 
     default HttpClient setBasicAuth(String user, String pass, String charset) {
-        return setRequestHeader("Authorization", "Basic " + UtilBase64.encode(user + ":" + pass, charset, false));
+        return putRequestHeader("Authorization", "Basic " + UtilBase64.encode(user + ":" + pass, charset, false));
     }
 
     String getSslContextType();
@@ -67,37 +67,38 @@ public interface HttpClient {
 
     String getResponseString(String charset) throws UnsupportedEncodingException;
 
-    default HttpResponse getHttpResponseEnvelope() {
-        return getHttpResponseEnvelope(StandardCharsets.UTF_8);
+    default HttpResponse getHttpResponse() {
+        return getHttpResponse(StandardCharsets.UTF_8);
     }
 
-    default HttpResponse getHttpResponseEnvelope(Charset standardCharsets) {
-        HttpResponse responseEnvelope = new HttpResponse();
+    default HttpResponse getHttpResponse(Charset standardCharsets) {
+        HttpResponse httpResponse = new HttpResponse();
         if (getException() != null) {
-            responseEnvelope.addException(getException());
+            httpResponse.addException(getException());
         }
         int status = getStatus();
+        httpResponse.setHttpStatusCode(status);
         if (status == -1) {
-            responseEnvelope.addException("Запроса не было");
+            httpResponse.addException("Запроса не было");
         } else {
-            responseEnvelope.setHttpStatus(HttpStatus.valueOf(status));
+            httpResponse.setHttpStatus(HttpStatus.valueOf(status));
         }
-        if (responseEnvelope.isStatus()) {
+        if (httpResponse.isStatus()) {
             try {
-                responseEnvelope.setBody(getResponseString(standardCharsets.toString()));
+                httpResponse.setBody(getResponseString(standardCharsets.toString()));
                 Map<String, List<String>> headerResponse = getHeaderResponse();
                 if (headerResponse != null) {
                     for (String key : headerResponse.keySet()) {
                         List<String> strings = headerResponse.get(key);
-                        responseEnvelope.addHeader(key, String.join(";", strings));
+                        httpResponse.addHeader(key, String.join(";", strings));
                     }
                 }
             } catch (Exception e) {
-                responseEnvelope.addException(e);
+                httpResponse.addException(e);
             }
         }
-        responseEnvelope.setTiming(System.currentTimeMillis() - responseEnvelope.getTiming());
-        return responseEnvelope;
+        httpResponse.setTiming(System.currentTimeMillis() - httpResponse.getTiming());
+        return httpResponse;
     }
 
 }

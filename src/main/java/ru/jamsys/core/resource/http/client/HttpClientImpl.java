@@ -2,7 +2,9 @@ package ru.jamsys.core.resource.http.client;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 import ru.jamsys.core.App;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.view.FileViewKeyStoreSslContext;
@@ -20,18 +22,23 @@ import java.time.Duration;
 import java.util.*;
 
 @Data
+@Accessors(chain = true)
 public class HttpClientImpl implements HttpClient {
 
     @Getter
+    @Setter
     private String sslContextType = "TLS";
 
     @Getter
+    @Setter
     private Proxy proxy = null;
 
     @Getter
+    @Setter
     private int timeoutMs = 10000;
 
     @Getter
+    @Setter
     public HttpMethodEnum method = null;
 
     private final Map<String, String> headersRequest = new HashMap<>();
@@ -42,10 +49,12 @@ public class HttpClientImpl implements HttpClient {
     private FileViewKeyStoreSslContext sslContext = null;
 
     @Getter
+    @Setter
     @ToString.Exclude
     private byte[] postData = null;
 
     @Getter
+    @Setter
     private String url = null;
 
     @Getter
@@ -59,44 +68,8 @@ public class HttpClientImpl implements HttpClient {
     private Exception exception = null;
 
     @Override
-    public HttpClient setUrl(String url) {
-        this.url = url;
-        return this;
-    }
-
-    @Override
-    public HttpClient setRequestHeader(String name, String value) {
+    public HttpClientImpl putRequestHeader(String name, String value) {
         headersRequest.put(name, value);
-        return this;
-    }
-
-    @Override
-    public HttpClient setPostData(byte[] postData) {
-        this.postData = postData;
-        return this;
-    }
-
-    @Override
-    public HttpClient setMethod(HttpMethodEnum method) {
-        this.method = method;
-        return this;
-    }
-
-    @Override
-    public HttpClient setTimeoutMs(int connectTimeoutMs) {
-        this.timeoutMs = connectTimeoutMs;
-        return this;
-    }
-
-    @Override
-    public HttpClient setProxy(Proxy proxy) {
-        this.proxy = proxy;
-        return this;
-    }
-
-    @Override
-    public HttpClient setSslContextType(String sslContextType) {
-        this.sslContextType = sslContextType;
         return this;
     }
 
@@ -160,7 +133,7 @@ public class HttpClientImpl implements HttpClient {
     }
 
     @Override
-    public HttpClient setKeyStore(File keyStore, Object... props) {
+    public HttpClientImpl setKeyStore(File keyStore, Object... props) {
         sslContext = keyStore.getView(FileViewKeyStoreSslContext.class, props);
         return this;
     }

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-@JsonPropertyOrder({"status", "description", "httpStatus", "headers", "body", "exception", "timing"})
+@JsonPropertyOrder({"status", "statusCode", "description", "httpStatus", "headers", "body", "exception", "timing"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class HttpResponse {
 
@@ -27,7 +27,14 @@ public class HttpResponse {
     protected List<Trace<String, Throwable>> exception = new ArrayList<>();
 
     @Setter
+    private int httpStatusCode;
+
     private HttpStatus httpStatus = HttpStatus.OK;
+
+    public void setHttpStatus(HttpStatus httpStatus) {
+        this.httpStatus = httpStatus;
+        this.httpStatusCode = httpStatus.value();
+    }
 
     private final Map<String, String> headers = new LinkedHashMap<>();
 
@@ -50,6 +57,7 @@ public class HttpResponse {
         description = e.getMessage();
         status = false;
         httpStatus = HttpStatus.EXPECTATION_FAILED;
+        httpStatusCode = HttpStatus.EXPECTATION_FAILED.value();
         exception.add(new Trace<>(description, e));
     }
 
