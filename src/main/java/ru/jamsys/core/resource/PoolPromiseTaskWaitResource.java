@@ -16,16 +16,15 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
 // Пул ресурсов хранит очередь задач, которые ждут освободившиеся ресурсы
 // При освобождении ресурса происходит передача управления ресурса в задачу
-// Пул, который предоставляет освободившиеся ресурсы для задач PromiseTaskPool
+// Пул, который предоставляет освободившиеся ресурсы для задач PromiseTask
 // В потоке исполнения задачи - совершается действие с освободившимся ресурсом
 
 // Существует индекс ресурса, например JdbcResource.default
-// Далее существует ManagerPoolTaskWait, где в карте хранится по индексу ресурса экземпляр PoolTaskWait
-// PoolTaskWait - это пул ресурсов с очередью задач, которым для выполнения нужен ресурс
-//
+// Далее существует ManagerPoolTaskWait, где в карте хранится по индексу ресурса экземпляр PoolPromiseTaskWaitResource
+// PoolPromiseTaskWaitResource - это пул ресурсов с очередью задач, которым для выполнения нужен ресурс
 
-// TODO: rename to PoolTaskWaitResource
-public class PoolTaskWait<
+
+public class PoolPromiseTaskWaitResource<
         RA,
         RR,
         PI extends ExpirationMsMutable & Resource<RA, RR>
@@ -40,7 +39,7 @@ public class PoolTaskWait<
 
     private final Class<PI> classItem;
 
-    public PoolTaskWait(String name, PoolSettings<PI> poolSettings, Class<PI> classItem) {
+    public PoolPromiseTaskWaitResource(String name, PoolSettings<PI> poolSettings, Class<PI> classItem) {
         super(name);
         this.poolSettings = poolSettings;
         this.classItem = classItem;

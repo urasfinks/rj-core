@@ -3,7 +3,7 @@ package ru.jamsys.core.promise;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.ManagerPoolTaskWait;
+import ru.jamsys.core.component.manager.ManagerPoolPromiseTaskWaitResource;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskWithResourceConsumerThrowing;
@@ -23,7 +23,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
 
     private final PoolSettings<T> poolSettings;
 
-    private final ManagerPoolTaskWait managerPoolTaskWait;
+    private final ManagerPoolPromiseTaskWaitResource managerPoolPromiseTaskWaitResource;
 
     @SuppressWarnings("all")
     public PromiseTaskWithResource(
@@ -35,7 +35,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
         super(index, promise, PromiseTaskExecuteType.IO, null);
         this.poolSettings = poolSettings;
         this.procedure = procedure;
-        managerPoolTaskWait = App.get(ManagerPoolTaskWait.class);
+        managerPoolPromiseTaskWaitResource = App.get(ManagerPoolPromiseTaskWaitResource.class);
         // Мы не можем так делать, потому что элемент живёт своей жизнью и гаситься AbstractManager
         // по истечению времени, мы должны использовать get() что бы остановленный элемент стартовал перед использованием
         //managerElement = managerPoolTaskWait.get(poolSettings.getIndex(), poolSettings);
@@ -48,7 +48,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     public void prepareLaunch(ProcedureThrowing afterExecuteBlock) {
         this.afterBlockExecution = afterExecuteBlock;
         getPromise().getTrace().add(new Trace<>(getIndex() + ".Pool-Subscribe(" + poolSettings.getIndex() + ")", null));
-        managerPoolTaskWait.get(poolSettings.getIndex(), poolSettings).addPromiseTaskPool(this);
+        managerPoolPromiseTaskWaitResource.get(poolSettings.getIndex(), poolSettings).addPromiseTaskPool(this);
     }
 
     @Override

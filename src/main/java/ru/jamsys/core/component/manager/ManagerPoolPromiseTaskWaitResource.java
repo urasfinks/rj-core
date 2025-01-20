@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.KeepAliveComponent;
-import ru.jamsys.core.resource.PoolTaskWait;
+import ru.jamsys.core.resource.PoolPromiseTaskWaitResource;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
@@ -13,30 +13,30 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 // PI - PoolItem
 
 @Component
-public class ManagerPoolTaskWait<
+public class ManagerPoolPromiseTaskWaitResource<
         RA,
         RR,
         PI extends ExpirationMsMutable & Resource<RA, RR>
-        > extends AbstractManager<PoolTaskWait<?, ?, ?>, PoolSettings<PI>>
+        > extends AbstractManager<PoolPromiseTaskWaitResource<?, ?, ?>, PoolSettings<PI>>
         implements KeepAliveComponent {
 
-    public PoolTaskWait<RA, RR, PI> get(String index, PoolSettings<PI> argument) {
-        return (PoolTaskWait) getManagerElement(index, argument.getClassPoolItem(), argument);
+    public PoolPromiseTaskWaitResource<RA, RR, PI> get(String index, PoolSettings<PI> argument) {
+        return (PoolPromiseTaskWaitResource) getManagerElement(index, argument.getClassPoolItem(), argument);
     }
 
     @Override
-    public PoolTaskWait<?, ?, ?> build(
+    public PoolPromiseTaskWaitResource<?, ?, ?> build(
             String index,
             Class<?> classItem,
             PoolSettings<PI> poolSettings
     ) {
-        PoolTaskWait<RA, RR, ?> poolTaskWait = new PoolTaskWait<>(
+        PoolPromiseTaskWaitResource<RA, RR, ?> poolPromiseTaskWaitResource = new PoolPromiseTaskWaitResource<>(
                 index,
                 poolSettings,
                 (Class<PI>) classItem
         );
-        poolTaskWait.run();
-        return poolTaskWait;
+        poolPromiseTaskWaitResource.run();
+        return poolPromiseTaskWaitResource;
     }
 
     @Override
