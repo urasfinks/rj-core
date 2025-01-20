@@ -16,13 +16,16 @@ public interface JdbcExecute {
             StatementControl statementControl,
             boolean debug
     ) throws Exception {
+        if (conn == null) {
+            throw new RuntimeException("Connection is null");
+        }
         List<Map<String, Object>> result = new ArrayList<>();
         if (argsList == null) {
             return result;
         }
         // Динамичный фрагмент не может использоваться в executeBatch
         if (jdbcTemplate.isDynamicArgument() && argsList.size() > 1) {
-            throw new Exception("ExecuteBatch not support DynamicArguments");
+            throw new RuntimeException("ExecuteBatch not support DynamicArguments");
         }
         CompiledSqlTemplate compiledSqlTemplate = jdbcTemplate.compile(argsList.getFirst());
         if (debug) {

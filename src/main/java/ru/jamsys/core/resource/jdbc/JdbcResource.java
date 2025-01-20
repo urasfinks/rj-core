@@ -89,6 +89,9 @@ public class JdbcResource
 
     @Override
     public List<Map<String, Object>> execute(JdbcRequest arguments) throws Throwable {
+        if (connection == null) {
+            throw new RuntimeException("Connection is null");
+        }
         JdbcTemplate jdbcTemplate = arguments.getJdbcTemplate();
         if (jdbcTemplate == null) {
             throw new RuntimeException("TemplateEnum: " + arguments.getName() + " return null template");
@@ -97,6 +100,9 @@ public class JdbcResource
     }
 
     public <T extends DataMapper<T>> List<T> execute(JdbcRequest arguments, Class<T> cls) throws Throwable {
+        if (connection == null) {
+            throw new RuntimeException("Connection is null");
+        }
         JdbcTemplate jdbcTemplate = arguments.getJdbcTemplate();
         if (jdbcTemplate == null) {
             throw new RuntimeException("TemplateEnum: " + arguments.getName() + " return null template");
@@ -127,6 +133,8 @@ public class JdbcResource
                 return msg.contains("закрыто")
                         || msg.contains("close")
                         || msg.contains("Connection reset")
+                        || msg.contains("Connection is null")
+                        || msg.contains("Connection problem")
                         || msg.contains("Ошибка ввода/вывода при отправке бэкенду");
             }
             return false;
