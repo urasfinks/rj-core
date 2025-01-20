@@ -77,13 +77,13 @@ public interface HttpClient {
             httpResponse.addException(getException());
         }
         int status = getStatus();
-        httpResponse.setHttpStatusCode(status);
+        httpResponse.setStatusCode(status);
         if (status == -1) {
             httpResponse.addException("Запроса не было");
         } else {
-            httpResponse.setHttpStatus(HttpStatus.valueOf(status));
+            httpResponse.setStatusDesc(HttpStatus.valueOf(status));
         }
-        if (httpResponse.isStatus()) {
+        if (httpResponse.getException() == null) {
             try {
                 httpResponse.setBody(getResponseString(standardCharsets.toString()));
                 Map<String, List<String>> headerResponse = getHeaderResponse();

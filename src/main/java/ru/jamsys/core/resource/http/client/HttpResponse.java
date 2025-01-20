@@ -4,61 +4,49 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.springframework.http.HttpStatus;
-import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.UtilJson;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Getter
-@JsonPropertyOrder({"status", "statusCode", "description", "httpStatus", "headers", "body", "exception", "timing"})
+@JsonPropertyOrder({"statusCode", "statusDesc", "timing", "exception", "body", "headers"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Setter
+@Accessors(chain = true)
 public class HttpResponse {
 
-    @Setter
-    private String description;
+    protected Throwable exception = null;
 
-    //Только получение, если хотите изменить статус - вызывайте addException и указывайте причину
-    private boolean status = true;
+    private int statusCode;
 
-    protected List<Trace<String, Throwable>> exception = new ArrayList<>();
-
-    @Setter
-    private int httpStatusCode;
-
-    private HttpStatus httpStatus = HttpStatus.OK;
-
-    public void setHttpStatus(HttpStatus httpStatus) {
-        this.httpStatus = httpStatus;
-        this.httpStatusCode = httpStatus.value();
-    }
+    private HttpStatus statusDesc = HttpStatus.OK;
 
     private final Map<String, String> headers = new LinkedHashMap<>();
 
-    @Setter
     private String body = null;
 
-    @Setter
     private long timing = System.currentTimeMillis();
+
+    public void setStatusDesc(HttpStatus statusDesc) {
+        this.statusDesc = statusDesc;
+        this.statusCode = statusDesc.value();
+    }
 
     public void addHeader(String key, String value) {
         headers.put(key, value);
     }
 
     public void addException(String e) {
-        description = e;
         addException(new RuntimeException(e));
     }
 
     public void addException(Throwable e) {
-        description = e.getMessage();
-        status = false;
-        httpStatus = HttpStatus.EXPECTATION_FAILED;
-        httpStatusCode = HttpStatus.EXPECTATION_FAILED.value();
-        exception.add(new Trace<>(description, e));
+        statusDesc = HttpStatus.EXPECTATION_FAILED;
+        statusCode = HttpStatus.EXPECTATION_FAILED.value();
+        exception = e;
     }
 
     @Override
