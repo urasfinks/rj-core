@@ -20,12 +20,12 @@ public class ManagerVirtualFileSystem extends AbstractManager<File, Void> implem
             App.error(new RuntimeException("file is null"));
             return;
         }
-        externalMapPut(file.getAbsolutePath(), file);
+        externalPut(file.getAbsolutePath(), file);
     }
 
     // setCleanableMap(false) - можем себе позволить прихранивать объекты
     public File get(String key) {
-        return externalMapGet(key);
+        return externalGet(key);
     }
 
     @Override

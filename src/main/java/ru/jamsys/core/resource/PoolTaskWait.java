@@ -5,8 +5,9 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.ClassEquals;
-import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.promise.PromiseTaskWithResource;
@@ -18,6 +19,12 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 // Пул, который предоставляет освободившиеся ресурсы для задач PromiseTaskPool
 // В потоке исполнения задачи - совершается действие с освободившимся ресурсом
 
+// Существует индекс ресурса, например JdbcResource.default
+// Далее существует ManagerPoolTaskWait, где в карте хранится по индексу ресурса экземпляр PoolTaskWait
+// PoolTaskWait - это пул ресурсов с очередью задач, которым для выполнения нужен ресурс
+//
+
+// TODO: rename to PoolTaskWaitResource
 public class PoolTaskWait<
         RA,
         RR,
@@ -43,6 +50,9 @@ public class PoolTaskWait<
     @Override
     public PI createPoolItem() {
         PI newPoolItem = App.context.getBean(poolSettings.getClassPoolItem());
+        if (isDebug() && getIndex().equals(getDebugIndex())) {
+            Util.logConsole("createPoolItem [" + getIndex() + "] :: " + poolSettings.getIndex() + "; result = " + newPoolItem.getClass().getName());
+        }
         try {
             newPoolItem.setArguments(poolSettings.getResourceArguments());
             newPoolItem.run();
@@ -75,12 +85,15 @@ public class PoolTaskWait<
     }
 
     public void addPromiseTaskPool(PromiseTaskWithResource<?> promiseTaskWithResource) {
+        if (isDebug() && getIndex().equals(getDebugIndex())) {
+            Util.logConsole("PoolTaskWait.addPromiseTaskPool(" + getIndex() + ") task: " + promiseTaskWithResource.getIndex());
+        }
         setActivity();
         broker.add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));
         // Если пул был пустой, создаётся ресурс и вызывается onParkUpdate()
         // Если же в пуле были ресурсы, то вернётся false и мы самостоятельно запустим onParkUpdate()
         // Что бы попытаться найти свободный ресурс и запустить только что добавленную задачу
-        if (!addIfPoolEmpty()) {
+        if (isAvailablePoolItem()) {
             onParkUpdate();
         }
     }
@@ -88,7 +101,8 @@ public class PoolTaskWait<
     @SuppressWarnings("all")
     @Override
     public void onParkUpdate() {
-        if (!broker.isEmpty() && !parkQueue.isEmpty()) {
+        // Только в том случае если есть задачи в очереди есть ресурсы в парке
+        if (!broker.isEmpty() && !isParkQueueEmpty()) {
             PI poolItem = getFromPark();
             if (poolItem != null) {
                 //Забираем с конца, что бы никаких штормов
@@ -96,6 +110,7 @@ public class PoolTaskWait<
                 if (envelope != null) {
                     envelope.getValue().start(new PoolItemEnvelope<>(this, poolItem));
                 } else {
+                    // Если задач более нет, возвращаем плавца в пул
                     complete(poolItem, null);
                 }
             }

@@ -6,6 +6,7 @@ import ru.jamsys.core.extension.*;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,9 +48,12 @@ public abstract class AbstractManager<
     @Override
     public Map<String, E> getMapForFlushStatistic() {
         // Логичнее сделать было new HashMap<>(map)
-        // но каждый раз копировать карту - такое себе, контролируйте вызов метода getMapForFlushStatistic
-        // что бы там не было никаких корректировок карты - иначе могут быть непредвиденные обстоятельства
-        return map;
+        // но keepAlive может шлёпнуть map.remove(key) и будет так себе история, поэтому копируем
+        Map<String, E> result;
+        lockAddFromRemoved.lock();
+        result = new HashMap<>(map);
+        lockAddFromRemoved.unlock();
+        return result;
     }
 
     @Override
@@ -78,11 +82,11 @@ public abstract class AbstractManager<
         });
     }
 
-    public E externalMapGet(String key) {
+    public E externalGet(String key) {
         return map.get(key);
     }
 
-    public void externalMapPut(String key, E element) {
+    public void externalPut(String key, E element) {
         if (element == null) {
             App.error(new RuntimeException("externalMapPut " + key + "; element is null"));
             return;

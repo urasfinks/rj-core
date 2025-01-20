@@ -10,6 +10,7 @@ import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.ValueName;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -47,11 +48,19 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         extends ExpirationMsMutableImpl
         implements Pool<RA, RR, PI>, LifeCycleInterface, KeepAlive, UniqueClassName {
 
+    @Setter
+    @Getter
+    boolean debug = false;
+
+    @Setter
+    @Getter
+    String debugIndex;
+
     @Getter
     @ToString.Include
     public final String index;
 
-    protected final ConcurrentLinkedDeque<PI> parkQueue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<PI> parkQueue = new ConcurrentLinkedDeque<>();
 
     protected final ConcurrentLinkedQueue<PI> removeQueue = new ConcurrentLinkedQueue<>();
 
@@ -70,7 +79,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     @Setter
     private Function<Integer, Integer> formulaRemoveCount = (need) -> need;
 
-    private long timeWhenParkIsEmpty = -1;
+    private volatile Long timeWhenParkIsEmpty = null;
 
     // Используется в виртуальных пулах потоков в RealThreadComponent, что бы не держать пулы для задач, которые уже не
     // исполняются по каким либо причинам
@@ -105,13 +114,17 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         );
     }
 
+    public boolean isParkQueueEmpty() {
+        return parkQueue.isEmpty();
+    }
+
     public void setDynamicPollSize(boolean dynamic) {
         dynamicPollSize.set(dynamic);
     }
 
     // Сколько времени паркинг был пуст
-    private long getTimeParkIsEmpty() {
-        if (timeWhenParkIsEmpty == -1) {
+    public long getTimeParkIsEmpty() {
+        if (timeWhenParkIsEmpty == null) {
             return 0;
         } else {
             return System.currentTimeMillis() - timeWhenParkIsEmpty;
@@ -120,11 +133,11 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     protected void updateParkStatistic() {
         if (parkQueue.isEmpty()) {
-            if (timeWhenParkIsEmpty == -1) {
+            if (timeWhenParkIsEmpty == null) {
                 timeWhenParkIsEmpty = System.currentTimeMillis();
             }
         } else {
-            timeWhenParkIsEmpty = -1;
+            timeWhenParkIsEmpty = null;
         }
     }
 
@@ -170,10 +183,18 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         }
     }
 
-    public boolean addIfPoolEmpty() {
-        if (propertyPoolSizeMin.get() == 0 && getRealActiveItem() == 0) {
-            add();
+    public boolean isAvailablePoolItem() {
+        if (!parkQueue.isEmpty()) { // Если в парке есть ресурсы, сразу говорим что всё ок
+            return true;
         }
+        // Если всё-таки в парке нет никого проверяем возможность создать новый элемент
+        // но только в том случае, если настройки парка могут быть равны 0 и кол-во активных элементов равны 0
+        // Парк типо просто из-за неактивности ушёл в ноль, что бы не тратить ресурсы
+        // иначе вернём false и просто задачи будут ждать, когда парк расширится автоматически от нагрузки
+        if (propertyPoolSizeMin.get() == 0 && getRealActiveItem() == 0) {
+            return add();
+        }
+        // Если нет возможности говорим - что не создали
         return false;
     }
 
@@ -218,8 +239,9 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     public PI getFromPark() {
         // Забираем с начала, что бы под нож улетели последние добавленные
-        PI poolItem = parkQueue.pollLast();
-        if (poolItem != null) {
+        if (!parkQueue.isEmpty()) {
+            PI poolItem = parkQueue.pollLast();
+            // Нет смысла проверять на null, обновим стату и вернём как есть
             updateParkStatistic();
             return poolItem;
         }
@@ -229,6 +251,9 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     private void addToPark(@NonNull PI poolItem) {
         // Если есть потребители, которые ждут ресурс - отдаём ресурс без перевставок в park
         if (forwardResourceWithoutParking(poolItem)) {
+            // updateParkStatistic вызывается планомерно в keepAlive
+            // Для быстродействия вычисления нехватки ресурсов в пуле дополнительно вызовем тут
+            updateParkStatistic();
             return;
         }
         // Вставка poolItem в parkQueue должна быть только в этом месте
@@ -245,7 +270,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
             App.error(new RuntimeException("Этот код не должен был случиться! Проверить логику! " + poolItem.hashCode()));
         }
         lockAddToPark.unlock();
-        // После разблокировки только начинаем заниматься грязной работой
+        // После разблокировки только начинаем заниматься работой
         if (addable) {
             onParkUpdate();
         }
@@ -376,7 +401,18 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     // Этот метод нельзя вызывать под бизнес задачи, система сама должна это контролировать
     @Override
     public void keepAlive(AtomicBoolean threadRun) {
+        if (isDebug() && getIndex().equals(getDebugIndex())) {
+            Util.logConsoleJson(new HashMapBuilder<String, Object>()
+                    .append("getTimeParkIsEmpty", getTimeParkIsEmpty())
+                    .append("parkQueueSize", parkQueue.size())
+                    .append("itemQueueSize", itemQueue.size())
+                    .append("getRealActiveItem", getRealActiveItem())
+                    .append("propertyPoolSizeMin", propertyPoolSizeMin.get())
+                    .append("formulaAddCount", formulaAddCount.apply(1))
+            );
+        }
         if (run.get()) {
+            updateParkStatistic();
             try {
                 // Если паркинг был пуст уже больше секунды начнём увеличивать
                 if (getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
