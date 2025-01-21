@@ -75,8 +75,8 @@ public class ServiceLogger extends RepositoryPropertiesField implements
         Log log = new Log(logType).setData(stringData).setExtIndex(extIndex);
         if (print) {
             switch (logType) {
-                case ERROR, SYSTEM_EXCEPTION -> Util.logConsole("::" + extIndex + "; " + stringData, true);
-                case INFO, DEBUG -> Util.logConsole("::" + extIndex + "; " + stringData, false);
+                case ERROR, SYSTEM_EXCEPTION -> Util.logConsole(getClass(), "::" + extIndex + "; " + stringData, true);
+                case INFO, DEBUG -> Util.logConsole(getClass(), "::" + extIndex + "; " + stringData, false);
             }
         }
         return add(log);

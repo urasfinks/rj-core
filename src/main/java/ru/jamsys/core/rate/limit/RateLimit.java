@@ -58,7 +58,11 @@ public class RateLimit
     public boolean check() {
         for (String key : map.keySet()) {
             if (!map.get(key).check()) {
-                Util.logConsole("RateLimit [ABORT] index: " + index + "; key: " + key + "; max: " + map.get(key).max() + "; now: " + map.get(key).get() + ";", true);
+                Util.logConsole(
+                        getClass(),
+                        "RateLimit [ABORT] index: " + index + "; key: " + key + "; max: " + map.get(key).max() + "; now: " + map.get(key).get() + ";",
+                        true
+                );
                 return false;
             }
         }

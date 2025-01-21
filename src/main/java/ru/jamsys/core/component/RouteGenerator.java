@@ -71,7 +71,7 @@ public class RouteGenerator {
             repository.put(s, tmp.get(s));
         });
 
-        Util.logConsole("@" + clsAnnotation.getSimpleName() + " for " + interfaceMatcher.getSimpleName() + " : " + UtilJson.toStringPretty(info, "[]"));
+        Util.logConsole(getClass(), "@" + clsAnnotation.getSimpleName() + " for " + interfaceMatcher.getSimpleName() + " : " + UtilJson.toStringPretty(info, "[]"));
         return routeGeneratorRepository;
     }
 

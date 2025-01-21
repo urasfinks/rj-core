@@ -318,7 +318,7 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
                 App.error(e);
             }
         } else {
-            Util.logConsole("file not exist");
+            Util.logConsole(SecurityComponent.class, "file not exist");
         }
     }
 
@@ -327,8 +327,14 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
         if (run.compareAndSet(false, true)) {
             byte[] publicKey = UtilFile.readBytes(pathPublicKey, null);
 
-            Util.logConsole("Security Check privateKey: " + (privateKey != null && privateKey.length > 0));
-            Util.logConsole("Security Check publicKey: " + (publicKey != null && publicKey.length > 0));
+            Util.logConsole(
+                    getClass(),
+                    "Security Check privateKey: " + (privateKey != null && privateKey.length > 0)
+            );
+            Util.logConsole(
+                    getClass(),
+                    "Security Check publicKey: " + (publicKey != null && publicKey.length > 0)
+            );
 
             if (publicKey != null && publicKey.length > 0 && privateKey != null && privateKey.length > 0) {
                 // У нас всё установлено можем просто работать
@@ -342,11 +348,16 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
                     throw new ForwardException(e);
                 }
                 if (UtilFile.ifExist(pathJsonCred)) {
-                    Util.logConsole("Please remove file [" + pathJsonCred + "] with credentials information", true);
+                    Util.logConsole(
+                            getClass(),
+                            "Please remove file [" + pathJsonCred + "] with credentials information",
+                            true
+                    );
                     updateDataFromJsonCred(UtilByte.bytesToChars(passwordKeyStore));
                 }
                 try {
                     Util.logConsole(
+                            getClass(),
                             "KeyStore available aliases: "
                                     + UtilJson.toStringPretty(getAvailableAliases(), "[]")
                     );

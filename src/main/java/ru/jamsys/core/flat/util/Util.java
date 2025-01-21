@@ -38,7 +38,7 @@ public class Util {
     static final String defaultCharset = "UTF-8";
 
     public static <T> void printArray(T[] arr) {
-        logConsole(Arrays.toString(arr));
+        logConsole(Util.class, Arrays.toString(arr));
     }
 
     public static <T, R> List<R> forEach(T[] array, Function<T, R> fn) {
@@ -52,36 +52,40 @@ public class Util {
         return list;
     }
 
-    public static void logConsoleJson(String title, Object data) {
-        logConsole(title + "; " + UtilJson.toStringPretty(data, "--"), false);
+    public static void logConsoleJson(Class<?> cls, String title, Object data) {
+        logConsole(
+                cls,
+                "Title: " + title + "; Json: " + UtilJson.toStringPretty(data, "--"),
+                false
+        );
     }
 
-    public static void logConsoleJson(Object data) {
-        logConsole(UtilJson.toStringPretty(data, "--"), false);
+    public static void logConsoleJson(Class<?> cls, Object data) {
+        logConsole(cls, UtilJson.toStringPretty(data, "--"), false);
     }
 
-    public static void logConsole(String data) {
-        logConsole(data, false);
+    public static void logConsole(Class<?> cls, String data) {
+        logConsole(cls, data, false);
     }
 
-    public static void logConsole(String data, boolean err) {
-        logConsole(Thread.currentThread(), data, err);
+    public static void logConsole(Class<?> cls, String data, boolean err) {
+        logConsole(cls, Thread.currentThread(), data, err);
     }
 
-    public static void logConsole(String data, boolean err, boolean newLine) {
-        logConsole(Thread.currentThread(), data, err, newLine);
+    public static void logConsole(Class<?> cls, String data, boolean err, boolean newLine) {
+        logConsole(cls, Thread.currentThread(), data, err, newLine);
     }
 
-    public static void logConsole(Thread t, String data, boolean err) {
-        logConsole(t, data, err, true);
+    public static void logConsole(Class<?> cls, Thread thread, String data, boolean err) {
+        logConsole(cls, thread, data, err, true);
     }
 
-    public static void logConsole(Thread t, String data, boolean err, boolean newLine) {
-        PrintStream out = err ? System.err : System.out;
+    public static void logConsole(Class<?> cls, Thread thread, String data, boolean err, boolean newLine) {
+        PrintStream ps = err ? System.err : System.out;
         if (newLine) {
-            out.println(UtilDate.msFormat(System.currentTimeMillis()) + " thread: " + t.getName() + "; " + data);
+            ps.println(UtilDate.msFormat(System.currentTimeMillis()) + "; Class: " + cls.getName() + "; Thread: " + thread.getName() + "; " + data);
         } else {
-            out.print(UtilDate.msFormat(System.currentTimeMillis()) + " thread: " + t.getName() + "; " + data);
+            ps.print(UtilDate.msFormat(System.currentTimeMillis()) + "; Class: " + cls.getName() + "; Thread: " + thread.getName() + "; " + data);
         }
     }
 
@@ -428,7 +432,7 @@ public class Util {
     public static boolean await(AtomicBoolean run, long timeoutMs, String exceptionMessage) {
         return await(run, timeoutMs, 0, () -> {
             if (exceptionMessage != null) {
-                logConsole(exceptionMessage, true);
+                logConsole(Util.class, exceptionMessage, true);
             }
         });
     }
@@ -436,7 +440,7 @@ public class Util {
     public static boolean await(AtomicBoolean run, long timeoutMs, int sleepIterationMs, String exceptionMessage) {
         return await(run, timeoutMs, sleepIterationMs, () -> {
             if (exceptionMessage != null) {
-                logConsole(exceptionMessage, true);
+                logConsole(Util.class, exceptionMessage, true);
             }
         });
     }

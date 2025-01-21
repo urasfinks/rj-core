@@ -16,10 +16,10 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilRisc;
-import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.handler.web.http.HttpInterceptor;
+import ru.jamsys.core.promise.Promise;
+import ru.jamsys.core.promise.PromiseGenerator;
 
 import java.io.File;
 import java.util.*;
@@ -55,7 +55,10 @@ public class HttpController {
             updateStaticFile();
             subscribeIgnoreFile();
             subscribeIgnoreDir();
-            Util.logConsole("IgnoredStaticFile: " + UtilJson.toStringPretty(ignoredStaticFile, "{}"));
+            Util.logConsole(
+                    getClass(),
+                    "IgnoredStaticFile: " + UtilJson.toStringPretty(ignoredStaticFile, "{}")
+            );
         }
         List<Class<HttpInterceptor>> list = serviceClassFinder.findByInstance(HttpInterceptor.class);
         if (!list.isEmpty()) {
@@ -66,7 +69,10 @@ public class HttpController {
     private void subscribeIgnoreFile() {
         PropertiesAgent ignoredClassAgent = serviceProperty.getFactory().getPropertiesAgent(
                 mapAlias -> {
-                    Util.logConsole("IgnoreWebStatic.File: " + UtilJson.toStringPretty(mapAlias, "{}"));
+                    Util.logConsole(
+                            getClass(),
+                            "IgnoreWebStatic.File: " + UtilJson.toStringPretty(mapAlias, "{}")
+                    );
                     updateStaticFile();
                 },
                 ignoreStaticFile,
@@ -79,7 +85,10 @@ public class HttpController {
     private void subscribeIgnoreDir() {
         PropertiesAgent ignoredClassAgent = serviceProperty.getFactory().getPropertiesAgent(
                 mapAlias -> {
-                    Util.logConsole("IgnoreWebStatic.Dir: " + UtilJson.toStringPretty(mapAlias, "{}"));
+                    Util.logConsole(
+                            getClass(),
+                            "IgnoreWebStatic.Dir: " + UtilJson.toStringPretty(mapAlias, "{}")
+                    );
                     updateStaticFile();
                 },
                 ignoreStaticDir,

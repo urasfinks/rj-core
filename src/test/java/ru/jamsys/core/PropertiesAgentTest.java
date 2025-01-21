@@ -176,7 +176,7 @@ class PropertiesAgentTest {
                 true,
                 true,
                 aBoolean -> {
-                    Util.logConsole(aBoolean.toString());
+                    Util.logConsole(getClass(), aBoolean.toString());
                     x.incrementAndGet();
                 });
         Assertions.assertEquals(1, x.get());

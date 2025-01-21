@@ -171,7 +171,7 @@ class RepositoryMapTest {
 
         @Override
         public void onPropertyUpdate(Map<String, String> mapAlias) {
-            Util.logConsole(mapAlias.toString());
+            Util.logConsole(getClass(), mapAlias.toString());
         }
     }
 

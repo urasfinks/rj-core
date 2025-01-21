@@ -176,7 +176,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             if (exception.get()) {
                 terminate(onError);
                 if (isPrintError()) {
-                    Util.logConsole(getLogString());
+                    Util.logConsole(getClass(), getLogString());
                 }
             } else if (
                     !wait.get() // Мы не ждём
@@ -188,7 +188,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     setError(new RuntimeException("goTo is not empty: " + goTo));
                     terminate(onError);
                     if (isPrintError()) {
-                        Util.logConsole(getLogString());
+                        Util.logConsole(getClass(), getLogString());
                     }
                 } else {
                     terminate(onComplete);
@@ -234,7 +234,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         String logString = null;
         if (isDebug()) {
             logString = getLogString();
-            Util.logConsole(logString);
+            Util.logConsole(getClass(), logString);
         }
         if (isLog()) {
             ServiceLogger serviceLogger = App.get(ServiceLogger.class);

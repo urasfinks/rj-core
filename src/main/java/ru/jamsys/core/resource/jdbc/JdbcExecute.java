@@ -29,8 +29,8 @@ public interface JdbcExecute {
         }
         CompiledSqlTemplate compiledSqlTemplate = jdbcTemplate.compile(argsList.getFirst());
         if (debug) {
-            Util.logConsole(compiledSqlTemplate.getSql());
-            Util.logConsole(jdbcTemplate.getSqlWithArgumentsValue(compiledSqlTemplate));
+            Util.logConsole(getClass(), compiledSqlTemplate.getSql());
+            Util.logConsole(getClass(), jdbcTemplate.getSqlWithArgumentsValue(compiledSqlTemplate));
         }
         StatementType statementType = jdbcTemplate.getStatementType();
         conn.setAutoCommit(statementType.isAutoCommit());
@@ -101,7 +101,7 @@ public interface JdbcExecute {
                 break;
         }
         if (debug) {
-            Util.logConsole(UtilJson.toStringPretty(result, "[]"));
+            Util.logConsole(getClass(), UtilJson.toStringPretty(result, "[]"));
         }
         return result;
     }

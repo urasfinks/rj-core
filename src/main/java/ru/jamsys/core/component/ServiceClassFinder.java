@@ -163,7 +163,11 @@ public class ServiceClassFinder {
     }
 
     public void removeAvailableClass(Class<?> cls, String cause) {
-        Util.logConsole("removeAvailableClass: " + cls.getName() + "; cause: " + cause, true);
+        Util.logConsole(
+                getClass(),
+                "removeAvailableClass: " + cls.getName() + "; cause: " + cause,
+                true
+        );
         availableClass.remove(cls);
     }
 

@@ -48,7 +48,7 @@ public class Core implements LifeCycleInterface {
 
     @Override
     public void run() {
-        Util.logConsole(getClass().getSimpleName() + ".run()");
+        Util.logConsole(getClass(), ".run()");
         String indexStatistic = UniqueClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext);
         String indexLog = UniqueClassNameImpl.getClassNameStatic(Log.class, null, applicationContext);
 
@@ -70,6 +70,7 @@ public class Core implements LifeCycleInterface {
             long start = System.currentTimeMillis();
             lifeCycleComponent.run();
             Util.logConsole(
+                    getClass(),
                     "run index: " + lifeCycleComponent.getInitializationIndex()
                             + "; class: " + lifeCycleComponent.getClass().getName()
                             + "; time: " + (System.currentTimeMillis() - start) + "ms"
@@ -79,7 +80,7 @@ public class Core implements LifeCycleInterface {
 
     @Override
     public void shutdown() {
-        Util.logConsole(getClass().getSimpleName() + ".shutdown()");
+        Util.logConsole(getClass(), ".shutdown()");
         while (!runComponent.isEmpty()) {
             LifeCycleComponent lifeCycleComponent = runComponent.pollLast();
             if (lifeCycleComponent != null) {
@@ -87,6 +88,7 @@ public class Core implements LifeCycleInterface {
                 long start = System.currentTimeMillis();
                 lifeCycleComponent.shutdown();
                 Util.logConsole(
+                        getClass(),
                         "shutdown index: " + lifeCycleComponent.getInitializationIndex()
                                 + "; class: " + lifeCycleComponent.getClass().getName()
                                 + "; time: " + (System.currentTimeMillis() - start) + "ms"

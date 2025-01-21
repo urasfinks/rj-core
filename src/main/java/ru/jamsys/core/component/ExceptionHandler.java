@@ -41,9 +41,9 @@ public class ExceptionHandler extends RepositoryPropertiesField {
         if (consoleOutput) {
             LineWriter lineWriter = new LineWriterString();
             if (th instanceof PromiseException promiseException) {
-                Util.logConsole(promiseException.toString());
+                Util.logConsole(getClass(), promiseException.toString());
             } else {
-                Util.logConsole(getTextException(th, lineWriter));
+                Util.logConsole(getClass(), getTextException(th, lineWriter));
             }
         }
         if (remoteLog) {

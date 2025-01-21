@@ -50,7 +50,12 @@ public class PoolPromiseTaskWaitResource<
     public PI createPoolItem() {
         PI newPoolItem = App.context.getBean(poolSettings.getClassPoolItem());
         if (isDebug() && getIndex().equals(getDebugIndex())) {
-            Util.logConsole("createPoolItem [" + getIndex() + "] :: " + poolSettings.getIndex() + "; result = " + newPoolItem.getClass().getName());
+            Util.logConsole(
+                    getClass(),
+                    "createPoolItem [" + getIndex() + "] :: "
+                            + poolSettings.getIndex()
+                            + "; result = " + newPoolItem.getClass().getName()
+            );
         }
         try {
             newPoolItem.setArguments(poolSettings.getResourceArguments());
@@ -85,7 +90,11 @@ public class PoolPromiseTaskWaitResource<
 
     public void addPromiseTaskPool(PromiseTaskWithResource<?> promiseTaskWithResource) {
         if (isDebug() && getIndex().equals(getDebugIndex())) {
-            Util.logConsole("PoolTaskWait.addPromiseTaskPool(" + getIndex() + ") task: " + promiseTaskWithResource.getIndex());
+            Util.logConsole(
+                    getClass(),
+                    "PoolTaskWait.addPromiseTaskPool(" + getIndex() + ") task: "
+                            + promiseTaskWithResource.getIndex()
+            );
         }
         setActivity();
         broker.add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));

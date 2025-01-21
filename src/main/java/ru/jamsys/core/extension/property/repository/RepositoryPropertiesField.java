@@ -56,7 +56,11 @@ public class RepositoryPropertiesField implements RepositoryProperties {
                 throw new ForwardException(th);
             }
         } else {
-            Util.logConsole("RepositoryPropertiesField.setProperty('" + prop + "', '" + value + "') field not exist", true);
+            Util.logConsole(
+                    getClass(),
+                    "RepositoryPropertiesField.setProperty('" + prop + "', '" + value + "') field not exist",
+                    true
+            );
         }
     }
 

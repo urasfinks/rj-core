@@ -37,7 +37,7 @@ public class App {
     public static void main(String[] args) {
         init();
         application.addListeners((ApplicationListener<ContextClosedEvent>) _ -> {
-            Util.logConsole("App shutdown process...");
+            Util.logConsole(App.class, "App shutdown process...");
 
             AtomicBoolean run = new AtomicBoolean(true);
 
@@ -51,10 +51,11 @@ public class App {
             shutdownThread.start();
 
             if (Util.await(run, 5000, 0, () -> Util.logConsole(
+                    App.class,
                     "App stop with error timeout shutdown; last running: " + Core.lastOperation,
                     true
             ))) {
-                Util.logConsole("App stop. I wish you good luck, see you soon!");
+                Util.logConsole(App.class, "App stop. I wish you good luck, see you soon!");
             }
         });
         run(args);
@@ -89,7 +90,7 @@ public class App {
     public static void run(String[] args) {
         init();
         if (context == null) {
-            Util.logConsole("Run arguments:");
+            Util.logConsole(App.class, "Run arguments:");
             Util.printArray(args);
             context = application.run(args);
             get(Core.class).run();

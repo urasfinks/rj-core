@@ -189,7 +189,10 @@ public class Cron {
             return compileResult.setNextTimestamp(null);
         }
         if (debug) {
-            Util.logConsole("Avg min: " + UtilDate.msFormat(flush.getMin()) + " realMs: " + flush.getMin());
+            Util.logConsole(
+                    getClass(),
+                    "Avg min: " + UtilDate.msFormat(flush.getMin()) + " realMs: " + flush.getMin()
+            );
         }
         nextTimestamp = flush.getMin();
         return compileResult.setNextTimestamp(nextTimestamp);

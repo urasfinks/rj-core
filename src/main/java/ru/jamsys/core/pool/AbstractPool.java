@@ -402,13 +402,15 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     @Override
     public void keepAlive(AtomicBoolean threadRun) {
         if (isDebug() && getIndex().equals(getDebugIndex())) {
-            Util.logConsoleJson(new HashMapBuilder<String, Object>()
-                    .append("getTimeParkIsEmpty", getTimeParkIsEmpty())
-                    .append("parkQueueSize", parkQueue.size())
-                    .append("itemQueueSize", itemQueue.size())
-                    .append("getRealActiveItem", getRealActiveItem())
-                    .append("propertyPoolSizeMin", propertyPoolSizeMin.get())
-                    .append("formulaAddCount", formulaAddCount.apply(1))
+            Util.logConsoleJson(
+                    getClass(),
+                    new HashMapBuilder<String, Object>()
+                            .append("getTimeParkIsEmpty", getTimeParkIsEmpty())
+                            .append("parkQueueSize", parkQueue.size())
+                            .append("itemQueueSize", itemQueue.size())
+                            .append("getRealActiveItem", getRealActiveItem())
+                            .append("propertyPoolSizeMin", propertyPoolSizeMin.get())
+                            .append("formulaAddCount", formulaAddCount.apply(1))
             );
         }
         if (run.get()) {

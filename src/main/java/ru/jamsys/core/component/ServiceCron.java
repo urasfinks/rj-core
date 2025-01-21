@@ -64,7 +64,7 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
                         }
                     }
                 } catch (InterruptedException ie) {
-                    Util.logConsole("interrupt()");
+                    Util.logConsole(getClass(), "interrupt()");
                 } catch (Throwable th) {
                     App.error(th);
                 }
