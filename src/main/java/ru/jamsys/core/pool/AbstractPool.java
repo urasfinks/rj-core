@@ -54,7 +54,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     @Setter
     @Getter
-    String debugIndex;
+    String debugIndex = "PoolPromiseTaskWaitResource.JdbcResource.default";
 
     @Getter
     @ToString.Include
@@ -222,13 +222,13 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         if (poolItem == null) {
             return;
         }
-        // Если произошло ручное удаление, и объект не является уже участником пула - завершаем
-        if (!itemQueue.contains(poolItem)) {
-            return;
-        }
         // Если ошибка является критичной для пловца - выбрасываем его из пула
         if (e != null && checkFatalException(e)) {
             exceptionQueue.add(poolItem);
+            return;
+        }
+        // Если произошло ручное удаление, и объект не является уже участником пула - завершаем
+        if (!itemQueue.contains(poolItem)) {
             return;
         }
         //Объект, который возвращают в пул не может попасть на удаление, его как бы только что использовали! Алё?

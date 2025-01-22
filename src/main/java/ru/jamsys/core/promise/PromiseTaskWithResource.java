@@ -53,8 +53,24 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
 
     @Override
     protected void executeBlock() throws Throwable {
-        try (PoolItemEnvelope<?, ?, T> res = getPoolItemEnvelope()) {
-            procedure.accept(threadRun, this, getPromise(), res.getItem());
+        PoolItemEnvelope<?, ?, T> res = this.getPoolItemEnvelope();
+        try {
+            this.procedure.accept(this.threadRun, this, this.getPromise(), res.getItem());
+        } catch (Throwable th) {
+            if (res != null) {
+                res.setThrowable(th);
+                try {
+                    res.close();
+                } catch (Throwable thSuppressed) {
+                    th.addSuppressed(thSuppressed);
+                }
+            }
+            throw th;
+        }
+        // Idea просит убрать проверку на null говорит всегда true
+        // Не понимаю, а что если getPoolItemEnvelope венёт null
+        if (res != null) {
+            res.close();
         }
     }
 
