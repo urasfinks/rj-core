@@ -30,11 +30,11 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
 
     String getIndex();
 
-    void complete(@NonNull PromiseTask task, @NonNull Throwable exception);
+    void completePromise(@NonNull PromiseTask task, @NonNull Throwable exception);
 
-    void complete(@Nullable PromiseTask task);
+    void completePromise(@Nullable PromiseTask task);
 
-    void complete();
+    void completePromise();
 
     // Синхронное ожидание выполнения Promise
     Promise await(long timeoutMs);

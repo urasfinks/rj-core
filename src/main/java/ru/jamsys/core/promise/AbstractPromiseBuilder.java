@@ -66,7 +66,7 @@ public abstract class AbstractPromiseBuilder extends AbstractPromise {
     public Promise run() {
         getTrace().add(new Trace<>("Run", null));
         run.set(true);
-        complete();
+        completePromise();
         return this;
     }
 

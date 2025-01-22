@@ -85,7 +85,7 @@ public class PromiseTask implements Runnable {
         if (isExternal()) {
             // Время можно путём вычитания start.start - complete.start
             promise.getTrace().add(new TracePromiseTask<>(getIndex() + ".complete", null, type, this.getClass()));
-            promise.complete(this);
+            promise.completePromise(this);
         }
     }
 
@@ -96,7 +96,7 @@ public class PromiseTask implements Runnable {
 
     public void externalError(Throwable th) {
         if (isExternal()) {
-            promise.complete(this, th);
+            promise.completePromise(this, th);
         }
     }
 
@@ -127,7 +127,7 @@ public class PromiseTask implements Runnable {
     public void run() {
         // Мы должны проверить, что Promise к которому принадлежит это задание ещё не остановлено
         if (!promise.isRun()) {
-            completeThrowable(new RuntimeException("Promise is not run"));
+            completePromiseTaskThrowable(new RuntimeException("Promise is not run"));
         }
         TimerNanoEnvelope<String> timerEnvelope = App.get(ServicePromise.class).registrationTimer(index);
         tracePromiseTask = new TracePromiseTask<>(index, null, type, this.getClass());
@@ -156,7 +156,7 @@ public class PromiseTask implements Runnable {
                     // Так как нужно придерживаться линейности и быть предсказуемым
                     // По сути afterBlockExecution может хотеть использовать данные созданные в executeBlock
                     // И тогда можем получить двойную ошибку
-                    completeThrowable(th);
+                    completePromiseTaskThrowable(th);
                 }
                 return;
             } else {
@@ -174,14 +174,14 @@ public class PromiseTask implements Runnable {
                 afterBlockExecution.run();
             } catch (Throwable th) {
                 stopTimer(timerEnvelope);
-                completeThrowable(th);
+                completePromiseTaskThrowable(th);
                 return;
             }
         }
 
         stopTimer(timerEnvelope);
         if (!isExternal()) {
-            complete();
+            completePromiseTask();
         }
     }
 
@@ -200,19 +200,19 @@ public class PromiseTask implements Runnable {
         tracePromiseTask.setTimeStop(System.currentTimeMillis());
     }
 
-    private void complete() {
+    private void completePromiseTask() {
         switch (type) {
             case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE -> {
             }
-            default -> promise.complete(this);
+            default -> promise.completePromise(this);
         }
     }
 
-    private void completeThrowable(Throwable th) {
+    private void completePromiseTaskThrowable(Throwable th) {
         switch (type) {
             case ASYNC_NO_WAIT_IO, ASYNC_NO_WAIT_COMPUTE ->
                     tracePromiseTask.getExceptionTrace().add(new Trace<>(null, th));
-            default -> promise.complete(this, th);
+            default -> promise.completePromise(this, th);
         }
     }
 

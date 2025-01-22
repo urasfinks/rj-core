@@ -29,7 +29,7 @@ public class PromiseController implements Cron1s, PromiseGenerator, UniqueClassN
                     AtomicInteger count = new AtomicInteger(0);
                     UtilRisc.forEach(threadRun, ServicePromise.queueMultipleCompleteSet, promise -> {
                         assert promise != null;
-                        promise.complete();
+                        promise.completePromise();
                         count.incrementAndGet();
                     });
                 });

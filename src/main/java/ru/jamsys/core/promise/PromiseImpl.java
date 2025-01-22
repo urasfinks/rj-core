@@ -42,23 +42,23 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         // Timeout может прилетать уже после того, как
         if (run.get()) {
             setError(new ForwardException("TimeOut cause: " + cause, getExpiredException()));
-            complete();
+            completePromise();
         }
     }
 
-    public void complete(@NonNull PromiseTask task, @NonNull Throwable exception) {
+    public void completePromise(@NonNull PromiseTask task, @NonNull Throwable exception) {
         setError(task, exception);
-        complete();
+        completePromise();
     }
 
-    public void complete(@Nullable PromiseTask task) {
+    public void completePromise(@Nullable PromiseTask task) {
         if (task != null) {
             setRunningTasks.remove(task);
         }
-        complete();
+        completePromise();
     }
 
-    public void complete() {
+    public void completePromise() {
         if (run.get()) {
             if (startLoop.compareAndSet(false, true)) {
                 try {
@@ -85,7 +85,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 Util.await(startLoop, 5L, null);
                 firstWaiting.set(false);
                 if (!startLoop.get()) {
-                    complete();
+                    completePromise();
                 }
             } else {
                 ServicePromise.queueMultipleCompleteSet.add(this);

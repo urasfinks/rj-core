@@ -28,18 +28,18 @@ public class PromiseDebug implements Promise {
     }
 
     @Override
-    public void complete(@NonNull PromiseTask task, @NonNull Throwable exception) {
-        promise.complete(task, exception);
+    public void completePromise(@NonNull PromiseTask task, @NonNull Throwable exception) {
+        promise.completePromise(task, exception);
     }
 
     @Override
-    public void complete(PromiseTask task) {
-        promise.complete(task);
+    public void completePromise(PromiseTask task) {
+        promise.completePromise(task);
     }
 
     @Override
-    public void complete() {
-        promise.complete();
+    public void completePromise() {
+        promise.completePromise();
     }
 
     @Override
