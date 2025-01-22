@@ -218,7 +218,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     }
 
     @Override
-    public void complete(PI poolItem, Throwable e) {
+    public void completePoolItem(PI poolItem, Throwable e) {
         if (poolItem == null) {
             return;
         }

@@ -119,7 +119,7 @@ public class PoolPromiseTaskWaitResource<
                     envelope.getValue().start(new PoolItemEnvelope<>(this, poolItem));
                 } else {
                     // Если задач более нет, возвращаем плавца в пул
-                    complete(poolItem, null);
+                    completePoolItem(poolItem, null);
                 }
             }
         }

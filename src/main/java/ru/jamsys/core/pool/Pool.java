@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.StatisticsFlush;
 public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlush {
 
     //После работы с ресурсом его надо вернуть в пул
-    void complete(PI ret, Throwable e);
+    void completePoolItem(PI ret, Throwable e);
 
     // overclocking / onInitPool min resource / addPoolItemIfEmpty
     PI createPoolItem() ;

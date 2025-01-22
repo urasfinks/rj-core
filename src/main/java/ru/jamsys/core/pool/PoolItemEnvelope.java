@@ -25,7 +25,7 @@ public class PoolItemEnvelope<RA, RR, PI extends Resource<RA, RR>> implements Au
 
     @Override
     public void close() throws Exception {
-        this.pool.complete(this.item, throwable);
+        this.pool.completePoolItem(this.item, throwable);
     }
 
 }

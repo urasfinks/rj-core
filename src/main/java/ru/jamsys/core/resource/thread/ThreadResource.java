@@ -88,7 +88,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
             if (shutdown.get()) {
                 pool.remove(this);
             } else {
-                pool.complete(this, null);
+                pool.completePoolItem(this, null);
             }
         }
         // В любом случае поток хотят тормознуть, не важно какие статусы сейчас
