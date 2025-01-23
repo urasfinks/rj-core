@@ -239,12 +239,17 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     }
 
     public PI getFromPark() {
-        // Забираем с начала, что бы под нож улетели последние добавленные
-        if (!parkQueue.isEmpty()) {
+        // Забираем с конца, что бы под нож улетели первые добавленные
+        while (!parkQueue.isEmpty()) {
             PI poolItem = parkQueue.pollLast();
-            // Нет смысла проверять на null, обновим стату и вернём как есть
             updateParkStatistic();
-            return poolItem;
+            if (poolItem == null) {
+                continue;
+            }
+            if (poolItem.isValid()) {
+                return poolItem;
+            }
+            exceptionQueue.add(poolItem);
         }
         return null;
     }
