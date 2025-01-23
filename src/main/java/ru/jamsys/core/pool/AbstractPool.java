@@ -171,7 +171,8 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     }
 
     private int getRealActiveItem() {
-        return itemQueue.size() - removeQueue.size();
+        // Активные пловцы это те, которые не под ножом и не ошибочные
+        return itemQueue.size() - (removeQueue.size() + exceptionQueue.size());
     }
 
     // Увеличиваем кол-во объектов для плаванья
@@ -411,6 +412,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
                             .append("getRealActiveItem", getRealActiveItem())
                             .append("propertyPoolSizeMin", propertyPoolSizeMin.get())
                             .append("formulaAddCount", formulaAddCount.apply(1))
+                            .append("actionOverclocking", getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty())
             );
         }
         if (run.get()) {
