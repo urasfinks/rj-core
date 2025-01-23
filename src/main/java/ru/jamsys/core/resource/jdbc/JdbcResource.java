@@ -135,6 +135,7 @@ public class JdbcResource
                         || msg.contains("Connection reset")
                         || msg.contains("Connection is null")
                         || msg.contains("Connection problem")
+                        || msg.contains("terminating connection")
                         || msg.contains("Ошибка ввода/вывода при отправке бэкенду");
             }
             return false;
