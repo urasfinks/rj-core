@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.extension.property.PropertiesAgent;
+import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.flat.util.YandexSpeechClient;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -64,6 +64,11 @@ public class YandexSpeechNotificationResource
     }
 
     @Override
+    public boolean isValid() {
+        return client != null;
+    }
+
+    @Override
     public void run() {
         if (propertiesAgent != null) {
             propertiesAgent.run();
@@ -80,6 +85,7 @@ public class YandexSpeechNotificationResource
         } catch (Exception e) {
             App.error(e);
         }
+        client = null;
     }
 
     @Override

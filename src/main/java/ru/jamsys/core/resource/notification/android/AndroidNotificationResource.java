@@ -77,6 +77,11 @@ public class AndroidNotificationResource
 
     }
 
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
     private String createPostData(String title, Map<String, Object> data, String token) {
         Map<String, Object> root = new LinkedHashMap<>();
         Map<String, Object> message = new LinkedHashMap<>();

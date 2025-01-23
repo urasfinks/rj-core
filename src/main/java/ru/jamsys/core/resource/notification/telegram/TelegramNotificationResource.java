@@ -16,6 +16,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
+// TODO: морально ресурс устарел, нужен рефактор
 @Component
 @Scope("prototype")
 public class TelegramNotificationResource
@@ -57,6 +58,11 @@ public class TelegramNotificationResource
         httpClient.setTimeoutMs(property.getTimeoutMs());
         httpClient.exec();
         return httpClient.getHttpResponse();
+    }
+
+    @Override
+    public boolean isValid() {
+        return true;
     }
 
     @Override

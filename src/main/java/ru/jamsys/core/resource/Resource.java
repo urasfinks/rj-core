@@ -13,4 +13,6 @@ public interface Resource<A, R> extends ResourceCheckException, LifeCycleInterfa
 
     R execute(A arguments) throws Throwable;
 
+    boolean isValid(); // Проверка, что ресурс валиден и готов к работе без всяких приколов
+
 }

@@ -90,6 +90,11 @@ public class AppleNotificationResource
     }
 
     @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
     public Function<Throwable, Boolean> getFatalException() {
         return _ -> false;
     }

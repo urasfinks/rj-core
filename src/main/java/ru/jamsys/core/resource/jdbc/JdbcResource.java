@@ -99,6 +99,24 @@ public class JdbcResource
         return execute(connection, jdbcTemplate, arguments.getListArgs(), statementControl, arguments.isDebug());
     }
 
+    @Override
+    public boolean isValid() {
+        if (connection == null) { // Явно если коннект null - всё плохо
+            return false;
+        }
+        try {
+            if (connection.isClosed()) { // Если коннект закрыт - всё плохо
+                return false;
+            }
+            if (!connection.isValid(1)) { // Если коннект не валидный - всё плохо
+                return false;
+            }
+        } catch (Throwable th) { // Любое исключение - всё плохо, в топку такой коннект
+            return false;
+        }
+        return true;
+    }
+
     public <T extends DataMapper<T>> List<T> execute(JdbcRequest arguments, Class<T> cls) throws Throwable {
         if (connection == null) {
             throw new RuntimeException("Connection is null");

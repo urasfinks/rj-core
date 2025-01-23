@@ -76,6 +76,11 @@ public class EmailNotificationResource
     }
 
     @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
     public Function<Throwable, Boolean> getFatalException() {
         return _ -> false;
     }

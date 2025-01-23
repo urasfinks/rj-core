@@ -97,6 +97,14 @@ public class InfluxResource
     }
 
     @Override
+    public boolean isValid() {
+        if (client == null) {
+            return false;
+        }
+        return client.ping();
+    }
+
+    @Override
     public Function<Throwable, Boolean> getFatalException() {
         return throwable -> {
             if (throwable != null) {

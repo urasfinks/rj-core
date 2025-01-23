@@ -163,6 +163,11 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
     }
 
     @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
     public Function<Throwable, Boolean> getFatalException() {
         return _ -> false;
     }

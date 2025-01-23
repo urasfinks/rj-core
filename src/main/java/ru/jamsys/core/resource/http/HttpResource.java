@@ -26,6 +26,11 @@ public class HttpResource extends ExpirationMsMutableImpl implements Resource<Ht
     }
 
     @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
     public Function<Throwable, Boolean> getFatalException() {
         return _ -> false;
     }
