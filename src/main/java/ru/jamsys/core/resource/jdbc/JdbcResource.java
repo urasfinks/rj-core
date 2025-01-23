@@ -105,6 +105,7 @@ public class JdbcResource
             return false;
         }
         try {
+            // Как будто проще проверить сначала на то что коннект закрыли санчала
             if (connection.isClosed()) { // Если коннект закрыт - всё плохо
                 return false;
             }
