@@ -41,7 +41,7 @@ class UtilDateTest {
     }
 
     @Test
-    void timeBetween(){
+    void timeBetween() {
         Assertions.assertEquals("""
                 {
                   "units" : {
@@ -71,6 +71,20 @@ class UtilDateTest {
         Assertions.assertEquals("16 минут", timeBetween.getDescription(1));
         Assertions.assertEquals("16 минут 50 секунд", timeBetween.getDescription(2));
         Assertions.assertEquals("16 минут 50 секунд", timeBetween.getDescription(3));
+
+
+        Assertions.assertEquals("""
+                {
+                  "units" : {
+                    "years" : 0,
+                    "months" : 0,
+                    "days" : 2,
+                    "hours" : 12,
+                    "minutes" : 2,
+                    "seconds" : 54
+                  },
+                  "description" : "2 дня 12 часов 2 минуты 54 секунды"
+                }""", UtilJson.toStringPretty(UtilDate.getTimeBetween(173_773_097_324_7L, 173_786_040_000_0L), "{}"));
     }
 
 }

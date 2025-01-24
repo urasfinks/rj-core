@@ -205,23 +205,35 @@ public class UtilDate {
 
         // Определяем годы, месяцы и дни с использованием Period
         Period period = Period.between(startDateTime.toLocalDate(), endDateTime.toLocalDate());
+
         int years = period.getYears();
         int months = period.getMonths();
         int days = period.getDays();
 
-        // Определяем часы, минуты и секунды с использованием Duration
+        // Корректируем начальную дату, добавляя вычисленные годы, месяцы и дни
         LocalDateTime adjustedStart = startDateTime.plusYears(years).plusMonths(months).plusDays(days);
-        Duration duration = Duration.between(adjustedStart, endDateTime);
+
+        // Проверяем оставшуюся разницу в часах, минутах и секундах
+        Duration remainingDuration = Duration.between(adjustedStart, endDateTime);
+
+        long hours = remainingDuration.toHours();
+        long minutes = remainingDuration.toMinutes() % 60;
+        long seconds = remainingDuration.getSeconds() % 60;
+
+        // Обработка отрицательного значения в случае неверного порядка дат
+        if (remainingDuration.isNegative()) {
+            hours = -hours;
+            minutes = -minutes;
+            seconds = -seconds;
+        }
 
         return new TimeBetween()
                 .set(TimeBetween.Unit.years, years)
                 .set(TimeBetween.Unit.months, months)
                 .set(TimeBetween.Unit.days, days)
-                .set(TimeBetween.Unit.hours, duration.toHours())
-                .set(TimeBetween.Unit.minutes, duration.toMinutes() % 60)
-                .set(TimeBetween.Unit.minutes, duration.toMinutes() % 60)
-                .set(TimeBetween.Unit.seconds, duration.getSeconds() % 60);
-
+                .set(TimeBetween.Unit.hours, hours)
+                .set(TimeBetween.Unit.minutes, minutes)
+                .set(TimeBetween.Unit.seconds, seconds);
     }
 
 }
