@@ -14,9 +14,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 
 public class UtilDate {
 
@@ -136,13 +134,19 @@ public class UtilDate {
     @JsonPropertyOrder({"units", "description"})
     public static class TimeBetween {
 
+        public enum StyleDescription {
+            STANDARD,
+            FORMAL
+        }
+
         public enum Unit {
-            years("год", "года", "лет"),
-            months("месяц", "месяца", "месяцев"),
-            days("день", "дня", "дней"),
-            hours("час", "часа", "часов"),
-            minutes("минута", "минуты", "минут"),
-            seconds("секунда", "секунды", "секунд");
+            YEARS("год", "года", "лет"),
+            MONTHS("месяц", "месяца", "месяцев"),
+            DAYS("день", "дня", "дней"),
+            HOURS("час", "часа", "часов"),
+            MINUTES("минута", "минуты", "минут"),
+            SECONDS("секунда", "секунды", "секунд");
+
             final String one;
             final String two;
             final String five;
@@ -160,12 +164,12 @@ public class UtilDate {
         }
 
         private Map<Unit, Long> units = new HashMapBuilder<Unit, Long>()
-                .append(Unit.years, 0L)
-                .append(Unit.months, 0L)
-                .append(Unit.days, 0L)
-                .append(Unit.hours, 0L)
-                .append(Unit.minutes, 0L)
-                .append(Unit.seconds, 0L);
+                .append(Unit.YEARS, 0L)
+                .append(Unit.MONTHS, 0L)
+                .append(Unit.DAYS, 0L)
+                .append(Unit.HOURS, 0L)
+                .append(Unit.MINUTES, 0L)
+                .append(Unit.SECONDS, 0L);
 
         public TimeBetween set(Unit unit, int value) {
             return set(unit, (long) value);
@@ -176,24 +180,38 @@ public class UtilDate {
             return this;
         }
 
-        public String getDescription(int count) {
-            StringBuilder sb = new StringBuilder();
+        public String getDescription(int count, StyleDescription styleDescription) {
+            List<String> list = new ArrayList<>();
+
             for (Unit unit : units.keySet()) {
                 Long c = units.get(unit);
                 if (c == 0) {
                     continue;
                 }
-                sb.append(c).append(" ").append(unit.digitTranslate(c)).append(" ");
+                list.add(c + " " + unit.digitTranslate(c));
                 count--;
                 if (count == 0) {
                     break;
                 }
             }
-            return sb.toString().trim();
+            switch (styleDescription) {
+                case STANDARD -> {
+                    return String.join(" ", list);
+                }
+                case FORMAL -> {
+                    String last = list.removeLast();
+                    if (list.isEmpty()) {
+                        return last;
+                    } else {
+                        return String.join(", ", list) + " и " + last;
+                    }
+                }
+            }
+            return null;
         }
 
         public String getDescription() {
-            return getDescription(6);
+            return getDescription(6, StyleDescription.STANDARD);
         }
 
     }
@@ -228,12 +246,12 @@ public class UtilDate {
         }
 
         return new TimeBetween()
-                .set(TimeBetween.Unit.years, years)
-                .set(TimeBetween.Unit.months, months)
-                .set(TimeBetween.Unit.days, days)
-                .set(TimeBetween.Unit.hours, hours)
-                .set(TimeBetween.Unit.minutes, minutes)
-                .set(TimeBetween.Unit.seconds, seconds);
+                .set(TimeBetween.Unit.YEARS, years)
+                .set(TimeBetween.Unit.MONTHS, months)
+                .set(TimeBetween.Unit.DAYS, days)
+                .set(TimeBetween.Unit.HOURS, hours)
+                .set(TimeBetween.Unit.MINUTES, minutes)
+                .set(TimeBetween.Unit.SECONDS, seconds);
     }
 
 }
