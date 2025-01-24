@@ -1,6 +1,12 @@
 package ru.jamsys.core.flat.util;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -9,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class UtilDate {
@@ -120,6 +127,101 @@ public class UtilDate {
             App.error(e);
         }
         return def;
+    }
+
+    @Getter
+    @Setter
+    @Accessors(chain = true)
+    @ToString
+    @JsonPropertyOrder({"units", "description"})
+    public static class TimeBetween {
+
+        public enum Unit {
+            years("год", "года", "лет"),
+            months("месяц", "месяца", "месяцев"),
+            days("день", "дня", "дней"),
+            hours("час", "часа", "часов"),
+            minutes("минута", "минуты", "минут"),
+            seconds("секунда", "секунды", "секунд");
+            final String one;
+            final String two;
+            final String five;
+
+            Unit(String one, String two, String five) {
+                this.one = one;
+                this.two = two;
+                this.five = five;
+            }
+
+            public String digitTranslate(long count) {
+                return Util.digitTranslate(count, one, two, five);
+            }
+
+        }
+
+        private Map<Unit, Long> units = new HashMapBuilder<Unit, Long>()
+                .append(Unit.years, 0L)
+                .append(Unit.months, 0L)
+                .append(Unit.days, 0L)
+                .append(Unit.hours, 0L)
+                .append(Unit.minutes, 0L)
+                .append(Unit.seconds, 0L);
+
+        public TimeBetween set(Unit unit, int value) {
+            return set(unit, (long) value);
+        }
+
+        public TimeBetween set(Unit unit, Long value) {
+            units.put(unit, value);
+            return this;
+        }
+
+        public String getDescription(int count) {
+            StringBuilder sb = new StringBuilder();
+            for (Unit unit : units.keySet()) {
+                Long c = units.get(unit);
+                if (c == 0) {
+                    continue;
+                }
+                sb.append(c).append(" ").append(unit.digitTranslate(c)).append(" ");
+                count--;
+                if (count == 0) {
+                    break;
+                }
+            }
+            return sb.toString().trim();
+        }
+
+        public String getDescription() {
+            return getDescription(6);
+        }
+
+    }
+
+    public static TimeBetween getTimeBetween(long startTimestamp, long endTimestamp) {
+        // Преобразуем Instant в LocalDateTime для удобной работы с датами
+        LocalDateTime startDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(startTimestamp), ZoneId.systemDefault());
+        LocalDateTime endDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(endTimestamp), ZoneId.systemDefault());
+
+        // Определяем годы, месяцы и дни с использованием Period
+        Period period = Period.between(startDateTime.toLocalDate(), endDateTime.toLocalDate());
+        int years = period.getYears();
+        int months = period.getMonths();
+        int days = period.getDays();
+
+        // Определяем часы, минуты и секунды с использованием Duration
+        LocalDateTime adjustedStart = startDateTime.plusYears(years).plusMonths(months).plusDays(days);
+        Duration duration = Duration.between(adjustedStart, endDateTime);
+
+        return new TimeBetween()
+                .set(TimeBetween.Unit.years, years)
+                .set(TimeBetween.Unit.months, months)
+                .set(TimeBetween.Unit.days, days)
+                .set(TimeBetween.Unit.hours, duration.toHours())
+                .set(TimeBetween.Unit.minutes, duration.toMinutes() % 60)
+                .set(TimeBetween.Unit.minutes, duration.toMinutes() % 60)
+                .set(TimeBetween.Unit.seconds, duration.getSeconds() % 60);
+
     }
 
 }

@@ -512,11 +512,11 @@ public class Util {
         return sb.toString();
     }
 
-    public static String digitTranslate(int number, String one, String two, String five) {
+    public static String digitTranslate(long number, String one, String two, String five) {
         // Определяем последние две цифры для исключений типа 11, 12, 13, 14
-        int lastTwoDigits = number % 100;
+        long lastTwoDigits = number % 100;
         // Определяем последнюю цифру
-        int lastDigit = number % 10;
+        long lastDigit = number % 10;
         if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
             return five;
         } else if (lastDigit == 1) {

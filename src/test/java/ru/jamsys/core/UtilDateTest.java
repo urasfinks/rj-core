@@ -3,6 +3,7 @@ package ru.jamsys.core;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilJson;
 
 import java.text.ParseException;
 
@@ -37,6 +38,39 @@ class UtilDateTest {
     @Test
     void diffSecond() throws ParseException {
         Assertions.assertEquals(60L, UtilDate.diffSecond("3:18", "03:19", "H:mm"));
+    }
+
+    @Test
+    void timeBetween(){
+        Assertions.assertEquals("""
+                {
+                  "units" : {
+                    "years" : 0,
+                    "months" : 0,
+                    "days" : 0,
+                    "hours" : 0,
+                    "minutes" : 0,
+                    "seconds" : 10
+                  },
+                  "description" : "10 секунд"
+                }""", UtilJson.toStringPretty(UtilDate.getTimeBetween(1732906800, 1732916800), "{}"));
+
+        Assertions.assertEquals("""
+                {
+                  "units" : {
+                    "years" : 0,
+                    "months" : 0,
+                    "days" : 0,
+                    "hours" : 0,
+                    "minutes" : 16,
+                    "seconds" : 50
+                  },
+                  "description" : "16 минут 50 секунд"
+                }""", UtilJson.toStringPretty(UtilDate.getTimeBetween(1732906800, 1733916800), "{}"));
+        UtilDate.TimeBetween timeBetween = UtilDate.getTimeBetween(1732906800, 1733916800);
+        Assertions.assertEquals("16 минут", timeBetween.getDescription(1));
+        Assertions.assertEquals("16 минут 50 секунд", timeBetween.getDescription(2));
+        Assertions.assertEquals("16 минут 50 секунд", timeBetween.getDescription(3));
     }
 
 }
