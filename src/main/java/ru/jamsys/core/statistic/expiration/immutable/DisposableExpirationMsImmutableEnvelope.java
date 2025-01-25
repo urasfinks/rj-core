@@ -33,6 +33,11 @@ public class DisposableExpirationMsImmutableEnvelope<T> extends ExpirationMsImmu
         return null;
     }
 
+    @SuppressWarnings("all")
+    public boolean doNeutralized() { //Нейтрализовать
+        return usage.compareAndSet(false, true);
+    }
+
     public ExpirationMsImmutableEnvelope<T> revert() {
         return new ExpirationMsImmutableEnvelope<>(super.getValue(), getKeepAliveOnInactivityMs(), getLastActivityMs());
     }

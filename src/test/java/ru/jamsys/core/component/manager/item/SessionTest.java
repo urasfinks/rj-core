@@ -25,7 +25,7 @@ class SessionTest {
 
     @Test
     void computeIfAbsent() {
-        Session<Integer, XTest> test = new Session<>("test", Integer.class, 1000);
+        Session<Integer, XTest> test = new Session<>("test", 1000);
         XTest s = test.computeIfAbsent(10, _ -> new XTest());
         Assertions.assertEquals(1, test.size());
         Assertions.assertEquals(1, test.sizeExpiration());
