@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 // Я захотел, что бы везде было одинаково. Только лишь поэтому TEO -> TimeEnvelope<TEO>
 // 11.05.2024 Cache переехал в Session, и вся история с однотипным протоколом распалась
 // 26.05.2024 Session был удалён
-
+// Спустя некоторое время появилась новая реализация Session)))
 //Время срабатывания onExpired = 3 секунды
 
 public class Broker<TEO>
@@ -195,6 +195,8 @@ public class Broker<TEO>
                 continue;
             }
             statistic(result);
+            // Все операции делаем в конце, когда получаем нейтрализованный объект
+            // Так как многопоточная среда, могут выхватить из под носа
             queueSize.decrementAndGet();
             return result.revert();
         } while (!queue.isEmpty());
@@ -203,10 +205,14 @@ public class Broker<TEO>
 
     public void remove(DisposableExpirationMsImmutableEnvelope<TEO> envelope) {
         if (envelope != null) {
-            // Делаем так, что бы он больше не достался никому
+            // Это конечно так себе удалять пришедший в remove объект не проверяя что он вообще есть в очереди
+            // Но как бы проверять  наличие - это перебирать всё очередь, а то очень тяжело
+            // Просто доверяем, что брокеры не перепутают
+            // Делаем так, что бы элемент больше не достался никому
             TEO value = envelope.getValue();
             if (value != null) {
                 statistic(envelope);
+                // Когда явно получили эксклюзивный доступ к объекту - можно и статистику посчитать
                 queueSize.decrementAndGet();
                 // Объект уже нейтрализован, поэтому просто его удаляем из expiration
                 expiration.remove((DisposableExpirationMsImmutableEnvelope) envelope, false);

@@ -148,8 +148,10 @@ public class Expiration<V>
         remove(obj, true);
     }
 
-    public void remove(DisposableExpirationMsImmutableEnvelope<V> obj, boolean neutralize) {
-        if (neutralize && obj.getValue() == null) {
+    public void remove(DisposableExpirationMsImmutableEnvelope<V> obj, boolean doNeutralize) {
+        // Удаление с нейтрализацией, если конечно необходимо
+        if (doNeutralize && obj.getValue() == null) {
+            //Может такое быть, что объект уже нейтрализован, тогда и смысла нет высчитывать
             return;
         }
         long timeMsExpiredFloor = Util.zeroLastNDigits(obj.getExpiredMs(), 3);
