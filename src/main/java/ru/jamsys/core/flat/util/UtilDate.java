@@ -217,34 +217,52 @@ public class UtilDate {
     }
 
     public static TimeBetween getTimeBetween(long startTimestamp, long endTimestamp) {
-        // Преобразуем Instant в LocalDateTime для удобной работы с датами
+        // Преобразуем в LocalDateTime
         LocalDateTime startDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(startTimestamp), ZoneId.systemDefault());
         LocalDateTime endDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(endTimestamp), ZoneId.systemDefault());
 
-        // Определяем годы, месяцы и дни с использованием Period
-        Period period = Period.between(startDateTime.toLocalDate(), endDateTime.toLocalDate());
+        // Убедимся, что startDateTime всегда раньше endDateTime
+        boolean isReversed = startDateTime.isAfter(endDateTime);
+        if (isReversed) {
+            LocalDateTime temp = startDateTime;
+            startDateTime = endDateTime;
+            endDateTime = temp;
+        }
 
+        // Рассчитываем разницу в годах, месяцах и днях
+        Period period = Period.between(startDateTime.toLocalDate(), endDateTime.toLocalDate());
         int years = period.getYears();
         int months = period.getMonths();
         int days = period.getDays();
 
-        // Корректируем начальную дату, добавляя вычисленные годы, месяцы и дни
+        // Корректируем дату на рассчитанные годы, месяцы и дни
         LocalDateTime adjustedStart = startDateTime.plusYears(years).plusMonths(months).plusDays(days);
 
-        // Проверяем оставшуюся разницу в часах, минутах и секундах
+        // Рассчитываем разницу в часах, минутах и секундах
         Duration remainingDuration = Duration.between(adjustedStart, endDateTime);
+
+        // Корректируем дни, если часы отрицательные
+        if (remainingDuration.isNegative()) {
+            adjustedStart = adjustedStart.minusDays(1);
+            remainingDuration = Duration.between(adjustedStart, endDateTime);
+            days -= 1; // Уменьшаем дни на 1
+        }
 
         long hours = remainingDuration.toHours();
         long minutes = remainingDuration.toMinutes() % 60;
         long seconds = remainingDuration.getSeconds() % 60;
 
-        // Обработка отрицательного значения в случае неверного порядка дат
-        if (remainingDuration.isNegative()) {
+        // Если порядок был обратным, делаем результат отрицательным
+        if (isReversed) {
+            years = -years;
+            months = -months;
+            days = -days;
             hours = -hours;
             minutes = -minutes;
             seconds = -seconds;
         }
 
+        // Возвращаем результат
         return new TimeBetween()
                 .set(TimeBetween.Unit.YEARS, years)
                 .set(TimeBetween.Unit.MONTHS, months)

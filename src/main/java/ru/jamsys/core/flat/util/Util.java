@@ -512,6 +512,9 @@ public class Util {
         return sb.toString();
     }
 
+    public static String digitTranslate(int number, String one, String two, String five) {
+        return digitTranslate((long) number, one, two, five);
+    }
     public static String digitTranslate(long number, String one, String two, String five) {
         // Определяем последние две цифры для исключений типа 11, 12, 13, 14
         long lastTwoDigits = number % 100;
