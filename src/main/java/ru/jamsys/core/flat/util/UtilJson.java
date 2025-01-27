@@ -138,9 +138,14 @@ public class UtilJson {
     }
 
     public static Map<String, Object> getMapOrThrow(String json) throws Throwable {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> map = (Map<String, Object>) Util.objectMapper.readValue(json, Map.class);
-        return map;
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> map = (Map<String, Object>) Util.objectMapper.readValue(json, Map.class);
+            return map;
+        } catch (Throwable th) {
+            Util.logConsole(UtilJson.class, json);
+            throw th;
+        }
     }
 
     public static List<Object> getListOrThrow(String json) throws Throwable {
