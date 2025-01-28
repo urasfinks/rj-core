@@ -79,7 +79,7 @@ public class HttpClientImpl implements HttpClient {
 
     @Override
     public void exec() {
-        timing = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         try {
             java.net.http.HttpClient.Builder clientBuilder = java.net.http.HttpClient.newBuilder();
 
@@ -127,7 +127,7 @@ public class HttpClientImpl implements HttpClient {
             exception = e;
             App.error(e);
         }
-        timing = System.currentTimeMillis() - timing;
+        setTiming(System.currentTimeMillis() - startTime);
     }
 
     @Override
