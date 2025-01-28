@@ -49,6 +49,8 @@ public interface HttpClient {
 
     int getTimeoutMs();
 
+    long getTiming(); // Время исполнения запроса
+
     HttpMethodEnum getMethod();
 
     Map<String, List<String>> getHeaderResponse();
@@ -97,7 +99,7 @@ public interface HttpClient {
                 httpResponse.addException(e);
             }
         }
-        httpResponse.setTiming(System.currentTimeMillis() - httpResponse.getTiming());
+        httpResponse.setTiming(getTiming());
         return httpResponse;
     }
 

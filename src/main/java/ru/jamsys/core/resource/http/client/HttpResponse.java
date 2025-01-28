@@ -28,7 +28,7 @@ public class HttpResponse {
 
     private String body = null;
 
-    private long timing = System.currentTimeMillis();
+    private long timing;
 
     public void setStatusDesc(HttpStatus statusDesc) {
         this.statusDesc = statusDesc;

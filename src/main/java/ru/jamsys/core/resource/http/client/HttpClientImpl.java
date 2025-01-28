@@ -27,6 +27,10 @@ public class HttpClientImpl implements HttpClient {
 
     @Getter
     @Setter
+    private long timing;
+
+    @Getter
+    @Setter
     private String sslContextType = "TLS";
 
     @Getter
@@ -75,6 +79,7 @@ public class HttpClientImpl implements HttpClient {
 
     @Override
     public void exec() {
+        timing = System.currentTimeMillis();
         try {
             java.net.http.HttpClient.Builder clientBuilder = java.net.http.HttpClient.newBuilder();
 
@@ -122,6 +127,7 @@ public class HttpClientImpl implements HttpClient {
             exception = e;
             App.error(e);
         }
+        timing = System.currentTimeMillis() - timing;
     }
 
     @Override
