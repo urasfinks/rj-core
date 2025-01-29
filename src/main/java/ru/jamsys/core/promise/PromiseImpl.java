@@ -169,6 +169,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     }
                 }
             } else {
+                // Встречал такую проблему, когда запускается skipAllStep(String cause)
                 setError(new RuntimeException("listPendingTasks.peekFirst() return null value"));
             }
         }

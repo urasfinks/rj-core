@@ -23,7 +23,15 @@ public class PromiseTest {
         abstractPromise.listPendingTasks.clear();
         index = abstractPromise.getComplexIndex(index);
         for (PromiseTask promiseTask : array) {
-            if (promiseTask.getIndex().equals(index) && promiseTask.getType().equals(task.getType())) {
+            // Столкнулся с проблемой, что хочу поменять для тестов тип задачи
+            // ранее была promiseTaskWithResource::IO, но для тестов мне это избыточно
+            // мне не нужна БД, поэтому комментирую проверку типа замены
+            // Но проверка типа была, что бы WAIT не поменять, так что меняем всё кроме WAIT
+            if (
+                    promiseTask.getIndex().equals(index)
+                            && !promiseTask.getType().equals(PromiseTaskExecuteType.WAIT)
+                //&& promiseTask.getType().equals(task.getType())
+            ) {
                 abstractPromise.listPendingTasks.add(task);
             } else {
                 abstractPromise.listPendingTasks.add(promiseTask);
