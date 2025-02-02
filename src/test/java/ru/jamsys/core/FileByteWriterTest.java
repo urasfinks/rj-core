@@ -202,4 +202,15 @@ class FileByteWriterTest {
         test.keepAlive(new AtomicBoolean(true));
     }
 
+    @Test
+    void getExtension(){
+        Assertions.assertEquals("txt", UtilFile.getExtension("/test/1.txt"));
+        Assertions.assertEquals("txt", UtilFile.getExtension("//test//1.txt"));
+        Assertions.assertEquals("txt", UtilFile.getExtension("\test\1.txt"));
+        Assertions.assertEquals("txt", UtilFile.getExtension("\\test\\1.txt"));
+        Assertions.assertEquals("txt", UtilFile.getExtension("http://test.com/1.txt"));
+        Assertions.assertEquals("txt", UtilFile.getExtension("http://test.com/1.txt?x=y"));
+        Assertions.assertEquals("txt", UtilFile.getExtension("http://test.com/1.txt?x=y/e.pdf"));
+    }
+
 }

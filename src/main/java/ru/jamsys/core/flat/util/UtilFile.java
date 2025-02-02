@@ -8,10 +8,8 @@ import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.io.InputStream;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +42,36 @@ public class UtilFile {
                     Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE);
             default -> Files.write(path, data, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         }
+    }
+
+    public static String getExtension(String uri) {
+        String[] split = uri.split("\\?");
+        if (split.length > 0) {
+            uri = split[0].trim();
+        }
+        split = uri.split("/");
+        if (split.length > 0) {
+            uri = split[split.length - 1].trim();
+        }
+        split = uri.split("\\\\");
+        if (split.length > 0) {
+            uri = split[split.length - 1].trim();
+        }
+        split = uri.split("\\.");
+        if (split.length > 0) {
+            uri = split[split.length - 1].trim();
+        }
+        return uri;
+    }
+
+    @SuppressWarnings("unused")
+    public static void writeBytes(String pathTarget, InputStream data) throws IOException {
+        Path path = Paths.get(pathTarget);
+        Path parent = path.getParent();
+        if (parent != null && Files.notExists(parent)) {
+            Files.createDirectories(parent);
+        }
+        java.nio.file.Files.copy(data, path, StandardCopyOption.REPLACE_EXISTING);
     }
 
 
