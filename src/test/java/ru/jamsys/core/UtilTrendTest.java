@@ -21,6 +21,14 @@ class UtilTrendTest {
     }
 
     @Test
+    void getPoly0() {
+        Assertions.assertEquals(5, Math.round(UtilTrend.getPoly(2, new double[]{1, 2, 3, 4})), "#1");
+        Assertions.assertEquals(4, Math.round(UtilTrend.getPoly(2, new double[]{1, 2, 3, 4}, 0)), "#1");
+        Assertions.assertEquals(3, Math.round(UtilTrend.getPoly(2, new double[]{1, 2, 3, 4}, -1)), "#1");
+        Assertions.assertEquals(2, Math.round(UtilTrend.getPoly(2, new double[]{1, 2, 3, 4}, -2)), "#1");
+    }
+
+    @Test
     void getPoly() {
         Assertions.assertEquals(28, Math.round(UtilTrend.getPoly(2, new double[]{13, 25, 98, 40, 15, 66})), "#1");
         Assertions.assertEquals(160, Math.round(UtilTrend.getPoly(3, new double[]{13, 25, 98, 40, 15, 66})), "#2");

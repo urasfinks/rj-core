@@ -1,7 +1,11 @@
 package ru.jamsys.core.flat.util;
 
+import lombok.Getter;
+import lombok.Setter;
 import ru.jamsys.core.flat.trend.LinearTrendLine;
 import ru.jamsys.core.flat.trend.PolyTrendLine;
+
+import java.util.*;
 
 public class UtilTrend {
 
@@ -15,12 +19,40 @@ public class UtilTrend {
         return t.predict(x.length + predict);
     }
 
-    public static double getPoly(int degree, double[] line, double predict) {
-        double[] x = new double[line.length];
-        for (int i = 0; i < line.length; i++) {
-            x[i] = i + 1;
+    @Getter
+    @Setter
+    public static class XY {
+
+        private List<Double> x = new ArrayList<>();
+        private List<Double> y = new ArrayList<>();
+        private Map<Double, Double> xy = new LinkedHashMap<>();
+
+        public double[] getX() {
+            return x.stream().mapToDouble(Double::doubleValue).toArray();
         }
-        return getPoly(degree, x, line, predict);
+
+        public double[] getY() {
+            return y.stream().mapToDouble(Double::doubleValue).toArray();
+        }
+
+        public void add(double iX, double iY) {
+            x.add(iX);
+            y.add(iY);
+            xy.put(iX, iY);
+        }
+
+        public void addY(double iY) {
+            add((double) x.size() + 1, iY);
+        }
+
+    }
+
+    public static double getPoly(int degree, double[] line, double predict) {
+        XY xy = new XY();
+        for (double v : line) {
+            xy.addY(v);
+        }
+        return getPoly(degree, xy.getX(), xy.getY(), predict);
     }
 
     public static double getLinear(double[] line) {
