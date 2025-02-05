@@ -1,6 +1,7 @@
 package ru.jamsys.core.extension.property.repository;
 
 import lombok.Setter;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.Util;
@@ -62,6 +63,15 @@ public class RepositoryPropertiesField implements RepositoryProperties {
                     true
             );
         }
+    }
+
+    public void autoFill(ServiceProperty serviceProperty) {
+        serviceProperty.getFactory().getPropertiesAgent(
+                null,
+                this,
+                null,
+                true
+        );
     }
 
 }

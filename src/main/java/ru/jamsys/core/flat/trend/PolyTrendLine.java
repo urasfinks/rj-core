@@ -5,7 +5,7 @@ package ru.jamsys.core.flat.trend;
 public class PolyTrendLine extends OLSTrendLine {
     final int degree;
 
-    public PolyTrendLine(int degree, double[] x, double[] y) {
+    public PolyTrendLine(int degree, double[] y, double[] x) {
         if (degree < 0) throw new IllegalArgumentException("The degree of the polynomial must not be negative");
         this.degree = degree;
         this.setValues(y, x);
