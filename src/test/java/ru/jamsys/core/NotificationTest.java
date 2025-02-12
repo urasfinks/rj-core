@@ -15,8 +15,8 @@ import ru.jamsys.core.resource.notification.email.EmailNotificationResource;
 import ru.jamsys.core.resource.notification.email.EmailTemplateNotificationRequest;
 import ru.jamsys.core.resource.notification.telegram.TelegramNotificationRequest;
 import ru.jamsys.core.resource.notification.telegram.TelegramNotificationResource;
-import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationRequest;
-import ru.jamsys.core.resource.notification.yandex.speech.YandexSpeechNotificationResource;
+import ru.jamsys.core.resource.yandex.speech.YandexSpeechRequest;
+import ru.jamsys.core.resource.yandex.speech.YandexSpeechResource;
 
 import java.util.HashMap;
 
@@ -68,9 +68,9 @@ class NotificationTest {
         promise
                 .appendWithResource(
                         "synthesize",
-                        YandexSpeechNotificationResource.class, (_, _, p1, yandexSpeechNotificationResource) ->
-                                yandexSpeechNotificationResource.execute(
-                                        new YandexSpeechNotificationRequest(
+                        YandexSpeechResource.class, (_, _, p1, yandexSpeechResource) ->
+                                yandexSpeechResource.execute(
+                                        new YandexSpeechRequest(
                                                 p1,
                                                 "target/result3.wav",
                                                 "Саня всё в порядке, всё в порядке Саня!"

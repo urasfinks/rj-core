@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.notification.yandex.speech;
+package ru.jamsys.core.resource.yandex.speech;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -7,7 +7,6 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.flat.util.YandexSpeechClient;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -18,17 +17,17 @@ import java.util.function.Function;
 
 @Component
 @Scope("prototype")
-public class YandexSpeechNotificationResource
+public class YandexSpeechResource
         extends ExpirationMsMutableImpl
         implements
-        Resource<YandexSpeechNotificationRequest, Void>,
+        Resource<YandexSpeechRequest, Void>,
         PropertyUpdateDelegate {
 
     YandexSpeechClient client = null;
 
     private PropertiesAgent propertiesAgent;
 
-    private final YandexSpeechNotificationProperties property = new YandexSpeechNotificationProperties();
+    private final YandexSpeechProperties property = new YandexSpeechProperties();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
@@ -52,7 +51,7 @@ public class YandexSpeechNotificationResource
     }
 
     @Override
-    public Void execute(YandexSpeechNotificationRequest arguments) {
+    public Void execute(YandexSpeechRequest arguments) {
         client.synthesize(
                 arguments.getText(),
                 new File(arguments.getFilePath()),

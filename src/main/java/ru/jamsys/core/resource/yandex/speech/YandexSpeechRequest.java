@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.notification.yandex.speech;
+package ru.jamsys.core.resource.yandex.speech;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class YandexSpeechNotificationRequest {
+public class YandexSpeechRequest {
 
     @Setter
     private double speed = 1.0;
@@ -29,7 +29,7 @@ public class YandexSpeechNotificationRequest {
 
     private final String text;
 
-    public YandexSpeechNotificationRequest(Promise promise, String filePath, String text) {
+    public YandexSpeechRequest(Promise promise, String filePath, String text) {
         this.text = text;
         this.filePath = filePath;
         List<PromiseTask> add = new ArrayList<>();
