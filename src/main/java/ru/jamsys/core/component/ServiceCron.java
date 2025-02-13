@@ -86,7 +86,7 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
                         promise.run();
                     }
                 } catch (Exception e) {
-                    App.error(new ForwardException("Cron task (" + indexPromise + ")", e));
+                    App.error(new ForwardException("Cron task (" + indexPromise + ")::" + cronTask.getClass(), e));
                 }
             }
         });

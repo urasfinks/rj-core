@@ -6,7 +6,6 @@ import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.UniqueClassNameImpl;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -18,7 +17,7 @@ public class PoolSettingsRegistry<
         >
         implements UniqueClassName {
 
-    private final Map<Class<R>, Function<Throwable, Boolean>> fn = new HashMap<>();
+    private final Map<Class<R>, Function<Throwable, Boolean>> fn = new ConcurrentHashMap<>();
 
     private final Map<String, PoolSettings<R>> registry = new ConcurrentHashMap<>();
 
