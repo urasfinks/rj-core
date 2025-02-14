@@ -9,17 +9,19 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.view.FileViewKeyStoreSslContext;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.Proxy;
+import java.net.Authenticator;
+import java.net.InetSocketAddress;
 import java.net.ProxySelector;
-import java.net.SocketAddress;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 @Data
 @Accessors(chain = true)
@@ -31,11 +33,19 @@ public class HttpClientImpl implements HttpClient {
 
     @Getter
     @Setter
+    private String proxyHost;
+
+    @Getter
+    @Setter
+    private int proxyPort;
+
+    @Getter
+    @Setter
     private String sslContextType = "TLS";
 
     @Getter
     @Setter
-    private Proxy proxy = null;
+    private Authenticator authenticator = null;
 
     @Getter
     @Setter
@@ -87,18 +97,8 @@ public class HttpClientImpl implements HttpClient {
                 clientBuilder.sslContext(sslContext.getSslContext(sslContextType));
             }
 
-            if (proxy != null) {
-                clientBuilder.proxy(new ProxySelector() {
-
-                    @Override
-                    public List<Proxy> select(URI uri) {
-                        return Collections.singletonList(proxy);
-                    }
-
-                    @Override
-                    public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {}
-
-                });
+            if (proxyHost != null) {
+                clientBuilder.proxy(ProxySelector.of(new InetSocketAddress(proxyHost, proxyPort)));
             }
 
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
@@ -136,6 +136,13 @@ public class HttpClientImpl implements HttpClient {
             return "";
         }
         return new String(response, charset);
+    }
+
+    @Override
+    public HttpClient setProxy(String host, int port) {
+        this.proxyHost = host;
+        this.proxyPort = port;
+        return this;
     }
 
     @Override

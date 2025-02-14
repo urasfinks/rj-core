@@ -6,8 +6,6 @@ import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.resource.virtual.file.system.File;
 
 import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -17,7 +15,7 @@ public interface HttpClient {
 
     HttpClient setSslContextType(String sslContextType);
 
-    HttpClient setProxy(Proxy proxy);
+    HttpClient setProxy(String host, int port);
 
     HttpClient setTimeoutMs(int connectTimeoutMs);
 
@@ -31,21 +29,11 @@ public interface HttpClient {
 
     HttpClient setUrl(String url);
 
-    default HttpClient setProxy(Proxy.Type type, String hostname, int port) {
-        return setProxy(new Proxy(type, new InetSocketAddress(hostname, port)));
-    }
-
-    default HttpClient setProxy(String hostname, int port) {
-        return setProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(hostname, port)));
-    }
-
     default HttpClient setBasicAuth(String user, String pass, String charset) {
         return putRequestHeader("Authorization", "Basic " + UtilBase64.encode(user + ":" + pass, charset, false));
     }
 
     String getSslContextType();
-
-    Proxy getProxy();
 
     int getTimeoutMs();
 
