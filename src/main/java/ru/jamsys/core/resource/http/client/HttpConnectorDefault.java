@@ -25,7 +25,7 @@ import java.util.Properties;
 
 @Data
 @Accessors(chain = true)
-public class HttpClientImpl implements HttpClient {
+public class HttpConnectorDefault implements HttpConnector {
 
     @Getter
     @Setter
@@ -73,7 +73,7 @@ public class HttpClientImpl implements HttpClient {
 
     @Getter
     @ToString.Exclude
-    private byte[] response = null;
+    private byte[] responseByte = null;
 
     @Getter
     private int status = -1;
@@ -82,7 +82,7 @@ public class HttpClientImpl implements HttpClient {
     private Exception exception = null;
 
     @Override
-    public HttpClientImpl putRequestHeader(String name, String value) {
+    public HttpConnectorDefault setRequestHeader(String name, String value) {
         headersRequest.put(name, value);
         return this;
     }
@@ -119,7 +119,7 @@ public class HttpClientImpl implements HttpClient {
             try (java.net.http.HttpClient httpClient = clientBuilder.build()) {
                 HttpResponse<byte[]> responses = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray());
                 status = responses.statusCode(); // Return the status code, if it is 200, it means the sending is successful
-                response = responses.body();
+                responseByte = responses.body();
                 this.headerResponse = responses.headers().map();
             }
 
@@ -132,21 +132,21 @@ public class HttpClientImpl implements HttpClient {
 
     @Override
     public String getResponseString(String charset) throws UnsupportedEncodingException {
-        if (response == null) {
+        if (responseByte == null) {
             return "";
         }
-        return new String(response, charset);
+        return new String(responseByte, charset);
     }
 
     @Override
-    public HttpClient setProxy(String host, int port) {
+    public HttpConnector setProxy(String host, int port) {
         this.proxyHost = host;
         this.proxyPort = port;
         return this;
     }
 
     @Override
-    public HttpClientImpl setKeyStore(File keyStore, Object... props) {
+    public HttpConnectorDefault setKeyStore(File keyStore, Object... props) {
         sslContext = keyStore.getView(FileViewKeyStoreSslContext.class, props);
         return this;
     }
@@ -154,7 +154,7 @@ public class HttpClientImpl implements HttpClient {
     @SuppressWarnings("unused")
     @ToString.Include()
     public String getResponseString() {
-        return response != null ? new String(response, StandardCharsets.UTF_8) : "null";
+        return responseByte != null ? new String(responseByte, StandardCharsets.UTF_8) : "null";
     }
 
     @SuppressWarnings("unused")

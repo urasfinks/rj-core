@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
-import ru.jamsys.core.resource.http.client.HttpClient;
+import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
@@ -12,7 +12,7 @@ import java.util.function.Function;
 
 @Component
 @Scope("prototype")
-public class HttpResource extends ExpirationMsMutableImpl implements Resource<HttpClient, HttpResponse> {
+public class HttpResource extends ExpirationMsMutableImpl implements Resource<HttpConnector, HttpResponse> {
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) {
@@ -20,9 +20,9 @@ public class HttpResource extends ExpirationMsMutableImpl implements Resource<Ht
     }
 
     @Override
-    public HttpResponse execute(HttpClient arguments) {
+    public HttpResponse execute(HttpConnector arguments) {
         arguments.exec();
-        return arguments.getHttpResponse();
+        return arguments.getResponseObject();
     }
 
     @Override

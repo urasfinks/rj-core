@@ -8,7 +8,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
-import ru.jamsys.core.resource.http.client.HttpClientImpl;
+import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
@@ -48,7 +48,7 @@ public class TelegramNotificationResource
         if (title != null && !title.trim().isEmpty()) {
             bodyRequest = "*" + title + "*\r\n" + bodyRequest;
         }
-        HttpClientImpl httpClient = new HttpClientImpl();
+        HttpConnectorDefault httpClient = new HttpConnectorDefault();
         httpClient.setUrl(String.format(
                 property.getUrl(),
                 new String(securityComponent.get(property.getSecurityAlias())),
@@ -57,7 +57,7 @@ public class TelegramNotificationResource
         );
         httpClient.setTimeoutMs(property.getTimeoutMs());
         httpClient.exec();
-        return httpClient.getHttpResponse();
+        return httpClient.getResponseObject();
     }
 
     @Override

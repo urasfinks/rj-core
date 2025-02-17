@@ -9,8 +9,8 @@ import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
-import ru.jamsys.core.resource.http.client.HttpClient;
-import ru.jamsys.core.resource.http.client.HttpClientImpl;
+import ru.jamsys.core.resource.http.client.HttpConnector;
+import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
@@ -65,15 +65,15 @@ public class AndroidNotificationResource
     @Override
     public HttpResponse execute(AndroidNotificationRequest arguments) {
         String postData = createPostData(arguments.getTitle(), arguments.getData(), arguments.getToken());
-        HttpClient httpClient = new HttpClientImpl()
+        HttpConnector httpConnector = new HttpConnectorDefault()
                 .setUrl(property.getUrl())
                 .setTimeoutMs(property.getTimeoutMs())
-                .putRequestHeader("Content-type", "application/json")
-                .putRequestHeader("Authorization", "Bearer " + accessToken)
+                .setRequestHeader("Content-type", "application/json")
+                .setRequestHeader("Authorization", "Bearer " + accessToken)
                 .setPostData(postData.getBytes(StandardCharsets.UTF_8));
-        httpClient.exec();
+        httpConnector.exec();
 
-        return httpClient.getHttpResponse();
+        return httpConnector.getResponseObject();
 
     }
 

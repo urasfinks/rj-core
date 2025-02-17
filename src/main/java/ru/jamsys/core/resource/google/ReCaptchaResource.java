@@ -8,7 +8,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertiesAgent;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
-import ru.jamsys.core.resource.http.client.HttpClientImpl;
+import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
@@ -39,16 +39,16 @@ public class ReCaptchaResource
 
     @Override
     public HttpResponse execute(String captchaValue) {
-        HttpClientImpl httpClient = new HttpClientImpl();
+        HttpConnectorDefault httpClient = new HttpConnectorDefault();
         httpClient.setUrl("https://www.google.com/recaptcha/api/siteverify");
 
         String body = "secret=" + new String(securityComponent.get(property.getSecurityAlias())) + "&response=" + captchaValue;
         httpClient.setPostData(body.getBytes(StandardCharsets.UTF_8));
 
         httpClient.setTimeoutMs(3000);
-        httpClient.putRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        httpClient.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         httpClient.exec();
-        return httpClient.getHttpResponse();
+        return httpClient.getResponseObject();
     }
 
     @Override

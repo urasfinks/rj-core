@@ -9,8 +9,8 @@ import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
-import ru.jamsys.core.resource.http.client.HttpClient;
-import ru.jamsys.core.resource.http.client.HttpClientImpl;
+import ru.jamsys.core.resource.http.client.HttpConnector;
+import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.FileLoaderFactory;
@@ -60,9 +60,9 @@ public class AppleNotificationResource
     @Override
     public HttpResponse execute(AppleNotificationRequest arguments) {
 
-        HttpClient httpClient = new HttpClientImpl();
-        httpClient.setUrl(property.getUrl() + arguments.getDevice());
-        httpClient.setTimeoutMs(property.getTimeoutMs());
+        HttpConnector httpConnector = new HttpConnectorDefault();
+        httpConnector.setUrl(property.getUrl() + arguments.getDevice());
+        httpConnector.setTimeoutMs(property.getTimeoutMs());
 
         Map<String, Object> root = new LinkedHashMap<>();
         Map<String, Object> aps = new LinkedHashMap<>();
@@ -72,21 +72,21 @@ public class AppleNotificationResource
 
         String postData = UtilJson.toString(root, "{}");
         if (postData != null) {
-            httpClient.setPostData(postData.getBytes(StandardCharsets.UTF_8));
+            httpConnector.setPostData(postData.getBytes(StandardCharsets.UTF_8));
         }
 
-        httpClient.putRequestHeader("apns-push-type", property.getPushType());
-        httpClient.putRequestHeader("apns-expiration", property.getExpiration());
-        httpClient.putRequestHeader("apns-priority", property.getPriority());
-        httpClient.putRequestHeader("apns-topic", property.getTopic());
+        httpConnector.setRequestHeader("apns-push-type", property.getPushType());
+        httpConnector.setRequestHeader("apns-expiration", property.getExpiration());
+        httpConnector.setRequestHeader("apns-priority", property.getPriority());
+        httpConnector.setRequestHeader("apns-topic", property.getTopic());
 
-        httpClient.setKeyStore(
+        httpConnector.setKeyStore(
                 managerVirtualFileSystem.get(property.getVirtualPath()),
                 FileViewKeyStore.prop.SECURITY_KEY.name(), property.getSecurityAlias(),
                 FileViewKeyStore.prop.TYPE.name(), "PKCS12"
         );
-        httpClient.exec();
-        return httpClient.getHttpResponse();
+        httpConnector.exec();
+        return httpConnector.getResponseObject();
     }
 
     @Override

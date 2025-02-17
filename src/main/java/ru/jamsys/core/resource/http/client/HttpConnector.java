@@ -11,26 +11,26 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-public interface HttpClient {
+public interface HttpConnector {
 
-    HttpClient setSslContextType(String sslContextType);
+    HttpConnector setSslContextType(String sslContextType);
 
-    HttpClient setProxy(String host, int port);
+    HttpConnector setProxy(String host, int port);
 
-    HttpClient setTimeoutMs(int connectTimeoutMs);
+    HttpConnector setTimeoutMs(int connectTimeoutMs);
 
-    HttpClient setMethod(HttpMethodEnum method);
+    HttpConnector setMethod(HttpMethodEnum method);
 
-    HttpClient setKeyStore(File keyStore, Object... props);
+    HttpConnector setKeyStore(File keyStore, Object... props);
 
-    HttpClient putRequestHeader(String name, String value);
+    HttpConnector setRequestHeader(String name, String value);
 
-    HttpClient setPostData(byte[] postData);
+    HttpConnector setPostData(byte[] postData);
 
-    HttpClient setUrl(String url);
+    HttpConnector setUrl(String url);
 
-    default HttpClient setBasicAuth(String user, String pass, String charset) {
-        return putRequestHeader("Authorization", "Basic " + UtilBase64.encode(user + ":" + pass, charset, false));
+    default HttpConnector setBasicAuth(String user, String pass, String charset) {
+        return setRequestHeader("Authorization", "Basic " + UtilBase64.encode(user + ":" + pass, charset, false));
     }
 
     String getSslContextType();
@@ -47,7 +47,7 @@ public interface HttpClient {
 
     String getUrl();
 
-    byte[] getResponse();
+    byte[] getResponseByte();
 
     int getStatus();
 
@@ -57,11 +57,11 @@ public interface HttpClient {
 
     String getResponseString(String charset) throws UnsupportedEncodingException;
 
-    default HttpResponse getHttpResponse() {
-        return getHttpResponse(StandardCharsets.UTF_8);
+    default HttpResponse getResponseObject() {
+        return getResponseObject(StandardCharsets.UTF_8);
     }
 
-    default HttpResponse getHttpResponse(Charset standardCharsets) {
+    default HttpResponse getResponseObject(Charset standardCharsets) {
         HttpResponse httpResponse = new HttpResponse();
         if (getException() != null) {
             httpResponse.addException(getException());
