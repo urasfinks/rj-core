@@ -17,7 +17,11 @@ public interface HttpConnector {
 
     HttpConnector setProxy(String host, int port);
 
-    HttpConnector setTimeoutMs(int connectTimeoutMs);
+    HttpConnector setProxy(String host, int port, String user, String password);
+
+    HttpConnector setConnectTimeoutMs(int connectTimeoutMs);
+
+    HttpConnector setReadTimeoutMs(int connectTimeoutMs);
 
     HttpConnector setMethod(HttpMethodEnum method);
 
@@ -35,7 +39,7 @@ public interface HttpConnector {
 
     String getSslContextType();
 
-    int getTimeoutMs();
+    int getConnectTimeoutMs();
 
     long getTiming(); // Время исполнения запроса
 

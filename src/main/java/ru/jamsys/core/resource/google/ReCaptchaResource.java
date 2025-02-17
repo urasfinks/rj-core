@@ -45,7 +45,8 @@ public class ReCaptchaResource
         String body = "secret=" + new String(securityComponent.get(property.getSecurityAlias())) + "&response=" + captchaValue;
         httpClient.setPostData(body.getBytes(StandardCharsets.UTF_8));
 
-        httpClient.setTimeoutMs(3000);
+        httpClient.setConnectTimeoutMs(1_000);
+        httpClient.setReadTimeoutMs(3_000);
         httpClient.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         httpClient.exec();
         return httpClient.getResponseObject();

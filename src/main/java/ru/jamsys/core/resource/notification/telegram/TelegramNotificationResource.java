@@ -55,7 +55,8 @@ public class TelegramNotificationResource
                 property.getIdChat(),
                 URLEncoder.encode(bodyRequest, StandardCharsets.UTF_8))
         );
-        httpClient.setTimeoutMs(property.getTimeoutMs());
+        httpClient.setConnectTimeoutMs(1_000);
+        httpClient.setReadTimeoutMs(property.getTimeoutMs());
         httpClient.exec();
         return httpClient.getResponseObject();
     }

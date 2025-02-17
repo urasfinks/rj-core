@@ -62,7 +62,8 @@ public class AppleNotificationResource
 
         HttpConnector httpConnector = new HttpConnectorDefault();
         httpConnector.setUrl(property.getUrl() + arguments.getDevice());
-        httpConnector.setTimeoutMs(property.getTimeoutMs());
+        httpConnector.setConnectTimeoutMs(1_000);
+        httpConnector.setReadTimeoutMs(property.getTimeoutMs());
 
         Map<String, Object> root = new LinkedHashMap<>();
         Map<String, Object> aps = new LinkedHashMap<>();

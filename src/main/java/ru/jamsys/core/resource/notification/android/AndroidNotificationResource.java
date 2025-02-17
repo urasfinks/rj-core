@@ -67,7 +67,8 @@ public class AndroidNotificationResource
         String postData = createPostData(arguments.getTitle(), arguments.getData(), arguments.getToken());
         HttpConnector httpConnector = new HttpConnectorDefault()
                 .setUrl(property.getUrl())
-                .setTimeoutMs(property.getTimeoutMs())
+                .setConnectTimeoutMs(1_000)
+                .setReadTimeoutMs(property.getTimeoutMs())
                 .setRequestHeader("Content-type", "application/json")
                 .setRequestHeader("Authorization", "Bearer " + accessToken)
                 .setPostData(postData.getBytes(StandardCharsets.UTF_8));
