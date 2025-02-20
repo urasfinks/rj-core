@@ -38,14 +38,33 @@ public class DeeplinkWebLocation implements PromiseGenerator, HttpHandler {
                     ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
                     servletHandler.setResponseContentType("text/html");
                     Map<String, String> args = new HashMapBuilder<String, String>()
-                            .append("urlSchemes", App.get(ServiceProperty.class).get("run.args.plugin.deeplink.url.schemes"))
-                            .append("urlIosAppStore", App.get(ServiceProperty.class).get("run.args.plugin.deeplink.url.ios.app.store"));
+                            .append("urlSchemes", App.get(ServiceProperty.class)
+                                    .get(
+                                            "run.args.plugin.deeplink.url.schemes",
+                                            "",
+                                            getClass().getName()
+                                    )
+                                    .get()
+                            )
+                            .append("urlIosAppStore", App.get(ServiceProperty.class)
+                                    .get(
+                                            "run.args.plugin.deeplink.url.ios.app.store",
+                                            "",
+                                            getClass().getName()
+                                    )
+                                    .get()
+                            );
                     servletHandler.setResponseBody(TemplateTwix.template(
                             UtilFileResource.getAsString(
                                     "static/deeplink.html",
                                     UtilFileResource.Direction.valueOf(
                                             App.get(ServiceProperty.class)
-                                                    .get("run.args.plugin.deeplink.template.class.loader")
+                                                    .get(
+                                                            "run.args.plugin.deeplink.template.class.loader",
+                                                            "",
+                                                            getClass().getName()
+                                                    )
+                                                    .get()
                                     )
                             ),
                             args

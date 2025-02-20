@@ -1,12 +1,12 @@
 package ru.jamsys.core.resource.notification.android;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
+import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.extension.annotation.PropertyName;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
-public class AndroidNotificationProperties extends RepositoryPropertiesField {
+public class AndroidNotificationProperty extends AnnotationPropertyExtractor {
 
     @PropertyName("notification.android.url")
     private String url;

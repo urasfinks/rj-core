@@ -23,22 +23,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-// Раньше на вставку был просто объект TEO и внутри происходила обёртка TimeEnvelope<TEO>
-// Но потом пришла реализация Cache где нельзя было такое сделать
-// и на вход надо было уже подавать объект TimeEnvelope<TEO>
-//     Причина: сначала необходимо выставлять время, на которое будем кешировать, а только потом делать вставку
-//              Индекс рассчитывается из времени expired
-//              После установки время expired изменить нельзя, так как индекс уже ключом Map
-// Я захотел, что бы везде было одинаково. Только лишь поэтому TEO -> TimeEnvelope<TEO>
-// 11.05.2024 Cache переехал в Session, и вся история с однотипным протоколом распалась
-// 26.05.2024 Session был удалён
-// Спустя некоторое время появилась новая реализация Session)))
-//Время срабатывания onExpired = 3 секунды
+// Брокер - циклическая очередь элементов, с timeout элементов (onExpired = 3 секунды)
+// Не является CascadeName - используйте каскадные имена в ключе
 
 public class Broker<TEO>
         extends ExpirationMsMutableImpl
         implements
-        UniqueClassName,
         StatisticsFlush,
         ClassEquals,
         LifeCycleInterface,
@@ -68,12 +58,13 @@ public class Broker<TEO>
     private Double lastTimeInQueue;
 
     @Getter
-    final Property<Integer> propertyBrokerSize;
+    final Property propertyBrokerSize;
 
     @Getter
-    final Property<Integer> propertyBrokerTailSize;
+    final Property propertyBrokerTailSize;
 
-    final String index;
+    @Getter
+    final String key;
 
     private final Consumer<TEO> onDropConsumer;
 
@@ -82,37 +73,30 @@ public class Broker<TEO>
     private final Expiration<DisposableExpirationMsImmutableEnvelope> expiration;
 
     public Broker(
-            String index,
+            String key,
             ApplicationContext applicationContext,
             Class<TEO> classItem,
             Consumer<TEO> onDropConsumer
     ) {
-        this.index = index;
+        this.key = key;
         this.classItem = classItem;
         this.onDropConsumer = onDropConsumer;
-        String clsIndex = getClassName(index, applicationContext);
 
         ServiceProperty serviceProperty = applicationContext.getBean(ServiceProperty.class);
-        propertyBrokerSize = new Property<>(
-                serviceProperty,
-                Integer.class,
-                clsIndex + "." + ValueName.BROKER_SIZE.getNameCamel(),
+        propertyBrokerSize = serviceProperty.get(
+                key + "." + ValueName.BROKER_SIZE.getNameCamel(),
                 3000,
-                false,
-                null
+                getClass().getName() + "::" + key
         );
-        propertyBrokerTailSize = new Property<>(
-                serviceProperty,
-                Integer.class,
-                clsIndex + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),
+        propertyBrokerTailSize = serviceProperty.get(
+                key + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),
                 5,
-                false,
-                null
+                getClass().getName() + "::" + key
         );
 
         ManagerExpiration managerExpiration = applicationContext.getBean(ManagerExpiration.class);
         expiration = managerExpiration.get(
-                getClassName(index, applicationContext),
+                key,
                 DisposableExpirationMsImmutableEnvelope.class,
                 this::onDrop
         );
@@ -150,7 +134,7 @@ public class Broker<TEO>
         // Проблема с производительностью
         // Мы не можем использовать queue.size() для расчёта переполнения
         // пример: вставка 100к записей занимаем 35сек
-        if (queueSize.get() >= propertyBrokerSize.get()) {
+        if (queueSize.get() >= propertyBrokerSize.get(Integer.class)) {
             // Он конечно протух не по своей воле, но что делать...
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
             DisposableExpirationMsImmutableEnvelope<TEO> teoDisposableExpirationMsImmutableEnvelope = queue.removeFirst();
@@ -163,7 +147,7 @@ public class Broker<TEO>
         queue.add(convert);
         queueSize.incrementAndGet();
 
-        if (tailQueueSize.get() >= propertyBrokerTailSize.get()) {
+        if (tailQueueSize.get() >= propertyBrokerTailSize.get(Integer.class)) {
             tailQueue.removeFirst();
         } else {
             tailQueueSize.incrementAndGet();
@@ -239,7 +223,7 @@ public class Broker<TEO>
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x
-        return queueSize.get() * 100 / propertyBrokerSize.get();
+        return queueSize.get() * 100 / propertyBrokerSize.get(Integer.class);
     }
 
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
@@ -268,7 +252,6 @@ public class Broker<TEO>
     }
 
     // Отладочная
-
     public List<TEO> getTailQueue(@Nullable AtomicBoolean run) {
         final List<TEO> ret = new ArrayList<>();
         UtilRisc.forEach(run, tailQueue, (ExpirationMsImmutableEnvelope<TEO> envelope) ->
@@ -307,14 +290,11 @@ public class Broker<TEO>
 
     @Override
     public void run() {
-        propertyBrokerSize.run();
-        propertyBrokerTailSize.run();
+
     }
 
     @Override
     public void shutdown() {
-        propertyBrokerSize.run();
-        propertyBrokerTailSize.run();
         lastTimeInQueue = null;
     }
 

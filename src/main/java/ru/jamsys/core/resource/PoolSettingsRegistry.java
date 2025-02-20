@@ -3,8 +3,7 @@ package ru.jamsys.core.resource;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
-import ru.jamsys.core.extension.UniqueClassName;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
+import ru.jamsys.core.extension.CascadeName;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,7 +14,7 @@ public class PoolSettingsRegistry<
         R extends Resource<?, RC> & ResourceCheckException,
         RC extends ResourceArguments
         >
-        implements UniqueClassName {
+        implements CascadeName {
 
     private final Map<Class<R>, Function<Throwable, Boolean>> fn = new ConcurrentHashMap<>();
 
@@ -23,15 +22,25 @@ public class PoolSettingsRegistry<
 
     @SuppressWarnings("all")
     public PoolSettings<?> get(Class<R> cls, String ns) {
-        String index = UniqueClassNameImpl.getClassNameStatic(cls, ns, App.context);
-        return registry.computeIfAbsent(index, s -> {
+        String index = getCascadeName(App.getUniqueClassName(cls) + "." + ns);
+        return registry.computeIfAbsent(index, key -> {
             return (PoolSettings<R>) new PoolSettings<>(
-                    s,
+                    key,
                     cls,
                     new ResourceArguments(ns),
                     fn.computeIfAbsent(cls, rClass -> App.get(rClass).getFatalException())
             );
         });
+    }
+
+    @Override
+    public String getKey() {
+        return null;
+    }
+
+    @Override
+    public CascadeName getParentCascadeName() {
+        return App.cascadeName;
     }
 
 }

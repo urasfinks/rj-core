@@ -10,11 +10,12 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.component.manager.item.LogType;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
+import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.promise.Promise;
@@ -31,9 +32,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @Lazy
-public class ServiceLogger extends RepositoryPropertiesField implements
+public class ServiceLogger extends AnnotationPropertyExtractor implements
         StatisticsFlushComponent,
-        LifeCycleComponent {
+        LifeCycleComponent,
+        CascadeName {
 
     private final Map<String, AtomicInteger> stat = new HashMap<>();
 
@@ -45,16 +47,18 @@ public class ServiceLogger extends RepositoryPropertiesField implements
 
     public ServiceLogger(ManagerBroker managerBroker, ApplicationContext applicationContext) {
         broker = managerBroker.get(
-                UniqueClassNameImpl.getClassNameStatic(Log.class, null, applicationContext),
+                getCascadeName(App.getUniqueClassName(Log.class)),
                 Log.class
         );
         for (LogType type : LogType.values()) {
             stat.put(type.getNameCamel(), new AtomicInteger(0));
         }
-        applicationContext
-                .getBean(ServiceProperty.class)
-                .getFactory()
-                .getPropertiesAgent(null, this, null, true);
+        new PropertySubscriber(
+                applicationContext.getBean(ServiceProperty.class),
+                null,
+                this,
+                null
+        ); //Без run() просто заполнить значения
     }
 
     public DisposableExpirationMsImmutableEnvelope<Log> add(Log log) {
@@ -113,4 +117,13 @@ public class ServiceLogger extends RepositoryPropertiesField implements
         }
     }
 
+    @Override
+    public String getKey() {
+        return null;
+    }
+
+    @Override
+    public CascadeName getParentCascadeName() {
+        return App.cascadeName;
+    }
 }

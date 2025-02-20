@@ -17,7 +17,7 @@ public interface StatisticsCollectorMap<E extends StatisticsFlush> extends Stati
     @Override
     default List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
         List<Statistic> result = new ArrayList<>();
-        String clsName = UniqueClassNameImpl.getClassNameStatic(getClass(), null);
+        String clsName = App.getUniqueClassName(getClass());
         UtilRisc.forEach(
                 threadRun,
                 getMapForFlushStatistic(),

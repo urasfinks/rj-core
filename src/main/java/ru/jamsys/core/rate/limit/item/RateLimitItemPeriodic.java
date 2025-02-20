@@ -5,9 +5,10 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.PropertiesAgent;
-import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
+import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyUpdater;
+import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.statistic.Statistic;
@@ -21,8 +22,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RateLimitItemPeriodic
-        extends RepositoryPropertiesField
-        implements RateLimitItem, PropertyUpdateDelegate, LifeCycleInterface {
+        extends AnnotationPropertyExtractor
+        implements RateLimitItem,
+        PropertyUpdater,
+        LifeCycleInterface {
 
     private final AtomicInteger tpu = new AtomicInteger(0);
 
@@ -38,23 +41,23 @@ public class RateLimitItemPeriodic
     private String nextTimeFlushFormat = "";
 
     @Getter
-    private final String ns;
+    private final String key;
 
     @SuppressWarnings("all")
     @PropertyName
     private Integer propMax = 1000;
 
-    private final PropertiesAgent propertiesAgent;
+    private final PropertySubscriber propertySubscriber;
 
-    public RateLimitItemPeriodic(TimeUnit period, String ns) {
-        this.ns = ns;
+    public RateLimitItemPeriodic(TimeUnit period, String key) {
+        this.key = key;
         this.period = period;
         this.periodName = period.getNameCamel();
-        propertiesAgent = App.get(ServiceProperty.class).getFactory().getPropertiesAgent(
+        propertySubscriber = new PropertySubscriber(
+                App.get(ServiceProperty.class),
                 this,
-                this,
-                ns,
-                false
+                null,
+                getKey()
         );
     }
 
@@ -106,18 +109,18 @@ public class RateLimitItemPeriodic
     }
 
     @Override
-    public void onPropertyUpdate(Map<String, String> mapAlias) {
-        this.max.set(propMax);
-    }
-
-    @Override
     public void run() {
-        propertiesAgent.run();
+        propertySubscriber.run();
     }
 
     @Override
     public void shutdown() {
-        propertiesAgent.shutdown();
+        propertySubscriber.shutdown();
+    }
+
+    @Override
+    public void onPropertyUpdate(String key, Property property) {
+        this.max.set(propMax);
     }
 
 }

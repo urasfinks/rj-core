@@ -20,18 +20,18 @@ public class ManagerBroker extends AbstractManager<Broker<?>, Consumer<?>> imple
     // initAndGet должен вызываться раньше, чем может быть использован в других местах
     // Суть инициализации, что бы передать Consumer.onDrop, и что бы пользователей обменника оградить от понимания,
     // что будет происходить если сообщения начнуть протухать
-    public <T> Broker<T> initAndGet(String index, Class<T> classItem, Consumer<T> onDrop) {
-        return (Broker) getManagerElement(index, classItem, onDrop);
+    public <T> Broker<T> initAndGet(String key, Class<T> classItem, Consumer<T> onDrop) {
+        return (Broker) getManagerElement(key, classItem, onDrop);
     }
 
     // Получить ранее инициализированный обменник
-    public <T> Broker<T> get(String index, Class<T> classItem) {
-        return (Broker) getManagerElementUnsafe(index, classItem);
+    public <T> Broker<T> get(String key, Class<T> classItem) {
+        return (Broker) getManagerElementUnsafe(key, classItem);
     }
 
     @Override
-    public Broker<?> build(String index, Class<?> classItem, Consumer<?> builderArgument) {
-        return new Broker<>(index, applicationContext, classItem, (Consumer) builderArgument);
+    public Broker<?> build(String key, Class<?> classItem, Consumer<?> builderArgument) {
+        return new Broker<>(key, applicationContext, classItem, (Consumer) builderArgument);
     }
 
     @Override

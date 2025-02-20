@@ -38,21 +38,31 @@ public class Expiration<V>
         StatisticsFlush,
         ClassEquals,
         LifeCycleInterface,
-        ExpirationMsMutable {
+        ExpirationMsMutable,
+        CascadeName {
 
     private final ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<V>>> bucket = new ConcurrentSkipListMap<>();
 
     private final ConcurrentSkipListMap<Long, AtomicInteger> bucketQueueSize = new ConcurrentSkipListMap<>();
 
     @Getter
-    private final String index;
+    private final String key;
+
+    @Getter
+    private final CascadeName parentCascadeName;
 
     private final Class<?> classItem;
 
     private final Consumer<DisposableExpirationMsImmutableEnvelope<?>> onExpired;
 
-    public Expiration(String index, Class<?> classItem, Consumer<DisposableExpirationMsImmutableEnvelope<?>> onExpired) {
-        this.index = index;
+    public Expiration(
+            CascadeName parentCascadeName,
+            String key,
+            Class<?> classItem,
+            Consumer<DisposableExpirationMsImmutableEnvelope<?>> onExpired
+    ) {
+        this.parentCascadeName = parentCascadeName;
+        this.key = key;
         this.classItem = classItem;
         this.onExpired = onExpired;
     }

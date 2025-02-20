@@ -18,8 +18,6 @@ public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlu
     // Реализация закрытия ресурса
     void closePoolItem(PI poolItem);
 
-    String getIndex();
-
     //Реализация проверки ошибки, для принятия решений выкидывания ресурса из пула
     boolean checkFatalException(Throwable th);
 

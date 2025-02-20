@@ -1,12 +1,12 @@
 package ru.jamsys.core.resource.yandex.speech;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
+import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.extension.annotation.PropertyName;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
-public class YandexSpeechProperties extends RepositoryPropertiesField {
+public class YandexSpeechProperty extends AnnotationPropertyExtractor {
 
     @PropertyName("yandex.speech.kit.host")
     private String host;

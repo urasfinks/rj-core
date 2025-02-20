@@ -1,6 +1,5 @@
 package ru.jamsys.core.component;
 
-import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.AbstractEnvironment;
@@ -9,63 +8,29 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.Property;
-import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
-import ru.jamsys.core.extension.property.ServicePropertyFactory;
-import ru.jamsys.core.extension.property.item.PropertySource;
-import ru.jamsys.core.extension.property.item.PropertySubscriber;
+import ru.jamsys.core.extension.property.item.PropertySubscription;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+// Хранилище Property
+// Отвечает за создание всех Property, создавать экземпляры Property в других местах запрещено
+// Отвечает за регистрацию подписок, для того, что бы распространить подписки на все Property
 
 @Component
 @Lazy
 public class ServiceProperty {
 
-    @Getter
-    final private ServicePropertyFactory factory;
-
-    final private Map<String, PropertySource> prop = new ConcurrentHashMap<>();
-
-    public String unitTestGetProp(String propKey) {
-        return prop.get(propKey).getValue();
-    }
-
-    public Map<String, String> getProp() {
-        HashMap<String, String> result = new HashMap<>();
-        prop.forEach((s, propertySource) -> result.put(s, propertySource.getValue()));
-        return result;
-    }
+    final private Map<String, Property> properties = new ConcurrentHashMap<>();
 
     //Нужен для момента, когда будет добавляться новое Property, что бы можно было к нему навешать старых слушателей
-    final private Set<PropertySubscriber> subscribers = Util.getConcurrentHashSet();
-
-    public boolean containsSubscriber(PropertySubscriber propertySubscriber) {
-        return subscribers.contains(propertySubscriber);
-    }
-
-    public String get(String key) {
-        return prop.get(key).getValue();
-    }
-
-    public <T> T get(Class<T> cls, String key, T defValue) {
-        PropertySource propertySource = prop.get(key);
-        if (propertySource == null) {
-            return defValue;
-        }
-        @SuppressWarnings("unchecked")
-        T t = (T) Property.convertType.get(cls).apply(propertySource.getValue());
-        return t;
-    }
+    final private Set<PropertySubscription> subscriptions = Util.getConcurrentHashSet();
 
     public ServiceProperty(ApplicationContext applicationContext) {
-        factory = new ServicePropertyFactory(this);
         Environment env = applicationContext.getEnvironment();
         MutablePropertySources propertySources = ((AbstractEnvironment) env).getPropertySources();
         for (org.springframework.core.env.PropertySource<?> next : propertySources) {
@@ -80,104 +45,48 @@ public class ServiceProperty {
             }
             if (next instanceof EnumerablePropertySource) {
                 for (String prop : ((EnumerablePropertySource<?>) next).getPropertyNames()) {
-                    createIfNotExist(prop, env.getProperty(prop));
+                    add(prop, env.getProperty(prop), next.getName());
                 }
             }
         }
-        if (prop.containsKey("spring.application.name")) {
-            String value = prop.get("spring.application.name").getValue();
+        if (properties.containsKey("spring.application.name")) {
+            String value = properties.get("spring.application.name").get();
             if (value != null) {
                 App.applicationName = value;
             }
         }
     }
 
-    // Добавляем новое или изменяем значение существующего Property
-    public void setProperty(String key, String value) {
-        setProperty(new HashMapBuilder<String, String>().append(key, value));
+    public Property get(String key, Object defValue, String who) {
+        return add(
+                key,
+                defValue == null ? null : String.valueOf(defValue),
+                who
+        );
     }
 
-    // Добавляем новое или изменяем значение существующего Property
-    public void setProperty(Map<String, String> map) {
-        Map<PropertySubscriber, Map<String, String>> notify = new HashMap<>();
-        if (!map.isEmpty()) {
-            map.forEach((key, value) -> {
-                PropertySource propertySource = createIfNotExist(key, value);
-                if (propertySource.isUpdateValue()) {
-                    UtilRisc.forEach(null, propertySource.getSubscribers(), propertySubscriber -> {
-                        notify.computeIfAbsent(propertySubscriber, _ -> new HashMap<>()).put(key, value);
-                    });
-                }
-                if (value == null) {
-                    this.prop.remove(key);
-                }
+    public Property add(String key, String value, String who) {
+        return this.properties.computeIfAbsent(key, key1 -> {
+            Property property = new Property(key1, value, who);
+            UtilRisc.forEach(null, subscriptions, property::addSubscription);
+            return property;
+        });
+    }
+
+    public PropertySubscription addSubscription(PropertySubscription propertySubscription) {
+        if (!subscriptions.contains(propertySubscription)) {
+            subscriptions.add(propertySubscription);
+            UtilRisc.forEach(null, this.properties, (_, property) -> {
+                property.addSubscription(propertySubscription);
             });
-            notify.forEach(PropertySubscriber::onPropertyUpdate);
         }
+        return propertySubscription;
     }
 
-    private PropertySource createIfNotExist(String key, String value) {
-        PropertySource result = this.prop.computeIfAbsent(key, k -> {
-            PropertySource propertySource = new PropertySource(k);
-            UtilRisc.forEach(null, subscribers, propertySource::check);
-            return propertySource;
-        });
-        result.setValue(value);
-        return result;
-    }
-
-    public PropertySubscriber subscribe(PropertySubscriber propertySubscriber) {
-        if (!subscribers.contains(propertySubscriber)) {
-            subscribers.add(propertySubscriber);
-            attacheAndNotifySubscriber(propertySubscriber);
-        }
-        return propertySubscriber;
-    }
-
-    public PropertySubscriber subscribe(String key, PropertyUpdateDelegate propertyUpdateDelegate, boolean require, String defValue) {
-
-        PropertySubscriber propertySubscriber = new PropertySubscriber();
-        propertySubscriber.setKey(key);
-        propertySubscriber.setPropertyUpdateDelegate(propertyUpdateDelegate);
-        subscribers.add(propertySubscriber);
-
-        PropertySource result = prop.get(key);
-        if (require && result == null) {
-            throw new RuntimeException("Required key '" + key + "' not found");
-        }
-        if (result == null) {
-            createIfNotExist(key, defValue);
-        }
-
-        attacheAndNotifySubscriber(propertySubscriber);
-        return propertySubscriber;
-    }
-
-    public PropertySubscriber subscribe(String regexp, PropertyUpdateDelegate propertyUpdateDelegate) {
-        PropertySubscriber propertySubscriber = new PropertySubscriber();
-        propertySubscriber.setRegexp(regexp);
-        propertySubscriber.setPropertyUpdateDelegate(propertyUpdateDelegate);
-        subscribers.add(propertySubscriber);
-
-        attacheAndNotifySubscriber(propertySubscriber);
-        return propertySubscriber;
-    }
-
-    private void attacheAndNotifySubscriber(PropertySubscriber propertySubscriber) {
-        Map<String, String> map = new LinkedHashMap<>();
-        UtilRisc.forEach(null, this.prop, (key, propertySource) -> {
-            propertySource.check(propertySubscriber);
-            if (propertySource.getSubscribers().contains(propertySubscriber)) {
-                map.put(key, propertySource.getValue());
-            }
-        });
-        propertySubscriber.onPropertyUpdate(map);
-    }
-
-    public void unsubscribe(PropertySubscriber propertySubscriber) {
-        subscribers.remove(propertySubscriber);
-        UtilRisc.forEach(null, this.prop, (_, propertySource) -> {
-            propertySource.remove(propertySubscriber);
+    public void removeSubscription(PropertySubscription propertySubscription) {
+        subscriptions.remove(propertySubscription);
+        UtilRisc.forEach(null, this.properties, (_, property) -> {
+            property.removeSubscription(propertySubscription);
         });
     }
 

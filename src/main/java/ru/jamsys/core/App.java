@@ -7,6 +7,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.flat.util.Util;
 
 import java.util.Map;
@@ -16,7 +17,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // TODO: Нужен RateLimit на Http запросы
 
 @SpringBootApplication
-public class App {
+public class App implements CascadeName {
+
+    public static App cascadeName = new App();
+
+    public static Map<String, Class<?>> uniqueClassName = new ConcurrentHashMap<>();
 
     public static String applicationName = App.class.getName(); // Может поменяться при загрузке компонента ServiceProperty
 
@@ -104,6 +109,31 @@ public class App {
             context = null;
             mapBean.clear();
         }
+    }
+
+    public static String getUniqueClassName(Class<?> cls) {
+        Class<?> regClass = uniqueClassName.computeIfAbsent(cls.getSimpleName(), _ -> cls);
+        if (regClass.equals(cls)) {
+            return cls.getSimpleName();
+        } else {
+            uniqueClassName.computeIfAbsent(cls.getName(), _ -> cls);
+            return cls.getName();
+        }
+    }
+
+    @Override
+    public String getKey() {
+        return null;
+    }
+
+    @Override
+    public CascadeName getParentCascadeName() {
+        return null;
+    }
+
+    @Override
+    public String getCascadeName() {
+        return App.class.getSimpleName();
     }
 
 }

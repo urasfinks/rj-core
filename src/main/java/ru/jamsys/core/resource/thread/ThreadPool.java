@@ -2,12 +2,11 @@ package ru.jamsys.core.resource.thread;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
-import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.component.manager.item.Broker;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.ClassEquals;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.PromiseTask;
-import ru.jamsys.core.rate.limit.RateLimitFactory;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,19 +17,16 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
 
     private final Broker<PromiseTask> broker;
 
-    public ThreadPool(String index) {
-        super(index);
+    public ThreadPool(CascadeName parentCascadeName, String key) {
+        super(parentCascadeName, key);
         this.broker = App.get(ManagerBroker.class)
-                .initAndGet(this.getIndex(), PromiseTask.class, promiseTask ->
+                .initAndGet(getCascadeName(), PromiseTask.class, promiseTask ->
                         promiseTask.
                                 getPromise().
                                 setError(new RuntimeException(
-                                        ThreadPool.class.getSimpleName() + ".broker->drop(task)")
+                                        App.getUniqueClassName(ThreadPool.class) + ".broker->drop(task)")
                                 )
                 );
-        App.get(ManagerRateLimit.class).get(getIndex())
-                // Это сколько может обрабатывать PromiseTask весь пул потоков
-                .init(App.context, "tps", RateLimitFactory.TPS);
     }
 
     public void addPromiseTask(PromiseTask promiseTask) {
@@ -49,7 +45,7 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
 
     @Override
     public ThreadResource createPoolItem() {
-        return new ThreadResource(this.getIndex() + "-" + counter.getAndIncrement(), this);
+        return new ThreadResource(this, counter.getAndIncrement() + "", this);
     }
 
     @Override
@@ -67,4 +63,13 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
         return true;
     }
 
+    @Override
+    public String getKey() {
+        return "";
+    }
+
+    @Override
+    public CascadeName getParentCascadeName() {
+        return null;
+    }
 }

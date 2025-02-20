@@ -13,14 +13,15 @@ import ru.jamsys.core.extension.exception.PromiseException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.extension.line.writer.LineWriterString;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
+import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
 
 @Setter
 @Component
 @Lazy
-public class ExceptionHandler extends RepositoryPropertiesField {
+public class ExceptionHandler extends AnnotationPropertyExtractor {
 
     private static int maxLine = 50;
 
@@ -31,10 +32,12 @@ public class ExceptionHandler extends RepositoryPropertiesField {
     private Boolean consoleOutput = true;
 
     public ExceptionHandler(ApplicationContext applicationContext) {
-        applicationContext
-                .getBean(ServiceProperty.class)
-                .getFactory()
-                .getPropertiesAgent(null, this, null, true);
+        new PropertySubscriber(
+                applicationContext.getBean(ServiceProperty.class),
+                null,
+                this,
+                null
+        );
     }
 
     public void handler(Throwable th) {

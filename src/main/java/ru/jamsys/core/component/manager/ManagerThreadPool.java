@@ -1,12 +1,14 @@
 package ru.jamsys.core.component.manager;
 
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.resource.thread.ThreadPool;
 
 @Component
-public class ManagerThreadPool extends AbstractManager<ThreadPool, Void> {
+public class ManagerThreadPool extends AbstractManager<ThreadPool, Void> implements CascadeName {
 
     public void addPromiseTask(PromiseTask promiseTask) {
         getManagerElement(promiseTask.getIndex(), Void.class, null)
@@ -14,8 +16,8 @@ public class ManagerThreadPool extends AbstractManager<ThreadPool, Void> {
     }
 
     @Override
-    public ThreadPool build(String index, Class<?> classItem, Void builderArgument) {
-        ThreadPool threadPool = new ThreadPool(index);
+    public ThreadPool build(String key, Class<?> classItem, Void builderArgument) {
+        ThreadPool threadPool = new ThreadPool(this, key);
         threadPool.run();
         return threadPool;
     }
@@ -25,4 +27,13 @@ public class ManagerThreadPool extends AbstractManager<ThreadPool, Void> {
         return 5;
     }
 
+    @Override
+    public String getKey() {
+        return null;
+    }
+
+    @Override
+    public CascadeName getParentCascadeName() {
+        return App.cascadeName;
+    }
 }

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.KeepAliveComponent;
-import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.flat.template.cron.release.Cron3s;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
@@ -16,7 +15,7 @@ import java.util.List;
 
 @Component
 @Lazy
-public class KeepAlive implements Cron3s, PromiseGenerator, UniqueClassName {
+public class KeepAlive implements Cron3s, PromiseGenerator {
 
     private final List<KeepAliveComponent> list = new ArrayList<>();
 

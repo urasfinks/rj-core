@@ -161,7 +161,9 @@ public class UtilFile {
     }
 
     public static String getWebContent(String relativeWebPath) {
-        String location = App.get(ServiceProperty.class).get("run.args.web.resource.location");
+        String location = App.get(ServiceProperty.class)
+                .get("run.args.web.resource.location", "", UtilFile.class.getName())
+                .get();
         try {
             byte[] bytes = UtilFile.readBytes(location + relativeWebPath);
             return new String(bytes);
@@ -171,7 +173,9 @@ public class UtilFile {
     }
 
     public static File getWebFile(String relativeWebPath) {
-        String location = App.get(ServiceProperty.class).get("run.args.web.resource.location");
+        String location = App.get(ServiceProperty.class)
+                .get("run.args.web.resource.location", "", UtilFile.class.getName())
+                .get();
         return new File(location + relativeWebPath);
     }
 

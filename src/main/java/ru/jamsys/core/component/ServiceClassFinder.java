@@ -6,9 +6,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertiesAgent;
-import ru.jamsys.core.extension.property.repository.RepositoryMapValue;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesMap;
+import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
 import ru.jamsys.core.flat.util.Util;
 
 import java.lang.annotation.Annotation;
@@ -31,7 +30,7 @@ public class ServiceClassFinder {
 
     private final ExceptionHandler exceptionHandler;
 
-    private final RepositoryPropertiesMap<Boolean> ignoredClassMap = new RepositoryPropertiesMap<>(Boolean.class);
+    private final PropertyRepositoryMap<Boolean> ignoredClassMap = new PropertyRepositoryMap<>(Boolean.class);
 
     private final ApplicationContext applicationContext;
 
@@ -49,21 +48,19 @@ public class ServiceClassFinder {
 
         fillUniqueClassName();
 
-        PropertiesAgent ignoredClassAgent = serviceProperty
-                .getFactory()
-                .getPropertiesAgent(
-                        mapAlias -> {
-                            System.out.println("onUpdate IgnoreClassFinder: " + mapAlias);
-                            availableClass.clear();
-                            availableClass.addAll(getAvailableClass(pkg));
-                            fillUniqueClassName();
-                        },
-                        ignoredClassMap,
-                        "run.args.IgnoreClassFinder",
-                        false
-                );
+        PropertySubscriber ignoredClassAgent = new PropertySubscriber(
+                serviceProperty,
+                (key, property) -> {
+                    Util.logConsoleJson(getClass(), "onUpdate IgnoreClassFinder: " + property.get());
+                    availableClass.clear();
+                    availableClass.addAll(getAvailableClass(pkg));
+                    fillUniqueClassName();
+                },
+                ignoredClassMap,
+                "run.args.IgnoreClassFinder"
+        );
 
-        ignoredClassAgent.series("run\\.args\\.IgnoreClassFinder.*");
+        ignoredClassAgent.addSubscriptionPattern("run\\.args\\.IgnoreClassFinder.*");
     }
 
     private void fillUniqueClassName() {
@@ -190,9 +187,9 @@ public class ServiceClassFinder {
                             break;
                         }
                     }
-                    RepositoryMapValue<?> s = ignoredClassMap.getMapRepository().get(aClass.getName());
+                    Boolean s = ignoredClassMap.getRepositoryItem(aClass.getName());
                     if (s != null) {
-                        findUnusedAnnotation = (Boolean) s.getValue();
+                        findUnusedAnnotation = s;
                     }
                     if (findUnusedAnnotation) {
                         return;

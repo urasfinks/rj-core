@@ -4,8 +4,9 @@ import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.PropertiesAgent;
-import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyUpdater;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -26,49 +27,31 @@ public class AndroidNotificationResource
         extends ExpirationMsMutableImpl
         implements
         Resource<AndroidNotificationRequest, HttpResponse>,
-        PropertyUpdateDelegate {
+        PropertyUpdater {
 
     private String accessToken;
 
-    private PropertiesAgent propertiesAgent;
+    private PropertySubscriber propertySubscriber;
 
-    private final AndroidNotificationProperties property = new AndroidNotificationProperties();
+    private final AndroidNotificationProperty androidNotificationProperty = new AndroidNotificationProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
-        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
+        propertySubscriber = new PropertySubscriber(
+                App.get(ServiceProperty.class),
                 this,
-                property,
-                resourceArguments.ns,
-                true
+                androidNotificationProperty,
+                resourceArguments.ns
         );
-    }
-
-    @Override
-    public void onPropertyUpdate(Map<String, String> mapAlias) {
-        if (property.getScope() == null || property.getStorageCredentials() == null) {
-            return;
-        }
-        try {
-            String[] messagingScope = new String[]{property.getScope()};
-            GoogleCredentials googleCredentials = GoogleCredentials
-                    .fromStream(new FileInputStream(property.getStorageCredentials()))
-                    .createScoped(Arrays.asList(messagingScope));
-            googleCredentials.refresh();
-            this.accessToken = googleCredentials.getAccessToken().getTokenValue();
-        } catch (Exception e) {
-            App.error(e);
-        }
     }
 
     @Override
     public HttpResponse execute(AndroidNotificationRequest arguments) {
         String postData = createPostData(arguments.getTitle(), arguments.getData(), arguments.getToken());
         HttpConnector httpConnector = new HttpConnectorDefault()
-                .setUrl(property.getUrl())
+                .setUrl(androidNotificationProperty.getUrl())
                 .setConnectTimeoutMs(1_000)
-                .setReadTimeoutMs(property.getTimeoutMs())
+                .setReadTimeoutMs(androidNotificationProperty.getTimeoutMs())
                 .setRequestHeader("Content-type", "application/json")
                 .setRequestHeader("Authorization", "Bearer " + accessToken)
                 .setPostData(postData.getBytes(StandardCharsets.UTF_8));
@@ -90,7 +73,7 @@ public class AndroidNotificationResource
 
         message.put("token", token);
 
-        notification.put("title", property.getApplicationName());
+        notification.put("title", androidNotificationProperty.getApplicationName());
         notification.put("body", title);
         message.put("notification", notification);
 
@@ -107,15 +90,15 @@ public class AndroidNotificationResource
 
     @Override
     public void run() {
-        if (propertiesAgent != null) {
-            propertiesAgent.run();
+        if (propertySubscriber != null) {
+            propertySubscriber.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertiesAgent != null) {
-            propertiesAgent.shutdown();
+        if (propertySubscriber != null) {
+            propertySubscriber.shutdown();
         }
     }
 
@@ -124,4 +107,20 @@ public class AndroidNotificationResource
         return _ -> false;
     }
 
+    @Override
+    public void onPropertyUpdate(String key, Property property) {
+        if (androidNotificationProperty.getScope() == null || androidNotificationProperty.getStorageCredentials() == null) {
+            return;
+        }
+        try {
+            String[] messagingScope = new String[]{androidNotificationProperty.getScope()};
+            GoogleCredentials googleCredentials = GoogleCredentials
+                    .fromStream(new FileInputStream(androidNotificationProperty.getStorageCredentials()))
+                    .createScoped(Arrays.asList(messagingScope));
+            googleCredentials.refresh();
+            this.accessToken = googleCredentials.getAccessToken().getTokenValue();
+        } catch (Exception e) {
+            App.error(e);
+        }
+    }
 }

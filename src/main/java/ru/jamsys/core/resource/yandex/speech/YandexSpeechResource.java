@@ -5,14 +5,14 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.PropertiesAgent;
-import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyUpdater;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.io.File;
-import java.util.Map;
 import java.util.function.Function;
 
 @Component
@@ -21,32 +21,21 @@ public class YandexSpeechResource
         extends ExpirationMsMutableImpl
         implements
         Resource<YandexSpeechRequest, Void>,
-        PropertyUpdateDelegate {
+        PropertyUpdater {
 
     YandexSpeechClient client = null;
 
-    private PropertiesAgent propertiesAgent;
+    private PropertySubscriber propertySubscriber;
 
-    private final YandexSpeechProperties property = new YandexSpeechProperties();
+    private final YandexSpeechProperty yandexSpeechProperty = new YandexSpeechProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
-        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(this, property, resourceArguments.ns, true);
-    }
-
-    @Override
-    public void onPropertyUpdate(Map<String, String> mapAlias) {
-        if (property.getHost() == null || property.getPort() == null || property.getAlias() == null) {
-            return;
-        }
-        if(client != null){
-            client.shutdown();
-        }
-        client = new YandexSpeechClient(
-                property.getHost(),
-                property.getPort(),
-                new String(App.get(SecurityComponent.class).get(property.getAlias()))
+        propertySubscriber = new PropertySubscriber(
+                App.get(ServiceProperty.class),
+                this,
+                yandexSpeechProperty,
+                resourceArguments.ns
         );
     }
 
@@ -69,15 +58,15 @@ public class YandexSpeechResource
 
     @Override
     public void run() {
-        if (propertiesAgent != null) {
-            propertiesAgent.run();
+        if (propertySubscriber != null) {
+            propertySubscriber.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertiesAgent != null) {
-            propertiesAgent.shutdown();
+        if (propertySubscriber != null) {
+            propertySubscriber.shutdown();
         }
         try {
             client.shutdown();
@@ -90,6 +79,21 @@ public class YandexSpeechResource
     @Override
     public Function<Throwable, Boolean> getFatalException() {
         return _ -> false;
+    }
+
+    @Override
+    public void onPropertyUpdate(String key, Property property) {
+        if (yandexSpeechProperty.getHost() == null || yandexSpeechProperty.getPort() == null || yandexSpeechProperty.getAlias() == null) {
+            return;
+        }
+        if (client != null) {
+            client.shutdown();
+        }
+        client = new YandexSpeechClient(
+                yandexSpeechProperty.getHost(),
+                yandexSpeechProperty.getPort(),
+                new String(App.get(SecurityComponent.class).get(yandexSpeechProperty.getAlias()))
+        );
     }
 
 }

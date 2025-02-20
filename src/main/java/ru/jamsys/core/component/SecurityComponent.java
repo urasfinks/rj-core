@@ -7,8 +7,8 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertiesAgent;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
+import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.util.*;
 import ru.jamsys.core.flat.util.crypto.UtilRsa;
 
@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
-public class SecurityComponent extends RepositoryPropertiesField implements LifeCycleComponent {
+public class SecurityComponent extends AnnotationPropertyExtractor implements LifeCycleComponent {
 
     @Setter
     @PropertyName("run.args.security.path.storage")
@@ -63,16 +63,16 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
 
     private KeyStore.PasswordProtection keyStorePP;
 
-    private final PropertiesAgent propertiesAgent;
+    private final PropertySubscriber propertySubscriber;
 
     private final AtomicBoolean run = new AtomicBoolean(false);
 
     public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
+        propertySubscriber = new PropertySubscriber(
+                serviceProperty,
                 null,
                 this,
-                null,
-                true
+                null
         );
         this.exceptionHandler = exceptionHandler;
     }
@@ -373,13 +373,13 @@ public class SecurityComponent extends RepositoryPropertiesField implements Life
                 printNotice(passwordFromInfoJson);
                 System.exit(0);
             }
-            propertiesAgent.run();
+            propertySubscriber.run();
         }
     }
 
     @Override
     public void shutdown() {
-        propertiesAgent.shutdown();
+        propertySubscriber.shutdown();
     }
 
     @Override

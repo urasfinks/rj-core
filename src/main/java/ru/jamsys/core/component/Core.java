@@ -1,15 +1,14 @@
 package ru.jamsys.core.component;
 
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerFileByteWriter;
 import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.StatisticSec;
 
@@ -24,8 +23,6 @@ public class Core implements LifeCycleInterface {
 
     private final ServiceClassFinder serviceClassFinder;
 
-    private final ApplicationContext applicationContext;
-
     private final ManagerFileByteWriter managerFileByteWriter;
 
     private final ManagerBroker managerBroker;
@@ -35,12 +32,10 @@ public class Core implements LifeCycleInterface {
     private final ConcurrentLinkedDeque<LifeCycleComponent> runComponent = new ConcurrentLinkedDeque<>();
 
     public Core(
-            ApplicationContext applicationContext,
             ServiceClassFinder serviceClassFinder,
             ManagerFileByteWriter managerFileByteWriter,
             ManagerBroker managerBroker
     ) {
-        this.applicationContext = applicationContext;
         this.serviceClassFinder = serviceClassFinder;
         this.managerFileByteWriter = managerFileByteWriter;
         this.managerBroker = managerBroker;
@@ -49,14 +44,15 @@ public class Core implements LifeCycleInterface {
     @Override
     public void run() {
         Util.logConsole(getClass(), ".run()");
-        String indexStatistic = UniqueClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext);
-        String indexLog = UniqueClassNameImpl.getClassNameStatic(Log.class, null, applicationContext);
 
-        FileByteWriter fileByteWriterStatistic = managerFileByteWriter.get(indexStatistic);
-        FileByteWriter fileByteWriterLog = managerFileByteWriter.get(indexLog);
+        String classNameStatistic = App.getUniqueClassName(StatisticSec.class);
+        String classNameLog = App.getUniqueClassName(Log.class);
 
-        managerBroker.initAndGet(indexStatistic, StatisticSec.class, fileByteWriterStatistic::append);
-        managerBroker.initAndGet(indexLog, Log.class, fileByteWriterLog::append);
+        FileByteWriter fileByteWriterStatistic = managerFileByteWriter.get(classNameStatistic);
+        FileByteWriter fileByteWriterLog = managerFileByteWriter.get(classNameLog);
+
+        managerBroker.initAndGet(classNameStatistic, StatisticSec.class, fileByteWriterStatistic::append);
+        managerBroker.initAndGet(classNameLog, Log.class, fileByteWriterLog::append);
 
         List<LifeCycleComponent> sortedList = new ArrayList<>();
         serviceClassFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {

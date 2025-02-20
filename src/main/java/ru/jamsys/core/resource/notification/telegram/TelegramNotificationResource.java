@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.PropertiesAgent;
+import ru.jamsys.core.extension.property.PropertySubscriber;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
@@ -25,19 +25,18 @@ public class TelegramNotificationResource
 
     private SecurityComponent securityComponent;
 
-    private PropertiesAgent propertiesAgent;
+    private PropertySubscriber propertySubscriber;
 
-    private final TelegramNotificationProperties property = new TelegramNotificationProperties();
+    private final TelegramNotificationProperty telegramNotificationProperty = new TelegramNotificationProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
-        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         securityComponent = App.get(SecurityComponent.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
+        propertySubscriber = new PropertySubscriber(
+                App.get(ServiceProperty.class),
                 null,
-                property,
-                resourceArguments.ns,
-                true
+                telegramNotificationProperty,
+                resourceArguments.ns
         );
     }
 
@@ -50,13 +49,13 @@ public class TelegramNotificationResource
         }
         HttpConnectorDefault httpClient = new HttpConnectorDefault();
         httpClient.setUrl(String.format(
-                property.getUrl(),
-                new String(securityComponent.get(property.getSecurityAlias())),
-                property.getIdChat(),
+                telegramNotificationProperty.getUrl(),
+                new String(securityComponent.get(telegramNotificationProperty.getSecurityAlias())),
+                telegramNotificationProperty.getIdChat(),
                 URLEncoder.encode(bodyRequest, StandardCharsets.UTF_8))
         );
         httpClient.setConnectTimeoutMs(1_000);
-        httpClient.setReadTimeoutMs(property.getTimeoutMs());
+        httpClient.setReadTimeoutMs(telegramNotificationProperty.getTimeoutMs());
         httpClient.exec();
         return httpClient.getResponseObject();
     }
@@ -73,16 +72,12 @@ public class TelegramNotificationResource
 
     @Override
     public void run() {
-        if (propertiesAgent != null) {
-            propertiesAgent.run();
-        }
+        propertySubscriber.run();
     }
 
     @Override
     public void shutdown() {
-        if (propertiesAgent != null) {
-            propertiesAgent.shutdown();
-        }
+        propertySubscriber.shutdown();
     }
 
 }

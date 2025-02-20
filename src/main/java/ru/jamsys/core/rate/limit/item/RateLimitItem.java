@@ -7,20 +7,25 @@ import ru.jamsys.core.extension.StatisticsFlush;
 
 public interface RateLimitItem extends StatisticsFlush {
 
-    String getNs(); // Получить пространство Property RateLimit
-
     boolean check();
 
     int get();
 
     int max();
 
+    String getKey();
+
     default void set(int value) {
-        App.get(ServiceProperty.class).setProperty(getNs(), value + "");
+        App.get(ServiceProperty.class)
+                .get(getKey(), 0, getClass().getName())
+                .set(value, getClass().getName());
     }
 
     default void set(ApplicationContext applicationContext, int value) {
-        applicationContext.getBean(ServiceProperty.class).setProperty(getNs(), value + "");
+        applicationContext
+                .getBean(ServiceProperty.class)
+                .get(getKey(), 0, getClass().getName())
+                .set(value, getClass().getName());
     }
 
 }

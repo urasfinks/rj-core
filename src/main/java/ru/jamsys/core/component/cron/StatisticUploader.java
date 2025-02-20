@@ -3,7 +3,6 @@ package ru.jamsys.core.component.cron;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import lombok.Getter;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
@@ -12,11 +11,11 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ByteTransformer;
-import ru.jamsys.core.extension.UniqueClassName;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
+import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilListSort;
@@ -38,7 +37,7 @@ import java.util.function.Function;
 
 @Component
 @Lazy
-public class StatisticUploader extends RepositoryPropertiesField implements Cron5s, PromiseGenerator, UniqueClassName {
+public class StatisticUploader extends AnnotationPropertyExtractor implements Cron5s, PromiseGenerator, CascadeName {
 
     final Broker<StatisticSec> broker;
 
@@ -56,27 +55,36 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
     @PropertyName("run.args.remote.statistic")
     private Boolean remoteStatistic;
 
+    @Override
+    public String getKey() {
+        return null;
+    }
+
+    @Override
+    public CascadeName getParentCascadeName() {
+        return App.cascadeName;
+    }
+
     public enum StatisticUploaderPromiseProperty {
         RESERVE_STATISTIC,
     }
 
     public StatisticUploader(
             ManagerBroker managerBroker,
-            ApplicationContext applicationContext,
             ServicePromise servicePromise,
             ServiceProperty serviceProperty
     ) {
         this.servicePromise = servicePromise;
         broker = managerBroker.get(
-                UniqueClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
+                getCascadeName(App.getUniqueClassName(StatisticSec.class)),
                 StatisticSec.class
         );
-        serviceProperty.getFactory().getPropertiesAgent(
+        new PropertySubscriber(
+                serviceProperty,
                 null,
                 this,
-                null,
-                false
-        );
+                null
+        ); //Без run() просто заполнить значения
     }
 
     @Override
@@ -121,7 +129,7 @@ public class StatisticUploader extends RepositoryPropertiesField implements Cron
                     }
                 })
                 .then("readDirectory", (_, _, promise) -> {
-                    String indexStatistic = UniqueClassNameImpl.getClassNameStatic(StatisticSec.class, null, App.context);
+                    String indexStatistic = getCascadeName();
                     List<String> filesRecursive = UtilFile.getFilesRecursive(getFolder(), false);
                     List<String> restore = new ArrayList<>();
                     for (String filePath : filesRecursive) {

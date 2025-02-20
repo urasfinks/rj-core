@@ -4,27 +4,42 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerExpiration;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
+import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.ClassEquals;
+import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.StatisticsFlush;
+import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
-public class Session<K, V> implements Map<K, V> {
+public class Session<K, V>
+        extends ExpirationMsMutableImpl
+        implements
+        Map<K, V>,
+        CascadeName,
+        StatisticsFlush,
+        LifeCycleInterface,
+        ClassEquals {
 
     @Getter
     private final Map<K, V> map = new ConcurrentHashMap<>(); // Основная карта, в которой хранятся сессионные данные
-
-    private final long keepAliveOnInactivityMs;
 
     // Брокер нужен, что бы срабатывал механизм onDrop, что бы мы подчищали основную карту map
     private final Expiration<DisposableExpirationMsImmutableEnvelope> expiration;
 
     // Помещаем в эту карту элементы из брокера, что бы можно удалить из брокера ключ, не дожидаясь его onDrop
     private final Map<K, DisposableExpirationMsImmutableEnvelope<K>> mapExpiration = new ConcurrentHashMap<>();
+
+    @Getter
+    private final String key;
+
+    @Getter
+    private final CascadeName parentCascadeName;
 
     public int size() {
         return map.size();
@@ -52,7 +67,10 @@ public class Session<K, V> implements Map<K, V> {
         // Добавляем новый таймер
         @SuppressWarnings("all")
         DisposableExpirationMsImmutableEnvelope newEnv = mapExpiration
-                .computeIfAbsent(key, k -> new DisposableExpirationMsImmutableEnvelope<>(k, keepAliveOnInactivityMs));
+                .computeIfAbsent(key, key1 -> new DisposableExpirationMsImmutableEnvelope<>(
+                        key1,
+                        getKeepAliveOnInactivityMs()
+                ));
         expiration.add(newEnv);
     }
 
@@ -67,18 +85,19 @@ public class Session<K, V> implements Map<K, V> {
         return map.put(key, value);
     }
 
-    public Session(String index, long keepAliveOnInactivityMs) {
-        this.keepAliveOnInactivityMs = keepAliveOnInactivityMs;
-        ManagerExpiration managerExpiration = App.get(ManagerExpiration.class);
-        expiration = managerExpiration.get(
-                UniqueClassNameImpl.getClassNameStatic(Session.class, index),
+    public Session(CascadeName parentCascadeName, String key, long keepAliveOnInactivityMs) {
+        this.parentCascadeName = parentCascadeName;
+        this.key = key;
+        setKeepAliveOnInactivityMs(keepAliveOnInactivityMs);
+        this.expiration = App.get(ManagerExpiration.class).get(
+                getCascadeName(),
                 DisposableExpirationMsImmutableEnvelope.class,
                 env -> {
                     @SuppressWarnings("unchecked")
-                    K key = (K) env.getValue();
-                    if (key != null) {
-                        map.remove(key);
-                        mapExpiration.remove(key);
+                    K key1 = (K) env.getValue();
+                    if (key1 != null) {
+                        map.remove(key1);
+                        mapExpiration.remove(key1);
                     }
                 }
         );
@@ -135,6 +154,54 @@ public class Session<K, V> implements Map<K, V> {
     @Override
     public boolean containsValue(Object value) {
         return map.containsValue(value);
+    }
+
+    @Override
+    public long getLastActivityMs() {
+        return 0;
+    }
+
+    @Override
+    public long getKeepAliveOnInactivityMs() {
+        return 0;
+    }
+
+    @Override
+    public void setStopTimeMs(Long timeMs) {
+
+    }
+
+    @Override
+    public Long getStopTimeMs() {
+        return 0L;
+    }
+
+    @Override
+    public boolean classEquals(Class<?> classItem) {
+        return true;
+    }
+
+    @Override
+    public void run() {
+
+    }
+
+    @Override
+    public void shutdown() {
+
+    }
+
+    public List<Statistic> flushAndGetStatistic(
+            Map<String, String> parentTags,
+            Map<String, Object> parentFields,
+            AtomicBoolean threadRun
+    ) {
+        List<Statistic> result = new ArrayList<>();
+        result.add(new Statistic(parentTags, parentFields)
+                .addField("size", size())
+                .addField("sizeExpiration", sizeExpiration())
+        );
+        return result;
     }
 
 }

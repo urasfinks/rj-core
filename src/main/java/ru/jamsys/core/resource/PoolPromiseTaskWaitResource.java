@@ -4,6 +4,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.ClassEquals;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -39,21 +40,27 @@ public class PoolPromiseTaskWaitResource<
 
     private final Class<PI> classItem;
 
-    public PoolPromiseTaskWaitResource(String name, PoolSettings<PI> poolSettings, Class<PI> classItem) {
-        super(name);
+    public PoolPromiseTaskWaitResource(
+            CascadeName parentCascadeName,
+            String name,
+            PoolSettings<PI> poolSettings,
+            Class<PI> classItem
+    ) {
+        super(parentCascadeName, name);
         this.poolSettings = poolSettings;
         this.classItem = classItem;
-        broker = App.get(ManagerBroker.class).initAndGet(this.getIndex(), PromiseTaskWithResource.class, null);
+        broker = App.get(ManagerBroker.class)
+                .initAndGet(this.getCascadeName(), PromiseTaskWithResource.class, null);
     }
 
     @Override
     public PI createPoolItem() {
         PI newPoolItem = App.context.getBean(poolSettings.getClassPoolItem());
-        if (isDebug() && getIndex().equals(getDebugIndex())) {
+        if (isDebug() && getKey().equals(getDebugKey())) {
             Util.logConsole(
                     getClass(),
-                    "createPoolItem [" + getIndex() + "] :: "
-                            + poolSettings.getIndex()
+                    "createPoolItem [" + getCascadeName() + "] :: "
+                            + poolSettings.getKey()
                             + "; result = " + newPoolItem.getClass().getName()
             );
         }
@@ -89,10 +96,10 @@ public class PoolPromiseTaskWaitResource<
     }
 
     public void addPromiseTaskPool(PromiseTaskWithResource<?> promiseTaskWithResource) {
-        if (isDebug() && getIndex().equals(getDebugIndex())) {
+        if (isDebug() && getKey().equals(getDebugKey())) {
             Util.logConsole(
                     getClass(),
-                    "PoolTaskWait.addPromiseTaskPool(" + getIndex() + ") task: "
+                    "PoolTaskWait.addPromiseTaskPool(" + getCascadeName() + ") task: "
                             + promiseTaskWithResource.getIndex()
             );
         }

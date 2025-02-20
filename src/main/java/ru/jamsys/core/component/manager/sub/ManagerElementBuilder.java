@@ -5,6 +5,6 @@ package ru.jamsys.core.component.manager.sub;
 
 public interface ManagerElementBuilder<E, EBA> {
 
-    E build(String index, Class<?> classItem, EBA builderArgument);
+    E build(String key, Class<?> classItem, EBA builderArgument);
 
 }

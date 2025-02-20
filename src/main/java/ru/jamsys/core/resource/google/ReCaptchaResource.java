@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.PropertiesAgent;
+import ru.jamsys.core.extension.property.PropertySubscriber;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
@@ -23,9 +23,9 @@ public class ReCaptchaResource
 
     private final SecurityComponent securityComponent;
 
-    private final ReCaptchaProperties property = new ReCaptchaProperties();
+    private final ReCaptchaProperty reCaptchaProperty = new ReCaptchaProperty();
 
-    private PropertiesAgent propertiesAgent;
+    private PropertySubscriber propertySubscriber;
 
     public ReCaptchaResource(SecurityComponent securityComponent) {
         this.securityComponent = securityComponent;
@@ -33,8 +33,12 @@ public class ReCaptchaResource
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
-        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(null, property, resourceArguments.ns, true);
+        propertySubscriber = new PropertySubscriber(
+                App.get(ServiceProperty.class),
+                null,
+                reCaptchaProperty,
+                resourceArguments.ns
+        );
     }
 
     @Override
@@ -42,7 +46,7 @@ public class ReCaptchaResource
         HttpConnectorDefault httpClient = new HttpConnectorDefault();
         httpClient.setUrl("https://www.google.com/recaptcha/api/siteverify");
 
-        String body = "secret=" + new String(securityComponent.get(property.getSecurityAlias())) + "&response=" + captchaValue;
+        String body = "secret=" + new String(securityComponent.get(reCaptchaProperty.getSecurityAlias())) + "&response=" + captchaValue;
         httpClient.setPostData(body.getBytes(StandardCharsets.UTF_8));
 
         httpClient.setConnectTimeoutMs(1_000);
@@ -64,16 +68,12 @@ public class ReCaptchaResource
 
     @Override
     public void run() {
-        if (propertiesAgent != null) {
-            propertiesAgent.run();
-        }
+        propertySubscriber.run();
     }
 
     @Override
     public void shutdown() {
-        if (propertiesAgent != null) {
-            propertiesAgent.shutdown();
-        }
+        propertySubscriber.shutdown();
     }
 
 }

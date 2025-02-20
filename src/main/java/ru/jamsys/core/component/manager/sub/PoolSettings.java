@@ -1,15 +1,16 @@
 package ru.jamsys.core.component.manager.sub;
 
 import lombok.Getter;
-import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.Resource;
+import ru.jamsys.core.resource.ResourceArguments;
 
 import java.util.function.Function;
 
 @Getter
 public class PoolSettings<T extends Resource<?, ?>> {
 
-    private final String index;
+    @Getter
+    private final String key;
 
     private final Class<T> classPoolItem;
 
@@ -18,12 +19,12 @@ public class PoolSettings<T extends Resource<?, ?>> {
     private final Function<Throwable, Boolean> functionCheckFatalException;
 
     public PoolSettings(
-            String index,
+            String key,
             Class<T> classPoolItem,
             ResourceArguments resourceArguments,
             Function<Throwable, Boolean> functionCheckFatalException
     ) {
-        this.index = index;
+        this.key = key;
         this.classPoolItem = classPoolItem;
         this.resourceArguments = resourceArguments;
         this.functionCheckFatalException = functionCheckFatalException;

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.ManagerSession;
 import ru.jamsys.core.flat.util.Util;
 
 class SessionTest {
@@ -25,7 +26,7 @@ class SessionTest {
 
     @Test
     void computeIfAbsent() {
-        Session<Integer, XTest> test = new Session<>("test", 1000);
+        Session<Integer, XTest> test = App.get(ManagerSession.class).get("test", 1000);
         XTest s = test.computeIfAbsent(10, _ -> new XTest());
         Assertions.assertEquals(1, test.size());
         Assertions.assertEquals(1, test.sizeExpiration());

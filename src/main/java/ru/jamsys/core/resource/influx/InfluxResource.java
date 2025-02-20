@@ -11,15 +11,15 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.PropertiesAgent;
-import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyUpdater;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,7 +30,7 @@ public class InfluxResource
         extends ExpirationMsMutableImpl
         implements
         Resource<List<Point>, Void>,
-        PropertyUpdateDelegate,
+        PropertyUpdater,
         ResourceCheckException {
 
     //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token ''
@@ -39,28 +39,18 @@ public class InfluxResource
 
     private WriteApiBlocking writer;
 
-    private PropertiesAgent propertiesAgent;
+    private PropertySubscriber propertySubscriber;
 
-    private final InfluxProperties property = new InfluxProperties();
+    private final InfluxProperty influxProperty = new InfluxProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) {
-        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
-                null,
-                property,
-                resourceArguments.ns,
-                true
+        propertySubscriber = new PropertySubscriber(
+                App.get(ServiceProperty.class),
+                this,
+                influxProperty,
+                resourceArguments.ns
         );
-    }
-
-    @Override
-    public void onPropertyUpdate(Map<String, String> mapAlias) {
-        down();
-        if (property.getHost() == null || property.getAlias() == null) {
-            return;
-        }
-        up();
     }
 
     private void down() {
@@ -77,7 +67,7 @@ public class InfluxResource
     private void up() {
         if (client == null) {
             SecurityComponent securityComponent = App.get(SecurityComponent.class);
-            client = InfluxDBClientFactory.create(property.getHost(), securityComponent.get(property.getAlias()));
+            client = InfluxDBClientFactory.create(influxProperty.getHost(), securityComponent.get(influxProperty.getAlias()));
             client.setLogLevel(LogLevel.NONE);
             // Как вы поняли) Верхняя строчка не работает
             Logger.getLogger(AbstractRestClient.class.getName()).setLevel(Level.OFF);
@@ -91,7 +81,7 @@ public class InfluxResource
     @Override
     public Void execute(List<Point> arguments) {
         if (writer != null && !arguments.isEmpty()) {
-            writer.writePoints(property.getBucket(), property.getOrg(), arguments);
+            writer.writePoints(influxProperty.getBucket(), influxProperty.getOrg(), arguments);
         }
         return null;
     }
@@ -122,18 +112,22 @@ public class InfluxResource
 
     @Override
     public void run() {
-        if (propertiesAgent != null) {
-            propertiesAgent.run();
-        }
+        propertySubscriber.run();
         up();
     }
 
     @Override
     public void shutdown() {
-        if (propertiesAgent != null) {
-            propertiesAgent.shutdown();
-        }
+        propertySubscriber.shutdown();
         down();
     }
 
+    @Override
+    public void onPropertyUpdate(String key, Property property) {
+        down();
+        if (influxProperty.getHost() == null || influxProperty.getAlias() == null) {
+            return;
+        }
+        up();
+    }
 }

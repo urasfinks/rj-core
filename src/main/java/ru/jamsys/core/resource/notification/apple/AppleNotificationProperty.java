@@ -1,12 +1,12 @@
 package ru.jamsys.core.resource.notification.apple;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
+import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.extension.annotation.PropertyName;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
-public class AppleNotificationProperties extends RepositoryPropertiesField {
+public class AppleNotificationProperty extends AnnotationPropertyExtractor {
 
     @PropertyName("notification.apple.virtual.path")
     private String virtualPath;

@@ -9,7 +9,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertiesAgent;
+import ru.jamsys.core.extension.property.PropertySubscriber;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
@@ -23,25 +23,23 @@ public class EmailNotificationResource
         extends ExpirationMsMutableImpl
         implements
         Resource<EmailNotificationRequest, Void>,
-        ResourceCheckException
-{
+        ResourceCheckException {
 
     private SecurityComponent securityComponent;
 
-    private PropertiesAgent propertiesAgent;
+    private PropertySubscriber propertySubscriber;
 
     @Getter
-    private final EmailNotificationProperties property = new EmailNotificationProperties();
+    private final EmailNotificationProperty property = new EmailNotificationProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
-        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         securityComponent = App.get(SecurityComponent.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
+        propertySubscriber = new PropertySubscriber(
+                App.get(ServiceProperty.class),
                 null,
                 property,
-                resourceArguments.ns,
-                true
+                resourceArguments.ns
         );
     }
 
@@ -87,16 +85,14 @@ public class EmailNotificationResource
 
     @Override
     public void run() {
-        if (propertiesAgent != null) {
-            propertiesAgent.run();
-        }
+        propertySubscriber.run();
+
     }
 
     @Override
     public void shutdown() {
-        if (propertiesAgent != null) {
-            propertiesAgent.shutdown();
-        }
+        propertySubscriber.shutdown();
+
     }
 
 }

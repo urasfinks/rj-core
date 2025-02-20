@@ -47,8 +47,8 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     @Override
     public void prepareLaunch(ProcedureThrowing afterExecuteBlock) {
         this.afterBlockExecution = afterExecuteBlock;
-        getPromise().getTrace().add(new Trace<>(getIndex() + ".Pool-Subscribe(" + poolSettings.getIndex() + ")", null));
-        managerPoolPromiseTaskWaitResource.get(poolSettings.getIndex(), poolSettings).addPromiseTaskPool(this);
+        getPromise().getTrace().add(new Trace<>(getIndex() + ".Pool-Subscribe(" + poolSettings.getKey() + ")", null));
+        managerPoolPromiseTaskWaitResource.get(poolSettings.getKey(), poolSettings).addPromiseTaskPool(this);
     }
 
     @Override
@@ -82,7 +82,7 @@ public class PromiseTaskWithResource<T extends Resource<?, ?>> extends PromiseTa
     // Пул вызывает этот метод
     public void start(PoolItemEnvelope<?, ?, T> poolItem) {
         setPoolItemEnvelope(poolItem);
-        getPromise().getTrace().add(new Trace<>(getIndex() + ".Pool-Received(" + poolSettings.getIndex() + ")", null));
+        getPromise().getTrace().add(new Trace<>(getIndex() + ".Pool-Received(" + poolSettings.getKey() + ")", null));
         super.prepareLaunch(null);
     }
 

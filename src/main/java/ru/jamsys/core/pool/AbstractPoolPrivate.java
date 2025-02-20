@@ -1,6 +1,7 @@
 package ru.jamsys.core.pool;
 
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
@@ -12,8 +13,8 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 public abstract class AbstractPoolPrivate<RA, RR, PI extends ExpirationMsMutable & Resource<RA, RR>>
         extends AbstractPool<RA, RR, PI> {
 
-    public AbstractPoolPrivate(String name) {
-        super(name);
+    public AbstractPoolPrivate(CascadeName parentCascadeName, String key) {
+        super(parentCascadeName, key);
     }
 
     // Звоночек, что бы взбодрить приватные ресурсы

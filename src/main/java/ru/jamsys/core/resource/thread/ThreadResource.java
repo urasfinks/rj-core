@@ -3,7 +3,7 @@ package ru.jamsys.core.resource.thread;
 import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
-import ru.jamsys.core.extension.UniqueClassName;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
@@ -16,12 +16,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
 
-public class ThreadResource extends ExpirationMsMutableImpl implements UniqueClassName, Resource<Void, Void> {
+public class ThreadResource extends ExpirationMsMutableImpl implements CascadeName, Resource<Void, Void> {
 
     private final Thread thread;
-
-    @Getter
-    private final String name;
 
     private final AtomicBoolean init = new AtomicBoolean(false);
 
@@ -36,10 +33,17 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
 
     private final ThreadPool pool;
 
-    public ThreadResource(String name, ThreadPool pool) {
+    @Getter
+    private final CascadeName parentCascadeName;
+
+    @Getter
+    private final String key;
+
+    public ThreadResource(CascadeName parentCascadeName, String key, ThreadPool pool) {
+        this.parentCascadeName = parentCascadeName;
+        this.key = key;
         this.pool = pool;
-        RateLimit rateLimit = App.get(ManagerRateLimit.class).get(pool.getIndex());
-        this.name = name;
+        RateLimit rateLimit = App.get(ManagerRateLimit.class).get(getCascadeName());
 
         thread = new Thread(() -> {
             while (spin.get() && isNotInterrupted() && !shutdown.get()) {
@@ -64,7 +68,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements UniqueCla
             }
             run.set(false);
         });
-        thread.setName(name);
+        thread.setName(getCascadeName());
     }
 
     public boolean isInit() {

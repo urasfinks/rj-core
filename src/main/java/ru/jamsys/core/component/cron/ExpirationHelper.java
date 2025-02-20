@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.ManagerExpiration;
-import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
@@ -14,7 +13,7 @@ import ru.jamsys.core.promise.PromiseGenerator;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class ExpirationHelper implements Cron1s, PromiseGenerator, UniqueClassName {
+public class ExpirationHelper implements Cron1s, PromiseGenerator {
 
     private final ManagerExpiration managerExpiration;
 

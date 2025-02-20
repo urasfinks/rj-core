@@ -82,7 +82,7 @@ class PromiseImplTest {
 
     @Test
     void test3() {
-        App.get(ManagerRateLimit.class).setLimit("ThreadPool.test.test", "tps", 10000);
+        App.get(ManagerRateLimit.class).get("ThreadPool.test.test").get("tps").set(10000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
@@ -99,7 +99,7 @@ class PromiseImplTest {
 
     @Test
     void test3_1() {
-        App.get(ManagerRateLimit.class).setLimit("ThreadPool.seq.then1", "tps", 1);
+        App.get(ManagerRateLimit.class).get("ThreadPool.seq.then1").get("tps").set(1);
         Promise promise = servicePromise.get("seq", 6_000L);
         AtomicInteger c = new AtomicInteger(0);
         promise.then("then1", (_, _, _) -> c.incrementAndGet());
@@ -113,7 +113,7 @@ class PromiseImplTest {
 
     @Test
     void test3_2() {
-        App.get(ManagerRateLimit.class).setLimit("ThreadPool.seq2.then1", "tps", 0);
+        App.get(ManagerRateLimit.class).get("ThreadPool.seq2.then1").get("tps").set(0);
         AtomicInteger c = new AtomicInteger(0);
         Promise promise = servicePromise.get("seq2", 6_000L)
                 .then("then1", (_, _, _) -> c.incrementAndGet())
@@ -143,7 +143,7 @@ class PromiseImplTest {
 
     @Test
     void test5() {
-        App.get(ManagerRateLimit.class).setLimit("ThreadPool.test.test", "tps", 100000000);
+        App.get(ManagerRateLimit.class).get("ThreadPool.test.test").get("tps").set(100000000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();

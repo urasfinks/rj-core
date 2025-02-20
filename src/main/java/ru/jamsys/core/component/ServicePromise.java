@@ -1,16 +1,15 @@
 package ru.jamsys.core.component;
 
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Expiration;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.UniqueClassName;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
@@ -28,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
-public class ServicePromise implements UniqueClassName, KeepAliveComponent, StatisticsFlushComponent {
+public class ServicePromise implements CascadeName, KeepAliveComponent, StatisticsFlushComponent {
 
     public static Set<Promise> queueMultipleCompleteSet = Util.getConcurrentHashSet();
 
@@ -42,17 +41,17 @@ public class ServicePromise implements UniqueClassName, KeepAliveComponent, Stat
 
     private final ConcurrentLinkedDeque<Statistic> toStatistic = new ConcurrentLinkedDeque<>();
 
-    public ServicePromise(ManagerBroker managerBroker, ApplicationContext applicationContext, ManagerExpiration managerExpiration) {
+    public ServicePromise(ManagerBroker managerBroker, ManagerExpiration managerExpiration) {
         this.broker = managerBroker.initAndGet(
-                getClassName("run", applicationContext),
+                getCascadeName(),
                 Promise.class,
-                promise -> promise.timeOut(getClassName("onPromiseTaskExpired"))
+                promise -> promise.timeOut("onPromiseTaskExpired")
         );
         promiseTaskRetry = managerExpiration.get("PromiseTaskRetry", PromiseTask.class, this::onPromiseTaskRetry);
     }
 
     public Promise get(Class<?> cls, long timeOutMs) {
-        return get(UniqueClassNameImpl.getClassNameStatic(cls), timeOutMs);
+        return get(App.getUniqueClassName(cls), timeOutMs);
     }
 
     public Promise get(String index, long timeOutMs) {
@@ -113,6 +112,16 @@ public class ServicePromise implements UniqueClassName, KeepAliveComponent, Stat
             }
         }
         return result;
+    }
+
+    @Override
+    public String getKey() {
+        return null;
+    }
+
+    @Override
+    public CascadeName getParentCascadeName() {
+        return App.cascadeName;
     }
 
 }

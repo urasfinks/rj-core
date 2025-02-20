@@ -4,17 +4,18 @@ import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.UniqueClassName;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
+import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -31,7 +32,7 @@ import java.util.Map;
 
 @Component
 @Lazy
-public class StatisticFlush extends RepositoryPropertiesField implements Cron1s, PromiseGenerator, UniqueClassName {
+public class StatisticFlush extends AnnotationPropertyExtractor implements Cron1s, PromiseGenerator, CascadeName {
 
     final Broker<StatisticSec> broker;
 
@@ -57,18 +58,17 @@ public class StatisticFlush extends RepositoryPropertiesField implements Cron1s,
     ) {
         this.servicePromise = servicePromise;
         this.broker = broker.get(
-                UniqueClassNameImpl.getClassNameStatic(StatisticSec.class, null, applicationContext),
+                getCascadeName(App.getUniqueClassName(StatisticSec.class)),
                 StatisticSec.class
         );
         this.exceptionHandler = exceptionHandler;
         serviceClassFinder.findByInstance(StatisticsFlushComponent.class).forEach(statisticsCollectorClass
                 -> list.add(applicationContext.getBean(statisticsCollectorClass)));
-
-        serviceProperty.getFactory().getPropertiesAgent(
+        new PropertySubscriber(
+                serviceProperty,
                 null,
                 this,
-                null,
-                false
+                null
         );
     }
 
@@ -79,7 +79,7 @@ public class StatisticFlush extends RepositoryPropertiesField implements Cron1s,
                     StatisticSec statisticSec = new StatisticSec();
                     UtilRisc.forEach(threadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
                         Map<String, String> parentTags = new LinkedHashMap<>();
-                        String measurement = UniqueClassNameImpl.getClassNameStatic(statisticsFlushComponent.getClass(), null);
+                        String measurement = App.getUniqueClassName(statisticsFlushComponent.getClass());
                         parentTags.put("measurement", measurement);
                         parentTags.put("Host", ip);
                         List<Statistic> statistics = statisticsFlushComponent.flushAndGetStatistic(
@@ -98,4 +98,15 @@ public class StatisticFlush extends RepositoryPropertiesField implements Cron1s,
                     }
                 });
     }
+
+    @Override
+    public String getKey() {
+        return null;
+    }
+
+    @Override
+    public CascadeName getParentCascadeName() {
+        return App.cascadeName;
+    }
+
 }

@@ -2,11 +2,11 @@ package ru.jamsys.core.resource.notification.email;
 
 import lombok.Getter;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
+import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
-public class EmailNotificationProperties extends RepositoryPropertiesField {
+public class EmailNotificationProperty extends AnnotationPropertyExtractor {
 
     @PropertyName("notification.email.host")
     private String host;

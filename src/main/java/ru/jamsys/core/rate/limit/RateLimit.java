@@ -1,11 +1,10 @@
 package ru.jamsys.core.rate.limit;
 
 import lombok.Getter;
-import org.springframework.context.ApplicationContext;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.ClassEquals;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsCollectorMap;
-import ru.jamsys.core.extension.UniqueClassName;
 import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.extension.exception.RateLimitException;
 import ru.jamsys.core.flat.util.Util;
@@ -26,16 +25,21 @@ public class RateLimit
         implements
         StatisticsCollectorMap<RateLimitItem>,
         ClassEquals,
-        UniqueClassName,
+        CascadeName,
         LifeCycleInterface,
         AddToMap<String, RateLimitItem> {
 
     final Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
 
-    private final String index;
+    @Getter
+    private final String key;
 
-    public RateLimit(String index) {
-        this.index = index;
+    @Getter
+    private final CascadeName parentCascadeName;
+
+    public RateLimit(CascadeName parentCascadeName, String key) {
+        this.parentCascadeName = parentCascadeName;
+        this.key = key;
     }
 
     @Override
@@ -49,7 +53,7 @@ public class RateLimit
             if (rateLimitItem.get() >= rateLimitItem.max()) {
                 throw new RateLimitException(
                         "RateLimit ABORT",
-                        "index: " + index + "; key: " + key + "; max: " + map.get(key).max() + "; now: " + map.get(key).get() + ";"
+                        "key: " +  map.get(key).getKey() + "; max: " + map.get(key).max() + "; now: " + map.get(key).get() + ";"
                 );
             }
         }
@@ -60,7 +64,7 @@ public class RateLimit
             if (!map.get(key).check()) {
                 Util.logConsole(
                         getClass(),
-                        "RateLimit [ABORT] index: " + index + "; key: " + key + "; max: " + map.get(key).max() + "; now: " + map.get(key).get() + ";",
+                        "RateLimit [ABORT] key: " + map.get(key).getKey() + "; max: " + map.get(key).max() + "; now: " + map.get(key).get() + ";",
                         true
                 );
                 return false;
@@ -69,14 +73,12 @@ public class RateLimit
         return true;
     }
 
-    public RateLimitItem get(String name) {
-        return map.get(name);
+    public RateLimitItem get(String key) {
+        return map.get(key);
     }
 
-    public RateLimit init(ApplicationContext applicationContext, String name, RateLimitFactory rateLimitFactory) {
-        map.computeIfAbsent(name, key -> rateLimitFactory.create(
-                getClassName(applicationContext) + "." + index + "." + key)
-        );
+    public RateLimit init(String key, RateLimitFactory rateLimitFactory) {
+        map.computeIfAbsent(getCascadeName(key), rateLimitFactory::create);
         return this;
     }
 
@@ -87,12 +89,12 @@ public class RateLimit
 
     @Override
     public void run() {
-        // Пока ничего не надо
+
     }
 
     @Override
     public void shutdown() {
-        // Пока ничего не надо
+
     }
 
 }

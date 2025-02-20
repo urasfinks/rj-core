@@ -5,9 +5,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.cron.CronTask;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.LifeCycleComponent;
-import ru.jamsys.core.extension.UniqueClassName;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.CronConfigurator;
@@ -19,11 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-// S - Service
+// Запуск обещаний помеченных
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class ServiceCron implements LifeCycleComponent, UniqueClassName {
+public class ServiceCron implements LifeCycleComponent, CascadeName {
 
     final private Thread thread;
 
@@ -71,7 +70,7 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
                 run.set(false);
             }
         });
-        thread.setName(UniqueClassNameImpl.getClassNameStatic(getClass(), null, applicationContext));
+        thread.setName(getCascadeName());
     }
 
     private void runCronTask(long curTimeMs) {
@@ -131,6 +130,16 @@ public class ServiceCron implements LifeCycleComponent, UniqueClassName {
     @Override
     public int getInitializationIndex() {
         return 6;
+    }
+
+    @Override
+    public String getKey() {
+        return null;
+    }
+
+    @Override
+    public CascadeName getParentCascadeName() {
+        return App.cascadeName;
     }
 
 }

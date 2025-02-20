@@ -29,7 +29,7 @@ public class ManagerVirtualFileSystem extends AbstractManager<File, Void> implem
     }
 
     @Override
-    public File build(String index, Class<?> classItem, Void builderArgument) {
+    public File build(String key, Class<?> classItem, Void builderArgument) {
         return null;
     }
 

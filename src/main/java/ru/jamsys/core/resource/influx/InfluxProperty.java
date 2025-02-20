@@ -1,12 +1,12 @@
 package ru.jamsys.core.resource.influx;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertiesField;
+import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.extension.annotation.PropertyName;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
-public class InfluxProperties extends RepositoryPropertiesField {
+public class InfluxProperty extends AnnotationPropertyExtractor {
 
     @PropertyName("influx.org")
     private String org;

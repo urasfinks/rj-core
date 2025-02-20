@@ -2,7 +2,7 @@ package ru.jamsys.core.resource.yandex.speech;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.extension.UniqueClassNameImpl;
+import ru.jamsys.core.App;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
@@ -34,7 +34,7 @@ public class YandexSpeechRequest {
         this.filePath = filePath;
         List<PromiseTask> add = new ArrayList<>();
         asyncPromiseTask = new PromiseTask(
-                UniqueClassNameImpl.getClassNameStatic(getClass()),
+                App.getUniqueClassName(getClass()),
                 promise,
                 PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
                 null

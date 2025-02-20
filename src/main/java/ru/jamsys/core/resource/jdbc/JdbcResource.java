@@ -6,8 +6,9 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertiesAgent;
-import ru.jamsys.core.extension.property.PropertyUpdateDelegate;
+import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyUpdater;
 import ru.jamsys.core.flat.template.jdbc.DataMapper;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
@@ -30,35 +31,26 @@ public class JdbcResource
         implements
         Resource<JdbcRequest, List<Map<String, Object>>>,
         JdbcExecute,
-        PropertyUpdateDelegate {
+        PropertyUpdater {
 
     private StatementControl statementControl;
 
     private Connection connection;
 
-    private PropertiesAgent propertiesAgent;
+    private PropertySubscriber propertySubscriber;
 
-    private final JdbcProperties property = new JdbcProperties();
+    private final JdbcProperty jdbcProperty = new JdbcProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Exception {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
-        propertiesAgent = serviceProperty.getFactory().getPropertiesAgent(
+        propertySubscriber = new PropertySubscriber(
+                App.get(ServiceProperty.class),
                 this,
-                property,
-                resourceArguments.ns,
-                true
+                jdbcProperty,
+                resourceArguments.ns
         );
         this.statementControl = new DefaultStatementControl();
-    }
-
-    @Override
-    public void onPropertyUpdate(Map<String, String> mapAlias) {
-        down();
-        if (property.getUri() == null || property.getUser() == null || property.getSecurityAlias() == null) {
-            return;
-        }
-        up();
     }
 
     private void up() {
@@ -66,9 +58,9 @@ public class JdbcResource
             try {
                 SecurityComponent securityComponent = App.get(SecurityComponent.class);
                 this.connection = DriverManager.getConnection(
-                        property.getUri(),
-                        property.getUser(),
-                        new String(securityComponent.get(property.getSecurityAlias()))
+                        jdbcProperty.getUri(),
+                        jdbcProperty.getUser(),
+                        new String(securityComponent.get(jdbcProperty.getSecurityAlias()))
                 );
             } catch (Throwable th) {
                 throw new ForwardException(th);
@@ -163,9 +155,7 @@ public class JdbcResource
 
     @Override
     public void run() {
-        if (propertiesAgent != null) {
-            propertiesAgent.run();
-        }
+        propertySubscriber.run();
         up();
         if (connection == null) {
             throw new RuntimeException("Connection problem");
@@ -174,10 +164,17 @@ public class JdbcResource
 
     @Override
     public void shutdown() {
-        if (propertiesAgent != null) {
-            propertiesAgent.shutdown();
-        }
+        propertySubscriber.shutdown();
         down();
+    }
+
+    @Override
+    public void onPropertyUpdate(String key, Property property) {
+        down();
+        if (jdbcProperty.getUri() == null || jdbcProperty.getUser() == null || jdbcProperty.getSecurityAlias() == null) {
+            return;
+        }
+        up();
     }
 
 }

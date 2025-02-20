@@ -40,8 +40,8 @@ class BrokerTest {
                     System.out.println("dropped: " + xTest);
                     droped.add(xTest);
                 });
-        broker.getPropertyBrokerSize().set(10);
-        broker.getPropertyBrokerTailSize().set(3);
+        broker.getPropertyBrokerSize().set(10, BrokerTest.class.getName());
+        broker.getPropertyBrokerTailSize().set(3, BrokerTest.class.getName());
 
         for (int i = 0; i < 10; i++) {
             broker.add(new XTest(i), 6_000L);
@@ -86,8 +86,8 @@ class BrokerTest {
         Broker<XTest> broker = App.get(ManagerBroker.class)
                 .get(XTest.class.getSimpleName(), XTest.class);
 
-        broker.getPropertyBrokerSize().set(10);
-        broker.getPropertyBrokerTailSize().set(3);
+        broker.getPropertyBrokerSize().set(10, BrokerTest.class.getName());
+        broker.getPropertyBrokerTailSize().set(3, BrokerTest.class.getName());
 
         for (int i = 0; i < 10; i++) {
             broker.add(new XTest(i), 6_000L);
@@ -209,17 +209,17 @@ class BrokerTest {
 
     @Test
     void testProperty() {
-        App.get(ServiceProperty.class).setProperty("Broker.XTest.BrokerSize", "3000");
+        App.get(ServiceProperty.class).add("Broker.XTest.BrokerSize", "3000", BrokerTest.class.getName());
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
 
         Assertions.assertEquals(3000, broker.getPropertyBrokerSize().get());
-        broker.getPropertyBrokerSize().set(3001);
+        broker.getPropertyBrokerSize().set(3001, BrokerTest.class.getName());
         Assertions.assertEquals(3001, broker.getPropertyBrokerSize().get());
     }
 
     @Test
     void testPropertyDo() {
-        App.get(ServiceProperty.class).setProperty("Broker.XTest.BrokerSize", "11");
+        App.get(ServiceProperty.class).add("Broker.XTest.BrokerSize", "11", BrokerTest.class.getName());
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
         Assertions.assertEquals(11, broker.getPropertyBrokerSize().get());
     }
@@ -227,7 +227,7 @@ class BrokerTest {
     @Test
     void testSpeedRemove() {
         int selection = 1_000_000;
-        App.get(ServiceProperty.class).setProperty("Broker.XTest.BrokerSize", "3000000");
+        App.get(ServiceProperty.class).add("Broker.XTest.BrokerSize", "3000000", BrokerTest.class.getName());
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
         List<DisposableExpirationMsImmutableEnvelope<XTest>> list = new ArrayList<>();
         long start = System.currentTimeMillis();
