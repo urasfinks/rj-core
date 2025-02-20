@@ -45,7 +45,7 @@ public class StatisticFlush extends AnnotationPropertyExtractor implements Cron1
     private final ServicePromise servicePromise;
 
     @Getter
-    @PropertyName("run.args.remote.statistic")
+    @PropertyName("statistic.uploader.remote")
     private Boolean remoteStatistic = true;
 
     public StatisticFlush(

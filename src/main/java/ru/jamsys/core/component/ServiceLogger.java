@@ -42,8 +42,8 @@ public class ServiceLogger extends AnnotationPropertyExtractor implements
     Broker<Log> broker;
 
     @Getter
-    @PropertyName("run.args.remote.log")
-    private Boolean remoteLog = true;
+    @PropertyName("remote")
+    private Boolean remote = false;
 
     public ServiceLogger(ManagerBroker managerBroker, ApplicationContext applicationContext) {
         broker = managerBroker.get(
@@ -57,13 +57,13 @@ public class ServiceLogger extends AnnotationPropertyExtractor implements
                 applicationContext.getBean(ServiceProperty.class),
                 null,
                 this,
-                null
+                "log.uploader"
         ); //Без run() просто заполнить значения
     }
 
     public DisposableExpirationMsImmutableEnvelope<Log> add(Log log) {
         stat.get(log.logType.getNameCamel()).incrementAndGet();
-        if (remoteLog) {
+        if (remote) {
             return broker.add(new ExpirationMsImmutableEnvelope<>(log, 6_000));
         }
         return null;
@@ -109,7 +109,7 @@ public class ServiceLogger extends AnnotationPropertyExtractor implements
 
     @Override
     public void shutdown() {
-        if (remoteLog && !broker.isEmpty()) {
+        if (remote && !broker.isEmpty()) {
             Promise promise = App.get(LogUploader.class).generate();
             if (promise != null) {
                 promise.run().await(5000);

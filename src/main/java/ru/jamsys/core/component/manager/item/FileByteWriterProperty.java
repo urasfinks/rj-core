@@ -9,9 +9,8 @@ import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 @Getter
 public class FileByteWriterProperty extends AnnotationPropertyExtractor {
 
-    @PropertyNotNull
     @PropertyName("folder")
-    private String folder;
+    private String folder = "LogManager";
 
     @PropertyName("file.size.kb")
     private Integer fileSizeKb = 20971520;

@@ -42,15 +42,15 @@ public class LogUploader extends AnnotationPropertyExtractor implements Cron5s, 
     private final ServicePromise servicePromise;
 
     @Getter
-    @PropertyName("default.log.file.folder")
-    private String folder;
+    @PropertyName("folder")
+    private String folder = "LogManager";
 
-    @PropertyName("run.args.remote.log.limit.points")
-    private Integer limitInsert;
+    @PropertyName("limit.points")
+    private Integer limitPoints = 2000;
 
     @Getter
-    @PropertyName("run.args.remote.log")
-    private Boolean remoteLog;
+    @PropertyName("remote")
+    private Boolean remote = false;
 
     private final String idx;
 
@@ -70,13 +70,13 @@ public class LogUploader extends AnnotationPropertyExtractor implements Cron5s, 
                 applicationContext.getBean(ServiceProperty.class),
                 null,
                 this,
-                null
+                "log.uploader"
         ); //Без run() просто заполнить значения
     }
 
     @Override
     public Promise generate() {
-        if (!remoteLog) {
+        if (!remote) {
             return null;
         }
         return servicePromise
@@ -87,7 +87,7 @@ public class LogUploader extends AnnotationPropertyExtractor implements Cron5s, 
                     JdbcRequest jdbcRequest = new JdbcRequest(Logger.INSERT);
                     List<Log> reserve = new ArrayList<>();
 
-                    while (!broker.isEmpty() && threadRun.get() && countInsert.get() < limitInsert) {
+                    while (!broker.isEmpty() && threadRun.get() && countInsert.get() < limitPoints) {
                         ExpirationMsImmutableEnvelope<Log> envelope = broker.pollFirst();
                         if (envelope != null) {
                             Log log = envelope.getValue();

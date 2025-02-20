@@ -44,16 +44,16 @@ public class StatisticUploader extends AnnotationPropertyExtractor implements Cr
     private final ServicePromise servicePromise;
 
     @Getter
-    @PropertyName("default.log.file.folder")
-    private String folder;
+    @PropertyName("folder")
+    private String folder = "LogManager";
 
     @Getter
-    @PropertyName("run.args.remote.statistic.limit.points")
-    private Integer limitInsert;
+    @PropertyName("limit.points")
+    private Integer limitPoints = 5000;
 
     @Getter
-    @PropertyName("run.args.remote.statistic")
-    private Boolean remoteStatistic;
+    @PropertyName("remote")
+    private Boolean remote = false;
 
     @Override
     public String getKey() {
@@ -83,13 +83,13 @@ public class StatisticUploader extends AnnotationPropertyExtractor implements Cr
                 serviceProperty,
                 null,
                 this,
-                null
+                "statistic.uploader"
         ); //Без run() просто заполнить значения
     }
 
     @Override
     public Promise generate() {
-        if (!remoteStatistic) {
+        if (!remote) {
             return null;
         }
         return servicePromise.get(getClass().getSimpleName(), 4_999L)
@@ -103,7 +103,7 @@ public class StatisticUploader extends AnnotationPropertyExtractor implements Cr
                     List<Point> listPoints = new ArrayList<>();
 
                     List<StatisticSec> reserve = new ArrayList<>();
-                    while (!broker.isEmpty() && threadRun.get() && countInsert.get() < limitInsert) {
+                    while (!broker.isEmpty() && threadRun.get() && countInsert.get() < limitPoints) {
                         ExpirationMsImmutableEnvelope<StatisticSec> envelope = broker.pollFirst();
                         if (envelope != null) {
                             StatisticSec statisticSec = envelope.getValue();

@@ -25,8 +25,8 @@ public class ExceptionHandler extends AnnotationPropertyExtractor {
 
     private static int maxLine = 50;
 
-    @PropertyName("run.args.remote.log")
-    private Boolean remoteLog = true;
+    @PropertyName("log.uploader.remote")
+    private Boolean remote = false;
 
     @PropertyName("run.args.console.output")
     private Boolean consoleOutput = true;
@@ -49,7 +49,7 @@ public class ExceptionHandler extends AnnotationPropertyExtractor {
                 Util.logConsole(getClass(), getTextException(th, lineWriter));
             }
         }
-        if (remoteLog) {
+        if (remote) {
             LineWriterList lineWriterList = new LineWriterList();
             lineWriterList.addLine(
                     UtilDate.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
