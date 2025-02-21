@@ -70,6 +70,14 @@ public class ServiceProperty {
         return result;
     }
 
+    public Property computeIfAbsent(String key, Object value, String who) {
+        return computeIfAbsent(
+                key,
+                value == null ? null : String.valueOf(value),
+                who
+        );
+    }
+
     public Property computeIfAbsent(String key, String value, String who) {
         return this.properties.computeIfAbsent(key, key1 -> {
             Property property = new Property(key1, value, who);

@@ -50,7 +50,7 @@ public class ServiceClassFinder {
 
         PropertySubscriber ignoredClassAgent = new PropertySubscriber(
                 serviceProperty,
-                (key, property) -> {
+                (_, property) -> {
                     Util.logConsoleJson(getClass(), "onUpdate IgnoreClassFinder: " + property.get());
                     availableClass.clear();
                     availableClass.addAll(getAvailableClass(pkg));
