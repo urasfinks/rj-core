@@ -66,10 +66,14 @@ public class Property {
             if (setup.size() > 30) {
                 setup.removeFirst();
             }
-            UtilRisc.forEach(null, subscriptions, subscription -> {
-                subscription.onPropertyUpdate(this);
-            });
+            emit();
         }
+    }
+
+    public void emit() {
+        UtilRisc.forEach(null, subscriptions, subscription -> {
+            subscription.onPropertyUpdate(this);
+        });
     }
 
     public void set(Object newValue, String who) {

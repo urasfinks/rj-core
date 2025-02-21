@@ -105,17 +105,25 @@ class PropertySubscriptionTest {
         // Так как значение не поменялось true -> true
         Assertions.assertEquals(1, x.get());
 
+        App.get(ServiceProperty.class)
+                .computeIfAbsent("run.args.IgnoreClassFinder.test3", null, PropertySubscriptionTest.class.getName())
+                ;
+
+        Assertions.assertEquals("{test1=false, test2=false, test3=null}", propertySubscriber.getPropertyRepository().getRepository().toString());
+        Assertions.assertEquals(2, x.get());
+
+        App.get(ServiceProperty.class)
+                .computeIfAbsent("run.args.IgnoreClassFinder.test3", null, PropertySubscriptionTest.class.getName())
+                .set(true, PropertySubscriptionTest.class.getName());
+
+        Assertions.assertEquals("{test1=false, test2=false, test3=true}", propertySubscriber.getPropertyRepository().getRepository().toString());
+        Assertions.assertEquals(3, x.get());
     }
 
 
     @Test
     @Order(6)
     public void simpleUpdate() {
-
-    }
-
-    @Test
-    public void extendSeries() {
 
     }
 
