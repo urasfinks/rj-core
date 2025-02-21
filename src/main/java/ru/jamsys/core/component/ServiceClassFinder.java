@@ -91,19 +91,17 @@ public class ServiceClassFinder {
             for (Type type : genericInterfaces) {
                 if (type instanceof ParameterizedType) {
                     Type[] actualTypeArguments = ((ParameterizedType) type).getActualTypeArguments();
-                    if (actualTypeArguments != null) {
-                        for (Type actualType : actualTypeArguments) {
-                            String typeClass = actualType.getTypeName();
-                            try {
-                                Class<?> aClass = Class.forName(typeClass);
-                                if (instanceOf(aClass, fnd)) {
-                                    @SuppressWarnings("unchecked")
-                                    Class<T> tmp = (Class<T>) aClass;
-                                    result.add(tmp);
-                                }
-                            } catch (Exception e) {
-                                exceptionHandler.handler(e);
+                    for (Type actualType : actualTypeArguments) {
+                        String typeClass = actualType.getTypeName();
+                        try {
+                            Class<?> aClass = Class.forName(typeClass);
+                            if (instanceOf(aClass, fnd)) {
+                                @SuppressWarnings("unchecked")
+                                Class<T> tmp = (Class<T>) aClass;
+                                result.add(tmp);
                             }
+                        } catch (Exception e) {
+                            exceptionHandler.handler(e);
                         }
                     }
                 }
