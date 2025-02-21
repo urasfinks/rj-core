@@ -74,6 +74,7 @@ class PropertySubscriptionTest {
     @Test
     @Order(2)
     public void onUpdate() {
+        // ВНИМАТЕЛЬНО тесты выполняются по очереди, по отдельности выполнять нельзя
         PropertyRepositoryMap<String> propertiesRepositoryMap = new PropertyRepositoryMap<>(String.class);
         AtomicInteger x = new AtomicInteger(0);
         PropertySubscriber propertySubscriber = new PropertySubscriber(
@@ -85,7 +86,7 @@ class PropertySubscriptionTest {
                 .addSubscriptionRegexp("run\\.args\\.IgnoreClassFinder.*");
         propertySubscriber.run();
 
-        Assertions.assertEquals("{test1=true, test2=false}", propertySubscriber.getPropertyRepository().getRepository().toString());
+        Assertions.assertEquals("{test1=false, test2=false}", propertySubscriber.getPropertyRepository().getRepository().toString());
 
         // Инициализация подписчика, не вызывает событий обновления, она проливает данные до репозитория
         // События наступают только после обновления данных Property
@@ -93,14 +94,14 @@ class PropertySubscriptionTest {
 
         App.get(ServiceProperty.class)
                 .computeIfAbsent("run.args.IgnoreClassFinder.test1", null, PropertySubscriptionTest.class.getName())
-                .set(true, PropertySubscriptionTest.class.getName());
+                .set(false, PropertySubscriptionTest.class.getName());
 
         // Так как значение не поменялось true -> true
         Assertions.assertEquals(0, x.get());
 
         App.get(ServiceProperty.class)
                 .computeIfAbsent("run.args.IgnoreClassFinder.test1", null, PropertySubscriptionTest.class.getName())
-                .set(false, PropertySubscriptionTest.class.getName());
+                .set(true, PropertySubscriptionTest.class.getName());
 
         // Так как значение не поменялось true -> true
         Assertions.assertEquals(1, x.get());
@@ -109,22 +110,15 @@ class PropertySubscriptionTest {
                 .computeIfAbsent("run.args.IgnoreClassFinder.test3", null, PropertySubscriptionTest.class.getName())
                 ;
 
-        Assertions.assertEquals("{test1=false, test2=false, test3=null}", propertySubscriber.getPropertyRepository().getRepository().toString());
+        Assertions.assertEquals("{test1=true, test2=false, test3=null}", propertySubscriber.getPropertyRepository().getRepository().toString());
         Assertions.assertEquals(2, x.get());
 
         App.get(ServiceProperty.class)
                 .computeIfAbsent("run.args.IgnoreClassFinder.test3", null, PropertySubscriptionTest.class.getName())
                 .set(true, PropertySubscriptionTest.class.getName());
 
-        Assertions.assertEquals("{test1=false, test2=false, test3=true}", propertySubscriber.getPropertyRepository().getRepository().toString());
+        Assertions.assertEquals("{test1=true, test2=false, test3=true}", propertySubscriber.getPropertyRepository().getRepository().toString());
         Assertions.assertEquals(3, x.get());
-    }
-
-
-    @Test
-    @Order(6)
-    public void simpleUpdate() {
-
     }
 
     @Getter
@@ -138,6 +132,7 @@ class PropertySubscriptionTest {
     @Test
     @Order(7)
     public void typedTest() {
+        // ВНИМАТЕЛЬНО тесты выполняются по очереди, по отдельности выполнять нельзя
         TypedProperty typedProperty = new TypedProperty();
         PropertySubscriber propertySubscriber = new PropertySubscriber(
                 App.get(ServiceProperty.class),
