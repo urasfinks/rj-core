@@ -83,12 +83,12 @@ public class Broker<TEO>
         this.onDropConsumer = onDropConsumer;
 
         ServiceProperty serviceProperty = applicationContext.getBean(ServiceProperty.class);
-        propertyBrokerSize = serviceProperty.get(
+        propertyBrokerSize = serviceProperty.computeIfAbsent(
                 key + "." + ValueName.BROKER_SIZE.getNameCamel(),
                 3000,
                 getClass().getName() + "::" + key
         );
-        propertyBrokerTailSize = serviceProperty.get(
+        propertyBrokerTailSize = serviceProperty.computeIfAbsent(
                 key + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),
                 5,
                 getClass().getName() + "::" + key

@@ -63,13 +63,4 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
         return true;
     }
 
-    @Override
-    public String getKey() {
-        return "";
-    }
-
-    @Override
-    public CascadeName getParentCascadeName() {
-        return null;
-    }
 }

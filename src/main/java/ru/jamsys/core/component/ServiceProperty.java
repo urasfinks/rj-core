@@ -13,6 +13,8 @@ import ru.jamsys.core.extension.property.item.PropertySubscription;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,7 +47,7 @@ public class ServiceProperty {
             }
             if (next instanceof EnumerablePropertySource) {
                 for (String prop : ((EnumerablePropertySource<?>) next).getPropertyNames()) {
-                    add(prop, env.getProperty(prop), next.getName());
+                    computeIfAbsent(prop, env.getProperty(prop), next.getName());
                 }
             }
         }
@@ -57,15 +59,18 @@ public class ServiceProperty {
         }
     }
 
-    public Property get(String key, Object defValue, String who) {
-        return add(
-                key,
-                defValue == null ? null : String.valueOf(defValue),
-                who
-        );
+    // Получить все Property ключ которых подходит по шаблону
+    public List<Property> get(String regexp) {
+        List<Property> result = new ArrayList<>();
+        UtilRisc.forEach(null, properties, (_, property) -> {
+            if (property.isMatchPattern(regexp)) {
+                result.add(property);
+            }
+        });
+        return result;
     }
 
-    public Property add(String key, String value, String who) {
+    public Property computeIfAbsent(String key, String value, String who) {
         return this.properties.computeIfAbsent(key, key1 -> {
             Property property = new Property(key1, value, who);
             UtilRisc.forEach(null, subscriptions, property::addSubscription);

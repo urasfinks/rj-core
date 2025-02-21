@@ -9,7 +9,6 @@ import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Objects;
 
 // PropertySubscriber связывает ServiceProperty и PropertyRepository
 // Задача донести изменения Property до PropertyRepository
@@ -41,40 +40,49 @@ public class PropertySubscriber implements LifeCycleInterface {
         this.namespace = namespace;
 
         if (this.propertyRepository != null) {
-            UtilRisc.forEach(null, this.propertyRepository.getRepository(), (key, defaultValue) -> {
-                String propertyKey = getPropertyKey(key);
-                // Получили default значение, получили Property, если не сошлись, считаем приоритетным Property.get()
-                String propertyValue = serviceProperty.get(
-                        propertyKey,
-                        defaultValue,
-                        "stack: " + getClass().getName()
-                                + "; repository:" + propertyRepository.getClass().getName()
-                                + "; namespace: " + namespace
-                ).get();
-                if (!Objects.equals(defaultValue, propertyValue)) {
-                    this.propertyRepository.setRepository(key, propertyValue);
-                }
-                addSubscription(key);
-            });
+            UtilRisc.forEach(null, this.propertyRepository.getRepository(), this::addSubscription);
             this.propertyRepository.checkNotNull();
         }
     }
 
-    public PropertySubscriber addSubscription(String key) {
+    private String getWho() {
+        StringBuilder sb = new StringBuilder();
+        sb
+                .append("class: ").append(getClass().getName()).append("; ")
+                .append("namespace: ").append(namespace).append("; ");
+        if (propertyRepository != null) {
+            sb
+                    .append("repository: ").append(propertyRepository.getClass().getName()).append("; ");
+        }
+        return sb.toString();
+    }
+
+    // Так как сам репопозиторий не знает в каком namespace он работает, нам необходимо сделать прокси
+    // для преобразования ключа
+    public void setRepositoryProxy(String key, String value) {
+        if (propertyRepository != null) {
+            propertyRepository.setRepository(getRepositoryKey(key), value);
+        }
+    }
+
+    public PropertySubscriber addSubscription(String key, String defaultValue) {
         // За регистрацию в ServiceProperty отвечает run()
-        subscriptions.put(
-                key,
-                new PropertySubscription(this).setKey(getPropertyKey(key))
-        );
+        PropertySubscription propertySubscription = new PropertySubscription(this, serviceProperty)
+                .setPropertyKey(getPropertyKey(key))
+                .setDefaultValue(defaultValue)
+                .syncPropertyRepository(getWho());
+        subscriptions.put(key, propertySubscription);
         return this;
     }
 
     // Подписаться на серию настроек по регулярному выражению
-    public PropertySubscriber addSubscriptionPattern(String regexp) {
+    public PropertySubscriber addSubscriptionRegexp(String regexp) {
         // За регистрацию в ServiceProperty отвечает run()
         subscriptions.put(
                 regexp,
-                new PropertySubscription(this).setKeyPattern(regexp)
+                new PropertySubscription(this, serviceProperty)
+                        .setRegexp(regexp)
+                        .syncPropertyRepository(getWho())
         );
         return this;
     }

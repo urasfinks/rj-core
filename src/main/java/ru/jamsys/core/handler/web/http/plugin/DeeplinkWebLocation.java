@@ -39,7 +39,7 @@ public class DeeplinkWebLocation implements PromiseGenerator, HttpHandler {
                     servletHandler.setResponseContentType("text/html");
                     Map<String, String> args = new HashMapBuilder<String, String>()
                             .append("urlSchemes", App.get(ServiceProperty.class)
-                                    .get(
+                                    .computeIfAbsent(
                                             "run.args.plugin.deeplink.url.schemes",
                                             "",
                                             getClass().getName()
@@ -47,7 +47,7 @@ public class DeeplinkWebLocation implements PromiseGenerator, HttpHandler {
                                     .get()
                             )
                             .append("urlIosAppStore", App.get(ServiceProperty.class)
-                                    .get(
+                                    .computeIfAbsent(
                                             "run.args.plugin.deeplink.url.ios.app.store",
                                             "",
                                             getClass().getName()
@@ -59,7 +59,7 @@ public class DeeplinkWebLocation implements PromiseGenerator, HttpHandler {
                                     "static/deeplink.html",
                                     UtilFileResource.Direction.valueOf(
                                             App.get(ServiceProperty.class)
-                                                    .get(
+                                                    .computeIfAbsent(
                                                             "run.args.plugin.deeplink.template.class.loader",
                                                             "",
                                                             getClass().getName()

@@ -60,7 +60,7 @@ public class ServiceClassFinder {
                 "run.args.IgnoreClassFinder"
         );
 
-        ignoredClassAgent.addSubscriptionPattern("run\\.args\\.IgnoreClassFinder.*");
+        ignoredClassAgent.addSubscriptionRegexp("run\\.args\\.IgnoreClassFinder.*");
     }
 
     private void fillUniqueClassName() {

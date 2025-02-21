@@ -17,14 +17,14 @@ public interface RateLimitItem extends StatisticsFlush {
 
     default void set(int value) {
         App.get(ServiceProperty.class)
-                .get(getKey(), 0, getClass().getName())
+                .computeIfAbsent(getKey(), 0, getClass().getName())
                 .set(value, getClass().getName());
     }
 
     default void set(ApplicationContext applicationContext, int value) {
         applicationContext
                 .getBean(ServiceProperty.class)
-                .get(getKey(), 0, getClass().getName())
+                .computeIfAbsent(getKey(), 0, getClass().getName())
                 .set(value, getClass().getName());
     }
 

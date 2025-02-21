@@ -44,14 +44,19 @@ public class Property {
     }
 
     public void addSubscription(PropertySubscription propertySubscription) {
-        String key = propertySubscription.getKey();
+        String key = propertySubscription.getPropertyKey();
         if (this.key.equals(key)) {
             this.subscriptions.add(propertySubscription);
         }
-        String pattern = propertySubscription.getKeyPattern();
-        if (pattern != null && Util.regexpFind(this.key, pattern) != null) {
+        String pattern = propertySubscription.getRegexp();
+        if (pattern != null && isMatchPattern(pattern)) {
             this.subscriptions.add(propertySubscription);
         }
+    }
+
+    // Ключ подходит по шаблону
+    public boolean isMatchPattern(String regexp) {
+        return Util.regexpFind(this.key, regexp) != null;
     }
 
     public void set(String newValue, String who) {

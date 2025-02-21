@@ -102,12 +102,12 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         this.parentCascadeName = parentCascadeName;
         this.key = key;
 
-        propertyPoolSizeMax = App.get(ServiceProperty.class).get(
+        propertyPoolSizeMax = App.get(ServiceProperty.class).computeIfAbsent(
                 getCascadeName() + "." + ValueName.POOL_SIZE_MAX.getNameCamel(),
                 1,
                 getCascadeName()
         );
-        propertyPoolSizeMin = App.get(ServiceProperty.class).get(
+        propertyPoolSizeMin = App.get(ServiceProperty.class).computeIfAbsent(
                 getCascadeName() + "." + ValueName.POOL_SIZE_MIN.getNameCamel(),
                 0,
                 getCascadeName()

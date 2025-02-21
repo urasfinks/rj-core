@@ -38,10 +38,10 @@ class FileByteWriterTest {
     @Test
     void folderNotExist() {
         try {
-            App.get(ServiceProperty.class).add("checkOverMaxFileWrite.log.file.folder", "LogManager", getClass().getName());
-            App.get(ServiceProperty.class).add("checkOverMaxFileWrite.log.file.size.kb", "20971520", getClass().getName());
-            App.get(ServiceProperty.class).add("checkOverMaxFileWrite.log.file.count", "100", getClass().getName());
-            App.get(ServiceProperty.class).add("checkOverMaxFileWrite.log.file.name", "log", getClass().getName());
+            App.get(ServiceProperty.class).computeIfAbsent("checkOverMaxFileWrite.log.file.folder", "LogManager", getClass().getName());
+            App.get(ServiceProperty.class).computeIfAbsent("checkOverMaxFileWrite.log.file.size.kb", "20971520", getClass().getName());
+            App.get(ServiceProperty.class).computeIfAbsent("checkOverMaxFileWrite.log.file.count", "100", getClass().getName());
+            App.get(ServiceProperty.class).computeIfAbsent("checkOverMaxFileWrite.log.file.name", "log", getClass().getName());
 
             FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkOverMaxFileWrite");
             test.getPropertySubscriber().getPropertyRepository().setRepository("log.file.folder", "xxkaa");
@@ -53,10 +53,10 @@ class FileByteWriterTest {
 
     @Test
     void checkOverMaxFileWrite() {
-        App.get(ServiceProperty.class).add("checkOverMaxFileWrite.log.file.folder", "LogManager", getClass().getName());
-        App.get(ServiceProperty.class).add("checkOverMaxFileWrite.log.file.size.kb", "20971520", getClass().getName());
-        App.get(ServiceProperty.class).add("checkOverMaxFileWrite.log.file.count", "100", getClass().getName());
-        App.get(ServiceProperty.class).add("checkOverMaxFileWrite.log.file.name", "log", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkOverMaxFileWrite.log.file.folder", "LogManager", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkOverMaxFileWrite.log.file.size.kb", "20971520", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkOverMaxFileWrite.log.file.count", "100", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkOverMaxFileWrite.log.file.name", "log", getClass().getName());
 
 
         UtilFile.removeAllFilesInFolder("LogManager");
@@ -84,10 +84,10 @@ class FileByteWriterTest {
 
     @Test
     void checkNameLog() {
-        App.get(ServiceProperty.class).add("checkNameLog.log.file.folder", "LogManager", getClass().getName());
-        App.get(ServiceProperty.class).add("checkNameLog.log.file.size.kb", "20971520", getClass().getName());
-        App.get(ServiceProperty.class).add("checkNameLog.log.file.count", "100", getClass().getName());
-        App.get(ServiceProperty.class).add("checkNameLog.log.file.name", "log", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkNameLog.log.file.folder", "LogManager", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkNameLog.log.file.size.kb", "20971520", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkNameLog.log.file.count", "100", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkNameLog.log.file.name", "log", getClass().getName());
 
         UtilFile.removeAllFilesInFolder("LogManager");
         FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkNameLog");
@@ -107,10 +107,10 @@ class FileByteWriterTest {
 
     @Test
     void checkRestoreExceptionShutdown() throws IOException {
-        App.get(ServiceProperty.class).add("checkRestoreExceptionShutdown.log.file.folder", "LogManager", getClass().getName());
-        App.get(ServiceProperty.class).add("checkRestoreExceptionShutdown.log.file.size.kb", "20971520", getClass().getName());
-        App.get(ServiceProperty.class).add("checkRestoreExceptionShutdown.log.file.count", "100", getClass().getName());
-        App.get(ServiceProperty.class).add("checkRestoreExceptionShutdown.log.file.name", "log", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkRestoreExceptionShutdown.log.file.folder", "LogManager", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkRestoreExceptionShutdown.log.file.size.kb", "20971520", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkRestoreExceptionShutdown.log.file.count", "100", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkRestoreExceptionShutdown.log.file.name", "log", getClass().getName());
 
         UtilFile.removeAllFilesInFolder("LogManager");
 
@@ -141,10 +141,10 @@ class FileByteWriterTest {
 
     @Test
     void checkTime() {
-        App.get(ServiceProperty.class).add("checkTime.log.file.folder", "LogManager", getClass().getName());
-        App.get(ServiceProperty.class).add("checkTime.log.file.size.kb", "20971520", getClass().getName());
-        App.get(ServiceProperty.class).add("checkTime.log.file.count", "100", getClass().getName());
-        App.get(ServiceProperty.class).add("checkTime.log.file.name", "log", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkTime.log.file.folder", "LogManager", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkTime.log.file.size.kb", "20971520", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkTime.log.file.count", "100", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("checkTime.log.file.name", "log", getClass().getName());
 
         UtilFile.removeAllFilesInFolder("LogManager");
         long start = System.currentTimeMillis();
@@ -192,10 +192,10 @@ class FileByteWriterTest {
 
     @Test
     void serializeStatisticSecToFile() {
-        App.get(ServiceProperty.class).add("default5.log.file.folder", "LogManager", getClass().getName());
-        App.get(ServiceProperty.class).add("default5.log.file.size.kb", "20971520", getClass().getName());
-        App.get(ServiceProperty.class).add("default5.log.file.count", "100", getClass().getName());
-        App.get(ServiceProperty.class).add("default5.log.file.name", "log", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("default5.log.file.folder", "LogManager", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("default5.log.file.size.kb", "20971520", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("default5.log.file.count", "100", getClass().getName());
+        App.get(ServiceProperty.class).computeIfAbsent("default5.log.file.name", "log", getClass().getName());
 
         UtilFile.removeAllFilesInFolder("LogManager");
         StatisticSec statisticSec1 = new StatisticSec();

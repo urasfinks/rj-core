@@ -209,7 +209,7 @@ class BrokerTest {
 
     @Test
     void testProperty() {
-        App.get(ServiceProperty.class).add("Broker.XTest.BrokerSize", "3000", BrokerTest.class.getName());
+        App.get(ServiceProperty.class).computeIfAbsent("Broker.XTest.BrokerSize", "3000", BrokerTest.class.getName());
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
 
         Assertions.assertEquals(3000, broker.getPropertyBrokerSize().get());
@@ -219,7 +219,7 @@ class BrokerTest {
 
     @Test
     void testPropertyDo() {
-        App.get(ServiceProperty.class).add("Broker.XTest.BrokerSize", "11", BrokerTest.class.getName());
+        App.get(ServiceProperty.class).computeIfAbsent("Broker.XTest.BrokerSize", "11", BrokerTest.class.getName());
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
         Assertions.assertEquals(11, broker.getPropertyBrokerSize().get());
     }
@@ -227,7 +227,7 @@ class BrokerTest {
     @Test
     void testSpeedRemove() {
         int selection = 1_000_000;
-        App.get(ServiceProperty.class).add("Broker.XTest.BrokerSize", "3000000", BrokerTest.class.getName());
+        App.get(ServiceProperty.class).computeIfAbsent("Broker.XTest.BrokerSize", "3000000", BrokerTest.class.getName());
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
         List<DisposableExpirationMsImmutableEnvelope<XTest>> list = new ArrayList<>();
         long start = System.currentTimeMillis();

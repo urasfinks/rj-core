@@ -51,7 +51,7 @@ public class HttpController {
         this.serviceProperty = serviceProperty;
         routeGeneratorRepository = routeGenerator.getRouterRepository(HttpHandler.class);
 
-        if (serviceProperty.get("run.args.web", false, getClass().getName()).get(Boolean.class)) {
+        if (serviceProperty.computeIfAbsent("run.args.web", false, getClass().getName()).get(Boolean.class)) {
             updateStaticFile();
             subscribeIgnoreFile();
             subscribeIgnoreDir();
@@ -76,7 +76,7 @@ public class HttpController {
                 ignoreStaticFile,
                 "run.args.web.static.file.ignore.file"
         )
-                .addSubscriptionPattern("run\\.args\\.web\\.static\\.file\\.ignore\\.file.*")
+                .addSubscriptionRegexp("run\\.args\\.web\\.static\\.file\\.ignore\\.file.*")
                 .run();
     }
 
@@ -90,13 +90,13 @@ public class HttpController {
                 ignoreStaticDir,
                 "run.args.web.static.file.ignore.dir"
         )
-                .addSubscriptionPattern("run\\.args\\.web\\.static\\.file\\.ignore\\.dir.*")
+                .addSubscriptionRegexp("run\\.args\\.web\\.static\\.file\\.ignore\\.dir.*")
                 .run();
     }
 
     private void updateStaticFile() {
         staticFile.clear();
-        String location = serviceProperty.get(
+        String location = serviceProperty.computeIfAbsent(
                 "run.args.web.resource.location",
                 "web/",
                 getClass().getName()
