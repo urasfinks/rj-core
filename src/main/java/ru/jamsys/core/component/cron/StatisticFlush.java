@@ -5,11 +5,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
@@ -30,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 @Component
 @Lazy
 public class StatisticFlush extends AnnotationPropertyExtractor implements Cron1s, PromiseGenerator, CascadeName {
@@ -40,35 +40,28 @@ public class StatisticFlush extends AnnotationPropertyExtractor implements Cron1
 
     String ip = Util.getIp();
 
-    final ExceptionHandler exceptionHandler;
-
     private final ServicePromise servicePromise;
 
+    @SuppressWarnings("all")
     @Getter
-    @PropertyName("statistic.uploader.remote")
-    private Boolean remoteStatistic = true;
+    @PropertyName("remote")
+    private Boolean remote = false;
 
     public StatisticFlush(
             ServiceClassFinder serviceClassFinder,
             ApplicationContext applicationContext,
-            ManagerBroker broker,
-            ExceptionHandler exceptionHandler,
             ServicePromise servicePromise,
             ServiceProperty serviceProperty
     ) {
         this.servicePromise = servicePromise;
-        this.broker = broker.get(
-                getCascadeName(App.getUniqueClassName(StatisticSec.class)),
-                StatisticSec.class
-        );
-        this.exceptionHandler = exceptionHandler;
+        this.broker = applicationContext.getBean(Core.class).getStatisticSecBroker();
         serviceClassFinder.findByInstance(StatisticsFlushComponent.class).forEach(statisticsCollectorClass
                 -> list.add(applicationContext.getBean(statisticsCollectorClass)));
         new PropertySubscriber(
                 serviceProperty,
                 null,
                 this,
-                null
+                "statistic.uploader"
         );
     }
 
@@ -93,7 +86,7 @@ public class StatisticFlush extends AnnotationPropertyExtractor implements Cron1
                     });
                     // Несмотря на remoteStatistic надо с сервисов сбрасывать статистику
                     // Так что мы будем всё собирать, но отправлять не будем
-                    if (!statisticSec.getList().isEmpty() && remoteStatistic) {
+                    if (!statisticSec.getList().isEmpty() && remote) {
                         broker.add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
                     }
                 });

@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+@SuppressWarnings("unused")
 @Component
 @Lazy
 public class StatisticUploader extends AnnotationPropertyExtractor implements Cron5s, PromiseGenerator, CascadeName {
@@ -43,14 +45,17 @@ public class StatisticUploader extends AnnotationPropertyExtractor implements Cr
 
     private final ServicePromise servicePromise;
 
+    @SuppressWarnings("all")
     @Getter
     @PropertyName("folder")
     private String folder = "LogManager";
 
+    @SuppressWarnings("all")
     @Getter
     @PropertyName("limit.points")
     private Integer limitPoints = 5000;
 
+    @SuppressWarnings("all")
     @Getter
     @PropertyName("remote")
     private Boolean remote = false;
@@ -75,10 +80,7 @@ public class StatisticUploader extends AnnotationPropertyExtractor implements Cr
             ServiceProperty serviceProperty
     ) {
         this.servicePromise = servicePromise;
-        broker = managerBroker.get(
-                getCascadeName(App.getUniqueClassName(StatisticSec.class)),
-                StatisticSec.class
-        );
+        broker = App.get(Core.class).getStatisticSecBroker();
         new PropertySubscriber(
                 serviceProperty,
                 null,

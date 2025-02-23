@@ -23,7 +23,7 @@ public class Property {
     }};
 
     @Getter
-    ConcurrentLinkedDeque<Map<String, String>> setup = new ConcurrentLinkedDeque<>(); //key: who, value: value
+    ConcurrentLinkedDeque<Map<String, String>> traceSetter = new ConcurrentLinkedDeque<>(); //key: who, value: value
 
     @Getter
     private final String key;
@@ -39,7 +39,7 @@ public class Property {
         if(key.equals("App.ManagerRateLimit.RateLimit.App.ManagerThreadPool.ThreadPool.seq.then1.tps")){
             Util.printStackTrace("!!");
         }
-        setup.add(new HashMapBuilder<String, String>().append(who, value));
+        traceSetter.add(new HashMapBuilder<String, String>().append(who, value));
     }
 
     public void removeSubscription(PropertySubscription propertySubscription) {
@@ -66,9 +66,9 @@ public class Property {
         String oldValue = value;
         if (!Objects.equals(value, newValue)) {
             this.value = newValue;
-            setup.add(new HashMapBuilder<String, String>().append(who, value));
-            if (setup.size() > 30) {
-                setup.removeFirst();
+            traceSetter.add(new HashMapBuilder<String, String>().append(who, value));
+            if (traceSetter.size() > 30) {
+                traceSetter.removeFirst();
             }
             emit(oldValue);
         }
