@@ -91,6 +91,14 @@ public class AppleNotificationResource
     }
 
     @Override
+    public boolean isRun() {
+        if (propertySubscriber != null) {
+            return propertySubscriber.isRun();
+        }
+        return false;
+    }
+
+    @Override
     public void run() {
         if (propertySubscriber != null) {
             propertySubscriber.run();
@@ -105,7 +113,7 @@ public class AppleNotificationResource
     }
 
     @Override
-    public void onPropertyUpdate(String key, Property property) {
+    public void onPropertyUpdate(String key, String oldValue, Property property) {
         if (appleNotificationProperty.getVirtualPath() == null || appleNotificationProperty.getStorage() == null) {
             return;
         }

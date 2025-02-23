@@ -78,12 +78,16 @@ public class ServiceProperty {
         );
     }
 
+    public void set(String key, Object value, String who) {
+        computeIfAbsent(key, null, who).set(value, who);
+    }
+
     public Property computeIfAbsent(String key, String value, String who) {
         return this.properties.computeIfAbsent(key, key1 -> {
             Property property = new Property(key1, value, who);
             UtilRisc.forEach(null, subscriptions, property::addSubscription);
             // После того, как для нового Property добавили существующих подписчиков - оповестим подписчиков
-            property.emit();
+            property.emit(property.get());
             return property;
         });
     }

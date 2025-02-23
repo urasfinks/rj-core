@@ -45,7 +45,7 @@ public class ServicePromise implements CascadeName, KeepAliveComponent, Statisti
         this.broker = managerBroker.initAndGet(
                 getCascadeName(),
                 Promise.class,
-                promise -> promise.timeOut("onPromiseTaskExpired")
+                promise -> promise.timeOut(getClass().getSimpleName() + ".onPromiseTaskExpired")
         );
         promiseTaskRetry = managerExpiration.get("PromiseTaskRetry", PromiseTask.class, this::onPromiseTaskRetry);
     }

@@ -82,7 +82,7 @@ public class YandexSpeechResource
     }
 
     @Override
-    public void onPropertyUpdate(String key, Property property) {
+    public void onPropertyUpdate(String key, String oldValue, Property property) {
         if (yandexSpeechProperty.getHost() == null || yandexSpeechProperty.getPort() == null || yandexSpeechProperty.getAlias() == null) {
             return;
         }

@@ -43,7 +43,9 @@ public class ThreadResource extends ExpirationMsMutableImpl implements CascadeNa
         this.parentCascadeName = parentCascadeName;
         this.key = key;
         this.pool = pool;
-        RateLimit rateLimit = App.get(ManagerRateLimit.class).get(getCascadeName());
+        // RateLimit будем запрашивать через родительское каскадное имя, так как key для потока - это
+        // всего лишь имя, а поток должен подчиняться правилам (лимитам) пула
+        RateLimit rateLimit = App.get(ManagerRateLimit.class).get(parentCascadeName.getCascadeName());
 
         thread = new Thread(() -> {
             while (spin.get() && isNotInterrupted() && !shutdown.get()) {
@@ -112,6 +114,11 @@ public class ThreadResource extends ExpirationMsMutableImpl implements CascadeNa
             raiseUp("Подавление остановки, поток уже остановлен", "shutdown()");
         }
         //return false;
+    }
+
+    @Override
+    public boolean isRun() {
+        return run.get();
     }
 
     @Override

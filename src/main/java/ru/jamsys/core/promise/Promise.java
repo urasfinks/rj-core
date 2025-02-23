@@ -3,12 +3,14 @@ package ru.jamsys.core.promise;
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.ManagerThreadPool;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskWithResourceConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
+import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.resource.PoolSettingsRegistry;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
@@ -215,7 +217,11 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     Map<String, Object> getRepositoryMapWithoutDebug();
 
     default String getComplexIndex(String index) {
-        return getIndex() + "." + index;
+        return getComplexIndex(getIndex(), index);
+    }
+
+    static String getComplexIndex(String promiseIndex, String promiseTaskIndex) {
+        return promiseIndex + "." + promiseTaskIndex;
     }
 
     default PromiseTask createTaskCompute(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {
@@ -254,6 +260,14 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
             PromiseTaskWithResourceConsumerThrowing<PromiseTask, AtomicBoolean, Promise, T> procedure
     ) {
         return createTaskResource(index, classResource, "default", procedure);
+    }
+
+    default RateLimit getRateLimit(String promiseTaskIndex) {
+        return App.get(ManagerThreadPool.class).getRateLimit(getComplexIndex(getIndex(), promiseTaskIndex));
+    }
+
+    static RateLimit getRateLimit(String promiseIndex, String promiseTaskIndex) {
+        return App.get(ManagerThreadPool.class).getRateLimit(getComplexIndex(promiseIndex, promiseTaskIndex));
     }
 
 }

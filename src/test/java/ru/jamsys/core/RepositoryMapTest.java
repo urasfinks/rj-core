@@ -10,6 +10,7 @@ import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertySubscriber;
 import ru.jamsys.core.extension.property.PropertyUpdater;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
+import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
 import ru.jamsys.core.flat.util.Util;
 
 import java.util.Map;
@@ -28,12 +29,16 @@ class RepositoryMapTest {
         App.shutdown();
     }
 
-    public static class XX extends AnnotationPropertyExtractor implements PropertyUpdater {
+    public static class XX extends PropertyRepositoryMap<String> implements PropertyUpdater {
 
         int c = 0;
 
+        public XX() {
+            super(String.class);
+        }
+
         @Override
-        public void onPropertyUpdate(String key, Property property) {
+        public void onPropertyUpdate(String key, String oldValue, Property property) {
             c++;
         }
     }
@@ -48,72 +53,58 @@ class RepositoryMapTest {
                 xx,
                 null
         );
+        propertySubscriber.run();
 
         propertySubscriber
-                .addSubscription( "run.args.security.path.storage", null)
-                .addSubscription( "run.args.security.path.storage", null);
+                .addSubscription("run.args.security.path.storage", null)
+                .addSubscription("run.args.security.path.storage", null);
 
+        propertySubscriber.reload();
 
-        Assertions.assertEquals(1, xx.c);
+        Assertions.assertEquals(0, xx.c);
 
         Assertions.assertEquals(1, propertySubscriber.getSubscriptions().size());
 
         propertySubscriber.addSubscription("run.args.security.path.public.key", null);
+        propertySubscriber.reload();
 
         Assertions.assertEquals(2, propertySubscriber.getSubscriptions().size());
+        Util.logConsoleJson(getClass(), propertySubscriber);
+        Assertions.assertEquals(0, xx.c);
 
+        serviceProperty.set("run.args.security.path.storage", "xx", RepositoryMapTest.class.getName());
         Assertions.assertEquals(2, xx.c);
 
-        serviceProperty
-                .computeIfAbsent("run.args.security.path.storage", "xx", RepositoryMapTest.class.getName())
-                .set("xx", RepositoryMapTest.class.getName());
-        Assertions.assertEquals(3, xx.c);
-
         // Дубликат значения не должен вызывать onPropUpdate
-        serviceProperty
-                .computeIfAbsent("run.args.security.path.storage", "xx", RepositoryMapTest.class.getName())
-                .set("xx", RepositoryMapTest.class.getName());
-        Assertions.assertEquals(3, xx.c);
+        serviceProperty.set("run.args.security.path.storage", "xx", RepositoryMapTest.class.getName());
+        Assertions.assertEquals(2, xx.c);
 
         propertySubscriber.shutdown();
         //Assertions.assertEquals(0, propertySubscriber.getListSubscriber().size());
 
         // После отписки мы не должны получать уведомления об изменениях
 
-        serviceProperty
-                .computeIfAbsent("run.args.security.path.storage", "x2", RepositoryMapTest.class.getName())
-                .set("x2", RepositoryMapTest.class.getName());
+        serviceProperty.set("run.args.security.path.storage", "x2", RepositoryMapTest.class.getName());
         Assertions.assertEquals(3, xx.c);
 
         // Обратно подписываемся
         propertySubscriber.addSubscription("run.args.security.path.storage", null);
-        // Так как автоматом получим значение при подписке
-        Assertions.assertEquals(4, xx.c);
+        Assertions.assertEquals(3, xx.c);
 
         propertySubscriber.addSubscription("run.args.security.path.public.key", null);
-        // Так как автоматом получим значение при подписке
-        Assertions.assertEquals(5, xx.c);
+        Assertions.assertEquals(3, xx.c);
 
-        serviceProperty
-                .computeIfAbsent("run.args.security.path.public.key", "", RepositoryMapTest.class.getName())
-                .set("x3", RepositoryMapTest.class.getName());
-        Assertions.assertEquals(6, xx.c);
+        serviceProperty.set("run.args.security.path.public.key", "x3", RepositoryMapTest.class.getName());
+        Assertions.assertEquals(3, xx.c);
 
-        propertySubscriber.removeByRepositoryKey("run.args.security.path.public.key");
+        propertySubscriber.removeSubscriptionByRepositoryKey("run.args.security.path.public.key");
 
-        serviceProperty
-                .computeIfAbsent("run.args.security.path.public.key", "", RepositoryMapTest.class.getName())
-                .set("x4", RepositoryMapTest.class.getName());
-        Assertions.assertEquals(6, xx.c);
+        serviceProperty.set("run.args.security.path.public.key", "x4", RepositoryMapTest.class.getName());
+        Assertions.assertEquals(3, xx.c);
 
         // Проверяем что другие подписки работают
-        serviceProperty
-                .computeIfAbsent("run.args.security.path.storage", "", RepositoryMapTest.class.getName())
-                .set("x5", RepositoryMapTest.class.getName());
-        Assertions.assertEquals(7, xx.c);
-
-
-        Assertions.assertEquals(7, xx.c);
+        serviceProperty.set("run.args.security.path.storage", "x5", RepositoryMapTest.class.getName());
+        Assertions.assertEquals(4, xx.c);
 
     }
 
@@ -129,7 +120,7 @@ class RepositoryMapTest {
         public String publicKey = "ppbb";
 
         @Override
-        public void onPropertyUpdate(String key, Property property) {
+        public void onPropertyUpdate(String key, String oldValue, Property property) {
             Util.logConsole(getClass(), key);
         }
     }
@@ -143,14 +134,13 @@ class RepositoryMapTest {
         System.out.println(mapPropValue);
 
         PropertySubscriber subscribe = new PropertySubscriber(serviceProperty, x2, x2, "run.args");
+        subscribe.run();
 
         Assertions.assertEquals(2, subscribe.getSubscriptions().size());
 
         Assertions.assertEquals("security/security.jks", x2.storage);
 
-        serviceProperty
-                .computeIfAbsent("run.args.security.path.storage", "x3", RepositoryMapTest.class.getName())
-                .set("x3", RepositoryMapTest.class.getName());
+        serviceProperty.set("run.args.security.path.storage", "x3", RepositoryMapTest.class.getName());
         Assertions.assertEquals("x3", x2.storage);
 
     }

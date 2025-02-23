@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension.property.item;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -30,9 +31,11 @@ public class PropertySubscription {
     private String defaultValue;
 
     @ToString.Exclude
+    @JsonIgnore
     private final PropertySubscriber propertySubscriber;
 
     @ToString.Exclude
+    @JsonIgnore
     private final ServiceProperty serviceProperty;
 
     public PropertySubscription(PropertySubscriber propertySubscriber, ServiceProperty serviceProperty) {
@@ -40,8 +43,8 @@ public class PropertySubscription {
         this.serviceProperty = serviceProperty;
     }
 
-    public void onPropertyUpdate(Property property) {
-        propertySubscriber.onPropertySubscriptionUpdate(property);
+    public void onPropertyUpdate(String oldValue, Property property) {
+        propertySubscriber.onPropertySubscriptionUpdate(oldValue, property);
     }
 
     // Пролить значения до PropertyRepository

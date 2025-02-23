@@ -3,6 +3,8 @@ package ru.jamsys.core.component.manager.sub;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.*;
+import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
@@ -39,6 +41,8 @@ public abstract class AbstractManager<
     private final Map<String, E> map = new ConcurrentHashMap<>();
 
     private final Map<String, E> mapReserved = new ConcurrentHashMap<>();
+
+    private final AtomicBoolean run = new AtomicBoolean(false);
 
     @Setter
     protected boolean cleanableMap = true;
@@ -137,6 +141,7 @@ public abstract class AbstractManager<
         if (element != null && element.classEquals(classItem)) {
             return element;
         }
+        Util.logConsole(getClass(), "Available key: " + UtilJson.toStringPretty(map, "{}"));
         return null;
     }
 
@@ -146,6 +151,11 @@ public abstract class AbstractManager<
             return element;
         }
         return null;
+    }
+
+    @Override
+    public boolean isRun() {
+        return run.get();
     }
 
     @Override

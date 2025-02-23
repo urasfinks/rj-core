@@ -8,15 +8,18 @@ import ru.jamsys.core.extension.StatisticsCollectorMap;
 import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.extension.exception.RateLimitException;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-// Прослойка RateLimit сделана, не для того, что бы отслеживать в run-time изменение показателей
-// RateLimit даёт комплексный подход к гибким метрикам ограничения скорости например:
-// установить 1 tps + не больше 200 запросов в день
+// RateLimit - набор RateLimitItem
+// Так как это набор, можно добавить RateLimitItem разных типов, на подобии TPS + TPD
+// Успехом считается если все правила сказали ОК
 
 @Getter
 @SuppressWarnings("unused")
@@ -30,6 +33,8 @@ public class RateLimit
         AddToMap<String, RateLimitItem> {
 
     final Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
+
+    private final AtomicBoolean run = new AtomicBoolean(false);
 
     @Getter
     private final String key;
@@ -48,38 +53,56 @@ public class RateLimit
     }
 
     public void checkOrThrow() {
-        for (String key : map.keySet()) {
-            RateLimitItem rateLimitItem = map.get(key);
+        UtilRisc.forEach(null, map, (key, rateLimitItem) -> {
             if (rateLimitItem.get() >= rateLimitItem.max()) {
                 throw new RateLimitException(
                         "RateLimit ABORT",
-                        "key: " +  map.get(key).getKey() + "; max: " + map.get(key).max() + "; now: " + map.get(key).get() + ";"
+                        "prop: " + key
+                                + "; max: " + rateLimitItem.max()
+                                + "; now: " + rateLimitItem.get()
+                                + "; key: " + rateLimitItem.getKey()
+                                + ";"
                 );
             }
-        }
+        });
     }
 
     public boolean check() {
-        for (String key : map.keySet()) {
-            if (!map.get(key).check()) {
-                Util.logConsole(
-                        getClass(),
-                        "RateLimit [ABORT] key: " + map.get(key).getKey() + "; max: " + map.get(key).max() + "; now: " + map.get(key).get() + ";",
-                        true
-                );
-                return false;
+        String[] array = map.keySet().toArray(new String[0]);
+        for (String key : array) {
+            RateLimitItem rateLimitItem = map.get(key);
+            if (rateLimitItem != null) {
+                if (!rateLimitItem.check()) {
+                    Util.logConsole(
+                            getClass(),
+                            "RateLimit [ABORT] key: " + key
+                                    + "; max: " + rateLimitItem.max()
+                                    + "; now: " + rateLimitItem.get()
+                                    + "; key: " + rateLimitItem.getKey()
+                                    + ";",
+                            true
+                    );
+                    return false;
+                }
             }
         }
         return true;
     }
 
     public RateLimitItem get(String key) {
-        return map.get(key);
+        RateLimitItem rateLimitItem = map.get(key);
+        if (rateLimitItem == null) {
+            throw new RuntimeException("available: " + UtilJson.toStringPretty(map, "{}"));
+        }
+        return rateLimitItem;
     }
 
-    public RateLimit init(String key, RateLimitFactory rateLimitFactory) {
-        map.computeIfAbsent(getCascadeName(key), rateLimitFactory::create);
-        return this;
+    public RateLimitItem computeIfAbsent(String key, RateLimitFactory rateLimitFactory) {
+        return map.computeIfAbsent(key, s -> {
+            RateLimitItem rateLimitItem = rateLimitFactory.create(getCascadeName(s));
+            rateLimitItem.run();
+            return rateLimitItem;
+        });
     }
 
     @Override
@@ -88,13 +111,22 @@ public class RateLimit
     }
 
     @Override
-    public void run() {
+    public boolean isRun() {
+        return run.get();
+    }
 
+    @Override
+    public void run() {
+        UtilRisc.forEach(null, map, (s, rateLimitItem) -> {
+            rateLimitItem.run();
+        });
     }
 
     @Override
     public void shutdown() {
-
+        UtilRisc.forEach(null, map, (s, rateLimitItem) -> {
+            rateLimitItem.shutdown();
+        });
     }
 
 }

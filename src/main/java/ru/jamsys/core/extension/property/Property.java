@@ -36,6 +36,9 @@ public class Property {
     public Property(@NonNull String key, String value, String who) {
         this.key = key;
         this.value = value;
+        if(key.equals("App.ManagerRateLimit.RateLimit.App.ManagerThreadPool.ThreadPool.seq.then1.tps")){
+            Util.printStackTrace("!!");
+        }
         setup.add(new HashMapBuilder<String, String>().append(who, value));
     }
 
@@ -60,19 +63,21 @@ public class Property {
     }
 
     public void set(String newValue, String who) {
+        String oldValue = value;
         if (!Objects.equals(value, newValue)) {
             this.value = newValue;
             setup.add(new HashMapBuilder<String, String>().append(who, value));
             if (setup.size() > 30) {
                 setup.removeFirst();
             }
-            emit();
+            emit(oldValue);
         }
     }
 
-    public void emit() {
+    public void emit(String oldValue) {
+        //System.out.println("emit:  " + getKey());
         UtilRisc.forEach(null, subscriptions, subscription -> {
-            subscription.onPropertyUpdate(this);
+            subscription.onPropertyUpdate(oldValue, this);
         });
     }
 

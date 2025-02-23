@@ -55,6 +55,8 @@ public class Expiration<V>
 
     private final Consumer<DisposableExpirationMsImmutableEnvelope<?>> onExpired;
 
+    private final AtomicBoolean run = new AtomicBoolean(false);
+
     public Expiration(
             CascadeName parentCascadeName,
             String key,
@@ -174,12 +176,18 @@ public class Expiration<V>
     }
 
     @Override
+    public boolean isRun() {
+        return run.get();
+    }
+
+    @Override
     public void run() {
-        // Пока ничего не надо
+        run.set(true);
     }
 
     @Override
     public void shutdown() {
+        run.set(false);
         bucket.clear();
         bucketQueueSize.clear();
     }

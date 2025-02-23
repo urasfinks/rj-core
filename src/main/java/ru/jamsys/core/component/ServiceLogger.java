@@ -37,10 +37,13 @@ public class ServiceLogger extends AnnotationPropertyExtractor implements
         LifeCycleComponent,
         CascadeName {
 
+    private final AtomicBoolean run = new AtomicBoolean(false);
+
     private final Map<String, AtomicInteger> stat = new HashMap<>();
 
     Broker<Log> broker;
 
+    @SuppressWarnings("all")
     @Getter
     @PropertyName("remote")
     private Boolean remote = false;
@@ -103,8 +106,13 @@ public class ServiceLogger extends AnnotationPropertyExtractor implements
     }
 
     @Override
-    public void run() {
+    public boolean isRun() {
+        return run.get();
+    }
 
+    @Override
+    public void run() {
+        run.set(true);
     }
 
     @Override
@@ -115,6 +123,7 @@ public class ServiceLogger extends AnnotationPropertyExtractor implements
                 promise.run().await(5000);
             }
         }
+        run.set(false);
     }
 
     @Override

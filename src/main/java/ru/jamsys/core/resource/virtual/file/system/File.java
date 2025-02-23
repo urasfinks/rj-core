@@ -39,6 +39,8 @@ public class File extends ExpirationMsMutableImpl
 
     protected SupplierThrowing<byte[]> loader = () -> null;
 
+    private final AtomicBoolean run = new AtomicBoolean(false);
+
     @Setter
     private ConsumerThrowing<byte[]> saver = null;
 
@@ -177,13 +179,19 @@ public class File extends ExpirationMsMutableImpl
     }
 
     @Override
+    public boolean isRun() {
+        return run.get();
+    }
+
+    @Override
     public void run() {
-        // Пока ничего не надо
+        run.set(true);
     }
 
     @Override
     public void shutdown() {
         reset();
+        run.set(false);
     }
 
 }

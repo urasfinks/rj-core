@@ -4,6 +4,7 @@ import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.lang.reflect.Field;
@@ -47,6 +48,15 @@ public class AnnotationPropertyExtractor implements PropertyRepository {
     @Override
     public void setRepository(String key, String value) {
         Field field = fields.get(key);
+        if (field == null) {
+            throw new RuntimeException(getClass().getName()
+                    + " fields.get(" + key + ") is null; available property: "
+                    + UtilJson.toStringPretty(getRepository(), "{}")
+            );
+        }
+        if (value == null && field.isAnnotationPresent(PropertyNotNull.class)) {
+            throw new RuntimeException(getClass().getName() + " key: " + key + "; set null value");
+        }
         try {
             field.set(this, Property.convertType.get(field.getType()).apply(value));
         } catch (Throwable th) {
@@ -65,8 +75,6 @@ public class AnnotationPropertyExtractor implements PropertyRepository {
                     }
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
-                } catch (RuntimeException e) {
-                    throw e;
                 }
 
             }

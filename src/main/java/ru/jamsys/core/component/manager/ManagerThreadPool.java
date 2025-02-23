@@ -5,6 +5,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.promise.PromiseTask;
+import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.resource.thread.ThreadPool;
 
 @Component
@@ -36,4 +37,9 @@ public class ManagerThreadPool extends AbstractManager<ThreadPool, Void> impleme
     public CascadeName getParentCascadeName() {
         return App.cascadeName;
     }
+
+    public RateLimit getRateLimit(String index) {
+        return getManagerElement(index, Void.class, null).getRateLimit();
+    }
+
 }

@@ -5,9 +5,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertySubscriber;
-import ru.jamsys.core.extension.property.PropertyUpdater;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.statistic.Statistic;
 
@@ -21,27 +19,24 @@ public class RateLimitItemTps
         extends AnnotationPropertyExtractor
         implements
         RateLimitItem,
-        PropertyUpdater,
         LifeCycleInterface {
 
     private final AtomicInteger tps = new AtomicInteger(0);
-
-    private final AtomicInteger max = new AtomicInteger(1);
 
     @Getter
     private final String key;
 
     @SuppressWarnings("all")
-    @PropertyName
-    private Integer propMax = 1000;
+    @PropertyName("max")
+    private volatile Integer max = 999999;
 
     private final PropertySubscriber propertySubscriber;
 
     public RateLimitItemTps(String key) {
         this.key = key;
-        propertySubscriber  = new PropertySubscriber(
+        propertySubscriber = new PropertySubscriber(
                 App.get(ServiceProperty.class),
-                this,
+                null,
                 this,
                 getKey()
         );
@@ -49,7 +44,7 @@ public class RateLimitItemTps
 
     @Override
     public boolean check() {
-        return tps.incrementAndGet() <= max.get();
+        return tps.incrementAndGet() <= max;
     }
 
     @Override
@@ -59,7 +54,7 @@ public class RateLimitItemTps
 
     @Override
     public int max() {
-        return max.get();
+        return max;
     }
 
     @Override
@@ -71,9 +66,17 @@ public class RateLimitItemTps
         List<Statistic> result = new ArrayList<>();
         result.add(new Statistic(parentTags, parentFields)
                 .addField("tps", tps.getAndSet(0))
-                .addField("max", max.get())
+                .addField("max", max)
         );
         return result;
+    }
+
+    @Override
+    public boolean isRun() {
+        if (propertySubscriber != null) {
+            return propertySubscriber.isRun();
+        }
+        return false;
     }
 
     @Override
@@ -84,11 +87,6 @@ public class RateLimitItemTps
     @Override
     public void shutdown() {
         propertySubscriber.shutdown();
-    }
-
-    @Override
-    public void onPropertyUpdate(String key, Property property) {
-        this.max.set(propMax);
     }
 
 }

@@ -1,14 +1,19 @@
 package ru.jamsys.core.extension.property;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.item.PropertySubscription;
 import ru.jamsys.core.extension.property.repository.PropertyRepository;
+import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 // PropertySubscriber связывает ServiceProperty и PropertyRepository
 // Задача донести изменения Property до PropertyRepository
@@ -18,13 +23,17 @@ import java.util.LinkedHashMap;
 @Getter
 public class PropertySubscriber implements LifeCycleInterface {
 
+    @JsonIgnore
     private final PropertyUpdater propertyUpdater;
 
+    @JsonIgnore
     private final ServiceProperty serviceProperty;
 
     private final PropertyRepository propertyRepository;
 
     private final String namespace;
+
+    private final AtomicBoolean run = new AtomicBoolean(false);
 
     private final HashMap<String, PropertySubscription> subscriptions = new LinkedHashMap<>();
 
@@ -41,7 +50,20 @@ public class PropertySubscriber implements LifeCycleInterface {
 
         if (this.propertyRepository != null) {
             UtilRisc.forEach(null, this.propertyRepository.getRepository(), this::addSubscription);
-            this.propertyRepository.checkNotNull();
+            try {
+                this.propertyRepository.checkNotNull();
+            } catch (Throwable th) {
+                Map<String, String> result;
+                if (namespace != null) {
+                    result = new LinkedHashMap<>();
+                    UtilRisc.forEach(null, this.propertyRepository.getRepository(), (key, value) -> {
+                        result.put(getPropertyKey(key), value);
+                    });
+                } else {
+                    result = this.propertyRepository.getRepository();
+                }
+                throw new ForwardException("PropertyRepository: " + UtilJson.toStringPretty(result, "{}"), th);
+            }
         }
     }
 
@@ -65,46 +87,52 @@ public class PropertySubscriber implements LifeCycleInterface {
         }
     }
 
+    // Подписки не вызывают onPropertySubscriptionUpdate, да PropertyRepository заполнится, но не более
     public PropertySubscriber addSubscription(String key, String defaultValue) {
-        // За регистрацию в ServiceProperty отвечает run()
         PropertySubscription propertySubscription = new PropertySubscription(this, serviceProperty)
                 .setPropertyKey(getPropertyKey(key))
                 .setDefaultValue(defaultValue)
                 .syncPropertyRepository(getWho());
         subscriptions.put(key, propertySubscription);
+        if (isRun()) {
+            run();
+        }
         return this;
     }
 
+    // Подписки не вызывают onPropertySubscriptionUpdate, да PropertyRepository заполнится, но не более
     // Подписаться на серию настроек по регулярному выражению
     public PropertySubscriber addSubscriptionRegexp(String regexp) {
-        // За регистрацию в ServiceProperty отвечает run()
         subscriptions.put(
                 regexp,
                 new PropertySubscription(this, serviceProperty)
                         .setRegexp(regexp)
                         .syncPropertyRepository(getWho())
         );
+        if (isRun()) {
+            run();
+        }
         return this;
     }
 
-    public PropertySubscriber removeByRepositoryKey(String key) {
+    public PropertySubscriber removeSubscriptionByRepositoryKey(String key) {
         PropertySubscription remove = subscriptions.remove(key);
         serviceProperty.removeSubscription(remove);
         return this;
     }
 
-    public PropertySubscriber removeByPropertiesKey(String propKey) {
-        removeByRepositoryKey(getRepositoryKey(propKey));
+    public PropertySubscriber removeSubscriptionByPropertiesKey(String propKey) {
+        removeSubscriptionByRepositoryKey(getRepositoryKey(propKey));
         return this;
     }
 
-    public void onPropertySubscriptionUpdate(Property property) {
+    public void onPropertySubscriptionUpdate(String oldValue, Property property) {
         String repositoryKey = getRepositoryKey(property.getKey());
         if (propertyRepository != null) {
             propertyRepository.setRepository(repositoryKey, property.get());
         }
         if (propertyUpdater != null) {
-            propertyUpdater.onPropertyUpdate(repositoryKey, property);
+            propertyUpdater.onPropertyUpdate(repositoryKey, oldValue, property);
         }
     }
 
@@ -140,12 +168,19 @@ public class PropertySubscriber implements LifeCycleInterface {
     }
 
     @Override
+    public boolean isRun() {
+        return run.get();
+    }
+
+    @Override
     public void run() {
+        run.set(true);
         subscriptions.forEach((_, subscription) -> serviceProperty.addSubscription(subscription));
     }
 
     @Override
     public void shutdown() {
+        run.set(false);
         subscriptions.forEach((_, subscription) -> serviceProperty.removeSubscription(subscription));
     }
 

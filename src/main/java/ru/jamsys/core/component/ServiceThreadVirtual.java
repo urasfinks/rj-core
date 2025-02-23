@@ -39,6 +39,11 @@ public class ServiceThreadVirtual implements LifeCycleComponent {
     }
 
     @Override
+    public boolean isRun() {
+        return run.get();
+    }
+
+    @Override
     public void run() {
         run.set(true);
     }

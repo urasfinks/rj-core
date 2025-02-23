@@ -111,6 +111,14 @@ public class InfluxResource
     }
 
     @Override
+    public boolean isRun() {
+        if (propertySubscriber != null) {
+            return propertySubscriber.isRun();
+        }
+        return false;
+    }
+
+    @Override
     public void run() {
         propertySubscriber.run();
         up();
@@ -123,7 +131,7 @@ public class InfluxResource
     }
 
     @Override
-    public void onPropertyUpdate(String key, Property property) {
+    public void onPropertyUpdate(String key, String oldValue, Property property) {
         down();
         if (influxProperty.getHost() == null || influxProperty.getAlias() == null) {
             return;

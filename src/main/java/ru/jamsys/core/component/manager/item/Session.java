@@ -35,6 +35,8 @@ public class Session<K, V>
     // Помещаем в эту карту элементы из брокера, что бы можно удалить из брокера ключ, не дожидаясь его onDrop
     private final Map<K, DisposableExpirationMsImmutableEnvelope<K>> mapExpiration = new ConcurrentHashMap<>();
 
+    private final AtomicBoolean run = new AtomicBoolean(false);
+
     @Getter
     private final String key;
 
@@ -182,13 +184,18 @@ public class Session<K, V>
     }
 
     @Override
-    public void run() {
+    public boolean isRun() {
+        return run.get();
+    }
 
+    @Override
+    public void run() {
+        run.set(true);
     }
 
     @Override
     public void shutdown() {
-
+        run.set(false);
     }
 
     public List<Statistic> flushAndGetStatistic(

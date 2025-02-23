@@ -116,7 +116,13 @@ public class ServiceCron implements LifeCycleComponent, CascadeName {
     }
 
     @Override
+    public boolean isRun() {
+        return run.get();
+    }
+
+    @Override
     public void run() {
+        run.set(true);
         thread.start();
     }
 

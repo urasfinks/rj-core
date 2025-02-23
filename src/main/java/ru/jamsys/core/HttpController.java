@@ -69,7 +69,7 @@ public class HttpController {
     private void subscribeIgnoreFile() {
         new PropertySubscriber(
                 serviceProperty,
-                (key, property) -> {
+                (key, _, property) -> {
                     Util.logConsole(getClass(), "IgnoreWebStatic.File: " + property.get());
                     updateStaticFile();
                 },
@@ -83,7 +83,7 @@ public class HttpController {
     private void subscribeIgnoreDir() {
         new PropertySubscriber(
                 serviceProperty,
-                (key, property) -> {
+                (key, _, property) -> {
                     Util.logConsole(getClass(), "IgnoreWebStatic.Dir: " + property.get());
                     updateStaticFile();
                 },

@@ -15,4 +15,9 @@ public interface Resource<A, R> extends ResourceCheckException, LifeCycleInterfa
 
     boolean isValid(); // Проверка, что ресурс валиден и готов к работе без всяких приколов
 
+    // Это для поддержки интерфейса LifeCycleInterface
+    // что бы для ресурсов не писать реализацию run
+    default boolean isRun() {
+        return isValid();
+    }
 }

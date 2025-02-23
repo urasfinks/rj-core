@@ -8,19 +8,19 @@ import ru.jamsys.core.rate.limit.item.RateLimitItemTps;
 
 public enum RateLimitFactory implements CamelNormalization {
 
-    TPS,
-    TPM,
-    TPH,
-    TPD,
-    TPW;
+    TPS, // В секунду
+    TPMin, // В минуту
+    TPH, // В час
+    TPD, // В день
+    TPMo; //  В месяц
 
     public RateLimitItem create(String key) {
         return switch (this) {
             case TPS -> new RateLimitItemTps(key);
-            case TPM -> new RateLimitItemPeriodic(TimeUnit.MINUTE, key);
+            case TPMin -> new RateLimitItemPeriodic(TimeUnit.MINUTE, key);
             case TPH -> new RateLimitItemPeriodic(TimeUnit.HOUR_OF_DAY, key);
             case TPD -> new RateLimitItemPeriodic(TimeUnit.DAY_OF_MONTH, key);
-            case TPW -> new RateLimitItemPeriodic(TimeUnit.MONTH, key);
+            case TPMo -> new RateLimitItemPeriodic(TimeUnit.MONTH, key);
         };
     }
 

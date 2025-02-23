@@ -36,7 +36,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         CascadeName {
 
     @Getter
-    private Broker<ByteTransformer> broker;
+    private final Broker<ByteTransformer> broker;
 
     private String currentFilePath;
 
@@ -59,7 +59,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     public FileByteWriter(CascadeName parentCascadeName, String key) {
         this.parentCascadeName = parentCascadeName;
-        this.key = key != null ? key : "default";
+        this.key = key;
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
         propertySubscriber = new PropertySubscriber(
@@ -68,13 +68,19 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                 fileByteWriterProperty,
                 getCascadeName()
         );
+        restoreIndex(fileByteWriterProperty.getFolder(), fileByteWriterProperty.getFileName());
+
         broker = App.get(ManagerBroker.class).initAndGet(
                 getCascadeName(App.getUniqueClassName(FileByteWriter.class)),
                 ByteTransformer.class,
                 null
         );
 
-        broker.getPropertyBrokerSize().set(400_000, getCascadeName());
+        App.get(ServiceProperty.class).computeIfAbsent(
+                propertySubscriber.getPropertyKey("size"),
+                null,
+                getCascadeName()
+        ).set(400_000, getCascadeName());
 
         if (fileByteWriterProperty.getFileName() == null || fileByteWriterProperty.getFileName().isEmpty()) {
             throw new RuntimeException("file name is empty");
@@ -85,11 +91,12 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         return counter.get();
     }
 
-    private void restoreIndex() {
-        List<String> filesRecursive = UtilFile.getFilesRecursive(fileByteWriterProperty.getFolder(), false);
+    private void restoreIndex(String folder, String fileName) {
+        System.out.println("RestoreIndex folder: " + folder + "; fileName: " + fileName);
+        List<String> filesRecursive = UtilFile.getFilesRecursive(folder, false);
         AvgMetric metric = new AvgMetric();
         for (String filePath : filesRecursive) {
-            if (filePath.startsWith("/" + fileByteWriterProperty.getFileName() + ".")) {
+            if (filePath.startsWith("/" + fileName + ".")) {
                 if (filePath.endsWith(".proc.bin")) {
                     // Файл скорее всего имеет не корректную структуру, так как при нормально завершении
                     // файлы с расширение proc.bin должны были переименоваться
@@ -102,14 +109,14 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                             true
                     );
                     try {
-                        UtilFile.remove(fileByteWriterProperty.getFolder() + filePath);
+                        UtilFile.remove(folder + filePath);
                     } catch (Exception e) {
                         App.error(new RuntimeException("So sorry my bad twice"));
                     }
                 } else {
                     // Что угодно может произойти, защищаемся от всего
                     try {
-                        String substring = filePath.substring(fileByteWriterProperty.getFileName().length() + 2);
+                        String substring = filePath.substring(fileName.length() + 2);
                         metric.add(Long.parseLong(substring.substring(0, substring.indexOf("."))));
                     } catch (Exception ignore) {
                     }
@@ -209,6 +216,11 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     }
 
     @Override
+    public boolean isRun() {
+        return propertySubscriber.isRun();
+    }
+
+    @Override
     public void run() {
         propertySubscriber.run();
     }
@@ -225,19 +237,21 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     }
 
     @Override
-    public void onPropertyUpdate(String key, Property property) {
-        if (key.equals("log.file.name")) {
-            broker = App.get(ManagerBroker.class).initAndGet(
-                    getCascadeName(App.getUniqueClassName(FileByteWriter.class)),
-                    ByteTransformer.class,
-                    null
-            );
-            restoreIndex();
+    public void onPropertyUpdate(String key, String oldValue, Property property) {
+        if (key.equals("file.name")) {
+            // Сливаем данные с прошлым именем файлов
+            restoreIndex(fileByteWriterProperty.getFolder(), oldValue);
+            // Сливаем данные с новым именем файлов
+            restoreIndex(fileByteWriterProperty.getFolder(), property.get());
         }
-        if (key.equals("log.file.folder")) {
+        if (key.equals("folder")) {
             if (!UtilFile.ifExist(fileByteWriterProperty.getFolder())) {
-                throw new RuntimeException("log.file.folder: " + fileByteWriterProperty.getFolder() + "; not exist");
+                throw new RuntimeException("file.folder: " + fileByteWriterProperty.getFolder() + "; not exist");
             }
+            // Сливаем данные из прошлой директории
+            restoreIndex(oldValue, fileByteWriterProperty.getFileName());
+            // Сливаем данные из новой директории
+            restoreIndex(property.get(), fileByteWriterProperty.getFileName());
         }
     }
 }

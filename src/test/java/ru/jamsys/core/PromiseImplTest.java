@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
-import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.*;
 import ru.jamsys.core.resource.http.HttpResource;
@@ -82,7 +81,7 @@ class PromiseImplTest {
 
     @Test
     void test3() {
-        App.get(ManagerRateLimit.class).get("ThreadPool.test.test").get("tps").set(10000);
+        Promise.getRateLimit("test", "test").get("tps").set(10000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
@@ -99,7 +98,7 @@ class PromiseImplTest {
 
     @Test
     void test3_1() {
-        App.get(ManagerRateLimit.class).get("ThreadPool.seq.then1").get("tps").set(1);
+        Promise.getRateLimit("seq", "then1").get("tps").set(1);
         Promise promise = servicePromise.get("seq", 6_000L);
         AtomicInteger c = new AtomicInteger(0);
         promise.then("then1", (_, _, _) -> c.incrementAndGet());
@@ -113,7 +112,7 @@ class PromiseImplTest {
 
     @Test
     void test3_2() {
-        App.get(ManagerRateLimit.class).get("ThreadPool.seq2.then1").get("tps").set(0);
+        Promise.getRateLimit("seq2", "then1").get("tps").set(0);
         AtomicInteger c = new AtomicInteger(0);
         Promise promise = servicePromise.get("seq2", 6_000L)
                 .then("then1", (_, _, _) -> c.incrementAndGet())
@@ -143,7 +142,7 @@ class PromiseImplTest {
 
     @Test
     void test5() {
-        App.get(ManagerRateLimit.class).get("ThreadPool.test.test").get("tps").set(100000000);
+        Promise.getRateLimit("test", "test").get("tps").set(100000000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();

@@ -5,9 +5,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerExpiration;
-import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.ClassEquals;
+import ru.jamsys.core.extension.KeepAlive;
+import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.addable.AddToList;
-import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.property.PropertySubscriber;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
@@ -58,12 +61,6 @@ public class Broker<TEO>
     private Double lastTimeInQueue;
 
     @Getter
-    final Property propertyBrokerSize;
-
-    @Getter
-    final Property propertyBrokerTailSize;
-
-    @Getter
     final String key;
 
     private final Consumer<TEO> onDropConsumer;
@@ -71,6 +68,12 @@ public class Broker<TEO>
     private final Class<TEO> classItem;
 
     private final Expiration<DisposableExpirationMsImmutableEnvelope> expiration;
+
+    @Getter
+    private final BrokerProperty propertyBroker = new BrokerProperty();
+
+    @Getter
+    private final PropertySubscriber propertySubscriber;
 
     public Broker(
             String key,
@@ -83,15 +86,11 @@ public class Broker<TEO>
         this.onDropConsumer = onDropConsumer;
 
         ServiceProperty serviceProperty = applicationContext.getBean(ServiceProperty.class);
-        propertyBrokerSize = serviceProperty.computeIfAbsent(
-                key + "." + ValueName.BROKER_SIZE.getNameCamel(),
-                3000,
-                getClass().getName() + "::" + key
-        );
-        propertyBrokerTailSize = serviceProperty.computeIfAbsent(
-                key + "." + ValueName.BROKER_TAIL_SIZE.getNameCamel(),
-                5,
-                getClass().getName() + "::" + key
+        propertySubscriber = new PropertySubscriber(
+                serviceProperty,
+                null,
+                propertyBroker,
+                key
         );
 
         ManagerExpiration managerExpiration = applicationContext.getBean(ManagerExpiration.class);
@@ -134,7 +133,7 @@ public class Broker<TEO>
         // Проблема с производительностью
         // Мы не можем использовать queue.size() для расчёта переполнения
         // пример: вставка 100к записей занимаем 35сек
-        if (queueSize.get() >= propertyBrokerSize.get(Integer.class)) {
+        if (queueSize.get() >= propertyBroker.getSize()) {
             // Он конечно протух не по своей воле, но что делать...
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
             DisposableExpirationMsImmutableEnvelope<TEO> teoDisposableExpirationMsImmutableEnvelope = queue.removeFirst();
@@ -147,7 +146,7 @@ public class Broker<TEO>
         queue.add(convert);
         queueSize.incrementAndGet();
 
-        if (tailQueueSize.get() >= propertyBrokerTailSize.get(Integer.class)) {
+        if (tailQueueSize.get() >= propertyBroker.getTailSize()) {
             tailQueue.removeFirst();
         } else {
             tailQueueSize.incrementAndGet();
@@ -223,7 +222,7 @@ public class Broker<TEO>
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x
-        return queueSize.get() * 100 / propertyBrokerSize.get(Integer.class);
+        return queueSize.get() * 100 / propertyBroker.getSize();
     }
 
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
@@ -289,12 +288,18 @@ public class Broker<TEO>
     }
 
     @Override
-    public void run() {
+    public boolean isRun() {
+        return propertySubscriber.isRun();
+    }
 
+    @Override
+    public void run() {
+        propertySubscriber.run();
     }
 
     @Override
     public void shutdown() {
+        propertySubscriber.shutdown();
         lastTimeInQueue = null;
     }
 

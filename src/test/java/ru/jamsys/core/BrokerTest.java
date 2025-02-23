@@ -40,8 +40,13 @@ class BrokerTest {
                     System.out.println("dropped: " + xTest);
                     droped.add(xTest);
                 });
-        broker.getPropertyBrokerSize().set(10, BrokerTest.class.getName());
-        broker.getPropertyBrokerTailSize().set(3, BrokerTest.class.getName());
+
+        App.get(ServiceProperty.class)
+                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("size"), null, BrokerTest.class.getName())
+                .set(10, BrokerTest.class.getName());
+        App.get(ServiceProperty.class)
+                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("tail.size"), null, BrokerTest.class.getName())
+                .set(3, BrokerTest.class.getName());
 
         for (int i = 0; i < 10; i++) {
             broker.add(new XTest(i), 6_000L);
@@ -86,8 +91,12 @@ class BrokerTest {
         Broker<XTest> broker = App.get(ManagerBroker.class)
                 .get(XTest.class.getSimpleName(), XTest.class);
 
-        broker.getPropertyBrokerSize().set(10, BrokerTest.class.getName());
-        broker.getPropertyBrokerTailSize().set(3, BrokerTest.class.getName());
+        App.get(ServiceProperty.class)
+                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("size"), null, BrokerTest.class.getName())
+                .set(10, BrokerTest.class.getName());
+        App.get(ServiceProperty.class)
+                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("tail.size"), null, BrokerTest.class.getName())
+                .set(3, BrokerTest.class.getName());
 
         for (int i = 0; i < 10; i++) {
             broker.add(new XTest(i), 6_000L);
@@ -209,26 +218,29 @@ class BrokerTest {
 
     @Test
     void testProperty() {
-        App.get(ServiceProperty.class).computeIfAbsent("Broker.XTest.BrokerSize", "3000", BrokerTest.class.getName());
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
+        App.get(ServiceProperty.class)
+                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("size"), null, BrokerTest.class.getName())
+                .set(3000, BrokerTest.class.getName());
 
-        Assertions.assertEquals(3000, broker.getPropertyBrokerSize().get());
-        broker.getPropertyBrokerSize().set(3001, BrokerTest.class.getName());
-        Assertions.assertEquals(3001, broker.getPropertyBrokerSize().get());
-    }
+        Assertions.assertEquals(3000, broker.getPropertyBroker().getSize());
 
-    @Test
-    void testPropertyDo() {
-        App.get(ServiceProperty.class).computeIfAbsent("Broker.XTest.BrokerSize", "11", BrokerTest.class.getName());
-        Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
-        Assertions.assertEquals(11, broker.getPropertyBrokerSize().get());
+        App.get(ServiceProperty.class)
+                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("size"), null, BrokerTest.class.getName())
+                .set(3001, BrokerTest.class.getName());
+
+        Assertions.assertEquals(3001, broker.getPropertyBroker().getSize());
     }
 
     @Test
     void testSpeedRemove() {
         int selection = 1_000_000;
-        App.get(ServiceProperty.class).computeIfAbsent("Broker.XTest.BrokerSize", "3000000", BrokerTest.class.getName());
+
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
+        App.get(ServiceProperty.class)
+                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("size"), null, BrokerTest.class.getName())
+                .set(3_000_000, BrokerTest.class.getName());
+
         List<DisposableExpirationMsImmutableEnvelope<XTest>> list = new ArrayList<>();
         long start = System.currentTimeMillis();
         for (int i = 0; i < selection; i++) {

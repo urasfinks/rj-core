@@ -43,7 +43,6 @@ public class JdbcResource
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Exception {
-        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         propertySubscriber = new PropertySubscriber(
                 App.get(ServiceProperty.class),
                 this,
@@ -154,6 +153,14 @@ public class JdbcResource
     }
 
     @Override
+    public boolean isRun() {
+        if (propertySubscriber != null) {
+            return propertySubscriber.isRun();
+        }
+        return false;
+    }
+
+    @Override
     public void run() {
         propertySubscriber.run();
         up();
@@ -169,7 +176,7 @@ public class JdbcResource
     }
 
     @Override
-    public void onPropertyUpdate(String key, Property property) {
+    public void onPropertyUpdate(String key, String oldValue, Property property) {
         down();
         if (jdbcProperty.getUri() == null || jdbcProperty.getUser() == null || jdbcProperty.getSecurityAlias() == null) {
             return;

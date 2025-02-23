@@ -1,12 +1,16 @@
 package ru.jamsys.core.resource.thread;
 
+import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
+import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.ClassEquals;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.PromiseTask;
+import ru.jamsys.core.rate.limit.RateLimit;
+import ru.jamsys.core.rate.limit.RateLimitFactory;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,8 +21,13 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
 
     private final Broker<PromiseTask> broker;
 
+    @Getter
+    private final RateLimit rateLimit;
+
     public ThreadPool(CascadeName parentCascadeName, String key) {
         super(parentCascadeName, key);
+        rateLimit = App.get(ManagerRateLimit.class).get(getCascadeName());
+        rateLimit.computeIfAbsent("tps", RateLimitFactory.TPS);
         this.broker = App.get(ManagerBroker.class)
                 .initAndGet(getCascadeName(), PromiseTask.class, promiseTask ->
                         promiseTask.

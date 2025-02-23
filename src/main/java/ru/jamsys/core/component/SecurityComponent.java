@@ -323,7 +323,16 @@ public class SecurityComponent extends AnnotationPropertyExtractor implements Li
     }
 
     @Override
+    public boolean isRun() {
+        if (propertySubscriber != null) {
+            return propertySubscriber.isRun();
+        }
+        return false;
+    }
+
+    @Override
     public void run() {
+        propertySubscriber.run();
         if (run.compareAndSet(false, true)) {
             byte[] publicKey = UtilFile.readBytes(pathPublicKey, null);
 
@@ -373,7 +382,6 @@ public class SecurityComponent extends AnnotationPropertyExtractor implements Li
                 printNotice(passwordFromInfoJson);
                 System.exit(0);
             }
-            propertySubscriber.run();
         }
     }
 

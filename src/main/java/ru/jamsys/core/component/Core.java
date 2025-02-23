@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
@@ -28,6 +29,8 @@ public class Core implements LifeCycleInterface {
     private final ManagerBroker managerBroker;
 
     public static String lastOperation;
+
+    private final AtomicBoolean run = new AtomicBoolean(false);
 
     private final ConcurrentLinkedDeque<LifeCycleComponent> runComponent = new ConcurrentLinkedDeque<>();
 
@@ -42,7 +45,13 @@ public class Core implements LifeCycleInterface {
     }
 
     @Override
+    public boolean isRun() {
+        return run.get();
+    }
+
+    @Override
     public void run() {
+        run.set(true);
         Util.logConsole(getClass(), ".run()");
 
         String classNameStatistic = App.getUniqueClassName(StatisticSec.class);
@@ -92,6 +101,7 @@ public class Core implements LifeCycleInterface {
                 );
             }
         }
+        run.set(false);
     }
 
 }

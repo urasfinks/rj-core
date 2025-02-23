@@ -84,9 +84,16 @@ public class EmailNotificationResource
     }
 
     @Override
+    public boolean isRun() {
+        if (propertySubscriber != null) {
+            return propertySubscriber.isRun();
+        }
+        return false;
+    }
+
+    @Override
     public void run() {
         propertySubscriber.run();
-
     }
 
     @Override

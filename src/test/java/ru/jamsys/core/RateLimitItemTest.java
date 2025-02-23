@@ -97,6 +97,7 @@ class RateLimitItemTest {
     @Test
     void testTps() {
         RateLimitItem rateLimitTps = new RateLimitItemTps("tps");
+        rateLimitTps.run();
         rateLimitTps.set(2);
         Assertions.assertTrue(rateLimitTps.check());
         Assertions.assertTrue(rateLimitTps.check());

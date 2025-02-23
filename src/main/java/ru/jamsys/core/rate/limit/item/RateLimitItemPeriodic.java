@@ -5,9 +5,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertySubscriber;
-import ru.jamsys.core.extension.property.PropertyUpdater;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.UtilDate;
@@ -24,12 +22,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RateLimitItemPeriodic
         extends AnnotationPropertyExtractor
         implements RateLimitItem,
-        PropertyUpdater,
         LifeCycleInterface {
 
     private final AtomicInteger tpu = new AtomicInteger(0);
-
-    private final AtomicInteger max = new AtomicInteger(999999);
 
     private final TimeUnit period;
 
@@ -44,8 +39,8 @@ public class RateLimitItemPeriodic
     private final String key;
 
     @SuppressWarnings("all")
-    @PropertyName
-    private Integer propMax = 1000;
+    @PropertyName("max")
+    private volatile Integer max = 999999;
 
     private final PropertySubscriber propertySubscriber;
 
@@ -55,15 +50,15 @@ public class RateLimitItemPeriodic
         this.periodName = period.getNameCamel();
         propertySubscriber = new PropertySubscriber(
                 App.get(ServiceProperty.class),
-                this,
                 null,
+                this,
                 getKey()
         );
     }
 
     @Override
     public boolean check() {
-        return tpu.incrementAndGet() <= max.get(); // -1 = infinity; 0 = reject
+        return tpu.incrementAndGet() <= max; // -1 = infinity; 0 = reject
     }
 
     @Override
@@ -73,7 +68,7 @@ public class RateLimitItemPeriodic
 
     @Override
     public int max() {
-        return max.get();
+        return max;
     }
 
     @Override
@@ -91,7 +86,7 @@ public class RateLimitItemPeriodic
     public Statistic flushAndGetStatistic(long curTime, Map<String, String> parentTags, Map<String, Object> parentFields) {
         Statistic statistic = new Statistic(parentTags, parentFields);
         statistic.addField("period", periodName);
-        statistic.addField("max", max.get());
+        statistic.addField("max", max);
         if (nextTimeFlush.get() <= curTime) {
             Calendar now = Calendar.getInstance();
             now.setTimeInMillis(curTime);
@@ -109,6 +104,11 @@ public class RateLimitItemPeriodic
     }
 
     @Override
+    public boolean isRun() {
+        return propertySubscriber.isRun();
+    }
+
+    @Override
     public void run() {
         propertySubscriber.run();
     }
@@ -116,11 +116,6 @@ public class RateLimitItemPeriodic
     @Override
     public void shutdown() {
         propertySubscriber.shutdown();
-    }
-
-    @Override
-    public void onPropertyUpdate(String key, Property property) {
-        this.max.set(propMax);
     }
 
 }
