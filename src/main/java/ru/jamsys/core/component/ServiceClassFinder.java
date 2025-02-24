@@ -1,7 +1,6 @@
 package ru.jamsys.core.component;
 
 import com.google.common.reflect.ClassPath;
-import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
@@ -15,18 +14,15 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+// Несёт информацию о загруженных классах ядра
+// Есть аннотация IgnoreClassFinder
 
 @Component
 public class ServiceClassFinder {
 
-    private final List<Class<?>> availableClass;
-
-    // Используется для однозначности имён на графиках в ClassNameTitle
-    @Getter
-    private final Map<Class<?>, String> uniqueClassName = new HashMap<>();
+    private final List<Class<?>> availableClass = new ArrayList<>();
 
     private final ExceptionHandler exceptionHandler;
 
@@ -44,45 +40,22 @@ public class ServiceClassFinder {
 
         @SuppressWarnings("SameParameterValue")
         String pkg = "ru.jamsys";
-        availableClass = getAvailableClass(pkg);
 
-        fillUniqueClassName();
-
-        PropertySubscriber ignoredClassAgent = new PropertySubscriber(
+        new PropertySubscriber(
                 serviceProperty,
                 (_, _, property) -> {
                     Util.logConsoleJson(getClass(), "onUpdate IgnoreClassFinder: " + property.get());
                     availableClass.clear();
                     availableClass.addAll(getAvailableClass(pkg));
-                    fillUniqueClassName();
                 },
                 ignoredClassMap,
                 "run.args.IgnoreClassFinder"
-        );
+        )
+                .addSubscriptionRegexp("run\\.args\\.IgnoreClassFinder.*")
+                .run();
 
-        ignoredClassAgent.addSubscriptionRegexp("run\\.args\\.IgnoreClassFinder.*");
-    }
-
-    private void fillUniqueClassName() {
-        Map<String, Integer> countDuplicateSimpleName = new HashMap<>();
-        availableClass.forEach((Class<?> cls) -> {
-            String simpleName = cls.getSimpleName();
-            if (!simpleName.isEmpty()) {
-                int cur = countDuplicateSimpleName.computeIfAbsent(simpleName, _ -> 0);
-                countDuplicateSimpleName.put(simpleName, cur + 1);
-            }
-        });
-        availableClass.forEach((Class<?> cls) -> {
-            String simpleName = cls.getSimpleName();
-            if (!simpleName.isEmpty()) {
-                if (countDuplicateSimpleName.get(simpleName) > 1) {
-                    uniqueClassName.put(cls, cls.getName());
-                    System.err.println("Duplicate class name: " + cls.getName());
-                } else {
-                    uniqueClassName.put(cls, cls.getSimpleName());
-                }
-            }
-        });
+        availableClass.clear();
+        availableClass.addAll(getAvailableClass(pkg));
     }
 
     private <T> List<Class<T>> getActualType(Type[] genericInterfaces, Class<T> fnd) {

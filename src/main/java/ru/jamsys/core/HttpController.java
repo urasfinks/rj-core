@@ -57,7 +57,7 @@ public class HttpController {
             subscribeIgnoreDir();
             Util.logConsole(
                     getClass(),
-                    "IgnoredStaticFile: " + UtilJson.toStringPretty(ignoredStaticFile, "{}")
+                    "IgnoredStaticFile: " + UtilJson.toStringPretty(ignoredStaticFile, "[]")
             );
         }
         List<Class<HttpInterceptor>> list = serviceClassFinder.findByInstance(HttpInterceptor.class);
