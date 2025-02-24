@@ -4,14 +4,16 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
+import ru.jamsys.core.flat.util.Util;
 
+@SuppressWarnings("unused")
 @ServiceClassFinderIgnore
 @Component
 public class ExampleWebSocketCheckConnection implements WebSocketCheckConnection {
 
     @Override
     public boolean check(@NotNull WebSocketSession webSocketSession) {
-        System.out.println("UUU");
+        Util.logConsole(getClass(), "Hello");
         return true;
     }
 
