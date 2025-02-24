@@ -3,7 +3,7 @@ package ru.jamsys.core.component;
 import com.google.common.reflect.ClassPath;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
+import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertySubscriber;
 import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Несёт информацию о загруженных классах ядра
-// Есть аннотация IgnoreClassFinder
+// Есть аннотация ServiceClassFinderIgnore
 
 @Component
 public class ServiceClassFinder {
@@ -44,14 +44,14 @@ public class ServiceClassFinder {
         new PropertySubscriber(
                 serviceProperty,
                 (_, _, property) -> {
-                    Util.logConsoleJson(getClass(), "onUpdate IgnoreClassFinder: " + property.get());
+                    Util.logConsoleJson(getClass(), "onUpdate ServiceClassFinderIgnore: " + property.get());
                     availableClass.clear();
                     availableClass.addAll(getAvailableClass(pkg));
                 },
                 ignoredClassMap,
-                "run.args.IgnoreClassFinder"
+                "run.args.ServiceClassFinderIgnore"
         )
-                .addSubscriptionRegexp("run\\.args\\.IgnoreClassFinder.*")
+                .addSubscriptionRegexp("run\\.args\\.ServiceClassFinderIgnore.*")
                 .run();
 
         availableClass.clear();
@@ -153,7 +153,7 @@ public class ServiceClassFinder {
                     }
                     boolean findUnusedAnnotation = false;
                     for (Annotation annotation : aClass.getAnnotations()) {
-                        if (instanceOf(annotation.annotationType(), IgnoreClassFinder.class)) {
+                        if (instanceOf(annotation.annotationType(), ServiceClassFinderIgnore.class)) {
                             findUnusedAnnotation = true;
                             break;
                         }

@@ -4,6 +4,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IgnoreClassFinder {
+public @interface ServiceClassFinderIgnore {
     boolean value() default true;
 }

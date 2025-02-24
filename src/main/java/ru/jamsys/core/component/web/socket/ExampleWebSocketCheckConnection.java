@@ -3,9 +3,9 @@ package ru.jamsys.core.component.web.socket;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
-import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
+import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 
-@IgnoreClassFinder
+@ServiceClassFinderIgnore
 @Component
 public class ExampleWebSocketCheckConnection implements WebSocketCheckConnection {
 

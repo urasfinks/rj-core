@@ -3,7 +3,7 @@ package ru.jamsys.core.handler.web.http.plugin;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.jamsys.core.component.ServicePromise;
-import ru.jamsys.core.extension.annotation.IgnoreClassFinder;
+import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.handler.web.http.HttpHandler;
@@ -13,7 +13,7 @@ import ru.jamsys.core.promise.PromiseGenerator;
 /*
  * Эту драгу опрашивает Google, что бы в телефоне зарегистрировать схему для открытия приложения
  * */
-@IgnoreClassFinder
+@ServiceClassFinderIgnore
 @Component
 @SuppressWarnings("unused")
 @RequestMapping("/.well-known/assetlinks.json")
