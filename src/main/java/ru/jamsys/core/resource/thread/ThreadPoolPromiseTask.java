@@ -15,7 +15,7 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> implements ClassEquals {
+public class ThreadPoolPromiseTask extends AbstractPoolPrivate<Void, Void, ThreadResourcePromiseTask> implements ClassEquals {
 
     AtomicInteger counter = new AtomicInteger(1);
 
@@ -24,7 +24,7 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
     @Getter
     private final RateLimit rateLimit;
 
-    public ThreadPool(CascadeName parentCascadeName, String key) {
+    public ThreadPoolPromiseTask(CascadeName parentCascadeName, String key) {
         super(parentCascadeName, key);
         rateLimit = App.get(ManagerRateLimit.class).get(getCascadeName());
         rateLimit.computeIfAbsent("tps", RateLimitFactory.TPS);
@@ -33,7 +33,7 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
                         promiseTask.
                                 getPromise().
                                 setError(new RuntimeException(
-                                        App.getUniqueClassName(ThreadPool.class) + ".broker->drop(task)")
+                                        App.getUniqueClassName(ThreadPoolPromiseTask.class) + ".broker->drop(task)")
                                 )
                 );
     }
@@ -53,12 +53,12 @@ public class ThreadPool extends AbstractPoolPrivate<Void, Void, ThreadResource> 
     }
 
     @Override
-    public ThreadResource createPoolItem() {
-        return new ThreadResource(this, counter.getAndIncrement() + "", this);
+    public ThreadResourcePromiseTask createPoolItem() {
+        return new ThreadResourcePromiseTask(this, counter.getAndIncrement() + "", this);
     }
 
     @Override
-    public void closePoolItem(ThreadResource poolItem) {
+    public void closePoolItem(ThreadResourcePromiseTask poolItem) {
         poolItem.shutdown();
     }
 

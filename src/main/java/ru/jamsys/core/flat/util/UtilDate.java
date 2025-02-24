@@ -18,6 +18,8 @@ import java.util.*;
 
 public class UtilDate {
 
+    public static String format  = "yyyy-MM-dd'T'HH:mm:ss";
+
     public static String get(String format) {
         Date now = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat(format);

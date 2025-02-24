@@ -11,6 +11,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.item.PropertySubscription;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Consumer;
 
 // Хранилище Property
 // Отвечает за создание всех Property, создавать экземпляры Property в других местах запрещено
@@ -49,7 +51,9 @@ public class ServiceProperty {
             }
             if (next instanceof EnumerablePropertySource) {
                 for (String prop : ((EnumerablePropertySource<?>) next).getPropertyNames()) {
-                    computeIfAbsent(prop, env.getProperty(prop), next.getName());
+                    computeIfAbsent(prop, env.getProperty(prop), property -> {
+                        property.getSetTrace().getLast().setResource(next.getName());
+                    });
                 }
             }
         }
@@ -73,27 +77,33 @@ public class ServiceProperty {
         return result;
     }
 
-    public Property computeIfAbsent(String key, Object value, String who) {
+    public Property computeIfAbsent(String key, Object value) {
         return computeIfAbsent(
                 key,
-                value == null ? null : String.valueOf(value),
-                who
+                value == null ? null : String.valueOf(value)
         );
     }
 
-    public void set(String key, Object value, String who) {
-        computeIfAbsent(key, null, who).set(value, who);
+    public void set(String key, Object value) {
+        computeIfAbsent(key, null).set(value);
     }
 
-    public Property computeIfAbsent(String key, String value, String who) {
+    public Property computeIfAbsent(String key, String value, Consumer<Property> onNew) {
         return this.properties.computeIfAbsent(key, key1 -> {
-            Property property = new Property(key1, value, who);
+            Property property = new Property(key1, value);
             sequenceKey.add(key1);
             UtilRisc.forEach(null, subscriptions, property::addSubscription);
             // После того, как для нового Property добавили существующих подписчиков - оповестим подписчиков
+            if (onNew != null) {
+                onNew.accept(property);
+            }
             property.emit(property.get());
             return property;
         });
+    }
+
+    public Property computeIfAbsent(String key, String value) {
+        return computeIfAbsent(key, value, null);
     }
 
     public PropertySubscription addSubscription(PropertySubscription propertySubscription) {
@@ -114,6 +124,17 @@ public class ServiceProperty {
         UtilRisc.forEach(null, this.properties, (_, property) -> {
             property.removeSubscription(propertySubscription);
         });
+    }
+
+    public String getJson() {
+        List<Property> result = new ArrayList<>();
+        UtilRisc.forEach(null, sequenceKey, (propertyKey) -> {
+            Property property = properties.get(propertyKey);
+            if (property != null) {
+                result.add(property);
+            }
+        });
+        return UtilJson.toStringPretty(result, "[]");
     }
 
 }

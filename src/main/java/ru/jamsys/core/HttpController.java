@@ -51,7 +51,7 @@ public class HttpController {
         this.serviceProperty = serviceProperty;
         routeGeneratorRepository = routeGenerator.getRouterRepository(HttpHandler.class);
 
-        if (serviceProperty.computeIfAbsent("run.args.web", false, getClass().getName()).get(Boolean.class)) {
+        if (serviceProperty.computeIfAbsent("run.args.web", false).get(Boolean.class)) {
             updateStaticFile();
             subscribeIgnoreFile();
             subscribeIgnoreDir();
@@ -98,8 +98,7 @@ public class HttpController {
         staticFile.clear();
         String location = serviceProperty.computeIfAbsent(
                 "run.args.web.resource.location",
-                "web/",
-                getClass().getName()
+                "web/"
         ).get();
         String absPath = new File(location).getAbsolutePath();
         List<String> filesRecursive = UtilFile.getFilesRecursive(location);

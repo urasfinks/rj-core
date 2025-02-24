@@ -38,6 +38,8 @@ public class ServiceClassFinder implements CascadeName {
 
     private final ApplicationContext applicationContext;
 
+    public static String pkg = "ru.jamsys";
+
     public ServiceClassFinder(
             ApplicationContext applicationContext,
             ExceptionHandler exceptionHandler,
@@ -47,7 +49,7 @@ public class ServiceClassFinder implements CascadeName {
         this.exceptionHandler = exceptionHandler;
 
         @SuppressWarnings("SameParameterValue")
-        String pkg = "ru.jamsys";
+
 
         PropertySubscriber propertySubscriber = new PropertySubscriber(
                 serviceProperty,

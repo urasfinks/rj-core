@@ -8,6 +8,8 @@ import lombok.experimental.Accessors;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyUpdater;
+import ru.jamsys.core.extension.property.repository.PropertyRepository;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.Objects;
@@ -26,6 +28,7 @@ public class PropertySubscription {
 
     private String regexp; //regexp
 
+    @JsonIgnore
     private String propertyKey;
 
     private String defaultValue;
@@ -33,6 +36,29 @@ public class PropertySubscription {
     @ToString.Exclude
     @JsonIgnore
     private final PropertySubscriber propertySubscriber;
+
+    @SuppressWarnings("unused") //used UtilJson
+    public String getSubscriberNamespace() {
+        return propertySubscriber.getNamespace();
+    }
+
+    @SuppressWarnings("unused") //used UtilJson
+    public String getUpdaterClass() {
+        PropertyUpdater propertyUpdater = propertySubscriber.getPropertyUpdater();
+        if (propertyUpdater != null) {
+            return propertyUpdater.getClass().getName();
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unused") //used UtilJson
+    public String getPropertyRepositoryClass() {
+        PropertyRepository propertyRepository = propertySubscriber.getPropertyRepository();
+        if (propertyRepository != null) {
+            return propertyRepository.getClass().getName();
+        }
+        return null;
+    }
 
     @ToString.Exclude
     @JsonIgnore
@@ -48,10 +74,15 @@ public class PropertySubscription {
     }
 
     // Пролить значения до PropertyRepository
-    public PropertySubscription syncPropertyRepository(String who) {
+    public PropertySubscription syncPropertyRepository() {
         if (propertyKey != null) {
             // Получили default значение, получили Property, если не сошлись, считаем приоритетным Property.get()
-            String propertyValue = serviceProperty.computeIfAbsent(propertyKey, defaultValue, who).get();
+            String propertyValue = serviceProperty.computeIfAbsent(propertyKey, defaultValue, property -> {
+                PropertyRepository propertyRepository = propertySubscriber.getPropertyRepository();
+                if (propertyRepository != null) {
+                    property.getSetTrace().getLast().setResource(propertyRepository.getClass().getName());
+                }
+            }).get();
             if (!Objects.equals(defaultValue, propertyValue)) {
                 propertySubscriber.setRepositoryProxy(propertyKey, propertyValue);
             }

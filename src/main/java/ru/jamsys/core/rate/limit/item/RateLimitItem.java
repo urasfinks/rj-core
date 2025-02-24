@@ -1,6 +1,5 @@
 package ru.jamsys.core.rate.limit.item;
 
-import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
@@ -18,15 +17,8 @@ public interface RateLimitItem extends StatisticsFlush, LifeCycleInterface {
 
     default void set(int value) {
         App.get(ServiceProperty.class)
-                .computeIfAbsent(getKey() + ".max", null, getClass().getName())
-                .set(value, getClass().getName());
-    }
-
-    default void set(ApplicationContext applicationContext, int value) {
-        applicationContext
-                .getBean(ServiceProperty.class)
-                .computeIfAbsent(getKey() + ".max", null, getClass().getName())
-                .set(value, getClass().getName());
+                .computeIfAbsent(getKey() + ".max", null)
+                .set(value);
     }
 
 }

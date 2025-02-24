@@ -155,8 +155,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         if (want < abstractPoolProperty.getMin()) {
             App.get(ServiceProperty.class).set(
                     propertySubscriber.getPropertyKey("max"),
-                    abstractPoolProperty.getMin(),
-                    getCascadeName()
+                    abstractPoolProperty.getMin()
             );
             return;
         }
@@ -164,14 +163,12 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         if (want > abstractPoolProperty.getMax()) { //Медленно поднимаем
             App.get(ServiceProperty.class).set(
                     propertySubscriber.getPropertyKey("max"),
-                    abstractPoolProperty.getMax() + 1,
-                    getCascadeName()
+                    abstractPoolProperty.getMax() + 1
             );
         } else { //Но очень быстро опускаем
             App.get(ServiceProperty.class).set(
                     propertySubscriber.getPropertyKey("max"),
-                    want,
-                    getCascadeName()
+                    want
             );
         }
     }

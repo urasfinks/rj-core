@@ -6,10 +6,10 @@ import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.resource.thread.ThreadPool;
+import ru.jamsys.core.resource.thread.ThreadPoolPromiseTask;
 
 @Component
-public class ManagerThreadPool extends AbstractManager<ThreadPool, Void> implements CascadeName {
+public class ManagerThreadPoolPromiseTask extends AbstractManager<ThreadPoolPromiseTask, Void> implements CascadeName {
 
     public void addPromiseTask(PromiseTask promiseTask) {
         getManagerElement(promiseTask.getIndex(), Void.class, null)
@@ -17,10 +17,10 @@ public class ManagerThreadPool extends AbstractManager<ThreadPool, Void> impleme
     }
 
     @Override
-    public ThreadPool build(String key, Class<?> classItem, Void builderArgument) {
-        ThreadPool threadPool = new ThreadPool(this, key);
-        threadPool.run();
-        return threadPool;
+    public ThreadPoolPromiseTask build(String key, Class<?> classItem, Void builderArgument) {
+        ThreadPoolPromiseTask threadPoolPromiseTask = new ThreadPoolPromiseTask(this, key);
+        threadPoolPromiseTask.run();
+        return threadPoolPromiseTask;
     }
 
     @Override

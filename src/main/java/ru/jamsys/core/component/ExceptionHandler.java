@@ -75,15 +75,19 @@ public class ExceptionHandler extends AnnotationPropertyExtractor {
         return sw.toString();
     }
 
+    public static String getLineStack(StackTraceElement element){
+        return "at "
+                + element.getClassName() + "." + element.getMethodName()
+                + "(" + element.getFileName() + ":" + element.getLineNumber() + ")";
+    }
+
     private static void printStackTrace(Throwable th, LineWriter sw, Integer count) {
         StackTraceElement[] elements = th.getStackTrace();
         sw.addLine(th.getClass().getName() + ": " + th.getMessage());
         int m = count != null ? count : maxLine;
         int s = elements.length;
         for (StackTraceElement element : elements) {
-            sw.addLineIndent("at "
-                    + element.getClassName() + "." + element.getMethodName()
-                    + "(" + element.getFileName() + ":" + element.getLineNumber() + ")");
+            sw.addLineIndent(getLineStack(element));
             m--;
             s--;
             if (m == 0) {

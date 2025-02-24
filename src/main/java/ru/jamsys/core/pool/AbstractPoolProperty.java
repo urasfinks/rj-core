@@ -12,7 +12,7 @@ public class AbstractPoolProperty extends AnnotationPropertyExtractor {
     private volatile Integer max = 1;
 
     @SuppressWarnings("all")
-    @PropertyName("max")
+    @PropertyName("min")
     private volatile Integer min = 0;
 
 }

@@ -41,16 +41,14 @@ public class DeeplinkWebLocation implements PromiseGenerator, HttpHandler {
                             .append("urlSchemes", App.get(ServiceProperty.class)
                                     .computeIfAbsent(
                                             "run.args.plugin.deeplink.url.schemes",
-                                            "",
-                                            getClass().getName()
+                                            ""
                                     )
                                     .get()
                             )
                             .append("urlIosAppStore", App.get(ServiceProperty.class)
                                     .computeIfAbsent(
                                             "run.args.plugin.deeplink.url.ios.app.store",
-                                            "",
-                                            getClass().getName()
+                                            ""
                                     )
                                     .get()
                             );
@@ -61,8 +59,7 @@ public class DeeplinkWebLocation implements PromiseGenerator, HttpHandler {
                                             App.get(ServiceProperty.class)
                                                     .computeIfAbsent(
                                                             "run.args.plugin.deeplink.template.class.loader",
-                                                            "",
-                                                            getClass().getName()
+                                                            ""
                                                     )
                                                     .get()
                                     )

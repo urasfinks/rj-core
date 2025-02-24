@@ -78,9 +78,8 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
         App.get(ServiceProperty.class).computeIfAbsent(
                 propertySubscriber.getPropertyKey("size"),
-                null,
-                getCascadeName()
-        ).set(400_000, getCascadeName());
+                null
+        ).set(400_000);
 
         if (fileByteWriterProperty.getFileName() == null || fileByteWriterProperty.getFileName().isEmpty()) {
             throw new RuntimeException("file name is empty");

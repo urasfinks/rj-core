@@ -67,18 +67,6 @@ public class PropertySubscriber implements LifeCycleInterface {
         }
     }
 
-    private String getWho() {
-        StringBuilder sb = new StringBuilder();
-        sb
-                .append("class: ").append(getClass().getName()).append("; ")
-                .append("namespace: ").append(namespace).append("; ");
-        if (propertyRepository != null) {
-            sb
-                    .append("repository: ").append(propertyRepository.getClass().getName()).append("; ");
-        }
-        return sb.toString();
-    }
-
     // Так как сам репопозиторий не знает в каком namespace он работает, нам необходимо сделать прокси
     // для преобразования ключа
     public void setRepositoryProxy(String key, String value) {
@@ -92,7 +80,7 @@ public class PropertySubscriber implements LifeCycleInterface {
         PropertySubscription propertySubscription = new PropertySubscription(this, serviceProperty)
                 .setPropertyKey(getPropertyKey(key))
                 .setDefaultValue(defaultValue)
-                .syncPropertyRepository(getWho());
+                .syncPropertyRepository();
         subscriptions.put(key, propertySubscription);
         if (isRun()) {
             run();
@@ -107,7 +95,7 @@ public class PropertySubscriber implements LifeCycleInterface {
                 regexp,
                 new PropertySubscription(this, serviceProperty)
                         .setRegexp(regexp)
-                        .syncPropertyRepository(getWho())
+                        .syncPropertyRepository()
         );
         if (isRun()) {
             run();

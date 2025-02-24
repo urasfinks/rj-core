@@ -50,9 +50,9 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
-        if (serviceProperty.computeIfAbsent("run.args.web.socket", false, getClass().getName()).get(Boolean.class)) {
+        if (serviceProperty.computeIfAbsent("run.args.web.socket", false).get(Boolean.class)) {
             String path = serviceProperty
-                    .computeIfAbsent("run.args.web.socket.path", "/socket/*", getClass().getName())
+                    .computeIfAbsent("run.args.web.socket.path", "/socket/*")
                     .get(String.class);
             registry.addHandler(applicationContext.getBean(WebSocket.class), path);
             ((ServletWebSocketHandlerRegistry) registry).setOrder(-1);
@@ -70,18 +70,18 @@ public class AppConfiguration implements WebSocketConfigurer {
         // По этому логика реализована линейной
         // Не могу предположить, что есть необходимость на ходу менять правила игры работать по ssl и редиректам
         // Как минимум это странно, как максимум - я без понятия как это сделать)))
-        if (serviceProperty.computeIfAbsent("run.args.web", false, getClass().getName()).get(Boolean.class)) {
+        if (serviceProperty.computeIfAbsent("run.args.web", false).get(Boolean.class)) {
             int httpPort = serviceProperty
-                    .computeIfAbsent("run.args.web.http.port", 80, getClass().getName())
+                    .computeIfAbsent("run.args.web.http.port", 80)
                     .get(Integer.class);
             int httpsPort = serviceProperty
-                    .computeIfAbsent("run.args.web.https.port", 443, getClass().getName())
+                    .computeIfAbsent("run.args.web.https.port", 443)
                     .get(Integer.class);
             boolean ssl = serviceProperty
-                    .computeIfAbsent("run.args.web.ssl", false, getClass().getName())
+                    .computeIfAbsent("run.args.web.ssl", false)
                     .get(Boolean.class);
             boolean redirect = serviceProperty
-                    .computeIfAbsent("run.args.web.http.redirect.https", true, getClass().getName())
+                    .computeIfAbsent("run.args.web.http.redirect.https", true)
                     .get(Boolean.class);
 
             TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
@@ -115,11 +115,11 @@ public class AppConfiguration implements WebSocketConfigurer {
     MultipartConfigElement multipartConfigElement() {
         MultipartConfigFactory factory = new MultipartConfigFactory();
         Integer multipartMax = serviceProperty
-                .computeIfAbsent("run.args.web.multipart.mb.max", 12, getClass().getName())
+                .computeIfAbsent("run.args.web.multipart.mb.max", 12)
                 .get(Integer.class);
         factory.setMaxFileSize(DataSize.ofMegabytes(multipartMax));
         Integer requestMax = serviceProperty
-                .computeIfAbsent("run.args.web.request.mb.max", 12, getClass().getName())
+                .computeIfAbsent("run.args.web.request.mb.max", 12)
                 .get(Integer.class);
         factory.setMaxRequestSize(DataSize.ofMegabytes(requestMax));
         return factory.createMultipartConfig();
@@ -132,9 +132,9 @@ public class AppConfiguration implements WebSocketConfigurer {
     public ServerProperties serverProperties() {
         //ServiceProperty bean = applicationContext.getBean(ServiceProperty.class);
         final ServerProperties serverProperties = new ServerProperties();
-        if (serviceProperty.computeIfAbsent("run.args.web.ssl", false, getClass().getName()).get(Boolean.class)) {
+        if (serviceProperty.computeIfAbsent("run.args.web.ssl", false).get(Boolean.class)) {
             String securityAlias = serviceProperty
-                    .computeIfAbsent("run.args.web.ssl.security.alias", "", getClass().getName())
+                    .computeIfAbsent("run.args.web.ssl.security.alias", "")
                     .get(String.class);
             if (!securityAlias.isEmpty()) {
                 Util.logConsole(getClass(), "Init web ssl context");

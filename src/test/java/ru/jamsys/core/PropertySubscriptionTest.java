@@ -16,8 +16,8 @@ class PropertySubscriptionTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runCore();
-        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", "true", PropertySubscriptionTest.class.getName());
-        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test2", "false", PropertySubscriptionTest.class.getName());
+        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", "true");
+        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test2", "false");
     }
 
     @AfterAll
@@ -41,20 +41,20 @@ class PropertySubscriptionTest {
 
         Assertions.assertEquals("{test1=true, test2=false}", propertySubscriber.getPropertyRepository().getRepository().toString());
 
-        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", null, PropertySubscriptionTest.class.getName()).set(false, PropertySubscriptionTest.class.getName());
+        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", null).set(false);
 
-        Assertions.assertEquals("false", App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", null, PropertySubscriptionTest.class.getName()).get());
+        Assertions.assertEquals("false", App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", null).get());
 
         Assertions.assertEquals("{test1=false, test2=false}", propertySubscriber.getPropertyRepository().getRepository().toString());
 
-        Assertions.assertEquals("false", App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test2", null, PropertySubscriptionTest.class.getName()).get());
+        Assertions.assertEquals("false", App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test2", null).get());
 
         propertySubscriber.getPropertyRepository().setRepository("test2", "true");
 
         Assertions.assertEquals("{test1=false, test2=true}", propertySubscriber.getPropertyRepository().getRepository().toString());
 
         // setRepository("test2", "true") не влияет на изменения Property, все изменения только через Property сверху в низ
-        Assertions.assertEquals("false", App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test2", "", PropertySubscriptionTest.class.getName()).get());
+        Assertions.assertEquals("false", App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test2", "").get());
 
     }
 
@@ -73,22 +73,22 @@ class PropertySubscriptionTest {
         // События наступают только после обновления данных Property
         Assertions.assertEquals(0, x.get());
 
-        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", null, PropertySubscriptionTest.class.getName()).set(false, PropertySubscriptionTest.class.getName());
+        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", null).set(false);
 
         // Так как значение не поменялось true -> true
         Assertions.assertEquals(0, x.get());
 
-        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", null, PropertySubscriptionTest.class.getName()).set(true, PropertySubscriptionTest.class.getName());
+        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", null).set(true);
 
         // Так как значение не поменялось true -> true
         Assertions.assertEquals(1, x.get());
 
-        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test3", null, PropertySubscriptionTest.class.getName());
+        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test3", null);
 
         Assertions.assertEquals("{test1=true, test2=false, test3=null}", propertySubscriber.getPropertyRepository().getRepository().toString());
         Assertions.assertEquals(2, x.get());
 
-        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test3", null, PropertySubscriptionTest.class.getName()).set(true, PropertySubscriptionTest.class.getName());
+        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test3", null).set(true);
 
         Assertions.assertEquals("{test1=true, test2=false, test3=true}", propertySubscriber.getPropertyRepository().getRepository().toString());
         Assertions.assertEquals(3, x.get());
@@ -113,9 +113,9 @@ class PropertySubscriptionTest {
         propertySubscriber.run();
 
         Assertions.assertEquals(true, typedProperty.getTest());
-        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", "", PropertySubscriptionTest.class.getName()).set(false, PropertySubscriptionTest.class.getName());
+        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", "").set(false);
         Assertions.assertEquals(false, typedProperty.getTest());
-        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", "", PropertySubscriptionTest.class.getName()).set(true, PropertySubscriptionTest.class.getName());
+        App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", "").set(true);
         Assertions.assertEquals(true, typedProperty.getTest());
     }
 

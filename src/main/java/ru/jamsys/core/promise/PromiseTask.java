@@ -6,7 +6,7 @@ import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadVirtual;
-import ru.jamsys.core.component.manager.ManagerThreadPool;
+import ru.jamsys.core.component.manager.ManagerThreadPoolPromiseTask;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
@@ -114,7 +114,7 @@ public class PromiseTask implements Runnable {
             switch (type) {
                 case IO, ASYNC_NO_WAIT_IO, EXTERNAL_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);
                 case COMPUTE, ASYNC_NO_WAIT_COMPUTE, EXTERNAL_WAIT_COMPUTE ->
-                        App.get(ManagerThreadPool.class).addPromiseTask(this);
+                        App.get(ManagerThreadPoolPromiseTask.class).addPromiseTask(this);
             }
         } else {
             // Исполняемого блока нет, в этом же потоке провернём, что бы статистику записать и всё

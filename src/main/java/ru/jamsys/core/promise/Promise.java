@@ -3,7 +3,7 @@ package ru.jamsys.core.promise;
 import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.ManagerThreadPool;
+import ru.jamsys.core.component.manager.ManagerThreadPoolPromiseTask;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
@@ -263,11 +263,11 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     }
 
     default RateLimit getRateLimit(String promiseTaskIndex) {
-        return App.get(ManagerThreadPool.class).getRateLimit(getComplexIndex(getIndex(), promiseTaskIndex));
+        return App.get(ManagerThreadPoolPromiseTask.class).getRateLimit(getComplexIndex(getIndex(), promiseTaskIndex));
     }
 
     static RateLimit getRateLimit(String promiseIndex, String promiseTaskIndex) {
-        return App.get(ManagerThreadPool.class).getRateLimit(getComplexIndex(promiseIndex, promiseTaskIndex));
+        return App.get(ManagerThreadPoolPromiseTask.class).getRateLimit(getComplexIndex(promiseIndex, promiseTaskIndex));
     }
 
 }

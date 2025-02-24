@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
 
-public class ThreadResource extends ExpirationMsMutableImpl implements CascadeName, Resource<Void, Void> {
+public class ThreadResourcePromiseTask extends ExpirationMsMutableImpl implements CascadeName, Resource<Void, Void> {
 
     private final Thread thread;
 
@@ -31,7 +31,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements CascadeNa
 
     private final AtomicBoolean shutdown = new AtomicBoolean(false);
 
-    private final ThreadPool pool;
+    private final ThreadPoolPromiseTask pool;
 
     @Getter
     private final CascadeName parentCascadeName;
@@ -39,7 +39,7 @@ public class ThreadResource extends ExpirationMsMutableImpl implements CascadeNa
     @Getter
     private final String key;
 
-    public ThreadResource(CascadeName parentCascadeName, String key, ThreadPool pool) {
+    public ThreadResourcePromiseTask(CascadeName parentCascadeName, String key, ThreadPoolPromiseTask pool) {
         this.parentCascadeName = parentCascadeName;
         this.key = key;
         this.pool = pool;

@@ -50,8 +50,7 @@ class FileByteWriterTest {
     void checkOverMaxFileWrite() {
         App.get(ServiceProperty.class).computeIfAbsent(
                 "App.ManagerFileByteWriter.FileByteWriter.checkOverMaxFileWrite.file.name",
-                "log",
-                getClass().getName()
+                "log"
         );
 
         UtilFile.removeAllFilesInFolder("LogManager");
@@ -81,8 +80,7 @@ class FileByteWriterTest {
     void checkNameLog() {
         App.get(ServiceProperty.class).computeIfAbsent(
                 "App.ManagerFileByteWriter.FileByteWriter.checkNameLog.file.name",
-                "log",
-                getClass().getName()
+                "log"
         );
 
         UtilFile.removeAllFilesInFolder("LogManager");
@@ -105,8 +103,7 @@ class FileByteWriterTest {
     void checkRestoreExceptionShutdown() throws IOException {
         App.get(ServiceProperty.class).computeIfAbsent(
                 "App.ManagerFileByteWriter.FileByteWriter.checkRestoreExceptionShutdown.file.name",
-                "log",
-                getClass().getName()
+                "log"
         );
         UtilFile.removeAllFilesInFolder("LogManager");
 
@@ -124,9 +121,8 @@ class FileByteWriterTest {
         //test.getPropertySubscriber().getPropertyRepository().setRepository("file.name", "default3");
         App.get(ServiceProperty.class).computeIfAbsent(
                 "App.ManagerFileByteWriter.FileByteWriter.checkRestoreExceptionShutdown.file.name",
-                null,
-                getClass().getName()
-        ).set("default3", getClass().getName());
+                null
+        ).set("default3");
         // Проверяем, что default3.002.proc.bin - удалён
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
@@ -144,8 +140,7 @@ class FileByteWriterTest {
     void checkTime() {
         App.get(ServiceProperty.class).computeIfAbsent(
                 "App.ManagerFileByteWriter.FileByteWriter.checkTime.file.name",
-                "log",
-                getClass().getName()
+                "log"
         );
         UtilFile.removeAllFilesInFolder("LogManager");
         long start = System.currentTimeMillis();
@@ -153,16 +148,14 @@ class FileByteWriterTest {
 
         App.get(ServiceProperty.class).computeIfAbsent(
                 "App.ManagerFileByteWriter.FileByteWriter.checkRestoreExceptionShutdown.file.name",
-                null,
-                getClass().getName()
-        ).set("default4", getClass().getName());
+                null
+        ).set("default4");
 
         //test.getBroker().getRateLimit().get(RateLimitName.BROKER_SIZE.getName()).set(9999999);
         App.get(ServiceProperty.class).computeIfAbsent(
                 test.getBroker().getPropertySubscriber().getPropertyKey("size"),
-                null,
-                FileByteWriterTest.class.getName()
-        ).set(9999999, FileByteWriterTest.class.getName());
+                null
+        ).set(9999999);
 
         long start2 = System.currentTimeMillis();
         for (int i = 0; i < 1000000; i++) {
@@ -204,8 +197,7 @@ class FileByteWriterTest {
     void serializeStatisticSecToFile() {
         App.get(ServiceProperty.class).computeIfAbsent(
                 "App.ManagerFileByteWriter.FileByteWriter.default5.file.name",
-                "log",
-                getClass().getName()
+                "log"
         );
         UtilFile.removeAllFilesInFolder("LogManager");
         StatisticSec statisticSec1 = new StatisticSec();
