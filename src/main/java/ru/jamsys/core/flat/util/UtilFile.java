@@ -145,10 +145,12 @@ public class UtilFile {
         }
     }
 
+    @SuppressWarnings("unused")
     public static String getFileName(String path) {
         return Paths.get(path).getFileName().toString();
     }
 
+    @SuppressWarnings("all")
     public static boolean rename(String pathFrom, String pathTo) {
         try {
             File file = new File(pathFrom);
@@ -179,6 +181,7 @@ public class UtilFile {
         return new File(location + relativeWebPath);
     }
 
+    @SuppressWarnings("unused")
     public static void removeDir(File dir) throws IOException {
         FileUtils.deleteDirectory(dir);
     }

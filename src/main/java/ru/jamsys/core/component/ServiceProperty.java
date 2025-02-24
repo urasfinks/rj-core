@@ -51,9 +51,11 @@ public class ServiceProperty {
             }
             if (next instanceof EnumerablePropertySource) {
                 for (String prop : ((EnumerablePropertySource<?>) next).getPropertyNames()) {
-                    computeIfAbsent(prop, env.getProperty(prop), property -> {
-                        property.getSetTrace().getLast().setResource(next.getName());
-                    });
+                    computeIfAbsent(
+                            prop,
+                            env.getProperty(prop),
+                            property -> property.getSetTrace().getLast().setResource(next.getName())
+                    );
                 }
             }
         }
@@ -106,6 +108,7 @@ public class ServiceProperty {
         return computeIfAbsent(key, value, null);
     }
 
+    @SuppressWarnings("all")
     public PropertySubscription addSubscription(PropertySubscription propertySubscription) {
         if (!subscriptions.contains(propertySubscription)) {
             subscriptions.add(propertySubscription);

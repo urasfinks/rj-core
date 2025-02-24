@@ -120,6 +120,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         return parkQueue.isEmpty();
     }
 
+    @SuppressWarnings("unused")
     public void setDynamicPollSize(boolean dynamic) {
         dynamicPollSize.set(dynamic);
     }
@@ -147,6 +148,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         return itemQueue.isEmpty();
     }
 
+    @SuppressWarnings("unused")
     public void setPoolSizeMax(int want) {
         if (!dynamicPollSize.get()) {
             return;

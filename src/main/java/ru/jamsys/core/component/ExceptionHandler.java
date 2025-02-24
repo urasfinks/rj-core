@@ -23,6 +23,7 @@ import ru.jamsys.core.flat.util.UtilDate;
 @Lazy
 public class ExceptionHandler extends AnnotationPropertyExtractor {
 
+    @SuppressWarnings("all")
     private static int maxLine = 50;
 
     @PropertyName("log.uploader.remote")

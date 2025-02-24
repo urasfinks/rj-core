@@ -103,12 +103,14 @@ public class PropertySubscriber implements LifeCycleInterface {
         return this;
     }
 
+    @SuppressWarnings("all")
     public PropertySubscriber removeSubscriptionByRepositoryKey(String key) {
         PropertySubscription remove = subscriptions.remove(key);
         serviceProperty.removeSubscription(remove);
         return this;
     }
 
+    @SuppressWarnings("unused")
     public PropertySubscriber removeSubscriptionByPropertiesKey(String propKey) {
         removeSubscriptionByRepositoryKey(getRepositoryKey(propKey));
         return this;
