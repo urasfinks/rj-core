@@ -3,6 +3,8 @@ package ru.jamsys.core.component;
 import com.google.common.reflect.ClassPath;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertySubscriber;
@@ -17,10 +19,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Несёт информацию о загруженных классах ядра
-// Есть аннотация ServiceClassFinderIgnore
+// Есть аннотация ServiceClassFinderIgnore, при которой класс ядра не попадает в availableClass
+// Так сделаны плагины для HttpHandler, то есть плагины есть, но они все помечены аннотацией ServiceClassFinderIgnore
+// Для того, что бы в проекте добавить плагин, надо убрать ServiceClassFinderIgnore с плагина
+// Это можно сделать при помощи .properties:
+// App.ServiceClassFinder.ignore.ru.jamsys.core.handler.web.http.plugin.DeeplinkSchemaApple=false
+// По умолчанию включенный ServiceClassFinderIgnore подразумевает настройку в namespace = App.ServiceClassFinder.ignore
+// полное_имя_класса = true, то есть игнорирование включено, если поставить false => игнорирование выключено
 
 @Component
-public class ServiceClassFinder {
+public class ServiceClassFinder implements CascadeName {
 
     private final List<Class<?>> availableClass = new ArrayList<>();
 
@@ -41,7 +49,7 @@ public class ServiceClassFinder {
         @SuppressWarnings("SameParameterValue")
         String pkg = "ru.jamsys";
 
-        new PropertySubscriber(
+        PropertySubscriber propertySubscriber = new PropertySubscriber(
                 serviceProperty,
                 (_, _, property) -> {
                     Util.logConsoleJson(getClass(), "onUpdate ServiceClassFinderIgnore: " + property.get());
@@ -49,11 +57,10 @@ public class ServiceClassFinder {
                     availableClass.addAll(getAvailableClass(pkg));
                 },
                 ignoredClassMap,
-                "run.args.ServiceClassFinderIgnore"
+                getCascadeName("ignore")
         )
-                .addSubscriptionRegexp("run\\.args\\.ServiceClassFinderIgnore.*")
-                .run();
-
+                .addSubscriptionRegexp(getCascadeName("ignore.*"));
+        propertySubscriber.run();
         availableClass.clear();
         availableClass.addAll(getAvailableClass(pkg));
     }
@@ -83,15 +90,6 @@ public class ServiceClassFinder {
         return result;
     }
 
-    @SuppressWarnings("unused")
-    public <T> List<Class<T>> getTypeSuperclass(Class<?> cls, Class<T> fnd) {
-        return new ArrayList<>(getActualType(new Type[]{cls.getGenericSuperclass()}, fnd));
-    }
-
-    public <T> List<Class<T>> getTypeInterface(Class<?> cls, Class<T> fnd) {
-        return new ArrayList<>(getActualType(cls.getGenericInterfaces(), fnd));
-    }
-
     public <T> T instanceOf(Class<T> cls) {
         if (availableClass.contains(cls)) {
             return applicationContext.getBean(cls);
@@ -110,21 +108,6 @@ public class ServiceClassFinder {
         }
         return result;
     }
-
-    public <T> List<Class<T>> findByInstanceExclude(Class<T> inst, Class<?> exclude) {
-        List<Class<T>> result = new ArrayList<>();
-        for (Class<?> cls : availableClass) {
-            if (instanceOf(cls, inst)) {
-                @SuppressWarnings("unchecked")
-                Class<T> tmp = (Class<T>) cls;
-                if (!instanceOf(exclude, tmp)) {
-                    result.add(tmp);
-                }
-            }
-        }
-        return result;
-    }
-
 
     public static boolean instanceOf(Class<?> cls, Class<?> interfaceRef) {
         return interfaceRef.isAssignableFrom(cls); //!cls.equals(interfaceRef) &&
@@ -175,6 +158,42 @@ public class ServiceClassFinder {
             throw new ForwardException(th);
         }
         return listClass;
+    }
+
+    @Override
+    public String getKey() {
+        return null;
+    }
+
+    @Override
+    public CascadeName getParentCascadeName() {
+        return App.cascadeName;
+    }
+
+    @SuppressWarnings("unused")
+    public <T> List<Class<T>> getTypeSuperclass(Class<?> cls, Class<T> fnd) {
+        return new ArrayList<>(getActualType(new Type[]{cls.getGenericSuperclass()}, fnd));
+    }
+
+    @SuppressWarnings("unused")
+    public <T> List<Class<T>> getTypeInterface(Class<?> cls, Class<T> fnd) {
+        return new ArrayList<>(getActualType(cls.getGenericInterfaces(), fnd));
+    }
+
+    @SuppressWarnings("unused")
+    // Вернуть список доступных классов за исключением
+    public <T> List<Class<T>> findByInstanceExclude(Class<T> inst, Class<?> exclude) {
+        List<Class<T>> result = new ArrayList<>();
+        for (Class<?> cls : availableClass) {
+            if (instanceOf(cls, inst)) {
+                @SuppressWarnings("unchecked")
+                Class<T> tmp = (Class<T>) cls;
+                if (!instanceOf(exclude, tmp)) {
+                    result.add(tmp);
+                }
+            }
+        }
+        return result;
     }
 
 }

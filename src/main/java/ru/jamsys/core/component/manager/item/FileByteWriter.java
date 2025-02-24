@@ -92,7 +92,6 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     }
 
     private void restoreIndex(String folder, String fileName) {
-        System.out.println("RestoreIndex folder: " + folder + "; fileName: " + fileName);
         List<String> filesRecursive = UtilFile.getFilesRecursive(folder, false);
         AvgMetric metric = new AvgMetric();
         for (String filePath : filesRecursive) {
