@@ -7,7 +7,10 @@ import ru.jamsys.core.extension.property.item.PropertySubscription;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Function;
 
@@ -31,14 +34,11 @@ public class Property {
     private String value;
 
     @Getter
-    private final Set<PropertySubscription> subscriptions = new LinkedHashSet<>();
+    private final Set<PropertySubscription> subscriptions = Util.getConcurrentHashSet();
 
     public Property(@NonNull String key, String value, String who) {
         this.key = key;
         this.value = value;
-        if(key.equals("App.ManagerRateLimit.RateLimit.App.ManagerThreadPool.ThreadPool.seq.then1.tps")){
-            Util.printStackTrace("!!");
-        }
         traceSetter.add(new HashMapBuilder<String, String>().append(who, value));
     }
 

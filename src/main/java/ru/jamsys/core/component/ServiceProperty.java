@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 // Хранилище Property
 // Отвечает за создание всех Property, создавать экземпляры Property в других местах запрещено
@@ -28,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServiceProperty {
 
     final private Map<String, Property> properties = new ConcurrentHashMap<>();
+    final private ConcurrentLinkedDeque<String> sequenceKey = new ConcurrentLinkedDeque<>();
 
     //Нужен для момента, когда будет добавляться новое Property, что бы можно было к нему навешать старых слушателей
     final private Set<PropertySubscription> subscriptions = Util.getConcurrentHashSet();
@@ -62,8 +64,9 @@ public class ServiceProperty {
     // Получить все Property ключ которых подходит по шаблону
     public List<Property> get(String regexp) {
         List<Property> result = new ArrayList<>();
-        UtilRisc.forEach(null, properties, (_, property) -> {
-            if (property.isMatchPattern(regexp)) {
+        UtilRisc.forEach(null, sequenceKey, (propertyKey) -> {
+            Property property = properties.get(propertyKey);
+            if (property != null && property.isMatchPattern(regexp)) {
                 result.add(property);
             }
         });
@@ -85,6 +88,7 @@ public class ServiceProperty {
     public Property computeIfAbsent(String key, String value, String who) {
         return this.properties.computeIfAbsent(key, key1 -> {
             Property property = new Property(key1, value, who);
+            sequenceKey.add(key1);
             UtilRisc.forEach(null, subscriptions, property::addSubscription);
             // После того, как для нового Property добавили существующих подписчиков - оповестим подписчиков
             property.emit(property.get());
@@ -95,8 +99,11 @@ public class ServiceProperty {
     public PropertySubscription addSubscription(PropertySubscription propertySubscription) {
         if (!subscriptions.contains(propertySubscription)) {
             subscriptions.add(propertySubscription);
-            UtilRisc.forEach(null, this.properties, (_, property) -> {
-                property.addSubscription(propertySubscription);
+            UtilRisc.forEach(null, sequenceKey, (propertyKey) -> {
+                Property property = properties.get(propertyKey);
+                if (property != null) {
+                    property.addSubscription(propertySubscription);
+                }
             });
         }
         return propertySubscription;

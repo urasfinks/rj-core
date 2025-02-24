@@ -29,7 +29,8 @@ class PropertySubscriptionTest {
     @Order(1)
     public void collection() {
         PropertyRepositoryMap<String> propertiesRepositoryMap = new PropertyRepositoryMap<>(String.class);
-        PropertySubscriber propertySubscriber = new PropertySubscriber(App.get(ServiceProperty.class), null, propertiesRepositoryMap, "run.args.ServiceClassFinderIgnore").addSubscriptionRegexp("run\\.args\\.ServiceClassFinderIgnore.*");
+        PropertySubscriber propertySubscriber = new PropertySubscriber(App.get(ServiceProperty.class), null, propertiesRepositoryMap, "run.args.ServiceClassFinderIgnore")
+                .addSubscriptionRegexp("run\\.args\\.ServiceClassFinderIgnore.*");
         propertySubscriber.run();
 
         Assertions.assertEquals("{test1=true, test2=false}", propertiesRepositoryMap.getMapRepository().toString());
