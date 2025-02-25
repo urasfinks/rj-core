@@ -26,21 +26,21 @@ class HttpRequestReaderTest {
             });
             Assertions.fail();
         } catch (Throwable th) {
-            Assertions.assertEquals(th.getMessage(), "Authorization header is not Basic");
+            Assertions.assertEquals("Authorization header is not Basic", th.getMessage());
         }
         try {
             ServletRequestReader.basicAuthHandler("Basic YWRtaW5xd2VydHk=", (_, _) -> {
             });
             Assertions.fail();
         } catch (Throwable th) {
-            Assertions.assertEquals(th.getMessage(), "Error parsing");
+            Assertions.assertEquals("Error parsing", th.getMessage());
         }
         try {
             ServletRequestReader.basicAuthHandler("Basic YWRtaW5xd2Vyd", (_, _) -> {
             });
             throw new RuntimeException("NO");
         } catch (Throwable th) {
-            Assertions.assertNotEquals(th.getMessage(), "NO");
+            Assertions.assertNotEquals("NO", th.getMessage());
         }
     }
 

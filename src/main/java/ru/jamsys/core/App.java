@@ -116,7 +116,7 @@ public class App implements CascadeName {
         if (regClass.equals(cls)) {
             return cls.getSimpleName();
         } else {
-            uniqueClassName.computeIfAbsent(cls.getName(), _ -> cls);
+            uniqueClassName.putIfAbsent(cls.getName(), cls);
             return cls.getName();
         }
     }
