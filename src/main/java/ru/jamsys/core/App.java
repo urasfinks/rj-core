@@ -77,6 +77,7 @@ public class App implements CascadeName {
         });
     }
 
+    @SuppressWarnings("all")
     public static void error(Throwable th) {
         if (context != null) {
             ExceptionHandler exceptionHandler = get(ExceptionHandler.class);
