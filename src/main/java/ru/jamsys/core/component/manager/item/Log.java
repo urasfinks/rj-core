@@ -5,7 +5,7 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.Correlation;
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.UtilCodeStyle;
 import ru.jamsys.core.flat.util.UtilLog;
 
 import java.io.ByteArrayInputStream;
@@ -60,7 +60,7 @@ public class Log implements ByteTransformer, Correlation {
     public void instanceFromByte(byte[] bytes) throws Exception {
         InputStream fis = new ByteArrayInputStream(bytes);
         setCorrelation(UtilLog.readShortString(fis));
-        logType = LogType.valueOf(Util.camelToSnake(UtilLog.readShortString(fis)));
+        logType = LogType.valueOf(UtilCodeStyle.camelToSnake(UtilLog.readShortString(fis)));
         timeAdd = Long.parseLong(UtilLog.readShortString(fis));
         setData(UtilLog.readString(fis));
     }

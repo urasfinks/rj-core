@@ -10,9 +10,9 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertySubscriber;
 import ru.jamsys.core.extension.property.PropertyUpdater;
-import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
+import ru.jamsys.core.flat.util.UtilText;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -139,7 +139,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         int curIndex = counter.getAndIncrement() % fileByteWriterProperty.getFileCount();
         currentFilePath = fileByteWriterProperty.getFolder()
                 + "/" + fileByteWriterProperty.getFileName()
-                + "." + Util.padLeft(curIndex + "", String.valueOf(fileByteWriterProperty.getFileCount()).length(), "0")
+                + "." + UtilText.padLeft(curIndex + "", String.valueOf(fileByteWriterProperty.getFileCount()).length(), "0")
                 + ".proc.bin";
     }
 

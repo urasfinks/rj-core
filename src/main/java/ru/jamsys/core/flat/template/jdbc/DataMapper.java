@@ -1,8 +1,10 @@
 package ru.jamsys.core.flat.template.jdbc;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import ru.jamsys.core.flat.UtilCodeStyle;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilText;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -49,8 +51,8 @@ public class DataMapper<T> {
         Map<String, Object> result = new LinkedHashMap<>();
         switch (transform) {
             case SNAKE_TO_CAMEL ->
-                    map.forEach((s, o) -> result.put(Util.firstCharToLowerCase(Util.snakeToCamel(s)), o));
-            case CAMEL_TO_SNAKE -> map.forEach((s, o) -> result.put(Util.camelToSnake(s).toLowerCase(), o));
+                    map.forEach((s, o) -> result.put(UtilText.firstCharToLowerCase(UtilCodeStyle.snakeToCamel(s)), o));
+            case CAMEL_TO_SNAKE -> map.forEach((s, o) -> result.put(UtilCodeStyle.camelToSnake(s).toLowerCase(), o));
         }
         return result;
     }

@@ -14,6 +14,7 @@ import ru.jamsys.core.extension.property.item.PropertySubscription;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilRisc;
+import ru.jamsys.core.flat.util.UtilText;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -114,7 +115,7 @@ public class Property {
 
     // Ключ подходит по шаблону
     public boolean isMatchPattern(String regexp) {
-        return Util.regexpFind(this.key, regexp) != null;
+        return UtilText.regexpFind(this.key, regexp) != null;
     }
 
     public void set(Object newValue) {

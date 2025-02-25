@@ -1,19 +1,14 @@
 package ru.jamsys.core.flat.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.util.StringUtils;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -24,12 +19,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
 public class Util {
 
@@ -37,8 +30,8 @@ public class Util {
 
     static final String defaultCharset = "UTF-8";
 
-    public static <T> void printArray(T[] arr) {
-        logConsole(Util.class, Arrays.toString(arr));
+    public static <T> void printArray(Class<?> cls, T[] arr) {
+        logConsole(cls, Arrays.toString(arr));
     }
 
     public static <T, R> List<R> forEach(T[] array, Function<T, R> fn) {
@@ -132,87 +125,6 @@ public class Util {
         return "p" + password;
     }
 
-    public static String stackTraceToString(Throwable e) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        return sw.toString();
-    }
-
-    public static String padRight(String data, int n) {
-        if (data == null) {
-            return "";
-        }
-        return String.format("%-" + n + "s", data);
-    }
-
-    public static String padRight(String data, int n, String ch) {
-        if (data == null) {
-            return "";
-        }
-        if (ch == null) ch = " ";
-        int lenStr = data.length();
-        if (lenStr >= n) {
-            return data;
-        } else {
-            return data + ch.repeat(n - lenStr);
-        }
-    }
-
-    public static String padLeft(String data, int n) {
-        return String.format("%" + n + "s", data);
-    }
-
-    public static String padLeft(String data, int n, String ch) {
-        if (data == null) {
-            return "";
-        }
-        if (ch == null) ch = " ";
-        int lenStr = data.length();
-        if (lenStr >= n) {
-            return data;
-        } else {
-            StringBuilder sb = new StringBuilder(data);
-            int addLen = n - lenStr;
-            for (int i = 0; i < addLen; i++) {
-                sb.insert(0, ch);
-            }
-            return sb.toString();
-        }
-    }
-
-    public static String trimLeft(String data, String ch) {
-        StringBuilder sb = new StringBuilder(data);
-        while (!sb.isEmpty() && ch.equals(sb.charAt(0) + "")) {
-            sb.delete(0, 1);
-        }
-        return sb.toString();
-    }
-
-    public static String trimRight(String data, String ch) {
-        StringBuilder sb = new StringBuilder(data);
-        while (!sb.isEmpty() && ch.equals(sb.charAt(sb.length() - 1) + "")) {
-            sb.delete(sb.length() - 1, sb.length());
-        }
-        return sb.toString();
-    }
-
-    public static String urlEncode(String data, String charset) throws Exception {
-        return URLEncoder.encode(data, charset);
-    }
-
-    public static String urlEncode(String data) throws Exception {
-        return urlEncode(data, defaultCharset);
-    }
-
-    public static String urlDecode(String data, String charset) throws Exception {
-        return URLDecoder.decode(data, charset);
-    }
-
-    public static String urlDecode(String data) throws Exception {
-        return urlDecode(data, defaultCharset);
-    }
-
     public static byte[] getHashByte(byte[] bytes, String hashType) throws NoSuchAlgorithmException {
         // MD2, MD5, SHA1, SHA-256, SHA-384, SHA-512
         java.security.MessageDigest crypt2 = java.security.MessageDigest.getInstance(hashType);
@@ -247,27 +159,6 @@ public class Util {
         return minimum + ThreadLocalRandom.current().nextInt((maximum - minimum) + 1);
     }
 
-    public static String regexpReplace(String data, String pattern, String replace) {
-        Pattern p = Pattern.compile(pattern);
-        Matcher m = p.matcher(data);
-        StringBuilder sb = new StringBuilder();
-        while (m.find()) {
-            m.appendReplacement(sb, replace);
-        }
-        m.appendTail(sb);
-        return sb.toString();
-    }
-
-    public static String regexpFind(String str, String pattern) {
-        Pattern p = Pattern.compile(pattern);
-        Matcher m = p.matcher(str);
-        return m.find() ? m.group(0) : null;
-    }
-
-    public static String capitalize(String str) {
-        return StringUtils.capitalize(str);
-    }
-
     public static boolean isNumeric(String num) {
         try {
             Double.parseDouble(num);
@@ -286,6 +177,7 @@ public class Util {
         return false;
     }
 
+    @SuppressWarnings("all")
     public static void printStackTrace(String label) {
         Exception exception = new Exception(
                 UtilDate.msFormat(System.currentTimeMillis()) + " ["
@@ -299,90 +191,6 @@ public class Util {
         for (String key : newObj.keySet()) {
             def.put(key, newObj.get(key));
         }
-    }
-
-    public static boolean isSnakeCase(String input) {
-        return input.contains("_");
-    }
-
-    public static boolean isCamelCase(String input) {
-        boolean hasUpper = false;
-        boolean hasLower = false;
-
-        for (char c : input.toCharArray()) {
-            if (Character.isUpperCase(c)) {
-                hasUpper = true;
-            }
-            if (Character.isLowerCase(c)) {
-                hasLower = true;
-            }
-            // Если нашли оба, можно завершить цикл
-            if (hasUpper && hasLower) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static String snakeToCamel(String phrase) {
-        if (phrase == null) {
-            return null;
-        }
-        String[] s = phrase.split("_");
-        if (s.length == 1 && isCamelCase(phrase)) {
-            return firstCharToUpperCase(phrase);
-        }
-        StringBuilder sb = new StringBuilder();
-        for (String w : s) {
-            if (w == null || w.isEmpty()) {
-                sb.append("_");
-                continue;
-            }
-            sb.append(w.substring(0, 1).toUpperCase())
-                    .append(w.substring(1).toLowerCase());
-        }
-        if (phrase.endsWith("_")) {
-            sb.append("_");
-        }
-        return sb.toString();
-    }
-
-    public static String camelToSnake(String phrase) {
-        if (phrase == null) {
-            return null;
-        }
-        if (isSnakeCase(phrase)) {
-            return phrase.toUpperCase();
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < phrase.length(); i++) {
-            char c = phrase.charAt(i);
-            if (Character.isUpperCase(c) && i > 0) {
-                sb.append("_");
-            }
-            sb.append(c);
-        }
-        return sb.toString().toUpperCase();
-    }
-
-    public static String firstCharToLowerCase(String someString) {
-        if (someString == null || someString.isEmpty()) {
-            return someString;
-        }
-        if (someString.length() == 1) {
-            return someString.toLowerCase();
-        }
-        return someString.substring(0, 1).toLowerCase() + someString.substring(1);
-    }
-
-    public static String firstCharToUpperCase(String someString) {
-        if (someString == null || someString.isEmpty()) {
-            return someString;
-        }
-        if (someString.length() == 1) {
-            return someString.toUpperCase();
-        }
-        return someString.substring(0, 1).toUpperCase() + someString.substring(1);
     }
 
     public static String htmlEntity(String value) {
@@ -510,25 +318,6 @@ public class Util {
             break;
         }
         return sb.toString();
-    }
-
-    public static String digitTranslate(int number, String one, String two, String five) {
-        return digitTranslate((long) number, one, two, five);
-    }
-    public static String digitTranslate(long number, String one, String two, String five) {
-        // Определяем последние две цифры для исключений типа 11, 12, 13, 14
-        long lastTwoDigits = number % 100;
-        // Определяем последнюю цифру
-        long lastDigit = number % 10;
-        if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
-            return five;
-        } else if (lastDigit == 1) {
-            return one;
-        } else if (lastDigit >= 2 && lastDigit <= 4) {
-            return two;
-        } else {
-            return five;
-        }
     }
 
     public static <T> T mapToObject(Map<String, Object> map, Class<T> cls) {

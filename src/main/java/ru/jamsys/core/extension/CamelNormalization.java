@@ -1,6 +1,6 @@
 package ru.jamsys.core.extension;
 
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.UtilCodeStyle;
 
 @SuppressWarnings("unused")
 public interface CamelNormalization {
@@ -8,7 +8,7 @@ public interface CamelNormalization {
     String name();
 
     default String getNameCamel() {
-        return Util.snakeToCamel(name());
+        return UtilCodeStyle.snakeToCamel(name());
     }
 
 }

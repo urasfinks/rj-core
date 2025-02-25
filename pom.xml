@@ -135,9 +135,10 @@
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.16.0</version>
+			<artifactId>commons-text</artifactId>
+			<version>1.13.0</version>
 		</dependency>
+
 
 	</dependencies>
 

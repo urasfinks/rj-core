@@ -18,7 +18,7 @@ import java.util.*;
 
 public class UtilDate {
 
-    public static String format  = "yyyy-MM-dd'T'HH:mm:ss";
+    public static String format = "yyyy-MM-dd'T'HH:mm:ss";
 
     public static String get(String format) {
         Date now = new Date();
@@ -160,7 +160,7 @@ public class UtilDate {
             }
 
             public String digitTranslate(long count) {
-                return Util.digitTranslate(count, one, two, five);
+                return UtilText.digitTranslate(count, one, two, five);
             }
 
         }

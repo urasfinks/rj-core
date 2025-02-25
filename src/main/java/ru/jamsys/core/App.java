@@ -96,7 +96,7 @@ public class App implements CascadeName {
         init();
         if (context == null) {
             Util.logConsole(App.class, "Run arguments:");
-            Util.printArray(args);
+            Util.printArray(App.class, args);
             context = application.run(args);
             get(Core.class).run();
         }

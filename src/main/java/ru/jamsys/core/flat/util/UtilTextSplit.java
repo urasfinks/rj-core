@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public class UtilSplit {
+public class UtilTextSplit {
 
     @SuppressWarnings("unused")
     public static List<String> splitMessageSmart(String message, int maxLength) {

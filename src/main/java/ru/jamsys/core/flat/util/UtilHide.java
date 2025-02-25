@@ -38,10 +38,10 @@ public class UtilHide {
         int tail = str.length() - countFirst;
         if (tail >= countLast * 2) {
             int middle = str.length() - countFirst - countLast;
-            return str.substring(0, countFirst) + Util.padLeft("", middle, ch) + str.substring(countFirst + middle);
+            return str.substring(0, countFirst) + UtilText.padLeft("", middle, ch) + str.substring(countFirst + middle);
         }
         int middle = (int) Math.ceil(Double.parseDouble(tail + "") / 2);
-        return str.substring(0, countFirst) + Util.padLeft("", middle, ch) + str.substring(countFirst + middle);
+        return str.substring(0, countFirst) + UtilText.padLeft("", middle, ch) + str.substring(countFirst + middle);
     }
 
     public static String replaceEncode(String input, String ch) {

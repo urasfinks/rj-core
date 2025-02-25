@@ -5,9 +5,11 @@ import lombok.Setter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.flat.UtilCodeStyle;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilListSort;
 import ru.jamsys.core.flat.util.UtilRisc;
+import ru.jamsys.core.flat.util.UtilText;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -21,51 +23,51 @@ class UtilTest {
 
     @Test
     void snakeToCamel() {
-        Assertions.assertEquals("HelloWorld", Util.snakeToCamel("HELLO_WORLD"));
-        Assertions.assertEquals("HelloWorld1", Util.snakeToCamel("HELLO_WORLD1"));
-        Assertions.assertEquals("HelloWorld1", Util.snakeToCamel("HELLO_WORLD_1"));
-        Assertions.assertEquals("HelloWorld1_", Util.snakeToCamel("HELLO_WORLD_1_"));
-        Assertions.assertEquals("_HelloWorld1_", Util.snakeToCamel("_HELLO_WORLD_1_"));
-        Assertions.assertEquals("Helloworld", Util.snakeToCamel("HELLOWORLD"));
-        Assertions.assertEquals("DataType", Util.snakeToCamel("dataType"));
-        Assertions.assertEquals("DataType", Util.snakeToCamel("DataType"));
-        Assertions.assertEquals("DataType", Util.snakeToCamel("data_Type"));
-        Assertions.assertEquals("DataType", Util.snakeToCamel("data_type"));
+        Assertions.assertEquals("HelloWorld", UtilCodeStyle.snakeToCamel("HELLO_WORLD"));
+        Assertions.assertEquals("HelloWorld1", UtilCodeStyle.snakeToCamel("HELLO_WORLD1"));
+        Assertions.assertEquals("HelloWorld1", UtilCodeStyle.snakeToCamel("HELLO_WORLD_1"));
+        Assertions.assertEquals("HelloWorld1_", UtilCodeStyle.snakeToCamel("HELLO_WORLD_1_"));
+        Assertions.assertEquals("_HelloWorld1_", UtilCodeStyle.snakeToCamel("_HELLO_WORLD_1_"));
+        Assertions.assertEquals("Helloworld", UtilCodeStyle.snakeToCamel("HELLOWORLD"));
+        Assertions.assertEquals("DataType", UtilCodeStyle.snakeToCamel("dataType"));
+        Assertions.assertEquals("DataType", UtilCodeStyle.snakeToCamel("DataType"));
+        Assertions.assertEquals("DataType", UtilCodeStyle.snakeToCamel("data_Type"));
+        Assertions.assertEquals("DataType", UtilCodeStyle.snakeToCamel("data_type"));
     }
 
     @Test
     void camelToSnake() {
-        Assertions.assertEquals("HELLO_WORLD", Util.camelToSnake("HelloWorld"));
-        Assertions.assertEquals("_HELLOWORLD", Util.camelToSnake("_HelloWorld"));
-        Assertions.assertEquals("HELLO_WORLD1", Util.camelToSnake("HelloWorld1"));
-        Assertions.assertEquals("HELLOWORLD", Util.camelToSnake("Helloworld"));
-        Assertions.assertEquals("HELLO_WORLD", Util.camelToSnake("Hello_world"));
+        Assertions.assertEquals("HELLO_WORLD", UtilCodeStyle.camelToSnake("HelloWorld"));
+        Assertions.assertEquals("_HELLOWORLD", UtilCodeStyle.camelToSnake("_HelloWorld"));
+        Assertions.assertEquals("HELLO_WORLD1", UtilCodeStyle.camelToSnake("HelloWorld1"));
+        Assertions.assertEquals("HELLOWORLD", UtilCodeStyle.camelToSnake("Helloworld"));
+        Assertions.assertEquals("HELLO_WORLD", UtilCodeStyle.camelToSnake("Hello_world"));
     }
 
     @Test
-    void firstCharToUpperCase(){
-        Assertions.assertEquals("HelloWorld", Util.firstCharToUpperCase("HelloWorld"));
-        Assertions.assertEquals("HelloWorld", Util.firstCharToUpperCase("helloWorld"));
-        Assertions.assertEquals("", Util.firstCharToUpperCase(""));
-        Assertions.assertEquals("U", Util.firstCharToUpperCase("u"));
-        Assertions.assertEquals("Ur", Util.firstCharToUpperCase("ur"));
-        Assertions.assertEquals("U", Util.firstCharToUpperCase("U"));
-        Assertions.assertEquals("UR", Util.firstCharToUpperCase("UR"));
-        Assertions.assertEquals("URa", Util.firstCharToUpperCase("URa"));
-        Assertions.assertNull(Util.firstCharToUpperCase(null));
+    void firstCharToUpperCase() {
+        Assertions.assertEquals("HelloWorld", UtilText.firstCharToUpperCase("HelloWorld"));
+        Assertions.assertEquals("HelloWorld", UtilText.firstCharToUpperCase("helloWorld"));
+        Assertions.assertEquals("", UtilText.firstCharToUpperCase(""));
+        Assertions.assertEquals("U", UtilText.firstCharToUpperCase("u"));
+        Assertions.assertEquals("Ur", UtilText.firstCharToUpperCase("ur"));
+        Assertions.assertEquals("U", UtilText.firstCharToUpperCase("U"));
+        Assertions.assertEquals("UR", UtilText.firstCharToUpperCase("UR"));
+        Assertions.assertEquals("URa", UtilText.firstCharToUpperCase("URa"));
+        Assertions.assertNull(UtilText.firstCharToUpperCase(null));
     }
 
     @Test
-    void firstCharToLowerCase(){
-        Assertions.assertEquals("helloWorld", Util.firstCharToLowerCase("HelloWorld"));
-        Assertions.assertEquals("helloWorld", Util.firstCharToLowerCase("helloWorld"));
-        Assertions.assertEquals("", Util.firstCharToLowerCase(""));
-        Assertions.assertEquals("u", Util.firstCharToLowerCase("U"));
-        Assertions.assertEquals("ur", Util.firstCharToLowerCase("Ur"));
-        Assertions.assertEquals("u", Util.firstCharToLowerCase("u"));
-        Assertions.assertEquals("ur", Util.firstCharToLowerCase("ur"));
-        Assertions.assertEquals("urA", Util.firstCharToLowerCase("urA"));
-        Assertions.assertNull(Util.firstCharToLowerCase(null));
+    void firstCharToLowerCase() {
+        Assertions.assertEquals("helloWorld", UtilText.firstCharToLowerCase("HelloWorld"));
+        Assertions.assertEquals("helloWorld", UtilText.firstCharToLowerCase("helloWorld"));
+        Assertions.assertEquals("", UtilText.firstCharToLowerCase(""));
+        Assertions.assertEquals("u", UtilText.firstCharToLowerCase("U"));
+        Assertions.assertEquals("ur", UtilText.firstCharToLowerCase("Ur"));
+        Assertions.assertEquals("u", UtilText.firstCharToLowerCase("u"));
+        Assertions.assertEquals("ur", UtilText.firstCharToLowerCase("ur"));
+        Assertions.assertEquals("urA", UtilText.firstCharToLowerCase("urA"));
+        Assertions.assertNull(UtilText.firstCharToLowerCase(null));
     }
 
     @Test
@@ -132,7 +134,7 @@ class UtilTest {
     }
 
     @Test
-    void listReversed(){
+    void listReversed() {
         List<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(2);
@@ -204,31 +206,31 @@ class UtilTest {
     }
 
     @Test
-    void digitTranslate(){
-        Assertions.assertEquals("коров", Util.digitTranslate(5, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(25, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(35, "корова", "коровы", "коров"));
+    void digitTranslate() {
+        Assertions.assertEquals("коров", UtilText.digitTranslate(5, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(25, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(35, "корова", "коровы", "коров"));
 
-        Assertions.assertEquals("корова", Util.digitTranslate(1, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коровы", Util.digitTranslate(2, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коровы", Util.digitTranslate(3, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коровы", Util.digitTranslate(4, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(6, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(7, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(8, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(9, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(10, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(11, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(12, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(13, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(14, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(15, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(16, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(17, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(18, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(19, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", Util.digitTranslate(20, "корова", "коровы", "коров"));
-        Assertions.assertEquals("корова", Util.digitTranslate(21, "корова", "коровы", "коров"));
+        Assertions.assertEquals("корова", UtilText.digitTranslate(1, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коровы", UtilText.digitTranslate(2, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коровы", UtilText.digitTranslate(3, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коровы", UtilText.digitTranslate(4, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(6, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(7, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(8, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(9, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(10, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(11, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(12, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(13, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(14, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(15, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(16, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(17, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(18, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(19, "корова", "коровы", "коров"));
+        Assertions.assertEquals("коров", UtilText.digitTranslate(20, "корова", "коровы", "коров"));
+        Assertions.assertEquals("корова", UtilText.digitTranslate(21, "корова", "коровы", "коров"));
     }
 
     @Getter
