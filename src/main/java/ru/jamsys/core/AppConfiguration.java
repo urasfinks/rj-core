@@ -52,7 +52,7 @@ public class AppConfiguration implements WebSocketConfigurer {
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
         if (serviceProperty.computeIfAbsent("run.args.web.socket", false).get(Boolean.class)) {
             String path = serviceProperty
-                    .computeIfAbsent("run.args.web.socket.path", "/socket/*")
+                    .computeIfAbsent("run.args.web.socket.uri", "/socket/*")
                     .get(String.class);
             registry.addHandler(applicationContext.getBean(WebSocket.class), path);
             ((ServletWebSocketHandlerRegistry) registry).setOrder(-1);
