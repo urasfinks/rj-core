@@ -31,7 +31,8 @@ public class Util {
     public static final ObjectMapper objectMapper = new ObjectMapper();
     public static final ObjectMapper objectMapperSkipUnknown = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    static ObjectMapper objectMapperPretty = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    public static final ObjectMapper objectMapperPretty = new ObjectMapper()
+            .enable(SerializationFeature.INDENT_OUTPUT);
 
     static final String defaultCharset = "UTF-8";
 
