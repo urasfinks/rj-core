@@ -3,9 +3,6 @@ package ru.jamsys.core.flat.util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
 import org.springframework.lang.Nullable;
@@ -17,9 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 public class UtilJson {
-
-    static ObjectMapper objectMapperPretty;
-    static ObjectMapper objectMapper2 = new ObjectMapper();
 
     public static Object selector(Map<String, Object> obj, String selector) {
         String[] split = selector.split("\\.");
@@ -90,12 +84,8 @@ public class UtilJson {
     public static String toStringPretty(Object object, String def) {
         DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
         prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
-        if (objectMapperPretty == null) {
-            objectMapperPretty = new ObjectMapper();
-            objectMapperPretty.enable(SerializationFeature.INDENT_OUTPUT);
-        }
         try {
-            return Util.objectMapper.writer(prettyPrinter).writeValueAsString(object);
+            return Util.objectMapperPretty.writer(prettyPrinter).writeValueAsString(object);
         } catch (Exception e) {
             App.error(e);
         }
@@ -103,16 +93,14 @@ public class UtilJson {
     }
 
     public static <T> T toObject(String json, Class<T> cls) throws Throwable {
-        objectMapper2.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return objectMapper2.readValue(json, cls);
+        return Util.objectMapperSkipUnknown.readValue(json, cls);
     }
 
     @SuppressWarnings("unused")
     public static <T> JsonEnvelope<T> toObjectOverflow(String json, Class<T> t) {
         JsonEnvelope<T> ret = new JsonEnvelope<>();
         try {
-            objectMapper2.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            ret.setObject(objectMapper2.readValue(json, t));
+            ret.setObject(Util.objectMapperSkipUnknown.readValue(json, t));
         } catch (Exception e) {
             ret.setException(e);
             App.error(e);

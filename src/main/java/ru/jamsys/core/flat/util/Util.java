@@ -1,6 +1,8 @@
 package ru.jamsys.core.flat.util;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 
@@ -27,6 +29,9 @@ import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 public class Util {
 
     public static final ObjectMapper objectMapper = new ObjectMapper();
+    public static final ObjectMapper objectMapperSkipUnknown = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    static ObjectMapper objectMapperPretty = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
     static final String defaultCharset = "UTF-8";
 
