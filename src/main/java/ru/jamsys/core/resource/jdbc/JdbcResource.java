@@ -122,7 +122,7 @@ public class JdbcResource
         execute.forEach(map -> {
             try {
                 T t = cls.getDeclaredConstructor().newInstance();
-                result.add(t.fromMap(map, DataMapper.Transform.SNAKE_TO_CAMEL));
+                result.add(t.fromMap(map, DataMapper.TransformCodeStyle.SNAKE_TO_CAMEL));
             } catch (Throwable th) {
                 throw new RuntimeException(th);
             }

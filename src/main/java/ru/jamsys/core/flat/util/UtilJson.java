@@ -1,8 +1,10 @@
 package ru.jamsys.core.flat.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
 import org.springframework.lang.Nullable;
@@ -14,6 +16,12 @@ import java.util.List;
 import java.util.Map;
 
 public class UtilJson {
+
+    public static final ObjectMapper objectMapper = new ObjectMapper();
+    public static final ObjectMapper objectMapperSkipUnknown = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    public static final ObjectMapper objectMapperPretty = new ObjectMapper()
+            .enable(SerializationFeature.INDENT_OUTPUT);
 
     public static Object selector(Map<String, Object> obj, String selector) {
         String[] split = selector.split("\\.");
@@ -68,7 +76,7 @@ public class UtilJson {
     @Nullable
     public static String toString(Object object, String def) {
         try {
-            return Util.objectMapper.writeValueAsString(object);
+            return objectMapper.writeValueAsString(object);
         } catch (Exception e) {
             App.error(e);
         }
@@ -76,7 +84,7 @@ public class UtilJson {
     }
 
     public static String toString(Object object) throws Throwable {
-        return Util.objectMapper.writeValueAsString(object);
+        return objectMapper.writeValueAsString(object);
     }
 
     @SuppressWarnings("unused")
@@ -85,7 +93,7 @@ public class UtilJson {
         DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
         prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
         try {
-            return Util.objectMapperPretty.writer(prettyPrinter).writeValueAsString(object);
+            return objectMapperPretty.writer(prettyPrinter).writeValueAsString(object);
         } catch (Exception e) {
             App.error(e);
         }
@@ -93,42 +101,13 @@ public class UtilJson {
     }
 
     public static <T> T toObject(String json, Class<T> cls) throws Throwable {
-        return Util.objectMapperSkipUnknown.readValue(json, cls);
-    }
-
-    @SuppressWarnings("unused")
-    public static <T> JsonEnvelope<T> toObjectOverflow(String json, Class<T> t) {
-        JsonEnvelope<T> ret = new JsonEnvelope<>();
-        try {
-            ret.setObject(Util.objectMapperSkipUnknown.readValue(json, t));
-        } catch (Exception e) {
-            ret.setException(e);
-            App.error(e);
-        }
-        return ret;
-    }
-
-    /* Example:
-    *   WrapJsonToObject<Map<String, Map<String, Object>>> mapWrapJsonToObject = UtilJson.toMap(message.getBody());
-        Map<String, Object> parsedJson = mapWrapJsonToObject.getObject().get("request");
-    * */
-    @SuppressWarnings("unused")
-    public static <K, V> JsonEnvelope<Map<K, V>> toMap(String json) {
-        JsonEnvelope<Map<K, V>> ret = new JsonEnvelope<>();
-        try {
-            ret.setObject(Util.objectMapper.readValue(json, new TypeReference<>() {
-            }));
-        } catch (Exception e) {
-            ret.setException(e);
-            App.error(e);
-        }
-        return ret;
+        return objectMapperSkipUnknown.readValue(json, cls);
     }
 
     public static Map<String, Object> getMapOrThrow(String json) throws Throwable {
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> map = (Map<String, Object>) Util.objectMapper.readValue(json, Map.class);
+            Map<String, Object> map = (Map<String, Object>) objectMapper.readValue(json, Map.class);
             return map;
         } catch (Throwable th) {
             Util.logConsole(UtilJson.class, json);
@@ -138,21 +117,8 @@ public class UtilJson {
 
     public static List<Object> getListOrThrow(String json) throws Throwable {
         @SuppressWarnings("unchecked")
-        List<Object> list = Util.objectMapper.readValue(json, List.class);
+        List<Object> list = objectMapper.readValue(json, List.class);
         return list;
-    }
-
-    @SuppressWarnings("unused")
-    public static <V> JsonEnvelope<List<V>> toList(String json) {
-        JsonEnvelope<List<V>> ret = new JsonEnvelope<>();
-        try {
-            ret.setObject(Util.objectMapper.readValue(json, new TypeReference<>() {
-            }));
-        } catch (Exception e) {
-            ret.setException(e);
-            App.error(e);
-        }
-        return ret;
     }
 
     // Возникла потребность хранить состояние объекта на момент времени.
@@ -193,6 +159,10 @@ public class UtilJson {
             }
         }
         return result;
+    }
+
+    public static <T> T mapToObject(Map<String, Object> map, Class<T> cls) {
+        return objectMapper.convertValue(map, cls);
     }
 
 }

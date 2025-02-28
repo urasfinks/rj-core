@@ -6,10 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.UtilCodeStyle;
-import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.flat.util.UtilListSort;
-import ru.jamsys.core.flat.util.UtilRisc;
-import ru.jamsys.core.flat.util.UtilText;
+import ru.jamsys.core.flat.util.*;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -241,7 +238,7 @@ class UtilTest {
 
     @Test
     void mapToObject() {
-        Tmp tmp = Util.mapToObject(new HashMapBuilder<String, Object>()
+        Tmp tmp = UtilJson.mapToObject(new HashMapBuilder<String, Object>()
                         .append("y", "x"),
                 Tmp.class
         );

@@ -87,10 +87,10 @@ public class SecurityComponent extends AnnotationPropertyExtractor implements Li
             byte[] initJson = UtilFile.readBytes(pathJsonCred);
             if (initJson.length > 0) {
                 String initString = new String(initJson, StandardCharsets.UTF_8);
-                JsonEnvelope<Map<String, Object>> mapJsonEnvelope = UtilJson.toMap(initString);
-                if (mapJsonEnvelope.getException() == null && !mapJsonEnvelope.getObject().isEmpty()) {
+                Map<String, Object> mapOrThrow = UtilJson.getMapOrThrow(initString);
+                if (!mapOrThrow.isEmpty()) {
                     @SuppressWarnings("unchecked")
-                    Map<String, Object> addAlias = (Map<String, Object>) mapJsonEnvelope.getObject().get("addAlias");
+                    Map<String, Object> addAlias = (Map<String, Object>) mapOrThrow.get("addAlias");
                     if (addAlias != null) {
                         for (String key : addAlias.keySet()) {
                             if (!"".equals(addAlias.get(key).toString())) {
@@ -101,8 +101,8 @@ public class SecurityComponent extends AnnotationPropertyExtractor implements Li
                     }
                 }
             }
-        } catch (Exception e) {
-            exceptionHandler.handler(e);
+        } catch (Throwable th) {
+            App.error(th);
         }
     }
 
@@ -121,9 +121,14 @@ public class SecurityComponent extends AnnotationPropertyExtractor implements Li
         }
         String result = null;
         String initString = new String(initJson, StandardCharsets.UTF_8);
-        JsonEnvelope<Map<String, Object>> mapJsonEnvelope = UtilJson.toMap(initString);
-        if (mapJsonEnvelope.getException() == null && !mapJsonEnvelope.getObject().isEmpty()) {
-            result = (String) mapJsonEnvelope.getObject().get("password");
+        Map<String, Object> mapOrThrow;
+        try {
+            mapOrThrow = UtilJson.getMapOrThrow(initString);
+        } catch (Throwable th) {
+            throw new ForwardException(th);
+        }
+        if (!mapOrThrow.isEmpty()) {
+            result = (String) mapOrThrow.get("password");
         }
         if (result == null || result.trim().isEmpty()) {
             throw new RuntimeException("Password json field from [" + pathJsonCred + "] is empty");

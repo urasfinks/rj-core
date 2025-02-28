@@ -12,13 +12,17 @@ import ru.jamsys.core.component.RouteGenerator;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.*;
+import ru.jamsys.core.handler.web.socket.WebSocketHandler;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.handler.web.socket.WebSocketHandler;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,7 +35,7 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
     private final Set<WebSocketSession> connections = Util.getConcurrentHashSet();
     private final RouteGeneratorRepository routeGeneratorRepository;
 
-    public WebSocket( ServiceClassFinder serviceClassFinder, RouteGenerator routeGenerator) {
+    public WebSocket(ServiceClassFinder serviceClassFinder, RouteGenerator routeGenerator) {
         List<Class<WebSocketCheckConnection>> byInstance = serviceClassFinder.findByInstance(WebSocketCheckConnection.class);
         if (byInstance.isEmpty()) {
             throw new RuntimeException("WebSocket not found WebSocketCheckConnection component");
@@ -95,7 +99,12 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
         super.handleTextMessage(session, message);
         String request = message.getPayload();
         JsonSchema.validate(request, UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"), null);
-        Map<Object, Object> req = UtilJson.toMap(request).getObject();
+        Map<String, Object> req;
+        try {
+            req = UtilJson.getMapOrThrow(request);
+        } catch (Throwable th) {
+            throw new ForwardException(th);
+        }
         PromiseGenerator promiseGenerator = routeGeneratorRepository.match((String) req.get("uri"));
         if (promiseGenerator == null) {
             App.error(new RuntimeException("PromiseGenerator not found"));
@@ -108,7 +117,6 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
         }
         promise.setRepositoryMap("WebSocketSession", session);
         promise.run();
-
     }
 
     @Override
