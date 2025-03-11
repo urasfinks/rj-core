@@ -17,11 +17,11 @@ public interface CascadeName {
     CascadeName getParentCascadeName();
 
     default String getCascadeName(String ns) {
-        return getCascadeName() + "." + ns;
+        return getCascadeName() + (ns.contains(".") ? ("[" + ns + "]") : ("." + ns));
     }
 
     default String getCascadeName(String ns, Class<?> classItem) {
-        return getCascadeName() + "[" + ns + "]<" + App.getUniqueClassName(classItem) + ">";
+        return getCascadeName(ns) + "<" + App.getUniqueClassName(classItem) + ">";
     }
 
     default String getCascadeName() {
