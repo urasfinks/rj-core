@@ -43,6 +43,11 @@ public class PropertyRepositoryMap<T> implements PropertyRepository {
     }
 
     @Override
+    public String getDescription(String key) {
+        return null;
+    }
+
+    @Override
     public PropertyRepository checkNotNull() {
         UtilRisc.forEach(null, mapRepository, (key, value) -> {
             if (propertyNotNull.contains(key) && value == null) {

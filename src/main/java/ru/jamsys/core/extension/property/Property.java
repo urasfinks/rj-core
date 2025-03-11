@@ -27,7 +27,7 @@ import java.util.function.Function;
 // Элемент ServiceProperty, хранит в себе ссылки на подписчиков, кто наблюдает за изменением значений
 // При изменении значения рассылает подписчикам уведомления
 
-@JsonPropertyOrder({"key", "value", "setTrace", "subscriptions"})
+@JsonPropertyOrder({"key", "value", "description", "setTrace", "subscriptions"})
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Property {
 
@@ -89,6 +89,9 @@ public class Property {
     @JsonProperty
     private String value;
 
+    @JsonProperty
+    private String description;
+
     @Getter
     private final Set<PropertySubscription> subscriptions = Util.getConcurrentHashSet();
 
@@ -96,6 +99,13 @@ public class Property {
         this.key = key;
         this.value = value;
         setTrace.add(new Trace(value));
+    }
+
+    public Property setDescriptionIfNull(String description) {
+        if (this.description == null) {
+            this.description = description;
+        }
+        return this;
     }
 
     public void removeSubscription(PropertySubscription propertySubscription) {

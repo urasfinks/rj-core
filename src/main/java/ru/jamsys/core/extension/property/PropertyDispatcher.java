@@ -91,6 +91,7 @@ public class PropertyDispatcher implements LifeCycleInterface {
         PropertySubscription propertySubscription = new PropertySubscription(this, serviceProperty)
                 .setPropertyKey(getPropertyKey(key))
                 .setDefaultValue(defaultValue)
+                .setDescription(propertyRepository != null ? propertyRepository.getDescription(key) : null)
                 .syncPropertyRepository();
         subscriptions.put(key, propertySubscription);
         if (isRun()) {

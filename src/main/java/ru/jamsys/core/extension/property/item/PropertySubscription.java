@@ -33,6 +33,9 @@ public class PropertySubscription {
 
     private String defaultValue;
 
+    @JsonIgnore
+    private String description;
+
     @ToString.Exclude
     @JsonIgnore
     private final PropertyDispatcher propertyDispatcher;
@@ -83,6 +86,7 @@ public class PropertySubscription {
                 if (propertyRepository != null) {
                     property.getSetTrace().getLast().setResource(propertyRepository.getClass().getName());
                 }
+                property.setDescriptionIfNull(getDescription());
             }).get();
             if (!Objects.equals(defaultValue, propertyValue)) {
                 propertyDispatcher.setRepositoryProxy(propertyKey, propertyValue);

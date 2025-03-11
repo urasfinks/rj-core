@@ -14,10 +14,7 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilRisc;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Consumer;
@@ -49,14 +46,31 @@ public class ServiceProperty {
             ) {
                 continue;
             }
+            Map<String, String> description = new HashMap<>();
             if (next instanceof EnumerablePropertySource) {
                 for (String prop : ((EnumerablePropertySource<?>) next).getPropertyNames()) {
+                    if (prop.endsWith(".description")) {
+                        description.put(prop.substring(0, prop.indexOf(".description")), env.getProperty(prop));
+                        continue;
+                    }
                     computeIfAbsent(
                             prop,
                             env.getProperty(prop),
                             property -> property.getSetTrace().getLast().setResource(next.getName())
                     );
                 }
+                description.forEach((key, desc) -> {
+                    Property property = properties.get(key);
+                    if (property != null) {
+                        property.setDescriptionIfNull(desc);
+                    } else {
+                        computeIfAbsent(
+                                key +".description",
+                                desc,
+                                property1 -> property1.getSetTrace().getLast().setResource(next.getName())
+                        );
+                    }
+                });
             }
         }
         if (properties.containsKey("spring.application.name")) {

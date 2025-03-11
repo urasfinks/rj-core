@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension.property.repository;
 
+import ru.jamsys.core.extension.annotation.PropertyDescription;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -62,6 +63,15 @@ public class AnnotationPropertyExtractor implements PropertyRepository {
         } catch (Throwable th) {
             throw new ForwardException("setRepository(" + key + ", " + value + "); field: " + field, th);
         }
+    }
+
+    @Override
+    public String getDescription(String key) {
+        Field field = fields.get(key);
+        if (field != null && field.isAnnotationPresent(PropertyDescription.class)) {
+            return field.getAnnotation(PropertyDescription.class).value();
+        }
+        return null;
     }
 
     @Override

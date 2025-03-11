@@ -4,6 +4,7 @@ import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.annotation.PropertyDescription;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
@@ -40,6 +41,7 @@ public class RateLimitItemPeriodic
 
     @SuppressWarnings("all")
     @PropertyName("max")
+    @PropertyDescription("Максимальное кол-во итераций")
     private volatile Integer max = 999999;
 
     private final PropertyDispatcher propertyDispatcher;
