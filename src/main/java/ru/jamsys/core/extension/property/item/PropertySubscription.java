@@ -38,12 +38,12 @@ public class PropertySubscription {
     private final PropertyDispatcher propertyDispatcher;
 
     @SuppressWarnings("unused") //used UtilJson
-    public String getSubscriberNamespace() {
+    public String getDispatcherNamespace() {
         return propertyDispatcher.getNamespace();
     }
 
     @SuppressWarnings("unused") //used UtilJson
-    public String getUpdaterClass() {
+    public String getClassPropertyListener() {
         PropertyListener propertyListener = propertyDispatcher.getPropertyListener();
         if (propertyListener != null) {
             return propertyListener.getClass().getName();
@@ -52,7 +52,7 @@ public class PropertySubscription {
     }
 
     @SuppressWarnings("unused") //used UtilJson
-    public String getPropertyRepositoryClass() {
+    public String getClassPropertyRepository() {
         PropertyRepository propertyRepository = propertyDispatcher.getPropertyRepository();
         if (propertyRepository != null) {
             return propertyRepository.getClass().getName();

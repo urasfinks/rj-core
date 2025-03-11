@@ -21,7 +21,7 @@ public interface CascadeName {
     }
 
     default String getCascadeName(String ns, Class<?> classItem) {
-        return getCascadeName() + "." + ns + "<" + App.getUniqueClassName(classItem) + ">";
+        return getCascadeName() + "[" + ns + "]<" + App.getUniqueClassName(classItem) + ">";
     }
 
     default String getCascadeName() {
