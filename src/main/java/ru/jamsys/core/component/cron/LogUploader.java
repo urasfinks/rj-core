@@ -80,7 +80,7 @@ public class LogUploader extends AnnotationPropertyExtractor implements Cron5s, 
             return null;
         }
         return servicePromise
-                .get(getClass().getSimpleName(), 4_999L)
+                .get(App.getUniqueClassName(getClass()), 4_999L)
                 .appendWithResource("sendPostgreSQL", JdbcResource.class, "logger", (threadRun, task, promise, jdbcResource) -> {
                     AtomicInteger countInsert = new AtomicInteger(0);
 

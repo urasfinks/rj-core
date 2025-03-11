@@ -93,7 +93,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                     App.get(ServiceLogger.class).add(
                             LogType.INFO,
                             new HashMapBuilder<String, Object>().append("exception", "File will be remove: [" + filePath + "] so sorry my bad"),
-                            getClass().getSimpleName() + ".restoreIndex",
+                            App.getUniqueClassName(getClass()) + ".restoreIndex",
                             true
                     );
                     try {

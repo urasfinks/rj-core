@@ -3,6 +3,7 @@ package ru.jamsys.core.component.cron;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.KeepAliveComponent;
@@ -29,7 +30,7 @@ public class KeepAlive implements Cron3s, PromiseGenerator {
 
     @Override
     public Promise generate() {
-        return servicePromise.get(getClass().getSimpleName(), 6_000L)
+        return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
                 .append("main", (threadRun, _, _)
                         -> list.forEach((KeepAliveComponent keepAliveComponent)
                         -> keepAliveComponent.keepAlive(threadRun)));

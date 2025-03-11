@@ -94,7 +94,7 @@ public class StatisticUploader extends AnnotationPropertyExtractor implements Cr
         if (!remote) {
             return null;
         }
-        return servicePromise.get(getClass().getSimpleName(), 4_999L)
+        return servicePromise.get(App.getUniqueClassName(getClass()), 4_999L)
                 .append("checkStatistic", (_, _, promise) -> {
                     if (broker.isEmpty()) {
                         promise.skipAllStep("broker.isEmpty()");

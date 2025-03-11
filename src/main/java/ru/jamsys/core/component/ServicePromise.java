@@ -25,6 +25,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// Сервис управления перезапуска задач + контроль времени, сколько задачи исполняются
+
 @Component
 @Lazy
 public class ServicePromise implements CascadeName, KeepAliveComponent, StatisticsFlushComponent {
@@ -45,7 +47,7 @@ public class ServicePromise implements CascadeName, KeepAliveComponent, Statisti
         this.broker = managerBroker.initAndGet(
                 getCascadeName(),
                 Promise.class,
-                promise -> promise.timeOut(getClass().getSimpleName() + ".onPromiseTaskExpired")
+                promise -> promise.timeOut(App.getUniqueClassName(getClass()) + ".onPromiseTaskExpired")
         );
         promiseTaskRetry = managerExpiration.get("PromiseTaskRetry", PromiseTask.class, this::onPromiseTaskRetry);
     }

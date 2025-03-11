@@ -130,7 +130,7 @@ public class ServiceCron implements LifeCycleComponent, CascadeName {
     public void shutdown() {
         spin.set(false);
         thread.interrupt();
-        Util.await(run, 1500, getClass().getSimpleName() + " not stop interrupt");
+        Util.await(run, 1500,  App.getUniqueClassName(getClass()) + " not stop interrupt");
     }
 
     @Override

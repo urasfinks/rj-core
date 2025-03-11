@@ -67,7 +67,7 @@ public class StatisticFlush extends AnnotationPropertyExtractor implements Cron1
 
     @Override
     public Promise generate() {
-        return servicePromise.get(getClass().getSimpleName(), 6_000L)
+        return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
                 .append("main", (threadRun, _, _) -> {
                     StatisticSec statisticSec = new StatisticSec();
                     UtilRisc.forEach(threadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {

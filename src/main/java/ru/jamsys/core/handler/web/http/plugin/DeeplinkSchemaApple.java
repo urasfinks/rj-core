@@ -2,6 +2,7 @@ package ru.jamsys.core.handler.web.http.plugin;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.http.ServletHandler;
@@ -27,7 +28,7 @@ public class DeeplinkSchemaApple implements PromiseGenerator, HttpHandler {
 
     @Override
     public Promise generate() {
-        return servicePromise.get(getClass().getSimpleName(), 7_000L)
+        return servicePromise.get(App.getUniqueClassName(getClass()), 7_000L)
                 .append("input", (_, _, promise) -> {
                     ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
                     servletHandler.setResponseBody(UtilFile.getWebContent(".well-known/apple-app-site-association.json"));

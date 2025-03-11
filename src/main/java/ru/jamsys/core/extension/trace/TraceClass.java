@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.trace;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import ru.jamsys.core.App;
 
 @JsonPropertyOrder({"start", "index", "class", "value"})
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -14,7 +15,7 @@ public class TraceClass<K, V> extends Trace<K, V> {
     @JsonProperty("class")
     String getCls() {
         if (cls != null) {
-            return cls.getSimpleName();
+            return App.getUniqueClassName(cls);
         }
         return null;
     }

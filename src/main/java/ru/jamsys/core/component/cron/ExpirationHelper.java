@@ -2,6 +2,7 @@ package ru.jamsys.core.component.cron;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
@@ -29,7 +30,7 @@ public class ExpirationHelper implements Cron1s, PromiseGenerator {
 
     @Override
     public Promise generate() {
-        return servicePromise.get(getClass().getSimpleName(), 6_000L)
+        return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
                 .append("main", (threadRun, _, _) -> managerExpiration.keepAlive(threadRun));
     }
 

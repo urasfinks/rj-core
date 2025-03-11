@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.RequestMapping;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -60,21 +61,21 @@ public class RouteGenerator {
                             tmp.put(value, promiseGenerator);
                         }
                     } else {
-                        tmp.put("/" + promiseGeneratorClass.getSimpleName(), promiseGenerator);
+                        tmp.put("/" + App.getUniqueClassName(promiseGeneratorClass), promiseGenerator);
                     }
                     break;
                 }
             }
         });
         UtilListSort.sort(new ArrayList<>(tmp.keySet()), UtilListSort.Type.DESC).forEach(s -> {
-            info.put(s, tmp.get(s).getClass().getSimpleName());
+            info.put(s, App.getUniqueClassName(tmp.get(s).getClass()));
             repository.put(s, tmp.get(s));
         });
 
         Util.logConsole(getClass(), "@"
-                + clsAnnotation.getSimpleName()
+                + App.getUniqueClassName(clsAnnotation)
                 + " for "
-                + interfaceMatcher.getSimpleName()
+                + App.getUniqueClassName(interfaceMatcher)
                 + " : "
                 + UtilJson.toStringPretty(info, "[]"));
         return routeGeneratorRepository;

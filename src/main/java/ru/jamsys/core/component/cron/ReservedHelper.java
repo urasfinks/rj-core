@@ -2,6 +2,7 @@ package ru.jamsys.core.component.cron;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
@@ -30,7 +31,7 @@ public class ReservedHelper implements Cron1s, PromiseGenerator {
 
     @Override
     public Promise generate() {
-        return servicePromise.get(getClass().getSimpleName(), 6_000L)
+        return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
                 .append("main", (_, _, _) -> list.forEach(AbstractManager::checkReserved));
     }
 }

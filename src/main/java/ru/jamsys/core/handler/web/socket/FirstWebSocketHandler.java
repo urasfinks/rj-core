@@ -2,6 +2,7 @@ package ru.jamsys.core.handler.web.socket;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
@@ -19,7 +20,7 @@ public class FirstWebSocketHandler implements PromiseGenerator, WebSocketHandler
 
     @Override
     public Promise generate() {
-        return servicePromise.get(getClass().getSimpleName(), 7_000L)
+        return servicePromise.get(App.getUniqueClassName(getClass()), 7_000L)
                 .append("input", (_, _, promise) -> System.out.println("Hello world"));
     }
 
