@@ -17,7 +17,7 @@ public interface CascadeName {
     CascadeName getParentCascadeName();
 
     default String getCascadeName(String ns) {
-        return getCascadeName() + (ns.contains(".") ? ("[" + ns + "]") : ("." + ns));
+        return getCascadeName() + append(ns);
     }
 
     default String getCascadeName(String ns, Class<?> classItem) {
@@ -27,10 +27,14 @@ public interface CascadeName {
     default String getCascadeName() {
         String key = getKey();
         if (key == null) {
-            return getParentCascadeName().getCascadeName() + "." + App.getUniqueClassName(getClass());
+            return getParentCascadeName().getCascadeName() + append(App.getUniqueClassName(getClass()));
         } else {
-            return getParentCascadeName().getCascadeName() + "." + App.getUniqueClassName(getClass()) + "." + key;
+            return getParentCascadeName().getCascadeName() + append(App.getUniqueClassName(getClass())) + append(key);
         }
+    }
+
+    static String append(String ns) {
+        return (ns.contains(".") ? ("[" + ns + "]") : ("." + ns));
     }
 
 }

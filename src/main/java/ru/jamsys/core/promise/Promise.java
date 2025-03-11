@@ -4,6 +4,7 @@ import lombok.NonNull;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerThreadPoolPromiseTask;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
@@ -221,7 +222,7 @@ public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutab
     }
 
     static String getComplexIndex(String promiseIndex, String promiseTaskIndex) {
-        return promiseIndex + "." + promiseTaskIndex;
+        return promiseIndex + CascadeName.append(promiseTaskIndex);
     }
 
     default PromiseTask createTaskCompute(String index, PromiseTaskConsumerThrowing<PromiseTask, AtomicBoolean, Promise> fn) {

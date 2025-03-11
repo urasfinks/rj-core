@@ -1,7 +1,10 @@
 package ru.jamsys.core.rate.limit;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
+import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.ClassEquals;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsCollectorMap;
@@ -99,7 +102,7 @@ public class RateLimit
 
     public RateLimitItem computeIfAbsent(String key, RateLimitFactory rateLimitFactory) {
         return map.computeIfAbsent(key, s -> {
-            RateLimitItem rateLimitItem = rateLimitFactory.create(this.key + "." + s);
+            RateLimitItem rateLimitItem = rateLimitFactory.create(this.key + CascadeName.append(s));
             rateLimitItem.run();
             return rateLimitItem;
         });
