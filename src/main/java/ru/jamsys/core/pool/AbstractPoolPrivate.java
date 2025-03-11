@@ -1,7 +1,6 @@
 package ru.jamsys.core.pool;
 
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
