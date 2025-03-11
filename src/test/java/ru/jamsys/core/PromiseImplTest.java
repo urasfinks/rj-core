@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.*;
+import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
 
@@ -98,7 +99,10 @@ class PromiseImplTest {
 
     @Test
     void test3_1() {
-        Promise.getRateLimit("seq", "then1").get("tps").set(1);
+        RateLimit rateLimit = Promise.getRateLimit("seq", "then1");
+        Util.logConsoleJson(PromiseImplTest.class, rateLimit);
+        rateLimit.get("tps").set(1);
+        Util.logConsoleJson(PromiseImplTest.class, rateLimit);
         Promise promise = servicePromise.get("seq", 6_000L);
         AtomicInteger c = new AtomicInteger(0);
         promise.then("then1", (_, _, _) -> c.incrementAndGet());

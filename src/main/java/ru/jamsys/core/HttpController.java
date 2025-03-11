@@ -10,7 +10,7 @@ import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
 import ru.jamsys.core.extension.http.ServletHandler;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -67,7 +67,7 @@ public class HttpController {
     }
 
     private void subscribeIgnoreFile() {
-        new PropertySubscriber(
+        new PropertyDispatcher(
                 serviceProperty,
                 (key, _, property) -> {
                     Util.logConsole(getClass(), "IgnoreWebStatic.File: " + property.get());
@@ -81,7 +81,7 @@ public class HttpController {
     }
 
     private void subscribeIgnoreDir() {
-        new PropertySubscriber(
+        new PropertyDispatcher(
                 serviceProperty,
                 (key, _, property) -> {
                     Util.logConsole(getClass(), "IgnoreWebStatic.Dir: " + property.get());

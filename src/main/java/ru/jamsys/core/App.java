@@ -113,6 +113,9 @@ public class App implements CascadeName {
     }
 
     public static String getUniqueClassName(Class<?> cls) {
+        if (cls == null) {
+            return "null";
+        }
         Class<?> regClass = uniqueClassName.computeIfAbsent(cls.getSimpleName(), _ -> cls);
         if (regClass.equals(cls)) {
             return cls.getSimpleName();

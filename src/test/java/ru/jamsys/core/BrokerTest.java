@@ -42,10 +42,10 @@ class BrokerTest {
                 });
 
         App.get(ServiceProperty.class)
-                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("size"), null)
+                .computeIfAbsent(broker.getPropertyDispatcher().getPropertyKeyByRepositoryKey("size"), null)
                 .set(10);
         App.get(ServiceProperty.class)
-                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("tail.size"), null)
+                .computeIfAbsent(broker.getPropertyDispatcher().getPropertyKeyByRepositoryKey("tail.size"), null)
                 .set(3);
 
         for (int i = 0; i < 10; i++) {
@@ -92,10 +92,10 @@ class BrokerTest {
                 .get(XTest.class.getSimpleName(), XTest.class);
 
         App.get(ServiceProperty.class)
-                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("size"), null)
+                .computeIfAbsent(broker.getPropertyDispatcher().getPropertyKeyByRepositoryKey("size"), null)
                 .set(10);
         App.get(ServiceProperty.class)
-                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("tail.size"), null)
+                .computeIfAbsent(broker.getPropertyDispatcher().getPropertyKeyByRepositoryKey("tail.size"), null)
                 .set(3);
 
         for (int i = 0; i < 10; i++) {
@@ -220,13 +220,13 @@ class BrokerTest {
     void testProperty() {
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
         App.get(ServiceProperty.class)
-                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("size"), null)
+                .computeIfAbsent(broker.getPropertyDispatcher().getPropertyKeyByRepositoryKey("size"), null)
                 .set(3000);
 
         Assertions.assertEquals(3000, broker.getPropertyBroker().getSize());
 
         App.get(ServiceProperty.class)
-                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("size"), null)
+                .computeIfAbsent(broker.getPropertyDispatcher().getPropertyKeyByRepositoryKey("size"), null)
                 .set(3001);
 
         Assertions.assertEquals(3001, broker.getPropertyBroker().getSize());
@@ -238,7 +238,7 @@ class BrokerTest {
 
         Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
         App.get(ServiceProperty.class)
-                .computeIfAbsent(broker.getPropertySubscriber().getPropertyKey("size"), null)
+                .computeIfAbsent(broker.getPropertyDispatcher().getPropertyKeyByRepositoryKey("size"), null)
                 .set(3_000_000);
 
         List<DisposableExpirationMsImmutableEnvelope<XTest>> list = new ArrayList<>();

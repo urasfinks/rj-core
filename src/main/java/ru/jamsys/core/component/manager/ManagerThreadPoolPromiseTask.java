@@ -18,7 +18,7 @@ public class ManagerThreadPoolPromiseTask extends AbstractManager<ThreadPoolProm
 
     @Override
     public ThreadPoolPromiseTask build(String key, Class<?> classItem, Void builderArgument) {
-        ThreadPoolPromiseTask threadPoolPromiseTask = new ThreadPoolPromiseTask(this, key);
+        ThreadPoolPromiseTask threadPoolPromiseTask = new ThreadPoolPromiseTask(getCascadeName(key, classItem));
         threadPoolPromiseTask.run();
         return threadPoolPromiseTask;
     }

@@ -33,8 +33,7 @@ public class ManagerPoolPromiseTaskWaitResource<
             PoolSettings<PI> poolSettings
     ) {
         PoolPromiseTaskWaitResource<RA, RR, ?> poolPromiseTaskWaitResource = new PoolPromiseTaskWaitResource<>(
-                this,
-                key,
+                getCascadeName(key, classItem),
                 poolSettings,
                 (Class<PI>) classItem
         );

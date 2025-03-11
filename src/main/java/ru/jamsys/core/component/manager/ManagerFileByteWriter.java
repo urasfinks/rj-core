@@ -11,13 +11,13 @@ import ru.jamsys.core.extension.KeepAliveComponent;
 public class ManagerFileByteWriter extends AbstractManager<FileByteWriter, Void>
         implements KeepAliveComponent, CascadeName {
 
-    public FileByteWriter get(String index) {
-        return getManagerElement(index, Void.class, null);
+    public FileByteWriter get(String key, Class<?> classItem) {
+        return getManagerElement(key, classItem, null);
     }
 
     @Override
     public FileByteWriter build(String key, Class<?> classItem, Void builderArgument) {
-        return new FileByteWriter(this, key);
+        return new FileByteWriter(getCascadeName(key, classItem));
     }
 
     @Override

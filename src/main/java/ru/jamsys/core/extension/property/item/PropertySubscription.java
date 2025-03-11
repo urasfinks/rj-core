@@ -7,7 +7,7 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.Property;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.extension.property.repository.PropertyRepository;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -35,16 +35,16 @@ public class PropertySubscription {
 
     @ToString.Exclude
     @JsonIgnore
-    private final PropertySubscriber propertySubscriber;
+    private final PropertyDispatcher propertyDispatcher;
 
     @SuppressWarnings("unused") //used UtilJson
     public String getSubscriberNamespace() {
-        return propertySubscriber.getNamespace();
+        return propertyDispatcher.getNamespace();
     }
 
     @SuppressWarnings("unused") //used UtilJson
     public String getUpdaterClass() {
-        PropertyListener propertyListener = propertySubscriber.getPropertyListener();
+        PropertyListener propertyListener = propertyDispatcher.getPropertyListener();
         if (propertyListener != null) {
             return propertyListener.getClass().getName();
         }
@@ -53,7 +53,7 @@ public class PropertySubscription {
 
     @SuppressWarnings("unused") //used UtilJson
     public String getPropertyRepositoryClass() {
-        PropertyRepository propertyRepository = propertySubscriber.getPropertyRepository();
+        PropertyRepository propertyRepository = propertyDispatcher.getPropertyRepository();
         if (propertyRepository != null) {
             return propertyRepository.getClass().getName();
         }
@@ -64,14 +64,14 @@ public class PropertySubscription {
     @JsonIgnore
     private final ServiceProperty serviceProperty;
 
-    public PropertySubscription(PropertySubscriber propertySubscriber, ServiceProperty serviceProperty) {
-        this.propertySubscriber = propertySubscriber;
+    public PropertySubscription(PropertyDispatcher propertyDispatcher, ServiceProperty serviceProperty) {
+        this.propertyDispatcher = propertyDispatcher;
         this.serviceProperty = serviceProperty;
     }
 
     // Вызывается из Property, когда обновлено значение
     public void onPropertyUpdate(String oldValue, Property property) {
-        propertySubscriber.onPropertySubscriptionUpdate(oldValue, property);
+        propertyDispatcher.onPropertySubscriptionUpdate(oldValue, property);
     }
 
     // Пролить значения до PropertyRepository
@@ -79,18 +79,18 @@ public class PropertySubscription {
         if (propertyKey != null) {
             // Получили default значение, получили Property, если не сошлись, считаем приоритетным Property.get()
             String propertyValue = serviceProperty.computeIfAbsent(propertyKey, defaultValue, property -> {
-                PropertyRepository propertyRepository = propertySubscriber.getPropertyRepository();
+                PropertyRepository propertyRepository = propertyDispatcher.getPropertyRepository();
                 if (propertyRepository != null) {
                     property.getSetTrace().getLast().setResource(propertyRepository.getClass().getName());
                 }
             }).get();
             if (!Objects.equals(defaultValue, propertyValue)) {
-                propertySubscriber.setRepositoryProxy(propertyKey, propertyValue);
+                propertyDispatcher.setRepositoryProxy(propertyKey, propertyValue);
             }
         }
         if (regexp != null) {
             UtilRisc.forEach(null, serviceProperty.get(regexp), property -> {
-                propertySubscriber.setRepositoryProxy(property.getKey(), property.get());
+                propertyDispatcher.setRepositoryProxy(property.getKey(), property.get());
             });
         }
         return this;

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.Property;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
@@ -31,13 +31,13 @@ public class AndroidNotificationResource
 
     private String accessToken;
 
-    private PropertySubscriber propertySubscriber;
+    private PropertyDispatcher propertyDispatcher;
 
     private final AndroidNotificationProperty androidNotificationProperty = new AndroidNotificationProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
-        propertySubscriber = new PropertySubscriber(
+        propertyDispatcher = new PropertyDispatcher(
                 App.get(ServiceProperty.class),
                 this,
                 androidNotificationProperty,
@@ -90,23 +90,23 @@ public class AndroidNotificationResource
 
     @Override
     public boolean isRun() {
-        if (propertySubscriber != null) {
-            return propertySubscriber.isRun();
+        if (propertyDispatcher != null) {
+            return propertyDispatcher.isRun();
         }
         return false;
     }
 
     @Override
     public void run() {
-        if (propertySubscriber != null) {
-            propertySubscriber.run();
+        if (propertyDispatcher != null) {
+            propertyDispatcher.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertySubscriber != null) {
-            propertySubscriber.shutdown();
+        if (propertyDispatcher != null) {
+            propertyDispatcher.shutdown();
         }
     }
 

@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.addable.AddToList;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
@@ -73,7 +73,7 @@ public class Broker<TEO>
     private final BrokerProperty propertyBroker = new BrokerProperty();
 
     @Getter
-    private final PropertySubscriber propertySubscriber;
+    private final PropertyDispatcher propertyDispatcher;
 
     public Broker(
             String key,
@@ -86,7 +86,7 @@ public class Broker<TEO>
         this.onDropConsumer = onDropConsumer;
 
         ServiceProperty serviceProperty = applicationContext.getBean(ServiceProperty.class);
-        propertySubscriber = new PropertySubscriber(
+        propertyDispatcher = new PropertyDispatcher(
                 serviceProperty,
                 null,
                 propertyBroker,
@@ -289,17 +289,17 @@ public class Broker<TEO>
 
     @Override
     public boolean isRun() {
-        return propertySubscriber.isRun();
+        return propertyDispatcher.isRun();
     }
 
     @Override
     public void run() {
-        propertySubscriber.run();
+        propertyDispatcher.run();
     }
 
     @Override
     public void shutdown() {
-        propertySubscriber.shutdown();
+        propertyDispatcher.shutdown();
         lastTimeInQueue = null;
     }
 

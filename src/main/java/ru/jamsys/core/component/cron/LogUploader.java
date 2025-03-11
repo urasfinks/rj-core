@@ -13,7 +13,7 @@ import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -66,7 +66,7 @@ public class LogUploader extends AnnotationPropertyExtractor implements Cron5s, 
         this.servicePromise = servicePromise;
         this.idx = App.getUniqueClassName(Log.class);
         broker = managerBroker.get(idx, Log.class);
-        new PropertySubscriber(
+        new PropertyDispatcher(
                 applicationContext.getBean(ServiceProperty.class),
                 null,
                 this,

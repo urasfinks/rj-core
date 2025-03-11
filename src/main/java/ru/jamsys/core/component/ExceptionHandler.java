@@ -13,7 +13,7 @@ import ru.jamsys.core.extension.exception.PromiseException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.extension.line.writer.LineWriterString;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
@@ -33,7 +33,7 @@ public class ExceptionHandler extends AnnotationPropertyExtractor {
     private Boolean consoleOutput = true;
 
     public ExceptionHandler(ApplicationContext applicationContext) {
-        new PropertySubscriber(
+        new PropertyDispatcher(
                 applicationContext.getBean(ServiceProperty.class),
                 null,
                 this,

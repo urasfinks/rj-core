@@ -20,6 +20,10 @@ public interface CascadeName {
         return getCascadeName() + "." + ns;
     }
 
+    default String getCascadeName(String ns, Class<?> classItem) {
+        return getCascadeName() + "." + ns + "<" + App.getUniqueClassName(classItem) + ">";
+    }
+
     default String getCascadeName() {
         String key = getKey();
         if (key == null) {

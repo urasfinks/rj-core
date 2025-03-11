@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // Классная функция - это использовать namespace, не надо в репозитории использовать абсолютные ключи Property
 
 @Getter
-public class PropertySubscriber implements LifeCycleInterface {
+public class PropertyDispatcher implements LifeCycleInterface {
 
     @JsonIgnore
     private final PropertyListener propertyListener;
@@ -38,7 +38,7 @@ public class PropertySubscriber implements LifeCycleInterface {
 
     private final HashMap<String, PropertySubscription> subscriptions = new LinkedHashMap<>();
 
-    public PropertySubscriber(
+    public PropertyDispatcher(
             ServiceProperty serviceProperty,
             PropertyListener propertyListener,
             PropertyRepository propertyRepository,
@@ -68,6 +68,16 @@ public class PropertySubscriber implements LifeCycleInterface {
         }
     }
 
+    public String getPropertyKeyByRepositoryKey(String keyRepository) {
+        if (getPropertyRepository() == null) {
+            throw new RuntimeException("PropertyRepository is null");
+        }
+        if (!getPropertyRepository().getRepository().containsKey(keyRepository)) {
+            throw new RuntimeException("Not found key: " + keyRepository + "; in repository ns: " + getPropertyRepository());
+        }
+        return getPropertyKey(keyRepository);
+    }
+
     // Так как сам репопозиторий не знает в каком namespace он работает, нам необходимо сделать прокси
     // для преобразования ключа
     public void setRepositoryProxy(String key, String value) {
@@ -77,7 +87,7 @@ public class PropertySubscriber implements LifeCycleInterface {
     }
 
     // Подписки не вызывают onPropertySubscriptionUpdate, да PropertyRepository заполнится, но не более
-    public PropertySubscriber addSubscription(String key, String defaultValue) {
+    public PropertyDispatcher addSubscription(String key, String defaultValue) {
         PropertySubscription propertySubscription = new PropertySubscription(this, serviceProperty)
                 .setPropertyKey(getPropertyKey(key))
                 .setDefaultValue(defaultValue)
@@ -91,7 +101,7 @@ public class PropertySubscriber implements LifeCycleInterface {
 
     // Подписки не вызывают onPropertySubscriptionUpdate, да PropertyRepository заполнится, но не более
     // Подписаться на серию настроек по регулярному выражению
-    public PropertySubscriber addSubscriptionRegexp(String regexp) {
+    public PropertyDispatcher addSubscriptionRegexp(String regexp) {
         subscriptions.put(
                 regexp,
                 new PropertySubscription(this, serviceProperty)
@@ -105,14 +115,14 @@ public class PropertySubscriber implements LifeCycleInterface {
     }
 
     @SuppressWarnings("all")
-    public PropertySubscriber removeSubscriptionByRepositoryKey(String key) {
+    public PropertyDispatcher removeSubscriptionByRepositoryKey(String key) {
         PropertySubscription remove = subscriptions.remove(key);
         serviceProperty.removeSubscription(remove);
         return this;
     }
 
     @SuppressWarnings("unused")
-    public PropertySubscriber removeSubscriptionByPropertiesKey(String propKey) {
+    public PropertyDispatcher removeSubscriptionByPropertiesKey(String propKey) {
         removeSubscriptionByRepositoryKey(getRepositoryKey(propKey));
         return this;
     }
@@ -129,7 +139,7 @@ public class PropertySubscriber implements LifeCycleInterface {
     }
 
     // Получить ключик с ns, как будет полностью выглядеть ключ в .properties
-    public String getPropertyKey(String key) {
+    private String getPropertyKey(String key) {
         if (key.isEmpty()) {
             if (namespace == null) {
                 // Не надо таких поворотов, когда и ns = null и ключ пустой
@@ -144,8 +154,8 @@ public class PropertySubscriber implements LifeCycleInterface {
         }
     }
 
-    // Получить ключик без ns, как он числится в объекте
-    public String getRepositoryKey(String propKey) {
+    // Получить ключик без ns, как он числится в репозитории
+    private String getRepositoryKey(String propKey) {
         if (namespace == null && propKey.isEmpty()) {
             throw new RuntimeException("Определитесь либо ns = null либо key.isEmpty()");
         } else if (namespace == null) {

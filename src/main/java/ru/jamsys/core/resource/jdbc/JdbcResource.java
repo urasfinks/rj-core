@@ -7,7 +7,7 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.Property;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.template.jdbc.DataMapper;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
@@ -37,13 +37,13 @@ public class JdbcResource
 
     private Connection connection;
 
-    private PropertySubscriber propertySubscriber;
+    private PropertyDispatcher propertyDispatcher;
 
     private final JdbcProperty jdbcProperty = new JdbcProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Exception {
-        propertySubscriber = new PropertySubscriber(
+        propertyDispatcher = new PropertyDispatcher(
                 App.get(ServiceProperty.class),
                 this,
                 jdbcProperty,
@@ -154,15 +154,15 @@ public class JdbcResource
 
     @Override
     public boolean isRun() {
-        if (propertySubscriber != null) {
-            return propertySubscriber.isRun();
+        if (propertyDispatcher != null) {
+            return propertyDispatcher.isRun();
         }
         return false;
     }
 
     @Override
     public void run() {
-        propertySubscriber.run();
+        propertyDispatcher.run();
         up();
         if (connection == null) {
             throw new RuntimeException("Connection problem");
@@ -171,7 +171,7 @@ public class JdbcResource
 
     @Override
     public void shutdown() {
-        propertySubscriber.shutdown();
+        propertyDispatcher.shutdown();
         down();
     }
 

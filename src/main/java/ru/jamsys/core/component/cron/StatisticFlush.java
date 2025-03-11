@@ -13,7 +13,7 @@ import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.Util;
@@ -57,7 +57,7 @@ public class StatisticFlush extends AnnotationPropertyExtractor implements Cron1
         this.broker = applicationContext.getBean(Core.class).getStatisticSecBroker();
         serviceClassFinder.findByInstance(StatisticsFlushComponent.class).forEach(statisticsCollectorClass
                 -> list.add(applicationContext.getBean(statisticsCollectorClass)));
-        new PropertySubscriber(
+        new PropertyDispatcher(
                 serviceProperty,
                 null,
                 this,

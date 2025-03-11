@@ -32,7 +32,11 @@ public class ManagerExpiration extends
             Class<?> classItem,
             Consumer<DisposableExpirationMsImmutableEnvelope<?>> builderArgument
     ) {
-        return new Expiration<>(this, key, classItem, builderArgument);
+        return new Expiration<>(
+                getCascadeName(key, classItem),
+                classItem,
+                builderArgument
+        );
     }
 
     @Override

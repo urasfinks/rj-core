@@ -9,15 +9,16 @@ public interface RateLimitItem extends StatisticsFlush, LifeCycleInterface {
 
     boolean check();
 
-    int get();
+    int getCount();
 
-    int max();
+    int getMax();
 
-    String getKey();
+    String getNamespace();
 
     default void set(int value) {
+        //+.max потому что поле в репозитории называется max
         App.get(ServiceProperty.class)
-                .computeIfAbsent(getKey() + ".max", null)
+                .computeIfAbsent(getNamespace() + ".max", null)
                 .set(value);
     }
 

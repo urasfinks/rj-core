@@ -19,7 +19,7 @@ public class ManagerRateLimit extends AbstractManager<RateLimit, Void> implement
 
     @Override
     public RateLimit build(String key, Class<?> classItem, Void builderArgument) {
-        return new RateLimit(this, key);
+        return new RateLimit(getCascadeName(key, classItem));
     }
 
     @Override

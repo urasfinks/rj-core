@@ -14,7 +14,7 @@ import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -56,7 +56,7 @@ public class ServiceLogger extends AnnotationPropertyExtractor implements
         for (LogType type : LogType.values()) {
             stat.put(type.getNameCamel(), new AtomicInteger(0));
         }
-        new PropertySubscriber(
+        new PropertyDispatcher(
                 applicationContext.getBean(ServiceProperty.class),
                 null,
                 this,

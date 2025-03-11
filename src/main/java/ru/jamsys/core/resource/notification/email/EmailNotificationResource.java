@@ -9,7 +9,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
@@ -27,7 +27,7 @@ public class EmailNotificationResource
 
     private SecurityComponent securityComponent;
 
-    private PropertySubscriber propertySubscriber;
+    private PropertyDispatcher propertyDispatcher;
 
     @Getter
     private final EmailNotificationProperty property = new EmailNotificationProperty();
@@ -35,7 +35,7 @@ public class EmailNotificationResource
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         securityComponent = App.get(SecurityComponent.class);
-        propertySubscriber = new PropertySubscriber(
+        propertyDispatcher = new PropertyDispatcher(
                 App.get(ServiceProperty.class),
                 null,
                 property,
@@ -85,20 +85,20 @@ public class EmailNotificationResource
 
     @Override
     public boolean isRun() {
-        if (propertySubscriber != null) {
-            return propertySubscriber.isRun();
+        if (propertyDispatcher != null) {
+            return propertyDispatcher.isRun();
         }
         return false;
     }
 
     @Override
     public void run() {
-        propertySubscriber.run();
+        propertyDispatcher.run();
     }
 
     @Override
     public void shutdown() {
-        propertySubscriber.shutdown();
+        propertyDispatcher.shutdown();
 
     }
 

@@ -5,7 +5,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.ClassEquals;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.PromiseTask;
@@ -24,12 +23,12 @@ public class ThreadPoolPromiseTask extends AbstractPoolPrivate<Void, Void, Threa
     @Getter
     private final RateLimit rateLimit;
 
-    public ThreadPoolPromiseTask(CascadeName parentCascadeName, String key) {
-        super(parentCascadeName, key);
-        rateLimit = App.get(ManagerRateLimit.class).get(getCascadeName());
+    public ThreadPoolPromiseTask(String key) {
+        super(key);
+        rateLimit = App.get(ManagerRateLimit.class).get(key);
         rateLimit.computeIfAbsent("tps", RateLimitFactory.TPS);
         this.broker = App.get(ManagerBroker.class)
-                .initAndGet(getCascadeName(), PromiseTask.class, promiseTask ->
+                .initAndGet(key, PromiseTask.class, promiseTask ->
                         promiseTask.
                                 getPromise().
                                 setError(new RuntimeException(
@@ -54,7 +53,7 @@ public class ThreadPoolPromiseTask extends AbstractPoolPrivate<Void, Void, Threa
 
     @Override
     public ThreadResourcePromiseTask createPoolItem() {
-        return new ThreadResourcePromiseTask(this, counter.getAndIncrement() + "", this);
+        return new ThreadResourcePromiseTask(getKey(), counter.getAndIncrement(), this);
     }
 
     @Override

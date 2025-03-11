@@ -63,7 +63,7 @@ public class Property {
                 }
                 if (stackTraceElement.getFileName() == null
                         || stackTraceElement.getFileName().equals(ConcurrentHashMap.class.getSimpleName() + ".java")
-                        || stackTraceElement.getFileName().equals(PropertySubscriber.class.getSimpleName() + ".java")
+                        || stackTraceElement.getFileName().equals(PropertyDispatcher.class.getSimpleName() + ".java")
                         || stackTraceElement.getFileName().equals(PropertySubscription.class.getSimpleName() + ".java")
                         || stackTraceElement.getFileName().equals(ServiceProperty.class.getSimpleName() + ".java")
                         || stackTraceElement.getFileName().equals(Property.class.getSimpleName() + ".java")

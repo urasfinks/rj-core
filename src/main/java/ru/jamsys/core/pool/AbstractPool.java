@@ -6,11 +6,10 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.resource.Resource;
@@ -45,7 +44,7 @@ import java.util.function.Function;
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Resource<RA, RR>>
         extends ExpirationMsMutableImpl
-        implements Pool<RA, RR, PI>, LifeCycleInterface, KeepAlive, CascadeName {
+        implements Pool<RA, RR, PI>, LifeCycleInterface, KeepAlive {
 
     @Setter
     @Getter
@@ -54,9 +53,6 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     @Setter
     @Getter
     String debugKey = "PoolPromiseTaskWaitResource.JdbcResource.default";
-
-    @Getter
-    protected final CascadeName parentCascadeName;
 
     @Getter
     @ToString.Include
@@ -97,17 +93,15 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     private final AbstractPoolProperty abstractPoolProperty = new AbstractPoolProperty();
 
     @Getter
-    private final PropertySubscriber propertySubscriber;
+    private final PropertyDispatcher propertyDispatcher;
 
-    public AbstractPool(CascadeName parentCascadeName, String key) {
-        this.parentCascadeName = parentCascadeName;
+    public AbstractPool(String key) {
         this.key = key;
-
-        propertySubscriber = new PropertySubscriber(
+        propertyDispatcher = new PropertyDispatcher(
                 App.get(ServiceProperty.class),
                 null,
                 abstractPoolProperty,
-                getCascadeName()
+                key
         );
     }
 
@@ -155,8 +149,9 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         }
         // Если хотят меньше минимума - очень резко опускаем максимум до минимума
         if (want < abstractPoolProperty.getMin()) {
+
             App.get(ServiceProperty.class).set(
-                    propertySubscriber.getPropertyKey("max"),
+                    propertyDispatcher.getPropertyKeyByRepositoryKey("max"),
                     abstractPoolProperty.getMin()
             );
             return;
@@ -164,12 +159,12 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         // Если желаемое значение элементов в пуле больше минимума, так как return не сработал
         if (want > abstractPoolProperty.getMax()) { //Медленно поднимаем
             App.get(ServiceProperty.class).set(
-                    propertySubscriber.getPropertyKey("max"),
+                    propertyDispatcher.getPropertyKeyByRepositoryKey("max"),
                     abstractPoolProperty.getMax() + 1
             );
         } else { //Но очень быстро опускаем
             App.get(ServiceProperty.class).set(
-                    propertySubscriber.getPropertyKey("max"),
+                    propertyDispatcher.getPropertyKeyByRepositoryKey("max"),
                     want
             );
         }
@@ -178,7 +173,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     // Бассейн может поместить новые объекты для плаванья
     private boolean isSizePoolAllowsExtend() {
         if (!run.get()) {
-            App.error(new RuntimeException("Пул " + getCascadeName() + " не может поместить в себя ничего, так как он выключен"));
+            App.error(new RuntimeException("Пул " + key + " не может поместить в себя ничего, так как он выключен"));
         }
         return run.get() && getRealActiveItem() < abstractPoolProperty.getMax();
     }
@@ -380,7 +375,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
             overclocking(abstractPoolProperty.getMin());
             restartOperation.set(false);
         }
-        propertySubscriber.run();
+        propertyDispatcher.run();
     }
 
     @Override
@@ -394,7 +389,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
             );
             restartOperation.set(false);
         }
-        propertySubscriber.shutdown();
+        propertyDispatcher.shutdown();
     }
 
     @Override

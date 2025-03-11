@@ -12,7 +12,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.Property;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -39,13 +39,13 @@ public class InfluxResource
 
     private WriteApiBlocking writer;
 
-    private PropertySubscriber propertySubscriber;
+    private PropertyDispatcher propertyDispatcher;
 
     private final InfluxProperty influxProperty = new InfluxProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) {
-        propertySubscriber = new PropertySubscriber(
+        propertyDispatcher = new PropertyDispatcher(
                 App.get(ServiceProperty.class),
                 this,
                 influxProperty,
@@ -112,21 +112,21 @@ public class InfluxResource
 
     @Override
     public boolean isRun() {
-        if (propertySubscriber != null) {
-            return propertySubscriber.isRun();
+        if (propertyDispatcher != null) {
+            return propertyDispatcher.isRun();
         }
         return false;
     }
 
     @Override
     public void run() {
-        propertySubscriber.run();
+        propertyDispatcher.run();
         up();
     }
 
     @Override
     public void shutdown() {
-        propertySubscriber.shutdown();
+        propertyDispatcher.shutdown();
         down();
     }
 

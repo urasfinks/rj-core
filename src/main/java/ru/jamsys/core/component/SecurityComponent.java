@@ -7,7 +7,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.util.*;
 import ru.jamsys.core.flat.util.crypto.UtilRsa;
@@ -63,12 +63,12 @@ public class SecurityComponent extends AnnotationPropertyExtractor implements Li
 
     private KeyStore.PasswordProtection keyStorePP;
 
-    private final PropertySubscriber propertySubscriber;
+    private final PropertyDispatcher propertyDispatcher;
 
     private final AtomicBoolean run = new AtomicBoolean(false);
 
     public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
-        propertySubscriber = new PropertySubscriber(
+        propertyDispatcher = new PropertyDispatcher(
                 serviceProperty,
                 null,
                 this,
@@ -329,15 +329,15 @@ public class SecurityComponent extends AnnotationPropertyExtractor implements Li
 
     @Override
     public boolean isRun() {
-        if (propertySubscriber != null) {
-            return propertySubscriber.isRun();
+        if (propertyDispatcher != null) {
+            return propertyDispatcher.isRun();
         }
         return false;
     }
 
     @Override
     public void run() {
-        propertySubscriber.run();
+        propertyDispatcher.run();
         if (run.compareAndSet(false, true)) {
             byte[] publicKey = UtilFile.readBytes(pathPublicKey, null);
 
@@ -392,7 +392,7 @@ public class SecurityComponent extends AnnotationPropertyExtractor implements Li
 
     @Override
     public void shutdown() {
-        propertySubscriber.shutdown();
+        propertyDispatcher.shutdown();
     }
 
     @Override

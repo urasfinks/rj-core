@@ -6,7 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.Property;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -25,13 +25,13 @@ public class YandexSpeechResource
 
     YandexSpeechClient client = null;
 
-    private PropertySubscriber propertySubscriber;
+    private PropertyDispatcher propertyDispatcher;
 
     private final YandexSpeechProperty yandexSpeechProperty = new YandexSpeechProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
-        propertySubscriber = new PropertySubscriber(
+        propertyDispatcher = new PropertyDispatcher(
                 App.get(ServiceProperty.class),
                 this,
                 yandexSpeechProperty,
@@ -58,15 +58,15 @@ public class YandexSpeechResource
 
     @Override
     public void run() {
-        if (propertySubscriber != null) {
-            propertySubscriber.run();
+        if (propertyDispatcher != null) {
+            propertyDispatcher.run();
         }
     }
 
     @Override
     public void shutdown() {
-        if (propertySubscriber != null) {
-            propertySubscriber.shutdown();
+        if (propertyDispatcher != null) {
+            propertyDispatcher.shutdown();
         }
         try {
             client.shutdown();

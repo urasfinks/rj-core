@@ -22,8 +22,7 @@ public class PoolSettingsRegistry<
 
     @SuppressWarnings("all")
     public PoolSettings<?> get(Class<R> cls, String ns) {
-        String index = getCascadeName(App.getUniqueClassName(cls) + "." + ns);
-        return registry.computeIfAbsent(index, key -> {
+        return registry.computeIfAbsent(getCascadeName(ns, cls), key -> {
             return (PoolSettings<R>) new PoolSettings<>(
                     key,
                     cls,

@@ -3,7 +3,6 @@ package ru.jamsys.core.resource.thread;
 import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
-import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
@@ -16,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
 
-public class ThreadResourcePromiseTask extends ExpirationMsMutableImpl implements CascadeName, Resource<Void, Void> {
+public class ThreadResourcePromiseTask extends ExpirationMsMutableImpl implements Resource<Void, Void> {
 
     private final Thread thread;
 
@@ -34,18 +33,14 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImpl implement
     private final ThreadPoolPromiseTask pool;
 
     @Getter
-    private final CascadeName parentCascadeName;
-
-    @Getter
     private final String key;
 
-    public ThreadResourcePromiseTask(CascadeName parentCascadeName, String key, ThreadPoolPromiseTask pool) {
-        this.parentCascadeName = parentCascadeName;
+    public ThreadResourcePromiseTask(String key, int indexThread, ThreadPoolPromiseTask pool) {
         this.key = key;
         this.pool = pool;
         // RateLimit будем запрашивать через родительское каскадное имя, так как key для потока - это
         // всего лишь имя, а поток должен подчиняться правилам (лимитам) пула
-        RateLimit rateLimit = App.get(ManagerRateLimit.class).get(parentCascadeName.getCascadeName());
+        RateLimit rateLimit = App.get(ManagerRateLimit.class).get(key);
 
         thread = new Thread(() -> {
             while (spin.get() && isNotInterrupted() && !shutdown.get()) {
@@ -70,7 +65,7 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImpl implement
             }
             run.set(false);
         });
-        thread.setName(getCascadeName());
+        thread.setName(key + "_" + indexThread);
     }
 
     public boolean isInit() {

@@ -5,7 +5,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.statistic.Statistic;
 
@@ -24,21 +24,21 @@ public class RateLimitItemTps
     private final AtomicInteger tps = new AtomicInteger(0);
 
     @Getter
-    private final String key;
+    private final String namespace;
 
     @SuppressWarnings("all")
     @PropertyName("max")
     private volatile Integer max = 999999;
 
-    private final PropertySubscriber propertySubscriber;
+    private final PropertyDispatcher propertyDispatcher;
 
-    public RateLimitItemTps(String key) {
-        this.key = key;
-        propertySubscriber = new PropertySubscriber(
+    public RateLimitItemTps(String namespace) {
+        this.namespace = namespace;
+        propertyDispatcher = new PropertyDispatcher(
                 App.get(ServiceProperty.class),
                 null,
                 this,
-                getKey()
+                namespace
         );
     }
 
@@ -48,12 +48,12 @@ public class RateLimitItemTps
     }
 
     @Override
-    public int get() {
+    public int getCount() {
         return tps.get();
     }
 
     @Override
-    public int max() {
+    public int getMax() {
         return max;
     }
 
@@ -73,20 +73,20 @@ public class RateLimitItemTps
 
     @Override
     public boolean isRun() {
-        if (propertySubscriber != null) {
-            return propertySubscriber.isRun();
+        if (propertyDispatcher != null) {
+            return propertyDispatcher.isRun();
         }
         return false;
     }
 
     @Override
     public void run() {
-        propertySubscriber.run();
+        propertyDispatcher.run();
     }
 
     @Override
     public void shutdown() {
-        propertySubscriber.shutdown();
+        propertyDispatcher.shutdown();
     }
 
 }

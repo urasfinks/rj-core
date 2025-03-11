@@ -9,7 +9,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.AuthException;
 import ru.jamsys.core.extension.http.ServletRequestReader;
 import ru.jamsys.core.extension.http.ServletResponseWriter;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
 import ru.jamsys.core.flat.util.UtilText;
 import ru.jamsys.core.handler.web.http.HttpInterceptor;
@@ -30,7 +30,7 @@ public class AuthInterceptor implements HttpInterceptor {
 
     public AuthInterceptor(ServiceProperty serviceProperty, SecurityComponent securityComponent) {
         this.securityComponent = securityComponent;
-        new PropertySubscriber(
+        new PropertyDispatcher(
                 serviceProperty,
                 null,
                 users,
@@ -39,7 +39,7 @@ public class AuthInterceptor implements HttpInterceptor {
                 .addSubscriptionRegexp("run\\.args\\.web\\.auth\\.user\\.password\\.alias\\.*")
                 .run();
 
-        new PropertySubscriber(
+        new PropertyDispatcher(
                 serviceProperty,
                 null,
                 uriRegexp,

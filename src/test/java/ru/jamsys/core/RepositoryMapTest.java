@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.Property;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
@@ -47,29 +47,29 @@ class RepositoryMapTest {
     void test() {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         XX xx = new XX();
-        PropertySubscriber propertySubscriber = new PropertySubscriber(
+        PropertyDispatcher propertyDispatcher = new PropertyDispatcher(
                 serviceProperty,
                 xx,
                 xx,
                 null
         );
-        propertySubscriber.run();
+        propertyDispatcher.run();
 
-        propertySubscriber
+        propertyDispatcher
                 .addSubscription("run.args.security.path.storage", null)
                 .addSubscription("run.args.security.path.storage", null);
 
-        propertySubscriber.reload();
+        propertyDispatcher.reload();
 
         Assertions.assertEquals(0, xx.c);
 
-        Assertions.assertEquals(1, propertySubscriber.getSubscriptions().size());
+        Assertions.assertEquals(1, propertyDispatcher.getSubscriptions().size());
 
-        propertySubscriber.addSubscription("run.args.security.path.public.key", null);
-        propertySubscriber.reload();
+        propertyDispatcher.addSubscription("run.args.security.path.public.key", null);
+        propertyDispatcher.reload();
 
-        Assertions.assertEquals(2, propertySubscriber.getSubscriptions().size());
-        Util.logConsoleJson(getClass(), propertySubscriber);
+        Assertions.assertEquals(2, propertyDispatcher.getSubscriptions().size());
+        Util.logConsoleJson(getClass(), propertyDispatcher);
         Assertions.assertEquals(0, xx.c);
 
         serviceProperty.set("run.args.security.path.storage", "xx");
@@ -79,7 +79,7 @@ class RepositoryMapTest {
         serviceProperty.set("run.args.security.path.storage", "xx");
         Assertions.assertEquals(2, xx.c);
 
-        propertySubscriber.shutdown();
+        propertyDispatcher.shutdown();
         //Assertions.assertEquals(0, propertySubscriber.getListSubscriber().size());
 
         // После отписки мы не должны получать уведомления об изменениях
@@ -88,16 +88,16 @@ class RepositoryMapTest {
         Assertions.assertEquals(3, xx.c);
 
         // Обратно подписываемся
-        propertySubscriber.addSubscription("run.args.security.path.storage", null);
+        propertyDispatcher.addSubscription("run.args.security.path.storage", null);
         Assertions.assertEquals(3, xx.c);
 
-        propertySubscriber.addSubscription("run.args.security.path.public.key", null);
+        propertyDispatcher.addSubscription("run.args.security.path.public.key", null);
         Assertions.assertEquals(3, xx.c);
 
         serviceProperty.set("run.args.security.path.public.key", "x3");
         Assertions.assertEquals(3, xx.c);
 
-        propertySubscriber.removeSubscriptionByRepositoryKey("run.args.security.path.public.key");
+        propertyDispatcher.removeSubscriptionByRepositoryKey("run.args.security.path.public.key");
 
         serviceProperty.set("run.args.security.path.public.key", "x4");
         Assertions.assertEquals(3, xx.c);
@@ -133,7 +133,7 @@ class RepositoryMapTest {
         Map<String, String> mapPropValue = x2.getRepository();
         System.out.println(mapPropValue);
 
-        PropertySubscriber subscribe = new PropertySubscriber(serviceProperty, x2, x2, "run.args");
+        PropertyDispatcher subscribe = new PropertyDispatcher(serviceProperty, x2, x2, "run.args");
         subscribe.run();
 
         Assertions.assertEquals(2, subscribe.getSubscriptions().size());

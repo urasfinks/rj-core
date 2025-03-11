@@ -8,7 +8,7 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.Property;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -32,8 +32,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         StatisticsFlush,
         ClassEquals,
         PropertyListener,
-        LifeCycleInterface,
-        CascadeName {
+        LifeCycleInterface {
 
     @Getter
     private final Broker<ByteTransformer> broker;
@@ -47,39 +46,30 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     private final FileByteWriterProperty fileByteWriterProperty = new FileByteWriterProperty();
 
     @Getter
-    private final PropertySubscriber propertySubscriber;
+    private final PropertyDispatcher propertyDispatcher;
 
     private final AtomicBoolean runWrite = new AtomicBoolean(false);
 
     @Getter
     private final String key;
 
-    @Getter
-    private final CascadeName parentCascadeName;
-
-    public FileByteWriter(CascadeName parentCascadeName, String key) {
-        this.parentCascadeName = parentCascadeName;
+    public FileByteWriter(String key) {
         this.key = key;
         // На практики не видел больше 400к логов на одном узле
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
-        propertySubscriber = new PropertySubscriber(
+        propertyDispatcher = new PropertyDispatcher(
                 App.get(ServiceProperty.class),
                 this,
                 fileByteWriterProperty,
-                getCascadeName()
+                key
         );
         restoreIndex(fileByteWriterProperty.getFolder(), fileByteWriterProperty.getFileName());
 
         broker = App.get(ManagerBroker.class).initAndGet(
-                getCascadeName(App.getUniqueClassName(FileByteWriter.class)),
+                key,
                 ByteTransformer.class,
                 null
         );
-
-        App.get(ServiceProperty.class).computeIfAbsent(
-                propertySubscriber.getPropertyKey("size"),
-                null
-        ).set(400_000);
 
         if (fileByteWriterProperty.getFileName() == null || fileByteWriterProperty.getFileName().isEmpty()) {
             throw new RuntimeException("file name is empty");
@@ -215,12 +205,12 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     @Override
     public boolean isRun() {
-        return propertySubscriber.isRun();
+        return propertyDispatcher.isRun();
     }
 
     @Override
     public void run() {
-        propertySubscriber.run();
+        propertyDispatcher.run();
     }
 
     @Override
@@ -231,7 +221,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         // Сначала не хотел закрывать файл, но решил, что надо, для того, что бы система могла уже с ним поработать
         // Если оставить его не закрытым, то он будет висеть до закрытия программы, что наверное не очень хорошо
         closeLastFile();
-        propertySubscriber.shutdown();
+        propertyDispatcher.shutdown();
     }
 
     @Override

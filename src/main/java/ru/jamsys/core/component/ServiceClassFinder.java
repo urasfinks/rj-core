@@ -7,7 +7,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
 import ru.jamsys.core.flat.util.Util;
 
@@ -51,7 +51,7 @@ public class ServiceClassFinder implements CascadeName {
         @SuppressWarnings("SameParameterValue")
 
 
-        PropertySubscriber propertySubscriber = new PropertySubscriber(
+        PropertyDispatcher propertyDispatcher = new PropertyDispatcher(
                 serviceProperty,
                 (_, _, property) -> {
                     Util.logConsoleJson(getClass(), "onUpdate ServiceClassFinderIgnore: " + property.get());
@@ -62,7 +62,7 @@ public class ServiceClassFinder implements CascadeName {
                 getCascadeName("ignore")
         )
                 .addSubscriptionRegexp(getCascadeName("ignore.*"));
-        propertySubscriber.run();
+        propertyDispatcher.run();
         availableClass.clear();
         availableClass.addAll(getAvailableClass(pkg));
     }

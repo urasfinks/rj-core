@@ -19,7 +19,7 @@ public class ManagerSession extends AbstractManager<Session, Integer>
 
     @Override
     public Session build(String key, Class<?> classItem, Integer builderArgument) {
-        return new Session(this, key, builderArgument);
+        return new Session(getCascadeName(key, classItem), builderArgument);
     }
 
     @Override

@@ -1,7 +1,11 @@
 package ru.jamsys.core.statistic.expiration;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import ru.jamsys.core.flat.util.UtilDate;
 
+@JsonIgnoreType
+@JsonIgnoreProperties
 public interface ExpirationMs {
 
     default long getExpiredMs() {
@@ -31,7 +35,7 @@ public interface ExpirationMs {
         return curTimeMs > (getLastActivityMs() + getKeepAliveOnInactivityMs());
     }
 
-    default TimeOutException getExpiredException() {
+    default TimeOutException genExpiredException() {
         return new TimeOutException(getLastActivityMs(), getKeepAliveOnInactivityMs());
     }
 

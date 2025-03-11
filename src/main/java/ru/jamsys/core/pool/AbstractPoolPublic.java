@@ -1,6 +1,5 @@
 package ru.jamsys.core.pool;
 
-import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
@@ -13,8 +12,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractPoolPublic<RA, RR, PI extends ExpirationMsMutable & Resource<RA, RR>>
         extends AbstractPool<RA, RR, PI> {
 
-    public AbstractPoolPublic(CascadeName parentCascadeName, String name) {
-        super(parentCascadeName, name);
+    public AbstractPoolPublic(String key) {
+        super(key);
     }
 
     public PI getPoolItem() {

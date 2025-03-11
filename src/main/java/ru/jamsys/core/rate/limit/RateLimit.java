@@ -1,7 +1,7 @@
 package ru.jamsys.core.rate.limit;
 
+import com.fasterxml.jackson.annotation.*;
 import lombok.Getter;
-import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.ClassEquals;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsCollectorMap;
@@ -11,6 +11,7 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
+import ru.jamsys.core.statistic.expiration.ExpirationMs;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
 
 import java.util.Map;
@@ -21,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // Так как это набор, можно добавить RateLimitItem разных типов, на подобии TPS + TPD
 // Успехом считается если все правила сказали ОК
 
+@JsonPropertyOrder({"key", "map"})
 @Getter
 @SuppressWarnings("unused")
 public class RateLimit
@@ -28,25 +30,23 @@ public class RateLimit
         implements
         StatisticsCollectorMap<RateLimitItem>,
         ClassEquals,
-        CascadeName,
         LifeCycleInterface,
         AddToMap<String, RateLimitItem> {
 
+    @JsonView(ExpirationMs.class)
     final Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
 
+    @JsonIgnore
     private final AtomicBoolean run = new AtomicBoolean(false);
 
     @Getter
     private final String key;
 
-    @Getter
-    private final CascadeName parentCascadeName;
-
-    public RateLimit(CascadeName parentCascadeName, String key) {
-        this.parentCascadeName = parentCascadeName;
+    public RateLimit(String key) {
         this.key = key;
     }
 
+    @JsonIgnore
     @Override
     public Map<String, RateLimitItem> getMapForFlushStatistic() {
         return map;
@@ -54,13 +54,13 @@ public class RateLimit
 
     public void checkOrThrow() {
         UtilRisc.forEach(null, map, (key, rateLimitItem) -> {
-            if (rateLimitItem.get() >= rateLimitItem.max()) {
+            if (rateLimitItem.getCount() >= rateLimitItem.getMax()) {
                 throw new RateLimitException(
                         "RateLimit ABORT",
                         "prop: " + key
-                                + "; max: " + rateLimitItem.max()
-                                + "; now: " + rateLimitItem.get()
-                                + "; key: " + rateLimitItem.getKey()
+                                + "; max: " + rateLimitItem.getMax()
+                                + "; now: " + rateLimitItem.getCount()
+                                + "; key: " + rateLimitItem.getNamespace()
                                 + ";"
                 );
             }
@@ -76,9 +76,9 @@ public class RateLimit
                     Util.logConsole(
                             getClass(),
                             "RateLimit [ABORT] key: " + key
-                                    + "; max: " + rateLimitItem.max()
-                                    + "; now: " + rateLimitItem.get()
-                                    + "; key: " + rateLimitItem.getKey()
+                                    + "; max: " + rateLimitItem.getMax()
+                                    + "; now: " + rateLimitItem.getCount()
+                                    + "; key: " + rateLimitItem.getNamespace()
                                     + ";",
                             true
                     );
@@ -92,14 +92,14 @@ public class RateLimit
     public RateLimitItem get(String key) {
         RateLimitItem rateLimitItem = map.get(key);
         if (rateLimitItem == null) {
-            throw new RuntimeException("available: " + UtilJson.toStringPretty(map, "{}"));
+            throw new RuntimeException("Not found key: " + key + "; available: " + UtilJson.toStringPretty(map, "{}"));
         }
         return rateLimitItem;
     }
 
     public RateLimitItem computeIfAbsent(String key, RateLimitFactory rateLimitFactory) {
         return map.computeIfAbsent(key, s -> {
-            RateLimitItem rateLimitItem = rateLimitFactory.create(getCascadeName(s));
+            RateLimitItem rateLimitItem = rateLimitFactory.create(this.key + "." + s);
             rateLimitItem.run();
             return rateLimitItem;
         });

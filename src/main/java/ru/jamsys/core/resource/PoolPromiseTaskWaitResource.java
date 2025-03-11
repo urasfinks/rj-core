@@ -41,16 +41,15 @@ public class PoolPromiseTaskWaitResource<
     private final Class<PI> classItem;
 
     public PoolPromiseTaskWaitResource(
-            CascadeName parentCascadeName,
-            String name,
+            String key,
             PoolSettings<PI> poolSettings,
             Class<PI> classItem
     ) {
-        super(parentCascadeName, name);
+        super(key);
         this.poolSettings = poolSettings;
         this.classItem = classItem;
         broker = App.get(ManagerBroker.class)
-                .initAndGet(this.getCascadeName(), PromiseTaskWithResource.class, null);
+                .initAndGet(key, PromiseTaskWithResource.class, null);
     }
 
     @Override
@@ -59,7 +58,7 @@ public class PoolPromiseTaskWaitResource<
         if (isDebug() && getKey().equals(getDebugKey())) {
             Util.logConsole(
                     getClass(),
-                    "createPoolItem [" + getCascadeName() + "] :: "
+                    "createPoolItem [" + key + "] :: "
                             + poolSettings.getKey()
                             + "; result = " + newPoolItem.getClass().getName()
             );
@@ -99,7 +98,7 @@ public class PoolPromiseTaskWaitResource<
         if (isDebug() && getKey().equals(getDebugKey())) {
             Util.logConsole(
                     getClass(),
-                    "PoolTaskWait.addPromiseTaskPool(" + getCascadeName() + ") task: "
+                    "PoolTaskWait.addPromiseTaskPool(" + key + ") task: "
                             + promiseTaskWithResource.getIndex()
             );
         }

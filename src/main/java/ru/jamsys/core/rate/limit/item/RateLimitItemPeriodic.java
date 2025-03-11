@@ -5,7 +5,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyName;
-import ru.jamsys.core.extension.property.PropertySubscriber;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.UtilDate;
@@ -36,23 +36,23 @@ public class RateLimitItemPeriodic
     private String nextTimeFlushFormat = "";
 
     @Getter
-    private final String key;
+    private final String namespace;
 
     @SuppressWarnings("all")
     @PropertyName("max")
     private volatile Integer max = 999999;
 
-    private final PropertySubscriber propertySubscriber;
+    private final PropertyDispatcher propertyDispatcher;
 
-    public RateLimitItemPeriodic(TimeUnit period, String key) {
-        this.key = key;
+    public RateLimitItemPeriodic(TimeUnit period, String namespace) {
+        this.namespace = namespace;
         this.period = period;
         this.periodName = period.getNameCamel();
-        propertySubscriber = new PropertySubscriber(
+        propertyDispatcher = new PropertyDispatcher(
                 App.get(ServiceProperty.class),
                 null,
                 this,
-                getKey()
+                namespace
         );
     }
 
@@ -62,12 +62,12 @@ public class RateLimitItemPeriodic
     }
 
     @Override
-    public int get() {
+    public int getCount() {
         return tpu.get();
     }
 
     @Override
-    public int max() {
+    public int getMax() {
         return max;
     }
 
@@ -105,17 +105,17 @@ public class RateLimitItemPeriodic
 
     @Override
     public boolean isRun() {
-        return propertySubscriber.isRun();
+        return propertyDispatcher.isRun();
     }
 
     @Override
     public void run() {
-        propertySubscriber.run();
+        propertyDispatcher.run();
     }
 
     @Override
     public void shutdown() {
-        propertySubscriber.shutdown();
+        propertyDispatcher.shutdown();
     }
 
 }

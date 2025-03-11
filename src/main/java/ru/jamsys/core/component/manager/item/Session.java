@@ -21,7 +21,6 @@ public class Session<K, V>
         extends ExpirationMsMutableImpl
         implements
         Map<K, V>,
-        CascadeName,
         StatisticsFlush,
         LifeCycleInterface,
         ClassEquals {
@@ -39,9 +38,6 @@ public class Session<K, V>
 
     @Getter
     private final String key;
-
-    @Getter
-    private final CascadeName parentCascadeName;
 
     public int size() {
         return map.size();
@@ -87,12 +83,11 @@ public class Session<K, V>
         return map.put(key, value);
     }
 
-    public Session(CascadeName parentCascadeName, String key, long keepAliveOnInactivityMs) {
-        this.parentCascadeName = parentCascadeName;
+    public Session(String key, int keepAliveOnInactivityMs) {
         this.key = key;
         setKeepAliveOnInactivityMs(keepAliveOnInactivityMs);
         this.expiration = App.get(ManagerExpiration.class).get(
-                getCascadeName(),
+                key,
                 DisposableExpirationMsImmutableEnvelope.class,
                 env -> {
                     @SuppressWarnings("unchecked")

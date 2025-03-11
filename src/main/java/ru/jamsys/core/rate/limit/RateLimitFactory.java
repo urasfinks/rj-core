@@ -14,13 +14,13 @@ public enum RateLimitFactory implements CamelNormalization {
     TPD, // В день
     TPMo; //  В месяц
 
-    public RateLimitItem create(String key) {
+    public RateLimitItem create(String namespace) {
         return switch (this) {
-            case TPS -> new RateLimitItemTps(key);
-            case TPMin -> new RateLimitItemPeriodic(TimeUnit.MINUTE, key);
-            case TPH -> new RateLimitItemPeriodic(TimeUnit.HOUR_OF_DAY, key);
-            case TPD -> new RateLimitItemPeriodic(TimeUnit.DAY_OF_MONTH, key);
-            case TPMo -> new RateLimitItemPeriodic(TimeUnit.MONTH, key);
+            case TPS -> new RateLimitItemTps(namespace);
+            case TPMin -> new RateLimitItemPeriodic(TimeUnit.MINUTE, namespace);
+            case TPH -> new RateLimitItemPeriodic(TimeUnit.HOUR_OF_DAY, namespace);
+            case TPD -> new RateLimitItemPeriodic(TimeUnit.DAY_OF_MONTH, namespace);
+            case TPMo -> new RateLimitItemPeriodic(TimeUnit.MONTH, namespace);
         };
     }
 

@@ -65,8 +65,8 @@ public class Core implements LifeCycleInterface {
         String classNameStatistic = App.getUniqueClassName(StatisticSec.class);
         String classNameLog = App.getUniqueClassName(Log.class);
 
-        FileByteWriter fileByteWriterStatistic = managerFileByteWriter.get(classNameStatistic);
-        FileByteWriter fileByteWriterLog = managerFileByteWriter.get(classNameLog);
+        FileByteWriter fileByteWriterStatistic = managerFileByteWriter.get(classNameStatistic, StatisticSec.class);
+        FileByteWriter fileByteWriterLog = managerFileByteWriter.get(classNameLog, Log.class);
 
         statisticSecBroker = managerBroker.initAndGet(classNameStatistic, StatisticSec.class, fileByteWriterStatistic::append);
         logBroker = managerBroker.initAndGet(classNameLog, Log.class, fileByteWriterLog::append);
