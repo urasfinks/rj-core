@@ -8,7 +8,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertySubscriber;
-import ru.jamsys.core.extension.property.PropertyUpdater;
+import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.template.jdbc.DataMapper;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
@@ -31,7 +31,7 @@ public class JdbcResource
         implements
         Resource<JdbcRequest, List<Map<String, Object>>>,
         JdbcExecute,
-        PropertyUpdater {
+        PropertyListener {
 
     private StatementControl statementControl;
 

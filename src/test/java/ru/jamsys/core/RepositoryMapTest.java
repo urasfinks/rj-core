@@ -8,7 +8,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertySubscriber;
-import ru.jamsys.core.extension.property.PropertyUpdater;
+import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
 import ru.jamsys.core.flat.util.Util;
@@ -29,7 +29,7 @@ class RepositoryMapTest {
         App.shutdown();
     }
 
-    public static class XX extends PropertyRepositoryMap<String> implements PropertyUpdater {
+    public static class XX extends PropertyRepositoryMap<String> implements PropertyListener {
 
         int c = 0;
 
@@ -109,7 +109,7 @@ class RepositoryMapTest {
     }
 
 
-    static class x2 extends AnnotationPropertyExtractor implements PropertyUpdater {
+    static class x2 extends AnnotationPropertyExtractor implements PropertyListener {
 
         @SuppressWarnings("all")
         @PropertyName("security.path.storage")

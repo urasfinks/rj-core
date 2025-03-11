@@ -6,7 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertySubscriber;
-import ru.jamsys.core.extension.property.PropertyUpdater;
+import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
@@ -27,7 +27,7 @@ public class AndroidNotificationResource
         extends ExpirationMsMutableImpl
         implements
         Resource<AndroidNotificationRequest, HttpResponse>,
-        PropertyUpdater {
+        PropertyListener {
 
     private String accessToken;
 

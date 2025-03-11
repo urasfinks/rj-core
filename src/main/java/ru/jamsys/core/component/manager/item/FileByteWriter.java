@@ -9,7 +9,7 @@ import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertySubscriber;
-import ru.jamsys.core.extension.property.PropertyUpdater;
+import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilText;
@@ -31,7 +31,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         KeepAlive,
         StatisticsFlush,
         ClassEquals,
-        PropertyUpdater,
+        PropertyListener,
         LifeCycleInterface,
         CascadeName {
 

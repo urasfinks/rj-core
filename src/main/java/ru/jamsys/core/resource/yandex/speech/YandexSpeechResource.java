@@ -7,7 +7,7 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertySubscriber;
-import ru.jamsys.core.extension.property.PropertyUpdater;
+import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
@@ -21,7 +21,7 @@ public class YandexSpeechResource
         extends ExpirationMsMutableImpl
         implements
         Resource<YandexSpeechRequest, Void>,
-        PropertyUpdater {
+        PropertyListener {
 
     YandexSpeechClient client = null;
 

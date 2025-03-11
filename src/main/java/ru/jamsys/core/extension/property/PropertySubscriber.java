@@ -19,12 +19,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // Задача донести изменения Property до PropertyRepository
 // PropertySubscriber не обладает функционалом изменять свойства, для изменения используйте Property
 // Получая элемент PropertySubscriber вы должны начать контролировать его жизненный цикл самостоятельно run()/shutdown()
+// Классная функция - это использовать namespace, не надо в репозитории использовать абсолютные ключи Property
 
 @Getter
 public class PropertySubscriber implements LifeCycleInterface {
 
     @JsonIgnore
-    private final PropertyUpdater propertyUpdater;
+    private final PropertyListener propertyListener;
 
     @JsonIgnore
     private final ServiceProperty serviceProperty;
@@ -39,11 +40,11 @@ public class PropertySubscriber implements LifeCycleInterface {
 
     public PropertySubscriber(
             ServiceProperty serviceProperty,
-            PropertyUpdater propertyUpdater,
+            PropertyListener propertyListener,
             PropertyRepository propertyRepository,
             String namespace
     ) {
-        this.propertyUpdater = propertyUpdater;
+        this.propertyListener = propertyListener;
         this.serviceProperty = serviceProperty;
         this.propertyRepository = propertyRepository;
         this.namespace = namespace;
@@ -116,13 +117,14 @@ public class PropertySubscriber implements LifeCycleInterface {
         return this;
     }
 
+    // Вызывается из PropertySubscription, когда приходит уведомление от Property что значение изменено
     public void onPropertySubscriptionUpdate(String oldValue, Property property) {
         String repositoryKey = getRepositoryKey(property.getKey());
         if (propertyRepository != null) {
             propertyRepository.setRepository(repositoryKey, property.get());
         }
-        if (propertyUpdater != null) {
-            propertyUpdater.onPropertyUpdate(repositoryKey, oldValue, property);
+        if (propertyListener != null) {
+            propertyListener.onPropertyUpdate(repositoryKey, oldValue, property);
         }
     }
 

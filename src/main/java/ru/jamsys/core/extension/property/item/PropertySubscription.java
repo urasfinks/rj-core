@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertySubscriber;
-import ru.jamsys.core.extension.property.PropertyUpdater;
+import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.extension.property.repository.PropertyRepository;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -44,9 +44,9 @@ public class PropertySubscription {
 
     @SuppressWarnings("unused") //used UtilJson
     public String getUpdaterClass() {
-        PropertyUpdater propertyUpdater = propertySubscriber.getPropertyUpdater();
-        if (propertyUpdater != null) {
-            return propertyUpdater.getClass().getName();
+        PropertyListener propertyListener = propertySubscriber.getPropertyListener();
+        if (propertyListener != null) {
+            return propertyListener.getClass().getName();
         }
         return null;
     }
@@ -69,6 +69,7 @@ public class PropertySubscription {
         this.serviceProperty = serviceProperty;
     }
 
+    // Вызывается из Property, когда обновлено значение
     public void onPropertyUpdate(String oldValue, Property property) {
         propertySubscriber.onPropertySubscriptionUpdate(oldValue, property);
     }
