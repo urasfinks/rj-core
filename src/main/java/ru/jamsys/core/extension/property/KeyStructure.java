@@ -25,15 +25,15 @@ public class KeyStructure {
         List<String> result = new ArrayList<>();
         if (value.contains("<") && value.contains(">")) {
             String[] split = value.split("<");
-            for (int i = 0; i < split.length; i++) {
-                if ("".equals(split[i])) {
+            for (String s : split) {
+                if ("".equals(s)) {
                     continue;
                 }
-                if(!split[i].contains(">")){
-                    result.add(split[i]);
+                if (!s.contains(">")) {
+                    result.add(s);
                     continue;
                 }
-                String[] split1 = split[i].split(">");
+                String[] split1 = s.split(">");
                 result.add("<" + split1[0] + ">");
                 if (split1.length > 1) {
                     if (split1[1].startsWith(".")) {

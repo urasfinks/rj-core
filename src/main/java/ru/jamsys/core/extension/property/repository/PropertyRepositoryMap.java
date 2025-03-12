@@ -1,7 +1,6 @@
 package ru.jamsys.core.extension.property.repository;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyUtil;
 import ru.jamsys.core.flat.util.UtilRisc;
 

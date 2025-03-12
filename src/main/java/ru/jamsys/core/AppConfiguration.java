@@ -26,7 +26,6 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.web.socket.WebSocket;
-import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 
 @SuppressWarnings("unused")

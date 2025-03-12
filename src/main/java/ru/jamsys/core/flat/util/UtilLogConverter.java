@@ -1,8 +1,5 @@
 package ru.jamsys.core.flat.util;
 
-import ru.jamsys.core.component.manager.item.LogHeader;
-import ru.jamsys.core.component.manager.item.LogType;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;

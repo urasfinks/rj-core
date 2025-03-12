@@ -2,11 +2,9 @@ package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceLogger;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.extension.*;
-import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
