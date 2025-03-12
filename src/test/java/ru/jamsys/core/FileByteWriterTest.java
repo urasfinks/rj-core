@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerFileByteWriter;
 import ru.jamsys.core.component.manager.item.FileByteWriter;
-import ru.jamsys.core.component.manager.item.LogSimple;
+import ru.jamsys.core.component.manager.item.Log;
+import ru.jamsys.core.component.manager.item.LogHeader;
 import ru.jamsys.core.component.manager.item.LogType;
 import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -38,7 +39,7 @@ class FileByteWriterTest {
     @Test
     void folderNotExist() {
         try {
-            FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkOverMaxFileWrite", LogSimple.class);
+            FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkOverMaxFileWrite", LogHeader.class);
             test.getPropertyDispatcher().getPropertyRepository().setRepository("log.file.folder", "xxkaa");
             Assertions.fail();
         } catch (Throwable th) {
@@ -54,15 +55,15 @@ class FileByteWriterTest {
         );
 
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkOverMaxFileWrite", LogSimple.class);
+        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkOverMaxFileWrite", Log.class);
 
         test.getPropertyDispatcher().getPropertyRepository().setRepository("file.size.kb", "1");
         test.getPropertyDispatcher().getPropertyRepository().setRepository("file.count", "2");
         test.getPropertyDispatcher().getPropertyRepository().setRepository("file.name", "default1");
 
-        test.append(new LogSimple(LogType.INFO).setData("LogData1"));
-        test.append(new LogSimple(LogType.INFO).setData("LogData2"));
-        test.append(new LogSimple(LogType.INFO).setData("LogData3"));
+        test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData1"));
+        test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData2"));
+        test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData3"));
         test.keepAlive(new AtomicBoolean(true));
         // Потому что за одну итерацию мы не записываем больше файлов чем максимальное кол-во
         // Ничего личного, просто такие правила
@@ -84,14 +85,14 @@ class FileByteWriterTest {
         );
 
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkNameLog", LogSimple.class);
+        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkNameLog", Log.class);
 
         test.getPropertyDispatcher().getPropertyRepository().setRepository("file.count", "100");
         test.getPropertyDispatcher().getPropertyRepository().setRepository("file.name", "default2");
 
-        test.append(new LogSimple(LogType.INFO).setData("LogData1"));
-        test.append(new LogSimple(LogType.INFO).setData("LogData2"));
-        test.append(new LogSimple(LogType.INFO).setData("LogData3"));
+        test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData1"));
+        test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData2"));
+        test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData3"));
         test.keepAlive(new AtomicBoolean(true));
 
         Assertions.assertEquals("[/default2.000.proc.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
@@ -117,7 +118,7 @@ class FileByteWriterTest {
 
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
-        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkRestoreExceptionShutdown", LogSimple.class);
+        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkRestoreExceptionShutdown", Log.class);
         //test.getPropertySubscriber().getPropertyRepository().setRepository("file.name", "default3");
         App.get(ServiceProperty.class).computeIfAbsent(
                 "App.ManagerFileByteWriter.checkRestoreExceptionShutdown<Log>.file.name",
@@ -128,7 +129,7 @@ class FileByteWriterTest {
 
         Assertions.assertEquals(2, test.getIndexFile());
 
-        test.append(new LogSimple(LogType.INFO).setData("LogData1"));
+        test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData1"));
         test.keepAlive(new AtomicBoolean(true));
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
@@ -144,7 +145,7 @@ class FileByteWriterTest {
         );
         UtilFile.removeAllFilesInFolder("LogManager");
         long start = System.currentTimeMillis();
-        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkTime", LogSimple.class);
+        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkTime", Log.class);
 
         App.get(ServiceProperty.class).computeIfAbsent(
                 "App.ManagerFileByteWriter.checkRestoreExceptionShutdown<Log>.file.name",
@@ -159,7 +160,7 @@ class FileByteWriterTest {
 
         long start2 = System.currentTimeMillis();
         for (int i = 0; i < 1000000; i++) {
-            test.append(new LogSimple(LogType.INFO).setData("LogData" + i));
+            test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData" + i));
         }
         System.out.println("add time: " + (System.currentTimeMillis() - start2));
         long start3 = System.currentTimeMillis();
@@ -171,10 +172,10 @@ class FileByteWriterTest {
 
     @Test
     void test() throws Exception {
-        LogSimple log1 = new LogSimple(LogType.INFO).setData("Hello");
+        LogHeader log1 = new LogHeader(LogType.INFO, FileByteWriterTest.class, "Hello");
         byte[] x = log1.getByteInstance();
 
-        LogSimple log2 = new LogSimple(LogType.INFO);
+        LogHeader log2 = new LogHeader(LogType.INFO, FileByteWriterTest.class, null);
         log2.instanceFromByte(x);
         System.out.println(log2);
         Assertions.assertEquals(log1.toString(), log2.toString());
@@ -202,7 +203,7 @@ class FileByteWriterTest {
         UtilFile.removeAllFilesInFolder("LogManager");
         StatisticSec statisticSec1 = new StatisticSec();
         statisticSec1.getList().add(new Statistic().addField("f1", 1).addTag("t1", "Hello"));
-        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("default5", LogSimple.class);
+        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("default5", Log.class);
         test.append(statisticSec1);
         test.keepAlive(new AtomicBoolean(true));
     }

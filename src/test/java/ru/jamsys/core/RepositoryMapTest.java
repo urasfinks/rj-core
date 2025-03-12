@@ -11,7 +11,7 @@ import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 
 import java.util.Map;
 
@@ -69,7 +69,7 @@ class RepositoryMapTest {
         propertyDispatcher.reload();
 
         Assertions.assertEquals(2, propertyDispatcher.getSubscriptions().size());
-        Util.logConsoleJson(getClass(), propertyDispatcher);
+        UtilLog.printInfo(getClass(), propertyDispatcher);
         Assertions.assertEquals(0, xx.c);
 
         serviceProperty.set("run.args.security.path.storage", "xx");
@@ -121,7 +121,7 @@ class RepositoryMapTest {
 
         @Override
         public void onPropertyUpdate(String key, String oldValue, Property property) {
-            Util.logConsole(getClass(), key);
+            UtilLog.printInfo(getClass(), key);
         }
     }
 

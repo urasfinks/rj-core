@@ -5,12 +5,19 @@ import ru.jamsys.core.component.ServiceLogger;
 import ru.jamsys.core.extension.ByteTransformer;
 
 import java.io.PrintStream;
+import java.util.Map;
 
 public interface Log extends ByteTransformer {
 
     LogType getLogType();
 
     String getView();
+
+    String getData();
+
+    Map<String, String> getHeader();
+
+    long getTimeAdd();
 
     @SuppressWarnings("all")
     default Log print() {

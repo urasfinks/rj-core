@@ -10,6 +10,7 @@ import ru.jamsys.core.flat.util.UtilLogConverter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Map;
 
 @ToString
 @Getter
@@ -51,6 +52,11 @@ public class LogSimple implements Log {
     @Override
     public String getView() {
         return "";
+    }
+
+    @Override
+    public Map<String, String> getHeader() {
+        return Map.of();
     }
 
 }

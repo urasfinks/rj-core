@@ -6,8 +6,6 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceLogger;
 import ru.jamsys.core.component.ServicePromise;
-import ru.jamsys.core.component.manager.item.LogSimple;
-import ru.jamsys.core.component.manager.item.LogType;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
@@ -244,8 +242,11 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 if (logString == null) {
                     logString = getLogString();
                 }
-                App.get(ServiceLogger.class).add(new LogSimple(exception.get() ? LogType.ERROR : LogType.INFO)
-                        .setData(logString));
+                if (exception.get()) {
+                    UtilLog.error(getClass(), logString).sendToLogger();
+                } else {
+                    UtilLog.info(getClass(), logString).sendToLogger();
+                }
             }
         }
     }

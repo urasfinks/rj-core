@@ -21,6 +21,8 @@ import java.util.Map;
 @Accessors(chain = true)
 public class LogHeader implements Log {
 
+    public long timeAdd = System.currentTimeMillis();
+
     public Map<String, String> header = new LinkedHashMap<>();
 
     public String data;
@@ -32,7 +34,7 @@ public class LogHeader implements Log {
         if (data != null) {
             this.data = data instanceof String ? data.toString() : UtilJson.toStringPretty(data, "--");
         }
-        addHeader("time", System.currentTimeMillis());
+        addHeader("time", timeAdd);
         addHeader("type", logType.getNameCamel());
         addHeader("thread", Thread.currentThread().getName());
         addHeader("class", cls.getName());
@@ -74,7 +76,7 @@ public class LogHeader implements Log {
 
     @Override
     public String getView() {
-        header.put("time", UtilDate.msFormat(Long.parseLong(header.get("time"))));
+        header.put("time", UtilDate.msFormat(timeAdd));
         if (data != null) {
             return UtilJson.toString(header, "--") + "\r\n" + data;
         } else {

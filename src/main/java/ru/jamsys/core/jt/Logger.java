@@ -10,17 +10,15 @@ public enum Logger implements JdbcRequestRepository {
             INSERT INTO logger (
                 date_add,
                 type,
-                correlation,
                 host,
-                ext_index,
-                data
+                data,
+                header
             ) values (
                 ${IN.date_add::TIMESTAMP},
                 ${IN.type::VARCHAR},
-                ${IN.correlation::VARCHAR},
                 ${IN.host::VARCHAR},
-                ${IN.ext_index::VARCHAR},
                 ${IN.data::VARCHAR}
+                ${IN.header::VARCHAR}
             );
             """, StatementType.SELECT_WITH_AUTO_COMMIT);
 
