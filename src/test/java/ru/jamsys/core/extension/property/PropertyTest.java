@@ -1,7 +1,6 @@
 package ru.jamsys.core.extension.property;
 
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 
 class PropertyTest {
