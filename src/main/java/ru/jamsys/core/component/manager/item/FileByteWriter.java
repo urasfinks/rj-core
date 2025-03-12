@@ -12,6 +12,7 @@ import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilText;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
@@ -71,6 +72,10 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                 null
         );
 
+        App.get(ServiceProperty.class)
+                .computeIfAbsent(broker.getPropertyDispatcher().getPropertyKeyByRepositoryKey("size"), null)
+                .set(400_000);
+
         if (fileByteWriterProperty.getFileName() == null || fileByteWriterProperty.getFileName().isEmpty()) {
             throw new RuntimeException("file name is empty");
         }
@@ -90,12 +95,11 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                     // файлы с расширение proc.bin должны были переименоваться
                     // Предполагается фатальное завершение прошлого процесса и такие файлы будут выкидываться
                     // (so sorry my bad) Дима Г. наблевавший в номере)
-                    App.get(ServiceLogger.class).add(
-                            LogType.INFO,
-                            new HashMapBuilder<String, Object>().append("exception", "File will be remove: [" + filePath + "] so sorry my bad"),
-                            App.getUniqueClassName(getClass()) + ".restoreIndex",
-                            true
-                    );
+                    UtilLog
+                            .error(getClass(), "File will be remove: [" + filePath + "] so sorry my bad")
+                            .print()
+                            .sendToLogger();
+
                     try {
                         UtilFile.remove(folder + filePath);
                     } catch (Exception e) {
@@ -133,9 +137,9 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                 + ".proc.bin";
     }
 
-    public void append(ByteTransformer log) {
+    public void append(ByteTransformer byteTransformer) {
         setActivity();
-        broker.add(log, 6_000);
+        broker.add(byteTransformer, 6_000);
     }
 
     @Override
@@ -242,4 +246,5 @@ public class FileByteWriter extends ExpirationMsMutableImpl
             restoreIndex(property.get(), fileByteWriterProperty.getFileName());
         }
     }
+
 }

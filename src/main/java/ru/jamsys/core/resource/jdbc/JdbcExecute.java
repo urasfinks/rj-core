@@ -1,8 +1,7 @@
 package ru.jamsys.core.resource.jdbc;
 
 import ru.jamsys.core.flat.template.jdbc.*;
-import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilLog;
 
 import java.sql.*;
 import java.util.*;
@@ -29,8 +28,8 @@ public interface JdbcExecute {
         }
         CompiledSqlTemplate compiledSqlTemplate = jdbcTemplate.compile(argsList.getFirst());
         if (debug) {
-            Util.logConsole(getClass(), compiledSqlTemplate.getSql());
-            Util.logConsole(getClass(), jdbcTemplate.getSqlWithArgumentsValue(compiledSqlTemplate));
+            UtilLog.printInfo(getClass(), compiledSqlTemplate.getSql());
+            UtilLog.printInfo(getClass(), jdbcTemplate.getSqlWithArgumentsValue(compiledSqlTemplate));
         }
         StatementType statementType = jdbcTemplate.getStatementType();
         conn.setAutoCommit(statementType.isAutoCommit());
@@ -101,7 +100,7 @@ public interface JdbcExecute {
                 break;
         }
         if (debug) {
-            Util.logConsole(getClass(), UtilJson.toStringPretty(result, "[]"));
+            UtilLog.printInfo(getClass(), result);
         }
         return result;
     }

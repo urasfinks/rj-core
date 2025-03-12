@@ -6,11 +6,12 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceLogger;
 import ru.jamsys.core.component.ServicePromise;
-import ru.jamsys.core.component.manager.item.Log;
+import ru.jamsys.core.component.manager.item.LogSimple;
 import ru.jamsys.core.component.manager.item.LogType;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 
 import java.util.List;
@@ -177,7 +178,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             if (exception.get()) {
                 terminate(onError);
                 if (isPrintError()) {
-                    Util.logConsole(getClass(), getLogString());
+                    UtilLog.printError(getClass(), getLogString());
                 }
             } else if (
                     !wait.get() // Мы не ждём
@@ -189,7 +190,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                     setError(new RuntimeException("goTo is not empty: " + goTo));
                     terminate(onError);
                     if (isPrintError()) {
-                        Util.logConsole(getClass(), getLogString());
+                        UtilLog.printError(getClass(), getLogString());
                     }
                 } else {
                     terminate(onComplete);
@@ -235,7 +236,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
         String logString = null;
         if (isDebug()) {
             logString = getLogString();
-            Util.logConsole(getClass(), logString);
+            UtilLog.printInfo(getClass(), logString);
         }
         if (isLog()) {
             ServiceLogger serviceLogger = App.get(ServiceLogger.class);
@@ -243,10 +244,8 @@ public class PromiseImpl extends AbstractPromiseBuilder {
                 if (logString == null) {
                     logString = getLogString();
                 }
-                App.get(ServiceLogger.class).add(new Log(
-                        exception.get() ? LogType.ERROR : LogType.INFO,
-                        getCorrelation()
-                ).setData(logString));
+                App.get(ServiceLogger.class).add(new LogSimple(exception.get() ? LogType.ERROR : LogType.INFO)
+                        .setData(logString));
             }
         }
     }

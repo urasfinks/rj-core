@@ -3,8 +3,8 @@ package ru.jamsys.core.flat.template.cron;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.statistic.AvgMetric;
 
 import java.util.*;
@@ -189,10 +189,10 @@ public class Cron {
             return compileResult.setNextTimestamp(null);
         }
         if (debug) {
-            Util.logConsole(
-                    getClass(),
-                    "Avg min: " + UtilDate.msFormat(flush.getMin()) + " realMs: " + flush.getMin()
-            );
+            UtilLog.info(getClass(), null)
+                    .addHeader("min", UtilDate.msFormat(flush.getMin()))
+                    .addHeader("realMs", flush.getMin())
+                    .print();
         }
         nextTimestamp = flush.getMin();
         return compileResult.setNextTimestamp(nextTimestamp);

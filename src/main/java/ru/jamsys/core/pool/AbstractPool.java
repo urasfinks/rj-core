@@ -8,9 +8,9 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.Statistic;
@@ -414,17 +414,15 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     @Override
     public void keepAlive(AtomicBoolean threadRun) {
         if (isDebug() && getKey().equals(getDebugKey())) {
-            Util.logConsoleJson(
-                    getClass(),
-                    new HashMapBuilder<String, Object>()
-                            .append("getTimeParkIsEmpty", getTimeParkIsEmpty())
-                            .append("parkQueueSize", parkQueue.size())
-                            .append("itemQueueSize", itemQueue.size())
-                            .append("getRealActiveItem", getRealActiveItem())
-                            .append("propertyPoolSizeMin", abstractPoolProperty.getMin())
-                            .append("formulaAddCount", formulaAddCount.apply(1))
-                            .append("actionOverclocking", getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty())
-            );
+            UtilLog.info(getClass(), null)
+                    .addHeader("getTimeParkIsEmpty", getTimeParkIsEmpty())
+                    .addHeader("parkQueueSize", parkQueue.size())
+                    .addHeader("itemQueueSize", itemQueue.size())
+                    .addHeader("getRealActiveItem", getRealActiveItem())
+                    .addHeader("propertyPoolSizeMin", abstractPoolProperty.getMin())
+                    .addHeader("formulaAddCount", formulaAddCount.apply(1))
+                    .addHeader("actionOverclocking", getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty())
+                    .print();
         }
         if (run.get()) {
             updateParkStatistic();

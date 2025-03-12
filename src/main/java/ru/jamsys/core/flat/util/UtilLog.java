@@ -1,31 +1,38 @@
 package ru.jamsys.core.flat.util;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import ru.jamsys.core.component.manager.item.LogHeader;
+import ru.jamsys.core.component.manager.item.LogType;
 
 public class UtilLog {
 
-    public static String readShortString(InputStream fis) throws Exception {
-        short len = UtilByte.bytesToShort(fis.readNBytes(2));
-        return new String(fis.readNBytes(len), StandardCharsets.UTF_8);
+    public static LogHeader error(Class<?> cls, Object data) {
+        return new LogHeader(LogType.ERROR, cls, data);
     }
 
-    public static String readString(InputStream fis) throws Exception {
-        int len = UtilByte.bytesToInt(fis.readNBytes(4));
-        return new String(fis.readNBytes(len), StandardCharsets.UTF_8);
+    public static LogHeader info(Class<?> cls, Object data) {
+        return new LogHeader(LogType.INFO, cls, data);
     }
 
-    public static void writeShortString(OutputStream fos, String data) throws Exception {
-        byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
-        fos.write(UtilByte.shortToBytes((short) dataBytes.length));
-        fos.write(dataBytes);
+    public static LogHeader debug(Class<?> cls, Object data) {
+        return new LogHeader(LogType.DEBUG, cls, data);
     }
 
-    public static void writeString(OutputStream fos, String data) throws Exception {
-        byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
-        fos.write(UtilByte.intToBytes(dataBytes.length));
-        fos.write(dataBytes);
+    public static LogHeader printError(Class<?> cls, Object data) {
+        LogHeader logHeader = new LogHeader(LogType.ERROR, cls, data);
+        logHeader.print();
+        return logHeader;
+    }
+
+    public static LogHeader printInfo(Class<?> cls, Object data) {
+        LogHeader logHeader = new LogHeader(LogType.INFO, cls, data);
+        logHeader.print();
+        return logHeader;
+    }
+
+    public static LogHeader printDebug(Class<?> cls, Object data) {
+        LogHeader logHeader = new LogHeader(LogType.DEBUG, cls, data);
+        logHeader.print();
+        return logHeader;
     }
 
 }

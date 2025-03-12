@@ -323,7 +323,7 @@ public class SecurityComponent extends AnnotationPropertyExtractor implements Li
                 App.error(e);
             }
         } else {
-            Util.logConsole(SecurityComponent.class, "file not exist");
+            UtilLog.printInfo(SecurityComponent.class, "file not exist");
         }
     }
 
@@ -341,13 +341,11 @@ public class SecurityComponent extends AnnotationPropertyExtractor implements Li
         if (run.compareAndSet(false, true)) {
             byte[] publicKey = UtilFile.readBytes(pathPublicKey, null);
 
-            Util.logConsole(
+            UtilLog.printInfo(
                     getClass(),
                     "Security Check privateKey: " + (privateKey != null && privateKey.length > 0)
-            );
-            Util.logConsole(
-                    getClass(),
-                    "Security Check publicKey: " + (publicKey != null && publicKey.length > 0)
+                            + "\r\n"
+                            + "Security Check publicKey: " + (publicKey != null && publicKey.length > 0)
             );
 
             if (publicKey != null && publicKey.length > 0 && privateKey != null && privateKey.length > 0) {
@@ -362,19 +360,16 @@ public class SecurityComponent extends AnnotationPropertyExtractor implements Li
                     throw new ForwardException(e);
                 }
                 if (UtilFile.ifExist(pathJsonCred)) {
-                    Util.logConsole(
+                    UtilLog.printError(
                             getClass(),
-                            "Please remove file [" + pathJsonCred + "] with credentials information",
-                            true
+                            "Please remove file [" + pathJsonCred + "] with credentials information"
                     );
                     updateDataFromJsonCred(UtilByte.bytesToChars(passwordKeyStore));
                 }
                 try {
-                    Util.logConsole(
-                            getClass(),
-                            "KeyStore available aliases: "
-                                    + UtilJson.toStringPretty(getAvailableAliases(), "[]")
-                    );
+                    UtilLog.info(getClass(), getAvailableAliases())
+                            .addHeader("description", "KeyStore available aliases")
+                            .print();
                 } catch (Exception ignore) {
 
                 }

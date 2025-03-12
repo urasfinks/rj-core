@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.builder.ArrayListBuilder;
 import ru.jamsys.core.extension.exception.PromiseException;
 import ru.jamsys.core.extension.trace.Trace;
@@ -22,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @JsonPropertyOrder({"correlation", "index", "addTime", "expTime", "stopTime", "diffTimeMs", "exception", "completed", "trace", "exceptionTrace", "property"})
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
-public abstract class AbstractPromise extends ExpirationMsImmutableImpl implements Promise, Correlation {
+public abstract class AbstractPromise extends ExpirationMsImmutableImpl implements Promise {
 
     @JsonIgnore
     @Getter
@@ -31,10 +30,6 @@ public abstract class AbstractPromise extends ExpirationMsImmutableImpl implemen
     @JsonProperty
     @Getter
     private final String index;
-
-    @Setter
-    @Getter
-    protected String correlation = java.util.UUID.randomUUID().toString();
 
     // Первый поток, который зашёл одновременно с выполнением основного loop будет пробовать ждать 5мс
     // Что бы перехватить инициативу крутить основной loop

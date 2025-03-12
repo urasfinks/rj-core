@@ -11,6 +11,7 @@ import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.CronConfigurator;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 
@@ -63,7 +64,7 @@ public class ServiceCron implements LifeCycleComponent, CascadeName {
                         }
                     }
                 } catch (InterruptedException ie) {
-                    Util.logConsole(getClass(), "interrupt()");
+                    UtilLog.printError(getClass(), "interrupt()");
                 } catch (Throwable th) {
                     App.error(th);
                 }

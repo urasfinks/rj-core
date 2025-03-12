@@ -178,16 +178,6 @@ public class PromiseDebug implements Promise {
     }
 
     @Override
-    public String getCorrelation() {
-        return promise.getCorrelation();
-    }
-
-    @Override
-    public void setCorrelation(String correlation) {
-        promise.setCorrelation(correlation);
-    }
-
-    @Override
     public Map<String, Object> getRepositoryMap() {
         if (promise.isDebug()) {
             if (promiseRepositoryDebug == null) {

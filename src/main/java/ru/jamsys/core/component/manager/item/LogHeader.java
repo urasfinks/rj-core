@@ -1,31 +1,46 @@
 package ru.jamsys.core.component.manager.item;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.flat.util.UtilByte;
-import ru.jamsys.core.flat.util.UtilLog;
+import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilLogConverter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @ToString
-public class LogHeader implements ByteTransformer {
+@Getter
+@Setter
+@Accessors(chain = true)
+public class LogHeader implements Log {
 
-    public Map<String, String> header = new HashMap<>();
+    public Map<String, String> header = new LinkedHashMap<>();
 
     public String data;
 
     public final LogType logType;
 
-    public LogHeader(LogType logType) {
+    public LogHeader(LogType logType, Class<?> cls, Object data) {
         this.logType = logType;
+        if (data != null) {
+            this.data = data instanceof String ? data.toString() : UtilJson.toStringPretty(data, "--");
+        }
+        addHeader("time", System.currentTimeMillis());
+        addHeader("type", logType.getNameCamel());
+        addHeader("thread", Thread.currentThread().getName());
+        addHeader("class", cls.getName());
     }
 
-    public LogHeader setData(String data) {
-        this.data = data;
+    public LogHeader addHeader(String key, Object value) {
+        addHeader(key, String.valueOf(value));
         return this;
     }
 
@@ -40,11 +55,11 @@ public class LogHeader implements ByteTransformer {
 
         // Запись заголовков
         for (String key : header.keySet()) {
-            UtilLog.writeShortString(os, key);
-            UtilLog.writeShortString(os, header.get(key));
+            UtilLogConverter.writeShortString(os, key);
+            UtilLogConverter.writeShortString(os, header.get(key));
         }
         // Запись тела
-        UtilLog.writeString(os, data);
+        UtilLogConverter.writeString(os, data);
         return os.toByteArray();
     }
 
@@ -53,9 +68,19 @@ public class LogHeader implements ByteTransformer {
         InputStream fis = new ByteArrayInputStream(bytes);
         short countHeader = UtilByte.bytesToShort(fis.readNBytes(2));
         for (int i = 0; i < countHeader; i++) {
-            addHeader(UtilLog.readShortString(fis), UtilLog.readShortString(fis));
+            addHeader(UtilLogConverter.readShortString(fis), UtilLogConverter.readShortString(fis));
         }
-        setData(UtilLog.readString(fis));
+        setData(UtilLogConverter.readString(fis));
+    }
+
+    @Override
+    public String getView() {
+        header.put("time", UtilDate.msFormat(Long.parseLong(header.get("time"))));
+        if (data != null) {
+            return UtilJson.toString(header, "--") + "\r\n" + data;
+        } else {
+            return UtilJson.toString(header, "--");
+        }
     }
 
 }

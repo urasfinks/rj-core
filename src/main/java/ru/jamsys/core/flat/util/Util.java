@@ -3,7 +3,6 @@ package ru.jamsys.core.flat.util;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 
-import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
@@ -26,58 +25,6 @@ import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 public class Util {
 
     static final String defaultCharset = "UTF-8";
-
-    public static <T> void printArray(Class<?> cls, T[] arr) {
-        logConsole(cls, Arrays.toString(arr));
-    }
-
-    public static <T, R> List<R> forEach(T[] array, Function<T, R> fn) {
-        List<R> list = new ArrayList<>();
-        for (T item : array) {
-            R r = fn.apply(item);
-            if (r != null) {
-                list.add(r);
-            }
-        }
-        return list;
-    }
-
-    public static void logConsoleJson(Class<?> cls, String title, Object data) {
-        logConsole(
-                cls,
-                "Title: " + title + "; Json: " + UtilJson.toStringPretty(data, "--"),
-                false
-        );
-    }
-
-    public static void logConsoleJson(Class<?> cls, Object data) {
-        logConsole(cls, UtilJson.toStringPretty(data, "--"), false);
-    }
-
-    public static void logConsole(Class<?> cls, String data) {
-        logConsole(cls, data, false);
-    }
-
-    public static void logConsole(Class<?> cls, String data, boolean err) {
-        logConsole(cls, Thread.currentThread(), data, err);
-    }
-
-    public static void logConsole(Class<?> cls, String data, boolean err, boolean newLine) {
-        logConsole(cls, Thread.currentThread(), data, err, newLine);
-    }
-
-    public static void logConsole(Class<?> cls, Thread thread, String data, boolean err) {
-        logConsole(cls, thread, data, err, true);
-    }
-
-    public static void logConsole(Class<?> cls, Thread thread, String data, boolean err, boolean newLine) {
-        PrintStream ps = err ? System.err : System.out;
-        if (newLine) {
-            ps.println(UtilDate.msFormat(System.currentTimeMillis()) + "; Class: " + cls.getName() + "; Thread: " + thread.getName() + "; " + data);
-        } else {
-            ps.print(UtilDate.msFormat(System.currentTimeMillis()) + "; Class: " + cls.getName() + "; Thread: " + thread.getName() + "; " + data);
-        }
-    }
 
     public static void sleepMs(long ms) {
         try {
@@ -237,7 +184,7 @@ public class Util {
     public static boolean await(AtomicBoolean run, long timeoutMs, String exceptionMessage) {
         return await(run, timeoutMs, 0, () -> {
             if (exceptionMessage != null) {
-                logConsole(Util.class, exceptionMessage, true);
+                UtilLog.printError(Util.class, exceptionMessage);
             }
         });
     }
@@ -245,7 +192,7 @@ public class Util {
     public static boolean await(AtomicBoolean run, long timeoutMs, int sleepIterationMs, String exceptionMessage) {
         return await(run, timeoutMs, sleepIterationMs, () -> {
             if (exceptionMessage != null) {
-                logConsole(Util.class, exceptionMessage, true);
+                UtilLog.printError(Util.class, exceptionMessage);
             }
         });
     }

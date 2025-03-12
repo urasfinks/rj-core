@@ -12,9 +12,8 @@ import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
 import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
-import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilFile;
-import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.handler.web.http.HttpInterceptor;
@@ -55,10 +54,9 @@ public class HttpController {
             updateStaticFile();
             subscribeIgnoreFile();
             subscribeIgnoreDir();
-            Util.logConsole(
-                    getClass(),
-                    "IgnoredStaticFile: " + UtilJson.toStringPretty(ignoredStaticFile, "[]")
-            );
+            UtilLog.info(getClass(), ignoredStaticFile)
+                    .addHeader("description", "IgnoredStaticFile")
+                    .print();
         }
         List<Class<HttpInterceptor>> list = serviceClassFinder.findByInstance(HttpInterceptor.class);
         if (!list.isEmpty()) {
@@ -70,7 +68,9 @@ public class HttpController {
         new PropertyDispatcher(
                 serviceProperty,
                 (key, _, property) -> {
-                    Util.logConsole(getClass(), "IgnoreWebStatic.File: " + property.get());
+                    UtilLog.info(getClass(), property.get())
+                            .addHeader("description", "IgnoreWebStatic.File")
+                            .print();
                     updateStaticFile();
                 },
                 ignoreStaticFile,
@@ -84,7 +84,9 @@ public class HttpController {
         new PropertyDispatcher(
                 serviceProperty,
                 (key, _, property) -> {
-                    Util.logConsole(getClass(), "IgnoreWebStatic.Dir: " + property.get());
+                    UtilLog.info(getClass(), property.get())
+                            .addHeader("description", "IgnoreWebStatic.Dir")
+                            .print();
                     updateStaticFile();
                 },
                 ignoreStaticDir,

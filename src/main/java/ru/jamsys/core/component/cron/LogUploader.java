@@ -9,7 +9,7 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.component.manager.item.Log;
+import ru.jamsys.core.component.manager.item.LogSimple;
 import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -37,7 +37,7 @@ import java.util.function.Function;
 @Lazy
 public class LogUploader extends AnnotationPropertyExtractor implements Cron5s, PromiseGenerator {
 
-    final Broker<Log> broker;
+    final Broker<LogSimple> broker;
 
     private final ServicePromise servicePromise;
 
@@ -64,8 +64,8 @@ public class LogUploader extends AnnotationPropertyExtractor implements Cron5s, 
             ApplicationContext applicationContext
     ) {
         this.servicePromise = servicePromise;
-        this.idx = App.getUniqueClassName(Log.class);
-        broker = managerBroker.get(idx, Log.class);
+        this.idx = App.getUniqueClassName(LogSimple.class);
+        broker = managerBroker.get(idx, LogSimple.class);
         new PropertyDispatcher(
                 applicationContext.getBean(ServiceProperty.class),
                 null,
@@ -85,18 +85,18 @@ public class LogUploader extends AnnotationPropertyExtractor implements Cron5s, 
                     AtomicInteger countInsert = new AtomicInteger(0);
 
                     JdbcRequest jdbcRequest = new JdbcRequest(Logger.INSERT);
-                    List<Log> reserve = new ArrayList<>();
+                    List<LogSimple> reserve = new ArrayList<>();
 
                     while (!broker.isEmpty() && threadRun.get() && countInsert.get() < limitPoints) {
-                        ExpirationMsImmutableEnvelope<Log> envelope = broker.pollFirst();
+                        ExpirationMsImmutableEnvelope<LogSimple> envelope = broker.pollFirst();
                         if (envelope != null) {
-                            Log log = envelope.getValue();
+                            LogSimple log = envelope.getValue();
                             reserve.add(log);
                             jdbcRequest.addArg("date_add", log.getTimeAdd())
                                     .addArg("type", log.getLogType().getNameCamel())
-                                    .addArg("correlation", log.getCorrelation())
+                                    //.addArg("correlation", log.getCorrelation())
                                     .addArg("host", "localhost")
-                                    .addArg("ext_index", log.getExtIndex())
+                                    //.addArg("ext_index", log.getExtIndex())
                                     .addArg("data", log.getData())
                                     .nextBatch();
                             countInsert.incrementAndGet();
@@ -128,8 +128,8 @@ public class LogUploader extends AnnotationPropertyExtractor implements Cron5s, 
                     if (broker.getOccupancyPercentage() < 50) {
                         String readyFile = promise.getRepositoryMap(String.class, "readyFile");
                         if (readyFile != null) {
-                            List<ByteTransformer> execute = fileByteReaderResource.execute(new FileByteReaderRequest(readyFile, Log.class));
-                            execute.forEach(byteItem -> broker.add((Log) byteItem, 6_000L));
+                            List<ByteTransformer> execute = fileByteReaderResource.execute(new FileByteReaderRequest(readyFile, LogSimple.class));
+                            execute.forEach(byteItem -> broker.add((LogSimple) byteItem, 6_000L));
                             try {
                                 UtilFile.remove(readyFile);
                             } catch (Exception e) {
@@ -147,7 +147,7 @@ public class LogUploader extends AnnotationPropertyExtractor implements Cron5s, 
 
                         if (isFatalExceptionOnComplete.apply(exception)) {
                             // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
-                            List<Log> reserveLog = promise.getRepositoryMap(List.class, LogUploaderPromiseProperty.RESERVE_LOG.name());
+                            List<LogSimple> reserveLog = promise.getRepositoryMap(List.class, LogUploaderPromiseProperty.RESERVE_LOG.name());
                             if (reserveLog != null && !reserveLog.isEmpty()) {
                                 reserveLog.forEach(log -> broker.add(log, 2_000L));
                             }

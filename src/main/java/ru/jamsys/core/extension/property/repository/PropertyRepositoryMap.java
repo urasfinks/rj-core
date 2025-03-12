@@ -2,6 +2,7 @@ package ru.jamsys.core.extension.property.repository;
 
 import lombok.Getter;
 import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.property.PropertyUtil;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ public class PropertyRepositoryMap<T> implements PropertyRepository {
     @Override
     public void setRepository(String key, String value) {
         @SuppressWarnings("unchecked")
-        T apply = (T) Property.convertType.get(cls).apply(value);
+        T apply = (T) PropertyUtil.convertType.get(cls).apply(value);
         mapRepository.put(key, apply);
     }
 

@@ -7,9 +7,8 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
-import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilListSort;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.PromiseGenerator;
 
 import java.lang.annotation.Annotation;
@@ -72,12 +71,11 @@ public class RouteGenerator {
             repository.put(s, tmp.get(s));
         });
 
-        Util.logConsole(getClass(), "@"
-                + App.getUniqueClassName(clsAnnotation)
-                + " for "
-                + App.getUniqueClassName(interfaceMatcher)
-                + " : "
-                + UtilJson.toStringPretty(info, "[]"));
+        UtilLog.info(getClass(), info)
+                .addHeader("annotation", "@" + App.getUniqueClassName(clsAnnotation))
+                .addHeader("interfaceMatcher", App.getUniqueClassName(interfaceMatcher))
+                .print();
+
         return routeGeneratorRepository;
     }
 

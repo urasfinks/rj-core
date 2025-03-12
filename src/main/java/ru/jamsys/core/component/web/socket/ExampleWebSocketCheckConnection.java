@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 
 @SuppressWarnings("unused")
 @ServiceClassFinderIgnore
@@ -13,7 +14,7 @@ public class ExampleWebSocketCheckConnection implements WebSocketCheckConnection
 
     @Override
     public boolean check(@NotNull WebSocketSession webSocketSession) {
-        Util.logConsole(getClass(), "Hello");
+        UtilLog.printInfo(getClass(), "Hello");
         return true;
     }
 

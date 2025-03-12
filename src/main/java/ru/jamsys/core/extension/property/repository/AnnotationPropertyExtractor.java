@@ -5,6 +5,7 @@ import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.Property;
+import ru.jamsys.core.extension.property.PropertyUtil;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -59,7 +60,7 @@ public class AnnotationPropertyExtractor implements PropertyRepository {
             throw new RuntimeException(getClass().getName() + " key: " + key + "; set null value");
         }
         try {
-            field.set(this, Property.convertType.get(field.getType()).apply(value));
+            field.set(this, PropertyUtil.convertType.get(field.getType()).apply(value));
         } catch (Throwable th) {
             throw new ForwardException("setRepository(" + key + ", " + value + "); field: " + field, th);
         }

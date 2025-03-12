@@ -9,6 +9,7 @@ import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +43,7 @@ public class App implements CascadeName {
     public static void main(String[] args) {
         init();
         application.addListeners((ApplicationListener<ContextClosedEvent>) _ -> {
-            Util.logConsole(App.class, "App shutdown process...");
+            UtilLog.printInfo(App.class, "App shutdown process...");
 
             AtomicBoolean run = new AtomicBoolean(true);
 
@@ -55,12 +56,11 @@ public class App implements CascadeName {
             shutdownThread.setDaemon(true);
             shutdownThread.start();
 
-            if (Util.await(run, 5000, 0, () -> Util.logConsole(
+            if (Util.await(run, 5000, 0, () -> UtilLog.printError(
                     App.class,
-                    "App stop with error timeout shutdown; last running: " + Core.lastOperation,
-                    true
+                    "App stop with error timeout shutdown; last running: " + Core.lastOperation
             ))) {
-                Util.logConsole(App.class, "App stop. I wish you good luck, see you soon!");
+                UtilLog.printInfo(App.class, "App stop. I wish you good luck, see you soon!");
             }
         });
         run(args);
@@ -96,8 +96,9 @@ public class App implements CascadeName {
     public static void run(String[] args) {
         init();
         if (context == null) {
-            Util.logConsole(App.class, "Run arguments:");
-            Util.printArray(App.class, args);
+            UtilLog.info(App.class, args)
+                    .addHeader("description", "Run arguments")
+                    .print();
             context = application.run(args);
             get(Core.class).run();
         }

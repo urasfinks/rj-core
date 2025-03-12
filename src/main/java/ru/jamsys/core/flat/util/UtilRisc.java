@@ -2,9 +2,7 @@ package ru.jamsys.core.flat.util;
 
 import ru.jamsys.core.extension.exception.ForwardException;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -118,6 +116,17 @@ public class UtilRisc {
                 throw new ForwardException(th);
             }
         }
+    }
+
+    public static <T, R> List<R> forEach(T[] array, Function<T, R> fn) {
+        List<R> list = new ArrayList<>();
+        for (T item : array) {
+            R r = fn.apply(item);
+            if (r != null) {
+                list.add(r);
+            }
+        }
+        return list;
     }
 
 }

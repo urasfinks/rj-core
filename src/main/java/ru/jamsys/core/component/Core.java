@@ -3,15 +3,13 @@ package ru.jamsys.core.component;
 import lombok.Getter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerFileByteWriter;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.statistic.StatisticSec;
 
 import java.util.ArrayList;
@@ -60,16 +58,18 @@ public class Core implements LifeCycleInterface {
     @Override
     public void run() {
         run.set(true);
-        Util.logConsole(getClass(), ".run()");
+        UtilLog.info(getClass(), null).addHeader("description", "run");
 
-        String classNameStatistic = App.getUniqueClassName(StatisticSec.class);
-        String classNameLog = App.getUniqueClassName(Log.class);
-
-        FileByteWriter fileByteWriterStatistic = managerFileByteWriter.get(classNameStatistic, StatisticSec.class);
-        FileByteWriter fileByteWriterLog = managerFileByteWriter.get(classNameLog, Log.class);
-
-        statisticSecBroker = managerBroker.initAndGet(classNameStatistic, StatisticSec.class, fileByteWriterStatistic::append);
-        logBroker = managerBroker.initAndGet(classNameLog, Log.class, fileByteWriterLog::append);
+        statisticSecBroker = managerBroker.initAndGet(
+                "StatisticBroker",
+                StatisticSec.class,
+                managerFileByteWriter.get("StatisticWriter", StatisticSec.class)::append
+        );
+        logBroker = managerBroker.initAndGet(
+                "LogBroker",
+                Log.class,
+                managerFileByteWriter.get("LogWriter", Log.class)::append
+        );
 
         List<LifeCycleComponent> sortedList = new ArrayList<>();
         serviceClassFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
@@ -82,31 +82,28 @@ public class Core implements LifeCycleInterface {
             runComponent.add(lifeCycleComponent);
             long start = System.currentTimeMillis();
             lifeCycleComponent.run();
-            Util.logConsole(
-                    getClass(),
-                    "run index: " + lifeCycleComponent.getInitializationIndex()
-                            + "; class: " + lifeCycleComponent.getClass().getName()
-                            + "; time: " + (System.currentTimeMillis() - start) + "ms"
-            );
+            UtilLog.info(getClass(), null)
+                    .addHeader("runIndex", lifeCycleComponent.getInitializationIndex())
+                    .addHeader("runClass", lifeCycleComponent.getInitializationIndex())
+                    .addHeader("runTime", (System.currentTimeMillis() - start) + "ms")
+                    .print();
         });
     }
 
     @Override
     public void shutdown() {
-        Util.logConsole(getClass(), ".shutdown()");
+        UtilLog.printInfo(getClass(), ".shutdown()");
         while (!runComponent.isEmpty()) {
             LifeCycleComponent lifeCycleComponent = runComponent.pollLast();
             if (lifeCycleComponent != null) {
                 lastOperation = lifeCycleComponent.getClass().getName();
                 long start = System.currentTimeMillis();
                 lifeCycleComponent.shutdown();
-                Util.logConsole(
-                        getClass(),
-                        "shutdown index: " + lifeCycleComponent.getInitializationIndex()
-                                + "; class: " + lifeCycleComponent.getClass().getName()
-                                + "; time: " + (System.currentTimeMillis() - start) + "ms"
-
-                );
+                UtilLog.info(getClass(), null)
+                        .addHeader("shutdownIndex", lifeCycleComponent.getInitializationIndex())
+                        .addHeader("shutdownClass", lifeCycleComponent.getClass().getName())
+                        .addHeader("shutdownTime", (System.currentTimeMillis() - start) + "ms")
+                        .print();
             }
         }
         run.set(false);

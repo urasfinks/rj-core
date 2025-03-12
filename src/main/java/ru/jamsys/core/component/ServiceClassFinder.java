@@ -9,7 +9,7 @@ import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
@@ -54,7 +54,7 @@ public class ServiceClassFinder implements CascadeName {
         PropertyDispatcher propertyDispatcher = new PropertyDispatcher(
                 serviceProperty,
                 (_, _, property) -> {
-                    Util.logConsoleJson(getClass(), "onUpdate ServiceClassFinderIgnore: " + property.get());
+                    UtilLog.printInfo(getClass(), "onUpdate ServiceClassFinderIgnore: " + property.get());
                     availableClass.clear();
                     availableClass.addAll(getAvailableClass(pkg));
                 },
@@ -116,11 +116,11 @@ public class ServiceClassFinder implements CascadeName {
     }
 
     public void removeAvailableClass(Class<?> cls, String cause) {
-        Util.logConsole(
-                getClass(),
-                "removeAvailableClass: " + cls.getName() + "; cause: " + cause,
-                true
-        );
+        UtilLog.error(getClass(), null)
+                .addHeader("description", "removeAvailableClass")
+                .addHeader("classRemove", cls.getName())
+                .addHeader("cause", cause)
+                .print();
         availableClass.remove(cls);
     }
 

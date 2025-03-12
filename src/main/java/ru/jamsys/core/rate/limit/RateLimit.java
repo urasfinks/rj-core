@@ -10,8 +10,8 @@ import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsCollectorMap;
 import ru.jamsys.core.extension.addable.AddToMap;
 import ru.jamsys.core.extension.exception.RateLimitException;
-import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.statistic.expiration.ExpirationMs;
@@ -76,15 +76,12 @@ public class RateLimit
             RateLimitItem rateLimitItem = map.get(key);
             if (rateLimitItem != null) {
                 if (!rateLimitItem.check()) {
-                    Util.logConsole(
-                            getClass(),
-                            "RateLimit [ABORT] key: " + key
-                                    + "; max: " + rateLimitItem.getMax()
-                                    + "; now: " + rateLimitItem.getCount()
-                                    + "; key: " + rateLimitItem.getNamespace()
-                                    + ";",
-                            true
-                    );
+                    UtilLog.error(getClass(), "RateLimit ABORT")
+                            .addHeader("key", key)
+                            .addHeader("max", rateLimitItem.getMax())
+                            .addHeader("count", rateLimitItem.getCount())
+                            .addHeader("namespace", rateLimitItem.getNamespace())
+                            .print();
                     return false;
                 }
             }

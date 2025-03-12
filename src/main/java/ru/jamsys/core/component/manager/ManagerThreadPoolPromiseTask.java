@@ -7,12 +7,13 @@ import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.resource.thread.ThreadPoolPromiseTask;
+import ru.jamsys.core.resource.thread.ThreadResourcePromiseTask;
 
 @Component
 public class ManagerThreadPoolPromiseTask extends AbstractManager<ThreadPoolPromiseTask, Void> implements CascadeName {
 
     public void addPromiseTask(PromiseTask promiseTask) {
-        getManagerElement(promiseTask.getIndex(), Void.class, null)
+        getManagerElement(promiseTask.getIndex(), ThreadResourcePromiseTask.class, null)
                 .addPromiseTask(promiseTask);
     }
 

@@ -7,7 +7,7 @@ import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.ClassEquals;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemEnvelope;
 import ru.jamsys.core.promise.PromiseTaskWithResource;
@@ -55,12 +55,12 @@ public class PoolPromiseTaskWaitResource<
     public PI createPoolItem() {
         PI newPoolItem = App.context.getBean(poolSettings.getClassPoolItem());
         if (isDebug() && getKey().equals(getDebugKey())) {
-            Util.logConsole(
-                    getClass(),
-                    "createPoolItem [" + key + "] :: "
-                            + poolSettings.getKey()
-                            + "; result = " + newPoolItem.getClass().getName()
-            );
+            UtilLog.info(getClass(), null)
+                    .addHeader("description", "createPoolItem")
+                    .addHeader("key", key)
+                    .addHeader("poolKey", poolSettings.getKey())
+                    .addHeader("result", newPoolItem.getClass().getName())
+                    .print();
         }
         try {
             newPoolItem.setArguments(poolSettings.getResourceArguments());
@@ -95,11 +95,11 @@ public class PoolPromiseTaskWaitResource<
 
     public void addPromiseTaskPool(PromiseTaskWithResource<?> promiseTaskWithResource) {
         if (isDebug() && getKey().equals(getDebugKey())) {
-            Util.logConsole(
-                    getClass(),
-                    "PoolTaskWait.addPromiseTaskPool(" + key + ") task: "
-                            + promiseTaskWithResource.getIndex()
-            );
+            UtilLog.info(getClass(), null)
+                    .addHeader("description", "addPromiseTaskPool")
+                    .addHeader("poolKey", key)
+                    .addHeader("taskWithResourceIndex", promiseTaskWithResource.getIndex())
+                    .print();
         }
         setActivity();
         broker.add(new ExpirationMsImmutableEnvelope<>(promiseTaskWithResource, promiseTaskWithResource.getPromise().getExpiryRemainingMs()));

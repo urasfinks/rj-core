@@ -5,7 +5,6 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerThreadPoolPromiseTask;
 import ru.jamsys.core.extension.CascadeName;
-import ru.jamsys.core.extension.Correlation;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
@@ -23,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 // Цепочка обещаний
 
-public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutable, Correlation {
+public interface Promise extends RepositoryMapClass<Object>, ExpirationMsImmutable {
 
     Promise setDebug(boolean debug);
 

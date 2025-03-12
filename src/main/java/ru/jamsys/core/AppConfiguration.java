@@ -27,6 +27,7 @@ import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.web.socket.WebSocket;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 
 @SuppressWarnings("unused")
 @Configuration
@@ -137,7 +138,7 @@ public class AppConfiguration implements WebSocketConfigurer {
                     .computeIfAbsent("run.args.web.ssl.security.alias", "")
                     .get(String.class);
             if (!securityAlias.isEmpty()) {
-                Util.logConsole(getClass(), "Init web ssl context");
+                UtilLog.printInfo(getClass(), "Init web ssl context");
                 // Так как мы тут лезем в перёд батьки) Извольте - надо подгрузить компонент, который должен был
                 // в своём порядке загрузиться самостоятельно в Core.run()
                 applicationContext.getBean(SecurityKey.class);

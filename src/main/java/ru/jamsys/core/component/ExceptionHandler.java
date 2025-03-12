@@ -17,6 +17,7 @@ import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilLog;
 
 @Setter
 @Component
@@ -45,9 +46,9 @@ public class ExceptionHandler extends AnnotationPropertyExtractor {
         if (consoleOutput) {
             LineWriter lineWriter = new LineWriterString();
             if (th instanceof PromiseException promiseException) {
-                Util.logConsole(getClass(), promiseException.toString());
+                UtilLog.printInfo(getClass(), promiseException.toString());
             } else {
-                Util.logConsole(getClass(), getTextException(th, lineWriter));
+                UtilLog.printInfo(getClass(), getTextException(th, lineWriter));
             }
         }
         if (remote) {
@@ -56,12 +57,7 @@ public class ExceptionHandler extends AnnotationPropertyExtractor {
                     UtilDate.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
             );
             getTextException(th, lineWriterList);
-            App.get(ServiceLogger.class).add(
-                    LogType.SYSTEM_EXCEPTION,
-                    new HashMapBuilder<String, Object>().append("exception", lineWriterList.getResult()),
-                    LogType.SYSTEM_EXCEPTION.getNameCamel(),
-                    false
-            );
+            UtilLog.error(ExceptionHandler.class, lineWriterList.getResult()).sendToLogger();
         }
 
     }

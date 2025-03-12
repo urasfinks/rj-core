@@ -3,8 +3,7 @@ package ru.jamsys.core.component.manager.sub;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.*;
-import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
@@ -141,7 +140,10 @@ public abstract class AbstractManager<
         if (element != null && element.classEquals(classItem)) {
             return element;
         }
-        Util.logConsole(getClass(), "Available key: " + UtilJson.toStringPretty(map, "{}"));
+        UtilLog
+                .error(getClass(), map)
+                .addHeader("cause", "Not found in available key")
+                .print();
         return null;
     }
 
