@@ -150,14 +150,18 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     @Override
     public void keepAlive(AtomicBoolean threadRun) {
+        // Это не то место где надо писать на ФС, это должно быть в IO promise
+        // keep alive синхронно вызывается для всех компонентов, мы будем тормозить этот процесс
+    }
+
+    public void flush(AtomicBoolean threadRun) {
         if (broker == null || broker.isEmpty()) {
             return;
         }
         if (currentFilePath == null) {
             genNextFile();
         }
-        //TODO: это не то место где надо писать на ФС, это должно быть в IO promise
-        // keep alive синхронно вызывается для всех компонентов, мы будем тормозить этот процесс
+
         int maxWriteCount = fileByteProperty.getFileCount();
         while (!broker.isEmpty() && threadRun.get()) {
             if (maxWriteCount <= 0) {

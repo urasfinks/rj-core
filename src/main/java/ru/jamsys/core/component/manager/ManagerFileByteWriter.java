@@ -7,6 +7,8 @@ import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.KeepAliveComponent;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 @Component
 public class ManagerFileByteWriter extends AbstractManager<FileByteWriter, Void>
         implements KeepAliveComponent, CascadeName {
@@ -35,7 +37,12 @@ public class ManagerFileByteWriter extends AbstractManager<FileByteWriter, Void>
         return App.cascadeName;
     }
 
-    //TODO: тут надо сделать функцию, которая будет пробегаться по всем писальщикам и делать запись централизованно
-    // вызов этой функции надо делать в cron но никак не в keepAlive
+    // Функцию пробегаться по всем писальщикам и делает централизованно запись
+    // TODO: вызов этой функции надо делать в cron но никак не в keepAlive
+    public void flush(AtomicBoolean threadRun) {
+        getMapForFlushStatistic().forEach((key, fileByteWriter) -> {
+            fileByteWriter.flush(threadRun);
+        });
+    }
 
 }
