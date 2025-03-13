@@ -3,6 +3,7 @@ package ru.jamsys.core.component;
 import lombok.Getter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerFileByteWriter;
 import ru.jamsys.core.component.manager.item.Broker;
@@ -59,16 +60,27 @@ public class Core implements LifeCycleInterface {
     public void run() {
         run.set(true);
         UtilLog.info(getClass(), null).addHeader("description", "run");
-
+        // Это работает так: инициализируем 2 очереди для логов и статистики
+        // Планируем, что из этих очередей будет своевременно вычитывать обещания из крона,
+        // которые должны сгружать их куда-то далеко удалённо
+        // Если обещания своевременно не сгружают логи/стату - сообщения начинают протухать
+        // и тут эти сообщения сливаются в onDrop в Файловые писальщики, которые должны их записывать на ФС
+        // Очереди Broker и FileByteWriter - разные
         statisticSecBroker = managerBroker.initAndGet(
-                "StatisticBroker",
+                App.getUniqueClassName(StatisticSec.class),
                 StatisticSec.class,
-                managerFileByteWriter.get("StatisticWriter", StatisticSec.class)::append
+                managerFileByteWriter.get(
+                        App.getUniqueClassName(StatisticSec.class),
+                        StatisticSec.class
+                )::append
         );
         logBroker = managerBroker.initAndGet(
-                "LogBroker",
+                App.getUniqueClassName(Log.class),
                 Log.class,
-                managerFileByteWriter.get("LogWriter", Log.class)::append
+                managerFileByteWriter.get(
+                        App.getUniqueClassName(Log.class),
+                        Log.class
+                )::append
         );
 
         List<LifeCycleComponent> sortedList = new ArrayList<>();

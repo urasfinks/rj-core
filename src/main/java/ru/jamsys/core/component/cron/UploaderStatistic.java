@@ -39,7 +39,7 @@ import java.util.function.Function;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class StatisticUploader extends AnnotationPropertyExtractor implements Cron5s, PromiseGenerator, CascadeName {
+public class UploaderStatistic extends AnnotationPropertyExtractor implements Cron5s, PromiseGenerator, CascadeName {
 
     final Broker<StatisticSec> broker;
 
@@ -74,7 +74,7 @@ public class StatisticUploader extends AnnotationPropertyExtractor implements Cr
         RESERVE_STATISTIC,
     }
 
-    public StatisticUploader(
+    public UploaderStatistic(
             ManagerBroker managerBroker,
             ServicePromise servicePromise,
             ServiceProperty serviceProperty

@@ -1,17 +1,17 @@
 package ru.jamsys.core.component.cron;
 
 import lombok.Getter;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
@@ -35,39 +35,37 @@ import java.util.function.Function;
 
 @Component
 @Lazy
-public class LogUploader extends AnnotationPropertyExtractor implements Cron5s, PromiseGenerator {
+@Getter
+public class UploaderLog extends AnnotationPropertyExtractor implements Cron5s, PromiseGenerator {
 
-    final Broker<Log> broker;
+    private final Broker<Log> broker;
 
     private final ServicePromise servicePromise;
 
-    @Getter
+    @PropertyNotNull
     @PropertyName("folder")
     private String folder = "LogManager";
+
+    @PropertyNotNull
+    @PropertyName("file.index")
+    private String fileIndex;
 
     @PropertyName("limit.points")
     private Integer limitPoints = 2000;
 
-    @Getter
+    @PropertyNotNull
     @PropertyName("remote")
     private Boolean remote = false;
-
-    private final String idx;
 
     public enum LogUploaderPromiseProperty {
         RESERVE_LOG,
     }
 
-    public LogUploader(
-            ManagerBroker managerBroker,
-            ServicePromise servicePromise,
-            ApplicationContext applicationContext
-    ) {
+    public UploaderLog(ServicePromise servicePromise) {
         this.servicePromise = servicePromise;
-        this.idx = App.getUniqueClassName(Log.class);
-        broker = managerBroker.get(idx, Log.class);
+        broker = App.get(Core.class).getLogBroker();
         new PropertyDispatcher(
-                applicationContext.getBean(ServiceProperty.class),
+                App.get(ServiceProperty.class),
                 null,
                 this,
                 "log.uploader"
@@ -113,7 +111,7 @@ public class LogUploader extends AnnotationPropertyExtractor implements Cron5s, 
                     List<String> filesRecursive = UtilFile.getFilesRecursive(getFolder(), false);
                     List<String> restore = new ArrayList<>();
                     for (String filePath : filesRecursive) {
-                        if (filePath.startsWith("/" + idx + ".") && !filePath.endsWith(".proc.bin")) {
+                        if (filePath.startsWith("/" + fileIndex + ".") && !filePath.endsWith(".proc.bin")) {
                             restore.add(filePath);
                         }
                     }

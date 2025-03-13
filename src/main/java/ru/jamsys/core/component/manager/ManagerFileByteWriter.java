@@ -35,4 +35,7 @@ public class ManagerFileByteWriter extends AbstractManager<FileByteWriter, Void>
         return App.cascadeName;
     }
 
+    //TODO: тут надо сделать функцию, которая будет пробегаться по всем писальщикам и делать запись централизованно
+    // вызов этой функции надо делать в cron но никак не в keepAlive
+
 }

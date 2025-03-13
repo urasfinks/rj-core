@@ -42,7 +42,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     final AtomicInteger counter = new AtomicInteger(0);
 
-    private final FileByteWriterProperty fileByteWriterProperty = new FileByteWriterProperty();
+    private final FileByteProperty fileByteProperty = new FileByteProperty();
 
     @Getter
     private final PropertyDispatcher propertyDispatcher;
@@ -59,22 +59,30 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         propertyDispatcher = new PropertyDispatcher(
                 App.get(ServiceProperty.class),
                 this,
-                fileByteWriterProperty,
+                fileByteProperty,
                 key
         );
-        restoreIndex(fileByteWriterProperty.getFolder(), fileByteWriterProperty.getFileName());
-
+        restoreIndex(fileByteProperty.getFolder(), fileByteProperty.getFileName());
+        // Это собственный брокер для текущего экземпляра, он копит то, что надо записывать на ФС
         broker = App.get(ManagerBroker.class).initAndGet(
                 key,
                 ByteTransformer.class,
-                null
+                byteTransformer -> {
+                    try {
+                        UtilLog.error(FileByteWriter.class, new String(byteTransformer.getByteInstance()))
+                                .addHeader("exception", "drop broker key: " + key)
+                                .print();
+                    } catch (Exception e) {
+                        App.error(e);
+                    }
+                } // Получается если получим перелимит или время протухло - теряем
         );
 
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker.getPropertyDispatcher().getPropertyKeyByRepositoryKey("size"), null)
                 .set(400_000);
 
-        if (fileByteWriterProperty.getFileName() == null || fileByteWriterProperty.getFileName().isEmpty()) {
+        if (fileByteProperty.getFileName() == null || fileByteProperty.getFileName().isEmpty()) {
             throw new RuntimeException("file name is empty");
         }
     }
@@ -128,10 +136,10 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     private void genNextFile() {
         closeLastFile();
-        int curIndex = counter.getAndIncrement() % fileByteWriterProperty.getFileCount();
-        currentFilePath = fileByteWriterProperty.getFolder()
-                + "/" + fileByteWriterProperty.getFileName()
-                + "." + UtilText.padLeft(curIndex + "", String.valueOf(fileByteWriterProperty.getFileCount()).length(), "0")
+        int curIndex = counter.getAndIncrement() % fileByteProperty.getFileCount();
+        currentFilePath = fileByteProperty.getFolder()
+                + "/" + fileByteProperty.getFileName()
+                + "." + UtilText.padLeft(curIndex + "", String.valueOf(fileByteProperty.getFileCount()).length(), "0")
                 + ".proc.bin";
     }
 
@@ -148,7 +156,9 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         if (currentFilePath == null) {
             genNextFile();
         }
-        int maxWriteCount = fileByteWriterProperty.getFileCount();
+        //TODO: это не то место где надо писать на ФС, это должно быть в IO promise
+        // keep alive синхронно вызывается для всех компонентов, мы будем тормозить этот процесс
+        int maxWriteCount = fileByteProperty.getFileCount();
         while (!broker.isEmpty() && threadRun.get()) {
             if (maxWriteCount <= 0) {
                 break;
@@ -161,7 +171,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     private void write(AtomicBoolean threadRun) {
         // Что бы не допустить одновременного выполнения при остановки приложения, когда приходит ContextClosedEvent
         if (runWrite.compareAndSet(false, true)) {
-            int tmpSizeKb = fileByteWriterProperty.getFileSizeKb();
+            int tmpSizeKb = fileByteProperty.getFileSizeKb();
             try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(currentFilePath, writeByteToCurrentFile.get() > 0))) {
                 while (!broker.isEmpty() && threadRun.get()) {
                     try {
@@ -230,18 +240,18 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     public void onPropertyUpdate(String key, String oldValue, Property property) {
         if (key.equals("file.name")) {
             // Сливаем данные с прошлым именем файлов
-            restoreIndex(fileByteWriterProperty.getFolder(), oldValue);
+            restoreIndex(fileByteProperty.getFolder(), oldValue);
             // Сливаем данные с новым именем файлов
-            restoreIndex(fileByteWriterProperty.getFolder(), property.get());
+            restoreIndex(fileByteProperty.getFolder(), property.get());
         }
         if (key.equals("folder")) {
-            if (!UtilFile.ifExist(fileByteWriterProperty.getFolder())) {
-                throw new RuntimeException("file.folder: " + fileByteWriterProperty.getFolder() + "; not exist");
+            if (!UtilFile.ifExist(fileByteProperty.getFolder())) {
+                throw new RuntimeException("file.folder: " + fileByteProperty.getFolder() + "; not exist");
             }
             // Сливаем данные из прошлой директории
-            restoreIndex(oldValue, fileByteWriterProperty.getFileName());
+            restoreIndex(oldValue, fileByteProperty.getFileName());
             // Сливаем данные из новой директории
-            restoreIndex(property.get(), fileByteWriterProperty.getFileName());
+            restoreIndex(property.get(), fileByteProperty.getFileName());
         }
     }
 

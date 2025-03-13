@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
-public class FileByteWriterProperty extends AnnotationPropertyExtractor {
+public class FileByteProperty extends AnnotationPropertyExtractor {
 
     @SuppressWarnings("all")
     @PropertyName("folder")
