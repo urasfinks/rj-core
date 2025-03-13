@@ -36,10 +36,10 @@ public class PropertyRepositoryMap<T> implements PropertyRepository {
     }
 
     @Override
-    public void setRepository(String key, String value) {
+    public void setRepository(String propertyName, String value) {
         @SuppressWarnings("unchecked")
         T apply = (T) PropertyUtil.convertType.get(cls).apply(value);
-        mapRepository.put(key, apply);
+        mapRepository.put(propertyName, apply);
     }
 
     @Override

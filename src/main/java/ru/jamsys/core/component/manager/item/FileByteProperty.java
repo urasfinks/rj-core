@@ -1,12 +1,14 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.annotation.PropertyName;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
+@FieldNameConstants
 public class FileByteProperty extends AnnotationPropertyExtractor {
 
     @SuppressWarnings("all")

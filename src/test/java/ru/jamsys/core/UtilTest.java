@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.component.manager.item.FileByteProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.UtilCodeStyle;
 import ru.jamsys.core.flat.util.*;
@@ -243,6 +244,12 @@ class UtilTest {
                 Tmp.class
         );
         Assertions.assertEquals("x", tmp.getY());
+    }
+
+    @Test
+    void test(){
+        FileByteProperty fileByteProperty = new FileByteProperty();
+        System.out.println(fileByteProperty.getFieldDataByVariableName(FileByteProperty.Fields.folder));
     }
 
 }
