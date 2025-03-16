@@ -7,6 +7,9 @@ import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.item.PropertySubscription;
+import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
+import ru.jamsys.core.extension.property.repository.PropertyEnvelopeRepository;
+import ru.jamsys.core.extension.property.repository.PropertyRepositoryList;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -44,6 +47,9 @@ public class SetTrace {
                     || stackTraceElement.getFileName().equals(Property.class.getSimpleName() + ".java")
                     || stackTraceElement.getFileName().equals(UtilRisc.class.getSimpleName() + ".java")
                     || stackTraceElement.getFileName().equals(SetTrace.class.getSimpleName() + ".java")
+                    || stackTraceElement.getFileName().equals(PropertyEnvelopeRepository.class.getSimpleName() + ".java")
+                    || stackTraceElement.getFileName().equals(AnnotationPropertyExtractor.class.getSimpleName() + ".java")
+                    || stackTraceElement.getFileName().equals(PropertyRepositoryList.class.getSimpleName() + ".java")
             ) {
                 continue;
             }

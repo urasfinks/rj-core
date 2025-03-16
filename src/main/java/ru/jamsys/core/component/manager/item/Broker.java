@@ -67,13 +67,14 @@ public class Broker<TEO>
 
     private final Class<TEO> classItem;
 
+    @SuppressWarnings("all")
     private final Expiration<DisposableExpirationMsImmutableEnvelope> expiration;
 
     @Getter
     private final BrokerProperty propertyBroker = new BrokerProperty();
 
     @Getter
-    private final PropertyDispatcher propertyDispatcher;
+    private final PropertyDispatcher<Integer> propertyDispatcher;
 
     public Broker(
             String key,
@@ -86,7 +87,7 @@ public class Broker<TEO>
         this.onDropConsumer = onDropConsumer;
 
         ServiceProperty serviceProperty = applicationContext.getBean(ServiceProperty.class);
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 serviceProperty,
                 null,
                 propertyBroker,
@@ -99,6 +100,7 @@ public class Broker<TEO>
                 DisposableExpirationMsImmutableEnvelope.class,
                 this::onDrop
         );
+
     }
 
     public int size() {
@@ -140,7 +142,7 @@ public class Broker<TEO>
             onDrop(teoDisposableExpirationMsImmutableEnvelope);
         }
 
-        // Не важно есть onDropConsumer или нет, мы при помощи неё будем удалять сообщения из брокера
+        // Не важно есть onDropConsumer или нет, мы при помощи её будем удалять сообщения из брокера
         expiration.add((DisposableExpirationMsImmutableEnvelope) convert);
 
         queue.add(convert);
@@ -179,7 +181,7 @@ public class Broker<TEO>
             }
             statistic(result);
             // Все операции делаем в конце, когда получаем нейтрализованный объект
-            // Так как многопоточная среда, могут выхватить из под носа
+            // Так как многопоточная среда, могут выхватить из-под носа
             queueSize.decrementAndGet();
             return result.revert();
         } while (!queue.isEmpty());
@@ -189,8 +191,8 @@ public class Broker<TEO>
     public void remove(DisposableExpirationMsImmutableEnvelope<TEO> envelope) {
         if (envelope != null) {
             // Это конечно так себе удалять пришедший в remove объект не проверяя что он вообще есть в очереди
-            // Но как бы проверять  наличие - это перебирать всё очередь, а то очень тяжело
-            // Просто доверяем, что брокеры не перепутают
+            // Но как бы проверять наличие - это перебирать всё очередь, а то очень тяжело
+            // Просто доверяем, что брокеры не перепутают.
             // Делаем так, что бы элемент больше не достался никому
             TEO value = envelope.getValue();
             if (value != null) {
@@ -204,10 +206,12 @@ public class Broker<TEO>
     }
 
     //Обработка выпадающих сообщений
+    @SuppressWarnings("all")
     public void onDrop(DisposableExpirationMsImmutableEnvelope envelope) {
         if (envelope == null) {
             return;
         }
+        @SuppressWarnings("unchecked")
         TEO value = (TEO) envelope.getValue();
         if (value != null) {
             queueSize.decrementAndGet();

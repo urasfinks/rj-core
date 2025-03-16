@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @FieldNameConstants
 public class RateLimitItemTps
-        extends AnnotationPropertyExtractor
+        extends AnnotationPropertyExtractor<Integer>
         implements
         RateLimitItem,
         LifeCycleInterface {
@@ -34,11 +34,11 @@ public class RateLimitItemTps
     @PropertyDescription("Максимальное кол-во итераций")
     private volatile Integer max = 999999;
 
-    private final PropertyDispatcher propertyDispatcher;
+    private final PropertyDispatcher<Integer> propertyDispatcher;
 
     public RateLimitItemTps(String namespace) {
         this.namespace = namespace;
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
                 this,
