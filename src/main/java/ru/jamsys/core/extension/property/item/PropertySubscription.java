@@ -5,13 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
-import ru.jamsys.core.extension.property.repository.PropertyEnvelopeRepository;
 import ru.jamsys.core.extension.property.repository.PropertyRepository;
-import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.Objects;
 
