@@ -110,7 +110,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                     UtilLog
                             .error(getClass(), "File will be remove: [" + filePath + "] so sorry my bad")
                             .print()
-                            .sendToLogger();
+                            .sendRemote();
 
                     try {
                         UtilFile.remove(folder + filePath);

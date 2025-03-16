@@ -4,7 +4,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceLogger;
+import ru.jamsys.core.component.ServiceLoggerRemote;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.trace.Trace;
@@ -236,17 +236,14 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             logString = getLogString();
             UtilLog.printInfo(getClass(), logString);
         }
-        if (isLog()) {
-            ServiceLogger serviceLogger = App.get(ServiceLogger.class);
-            if (serviceLogger.getRemote()) {
-                if (logString == null) {
-                    logString = getLogString();
-                }
-                if (exception.get()) {
-                    UtilLog.error(getClass(), logString).sendToLogger();
-                } else {
-                    UtilLog.info(getClass(), logString).sendToLogger();
-                }
+        if (isLog() && App.get(ServiceLoggerRemote.class).getRemote()) {
+            if (logString == null) {
+                logString = getLogString();
+            }
+            if (exception.get()) {
+                UtilLog.error(getClass(), logString).sendRemote();
+            } else {
+                UtilLog.info(getClass(), logString).sendRemote();
             }
         }
     }

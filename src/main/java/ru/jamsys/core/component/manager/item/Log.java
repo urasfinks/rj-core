@@ -1,7 +1,7 @@
 package ru.jamsys.core.component.manager.item;
 
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceLogger;
+import ru.jamsys.core.component.ServiceLoggerRemote;
 import ru.jamsys.core.extension.ByteTransformer;
 
 import java.io.PrintStream;
@@ -19,15 +19,14 @@ public interface Log extends ByteTransformer {
 
     long getTimeAdd();
 
-    @SuppressWarnings("all")
     default Log print() {
         PrintStream ps = getLogType().equals(LogType.ERROR) ? System.err : System.out;
         ps.println(getView());
         return this;
     }
 
-    default Log sendToLogger(){
-        App.get(ServiceLogger.class).add(this);
+    default Log sendRemote() {
+        App.get(ServiceLoggerRemote.class).add(this);
         return this;
     }
 

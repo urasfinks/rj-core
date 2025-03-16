@@ -20,7 +20,7 @@ import ru.jamsys.core.flat.util.UtilLog;
 @Component
 @Lazy
 @FieldNameConstants
-public class ExceptionHandler extends AnnotationPropertyExtractor {
+public class ExceptionHandler extends AnnotationPropertyExtractor<Object> {
 
     @SuppressWarnings("all")
     private static int maxLine = 50;
@@ -32,12 +32,12 @@ public class ExceptionHandler extends AnnotationPropertyExtractor {
     private Boolean consoleOutput = true;
 
     public ExceptionHandler(ApplicationContext applicationContext) {
-        new PropertyDispatcher(
+        new PropertyDispatcher<>(
                 applicationContext.getBean(ServiceProperty.class),
                 null,
                 this,
                 null
-        );
+        ).run();
     }
 
     public void handler(Throwable th) {
@@ -55,7 +55,7 @@ public class ExceptionHandler extends AnnotationPropertyExtractor {
                     UtilDate.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
             );
             getTextException(th, lineWriterList);
-            UtilLog.error(ExceptionHandler.class, lineWriterList.getResult()).sendToLogger();
+            UtilLog.error(ExceptionHandler.class, lineWriterList.getResult()).sendRemote();
         }
 
     }

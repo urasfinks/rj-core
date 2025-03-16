@@ -41,7 +41,7 @@ import java.util.function.Function;
 @FieldNameConstants
 @Component
 @Lazy
-public class UploaderStatistic extends AnnotationPropertyExtractor implements Cron5s, PromiseGenerator, CascadeName {
+public class UploadStatisticToRemote extends AnnotationPropertyExtractor<Object> implements Cron5s, PromiseGenerator, CascadeName {
 
     final Broker<StatisticSec> broker;
 
@@ -76,14 +76,14 @@ public class UploaderStatistic extends AnnotationPropertyExtractor implements Cr
         RESERVE_STATISTIC,
     }
 
-    public UploaderStatistic(
+    public UploadStatisticToRemote(
             ManagerBroker managerBroker,
             ServicePromise servicePromise,
             ServiceProperty serviceProperty
     ) {
         this.servicePromise = servicePromise;
         broker = App.get(Core.class).getStatisticSecBroker();
-        new PropertyDispatcher(
+        new PropertyDispatcher<>(
                 serviceProperty,
                 null,
                 this,

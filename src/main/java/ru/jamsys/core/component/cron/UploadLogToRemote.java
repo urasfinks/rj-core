@@ -38,7 +38,7 @@ import java.util.function.Function;
 @Component
 @Lazy
 @Getter
-public class UploaderLog extends AnnotationPropertyExtractor<Object> implements Cron5s, PromiseGenerator {
+public class UploadLogToRemote extends AnnotationPropertyExtractor<Object> implements Cron5s, PromiseGenerator {
 
     private final Broker<Log> broker;
 
@@ -63,7 +63,7 @@ public class UploaderLog extends AnnotationPropertyExtractor<Object> implements 
         RESERVE_LOG,
     }
 
-    public UploaderLog(ServicePromise servicePromise) {
+    public UploadLogToRemote(ServicePromise servicePromise) {
         this.servicePromise = servicePromise;
         broker = App.get(Core.class).getLogBroker();
         new PropertyDispatcher<>(

@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @FieldNameConstants
 @Component
 @Lazy
-public class ServiceLogger extends AnnotationPropertyExtractor implements
+public class ServiceLoggerRemote extends AnnotationPropertyExtractor<Boolean> implements
         StatisticsFlushComponent,
         LifeCycleComponent,
         CascadeName {
@@ -47,14 +47,14 @@ public class ServiceLogger extends AnnotationPropertyExtractor implements
     @PropertyKey("remote")
     private Boolean remote = false;
 
-    final PropertyDispatcher propertyDispatcher;
+    final PropertyDispatcher<Boolean> propertyDispatcher;
 
-    public ServiceLogger(ApplicationContext applicationContext) {
+    public ServiceLoggerRemote(ApplicationContext applicationContext) {
         broker = applicationContext.getBean(Core.class).getLogBroker();
         for (LogType type : LogType.values()) {
             stat.put(type.getNameCamel(), new AtomicInteger(0));
         }
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 applicationContext.getBean(ServiceProperty.class),
                 null,
                 this,
@@ -99,13 +99,6 @@ public class ServiceLogger extends AnnotationPropertyExtractor implements
 
     @Override
     public void shutdown() {
-        // Я не думаю, что мы должны вмешиваться в чужие процессы
-//        if (remote && !broker.isEmpty()) {
-//            Promise promise = App.get(LogUploader.class).generate();
-//            if (promise != null) {
-//                promise.run().await(5000);
-//            }
-//        }
         propertyDispatcher.shutdown();
         run.set(false);
     }
