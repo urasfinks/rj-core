@@ -1,6 +1,7 @@
 package ru.jamsys.core.component;
 
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -11,7 +12,7 @@ import ru.jamsys.core.component.manager.item.LogType;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.statistic.Statistic;
@@ -27,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 // Сервис просто пропускает через себя логи и ведёт статистику сколько по типу через него проходит
 
+@FieldNameConstants
 @Component
 @Lazy
 public class ServiceLogger extends AnnotationPropertyExtractor implements
@@ -42,7 +44,7 @@ public class ServiceLogger extends AnnotationPropertyExtractor implements
 
     @SuppressWarnings("all")
     @Getter
-    @PropertyName("remote")
+    @PropertyKey("remote")
     private Boolean remote = false;
 
     final PropertyDispatcher propertyDispatcher;

@@ -1,10 +1,11 @@
 package ru.jamsys.core.component;
 
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.exception.PromiseException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
@@ -18,15 +19,16 @@ import ru.jamsys.core.flat.util.UtilLog;
 @Setter
 @Component
 @Lazy
+@FieldNameConstants
 public class ExceptionHandler extends AnnotationPropertyExtractor {
 
     @SuppressWarnings("all")
     private static int maxLine = 50;
 
-    @PropertyName("log.uploader.remote")
+    @PropertyKey("log.uploader.remote")
     private Boolean remote = false;
 
-    @PropertyName("run.args.console.output")
+    @PropertyKey("run.args.console.output")
     private Boolean consoleOutput = true;
 
     public ExceptionHandler(ApplicationContext applicationContext) {

@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.ANNOTATION_TYPE, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PropertyName {
+public @interface PropertyKey {
     String value() default "";
 }

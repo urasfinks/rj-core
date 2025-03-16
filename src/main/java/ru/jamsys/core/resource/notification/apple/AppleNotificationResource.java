@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerVirtualFileSystem;
-import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -32,14 +31,14 @@ public class AppleNotificationResource
 
     private ManagerVirtualFileSystem managerVirtualFileSystem;
 
-    private PropertyDispatcher propertyDispatcher;
+    private PropertyDispatcher<Object> propertyDispatcher;
 
     private final AppleNotificationProperty appleNotificationProperty = new AppleNotificationProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         managerVirtualFileSystem = App.get(ManagerVirtualFileSystem.class);
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 appleNotificationProperty,
@@ -113,7 +112,7 @@ public class AppleNotificationResource
     }
 
     @Override
-    public void onPropertyUpdate(String key, String oldValue, Property property) {
+    public void onPropertyUpdate(String key, String oldValue, String newValue) {
         if (appleNotificationProperty.getVirtualPath() == null || appleNotificationProperty.getStorage() == null) {
             return;
         }

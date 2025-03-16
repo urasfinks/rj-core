@@ -1,26 +1,28 @@
 package ru.jamsys.core.resource.notification.android;
 
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@FieldNameConstants
 @Getter
-public class AndroidNotificationProperty extends AnnotationPropertyExtractor {
+public class AndroidNotificationProperty extends AnnotationPropertyExtractor<Object> {
 
-    @PropertyName("notification.android.url")
+    @PropertyKey("notification.android.url")
     private String url;
 
-    @PropertyName("notification.android.application.name")
+    @PropertyKey("notification.android.application.name")
     private String applicationName;
 
-    @PropertyName("notification.android.timeoutMs")
+    @PropertyKey("notification.android.timeoutMs")
     private Integer timeoutMs;
 
-    @PropertyName("notification.android.messaging.scope")
+    @PropertyKey("notification.android.messaging.scope")
     private String scope;
 
-    @PropertyName("notification.android.storage.credentials")
+    @PropertyKey("notification.android.storage.credentials")
     private String storageCredentials;
 
 }

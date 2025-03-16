@@ -249,7 +249,7 @@ class UtilTest {
     @Test
     void test(){
         FileByteProperty fileByteProperty = new FileByteProperty();
-        System.out.println(fileByteProperty.getFieldDataByVariableName(FileByteProperty.Fields.folder));
+        System.out.println(fileByteProperty.getByFieldNameConstants(FileByteProperty.Fields.folder));
     }
 
 }

@@ -8,7 +8,8 @@ import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
+import ru.jamsys.core.extension.property.repository.PropertyEnvelopeRepository;
+import ru.jamsys.core.extension.property.repository.PropertyRepositoryList;
 import ru.jamsys.core.flat.util.UtilLog;
 
 import java.lang.annotation.Annotation;
@@ -18,7 +19,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-// Несёт информацию о загруженных классах ядра
+// Несёт информацию о загруженных классах ядра.
 // Есть аннотация ServiceClassFinderIgnore, при которой класс ядра не попадает в availableClass
 // Так сделаны плагины для HttpHandler, то есть плагины есть, но они все помечены аннотацией ServiceClassFinderIgnore
 // Для того, что бы в проекте добавить плагин, надо убрать ServiceClassFinderIgnore с плагина
@@ -34,7 +35,7 @@ public class ServiceClassFinder implements CascadeName {
 
     private final ExceptionHandler exceptionHandler;
 
-    private final PropertyRepositoryMap<Boolean> ignoredClassMap = new PropertyRepositoryMap<>(Boolean.class);
+    private final PropertyRepositoryList<Boolean> ignoredClassMap = new PropertyRepositoryList<>(Boolean.class);
 
     private final ApplicationContext applicationContext;
 
@@ -51,10 +52,10 @@ public class ServiceClassFinder implements CascadeName {
         @SuppressWarnings("SameParameterValue")
 
 
-        PropertyDispatcher propertyDispatcher = new PropertyDispatcher(
+        PropertyDispatcher<Boolean> propertyDispatcher = new PropertyDispatcher<>(
                 serviceProperty,
-                (_, _, property) -> {
-                    UtilLog.printInfo(getClass(), "onUpdate ServiceClassFinderIgnore: " + property.get());
+                (_, _, newValue) -> {
+                    UtilLog.printInfo(getClass(), "onUpdate ServiceClassFinderIgnore: " + newValue);
                     availableClass.clear();
                     availableClass.addAll(getAvailableClass(pkg));
                 },
@@ -143,7 +144,11 @@ public class ServiceClassFinder implements CascadeName {
                             break;
                         }
                     }
-                    Boolean s = ignoredClassMap.getRepositoryItem(aClass.getName());
+                    PropertyEnvelopeRepository<Boolean> propertyEnvelopeRepository = ignoredClassMap.getByRepositoryPropertyKey(aClass.getName());
+                    Boolean s = null;
+                    if (propertyEnvelopeRepository != null) {
+                        s = propertyEnvelopeRepository.getValue();
+                    }
                     if (s != null) {
                         findUnusedAnnotation = s;
                     }

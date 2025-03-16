@@ -10,7 +10,8 @@ import ru.jamsys.core.extension.exception.AuthException;
 import ru.jamsys.core.extension.http.ServletRequestReader;
 import ru.jamsys.core.extension.http.ServletResponseWriter;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
+import ru.jamsys.core.extension.property.repository.PropertyEnvelopeRepository;
+import ru.jamsys.core.extension.property.repository.PropertyRepositoryList;
 import ru.jamsys.core.flat.util.UtilText;
 import ru.jamsys.core.handler.web.http.HttpInterceptor;
 
@@ -24,9 +25,9 @@ public class AuthInterceptor implements HttpInterceptor {
 
     private final SecurityComponent securityComponent;
 
-    private final PropertyRepositoryMap<String> users = new PropertyRepositoryMap<>(String.class);
+    private final PropertyRepositoryList<String> users = new PropertyRepositoryList<>(String.class);
 
-    private final PropertyRepositoryMap<String> uriRegexp = new PropertyRepositoryMap<>(String.class);
+    private final PropertyRepositoryList<String> uriRegexp = new PropertyRepositoryList<>(String.class);
 
     public AuthInterceptor(ServiceProperty serviceProperty, SecurityComponent securityComponent) {
         this.securityComponent = securityComponent;
@@ -52,11 +53,10 @@ public class AuthInterceptor implements HttpInterceptor {
     @Override
     public boolean handle(HttpServletRequest request, HttpServletResponse response) {
         String requestURI = request.getRequestURI();
-        String[] patternKey = uriRegexp.getRepository().keySet().toArray(new String[0]);
         boolean needAuth = false;
-        for (String key : patternKey) {
-            String repositoryItem = uriRegexp.getRepositoryItem(key);
-            if (repositoryItem != null && UtilText.regexpFind(requestURI, repositoryItem) != null) {
+        for (PropertyEnvelopeRepository<String> propertyEnvelopeRepository : uriRegexp.getListPropertyEnvelopeRepository()) {
+            String regexpPattern = propertyEnvelopeRepository.getValue();
+            if (regexpPattern != null && UtilText.regexpFind(requestURI, regexpPattern) != null) {
                 needAuth = true;
                 break;
             }
@@ -68,7 +68,8 @@ public class AuthInterceptor implements HttpInterceptor {
             ServletRequestReader servletRequestReader = new ServletRequestReader(request);
             servletRequestReader.basicAuthHandler((user, password) -> {
                 String cred = null;
-                String userPasswordSecurityAlias = users.getRepositoryItem(user);
+                PropertyEnvelopeRepository<String> propertyEnvelopeRepository = users.getByRepositoryPropertyKey(user);
+                String userPasswordSecurityAlias = propertyEnvelopeRepository.getValue();
                 if (userPasswordSecurityAlias == null) {
                     throw new AuthException("Authorization failed for user: " + user);
                 }

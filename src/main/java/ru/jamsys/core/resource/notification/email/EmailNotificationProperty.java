@@ -1,44 +1,46 @@
 package ru.jamsys.core.resource.notification.email;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import lombok.experimental.FieldNameConstants;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@FieldNameConstants
 @Getter
 public class EmailNotificationProperty extends AnnotationPropertyExtractor {
 
-    @PropertyName("notification.email.host")
+    @PropertyKey("notification.email.host")
     private String host;
 
-    @PropertyName("notification.email.user")
+    @PropertyKey("notification.email.user")
     private String user;
 
-    @PropertyName("notification.email.from")
+    @PropertyKey("notification.email.from")
     private String from;
 
-    @PropertyName("notification.email.charset")
+    @PropertyKey("notification.email.charset")
     private String charset;
 
-    @PropertyName("notification.email.security.alias")
+    @PropertyKey("notification.email.security.alias")
     private String securityAlias;
 
-    @PropertyName("notification.email.port")
+    @PropertyKey("notification.email.port")
     private Integer port;
 
-    @PropertyName("notification.email.timeoutMs")
+    @PropertyKey("notification.email.timeoutMs")
     private Integer connectTimeoutMs;
 
-    @PropertyName("notification.email.ssl")
+    @PropertyKey("notification.email.ssl")
     private Boolean ssl;
 
-    @PropertyName("notification.email.support.address")
+    @PropertyKey("notification.email.support.address")
     private String support;
 
-    @PropertyName("notification.email.template.path")
+    @PropertyKey("notification.email.template.path")
     private String templatePath;
 
-    @PropertyName("notification.email.template.class.loader")
+    @PropertyKey("notification.email.template.class.loader")
     private String templateClassLoader;
 
 }

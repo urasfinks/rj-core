@@ -93,11 +93,11 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     private final AbstractPoolProperty abstractPoolProperty = new AbstractPoolProperty();
 
     @Getter
-    private final PropertyDispatcher propertyDispatcher;
+    private final PropertyDispatcher<Integer> propertyDispatcher;
 
     public AbstractPool(String key) {
         this.key = key;
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
                 abstractPoolProperty,
@@ -149,9 +149,11 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         }
         // Если хотят меньше минимума - очень резко опускаем максимум до минимума
         if (want < abstractPoolProperty.getMin()) {
-
             App.get(ServiceProperty.class).set(
-                    propertyDispatcher.getPropertyKeyByRepositoryKey("max"),
+                    propertyDispatcher
+                            .getPropertyRepository()
+                            .getByFieldNameConstants(AbstractPoolProperty.Fields.max)
+                            .getPropertyKey(),
                     abstractPoolProperty.getMin()
             );
             return;
@@ -159,12 +161,18 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
         // Если желаемое значение элементов в пуле больше минимума, так как return не сработал
         if (want > abstractPoolProperty.getMax()) { //Медленно поднимаем
             App.get(ServiceProperty.class).set(
-                    propertyDispatcher.getPropertyKeyByRepositoryKey("max"),
+                    propertyDispatcher
+                            .getPropertyRepository()
+                            .getByFieldNameConstants(AbstractPoolProperty.Fields.max)
+                            .getPropertyKey(),
                     abstractPoolProperty.getMax() + 1
             );
         } else { //Но очень быстро опускаем
             App.get(ServiceProperty.class).set(
-                    propertyDispatcher.getPropertyKeyByRepositoryKey("max"),
+                    propertyDispatcher
+                            .getPropertyRepository()
+                            .getByFieldNameConstants(AbstractPoolProperty.Fields.max)
+                            .getPropertyKey(),
                     want
             );
         }

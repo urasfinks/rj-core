@@ -1,39 +1,41 @@
 package ru.jamsys.core.resource.notification.apple;
 
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@FieldNameConstants
 @Getter
-public class AppleNotificationProperty extends AnnotationPropertyExtractor {
+public class AppleNotificationProperty extends AnnotationPropertyExtractor<Object> {
 
-    @PropertyName("notification.apple.virtual.path")
+    @PropertyKey("notification.apple.virtual.path")
     private String virtualPath;
 
-    @PropertyName("notification.apple.security.alias")
+    @PropertyKey("notification.apple.security.alias")
     private String securityAlias;
 
-    @PropertyName("notification.apple.url")
+    @PropertyKey("notification.apple.url")
     private String url;
 
-    @PropertyName("notification.apple.topic")
+    @PropertyKey("notification.apple.topic")
     private String topic;
 
-    @PropertyName("notification.apple.priority")
+    @PropertyKey("notification.apple.priority")
     private String priority;
 
-    @PropertyName("notification.apple.expiration")
+    @PropertyKey("notification.apple.expiration")
     private String expiration;
 
-    @PropertyName("notification.apple.pushType")
+    @PropertyKey("notification.apple.pushType")
     private String pushType;
 
 
-    @PropertyName("notification.apple.timeoutMs")
+    @PropertyKey("notification.apple.timeoutMs")
     private Integer timeoutMs;
 
-    @PropertyName("notification.apple.storage")
+    @PropertyKey("notification.apple.storage")
     private String storage;
 
 }

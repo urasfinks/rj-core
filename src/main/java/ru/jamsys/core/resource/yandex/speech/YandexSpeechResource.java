@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.resource.Resource;
@@ -25,13 +24,13 @@ public class YandexSpeechResource
 
     YandexSpeechClient client = null;
 
-    private PropertyDispatcher propertyDispatcher;
+    private PropertyDispatcher<Object> propertyDispatcher;
 
     private final YandexSpeechProperty yandexSpeechProperty = new YandexSpeechProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 yandexSpeechProperty,
@@ -82,7 +81,7 @@ public class YandexSpeechResource
     }
 
     @Override
-    public void onPropertyUpdate(String key, String oldValue, Property property) {
+    public void onPropertyUpdate(String key, String oldValue, String newValue) {
         if (yandexSpeechProperty.getHost() == null || yandexSpeechProperty.getPort() == null || yandexSpeechProperty.getAlias() == null) {
             return;
         }

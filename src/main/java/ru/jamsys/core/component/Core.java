@@ -104,7 +104,7 @@ public class Core implements LifeCycleInterface {
 
     @Override
     public void shutdown() {
-        UtilLog.printInfo(getClass(), ".shutdown()");
+        UtilLog.printInfo(getClass(), "shutdown()");
         while (!runComponent.isEmpty()) {
             LifeCycleComponent lifeCycleComponent = runComponent.pollLast();
             if (lifeCycleComponent != null) {

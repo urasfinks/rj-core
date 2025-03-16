@@ -1,26 +1,55 @@
 package ru.jamsys.core.extension.property.repository;
 
+import ru.jamsys.core.extension.property.PropertyDispatcher;
+import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilRisc;
 
-import java.util.Map;
+import java.util.List;
 
-public interface PropertyRepository {
+public interface PropertyRepository<T> {
 
-    Map<String, String> getRepository(); // Репозиторий значений
+    void init(PropertyDispatcher<T> propertyDispatcher);
 
-    void setRepository(String propertyName, String value);
+    List<PropertyEnvelopeRepository<T>> getListPropertyEnvelopeRepository(); // Репозиторий значений
 
-    String getDescription(String key);
+    void append(String repositoryPropertyKey, PropertyDispatcher<T> propertyDispatcher);
 
-    PropertyRepository checkNotNull();
+    void updateRepository(String repositoryPropertyKey, PropertyDispatcher<T> propertyDispatcher);
 
-    default PropertyRepository isAnyPropertyNullThrow() {
-        UtilRisc.forEach(null, getRepository(), (key, value) -> {
-            if (value == null) {
-                throw new RuntimeException(getClass().getName() + " key: " + key + "; value is null");
+    default void checkNotNull() {
+        UtilRisc.forEach(null, getListPropertyEnvelopeRepository(), fieldData -> {
+            if (fieldData.isNotNull() && fieldData.getValue() == null) {
+                throw new RuntimeException(UtilJson.toStringPretty(this, "--"));
             }
         });
-        return this;
+    }
+
+    default PropertyEnvelopeRepository<T> getByFieldNameConstants(String FieldNameConstants) { //@FieldNameConstants -> FileByteProperty.Fields.folder
+        for (PropertyEnvelopeRepository<T> propertyEnvelopeRepository : getListPropertyEnvelopeRepository()) {
+            if (propertyEnvelopeRepository.getFieldNameConstants().equals(FieldNameConstants)) {
+                return propertyEnvelopeRepository;
+            }
+        }
+        return null;
+    }
+
+    default PropertyEnvelopeRepository<T> getByRepositoryPropertyKey(String repositoryPropertyKey) {
+        for (PropertyEnvelopeRepository<T> propertyEnvelopeRepository : getListPropertyEnvelopeRepository()) {
+            if (propertyEnvelopeRepository.getRepositoryPropertyKey().equals(repositoryPropertyKey)) {
+                return propertyEnvelopeRepository;
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unused")
+    default PropertyEnvelopeRepository<T> getByPropertyKey(String propertyKey) {
+        for (PropertyEnvelopeRepository<T> propertyEnvelopeRepository : getListPropertyEnvelopeRepository()) {
+            if (propertyEnvelopeRepository.getPropertyKey().equals(propertyKey)) {
+                return propertyEnvelopeRepository;
+            }
+        }
+        return null;
     }
 
 }

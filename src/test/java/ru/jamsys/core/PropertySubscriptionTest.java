@@ -1,12 +1,15 @@
 package ru.jamsys.core;
 
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
-import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
+import ru.jamsys.core.extension.property.repository.PropertyRepositoryList;
+import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilLog;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,33 +31,99 @@ class PropertySubscriptionTest {
     @Test
     @Order(1)
     public void collection() {
-        PropertyRepositoryMap<String> propertiesRepositoryMap = new PropertyRepositoryMap<>(String.class);
-        PropertyDispatcher propertyDispatcher = new PropertyDispatcher(App.get(ServiceProperty.class), null, propertiesRepositoryMap, "run.args.ServiceClassFinderIgnore")
+        PropertyRepositoryList<String> propertyRepositoryList = new PropertyRepositoryList<>(String.class);
+        PropertyDispatcher<String> propertyDispatcher = new PropertyDispatcher<>(
+                App.get(ServiceProperty.class),
+                null,
+                propertyRepositoryList,
+                "run.args.ServiceClassFinderIgnore"
+        )
                 .addSubscriptionRegexp("run\\.args\\.ServiceClassFinderIgnore.*");
-        propertyDispatcher.run();
 
-        Assertions.assertEquals("{test1=true, test2=false}", propertiesRepositoryMap.getMapRepository().toString());
+        propertyDispatcher.run();
+        UtilLog.printInfo(PropertySubscriptionTest.class, propertyDispatcher);
+
+        Assertions.assertEquals("""
+                [
+                  {
+                    "propertyKey" : "run.args.ServiceClassFinderIgnore.test1",
+                    "repositoryPropertyKey" : "test1",
+                    "fieldNameConstants" : null,
+                    "cls" : "java.lang.String",
+                    "description" : null,
+                    "notNull" : false,
+                    "dynamic" : true,
+                    "value" : "true"
+                  },
+                  {
+                    "propertyKey" : "run.args.ServiceClassFinderIgnore.test2",
+                    "repositoryPropertyKey" : "test2",
+                    "fieldNameConstants" : null,
+                    "cls" : "java.lang.String",
+                    "description" : null,
+                    "notNull" : false,
+                    "dynamic" : true,
+                    "value" : "false"
+                  }
+                ]""", UtilJson.toStringPretty(propertyRepositoryList.getListPropertyEnvelopeRepository(), "--"));
         //Assertions.assertEquals("[run\\.args\\.ServiceClassFinderIgnore.*]", propertySubscriber.getRepositoryPropertyListeners().toString());
 
         // Дребидень полная в случае с regexp
         //Assertions.assertEquals("[run.args.ServiceClassFinderIgnore.run\\.args\\.ServiceClassFinderIgnore.*]", propertySubscriber.getServicePropertyListeners().toString());
 
-        Assertions.assertEquals("{test1=true, test2=false}", propertyDispatcher.getPropertyRepository().getRepository().toString());
+        Assertions.assertEquals("""
+                [
+                  {
+                    "propertyKey" : "run.args.ServiceClassFinderIgnore.test1",
+                    "repositoryPropertyKey" : "test1",
+                    "fieldNameConstants" : null,
+                    "cls" : "java.lang.String",
+                    "description" : null,
+                    "notNull" : false,
+                    "dynamic" : true,
+                    "value" : "true"
+                  },
+                  {
+                    "propertyKey" : "run.args.ServiceClassFinderIgnore.test2",
+                    "repositoryPropertyKey" : "test2",
+                    "fieldNameConstants" : null,
+                    "cls" : "java.lang.String",
+                    "description" : null,
+                    "notNull" : false,
+                    "dynamic" : true,
+                    "value" : "false"
+                  }
+                ]""", UtilJson.toStringPretty(propertyRepositoryList.getListPropertyEnvelopeRepository(), "--"));
 
         App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", null).set(false);
 
         Assertions.assertEquals("false", App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test1", null).get());
 
-        Assertions.assertEquals("{test1=false, test2=false}", propertyDispatcher.getPropertyRepository().getRepository().toString());
+        Assertions.assertEquals("""
+                [
+                  {
+                    "propertyKey" : "run.args.ServiceClassFinderIgnore.test1",
+                    "repositoryPropertyKey" : "test1",
+                    "fieldNameConstants" : null,
+                    "cls" : "java.lang.String",
+                    "description" : null,
+                    "notNull" : false,
+                    "dynamic" : true,
+                    "value" : "false"
+                  },
+                  {
+                    "propertyKey" : "run.args.ServiceClassFinderIgnore.test2",
+                    "repositoryPropertyKey" : "test2",
+                    "fieldNameConstants" : null,
+                    "cls" : "java.lang.String",
+                    "description" : null,
+                    "notNull" : false,
+                    "dynamic" : true,
+                    "value" : "false"
+                  }
+                ]""", UtilJson.toStringPretty(propertyRepositoryList.getListPropertyEnvelopeRepository(), "--"));
 
         Assertions.assertEquals("false", App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test2", null).get());
-
-        propertyDispatcher.getPropertyRepository().setRepository("test2", "true");
-
-        Assertions.assertEquals("{test1=false, test2=true}", propertyDispatcher.getPropertyRepository().getRepository().toString());
-
-        // setRepository("test2", "true") не влияет на изменения Property, все изменения только через Property сверху в низ
-        Assertions.assertEquals("false", App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test2", "").get());
 
     }
 
@@ -62,12 +131,44 @@ class PropertySubscriptionTest {
     @Order(2)
     public void onUpdate() {
         // ВНИМАТЕЛЬНО тесты выполняются по очереди, по отдельности выполнять нельзя
-        PropertyRepositoryMap<String> propertiesRepositoryMap = new PropertyRepositoryMap<>(String.class);
+        PropertyRepositoryList<String> propertiesRepositoryMap = new PropertyRepositoryList<>(String.class);
         AtomicInteger x = new AtomicInteger(0);
-        PropertyDispatcher propertyDispatcher = new PropertyDispatcher(App.get(ServiceProperty.class), (_, _, _) -> x.incrementAndGet(), propertiesRepositoryMap, "run.args.ServiceClassFinderIgnore").addSubscriptionRegexp("run\\.args\\.ServiceClassFinderIgnore.*");
+        PropertyDispatcher<String> propertyDispatcher = new PropertyDispatcher<>(
+                App.get(ServiceProperty.class),
+                (_, _, _) -> x.incrementAndGet(),
+                propertiesRepositoryMap,
+                "run.args.ServiceClassFinderIgnore"
+        )
+                .addSubscriptionRegexp("run\\.args\\.ServiceClassFinderIgnore.*");
         propertyDispatcher.run();
 
-        Assertions.assertEquals("{test1=false, test2=false}", propertyDispatcher.getPropertyRepository().getRepository().toString());
+        Assertions.assertEquals("""
+                {
+                  "cls" : "java.lang.String",
+                  "listPropertyEnvelopeRepository" : [
+                    {
+                      "propertyKey" : "run.args.ServiceClassFinderIgnore.test1",
+                      "repositoryPropertyKey" : "test1",
+                      "fieldNameConstants" : null,
+                      "cls" : "java.lang.String",
+                      "description" : null,
+                      "notNull" : false,
+                      "dynamic" : true,
+                      "value" : "false"
+                    },
+                    {
+                      "propertyKey" : "run.args.ServiceClassFinderIgnore.test2",
+                      "repositoryPropertyKey" : "test2",
+                      "fieldNameConstants" : null,
+                      "cls" : "java.lang.String",
+                      "description" : null,
+                      "notNull" : false,
+                      "dynamic" : true,
+                      "value" : "false"
+                    }
+                  ],
+                  "init" : true
+                }""", UtilJson.toStringPretty(propertyDispatcher.getPropertyRepository(), "--"));
 
         // Инициализация подписчика, не вызывает событий обновления, она проливает данные до репозитория
         // События наступают только после обновления данных Property
@@ -85,20 +186,93 @@ class PropertySubscriptionTest {
 
         App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test3", null);
 
-        Assertions.assertEquals("{test1=true, test2=false, test3=null}", propertyDispatcher.getPropertyRepository().getRepository().toString());
+        Assertions.assertEquals("""
+                {
+                  "cls" : "java.lang.String",
+                  "listPropertyEnvelopeRepository" : [
+                    {
+                      "propertyKey" : "run.args.ServiceClassFinderIgnore.test1",
+                      "repositoryPropertyKey" : "test1",
+                      "fieldNameConstants" : null,
+                      "cls" : "java.lang.String",
+                      "description" : null,
+                      "notNull" : false,
+                      "dynamic" : true,
+                      "value" : "true"
+                    },
+                    {
+                      "propertyKey" : "run.args.ServiceClassFinderIgnore.test2",
+                      "repositoryPropertyKey" : "test2",
+                      "fieldNameConstants" : null,
+                      "cls" : "java.lang.String",
+                      "description" : null,
+                      "notNull" : false,
+                      "dynamic" : true,
+                      "value" : "false"
+                    },
+                    {
+                      "propertyKey" : "run.args.ServiceClassFinderIgnore.test3",
+                      "repositoryPropertyKey" : "test3",
+                      "fieldNameConstants" : null,
+                      "cls" : "java.lang.String",
+                      "description" : null,
+                      "notNull" : false,
+                      "dynamic" : true,
+                      "value" : null
+                    }
+                  ],
+                  "init" : true
+                }""", UtilJson.toStringPretty(propertyDispatcher.getPropertyRepository(), "--"));
         Assertions.assertEquals(2, x.get());
 
         App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test3", null).set(true);
 
-        Assertions.assertEquals("{test1=true, test2=false, test3=true}", propertyDispatcher.getPropertyRepository().getRepository().toString());
+        Assertions.assertEquals("""
+                {
+                  "cls" : "java.lang.String",
+                  "listPropertyEnvelopeRepository" : [
+                    {
+                      "propertyKey" : "run.args.ServiceClassFinderIgnore.test1",
+                      "repositoryPropertyKey" : "test1",
+                      "fieldNameConstants" : null,
+                      "cls" : "java.lang.String",
+                      "description" : null,
+                      "notNull" : false,
+                      "dynamic" : true,
+                      "value" : "true"
+                    },
+                    {
+                      "propertyKey" : "run.args.ServiceClassFinderIgnore.test2",
+                      "repositoryPropertyKey" : "test2",
+                      "fieldNameConstants" : null,
+                      "cls" : "java.lang.String",
+                      "description" : null,
+                      "notNull" : false,
+                      "dynamic" : true,
+                      "value" : "false"
+                    },
+                    {
+                      "propertyKey" : "run.args.ServiceClassFinderIgnore.test3",
+                      "repositoryPropertyKey" : "test3",
+                      "fieldNameConstants" : null,
+                      "cls" : "java.lang.String",
+                      "description" : null,
+                      "notNull" : false,
+                      "dynamic" : true,
+                      "value" : "true"
+                    }
+                  ],
+                  "init" : true
+                }""", UtilJson.toStringPretty(propertyDispatcher.getPropertyRepository(), "--"));
         Assertions.assertEquals(3, x.get());
     }
 
+    @FieldNameConstants
     @Getter
-    public static class TypedProperty extends AnnotationPropertyExtractor {
+    public static class TypedProperty extends AnnotationPropertyExtractor<String> {
 
         @SuppressWarnings("all")
-        @PropertyName("run.args.ServiceClassFinderIgnore.test1")
+        @PropertyKey("run.args.ServiceClassFinderIgnore.test1")
         private Boolean test;
 
     }
@@ -108,7 +282,12 @@ class PropertySubscriptionTest {
     public void typedTest() {
         // ВНИМАТЕЛЬНО тесты выполняются по очереди, по отдельности выполнять нельзя
         TypedProperty typedProperty = new TypedProperty();
-        PropertyDispatcher propertyDispatcher = new PropertyDispatcher(App.get(ServiceProperty.class), null, typedProperty, null);
+        PropertyDispatcher<String> propertyDispatcher = new PropertyDispatcher<>(
+                App.get(ServiceProperty.class),
+                null,
+                typedProperty,
+                null
+        );
 
         propertyDispatcher.run();
 

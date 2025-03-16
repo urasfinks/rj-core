@@ -11,7 +11,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
 import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
+import ru.jamsys.core.extension.property.repository.PropertyRepositoryList;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -32,9 +32,9 @@ public class HttpController {
 
     private HttpInterceptor httpInterceptor;
 
-    private final PropertyRepositoryMap<String> ignoreStaticFile = new PropertyRepositoryMap<>(String.class);
+    private final PropertyRepositoryList<String> ignoreStaticFile = new PropertyRepositoryList<>(String.class);
 
-    private final PropertyRepositoryMap<String> ignoreStaticDir = new PropertyRepositoryMap<>(String.class);
+    private final PropertyRepositoryList<String> ignoreStaticDir = new PropertyRepositoryList<>(String.class);
 
     private final Set<String> ignoredStaticFile = new HashSet<>();
 
@@ -65,10 +65,10 @@ public class HttpController {
     }
 
     private void subscribeIgnoreFile() {
-        new PropertyDispatcher(
+        new PropertyDispatcher<>(
                 serviceProperty,
-                (key, _, property) -> {
-                    UtilLog.info(getClass(), property.get())
+                (key, _, newValue) -> {
+                    UtilLog.info(getClass(), newValue)
                             .addHeader("description", "IgnoreWebStatic.File")
                             .print();
                     updateStaticFile();
@@ -81,10 +81,10 @@ public class HttpController {
     }
 
     private void subscribeIgnoreDir() {
-        new PropertyDispatcher(
+        new PropertyDispatcher<>(
                 serviceProperty,
-                (key, _, property) -> {
-                    UtilLog.info(getClass(), property.get())
+                (key, _, newValue) -> {
+                    UtilLog.info(getClass(), newValue)
                             .addHeader("description", "IgnoreWebStatic.Dir")
                             .print();
                     updateStaticFile();
@@ -106,16 +106,16 @@ public class HttpController {
         List<String> filesRecursive = UtilFile.getFilesRecursive(location);
         filesRecursive.forEach(s -> staticFile.put(s.substring(absPath.length()), s));
 
-        UtilRisc.forEach(null, ignoreStaticFile.getMapRepository(), (_, excludeFile) -> {
+        UtilRisc.forEach(null, ignoreStaticFile.getListPropertyEnvelopeRepository(), propertyEnvelope -> {
             UtilRisc.forEach(null, staticFile, (key, value) -> {
-                if (key.equals(excludeFile)) {
-                    ignoredStaticFile.add(staticFile.remove(excludeFile));
+                if (key.equals(propertyEnvelope.getValue())) {
+                    ignoredStaticFile.add(staticFile.remove(propertyEnvelope.getValue()));
                 }
             });
         });
-        UtilRisc.forEach(null, ignoreStaticDir.getMapRepository(), (_, excludeDir) -> {
+        UtilRisc.forEach(null, ignoreStaticDir.getListPropertyEnvelopeRepository(), propertyEnvelope -> {
             UtilRisc.forEach(null, staticFile, (key, value) -> {
-                if (key.startsWith(excludeDir)) {
+                if (key.startsWith(propertyEnvelope.getValue())) {
                     ignoredStaticFile.add(staticFile.remove(key));
                 }
             });

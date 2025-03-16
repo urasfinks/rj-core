@@ -5,7 +5,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.extension.*;
-import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilByte;
@@ -45,7 +44,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     private final FileByteProperty fileByteProperty = new FileByteProperty();
 
     @Getter
-    private final PropertyDispatcher propertyDispatcher;
+    private final PropertyDispatcher<Object> propertyDispatcher;
 
     private final AtomicBoolean runWrite = new AtomicBoolean(false);
 
@@ -54,9 +53,9 @@ public class FileByteWriter extends ExpirationMsMutableImpl
 
     public FileByteWriter(String key) {
         this.key = key;
-        // На практики не видел больше 400к логов на одном узле
+        // На практики не видел больше 400к логов на одном узле.
         // Проверил запись 1кк логов - в секунду укладываемся на одном потоке
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 fileByteProperty,
@@ -79,7 +78,14 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         );
 
         App.get(ServiceProperty.class)
-                .computeIfAbsent(broker.getPropertyDispatcher().getPropertyKeyByRepositoryKey("size"), null)
+                .computeIfAbsent(
+                        broker
+                                .getPropertyDispatcher()
+                                .getPropertyRepository()
+                                .getByFieldNameConstants(BrokerProperty.Fields.size)
+                                .getPropertyKey(),
+                        null
+                )
                 .set(400_000);
 
         if (fileByteProperty.getFileName() == null || fileByteProperty.getFileName().isEmpty()) {
@@ -97,10 +103,10 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         for (String filePath : filesRecursive) {
             if (filePath.startsWith("/" + fileName + ".")) {
                 if (filePath.endsWith(".proc.bin")) {
-                    // Файл скорее всего имеет не корректную структуру, так как при нормально завершении
-                    // файлы с расширение proc.bin должны были переименоваться
+                    // Файл скорее всего имеет не корректную структуру, так как при нормально завершении.
+                    // Файлы с расширением proc.bin должны были переименоваться.
                     // Предполагается фатальное завершение прошлого процесса и такие файлы будут выкидываться
-                    // (so sorry my bad) Дима Г. наблевавший в номере)
+                    // (so sorry my bad) Дима Г. наблевавший в номере
                     UtilLog
                             .error(getClass(), "File will be remove: [" + filePath + "] so sorry my bad")
                             .print()
@@ -163,6 +169,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         }
 
         int maxWriteCount = fileByteProperty.getFileCount();
+        UtilLog.printInfo(FileByteWriter.class, fileByteProperty);
         while (!broker.isEmpty() && threadRun.get()) {
             if (maxWriteCount <= 0) {
                 break;
@@ -173,7 +180,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     }
 
     private void write(AtomicBoolean threadRun) {
-        // Что бы не допустить одновременного выполнения при остановки приложения, когда приходит ContextClosedEvent
+        // Что бы не допустить одновременного выполнения при остановке приложения, когда приходит ContextClosedEvent
         if (runWrite.compareAndSet(false, true)) {
             int tmpSizeKb = fileByteProperty.getFileSizeKb();
             try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(currentFilePath, writeByteToCurrentFile.get() > 0))) {
@@ -200,7 +207,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                     }
                 }
             } catch (Exception e) {
-                // Предполагаю, что есть проблемы с файлом
+                // Предполагаю, что есть проблемы с файлом.
                 // Буду пробовать в другой записать
                 genNextFile();
                 App.error(e);
@@ -233,20 +240,20 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     public void shutdown() {
         // Запишем если были накопления в брокере
         keepAlive(new AtomicBoolean(true));
-        // Переименуем файл, что бы при следующем старте его не удалили как ошибочный
-        // Сначала не хотел закрывать файл, но решил, что надо, для того, что бы система могла уже с ним поработать
+        // Переименуем файл, что бы при следующем старте его не удалили как ошибочный.
+        // Сначала не хотел закрывать файл, но решил, что надо, для того, что бы система могла уже с ним поработать.
         // Если оставить его не закрытым, то он будет висеть до закрытия программы, что наверное не очень хорошо
         closeLastFile();
         propertyDispatcher.shutdown();
     }
 
     @Override
-    public void onPropertyUpdate(String key, String oldValue, Property property) {
+    public void onPropertyUpdate(String key, String oldValue, String newValue) {
         if (key.equals("file.name")) {
             // Сливаем данные с прошлым именем файлов
             restoreIndex(fileByteProperty.getFolder(), oldValue);
             // Сливаем данные с новым именем файлов
-            restoreIndex(fileByteProperty.getFolder(), property.get());
+            restoreIndex(fileByteProperty.getFolder(), newValue);
         }
         if (key.equals("folder")) {
             if (!UtilFile.ifExist(fileByteProperty.getFolder())) {
@@ -255,7 +262,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
             // Сливаем данные из прошлой директории
             restoreIndex(oldValue, fileByteProperty.getFileName());
             // Сливаем данные из новой директории
-            restoreIndex(property.get(), fileByteProperty.getFileName());
+            restoreIndex(newValue, fileByteProperty.getFileName());
         }
     }
 

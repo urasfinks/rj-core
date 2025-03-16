@@ -2,10 +2,11 @@ package ru.jamsys.core.component;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.LifeCycleComponent;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
@@ -29,24 +30,25 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@FieldNameConstants
 @Component
-public class SecurityComponent extends AnnotationPropertyExtractor implements LifeCycleComponent {
+public class SecurityComponent extends AnnotationPropertyExtractor<String> implements LifeCycleComponent {
 
     @Setter
-    @PropertyName("run.args.security.path.storage")
+    @PropertyKey("run.args.security.path.storage")
     private String pathStorage;
 
     @Setter
-    @PropertyName("run.args.security.path.public.key")
+    @PropertyKey("run.args.security.path.public.key")
     private String pathPublicKey;
 
     @Setter
-    @PropertyName("run.args.security.path.init")
+    @PropertyKey("run.args.security.path.init")
     private String pathJsonCred;
 
     @Getter
     @SuppressWarnings("all")
-    @PropertyName("run.args.security.path.java")
+    @PropertyKey("run.args.security.path.java")
     private String pathInitSecurityKeyJava;
 
     final private ExceptionHandler exceptionHandler;
@@ -63,12 +65,12 @@ public class SecurityComponent extends AnnotationPropertyExtractor implements Li
 
     private KeyStore.PasswordProtection keyStorePP;
 
-    private final PropertyDispatcher propertyDispatcher;
+    private final PropertyDispatcher<String> propertyDispatcher;
 
     private final AtomicBoolean run = new AtomicBoolean(false);
 
     public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 serviceProperty,
                 null,
                 this,

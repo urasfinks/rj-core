@@ -1,154 +1,91 @@
 package ru.jamsys.core.extension.property.repository;
 
 import lombok.Getter;
-import lombok.ToString;
 import ru.jamsys.core.extension.annotation.PropertyDescription;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertyUtil;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-// Класс помогает изъять свойства у класса родителя через аннтоции
+// Класс помогает изъять свойства у класса родителя через аннотации
+// @FieldNameConstants
+// Для примера, что бы удобно скопировать было, а так оно тут не работает, его надо для всех наследников
 @Getter
-public class AnnotationPropertyExtractor implements PropertyRepository {
+public class AnnotationPropertyExtractor<T> implements PropertyRepository<T> {
 
-    @Getter
-    @ToString
-    public static class FieldData {
+    private final List<PropertyEnvelopeRepository<T>> listPropertyEnvelopeRepository = new ArrayList<>();
 
-        @ToString.Exclude
-        private final Field field;
-        private final String variableName;
-        private final String propertyName;
-        private final String description;
-        private final boolean notNull;
-
-        public FieldData(Field field, String variableName, String propertyName, String description, boolean notNull) {
-            this.field = field;
-            this.variableName = variableName;
-            this.propertyName = propertyName;
-            this.description = description;
-            this.notNull = notNull;
-        }
-
-    }
-
-    private final Map<Field, FieldData> fields = new HashMap<>();
-
-    public AnnotationPropertyExtractor() {
-        for (Field field : getClass().getDeclaredFields()) {
-            if (field.isAnnotationPresent(PropertyName.class)) {
-                // Может такое быть, что value = "", это значит что мы смотрим прямо на корневое значение ns
-                field.setAccessible(true);
-                fields.put(field, new FieldData(
-                        field,
-                        field.getName(),
-                        field.isAnnotationPresent(PropertyName.class)
-                                ? field.getAnnotation(PropertyName.class).value()
-                                : null,
-                        field.isAnnotationPresent(PropertyDescription.class)
-                                ? field.getAnnotation(PropertyDescription.class).value()
-                                : null,
-                        field.isAnnotationPresent(PropertyNotNull.class)
-                ));
-            }
-        }
-    }
-
-    public FieldData getFieldDataByVariableName(String FieldNameConstants) { //@FieldNameConstants -> FileByteProperty.Fields.folder
-        for (Field field : fields.keySet()) {
-            FieldData fieldData = fields.get(field);
-            if (fieldData.getVariableName().equals(FieldNameConstants)) {
-                return fieldData;
-            }
-        }
-        return null;
-    }
-
-    public FieldData getFieldDataByPropertyName(String propertyName) { //@FieldNameConstants -> FileByteProperty.Fields.folder
-        for (Field field : fields.keySet()) {
-            FieldData fieldData = fields.get(field);
-            if (fieldData.getPropertyName().equals(propertyName)) {
-                return fieldData;
-            }
-        }
-        return null;
-    }
-
-    // Свойства в конструкторе ещё не инициализированы field.get(this) = null
-    // Заполнение propertyReferences выполняется позже
-    // Вызывается в PropertySubscriber для того, что бы создать подписки и получать уведомления об изменениях для
-    // PropertyUpdater
-    public Map<String, String> getRepository() { //key: key: value: defValue
-        Map<String, String> result = new LinkedHashMap<>();
-        fields.forEach((field, fieldData) -> {
-            try {
-                Object fieldValue = field.get(this);
-                result.put(fieldData.getPropertyName(), fieldValue == null ? null : String.valueOf(fieldValue));
-            } catch (Throwable th) {
-                throw new ForwardException(th);
-            }
-        });
-        return result;
-    }
+    private final AtomicBoolean init = new AtomicBoolean(false);
 
     @Override
-    public void setRepository(String propertyName, String value) {
-        FieldData fieldData = getFieldDataByPropertyName(propertyName);
-        if (fieldData == null) {
-            throw new RuntimeException(getClass().getName()
-                    + " fields.get(" + propertyName + ") is null; available property: "
-                    + UtilJson.toStringPretty(getRepository(), "{}")
-            );
-        }
-        if (value == null && fieldData.isNotNull()) {
-            throw new RuntimeException(getClass().getName() + " propertyName: " + propertyName + "; set null value");
-        }
-        try {
-            fieldData.getField().set(
-                    this,
-                    PropertyUtil.convertType.get(fieldData.getField().getType()).apply(value)
-            );
-        } catch (Throwable th) {
-            throw new ForwardException("setRepository(" + propertyName + ", " + value + "); field: " + fieldData, th);
-        }
-    }
-
-    @Override
-    public PropertyRepository checkNotNull() {
-        UtilRisc.forEach(null, fields, (field, fieldData) -> {
-            if (fieldData.isNotNull()) {
-                try {
-                    Object fieldValue = field.get(this);
-                    if (fieldValue == null) {
-                        throw new RuntimeException(
-                                getClass().getName()
-                                        + " propertyName: " + fieldData.getPropertyName()
-                                        + " variableName: " + fieldData.getVariableName()
-                                        + "; value is null");
+    public void init(PropertyDispatcher<T> propertyDispatcher) {
+        if (init.compareAndSet(false, true)) {
+            for (Field field : getClass().getDeclaredFields()) {
+                if (field.isAnnotationPresent(PropertyKey.class)) {
+                    try {
+                        // Может такое быть, что value = "", это значит что мы смотрим прямо на корневое значение ns
+                        field.setAccessible(true);
+                        @SuppressWarnings("unchecked")
+                        Class<T> cls = (Class<T>) field.getType();
+                        @SuppressWarnings("unchecked")
+                        T fieldValue = (T) field.get(this);
+                        String repositoryPropertyKey = field.getAnnotation(PropertyKey.class).value();
+                        PropertyEnvelopeRepository<T> tPropertyEnvelopeRepository = new PropertyEnvelopeRepository<>(
+                                field,
+                                cls,
+                                field.getName(),
+                                repositoryPropertyKey,
+                                fieldValue,
+                                field.isAnnotationPresent(PropertyDescription.class)
+                                        ? field.getAnnotation(PropertyDescription.class).value()
+                                        : null,
+                                field.isAnnotationPresent(PropertyNotNull.class)
+                        )
+                                .setServiceProperty(propertyDispatcher.getServiceProperty())
+                                .setPropertyKey(propertyDispatcher.getPropertyKey(repositoryPropertyKey))
+                                .setPropertyRepository(this)
+                                .syncPropertyValue();
+                        fill(tPropertyEnvelopeRepository);
+                        listPropertyEnvelopeRepository.add(tPropertyEnvelopeRepository);
+                    } catch (Throwable th) {
+                        throw new ForwardException(th);
                     }
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
                 }
             }
-        });
-        return this;
+        }
     }
 
     @Override
-    public String getDescription(String propertyName) {
-        FieldData fieldData = getFieldDataByPropertyName(propertyName);
-        if (fieldData != null) {
-            return fieldData.getDescription();
+    public void append(String repositoryPropertyKey, PropertyDispatcher<T> propertyDispatcher) {
+
+    }
+
+    private void fill(PropertyEnvelopeRepository<T> propertyEnvelopeRepository) {
+        try {
+            propertyEnvelopeRepository.getField().set(this, propertyEnvelopeRepository.getValue());
+        } catch (Throwable th) {
+            throw new RuntimeException(UtilJson.toStringPretty(propertyEnvelopeRepository, "--"), th);
         }
-        return null;
+    }
+
+    // Приходит уведомление, что обновилось значение по ключу репозитория
+    // Значения нельзя устанавливать самостоятельно в PropertyEnvelopeRepository
+    // Тут мы просто пробрасываем значение до свойств класс
+    // isAdditionalProperties - тут не уместно, так как свойства класса не динамичны
+    @Override
+    public void updateRepository(String repositoryPropertyKey, PropertyDispatcher<T> propertyDispatcher) {
+        PropertyEnvelopeRepository<T> propertyEnvelopeRepository = getByRepositoryPropertyKey(repositoryPropertyKey);
+        if (propertyEnvelopeRepository == null) {
+            throw new RuntimeException("propertyEnvelopeRepository is null");
+        }
+        propertyEnvelopeRepository.syncPropertyValue();
+        fill(propertyEnvelopeRepository);
     }
 
 }

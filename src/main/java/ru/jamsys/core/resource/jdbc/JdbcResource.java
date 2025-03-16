@@ -6,7 +6,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.template.jdbc.DataMapper;
@@ -37,13 +36,13 @@ public class JdbcResource
 
     private Connection connection;
 
-    private PropertyDispatcher propertyDispatcher;
+    private PropertyDispatcher<String> propertyDispatcher;
 
     private final JdbcProperty jdbcProperty = new JdbcProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Exception {
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 jdbcProperty,
@@ -96,7 +95,7 @@ public class JdbcResource
             return false;
         }
         try {
-            // Как будто проще проверить сначала на то что коннект закрыли санчала
+            // Как будто проще проверить сначала на то что коннект закрыли сначала
             if (connection.isClosed()) { // Если коннект закрыт - всё плохо
                 return false;
             }
@@ -176,7 +175,7 @@ public class JdbcResource
     }
 
     @Override
-    public void onPropertyUpdate(String key, String oldValue, Property property) {
+    public void onPropertyUpdate(String key, String oldValue, String newValue) {
         down();
         if (jdbcProperty.getUri() == null || jdbcProperty.getUser() == null || jdbcProperty.getSecurityAlias() == null) {
             return;

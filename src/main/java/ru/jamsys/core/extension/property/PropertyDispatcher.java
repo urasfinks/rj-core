@@ -4,25 +4,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.item.PropertySubscription;
+import ru.jamsys.core.extension.property.repository.PropertyEnvelopeRepository;
 import ru.jamsys.core.extension.property.repository.PropertyRepository;
-import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 // PropertySubscriber связывает ServiceProperty и PropertyRepository
 // Задача донести изменения Property до PropertyRepository
 // PropertySubscriber не обладает функционалом изменять свойства, для изменения используйте Property
-// Получая элемент PropertySubscriber вы должны начать контролировать его жизненный цикл самостоятельно run()/shutdown()
+// Получая элемент PropertyDispatcher вы должны начать контролировать его жизненный цикл самостоятельно run()/shutdown()
 // Классная функция - это использовать namespace, не надо в репозитории использовать абсолютные ключи Property
 
 @Getter
-public class PropertyDispatcher implements LifeCycleInterface {
+public class PropertyDispatcher<T> implements LifeCycleInterface {
 
     @JsonIgnore
     private final PropertyListener propertyListener;
@@ -30,18 +28,20 @@ public class PropertyDispatcher implements LifeCycleInterface {
     @JsonIgnore
     private final ServiceProperty serviceProperty;
 
-    private final PropertyRepository propertyRepository;
+    private final PropertyRepository<T> propertyRepository;
 
     private final String namespace;
 
     private final AtomicBoolean run = new AtomicBoolean(false);
 
-    private final HashMap<String, PropertySubscription> subscriptions = new LinkedHashMap<>();
+    private final Set<PropertySubscription<T>> subscriptions = Util.getConcurrentHashSet();
+
+    private final Set<PropertySubscription<T>> regexp = Util.getConcurrentHashSet();
 
     public PropertyDispatcher(
             ServiceProperty serviceProperty,
             PropertyListener propertyListener,
-            PropertyRepository propertyRepository,
+            PropertyRepository<T> propertyRepository,
             String namespace
     ) {
         this.propertyListener = propertyListener;
@@ -50,123 +50,93 @@ public class PropertyDispatcher implements LifeCycleInterface {
         this.namespace = namespace;
 
         if (this.propertyRepository != null) {
-            UtilRisc.forEach(null, this.propertyRepository.getRepository(), this::addSubscription);
-            try {
-                this.propertyRepository.checkNotNull();
-            } catch (Throwable th) {
-                Map<String, String> result;
-                if (namespace != null) {
-                    result = new LinkedHashMap<>();
-                    UtilRisc.forEach(null, this.propertyRepository.getRepository(), (key, value) -> {
-                        result.put(getPropertyKey(key), value);
-                    });
-                } else {
-                    result = this.propertyRepository.getRepository();
-                }
-                throw new ForwardException("PropertyRepository: " + UtilJson.toStringPretty(result, "{}"), th);
-            }
+            this.propertyRepository.init(this);
+            this.propertyRepository.checkNotNull();
         }
     }
 
-    public String getPropertyKeyByRepositoryKey(String keyRepository) {
-        if (getPropertyRepository() == null) {
-            throw new RuntimeException("PropertyRepository is null");
-        }
-        if (!getPropertyRepository().getRepository().containsKey(keyRepository)) {
-            throw new RuntimeException("Not found key: " + keyRepository + "; in repository ns: " + getPropertyRepository());
-        }
-        return getPropertyKey(keyRepository);
-    }
-
-    // Так как сам репопозиторий не знает в каком namespace он работает, нам необходимо сделать прокси
-    // для преобразования ключа
-    public void setRepositoryProxy(String key, String value) {
-        if (propertyRepository != null) {
-            propertyRepository.setRepository(getRepositoryKey(key), value);
-        }
-    }
-
-    // Подписки не вызывают onPropertySubscriptionUpdate, да PropertyRepository заполнится, но не более
-    public PropertyDispatcher addSubscription(String key, String defaultValue) {
-        PropertySubscription propertySubscription = new PropertySubscription(this, serviceProperty)
-                .setPropertyKey(getPropertyKey(key))
-                .setDefaultValue(defaultValue)
-                .setDescription(propertyRepository != null ? propertyRepository.getDescription(key) : null)
-                .syncPropertyRepository();
-        subscriptions.put(key, propertySubscription);
+    // Подписки не вызывают onPropertyUpdate.
+    // Подписаться на серию Property по регулярному выражению
+    public PropertyDispatcher<T> addSubscriptionRegexp(String regexp) {
+        this.regexp.add(
+                new PropertySubscription<>(this)
+                        .setRegexp(regexp));
+        UtilRisc.forEach(null, serviceProperty.getByRegexp(regexp), property -> {
+            propertyRepository.append(getRepositoryPropertyKey(property.getKey()), this);
+        });
         if (isRun()) {
-            run();
-        }
-        return this;
-    }
-
-    // Подписки не вызывают onPropertySubscriptionUpdate, да PropertyRepository заполнится, но не более
-    // Подписаться на серию настроек по регулярному выражению
-    public PropertyDispatcher addSubscriptionRegexp(String regexp) {
-        subscriptions.put(
-                regexp,
-                new PropertySubscription(this, serviceProperty)
-                        .setRegexp(regexp)
-                        .syncPropertyRepository()
-        );
-        if (isRun()) {
-            run();
+            reload();
         }
         return this;
     }
 
     @SuppressWarnings("all")
-    public PropertyDispatcher removeSubscriptionByRepositoryKey(String key) {
-        PropertySubscription remove = subscriptions.remove(key);
-        serviceProperty.removeSubscription(remove);
-        return this;
+    public PropertyDispatcher<T> removeSubscriptionByRepositoryPropertyKey(String repositoryPropertyKey) {
+        return removeSubscriptionByPropertyKey(getPropertyKey(repositoryPropertyKey));
     }
 
     @SuppressWarnings("unused")
-    public PropertyDispatcher removeSubscriptionByPropertiesKey(String propKey) {
-        removeSubscriptionByRepositoryKey(getRepositoryKey(propKey));
+    public PropertyDispatcher<T> removeSubscriptionByPropertyKey(String propertyKey) {
+        UtilRisc.forEach(null, subscriptions, propertySubscription -> {
+            if (propertySubscription.getPropertyKey().equals(propertyKey)) {
+                subscriptions.remove(propertySubscription);
+                serviceProperty.removeSubscription(propertySubscription);
+            }
+        });
         return this;
     }
 
     // Вызывается из PropertySubscription, когда приходит уведомление от Property что значение изменено
-    public void onPropertySubscriptionUpdate(String oldValue, Property property) {
-        String repositoryKey = getRepositoryKey(property.getKey());
+    public void onPropertyUpdate(String propertyKey, String oldValue, String newValue) {
+        String repositoryPropertyKey = getRepositoryPropertyKey(propertyKey);
         if (propertyRepository != null) {
-            propertyRepository.setRepository(repositoryKey, property.get());
+            propertyRepository.updateRepository(repositoryPropertyKey, this);
         }
         if (propertyListener != null) {
-            propertyListener.onPropertyUpdate(repositoryKey, oldValue, property);
+            propertyListener.onPropertyUpdate(repositoryPropertyKey, oldValue, newValue);
         }
     }
 
+    @SuppressWarnings("unused")
+    public String getPropertyKey(PropertyEnvelopeRepository<T> propertyEnvelopeRepository) {
+        if (propertyEnvelopeRepository == null) {
+            throw new RuntimeException("PropertyEnvelopeRepository is null");
+        }
+        PropertyRepository<T> propertyRepository = getPropertyRepository();
+        if (propertyRepository == null) {
+            throw new RuntimeException("PropertyRepository is null");
+        }
+        return getPropertyKey(propertyEnvelopeRepository.getRepositoryPropertyKey());
+    }
+
     // Получить ключик с ns, как будет полностью выглядеть ключ в .properties
-    private String getPropertyKey(String key) {
-        if (key.isEmpty()) {
+    public String getPropertyKey(String repositoryPropertyKey) {
+        if (repositoryPropertyKey.isEmpty()) {
             if (namespace == null) {
                 // Не надо таких поворотов, когда и ns = null и ключ пустой
-                // На что это ссылка получается в property? на на что?
+                // На что это ссылка получается в property?
                 // Допустим есть ns = run.args.x1 и ключ пустота => подписываемся на run.args.x1
                 // Если ns = "" и ключ = "" мы подписываемся на "" - а это исключено
                 throw new RuntimeException("Определитесь либо ns = null либо key.isEmpty()");
             }
             return namespace;
         } else {
-            return namespace != null ? (namespace + "." + key) : key;
+            return namespace != null ? (namespace + "." + repositoryPropertyKey) : repositoryPropertyKey;
         }
     }
 
     // Получить ключик без ns, как он числится в репозитории
-    private String getRepositoryKey(String propKey) {
-        if (namespace == null && propKey.isEmpty()) {
+    private String getRepositoryPropertyKey(String propertyKey) {
+        if (namespace == null && propertyKey.isEmpty()) {
             throw new RuntimeException("Определитесь либо ns = null либо key.isEmpty()");
         } else if (namespace == null) {
-            return propKey;
-        } else if (propKey.isEmpty()) {
+            return propertyKey;
+        } else if (propertyKey.isEmpty()) {
             return namespace;
-        } else if (propKey.equals(namespace)) {
+        } else if (propertyKey.equals(namespace)) {
             return "";
         } else {
-            return propKey.substring(namespace.length() + 1);
+            return propertyKey.substring(namespace.length() + 1);
         }
     }
 
@@ -177,14 +147,35 @@ public class PropertyDispatcher implements LifeCycleInterface {
 
     @Override
     public void run() {
-        run.set(true);
-        subscriptions.forEach((_, subscription) -> serviceProperty.addSubscription(subscription));
+        if (run.compareAndSet(false, true)) {
+            UtilRisc.forEach(null, regexp, serviceProperty::addSubscription);
+            UtilRisc.forEach(null, this.propertyRepository.getListPropertyEnvelopeRepository(), propertyEnvelopeRepository -> {
+                PropertySubscription<T> propertySubscription = new PropertySubscription<>(this)
+                        .setPropertyKey(propertyEnvelopeRepository.getPropertyKey());
+                serviceProperty.addSubscription(propertySubscription);
+                subscriptions.add(propertySubscription);
+            });
+
+            UtilRisc.forEach(null, propertyRepository.getListPropertyEnvelopeRepository(), tPropertyEnvelopeRepository -> {
+                ServiceProperty.Equals equals = tPropertyEnvelopeRepository.propertyEquals();
+                if (!equals.isEquals()) {
+                    onPropertyUpdate(
+                            tPropertyEnvelopeRepository.getPropertyKey(),
+                            equals.getOldValue(),
+                            equals.getNewValue()
+                    );
+                }
+            });
+        }
     }
 
     @Override
     public void shutdown() {
-        run.set(false);
-        subscriptions.forEach((_, subscription) -> serviceProperty.removeSubscription(subscription));
+        if (run.compareAndSet(true, false)) {
+            UtilRisc.forEach(null, subscriptions, serviceProperty::removeSubscription);
+            UtilRisc.forEach(null, regexp, serviceProperty::removeSubscription);
+            subscriptions.clear();
+        }
     }
 
 }

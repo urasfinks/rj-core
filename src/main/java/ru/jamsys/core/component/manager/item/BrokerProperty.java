@@ -1,23 +1,25 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.annotation.PropertyDescription;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 
 @Getter
-public class BrokerProperty extends AnnotationPropertyExtractor {
+@FieldNameConstants
+public class BrokerProperty extends AnnotationPropertyExtractor<Integer> {
 
     @SuppressWarnings("all")
     @PropertyNotNull
-    @PropertyName("size")
+    @PropertyKey("size")
     @PropertyDescription("Размер рабочей очереди")
     private volatile Integer size = 3000;
 
     @SuppressWarnings("all")
     @PropertyNotNull
-    @PropertyName("tail.size")
+    @PropertyKey("tail.size")
     @PropertyDescription("Размер пробы очереди")
     private volatile Integer tailSize = 5;
 

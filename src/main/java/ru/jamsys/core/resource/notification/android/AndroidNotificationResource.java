@@ -4,7 +4,6 @@ import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -31,13 +30,13 @@ public class AndroidNotificationResource
 
     private String accessToken;
 
-    private PropertyDispatcher propertyDispatcher;
+    private PropertyDispatcher<Object> propertyDispatcher;
 
     private final AndroidNotificationProperty androidNotificationProperty = new AndroidNotificationProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 androidNotificationProperty,
@@ -116,7 +115,7 @@ public class AndroidNotificationResource
     }
 
     @Override
-    public void onPropertyUpdate(String key, String oldValue, Property property) {
+    public void onPropertyUpdate(String key, String oldValue, String newValue) {
         if (androidNotificationProperty.getScope() == null || androidNotificationProperty.getStorageCredentials() == null) {
             return;
         }

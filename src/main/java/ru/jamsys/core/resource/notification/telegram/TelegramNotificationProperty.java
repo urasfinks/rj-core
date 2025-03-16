@@ -1,23 +1,25 @@
 package ru.jamsys.core.resource.notification.telegram;
 
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@FieldNameConstants
 @Getter
 public class TelegramNotificationProperty extends AnnotationPropertyExtractor {
 
-    @PropertyName("notification.telegram.security.alias")
+    @PropertyKey("notification.telegram.security.alias")
     private String securityAlias;
 
-    @PropertyName("notification.telegram.url")
+    @PropertyKey("notification.telegram.url")
     private String url;
 
-    @PropertyName("notification.telegram.idChat")
+    @PropertyKey("notification.telegram.idChat")
     private String idChat;
 
-    @PropertyName("notification.telegram.timeoutMs")
+    @PropertyKey("notification.telegram.timeoutMs")
     private Integer timeoutMs;
 
 }

@@ -1,6 +1,7 @@
 package ru.jamsys.core.component.cron;
 
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
@@ -10,7 +11,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Log;
 import ru.jamsys.core.extension.ByteTransformer;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
@@ -33,28 +34,29 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+@FieldNameConstants
 @Component
 @Lazy
 @Getter
-public class UploaderLog extends AnnotationPropertyExtractor implements Cron5s, PromiseGenerator {
+public class UploaderLog extends AnnotationPropertyExtractor<Object> implements Cron5s, PromiseGenerator {
 
     private final Broker<Log> broker;
 
     private final ServicePromise servicePromise;
 
     @PropertyNotNull
-    @PropertyName("folder")
+    @PropertyKey("folder")
     private String folder = "LogManager";
 
     @PropertyNotNull
-    @PropertyName("file.index")
-    private String fileIndex;
+    @PropertyKey("file.index")
+    private String fileIndex = "test";
 
-    @PropertyName("limit.points")
+    @PropertyKey("limit.points")
     private Integer limitPoints = 2000;
 
     @PropertyNotNull
-    @PropertyName("remote")
+    @PropertyKey("remote")
     private Boolean remote = false;
 
     public enum LogUploaderPromiseProperty {
@@ -64,7 +66,7 @@ public class UploaderLog extends AnnotationPropertyExtractor implements Cron5s, 
     public UploaderLog(ServicePromise servicePromise) {
         this.servicePromise = servicePromise;
         broker = App.get(Core.class).getLogBroker();
-        new PropertyDispatcher(
+        new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
                 this,

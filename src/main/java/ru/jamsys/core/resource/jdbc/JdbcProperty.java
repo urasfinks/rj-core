@@ -1,20 +1,22 @@
 package ru.jamsys.core.resource.jdbc;
 
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@FieldNameConstants
 @Getter
-public class JdbcProperty extends AnnotationPropertyExtractor {
+public class JdbcProperty extends AnnotationPropertyExtractor<String> {
 
-    @PropertyName("jdbc.uri")
+    @PropertyKey("jdbc.uri")
     private String uri;
 
-    @PropertyName("jdbc.user")
+    @PropertyKey("jdbc.user")
     private String user;
 
-    @PropertyName("jdbc.security.alias")
+    @PropertyKey("jdbc.security.alias")
     private String securityAlias;
 
 }

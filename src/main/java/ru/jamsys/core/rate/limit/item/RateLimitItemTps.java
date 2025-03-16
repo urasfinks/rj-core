@@ -1,11 +1,12 @@
 package ru.jamsys.core.rate.limit.item;
 
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.annotation.PropertyDescription;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.statistic.Statistic;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@FieldNameConstants
 public class RateLimitItemTps
         extends AnnotationPropertyExtractor
         implements
@@ -28,7 +30,7 @@ public class RateLimitItemTps
     private final String namespace;
 
     @SuppressWarnings("all")
-    @PropertyName("max")
+    @PropertyKey("max")
     @PropertyDescription("Максимальное кол-во итераций")
     private volatile Integer max = 999999;
 

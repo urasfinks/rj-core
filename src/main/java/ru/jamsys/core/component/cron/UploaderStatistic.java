@@ -3,6 +3,7 @@ package ru.jamsys.core.component.cron;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
@@ -13,7 +14,7 @@ import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ByteTransformer;
 import ru.jamsys.core.extension.CascadeName;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
@@ -37,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @SuppressWarnings("unused")
+@FieldNameConstants
 @Component
 @Lazy
 public class UploaderStatistic extends AnnotationPropertyExtractor implements Cron5s, PromiseGenerator, CascadeName {
@@ -47,17 +49,17 @@ public class UploaderStatistic extends AnnotationPropertyExtractor implements Cr
 
     @SuppressWarnings("all")
     @Getter
-    @PropertyName("folder")
+    @PropertyKey("folder")
     private String folder = "LogManager";
 
     @SuppressWarnings("all")
     @Getter
-    @PropertyName("limit.points")
+    @PropertyKey("limit.points")
     private Integer limitPoints = 5000;
 
     @SuppressWarnings("all")
     @Getter
-    @PropertyName("remote")
+    @PropertyKey("remote")
     private Boolean remote = false;
 
     @Override

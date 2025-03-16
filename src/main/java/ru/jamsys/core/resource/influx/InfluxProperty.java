@@ -1,23 +1,25 @@
 package ru.jamsys.core.resource.influx;
 
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@FieldNameConstants
 @Getter
-public class InfluxProperty extends AnnotationPropertyExtractor {
+public class InfluxProperty extends AnnotationPropertyExtractor<String> {
 
-    @PropertyName("influx.org")
+    @PropertyKey("influx.org")
     private String org;
 
-    @PropertyName("influx.bucket")
+    @PropertyKey("influx.bucket")
     private String bucket;
 
-    @PropertyName("influx.host")
+    @PropertyKey("influx.host")
     private String host;
 
-    @PropertyName("influx.security.alias")
+    @PropertyKey("influx.security.alias")
     private String alias;
 
 }

@@ -1,6 +1,7 @@
 package ru.jamsys.core.component.cron;
 
 import lombok.Getter;
+import lombok.experimental.FieldNameConstants;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -12,7 +13,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unused")
+@FieldNameConstants
 @Component
 @Lazy
 public class StatisticFlush extends AnnotationPropertyExtractor implements Cron1s, PromiseGenerator, CascadeName {
@@ -44,7 +46,7 @@ public class StatisticFlush extends AnnotationPropertyExtractor implements Cron1
 
     @SuppressWarnings("all")
     @Getter
-    @PropertyName("remote")
+    @PropertyKey("remote")
     private Boolean remote = false;
 
     public StatisticFlush(

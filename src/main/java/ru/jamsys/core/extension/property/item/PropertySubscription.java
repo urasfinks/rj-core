@@ -9,40 +9,50 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
+import ru.jamsys.core.extension.property.repository.PropertyEnvelopeRepository;
 import ru.jamsys.core.extension.property.repository.PropertyRepository;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.Objects;
 
-// Подписка - это как НСИ, что ключ или шаблон property привязан к подписчику
+// Подписка - это как НСИ, что ключ (PropertyKey) или шаблон (regexp) привязан к подписчику (PropertyDispatcher).
 // Подписка хранится в Property, для того, что бы когда будет изменение значения
-// пробежаться по всем подпискам и вызвать onUpdate, что бы до подписчиков распространить событие изменения
-// Так же подписка хранится в подписчике, у подписчика список по подпискам, так как подписчик может подписываться сразу
-// на несколько полей
+// пробежаться по всем подпискам и вызвать onUpdate, что бы до подписчиков (диспетчеров) распространить событие изменения.
+// Так же подписка хранится в подписчике (PropertyDispatcher), что бы иметь возможность отписаться или заново подписаться
+// run() / shutdown()
 
 @Getter
 @ToString
 @Setter
 @Accessors(chain = true)
-public class PropertySubscription {
+public class PropertySubscription<T> {
 
     private String regexp; //regexp
 
-    @JsonIgnore
     private String propertyKey;
-
-    private String defaultValue;
-
-    @JsonIgnore
-    private String description;
 
     @ToString.Exclude
     @JsonIgnore
-    private final PropertyDispatcher propertyDispatcher;
+    @Getter
+    private final PropertyDispatcher<T> propertyDispatcher;
 
-    @SuppressWarnings("unused") //used UtilJson
-    public String getDispatcherNamespace() {
-        return propertyDispatcher.getNamespace();
+    public PropertySubscription(PropertyDispatcher<T> propertyDispatcher) {
+        this.propertyDispatcher = propertyDispatcher;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PropertySubscription<?> that = (PropertySubscription<?>) o;
+        return Objects.equals(regexp, that.regexp)
+                && Objects.equals(propertyKey, that.propertyKey)
+                && Objects.equals(propertyDispatcher, that.propertyDispatcher);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(regexp, propertyKey, propertyDispatcher);
     }
 
     @SuppressWarnings("unused") //used UtilJson
@@ -56,48 +66,11 @@ public class PropertySubscription {
 
     @SuppressWarnings("unused") //used UtilJson
     public String getClassPropertyRepository() {
-        PropertyRepository propertyRepository = propertyDispatcher.getPropertyRepository();
+        PropertyRepository<T> propertyRepository = propertyDispatcher.getPropertyRepository();
         if (propertyRepository != null) {
             return propertyRepository.getClass().getName();
         }
         return null;
-    }
-
-    @ToString.Exclude
-    @JsonIgnore
-    private final ServiceProperty serviceProperty;
-
-    public PropertySubscription(PropertyDispatcher propertyDispatcher, ServiceProperty serviceProperty) {
-        this.propertyDispatcher = propertyDispatcher;
-        this.serviceProperty = serviceProperty;
-    }
-
-    // Вызывается из Property, когда обновлено значение
-    public void onPropertyUpdate(String oldValue, Property property) {
-        propertyDispatcher.onPropertySubscriptionUpdate(oldValue, property);
-    }
-
-    // Пролить значения до PropertyRepository
-    public PropertySubscription syncPropertyRepository() {
-        if (propertyKey != null) {
-            // Получили default значение, получили Property, если не сошлись, считаем приоритетным Property.get()
-            String propertyValue = serviceProperty.computeIfAbsent(propertyKey, defaultValue, property -> {
-                PropertyRepository propertyRepository = propertyDispatcher.getPropertyRepository();
-                if (propertyRepository != null) {
-                    property.getSetTrace().getLast().setResource(propertyRepository.getClass().getName());
-                }
-                property.setDescriptionIfNull(getDescription());
-            }).get();
-            if (!Objects.equals(defaultValue, propertyValue)) {
-                propertyDispatcher.setRepositoryProxy(propertyKey, propertyValue);
-            }
-        }
-        if (regexp != null) {
-            UtilRisc.forEach(null, serviceProperty.get(regexp), property -> {
-                propertyDispatcher.setRepositoryProxy(property.getKey(), property.get());
-            });
-        }
-        return this;
     }
 
 }

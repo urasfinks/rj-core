@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.resource.Resource;
@@ -39,13 +38,13 @@ public class InfluxResource
 
     private WriteApiBlocking writer;
 
-    private PropertyDispatcher propertyDispatcher;
+    private PropertyDispatcher<String> propertyDispatcher;
 
     private final InfluxProperty influxProperty = new InfluxProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) {
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 influxProperty,
@@ -69,7 +68,7 @@ public class InfluxResource
             SecurityComponent securityComponent = App.get(SecurityComponent.class);
             client = InfluxDBClientFactory.create(influxProperty.getHost(), securityComponent.get(influxProperty.getAlias()));
             client.setLogLevel(LogLevel.NONE);
-            // Как вы поняли) Верхняя строчка не работает
+            // Как вы поняли - верхняя строчка не работает
             Logger.getLogger(AbstractRestClient.class.getName()).setLevel(Level.OFF);
             if (!client.ping()) {
                 throw new RuntimeException("Ping request wasn't successful");
@@ -131,7 +130,7 @@ public class InfluxResource
     }
 
     @Override
-    public void onPropertyUpdate(String key, String oldValue, Property property) {
+    public void onPropertyUpdate(String key, String oldValue, String newValue) {
         down();
         if (influxProperty.getHost() == null || influxProperty.getAlias() == null) {
             return;

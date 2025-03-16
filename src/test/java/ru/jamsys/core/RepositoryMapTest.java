@@ -1,19 +1,19 @@
 package ru.jamsys.core;
 
+import lombok.experimental.FieldNameConstants;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.annotation.PropertyName;
+import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
-import ru.jamsys.core.extension.property.repository.PropertyRepositoryMap;
+import ru.jamsys.core.extension.property.repository.PropertyEnvelopeRepository;
+import ru.jamsys.core.extension.property.repository.PropertyRepositoryList;
 import ru.jamsys.core.flat.util.UtilLog;
-
-import java.util.Map;
 
 // IO time: 5ms
 // COMPUTE time: 5ms
@@ -29,7 +29,7 @@ class RepositoryMapTest {
         App.shutdown();
     }
 
-    public static class XX extends PropertyRepositoryMap<String> implements PropertyListener {
+    public static class XX extends PropertyRepositoryList<String> implements PropertyListener {
 
         int c = 0;
 
@@ -38,16 +38,23 @@ class RepositoryMapTest {
         }
 
         @Override
-        public void onPropertyUpdate(String key, String oldValue, Property property) {
+        public void onPropertyUpdate(String key, String oldValue, String newValue) {
             c++;
         }
+    }
+
+    @Test
+    void eq() {
+        PropertyEnvelopeRepository<Object> p1 = new PropertyEnvelopeRepository<>(Object.class, "run.args.security.path.storage", null, false);
+        PropertyEnvelopeRepository<Object> p2 = new PropertyEnvelopeRepository<>(Object.class, "run.args.security.path.storage", null, false);
+        Assertions.assertEquals(p1, p2);
     }
 
     @Test
     void test() {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         XX xx = new XX();
-        PropertyDispatcher propertyDispatcher = new PropertyDispatcher(
+        PropertyDispatcher<String> propertyDispatcher = new PropertyDispatcher<>(
                 serviceProperty,
                 xx,
                 xx,
@@ -55,29 +62,30 @@ class RepositoryMapTest {
         );
         propertyDispatcher.run();
 
-        propertyDispatcher
-                .addSubscription("run.args.security.path.storage", null)
-                .addSubscription("run.args.security.path.storage", null);
-
+        xx.append("run.args.security.path.storage", propertyDispatcher);
+        xx.append("run.args.security.path.storage", propertyDispatcher);
         propertyDispatcher.reload();
 
         Assertions.assertEquals(0, xx.c);
 
         Assertions.assertEquals(1, propertyDispatcher.getSubscriptions().size());
 
-        propertyDispatcher.addSubscription("run.args.security.path.public.key", null);
+        xx.append("run.args.security.path.public.key", propertyDispatcher);
         propertyDispatcher.reload();
 
         Assertions.assertEquals(2, propertyDispatcher.getSubscriptions().size());
-        UtilLog.printInfo(getClass(), propertyDispatcher);
+        //UtilLog.printInfo(getClass(), propertyDispatcher);
         Assertions.assertEquals(0, xx.c);
 
         serviceProperty.set("run.args.security.path.storage", "xx");
-        Assertions.assertEquals(2, xx.c);
+        // Обновили 1 значение, должно прийти 1 обновление
+        Assertions.assertEquals(1, xx.c);
 
         // Дубликат значения не должен вызывать onPropUpdate
         serviceProperty.set("run.args.security.path.storage", "xx");
-        Assertions.assertEquals(2, xx.c);
+        Assertions.assertEquals(1, xx.c);
+
+
 
         propertyDispatcher.shutdown();
         //Assertions.assertEquals(0, propertySubscriber.getListSubscriber().size());
@@ -85,19 +93,21 @@ class RepositoryMapTest {
         // После отписки мы не должны получать уведомления об изменениях
 
         serviceProperty.set("run.args.security.path.storage", "x2");
-        Assertions.assertEquals(3, xx.c);
+        Assertions.assertEquals(1, xx.c);
 
         // Обратно подписываемся
-        propertyDispatcher.addSubscription("run.args.security.path.storage", null);
-        Assertions.assertEquals(3, xx.c);
+        propertyDispatcher.run();
+        // Но после обратной подписки мы должны получить уведомление, что произошли изменения так как
+        // В репе лежит xx, а в момент простоя значение поменялось на x2
+        Assertions.assertEquals(2, xx.c);
 
-        propertyDispatcher.addSubscription("run.args.security.path.public.key", null);
-        Assertions.assertEquals(3, xx.c);
+        xx.append("run.args.security.path.public.key", propertyDispatcher);
+        Assertions.assertEquals(2, xx.c);
 
         serviceProperty.set("run.args.security.path.public.key", "x3");
         Assertions.assertEquals(3, xx.c);
 
-        propertyDispatcher.removeSubscriptionByRepositoryKey("run.args.security.path.public.key");
+        propertyDispatcher.removeSubscriptionByRepositoryPropertyKey("run.args.security.path.public.key");
 
         serviceProperty.set("run.args.security.path.public.key", "x4");
         Assertions.assertEquals(3, xx.c);
@@ -108,19 +118,19 @@ class RepositoryMapTest {
 
     }
 
-
-    static class x2 extends AnnotationPropertyExtractor implements PropertyListener {
+    @FieldNameConstants
+    static class x2 extends AnnotationPropertyExtractor<String> implements PropertyListener {
 
         @SuppressWarnings("all")
-        @PropertyName("security.path.storage")
+        @PropertyKey("security.path.storage")
         public String storage = "wef";
 
         @SuppressWarnings("all")
-        @PropertyName("security.path.public.key")
+        @PropertyKey("security.path.public.key")
         public String publicKey = "ppbb";
 
         @Override
-        public void onPropertyUpdate(String key, String oldValue, Property property) {
+        public void onPropertyUpdate(String key, String oldValue, String newValue) {
             UtilLog.printInfo(getClass(), key);
         }
     }
@@ -130,10 +140,8 @@ class RepositoryMapTest {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         x2 x2 = new x2();
 
-        Map<String, String> mapPropValue = x2.getRepository();
-        System.out.println(mapPropValue);
 
-        PropertyDispatcher subscribe = new PropertyDispatcher(serviceProperty, x2, x2, "run.args");
+        PropertyDispatcher<String> subscribe = new PropertyDispatcher<>(serviceProperty, x2, x2, "run.args");
         subscribe.run();
 
         Assertions.assertEquals(2, subscribe.getSubscriptions().size());
