@@ -18,6 +18,8 @@ import java.util.Map;
 @Accessors(chain = true)
 public class LogSimple implements Log {
 
+    private short writerFlag;
+
     public long timeAdd = System.currentTimeMillis();
 
     public LogType logType;
@@ -65,6 +67,16 @@ public class LogSimple implements Log {
     @Override
     public Map<String, String> getHeader() {
         return Map.of();
+    }
+
+    @Override
+    public short getWriterFlag() {
+        return writerFlag;
+    }
+
+    @Override
+    public void setWriterFlag(short writerFlag) {
+        this.writerFlag = writerFlag;
     }
 
 }

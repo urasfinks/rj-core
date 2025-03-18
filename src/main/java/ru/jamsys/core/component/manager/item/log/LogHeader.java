@@ -21,6 +21,8 @@ import java.util.Map;
 @Accessors(chain = true)
 public class LogHeader implements Log {
 
+    private short writerFlag;
+
     public long timeAdd = System.currentTimeMillis();
 
     public Map<String, String> header = new LinkedHashMap<>();
@@ -50,6 +52,16 @@ public class LogHeader implements Log {
     public LogHeader addHeader(String key, String value) {
         this.header.put(key, value);
         return this;
+    }
+
+    @Override
+    public short getWriterFlag() {
+        return writerFlag;
+    }
+
+    @Override
+    public void setWriterFlag(short writerFlag) {
+        this.writerFlag = writerFlag;
     }
 
     public byte[] toByte() throws Exception {

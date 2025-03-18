@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 
 // short 16 бит (2 байта) Диапазон значений: от -32,768 до 32,767 (включительно)
 // int 32 бита (4 байта) Диапазон значений: от -2,147,483,648 до 2,147,483,647 (включительно)
-
+// TODO: UtilLogConverter -> UtilFileByteReader
 public class UtilLogConverter {
 
     // Читаем 2 байта длины данных, потом читаем столько байт данных

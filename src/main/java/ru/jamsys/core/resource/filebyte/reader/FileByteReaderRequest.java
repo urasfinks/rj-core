@@ -14,4 +14,5 @@ public class FileByteReaderRequest {
         this.filePath = filePath;
         this.clsItem = clsItem;
     }
+
 }
