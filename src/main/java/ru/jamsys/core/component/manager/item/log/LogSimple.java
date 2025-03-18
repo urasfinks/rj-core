@@ -1,4 +1,4 @@
-package ru.jamsys.core.component.manager.item;
+package ru.jamsys.core.component.manager.item.log;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +24,8 @@ public class LogSimple implements Log {
 
     public String data;
 
+    public LogSimple() {}
+
     public LogSimple(LogType logType) {
         this.logType = logType;
     }
@@ -33,7 +35,7 @@ public class LogSimple implements Log {
         return this;
     }
 
-    public byte[] getByteInstance() throws Exception {
+    public byte[] toByte() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         UtilLogConverter.writeShortString(os, logType.getNameCamel());
         UtilLogConverter.writeShortString(os, timeAdd + "");
@@ -41,8 +43,14 @@ public class LogSimple implements Log {
         return os.toByteArray();
     }
 
+    public static LogSimple instanceFromBytes(byte[] bytes) throws Exception {
+        LogSimple logSimple = new LogSimple();
+        logSimple.toObject(bytes);
+        return logSimple;
+    }
+
     @Override
-    public void instanceFromByte(byte[] bytes) throws Exception {
+    public void toObject(byte[] bytes) throws Exception {
         InputStream fis = new ByteArrayInputStream(bytes);
         logType = LogType.valueOf(UtilCodeStyle.camelToSnake(UtilLogConverter.readShortString(fis)));
         timeAdd = Long.parseLong(UtilLogConverter.readShortString(fis));

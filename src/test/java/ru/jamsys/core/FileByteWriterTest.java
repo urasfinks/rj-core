@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerFileByteWriter;
 import ru.jamsys.core.component.manager.item.*;
+import ru.jamsys.core.component.manager.item.log.Log;
+import ru.jamsys.core.component.manager.item.log.LogHeader;
+import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -221,10 +224,9 @@ class FileByteWriterTest {
     @Test
     void test() throws Exception {
         LogHeader log1 = new LogHeader(LogType.INFO, FileByteWriterTest.class, "Hello");
-        byte[] x = log1.getByteInstance();
+        byte[] x = log1.toByte();
 
-        LogHeader log2 = new LogHeader(LogType.INFO, FileByteWriterTest.class, null);
-        log2.instanceFromByte(x);
+        LogHeader log2 = LogHeader.instanceFromBytes(x);
         System.out.println(log2);
         Assertions.assertEquals(log1.toString(), log2.toString());
 
@@ -234,11 +236,9 @@ class FileByteWriterTest {
     void serialize() {
         StatisticSec statisticSec1 = new StatisticSec();
         statisticSec1.getList().add(new Statistic().addField("f1", 1).addTag("t1", "Hello"));
-        byte[] byteInstance = statisticSec1.getByteInstance();
+        byte[] byteInstance = statisticSec1.toByte();
 
-        StatisticSec statisticSec2 = new StatisticSec();
-        statisticSec2.instanceFromByte(byteInstance);
-
+        StatisticSec statisticSec2 = StatisticSec.instanceFromBytes(byteInstance);
         Assertions.assertEquals(statisticSec1.toString(), statisticSec2.toString());
     }
 

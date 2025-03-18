@@ -1,7 +1,7 @@
 package ru.jamsys.core.flat.util;
 
-import ru.jamsys.core.component.manager.item.LogHeader;
-import ru.jamsys.core.component.manager.item.LogType;
+import ru.jamsys.core.component.manager.item.log.LogHeader;
+import ru.jamsys.core.component.manager.item.log.LogType;
 
 public class UtilLog {
 

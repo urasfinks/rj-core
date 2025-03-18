@@ -1,4 +1,4 @@
-package ru.jamsys.core.component.manager.item;
+package ru.jamsys.core.component.manager.item.log;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +27,10 @@ public class LogHeader implements Log {
 
     public String data;
 
-    public final LogType logType;
+    public LogType logType;
+
+    public LogHeader() {
+    }
 
     public LogHeader(LogType logType, Class<?> cls, Object data) {
         this.logType = logType;
@@ -35,7 +38,6 @@ public class LogHeader implements Log {
             this.data = data instanceof String ? data.toString() : UtilJson.toStringPretty(data, "--");
         }
         addHeader("time", timeAdd);
-        addHeader("type", logType.getNameCamel());
         addHeader("thread", Thread.currentThread().getName());
         addHeader("class", cls.getName());
     }
@@ -50,9 +52,10 @@ public class LogHeader implements Log {
         return this;
     }
 
-    public byte[] getByteInstance() throws Exception {
+    public byte[] toByte() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        os.write(UtilByte.shortToBytes((short) header.size()));
+        os.write(UtilByte.shortToBytes((short) logType.ordinal())); //Записали тип лога в первые 2 байта
+        os.write(UtilByte.shortToBytes((short) header.size())); // В следующие 2 байта записали кол-во заголовков
 
         // Запись заголовков
         for (String key : header.keySet()) {
@@ -64,9 +67,16 @@ public class LogHeader implements Log {
         return os.toByteArray();
     }
 
+    public static LogHeader instanceFromBytes(byte[] bytes) throws Exception {
+        LogHeader logHeader = new LogHeader();
+        logHeader.toObject(bytes);
+        return logHeader;
+    }
+
     @Override
-    public void instanceFromByte(byte[] bytes) throws Exception {
+    public void toObject(byte[] bytes) throws Exception {
         InputStream fis = new ByteArrayInputStream(bytes);
+        setLogType(LogType.valueOfOrdinal(UtilByte.bytesToShort(fis.readNBytes(2))));
         short countHeader = UtilByte.bytesToShort(fis.readNBytes(2));
         for (int i = 0; i < countHeader; i++) {
             addHeader(UtilLogConverter.readShortString(fis), UtilLogConverter.readShortString(fis));

@@ -33,7 +33,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         LifeCycleInterface {
 
     @Getter
-    private final Broker<ByteTransformer> broker;
+    private final Broker<ByteSerialization> broker;
 
     private String currentFilePath;
 
@@ -65,10 +65,10 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         // Это собственный брокер для текущего экземпляра, он копит то, что надо записывать на ФС
         broker = App.get(ManagerBroker.class).initAndGet(
                 key,
-                ByteTransformer.class,
+                ByteSerialization.class,
                 byteTransformer -> {
                     try {
-                        UtilLog.error(FileByteWriter.class, new String(byteTransformer.getByteInstance()))
+                        UtilLog.error(FileByteWriter.class, new String(byteTransformer.toByte()))
                                 .addHeader("exception", "drop broker key: " + key)
                                 .print();
                     } catch (Exception e) {
@@ -149,9 +149,9 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                 + ".proc.bin";
     }
 
-    public void append(ByteTransformer byteTransformer) {
+    public void append(ByteSerialization byteSerialization) {
         setActivity();
-        broker.add(byteTransformer, 6_000);
+        broker.add(byteSerialization, 6_000);
     }
 
     @Override
@@ -186,10 +186,10 @@ public class FileByteWriter extends ExpirationMsMutableImpl
             try (BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(currentFilePath, writeByteToCurrentFile.get() > 0))) {
                 while (!broker.isEmpty() && threadRun.get()) {
                     try {
-                        ExpirationMsImmutableEnvelope<ByteTransformer> itemExpirationMsMutableEnvelope = broker.pollFirst();
+                        ExpirationMsImmutableEnvelope<ByteSerialization> itemExpirationMsMutableEnvelope = broker.pollFirst();
                         if (itemExpirationMsMutableEnvelope != null) {
-                            ByteTransformer item = itemExpirationMsMutableEnvelope.getValue();
-                            byte[] d = item.getByteInstance();
+                            ByteSerialization item = itemExpirationMsMutableEnvelope.getValue();
+                            byte[] d = item.toByte();
                             fos.write(UtilByte.intToBytes(d.length));
                             writeByteToCurrentFile.addAndGet(4);
                             fos.write(d);

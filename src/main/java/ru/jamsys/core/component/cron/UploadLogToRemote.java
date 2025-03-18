@@ -9,8 +9,8 @@ import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.component.manager.item.Log;
-import ru.jamsys.core.extension.ByteTransformer;
+import ru.jamsys.core.component.manager.item.log.Log;
+import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -127,7 +127,7 @@ public class UploadLogToRemote extends AnnotationPropertyExtractor<Object> imple
                     if (broker.getOccupancyPercentage() < 50) {
                         String readyFile = promise.getRepositoryMap(String.class, "readyFile");
                         if (readyFile != null) {
-                            List<ByteTransformer> execute = fileByteReaderResource.execute(new FileByteReaderRequest(readyFile, Log.class));
+                            List<ByteSerialization> execute = fileByteReaderResource.execute(new FileByteReaderRequest(readyFile, Log.class));
                             execute.forEach(byteItem -> broker.add((Log) byteItem, 6_000L));
                             try {
                                 UtilFile.remove(readyFile);

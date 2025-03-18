@@ -1,7 +1,10 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.ClassEquals;
+import ru.jamsys.core.extension.KeepAlive;
+import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -21,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 // Для задач, когда надо сформировать ошибки по timeOut
-// Но надо помнить, что всегда есть лаг срабатывания onExpired, так как keepAlive вызывается по расписанию
+// Но надо помнить, что всегда есть лаг срабатывания onExpired, так как keepAlive вызывается по расписанию.
 // Уменьшить лаг можно путём более частого вызова keepAlive
 // Мы не можем себе позволить постфактум менять timeout, так как в map заносится expiredTime из .getExpiredMs()
 // Возвращается одноразовая обёртка, для синхронизации данных в многопоточном режиме
@@ -179,11 +182,17 @@ public class Expiration<V>
         run.set(true);
     }
 
+    public boolean isEmpty() {
+        return bucket.isEmpty() && bucketQueueSize.isEmpty();
+    }
+
     @Override
     public void shutdown() {
         run.set(false);
-        bucket.clear();
-        bucketQueueSize.clear();
+        // Я считаю это не гуманно при стопе чистить корзины, а вдруг его включат через секунду,
+        // а мы уже удалил все данные. Я против такого.
+        //bucket.clear();
+        //bucketQueueSize.clear();
     }
 
 }

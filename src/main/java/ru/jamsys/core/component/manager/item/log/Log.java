@@ -1,13 +1,13 @@
-package ru.jamsys.core.component.manager.item;
+package ru.jamsys.core.component.manager.item.log;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceLoggerRemote;
-import ru.jamsys.core.extension.ByteTransformer;
+import ru.jamsys.core.extension.ByteSerialization;
 
 import java.io.PrintStream;
 import java.util.Map;
 
-public interface Log extends ByteTransformer {
+public interface Log extends ByteSerialization {
 
     LogType getLogType();
 

@@ -12,7 +12,7 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.extension.ByteTransformer;
+import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -153,7 +153,7 @@ public class UploadStatisticToRemote extends AnnotationPropertyExtractor<Object>
                     if (broker.getOccupancyPercentage() < 50) {
                         String readyFile = promise.getRepositoryMap(String.class, "readyFile");
                         if (readyFile != null) {
-                            List<ByteTransformer> execute = fileByteReaderResource.execute(
+                            List<ByteSerialization> execute = fileByteReaderResource.execute(
                                     new FileByteReaderRequest(readyFile, StatisticSec.class)
                             );
                             execute.forEach(byteItem -> broker.add((StatisticSec) byteItem, 6_000L));
