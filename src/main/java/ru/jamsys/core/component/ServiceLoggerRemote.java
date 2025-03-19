@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.component.manager.item.log.Log;
+import ru.jamsys.core.component.manager.item.log.PersistentData;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.LifeCycleComponent;
@@ -40,7 +40,7 @@ public class ServiceLoggerRemote extends AnnotationPropertyExtractor<Boolean> im
 
     private final Map<String, AtomicInteger> stat = new HashMap<>();
 
-    private final Broker<Log> broker;
+    private final Broker<PersistentData> broker;
 
     @SuppressWarnings("all")
     @Getter
@@ -62,10 +62,10 @@ public class ServiceLoggerRemote extends AnnotationPropertyExtractor<Boolean> im
         );
     }
 
-    public DisposableExpirationMsImmutableEnvelope<Log> add(Log log) {
-        stat.get(log.getLogType().getNameCamel()).incrementAndGet();
+    public DisposableExpirationMsImmutableEnvelope<PersistentData> add(PersistentData persistentData) {
+        stat.get(persistentData.getLogType().getNameCamel()).incrementAndGet();
         if (remote) {
-            return broker.add(new ExpirationMsImmutableEnvelope<>(log, 6_000));
+            return broker.add(new ExpirationMsImmutableEnvelope<>(persistentData, 6_000));
         }
         return null;
     }

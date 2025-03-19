@@ -22,7 +22,7 @@ import java.util.Map;
 @Setter
 @Accessors(chain = true)
 @JsonPropertyOrder({"writerFlag", "logType", "timeAdd", "header", "data"})
-public class LogHeader implements Log {
+public class PersistentDataHeader implements PersistentData {
 
     private short writerFlag;
 
@@ -34,10 +34,10 @@ public class LogHeader implements Log {
 
     public LogType logType;
 
-    public LogHeader() {
+    public PersistentDataHeader() {
     }
 
-    public LogHeader(LogType logType, Class<?> cls, Object body) {
+    public PersistentDataHeader(LogType logType, Class<?> cls, Object body) {
         this.logType = logType;
         if (body != null) {
             this.body = body instanceof String ? body.toString() : UtilJson.toStringPretty(body, "--");
@@ -47,12 +47,12 @@ public class LogHeader implements Log {
         addHeader("source", cls.getName());
     }
 
-    public LogHeader addHeader(String key, Object value) {
+    public PersistentDataHeader addHeader(String key, Object value) {
         addHeader(key, String.valueOf(value));
         return this;
     }
 
-    public LogHeader addHeader(String key, String value) {
+    public PersistentDataHeader addHeader(String key, String value) {
         this.header.put(key, value);
         return this;
     }
@@ -82,11 +82,11 @@ public class LogHeader implements Log {
         return os.toByteArray();
     }
 
-    public static LogHeader instanceFromBytes(byte[] bytes, short writerFlag) throws Exception {
-        LogHeader logHeader = new LogHeader();
-        logHeader.toObject(bytes);
-        logHeader.setWriterFlag(writerFlag);
-        return logHeader;
+    public static PersistentDataHeader instanceFromBytes(byte[] bytes, short writerFlag) throws Exception {
+        PersistentDataHeader persistentDataHeader = new PersistentDataHeader();
+        persistentDataHeader.toObject(bytes);
+        persistentDataHeader.setWriterFlag(writerFlag);
+        return persistentDataHeader;
     }
 
     @Override

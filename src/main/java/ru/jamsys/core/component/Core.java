@@ -7,7 +7,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerFileByteWriter;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.component.manager.item.log.Log;
+import ru.jamsys.core.component.manager.item.log.PersistentData;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -39,7 +39,7 @@ public class Core implements LifeCycleInterface {
     private Broker<StatisticSec> statisticSecBroker;
 
     @Getter
-    private Broker<Log> logBroker;
+    private Broker<PersistentData> logBroker;
 
     public Core(
             ServiceClassFinder serviceClassFinder,
@@ -75,11 +75,11 @@ public class Core implements LifeCycleInterface {
                 )::append
         );
         logBroker = managerBroker.initAndGet(
-                App.getUniqueClassName(Log.class),
-                Log.class,
+                App.getUniqueClassName(PersistentData.class),
+                PersistentData.class,
                 managerFileByteWriter.get(
-                        App.getUniqueClassName(Log.class),
-                        Log.class
+                        App.getUniqueClassName(PersistentData.class),
+                        PersistentData.class
                 )::append
         );
 

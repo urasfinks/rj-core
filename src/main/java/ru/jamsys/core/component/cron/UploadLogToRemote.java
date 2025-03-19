@@ -9,7 +9,7 @@ import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.component.manager.item.log.Log;
+import ru.jamsys.core.component.manager.item.log.PersistentData;
 import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
@@ -40,7 +40,7 @@ import java.util.function.Function;
 @Getter
 public class UploadLogToRemote extends AnnotationPropertyExtractor<Object> implements Cron5s, PromiseGenerator {
 
-    private final Broker<Log> broker;
+    private final Broker<PersistentData> broker;
 
     private final ServicePromise servicePromise;
 
@@ -85,18 +85,18 @@ public class UploadLogToRemote extends AnnotationPropertyExtractor<Object> imple
                     AtomicInteger countInsert = new AtomicInteger(0);
 
                     JdbcRequest jdbcRequest = new JdbcRequest(Logger.INSERT);
-                    List<Log> reserve = new ArrayList<>();
+                    List<PersistentData> reserve = new ArrayList<>();
 
                     while (!broker.isEmpty() && threadRun.get() && countInsert.get() < limitPoints) {
-                        ExpirationMsImmutableEnvelope<Log> envelope = broker.pollFirst();
+                        ExpirationMsImmutableEnvelope<PersistentData> envelope = broker.pollFirst();
                         if (envelope != null) {
-                            Log log = envelope.getValue();
-                            reserve.add(log);
-                            jdbcRequest.addArg("date_add", log.getTimeAdd())
-                                    .addArg("type", log.getLogType().getNameCamel())
+                            PersistentData persistentData = envelope.getValue();
+                            reserve.add(persistentData);
+                            jdbcRequest.addArg("date_add", persistentData.getTimeAdd())
+                                    .addArg("type", persistentData.getLogType().getNameCamel())
                                     .addArg("host", "localhost")
-                                    .addArg("data", log.getBody())
-                                    .addArg("header", log.getHeader())
+                                    .addArg("data", persistentData.getBody())
+                                    .addArg("header", persistentData.getHeader())
                                     .nextBatch();
                             countInsert.incrementAndGet();
                         }
@@ -127,8 +127,8 @@ public class UploadLogToRemote extends AnnotationPropertyExtractor<Object> imple
                     if (broker.getOccupancyPercentage() < 50) {
                         String readyFile = promise.getRepositoryMap(String.class, "readyFile");
                         if (readyFile != null) {
-                            List<ByteSerialization> execute = fileByteReaderResource.execute(new FileByteReaderRequest(readyFile, Log.class));
-                            execute.forEach(byteItem -> broker.add((Log) byteItem, 6_000L));
+                            List<ByteSerialization> execute = fileByteReaderResource.execute(new FileByteReaderRequest(readyFile, PersistentData.class));
+                            execute.forEach(byteItem -> broker.add((PersistentData) byteItem, 6_000L));
                             try {
                                 UtilFile.remove(readyFile);
                             } catch (Exception e) {
@@ -146,9 +146,9 @@ public class UploadLogToRemote extends AnnotationPropertyExtractor<Object> imple
 
                         if (isFatalExceptionOnComplete.apply(exception)) {
                             // Уменьшили срок с 6сек до 2сек, что бы при падении Influx быстрее сгрузить данные на файловую систему
-                            List<Log> reserveLog = promise.getRepositoryMap(List.class, LogUploaderPromiseProperty.RESERVE_LOG.name());
-                            if (reserveLog != null && !reserveLog.isEmpty()) {
-                                reserveLog.forEach(log -> broker.add(log, 2_000L));
+                            List<PersistentData> reservePersistentData = promise.getRepositoryMap(List.class, LogUploaderPromiseProperty.RESERVE_LOG.name());
+                            if (reservePersistentData != null && !reservePersistentData.isEmpty()) {
+                                reservePersistentData.forEach(log -> broker.add(log, 2_000L));
                             }
                         }
                     }

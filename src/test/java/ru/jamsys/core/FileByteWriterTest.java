@@ -9,8 +9,8 @@ import ru.jamsys.core.component.manager.ManagerFileByteWriter;
 import ru.jamsys.core.component.manager.item.BrokerProperty;
 import ru.jamsys.core.component.manager.item.FileByteProperty;
 import ru.jamsys.core.component.manager.item.FileByteWriter;
-import ru.jamsys.core.component.manager.item.log.Log;
-import ru.jamsys.core.component.manager.item.log.LogHeader;
+import ru.jamsys.core.component.manager.item.log.PersistentData;
+import ru.jamsys.core.component.manager.item.log.PersistentDataHeader;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -42,7 +42,7 @@ class FileByteWriterTest {
     @Test
     void folderNotExist() {
         try {
-            FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkOverMaxFileWrite", LogHeader.class);
+            FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkOverMaxFileWrite", PersistentDataHeader.class);
             App.get(ServiceProperty.class).set(
                     test
                             .getPropertyDispatcher()
@@ -65,7 +65,7 @@ class FileByteWriterTest {
         );
 
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkOverMaxFileWrite", Log.class);
+        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkOverMaxFileWrite", PersistentData.class);
 
         App.get(ServiceProperty.class).set(
                 test
@@ -118,7 +118,7 @@ class FileByteWriterTest {
         );
 
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkNameLog", Log.class);
+        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkNameLog", PersistentData.class);
 
         App.get(ServiceProperty.class).set(
                 test
@@ -137,9 +137,9 @@ class FileByteWriterTest {
                 "default2"
         );
 
-        test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData1"));
-        test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData2"));
-        test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData3"));
+        test.append(new PersistentDataHeader(LogType.INFO, FileByteWriterTest.class, "LogData1"));
+        test.append(new PersistentDataHeader(LogType.INFO, FileByteWriterTest.class, "LogData2"));
+        test.append(new PersistentDataHeader(LogType.INFO, FileByteWriterTest.class, "LogData3"));
         test.flush(new AtomicBoolean(true));
 
         Assertions.assertEquals("[/default2.000.proc.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
@@ -165,7 +165,7 @@ class FileByteWriterTest {
 
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
-        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkRestoreExceptionShutdown", Log.class);
+        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkRestoreExceptionShutdown", PersistentData.class);
         //test.getPropertySubscriber().getPropertyRepository().setRepository("file.name", "default3");
         App.get(ServiceProperty.class).set(
                 "App.ManagerFileByteWriter.checkRestoreExceptionShutdown<Log>.file.name",
@@ -176,7 +176,7 @@ class FileByteWriterTest {
 
         Assertions.assertEquals(2, test.getIndexFile());
 
-        test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData1"));
+        test.append(new PersistentDataHeader(LogType.INFO, FileByteWriterTest.class, "LogData1"));
         test.flush(new AtomicBoolean(true));
         Assertions.assertEquals("[/default3.000.bin, /default3.001.bin, /default3.002.proc.bin, /test.003.proc.bin, /test.004.bin]", UtilFile.getFilesRecursive("LogManager", false).toString());
 
@@ -192,7 +192,7 @@ class FileByteWriterTest {
         );
         UtilFile.removeAllFilesInFolder("LogManager");
         long start = System.currentTimeMillis();
-        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkTime", Log.class);
+        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkTime", PersistentData.class);
 
         App.get(ServiceProperty.class).set(
                 "App.ManagerFileByteWriter.checkRestoreExceptionShutdown<Log>.file.name",
@@ -213,7 +213,7 @@ class FileByteWriterTest {
 
         long start2 = System.currentTimeMillis();
         for (int i = 0; i < 1000000; i++) {
-            test.append(new LogHeader(LogType.INFO, FileByteWriterTest.class, "LogData" + i));
+            test.append(new PersistentDataHeader(LogType.INFO, FileByteWriterTest.class, "LogData" + i));
         }
         System.out.println("add time: " + (System.currentTimeMillis() - start2));
         long start3 = System.currentTimeMillis();
@@ -225,10 +225,10 @@ class FileByteWriterTest {
 
     @Test
     void test() throws Exception {
-        LogHeader log1 = new LogHeader(LogType.INFO, FileByteWriterTest.class, "Hello");
+        PersistentDataHeader log1 = new PersistentDataHeader(LogType.INFO, FileByteWriterTest.class, "Hello");
         byte[] x = log1.toByte();
 
-        LogHeader log2 = LogHeader.instanceFromBytes(x, (short) 0);
+        PersistentDataHeader log2 = PersistentDataHeader.instanceFromBytes(x, (short) 0);
         System.out.println(log2);
         Assertions.assertEquals(log1.toString(), log2.toString());
 
@@ -253,7 +253,7 @@ class FileByteWriterTest {
         UtilFile.removeAllFilesInFolder("LogManager");
         StatisticSec statisticSec1 = new StatisticSec();
         statisticSec1.getList().add(new Statistic().addField("f1", 1).addTag("t1", "Hello"));
-        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("default5", Log.class);
+        FileByteWriter test = App.get(ManagerFileByteWriter.class).get("default5", PersistentData.class);
         test.append(statisticSec1);
         test.flush(new AtomicBoolean(true));
     }

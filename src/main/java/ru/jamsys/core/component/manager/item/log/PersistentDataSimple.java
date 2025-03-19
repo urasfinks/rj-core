@@ -19,7 +19,7 @@ import java.util.Map;
 @Setter
 @Accessors(chain = true)
 @JsonPropertyOrder({"writerFlag", "logType", "timeAdd", "header", "data"})
-public class LogSimple implements Log {
+public class PersistentDataSimple implements PersistentData {
 
     private short writerFlag;
 
@@ -29,13 +29,13 @@ public class LogSimple implements Log {
 
     public String body;
 
-    public LogSimple() {}
+    public PersistentDataSimple() {}
 
-    public LogSimple(LogType logType) {
+    public PersistentDataSimple(LogType logType) {
         this.logType = logType;
     }
 
-    public LogSimple setBody(String body) {
+    public PersistentDataSimple setBody(String body) {
         this.body = body;
         return this;
     }
@@ -48,11 +48,11 @@ public class LogSimple implements Log {
         return os.toByteArray();
     }
 
-    public static LogSimple instanceFromBytes(byte[] bytes, short writerFlag) throws Exception {
-        LogSimple logSimple = new LogSimple();
-        logSimple.toObject(bytes);
-        logSimple.setWriterFlag(writerFlag);
-        return logSimple;
+    public static PersistentDataSimple instanceFromBytes(byte[] bytes, short writerFlag) throws Exception {
+        PersistentDataSimple persistentDataSimple = new PersistentDataSimple();
+        persistentDataSimple.toObject(bytes);
+        persistentDataSimple.setWriterFlag(writerFlag);
+        return persistentDataSimple;
     }
 
     @Override

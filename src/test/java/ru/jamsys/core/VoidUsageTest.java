@@ -2,7 +2,7 @@ package ru.jamsys.core;
 
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.item.log.Log;
+import ru.jamsys.core.component.manager.item.log.PersistentData;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.item.PropertySubscription;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -18,7 +18,7 @@ class VoidUsageTest {
         try {
             Property property = new Property("", "").setDescriptionIfNull(null);
             PropertySubscription<?> propertySubscription = new ServiceProperty(null).addSubscription(null);
-            Log log = UtilLog.info(VoidUsageTest.class, null).sendRemote();
+            PersistentData persistentData = UtilLog.info(VoidUsageTest.class, null).sendRemote();
         } catch (Throwable ignore) {
         }
     }

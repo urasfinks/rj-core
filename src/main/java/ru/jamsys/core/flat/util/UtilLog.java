@@ -1,38 +1,38 @@
 package ru.jamsys.core.flat.util;
 
-import ru.jamsys.core.component.manager.item.log.LogHeader;
+import ru.jamsys.core.component.manager.item.log.PersistentDataHeader;
 import ru.jamsys.core.component.manager.item.log.LogType;
 
 public class UtilLog {
 
-    public static LogHeader error(Class<?> cls, Object data) {
-        return new LogHeader(LogType.ERROR, cls, data);
+    public static PersistentDataHeader error(Class<?> cls, Object data) {
+        return new PersistentDataHeader(LogType.ERROR, cls, data);
     }
 
-    public static LogHeader info(Class<?> cls, Object data) {
-        return new LogHeader(LogType.INFO, cls, data);
+    public static PersistentDataHeader info(Class<?> cls, Object data) {
+        return new PersistentDataHeader(LogType.INFO, cls, data);
     }
 
-    public static LogHeader debug(Class<?> cls, Object data) {
-        return new LogHeader(LogType.DEBUG, cls, data);
+    public static PersistentDataHeader debug(Class<?> cls, Object data) {
+        return new PersistentDataHeader(LogType.DEBUG, cls, data);
     }
 
-    public static LogHeader printError(Class<?> cls, Object data) {
-        LogHeader logHeader = new LogHeader(LogType.ERROR, cls, data);
-        logHeader.print();
-        return logHeader;
+    public static PersistentDataHeader printError(Class<?> cls, Object data) {
+        PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.ERROR, cls, data);
+        persistentDataHeader.print();
+        return persistentDataHeader;
     }
 
-    public static LogHeader printInfo(Class<?> cls, Object data) {
-        LogHeader logHeader = new LogHeader(LogType.INFO, cls, data);
-        logHeader.print();
-        return logHeader;
+    public static PersistentDataHeader printInfo(Class<?> cls, Object data) {
+        PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.INFO, cls, data);
+        persistentDataHeader.print();
+        return persistentDataHeader;
     }
 
-    public static LogHeader printDebug(Class<?> cls, Object data) {
-        LogHeader logHeader = new LogHeader(LogType.DEBUG, cls, data);
-        logHeader.print();
-        return logHeader;
+    public static PersistentDataHeader printDebug(Class<?> cls, Object data) {
+        PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.DEBUG, cls, data);
+        persistentDataHeader.print();
+        return persistentDataHeader;
     }
 
 }

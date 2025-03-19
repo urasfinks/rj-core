@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.ByteSerialization;
 import java.io.PrintStream;
 import java.util.Map;
 
-public interface Log extends ByteSerialization {
+public interface PersistentData extends ByteSerialization {
 
     LogType getLogType();
 
@@ -19,13 +19,13 @@ public interface Log extends ByteSerialization {
 
     long getTimeAdd();
 
-    default Log print() {
+    default PersistentData print() {
         PrintStream ps = getLogType().equals(LogType.ERROR) ? System.err : System.out;
         ps.println(getView());
         return this;
     }
 
-    default Log sendRemote() {
+    default PersistentData sendRemote() {
         App.get(ServiceLoggerRemote.class).add(this);
         return this;
     }
