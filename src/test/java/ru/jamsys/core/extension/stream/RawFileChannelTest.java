@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.component.manager.item.log.PersistentDataHeader;
+import ru.jamsys.core.extension.raw.writer.BlockInfo;
+import ru.jamsys.core.extension.raw.writer.RawFileChannel;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -12,72 +14,72 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 
-class FileAccessChannelTest {
+class RawFileChannelTest {
 
     @Test
     void x0() throws Exception {
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileAccessChannel<PersistentDataHeader> fileAccessChannel = new FileAccessChannel<>(
+        RawFileChannel<PersistentDataHeader> rawFileChannel = new RawFileChannel<>(
                 "LogManager/1.txt",
                 UtilByte.megabytesToBytes(20),
                 PersistentDataHeader.class
         );
 
-        PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.INFO, FileAccessChannelTest.class, "Hello");
+        PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.INFO, RawFileChannelTest.class, "Hello");
         persistentDataHeader.setWriterFlag((short) 4);
 
-        fileAccessChannel.write(persistentDataHeader);
-        fileAccessChannel.write(persistentDataHeader);
+        rawFileChannel.write(persistentDataHeader);
+        rawFileChannel.write(persistentDataHeader);
 
-        fileAccessChannel.close();
-        UtilLog.printInfo(FileAccessChannelTest.class, fileAccessChannel.getCopyQueue());
-        Assertions.assertEquals(234, fileAccessChannel.getLength());
+        rawFileChannel.close();
+        UtilLog.printInfo(RawFileChannelTest.class, rawFileChannel.getCopyQueue());
+        Assertions.assertEquals(228, rawFileChannel.getDataLength());
     }
 
     @Test
     void x1() throws Exception {
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileAccessChannel<PersistentDataHeader> fileAccessChannel = new FileAccessChannel<>(
+        RawFileChannel<PersistentDataHeader> rawFileChannel = new RawFileChannel<>(
                 "LogManager/1.txt",
                 UtilByte.megabytesToBytes(20),
                 PersistentDataHeader.class
         );
 
-        PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.INFO, FileAccessChannelTest.class, "Hello");
+        PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.INFO, RawFileChannelTest.class, "Hello");
         persistentDataHeader.setWriterFlag((short) 4);
 
-        fileAccessChannel.write(persistentDataHeader);
+        rawFileChannel.write(persistentDataHeader);
         // Ещё раз запишем
-        fileAccessChannel.write(persistentDataHeader);
+        rawFileChannel.write(persistentDataHeader);
 
-        Assertions.assertEquals(2, fileAccessChannel.getCopyQueue().size());
-        Assertions.assertNotNull(fileAccessChannel.getCopyQueue().getFirst().getBytes());
+        Assertions.assertEquals(2, rawFileChannel.getCopyQueue().size());
+        Assertions.assertNotNull(rawFileChannel.getCopyQueue().getFirst().getBytes());
         //UtilLog.printInfo(FileAccessChannelTest.class, fileAccessChannel.getCopyQueue());
 
-        fileAccessChannel.close();
+        rawFileChannel.close();
 
-        fileAccessChannel = new FileAccessChannel<>(
+        rawFileChannel = new RawFileChannel<>(
                 "LogManager/1.txt",
                 UtilByte.megabytesToBytes(20),
                 PersistentDataHeader.class
         );
         //Мы только что создали объект, он должен был подсосать данные из файла и сделать разметку
-        Assertions.assertEquals(2, fileAccessChannel.getCopyQueue().size());
-        Assertions.assertNull(fileAccessChannel.getCopyQueue().getFirst().getBytes());
+        Assertions.assertEquals(2, rawFileChannel.getCopyQueue().size());
+        Assertions.assertNull(rawFileChannel.getCopyQueue().getFirst().getBytes());
 
         //Проливаем данные с ФС в объект
-        FileAccessChannel.BlockInfo<PersistentDataHeader> first = fileAccessChannel.getCopyQueue().getFirst();
-        fileAccessChannel.read(first);
+        BlockInfo<PersistentDataHeader> first = rawFileChannel.getCopyQueue().getFirst();
+        rawFileChannel.read(first);
         Assertions.assertNotNull(first.getBytes());
 
-        UtilLog.printInfo(FileAccessChannelTest.class, fileAccessChannel.getCopyQueue());
-        fileAccessChannel.close();
+        UtilLog.printInfo(RawFileChannelTest.class, rawFileChannel.getCopyQueue());
+        rawFileChannel.close();
     }
 
     @Test
     void thread() throws Exception {
         UtilFile.removeAllFilesInFolder("LogManager");
-        FileAccessChannel<PersistentDataHeader> fileAccessChannel = new FileAccessChannel<>(
+        RawFileChannel<PersistentDataHeader> rawFileChannel = new RawFileChannel<>(
                 "LogManager/1.txt",
                 UtilByte.megabytesToBytes(200),
                 PersistentDataHeader.class
@@ -91,10 +93,10 @@ class FileAccessChannelTest {
                     try {
                         PersistentDataHeader persistentDataHeader = new PersistentDataHeader(
                                 LogType.INFO,
-                                FileAccessChannelTest.class,
+                                RawFileChannelTest.class,
                                 name + " " + j
                         );
-                        fileAccessChannel.write(persistentDataHeader);
+                        rawFileChannel.write(persistentDataHeader);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -110,6 +112,6 @@ class FileAccessChannelTest {
         BigDecimal transactionTime = new BigDecimal(l).divide(new BigDecimal(1000000), 5, RoundingMode.HALF_UP);
         BigDecimal tps = new BigDecimal(1000).divide(transactionTime, 5, RoundingMode.HALF_UP);
         System.out.println("Tps: " + tps);
-        Assertions.assertEquals(1000000, fileAccessChannel.getCopyQueue().size());
+        Assertions.assertEquals(1000000, rawFileChannel.getCopyQueue().size());
     }
 }

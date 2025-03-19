@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension.stream;
+package ru.jamsys.core.extension.raw.writer;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerExpiration;

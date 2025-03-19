@@ -1,10 +1,6 @@
-package ru.jamsys.core.extension.stream;
+package ru.jamsys.core.extension.raw.writer;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.flat.util.UtilByte;
 
@@ -18,56 +14,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class FileAccessChannel<T extends ByteSerialization> {
-
-    @Getter
-    @Accessors(chain = true)
-    public static class BlockInfo<TX extends ByteSerialization> {
-
-        @Setter
-        private short writerFlag;
-
-        private final long position; // Позиция начала блока
-
-        @JsonIgnore
-        private byte[] bytes;
-
-        private final Class<TX> cls;
-
-        private final int dataLength;
-
-        private BlockInfo(
-                long position,
-                short writerFlag,
-                int dataLength,
-                Class<TX> cls
-        ) {
-            this.position = position;
-            this.writerFlag = writerFlag;
-            this.dataLength = dataLength;
-            this.cls = cls;
-        }
-
-        public BlockInfo<TX> setBytes(byte[] bytes) {
-            if (bytes.length != dataLength) {
-                throw new RuntimeException("allocation byte size != current byte size");
-            }
-            this.bytes = bytes;
-            return this;
-        }
-
-        @JsonProperty("data")
-        public TX cast() throws Exception {
-            if (bytes == null || bytes.length == 0) {
-                return null;
-            }
-            TX item = cls.getConstructor().newInstance();
-            item.toObject(bytes);
-            item.setWriterFlag(writerFlag);
-            return item;
-        }
-
-    }
+public class RawFileChannel<T extends ByteSerialization> {
 
     // Очередь для хранения блоков
     private final ConcurrentLinkedDeque<BlockInfo<T>> queue = new ConcurrentLinkedDeque<>();
@@ -86,20 +33,14 @@ public class FileAccessChannel<T extends ByteSerialization> {
     // Для быстрого доступа надо файл сразу аллоцировать по размеру
     // Если в процессе расширять - это трудоёмкая операция, для примера: с аллокацией 1_000_000 вставка - 2400мс
     // без аллокации вставка 1_000_000 - 3900мс, если быть грубым: почти в 2 раза
-    public FileAccessChannel(String filePath, long fileSizeAllocate, Class<T> cls) throws Exception {
+    public RawFileChannel(String filePath, long fileSizeAllocate, Class<T> cls) throws Exception {
         this.filePath = filePath;
         this.file = new RandomAccessFile(filePath, "rw");
         this.file.setLength(fileSizeAllocate);
         this.channel = this.file.getChannel();
         this.cls = cls;
-        init();
-    }
 
-    public long getLength() {
-        return fileLength.get();
-    }
 
-    private void init() throws Exception {
         long currentPosition = 0; // Текущая позиция в файле
         // Читаем файл блоками
         long length = file.length();
@@ -122,6 +63,10 @@ public class FileAccessChannel<T extends ByteSerialization> {
             // Перемещаем указатель на следующий блок
             currentPosition += 6 + dataLength; // 6 = 2 (short) + 4 (int)
         }
+    }
+
+    public long getDataLength() {
+        return fileLength.get();
     }
 
     public BlockInfo<T> write(ByteSerialization item) throws Exception {
