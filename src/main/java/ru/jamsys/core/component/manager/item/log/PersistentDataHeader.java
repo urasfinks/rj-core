@@ -71,6 +71,15 @@ public class PersistentDataHeader implements PersistentData {
     }
 
     public byte[] toByte() throws Exception {
+        // [2] LogType
+        // [2] SizeHeader
+        //*[2] KeyHeaderLength
+        // ...
+        //*[4] ValueHeaderLength
+        // ..s
+        // [4] BodyLength
+        // ...
+
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         os.write(UtilByte.shortToBytes((short) logType.ordinal())); //Записали тип лога в первые 2 байта
         os.write(UtilByte.shortToBytes((short) header.size())); // В следующие 2 байта записали кол-во заголовков

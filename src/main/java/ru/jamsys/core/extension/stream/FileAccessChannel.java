@@ -6,17 +6,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.extension.ByteSerialization;
-import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -27,30 +25,34 @@ public class FileAccessChannel<T extends ByteSerialization> {
     public static class BlockInfo<TX extends ByteSerialization> {
 
         @Setter
-        private short writerFlag; //
+        private short writerFlag;
 
         private final long position; // Позиция начала блока
-
-        private final int length;   // Длина данных
 
         @JsonIgnore
         private byte[] bytes;
 
         private final Class<TX> cls;
 
-        BlockInfo(short writerFlag, long position, int length, Class<TX> cls) {
-            this.writerFlag = writerFlag;
+        private final int dataLength;
+
+        private BlockInfo(
+                long position,
+                short writerFlag,
+                int dataLength,
+                Class<TX> cls
+        ) {
             this.position = position;
-            this.length = length;
+            this.writerFlag = writerFlag;
+            this.dataLength = dataLength;
             this.cls = cls;
         }
 
         public BlockInfo<TX> setBytes(byte[] bytes) {
-            if (bytes.length != length) {
+            if (bytes.length != dataLength) {
                 throw new RuntimeException("allocation byte size != current byte size");
             }
             this.bytes = bytes;
-
             return this;
         }
 
@@ -67,14 +69,6 @@ public class FileAccessChannel<T extends ByteSerialization> {
 
     }
 
-    private final FileChannel channel;
-
-    private final RandomAccessFile file;
-
-    // Что бы не было такого, что с боку будут подсовывать не наши размеченные данные.
-    // Мы сами являемся создателями BlockInfo.
-    private final Set<BlockInfo<T>> reg = Util.getConcurrentHashSet();
-
     // Очередь для хранения блоков
     private final ConcurrentLinkedDeque<BlockInfo<T>> queue = new ConcurrentLinkedDeque<>();
 
@@ -82,69 +76,65 @@ public class FileAccessChannel<T extends ByteSerialization> {
 
     private final Class<T> cls;
 
-    public FileAccessChannel(String filePath, Class<T> cls) throws Exception {
+    private final RandomAccessFile file;
+
+    private final FileChannel channel;
+
+    @Getter
+    private final String filePath;
+
+    // Для быстрого доступа надо файл сразу аллоцировать по размеру
+    // Если в процессе расширять - это трудоёмкая операция, для примера: с аллокацией 1_000_000 вставка - 2400мс
+    // без аллокации вставка 1_000_000 - 3900мс, если быть грубым: почти в 2 раза
+    public FileAccessChannel(String filePath, long fileSizeAllocate, Class<T> cls) throws Exception {
+        this.filePath = filePath;
         this.file = new RandomAccessFile(filePath, "rw");
-        this.channel = file.getChannel();
-        this.fileLength.set(file.length()); // Получаем длину файла
+        this.file.setLength(fileSizeAllocate);
+        this.channel = this.file.getChannel();
         this.cls = cls;
-        init(false);
+        init();
     }
 
-    public FileAccessChannel(String filePath, Class<T> cls, boolean loadDataOnInit) throws Exception {
-        this.file = new RandomAccessFile(filePath, "rw");
-        this.channel = file.getChannel();
-        this.fileLength.set(file.length()); // Получаем длину файла
-        this.cls = cls;
-        init(loadDataOnInit);
+    public long getLength() {
+        return fileLength.get();
     }
 
-    private void init(boolean loadDataOnInit) throws Exception {
+    private void init() throws Exception {
         long currentPosition = 0; // Текущая позиция в файле
         // Читаем файл блоками
-        while (currentPosition < this.fileLength.get()) {
+        long length = file.length();
+        while (currentPosition < length) {
             file.seek(currentPosition);
             short writerFlag = file.readShort(); // Читаем 2 байта (short)
             int dataLength = file.readInt(); // Читаем 4 байта (int) - длина данных
-            // Создаем объект BlockInfo и добавляем его в очередь
-            BlockInfo<T> blockInfo = new BlockInfo<>(writerFlag, currentPosition, dataLength, cls);
-            // Если надо читать, ну читаем, но не от всего сердца (smile).
-            // Как будто потоки должны сами читать, что бы память не забивать приложения
-            if (loadDataOnInit) {
-                byte[] buffer = new byte[dataLength];
-                int _ = file.read(buffer);
-                blockInfo.setBytes(buffer);
+            if (dataLength == 0) { // Если длина данных 0 - значит данные закончились
+                break;
             }
-            reg.add(blockInfo);
+            fileLength.addAndGet(6 + dataLength);
+            // Создаем объект BlockInfo и добавляем его в очередь
+            BlockInfo<T> blockInfo = new BlockInfo<>(
+                    currentPosition,
+                    writerFlag,
+                    dataLength,
+                    cls
+            );
             queue.add(blockInfo);
             // Перемещаем указатель на следующий блок
             currentPosition += 6 + dataLength; // 6 = 2 (short) + 4 (int)
         }
     }
 
-    public void writeFlag(BlockInfo<T> blockInfo, short flag) throws IOException {
-        if (blockInfo == null) {
-            return;
-        }
-        try (FileLock _ = channel.lock(blockInfo.getPosition(), 2, false)) {
-            ByteBuffer buffer = ByteBuffer.wrap(UtilByte.shortToBytes(flag));
-            int _ = channel.write(buffer, blockInfo.getPosition());
-            blockInfo.setWriterFlag(flag);
-        }
-    }
-
     public BlockInfo<T> write(ByteSerialization item) throws Exception {
-        if (item == null) {
-            return null;
-        }
         BlockInfo<T> blockInfo = allocate(item);
-        try (FileLock _ = channel.lock(blockInfo.getPosition(), 6 + blockInfo.getLength(), false)) {
-            file.writeShort(blockInfo.getWriterFlag());
-            file.writeInt(blockInfo.getLength());
-            file.write(blockInfo.getBytes());
 
-            reg.add(blockInfo);
-            queue.add(blockInfo);
-        }
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        os.write(UtilByte.shortToBytes(blockInfo.getWriterFlag()));
+        os.write(UtilByte.intToBytes(blockInfo.getDataLength()));
+        os.write(blockInfo.getBytes());
+
+        int _ = channel.write(ByteBuffer.wrap(os.toByteArray()), blockInfo.getPosition());
+
+        queue.add(blockInfo);
         return blockInfo;
     }
 
@@ -152,30 +142,19 @@ public class FileAccessChannel<T extends ByteSerialization> {
         if (blockInfo == null) {
             return;
         }
-        if (!reg.contains(blockInfo)) {
-            throw new RuntimeException("blockInfo not contains in reg");
-        }
-        try (FileLock _ = channel.lock(blockInfo.getPosition() + 2, blockInfo.getLength(), true)) {
-            ByteBuffer buffer = ByteBuffer.allocate(blockInfo.getLength());
-            channel.read(buffer, blockInfo.getPosition() + 6);
-            blockInfo.setBytes(buffer.array());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void close() throws IOException {
-        channel.close();
-        file.close();
+        file.seek(blockInfo.getPosition() + 6);
+        byte[] buffer = new byte[blockInfo.getDataLength()];
+        int _ = file.read(buffer);
+        blockInfo.setBytes(buffer);
     }
 
     private BlockInfo<T> allocate(ByteSerialization item) throws Exception {
         byte[] itemByte = item.toByte();
-        long itemBodyLength = 6 + itemByte.length;
-        long newEof = fileLength.addAndGet(itemBodyLength);
+        int blockLength = 6 + itemByte.length;
+        long position = fileLength.addAndGet(blockLength) - blockLength;
         return new BlockInfo<>(
+                position,
                 item.getWriterFlag(),
-                newEof - itemBodyLength,
                 itemByte.length,
                 cls
         )
@@ -192,6 +171,11 @@ public class FileAccessChannel<T extends ByteSerialization> {
 
     public List<BlockInfo<T>> getCopyQueue() {
         return new ArrayList<>(queue);
+    }
+
+    public void close() throws IOException {
+        channel.close();
+        file.close();
     }
 
 }

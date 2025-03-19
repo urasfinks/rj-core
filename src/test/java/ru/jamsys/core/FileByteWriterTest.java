@@ -187,7 +187,7 @@ class FileByteWriterTest {
     @Test
     void checkTime() {
         App.get(ServiceProperty.class).set(
-                "App.ManagerFileByteWriter.checkTime<Log>.file.name",
+                "App.ManagerFileByteWriter.checkTime<PersistentData>.file.name",
                 "log"
         );
         UtilFile.removeAllFilesInFolder("LogManager");

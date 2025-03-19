@@ -7,17 +7,25 @@ import java.util.Arrays;
 
 public class UtilByte {
 
-    public static void reverseBytes(byte[] array) {
-        int i = 0;
-        int j = array.length - 1;
-        byte tmp;
-        while (j > i) {
-            tmp = array[j];
-            array[j] = array[i];
-            array[i] = tmp;
-            j--;
-            i++;
-        }
+    public static final long KB = 1024; // 1 килобайт
+    public static final long MB = KB * 1024; // 1 мегабайт
+    public static final long GB = MB * 1024; // 1 гигабайт
+    public static final long TB = GB * 1024; // 1 терабайт
+
+    public static long kilobytesToBytes(long kilobytes) {
+        return kilobytes * KB;
+    }
+
+    public static long megabytesToBytes(long megabytes) {
+        return megabytes * MB;
+    }
+
+    public static long gigabytesToBytes(long gigabytes) {
+        return gigabytes * GB;
+    }
+
+    public static long terabytesToBytes(long terabytes) {
+        return terabytes * TB;
     }
 
     public static byte[] charsToBytes(char[] chars) {
@@ -44,6 +52,19 @@ public class UtilByte {
 
     public static short bytesToShort(byte[] bytes) {
         return ByteBuffer.wrap(bytes).getShort();
+    }
+
+    public static void reverseBytes(byte[] array) {
+        int i = 0;
+        int j = array.length - 1;
+        byte tmp;
+        while (j > i) {
+            tmp = array[j];
+            array[j] = array[i];
+            array[i] = tmp;
+            j--;
+            i++;
+        }
     }
 
 }
