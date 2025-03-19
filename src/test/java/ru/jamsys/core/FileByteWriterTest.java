@@ -6,7 +6,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerFileByteWriter;
-import ru.jamsys.core.component.manager.item.*;
+import ru.jamsys.core.component.manager.item.BrokerProperty;
+import ru.jamsys.core.component.manager.item.FileByteProperty;
+import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.component.manager.item.log.Log;
 import ru.jamsys.core.component.manager.item.log.LogHeader;
 import ru.jamsys.core.component.manager.item.log.LogType;
@@ -226,7 +228,7 @@ class FileByteWriterTest {
         LogHeader log1 = new LogHeader(LogType.INFO, FileByteWriterTest.class, "Hello");
         byte[] x = log1.toByte();
 
-        LogHeader log2 = LogHeader.instanceFromBytes(x);
+        LogHeader log2 = LogHeader.instanceFromBytes(x, (short) 0);
         System.out.println(log2);
         Assertions.assertEquals(log1.toString(), log2.toString());
 

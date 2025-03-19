@@ -13,7 +13,7 @@ public interface Log extends ByteSerialization {
 
     String getView();
 
-    String getData();
+    String getBody();
 
     Map<String, String> getHeader();
 

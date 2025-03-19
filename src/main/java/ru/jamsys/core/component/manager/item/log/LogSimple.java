@@ -1,5 +1,7 @@
 package ru.jamsys.core.component.manager.item.log;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -16,6 +18,7 @@ import java.util.Map;
 @Getter
 @Setter
 @Accessors(chain = true)
+@JsonPropertyOrder({"writerFlag", "logType", "timeAdd", "header", "data"})
 public class LogSimple implements Log {
 
     private short writerFlag;
@@ -24,7 +27,7 @@ public class LogSimple implements Log {
 
     public LogType logType;
 
-    public String data;
+    public String body;
 
     public LogSimple() {}
 
@@ -32,8 +35,8 @@ public class LogSimple implements Log {
         this.logType = logType;
     }
 
-    public LogSimple setData(String data) {
-        this.data = data;
+    public LogSimple setBody(String body) {
+        this.body = body;
         return this;
     }
 
@@ -41,13 +44,14 @@ public class LogSimple implements Log {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         UtilLogConverter.writeShortString(os, logType.getNameCamel());
         UtilLogConverter.writeShortString(os, timeAdd + "");
-        UtilLogConverter.writeString(os, data);
+        UtilLogConverter.writeString(os, body);
         return os.toByteArray();
     }
 
-    public static LogSimple instanceFromBytes(byte[] bytes) throws Exception {
+    public static LogSimple instanceFromBytes(byte[] bytes, short writerFlag) throws Exception {
         LogSimple logSimple = new LogSimple();
         logSimple.toObject(bytes);
+        logSimple.setWriterFlag(writerFlag);
         return logSimple;
     }
 
@@ -56,9 +60,10 @@ public class LogSimple implements Log {
         InputStream fis = new ByteArrayInputStream(bytes);
         logType = LogType.valueOf(UtilCodeStyle.camelToSnake(UtilLogConverter.readShortString(fis)));
         timeAdd = Long.parseLong(UtilLogConverter.readShortString(fis));
-        setData(UtilLogConverter.readString(fis));
+        setBody(UtilLogConverter.readString(fis));
     }
 
+    @JsonIgnore
     @Override
     public String getView() {
         return "";

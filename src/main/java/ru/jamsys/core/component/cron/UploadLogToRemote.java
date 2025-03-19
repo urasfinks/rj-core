@@ -95,7 +95,7 @@ public class UploadLogToRemote extends AnnotationPropertyExtractor<Object> imple
                             jdbcRequest.addArg("date_add", log.getTimeAdd())
                                     .addArg("type", log.getLogType().getNameCamel())
                                     .addArg("host", "localhost")
-                                    .addArg("data", log.getData())
+                                    .addArg("data", log.getBody())
                                     .addArg("header", log.getHeader())
                                     .nextBatch();
                             countInsert.incrementAndGet();

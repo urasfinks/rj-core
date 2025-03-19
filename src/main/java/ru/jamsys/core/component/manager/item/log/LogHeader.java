@@ -1,5 +1,7 @@
 package ru.jamsys.core.component.manager.item.log;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,6 +21,7 @@ import java.util.Map;
 @Getter
 @Setter
 @Accessors(chain = true)
+@JsonPropertyOrder({"writerFlag", "logType", "timeAdd", "header", "data"})
 public class LogHeader implements Log {
 
     private short writerFlag;
@@ -27,21 +30,21 @@ public class LogHeader implements Log {
 
     public Map<String, String> header = new LinkedHashMap<>();
 
-    public String data;
+    public String body;
 
     public LogType logType;
 
     public LogHeader() {
     }
 
-    public LogHeader(LogType logType, Class<?> cls, Object data) {
+    public LogHeader(LogType logType, Class<?> cls, Object body) {
         this.logType = logType;
-        if (data != null) {
-            this.data = data instanceof String ? data.toString() : UtilJson.toStringPretty(data, "--");
+        if (body != null) {
+            this.body = body instanceof String ? body.toString() : UtilJson.toStringPretty(body, "--");
         }
         addHeader("time", timeAdd);
         addHeader("thread", Thread.currentThread().getName());
-        addHeader("class", cls.getName());
+        addHeader("source", cls.getName());
     }
 
     public LogHeader addHeader(String key, Object value) {
@@ -75,13 +78,14 @@ public class LogHeader implements Log {
             UtilLogConverter.writeShortString(os, header.get(key));
         }
         // Запись тела
-        UtilLogConverter.writeString(os, data);
+        UtilLogConverter.writeString(os, body);
         return os.toByteArray();
     }
 
-    public static LogHeader instanceFromBytes(byte[] bytes) throws Exception {
+    public static LogHeader instanceFromBytes(byte[] bytes, short writerFlag) throws Exception {
         LogHeader logHeader = new LogHeader();
         logHeader.toObject(bytes);
+        logHeader.setWriterFlag(writerFlag);
         return logHeader;
     }
 
@@ -93,14 +97,15 @@ public class LogHeader implements Log {
         for (int i = 0; i < countHeader; i++) {
             addHeader(UtilLogConverter.readShortString(fis), UtilLogConverter.readShortString(fis));
         }
-        setData(UtilLogConverter.readString(fis));
+        setBody(UtilLogConverter.readString(fis));
     }
 
+    @JsonIgnore
     @Override
     public String getView() {
         header.put("time", UtilDate.msFormat(timeAdd));
-        if (data != null) {
-            return UtilJson.toString(header, "--") + "\r\n" + data;
+        if (body != null) {
+            return UtilJson.toString(header, "--") + "\r\n" + body;
         } else {
             return UtilJson.toString(header, "--");
         }
