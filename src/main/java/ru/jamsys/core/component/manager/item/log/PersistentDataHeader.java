@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -30,7 +31,7 @@ public class PersistentDataHeader implements PersistentData {
 
     public Map<String, String> header = new LinkedHashMap<>();
 
-    public String body;
+    public Object body;
 
     public LogType logType;
 
@@ -39,12 +40,14 @@ public class PersistentDataHeader implements PersistentData {
 
     public PersistentDataHeader(LogType logType, Class<?> cls, Object body) {
         this.logType = logType;
-        if (body != null) {
-            this.body = body instanceof String ? body.toString() : UtilJson.toStringPretty(body, "--");
-        }
+        this.body = body;
         addHeader("time", timeAdd);
         addHeader("thread", Thread.currentThread().getName());
         addHeader("source", cls.getName());
+    }
+
+    public String getBody() {
+        return String.valueOf(body);
     }
 
     public PersistentDataHeader addHeader(String key, Object value) {
@@ -78,7 +81,7 @@ public class PersistentDataHeader implements PersistentData {
             UtilLogConverter.writeShortString(os, header.get(key));
         }
         // Запись тела
-        UtilLogConverter.writeString(os, body);
+        UtilLogConverter.writeString(os, getBody());
         return os.toByteArray();
     }
 
@@ -103,12 +106,16 @@ public class PersistentDataHeader implements PersistentData {
     @JsonIgnore
     @Override
     public String getView() {
-        header.put("time", UtilDate.msFormat(timeAdd));
-        if (body != null) {
-            return UtilJson.toString(header, "--") + "\r\n" + body;
-        } else {
-            return UtilJson.toString(header, "--");
-        }
+        return UtilJson.toStringPretty(
+                new HashMapBuilder<String, Object>()
+                        .append(
+                                "header",
+                                new HashMapBuilder<>(header)
+                                        .append("time", UtilDate.msFormat(timeAdd))
+                        )
+                        .append("body", body),
+                "--"
+        );
     }
 
 }

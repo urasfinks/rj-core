@@ -40,6 +40,10 @@ public class PersistentDataSimple implements PersistentData {
         return this;
     }
 
+    public String getBody() {
+        return String.valueOf(body);
+    }
+
     public byte[] toByte() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         UtilLogConverter.writeShortString(os, logType.getNameCamel());
