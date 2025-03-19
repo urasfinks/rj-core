@@ -7,9 +7,13 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.extension.ByteSerialization;
 
+// Разметка для сырого чтения файла
+// Изначально создаётся без данных, только позиция, флаг и длина.
+// Впоследствии можно считать сами данные + скастовать в первоначальный объект
+
 @Getter
 @Accessors(chain = true)
-public class BlockInfo<TX extends ByteSerialization> {
+public class RawFileBlock<T extends ByteSerialization> {
 
     @Setter
     private short writerFlag;
@@ -19,15 +23,15 @@ public class BlockInfo<TX extends ByteSerialization> {
     @JsonIgnore
     private byte[] bytes;
 
-    private final Class<TX> cls;
+    private final Class<T> cls;
 
     private final int dataLength;
 
-    public BlockInfo(
+    public RawFileBlock(
             long position,
             short writerFlag,
             int dataLength,
-            Class<TX> cls
+            Class<T> cls
     ) {
         this.position = position;
         this.writerFlag = writerFlag;
@@ -35,7 +39,7 @@ public class BlockInfo<TX extends ByteSerialization> {
         this.cls = cls;
     }
 
-    public BlockInfo<TX> setBytes(byte[] bytes) {
+    public RawFileBlock<T> setBytes(byte[] bytes) {
         if (bytes.length != dataLength) {
             throw new RuntimeException("allocation byte size != current byte size");
         }
@@ -44,11 +48,11 @@ public class BlockInfo<TX extends ByteSerialization> {
     }
 
     @JsonProperty("data")
-    public TX cast() throws Exception {
+    public T cast() throws Exception {
         if (bytes == null || bytes.length == 0) {
             return null;
         }
-        TX item = cls.getConstructor().newInstance();
+        T item = cls.getConstructor().newInstance();
         item.toObject(bytes);
         item.setWriterFlag(writerFlag);
         return item;

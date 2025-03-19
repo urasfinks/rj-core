@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.component.manager.item.log.PersistentDataHeader;
-import ru.jamsys.core.extension.raw.writer.BlockInfo;
+import ru.jamsys.core.extension.raw.writer.RawFileBlock;
 import ru.jamsys.core.extension.raw.writer.RawFileChannel;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -28,8 +28,8 @@ class RawFileChannelTest {
         PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.INFO, RawFileChannelTest.class, "Hello");
         persistentDataHeader.setWriterFlag((short) 4);
 
-        rawFileChannel.write(persistentDataHeader);
-        rawFileChannel.write(persistentDataHeader);
+        rawFileChannel.append(persistentDataHeader);
+        rawFileChannel.append(persistentDataHeader);
 
         rawFileChannel.close();
         UtilLog.printInfo(RawFileChannelTest.class, rawFileChannel.getCopyQueue());
@@ -48,9 +48,9 @@ class RawFileChannelTest {
         PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.INFO, RawFileChannelTest.class, "Hello");
         persistentDataHeader.setWriterFlag((short) 4);
 
-        rawFileChannel.write(persistentDataHeader);
+        rawFileChannel.append(persistentDataHeader);
         // Ещё раз запишем
-        rawFileChannel.write(persistentDataHeader);
+        rawFileChannel.append(persistentDataHeader);
 
         Assertions.assertEquals(2, rawFileChannel.getCopyQueue().size());
         Assertions.assertNotNull(rawFileChannel.getCopyQueue().getFirst().getBytes());
@@ -68,7 +68,7 @@ class RawFileChannelTest {
         Assertions.assertNull(rawFileChannel.getCopyQueue().getFirst().getBytes());
 
         //Проливаем данные с ФС в объект
-        BlockInfo<PersistentDataHeader> first = rawFileChannel.getCopyQueue().getFirst();
+        RawFileBlock<PersistentDataHeader> first = rawFileChannel.getCopyQueue().getFirst();
         rawFileChannel.read(first);
         Assertions.assertNotNull(first.getBytes());
 
@@ -96,7 +96,7 @@ class RawFileChannelTest {
                                 RawFileChannelTest.class,
                                 name + " " + j
                         );
-                        rawFileChannel.write(persistentDataHeader);
+                        rawFileChannel.append(persistentDataHeader);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

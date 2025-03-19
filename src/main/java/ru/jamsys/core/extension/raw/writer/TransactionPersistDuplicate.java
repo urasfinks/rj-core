@@ -8,17 +8,6 @@ import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmut
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// У нас есть уже записанные файлы на диске, в этих файлах есть разбитые данные с типом ByteTransformer.
-// Наша задача проконтролировать, что все элементы файла были считаны и чтение было подтверждено.
-// На вход будет поступать класс ByteTransformer и путь до файла.
-// Мы загружаем в память все элементы файла и создаём карту ключей по смещению байт, где они лежат: 0-118, 119-234 и тд.
-// Когда будут приходить commit чтения мы будем просто записывать в новый файл строки, что уже обработано.
-// Это надо для того, что бы если приложение упадёт, можно было понять - что было точно считано, а что нет
-// После того, как все элементы на обработку кончаются:
-// 1) удаляем файл
-// 2) Удаляем файл обработки
-// 3) Запрашиваем следующий файл
-
 public class TransactionPersistDuplicate<T> {
 
     private final ConcurrentLinkedDeque<T> input = new ConcurrentLinkedDeque<>();
