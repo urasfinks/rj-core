@@ -60,7 +60,7 @@ class FileByteWriterTest {
     @Test
     void checkOverMaxFileWrite() {
         App.get(ServiceProperty.class).set(
-                "App.ManagerFileByteWriter.checkOverMaxFileWrite<Log>.file.name",
+                "App.ManagerFileByteWriter.checkOverMaxFileWrite<PersistentData>.file.name",
                 "log"
         );
 
@@ -113,7 +113,7 @@ class FileByteWriterTest {
     @Test
     void checkNameLog() {
         App.get(ServiceProperty.class).set(
-                "App.ManagerFileByteWriter.checkNameLog<Log>.file.name",
+                "App.ManagerFileByteWriter.checkNameLog<PersistentData>.file.name",
                 "log"
         );
 
@@ -150,7 +150,7 @@ class FileByteWriterTest {
     @Test
     void checkRestoreExceptionShutdown() throws IOException {
         App.get(ServiceProperty.class).set(
-                "App.ManagerFileByteWriter.checkRestoreExceptionShutdown<Log>.file.name",
+                "App.ManagerFileByteWriter.checkRestoreExceptionShutdown<PersistentData>.file.name",
                 "log"
         );
         UtilFile.removeAllFilesInFolder("LogManager");
@@ -168,7 +168,7 @@ class FileByteWriterTest {
         FileByteWriter test = App.get(ManagerFileByteWriter.class).get("checkRestoreExceptionShutdown", PersistentData.class);
         //test.getPropertySubscriber().getPropertyRepository().setRepository("file.name", "default3");
         App.get(ServiceProperty.class).set(
-                "App.ManagerFileByteWriter.checkRestoreExceptionShutdown<Log>.file.name",
+                "App.ManagerFileByteWriter.checkRestoreExceptionShutdown<PersistentData>.file.name",
                "default3"
         );
         // Проверяем, что default3.002.proc.bin - удалён
@@ -247,7 +247,7 @@ class FileByteWriterTest {
     @Test
     void serializeStatisticSecToFile() {
         App.get(ServiceProperty.class).set(
-                "App.ManagerFileByteWriter.default5<Log>.file.name",
+                "App.ManagerFileByteWriter.default5<PersistentData>.file.name",
                 "log"
         );
         UtilFile.removeAllFilesInFolder("LogManager");
