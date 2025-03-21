@@ -2,7 +2,6 @@ package ru.jamsys.core.extension.raw.writer;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,7 +28,9 @@ class AbstractHotSwapTest {
         // Создаем mock-объекты
         mockResource = mock(Completable.class);
         mockNewResource = mock(Completable.class);
-        mockOnSwap = mock(Consumer.class);
+        @SuppressWarnings("unchecked")
+        Consumer<Completable> t1 = (Consumer<Completable>) mock(Consumer.class);
+        mockOnSwap = t1;
 
         // Создаем анонимный класс для тестирования AbstractHotSwap
         hotSwap = new AbstractHotSwap<>() {
@@ -44,11 +45,13 @@ class AbstractHotSwapTest {
         hotSwap.setOnSwap(mockOnSwap);
         //-------------------------------------
 
-        onSwapMock2 = Mockito.mock(Consumer.class);
+        @SuppressWarnings("unchecked")
+        Consumer<TestCompletable> t2 = (Consumer<TestCompletable>) mock(Consumer.class);
+        onSwapMock2 = t2;
         hotSwap2 = new AbstractHotSwap<>() {
             @Override
             public TestCompletable getNextHotSwap(int seq) {
-                return new TestCompletable(seq);
+                return new TestCompletable();
             }
         };
         hotSwap2.setOnSwap(onSwapMock2);
@@ -146,11 +149,9 @@ class AbstractHotSwapTest {
     }
 
     static class TestCompletable implements ru.jamsys.core.extension.raw.writer.Completable {
-        private final int id;
         private volatile boolean completed = false;
 
-        TestCompletable(int id) {
-            this.id = id;
+        TestCompletable() {
         }
 
         void complete() {
