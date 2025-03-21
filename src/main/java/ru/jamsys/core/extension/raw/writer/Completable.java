@@ -2,12 +2,8 @@ package ru.jamsys.core.extension.raw.writer;
 
 // Нечто, что закончилось
 
-public interface Completed<E> {
+public interface Completable {
 
     boolean isCompleted();
-
-    E getIfNotCompleted();
-
-    void release();
 
 }

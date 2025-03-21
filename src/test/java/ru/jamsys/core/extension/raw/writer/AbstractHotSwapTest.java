@@ -2,118 +2,256 @@ package ru.jamsys.core.extension.raw.writer;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class AbstractHotSwapTest {
-    private AbstractHotSwap<Completed<String>, String> hotSwap;
-    private Completed<String> mockResource;
-    private Completed<String> mockNewResource;
+
+
+    private AbstractHotSwap<Completable> hotSwap;
+    private Completable mockResource;
+    private Completable mockNewResource;
+    private Consumer<Completable> mockOnSwap;
+
+    //---------------
+
+    private AbstractHotSwap<TestCompletable> hotSwap2;
+    private Consumer<TestCompletable> onSwapMock2;
 
     @BeforeEach
     void setUp() {
         // Создаем mock-объекты
-        mockResource = mock(Completed.class);
-        mockNewResource = mock(Completed.class);
+        mockResource = mock(Completable.class);
+        mockNewResource = mock(Completable.class);
+        mockOnSwap = mock(Consumer.class);
 
         // Создаем анонимный класс для тестирования AbstractHotSwap
-        hotSwap = new AbstractHotSwap<Completed<String>, String>() {
+        hotSwap = new AbstractHotSwap<>() {
             @Override
-            public Completed<String> getNextSwap(int sequence) {
+            public Completable getNextHotSwap(int sequence) {
                 return mockNewResource;
             }
         };
 
-        // Заменяем primary на mockResource для тестов
-        hotSwap.primary = mockResource;
+        // Заменяем resource на mockResource для тестов
+        hotSwap.resource = mockResource;
+        hotSwap.setOnSwap(mockOnSwap);
+        //-------------------------------------
+
+        onSwapMock2 = Mockito.mock(Consumer.class);
+        hotSwap2 = new AbstractHotSwap<>() {
+            @Override
+            public TestCompletable getNextHotSwap(int seq) {
+                return new TestCompletable(seq);
+            }
+        };
+        hotSwap2.setOnSwap(onSwapMock2);
     }
 
     @Test
     void testInitialization() {
-        assertNotNull(hotSwap.primary);
+        assertNotNull(hotSwap2.getResource());
     }
 
     @Test
-    void testSwapWhenPrimaryIsCompleted() {
+    void testSwapWhenResourceIsCompleted() {
+        TestCompletable oldResource = hotSwap2.getResource();
+        oldResource.complete();
+        hotSwap2.swap();
+        TestCompletable newResource = hotSwap2.getResource();
+
+        assertNotSame(oldResource, newResource);
+        verify(onSwapMock2).accept(oldResource);
+    }
+
+    @Test
+    void testSwapWhenResourceIsNotCompleted() {
+        TestCompletable oldResource = hotSwap2.getResource();
+        hotSwap2.swap();
+        TestCompletable newResource = hotSwap2.getResource();
+
+        assertSame(oldResource, newResource);
+        verifyNoInteractions(onSwapMock2);
+    }
+
+    @Test
+    void testGetResourceWhenResourceIsCompleted() {
+        TestCompletable oldResource = hotSwap2.getResource();
+        oldResource.complete();
+        TestCompletable newResource = hotSwap2.getResource();
+
+        assertNotSame(oldResource, newResource);
+        verify(onSwapMock2).accept(oldResource);
+    }
+
+    @Test
+    void testGetResourceWhenResourceIsNotCompleted() {
+        TestCompletable oldResource = hotSwap2.getResource();
+        TestCompletable newResource = hotSwap2.getResource();
+
+        assertSame(oldResource, newResource);
+    }
+
+    @Test
+    void testSwapRateLimit() throws InterruptedException {
+        TestCompletable first = hotSwap2.getResource();
+        first.complete();
+        hotSwap2.swap();
+        TestCompletable second = hotSwap2.getResource();
+        hotSwap2.swap(); // Должен игнорироваться, так как не прошло 1 секунды
+        TestCompletable third = hotSwap2.getResource();
+
+        assertSame(second, third);
+        Thread.sleep(1001);
+        second.complete();
+        hotSwap2.swap();
+        TestCompletable fourth = hotSwap2.getResource();
+
+        assertNotSame(second, fourth);
+    }
+
+    @Test
+    void testOnCloseCalled() {
+        TestCompletable oldResource = hotSwap2.getResource();
+        oldResource.complete();
+        hotSwap2.swap();
+        verify(onSwapMock2).accept(oldResource);
+    }
+
+    @Test
+    void testConcurrentAccess() throws InterruptedException {
+        int threadCount = 10;
+        CountDownLatch latch = new CountDownLatch(threadCount);
+        AtomicReference<TestCompletable> initialResource = new AtomicReference<>(hotSwap2.getResource());
+
+        Runnable task = () -> {
+            hotSwap2.getResource();
+            latch.countDown();
+        };
+
+        Thread[] threads = new Thread[threadCount];
+        for (int i = 0; i < threadCount; i++) {
+            threads[i] = new Thread(task);
+            threads[i].start();
+        }
+
+        latch.await();
+        assertSame(initialResource.get(), hotSwap2.getResource());
+    }
+
+    static class TestCompletable implements ru.jamsys.core.extension.raw.writer.Completable {
+        private final int id;
+        private volatile boolean completed = false;
+
+        TestCompletable(int id) {
+            this.id = id;
+        }
+
+        void complete() {
+            completed = true;
+        }
+
+        @Override
+        public boolean isCompleted() {
+            return completed;
+        }
+    }
+
+    @Test
+    void testInitialization0() {
+        assertNotNull(hotSwap.resource);
+    }
+
+    @Test
+    void testSwapWhenResourceIsCompleted0() {
         // Настраиваем mockResource как завершенный
         when(mockResource.isCompleted()).thenReturn(true);
 
         // Вызываем swap
         hotSwap.swap();
 
-        // Проверяем, что primary был заменен на новый ресурс
-        assertEquals(mockNewResource, hotSwap.primary);
-        verify(mockResource, times(1)).release();
+        // Проверяем, что resource был заменен на новый ресурс
+        assertEquals(mockNewResource, hotSwap.resource);
     }
 
     @Test
-    void testSwapWhenPrimaryIsNotCompleted() {
+    void testSwapWhenResourceIsNotCompleted0() {
         // Настраиваем mockResource как не завершенный
         when(mockResource.isCompleted()).thenReturn(false);
 
         // Вызываем swap
         hotSwap.swap();
 
-        // Проверяем, что primary не был заменен
-        assertEquals(mockResource, hotSwap.primary);
-        verify(mockResource, never()).release();
+        // Проверяем, что resource не был заменен
+        assertEquals(mockResource, hotSwap.resource);
     }
 
     @Test
-    void testGetResourceWhenPrimaryIsCompleted() {
+    void testGetResourceWhenResourceIsCompleted0() {
         // Настраиваем mockResource как завершенный
         when(mockResource.isCompleted()).thenReturn(true);
-        when(mockNewResource.isCompleted()).thenReturn(false);
-        when(mockNewResource.getIfNotCompleted()).thenReturn("NewResource");
 
         // Вызываем getResource
-        String result = hotSwap.getResource();
+        Completable result = hotSwap.getResource();
 
         // Проверяем, что был возвращен новый ресурс
-        assertEquals("NewResource", result);
-        verify(mockResource, times(1)).release();
+        assertEquals(mockNewResource, result);
     }
 
     @Test
-    void testGetResourceWhenPrimaryIsNotCompleted() {
+    void testGetResourceWhenResourceIsNotCompleted0() {
         // Настраиваем mockResource как не завершенный
         when(mockResource.isCompleted()).thenReturn(false);
-        when(mockResource.getIfNotCompleted()).thenReturn("Resource");
 
         // Вызываем getResource
-        String result = hotSwap.getResource();
+        Completable result = hotSwap.getResource();
 
         // Проверяем, что был возвращен текущий ресурс
-        assertEquals("Resource", result);
-        verify(mockResource, never()).release();
+        assertEquals(mockResource, result);
     }
 
     @Test
-    void testSwapRateLimit() {
+    void testSwapRateLimit0() {
         // Настраиваем mockResource как завершенный
         when(mockResource.isCompleted()).thenReturn(true);
 
         // Первый вызов swap
         hotSwap.swap();
-        assertEquals(mockNewResource, hotSwap.primary);
+        assertEquals(mockNewResource, hotSwap.resource);
 
         // Второй вызов swap (должен быть проигнорирован из-за ограничения времени)
         hotSwap.swap();
-        assertEquals(mockNewResource, hotSwap.primary); // primary не должен измениться
+        assertEquals(mockNewResource, hotSwap.resource); // resource не должен измениться
     }
 
     @Test
-    void testConcurrentAccess() throws InterruptedException {
+    void testOnSwapCalled() {
         // Настраиваем mockResource как завершенный
         when(mockResource.isCompleted()).thenReturn(true);
-        when(mockNewResource.isCompleted()).thenReturn(false);
-        when(mockNewResource.getIfNotCompleted()).thenReturn("NewResource");
+        hotSwap.setOnSwap(mockOnSwap);
+
+        // Вызываем swap
+        hotSwap.swap();
+
+        // Проверяем, что onSwap был вызван
+        verify(mockOnSwap, times(1)).accept(mockResource);
+    }
+
+    @Test
+    void testConcurrentAccess0() throws InterruptedException {
+        // Настраиваем mockResource как завершенный
+        when(mockResource.isCompleted()).thenReturn(true);
 
         // Создаем несколько потоков для тестирования многопоточного доступа
         Runnable task = () -> {
             for (int i = 0; i < 10; i++) {
-                String resource = hotSwap.getResource();
+                Completable resource = hotSwap.getResource();
                 assertNotNull(resource);
             }
         };
@@ -128,6 +266,7 @@ class AbstractHotSwapTest {
         thread2.join();
 
         // Проверяем, что ресурс был заменен только один раз
-        verify(mockResource, times(1)).release();
+        verify(mockOnSwap, times(1)).accept(mockResource);
     }
+
 }
