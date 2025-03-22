@@ -16,7 +16,7 @@ import java.util.List;
 @ToString(callSuper = true)
 public class StatisticSec extends ExpirationMsMutableImpl implements ByteSerialization, Serializable {
 
-    private short statusCode;
+    private short subscriberStatusRead;
 
     public List<Statistic> list = new ArrayList<>();
 

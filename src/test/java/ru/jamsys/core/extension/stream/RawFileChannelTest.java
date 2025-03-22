@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.component.manager.item.log.PersistentDataHeader;
-import ru.jamsys.core.extension.raw.writer.RawFileBlock;
+import ru.jamsys.core.extension.raw.writer.RawFileMarkup;
 import ru.jamsys.core.extension.raw.writer.RawFileChannel;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -26,7 +26,7 @@ class RawFileChannelTest {
         );
 
         PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.INFO, RawFileChannelTest.class, "Hello");
-        persistentDataHeader.setStatusCode((short) 4);
+        persistentDataHeader.setSubscriberStatusRead((short) 4);
 
         rawFileChannel.add(rawFileChannel.convert(persistentDataHeader));
         rawFileChannel.add(rawFileChannel.convert(persistentDataHeader));
@@ -46,7 +46,7 @@ class RawFileChannelTest {
         );
 
         PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.INFO, RawFileChannelTest.class, "Hello");
-        persistentDataHeader.setStatusCode((short) 4);
+        persistentDataHeader.setSubscriberStatusRead((short) 4);
 
         rawFileChannel.add(rawFileChannel.convert(persistentDataHeader));
         // Ещё раз запишем
@@ -68,7 +68,7 @@ class RawFileChannelTest {
         Assertions.assertNull(rawFileChannel.getCopyQueue().getFirst().getBytes());
 
         //Проливаем данные с ФС в объект
-        RawFileBlock<PersistentDataHeader> first = rawFileChannel.getCopyQueue().getFirst();
+        RawFileMarkup<PersistentDataHeader> first = rawFileChannel.getCopyQueue().getFirst();
         rawFileChannel.read(first);
         Assertions.assertNotNull(first.getBytes());
 

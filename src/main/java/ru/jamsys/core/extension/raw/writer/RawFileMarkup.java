@@ -13,7 +13,7 @@ import ru.jamsys.core.extension.ByteSerialization;
 
 @Getter
 @Accessors(chain = true)
-public class RawFileBlock<T extends ByteSerialization> {
+public class RawFileMarkup<T extends ByteSerialization> {
 
     @Setter
     private short stateCode;
@@ -27,7 +27,7 @@ public class RawFileBlock<T extends ByteSerialization> {
 
     private final int dataLength;
 
-    public RawFileBlock(
+    public RawFileMarkup(
             long position,
             short stateCode,
             int dataLength,
@@ -39,7 +39,7 @@ public class RawFileBlock<T extends ByteSerialization> {
         this.cls = cls;
     }
 
-    public RawFileBlock<T> setBytes(byte[] bytes) {
+    public RawFileMarkup<T> setBytes(byte[] bytes) {
         if (bytes.length != dataLength) {
             throw new RuntimeException("allocation byte size != current byte size");
         }
@@ -54,7 +54,7 @@ public class RawFileBlock<T extends ByteSerialization> {
         }
         T item = cls.getConstructor().newInstance();
         item.toObject(bytes);
-        item.setStatusCode(stateCode);
+        item.setSubscriberStatusRead(stateCode);
         return item;
     }
 

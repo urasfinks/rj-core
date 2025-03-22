@@ -18,10 +18,10 @@ import java.util.Map;
 @Getter
 @Setter
 @Accessors(chain = true)
-@JsonPropertyOrder({"statusCode", "logType", "timeAdd", "header", "data"})
+@JsonPropertyOrder({"subscriberStatusRead", "logType", "timeAdd", "header", "data"})
 public class PersistentDataSimple implements PersistentData {
 
-    private short statusCode;
+    private short subscriberStatusRead;
 
     public long timeAdd = System.currentTimeMillis();
 
@@ -48,10 +48,10 @@ public class PersistentDataSimple implements PersistentData {
         return os.toByteArray();
     }
 
-    public static PersistentDataSimple instanceFromBytes(byte[] bytes, short statusCode) throws Exception {
+    public static PersistentDataSimple instanceFromBytes(byte[] bytes, short subscriberStatusRead) throws Exception {
         PersistentDataSimple persistentDataSimple = new PersistentDataSimple();
         persistentDataSimple.toObject(bytes);
-        persistentDataSimple.setStatusCode(statusCode);
+        persistentDataSimple.setSubscriberStatusRead(subscriberStatusRead);
         return persistentDataSimple;
     }
 
@@ -75,13 +75,13 @@ public class PersistentDataSimple implements PersistentData {
     }
 
     @Override
-    public short getStatusCode() {
-        return statusCode;
+    public short getSubscriberStatusRead() {
+        return subscriberStatusRead;
     }
 
     @Override
-    public void setStatusCode(short statusCode) {
-        this.statusCode = statusCode;
+    public void setSubscriberStatusRead(short subscriberStatusRead) {
+        this.subscriberStatusRead = subscriberStatusRead;
     }
 
 }

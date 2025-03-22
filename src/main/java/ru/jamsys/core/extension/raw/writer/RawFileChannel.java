@@ -20,8 +20,8 @@ import java.util.concurrent.atomic.AtomicLong;
 // Класс сырой записи в файл в многопоточном режиме
 // Можно записать свой собственный ByteSerialization только в конец файла
 // При инициализации происходит чтение разметки данных из файла - RawFileBlock
-// который содержит начало блока, StatusCode и размер блока.
-// Блоки помещаются в очередь, которую можно вычитать и сделать в дальнейшем правки в StatusCode (commit)
+// который содержит начало блока, subscriberStatusRead и размер блока.
+// Блоки помещаются в очередь, которую можно вычитать и сделать в дальнейшем правки в subscriberStatusRead (commit)
 // Для чего:
 // Вот у нас есть файл с логами, логи надо доставить до удалённого хранилища
 // Как быть и как проконтролировать что всё было доставлено на удалённый сервер?
@@ -40,10 +40,10 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RawFileChannel<T extends ByteSerialization>
         implements
         Closable,
-        ResourceQueue<RawFileBlock<T>> {
+        ResourceQueue<RawFileMarkup<T>> {
 
     // Очередь для хранения блоков
-    private final ConcurrentLinkedDeque<RawFileBlock<T>> queue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<RawFileMarkup<T>> queue = new ConcurrentLinkedDeque<>();
 
     private final AtomicInteger queueSize = new AtomicInteger(0);
 
@@ -73,72 +73,72 @@ public class RawFileChannel<T extends ByteSerialization>
         long length = file.length();
         while (currentPosition < length) {
             file.seek(currentPosition);
-            short statusCode = file.readShort(); // Читаем 2 байта (short)
+            short subscriberStatusRead = file.readShort(); // Читаем 2 байта (short)
             int dataLength = file.readInt(); // Читаем 4 байта (int) - длина данных
             if (dataLength == 0) { // Если длина данных 0 - значит данные закончились
                 break;
             }
             fileLength.addAndGet(6 + dataLength);
             // Создаем объект BlockInfo и добавляем его в очередь
-            RawFileBlock<T> rawFileBlock = new RawFileBlock<>(
+            RawFileMarkup<T> rawFileMarkup = new RawFileMarkup<>(
                     currentPosition,
-                    statusCode,
+                    subscriberStatusRead,
                     dataLength,
                     cls
             );
-            queue.add(rawFileBlock);
+            queue.add(rawFileMarkup);
             queueSize.incrementAndGet();
             // Перемещаем указатель на следующий блок
             currentPosition += 6 + dataLength; // 6 = 2 (short) + 4 (int)
         }
     }
 
-    public List<RawFileBlock<T>> getCopyQueue() {
+    public List<RawFileMarkup<T>> getCopyQueue() {
         return new ArrayList<>(queue);
     }
 
-    public void updateStatusCode(RawFileBlock<T> rawFileBlock) throws Exception {
+    public void updateSubscriberStatusRead(RawFileMarkup<T> rawFileMarkup) throws Exception {
         int _ = channel.write(
-                ByteBuffer.wrap(UtilByte.shortToBytes(rawFileBlock.getStateCode())),
-                rawFileBlock.getPosition()
+                ByteBuffer.wrap(UtilByte.shortToBytes(rawFileMarkup.getStateCode())),
+                rawFileMarkup.getPosition()
         );
     }
 
-    // Синхронизованное обновление StatusCode если предполагается конкуренция
-    public void updateStatusCode(
-            RawFileBlock<T> rawFileBlock,
-            Function<Short, Short> getNewStatusCode
+    // Синхронизованное обновление SubscriberStatusRead если предполагается конкуренция
+    public void updateSubscriberStatusRead(
+            RawFileMarkup<T> rawFileMarkup,
+            Function<Short, Short> getNewSubscriberStatusRead
     ) throws Exception {
-        try (FileLock _ = channel.lock(rawFileBlock.getPosition(), 2, false)) {
-            // Считаем актуальные statusCode
+        try (FileLock _ = channel.lock(rawFileMarkup.getPosition(), 2, false)) {
+            // Считаем актуальные SubscriberStatusRead
             ByteBuffer buffer = ByteBuffer.allocate(2);
-            channel.read(buffer, rawFileBlock.getPosition());
-            short currentStatusCode = UtilByte.bytesToShort(buffer.array());
+            channel.read(buffer, rawFileMarkup.getPosition());
+            short currentSubscriberStatusRead = UtilByte.bytesToShort(buffer.array());
             int _ = channel.write(
-                    ByteBuffer.wrap(UtilByte.shortToBytes(getNewStatusCode.apply(currentStatusCode))),
-                    rawFileBlock.getPosition()
+                    ByteBuffer.wrap(UtilByte.shortToBytes(getNewSubscriberStatusRead.apply(currentSubscriberStatusRead))),
+                    rawFileMarkup.getPosition()
             );
         }
     }
 
-    public void read(RawFileBlock<T> rawFileBlock) throws IOException {
-        if (rawFileBlock == null) {
+    public void read(RawFileMarkup<T> rawFileMarkup) throws IOException {
+        if (rawFileMarkup == null) {
             return;
         }
-        try (FileLock _ = channel.lock(rawFileBlock.getPosition() + 6, rawFileBlock.getDataLength(), true)) {
-            ByteBuffer buffer = ByteBuffer.allocate(rawFileBlock.getDataLength());
-            channel.read(buffer, rawFileBlock.getPosition() + 6);
-            rawFileBlock.setBytes(buffer.array());
+        try (FileLock _ = channel.lock(rawFileMarkup.getPosition() + 6, rawFileMarkup.getDataLength(), true)) {
+            ByteBuffer buffer = ByteBuffer.allocate(rawFileMarkup.getDataLength());
+            channel.read(buffer, rawFileMarkup.getPosition() + 6);
+            rawFileMarkup.setBytes(buffer.array());
         }
     }
 
-    public RawFileBlock<T> convert(T item) throws Exception {
+    public RawFileMarkup<T> convert(T item) throws Exception {
         byte[] itemByte = item.toByte();
         int blockLength = 6 + itemByte.length;
         long position = fileLength.addAndGet(blockLength) - blockLength;
-        return new RawFileBlock<>(
+        return new RawFileMarkup<>(
                 position,
-                item.getStatusCode(),
+                item.getSubscriberStatusRead(),
                 itemByte.length,
                 cls
         )
@@ -155,32 +155,32 @@ public class RawFileChannel<T extends ByteSerialization>
     }
 
     @Override
-    public void add(RawFileBlock<T> rawFileBlock) throws Exception {
+    public void add(RawFileMarkup<T> rawFileMarkup) throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        os.write(UtilByte.shortToBytes(rawFileBlock.getStateCode()));
-        os.write(UtilByte.intToBytes(rawFileBlock.getDataLength()));
-        os.write(rawFileBlock.getBytes());
+        os.write(UtilByte.shortToBytes(rawFileMarkup.getStateCode()));
+        os.write(UtilByte.intToBytes(rawFileMarkup.getDataLength()));
+        os.write(rawFileMarkup.getBytes());
 
-        int _ = channel.write(ByteBuffer.wrap(os.toByteArray()), rawFileBlock.getPosition());
+        int _ = channel.write(ByteBuffer.wrap(os.toByteArray()), rawFileMarkup.getPosition());
 
-        queue.add(rawFileBlock);
+        queue.add(rawFileMarkup);
         queueSize.incrementAndGet();
     }
 
-    public RawFileBlock<T> pollFirst() {
-        RawFileBlock<T> tRawFileBlock = queue.pollFirst();
-        if (tRawFileBlock != null) {
+    public RawFileMarkup<T> pollFirst() {
+        RawFileMarkup<T> tRawFileMarkup = queue.pollFirst();
+        if (tRawFileMarkup != null) {
             queueSize.decrementAndGet();
         }
-        return tRawFileBlock;
+        return tRawFileMarkup;
     }
 
-    public RawFileBlock<T> pollLast() {
-        RawFileBlock<T> tRawFileBlock = queue.pollLast();
-        if (tRawFileBlock != null) {
+    public RawFileMarkup<T> pollLast() {
+        RawFileMarkup<T> tRawFileMarkup = queue.pollLast();
+        if (tRawFileMarkup != null) {
             queueSize.decrementAndGet();
         }
-        return tRawFileBlock;
+        return tRawFileMarkup;
     }
 
     public void close() throws Exception {

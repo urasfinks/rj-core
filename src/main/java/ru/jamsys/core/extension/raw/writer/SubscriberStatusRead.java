@@ -14,44 +14,44 @@ import java.util.Map;
 // Например лог считан, лог записан, лог передан
 // Это не последовательность, это одновременно может происходить, то есть каждый статус это бит short
 // с двумя состояниями 0 и 1, изначально все 16 состояний = 0 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0].
-// В StatusCodeModel вы заполняете byteIndex который будет соответствовать индексу бита short.
+// В SubscriberStatusModel вы заполняете byteIndex который будет соответствовать индексу бита short.
 // Любой бит в один момент времени можно перевести из 0 в 1, тем самым пометив, что операция по какому-то состоянию
 // завершена
 
-public class StatusCode<T extends StatusCodeModel> {
+public class SubscriberStatusRead<T extends SubscriberStatusReadModel> {
 
     @Getter
     @Setter
-    private short statusCode;
+    private short subscriberStatusRead;
 
     private final Class<T> cls;
 
-    public StatusCode(short statusCode, Class<T> cls) {
-        this.statusCode = statusCode;
+    public SubscriberStatusRead(short subscriberStatusRead, Class<T> cls) {
+        this.subscriberStatusRead = subscriberStatusRead;
         this.cls = cls;
     }
 
-    public void set(T enumStatusCodeModel, boolean enable) {
-        for (StatusCodeModel statusCodeModel : cls.getEnumConstants()) {
-            if (statusCodeModel.equals(enumStatusCodeModel)) {
+    public void set(T enumSubscriberStatusReadModel, boolean enable) {
+        for (SubscriberStatusReadModel subscriberStatusReadModel : cls.getEnumConstants()) {
+            if (subscriberStatusReadModel.equals(enumSubscriberStatusReadModel)) {
                 if (enable) {
-                    this.statusCode = UtilByte.setBit(this.statusCode, statusCodeModel.getByteIndex());
+                    this.subscriberStatusRead = UtilByte.setBit(this.subscriberStatusRead, subscriberStatusReadModel.getByteIndex());
                 } else {
-                    this.statusCode = UtilByte.clearBit(this.statusCode, statusCodeModel.getByteIndex());
+                    this.subscriberStatusRead = UtilByte.clearBit(this.subscriberStatusRead, subscriberStatusReadModel.getByteIndex());
                 }
                 break;
             }
         }
     }
 
-    public boolean getStatus(T statusCode) {
-        return UtilByte.getBit(this.statusCode, statusCode.getByteIndex()) != 0;
+    public boolean getStatus(T subscriberStatusReadModel) {
+        return UtilByte.getBit(this.subscriberStatusRead, subscriberStatusReadModel.getByteIndex()) != 0;
     }
 
     public Map<T, Boolean> getStatus() {
         Map<T, Boolean> result = new LinkedHashMap<>();
-        for (T statusCode : cls.getEnumConstants()) {
-            result.put(statusCode, UtilByte.getBit(this.statusCode, statusCode.getByteIndex()) != 0);
+        for (T subscriberStatusRead : cls.getEnumConstants()) {
+            result.put(subscriberStatusRead, UtilByte.getBit(this.subscriberStatusRead, subscriberStatusRead.getByteIndex()) != 0);
         }
         return result;
     }
@@ -59,8 +59,8 @@ public class StatusCode<T extends StatusCodeModel> {
     @JsonValue
     public Map<String, Object> get() {
         return new HashMapBuilder<String, Object>()
-                .append("number", statusCode)
-                .append("bits", UtilByte.getBits(statusCode))
+                .append("number", subscriberStatusRead)
+                .append("bits", UtilByte.getBits(subscriberStatusRead))
                 .append("status", getStatus())
                 ;
     }

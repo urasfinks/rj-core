@@ -190,9 +190,9 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                         if (itemExpirationMsMutableEnvelope != null) {
                             ByteSerialization item = itemExpirationMsMutableEnvelope.getValue();
                             byte[] d = item.toByte();
-                            fos.write(UtilByte.shortToBytes(item.getStatusCode()));
+                            fos.write(UtilByte.shortToBytes(item.getSubscriberStatusRead()));
                             fos.write(UtilByte.intToBytes(d.length));
-                            writeByteToCurrentFile.addAndGet(6); //2 byte statusCode + 4 byte item byte length
+                            writeByteToCurrentFile.addAndGet(6); //2 byte subscriberStatusRead + 4 byte item byte length
                             fos.write(d);
                             writeByteToCurrentFile.addAndGet(d.length);
 
