@@ -35,7 +35,7 @@ public class FileByteReaderResource
         try (BufferedInputStream fis = new BufferedInputStream(new FileInputStream(arguments.getFilePath()))) {
             while (fis.available() > 0) {
                 ByteSerialization item = arguments.getClsItem().getConstructor().newInstance();
-                item.setWriterFlag(UtilByte.bytesToShort(fis.readNBytes(2)));
+                item.setStatusCode(UtilByte.bytesToShort(fis.readNBytes(2)));
                 int lenData = UtilByte.bytesToInt(fis.readNBytes(4));
                 item.toObject(fis.readNBytes(lenData));
                 result.add(item);

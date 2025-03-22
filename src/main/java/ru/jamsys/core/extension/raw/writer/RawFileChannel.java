@@ -12,13 +12,14 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 // Класс сырой записи в файл в многопоточном режиме
 // Можно записать свой собственный ByteSerialization только в конец файла
 // При инициализации происходит чтение разметки данных из файла - RawFileBlock
-// который содержит начало блока, writerFlag и размер блока.
-// Блоки помещаются в очередь, которую можно вычитать и сделать в дальнейшем правки в writerFlag (commit)
+// который содержит начало блока, StatusCode и размер блока.
+// Блоки помещаются в очередь, которую можно вычитать и сделать в дальнейшем правки в StatusCode (commit)
 // Для чего:
 // Вот у нас есть файл с логами, логи надо доставить до удалённого хранилища
 // Как быть и как проконтролировать что всё было доставлено на удалённый сервер?
@@ -34,10 +35,12 @@ import java.util.concurrent.atomic.AtomicLong;
 // Например вкладывать в данные идентификатор будущего запроса, и если операция где-то сломается, другая сторона должна
 // проверять дубли в случае повтора операции.
 
-public class RawFileChannel<T extends ByteSerialization> {
+public class RawFileChannel<T extends ByteSerialization> implements Closable, ResourceQueue<RawFileBlock<T>> {
 
     // Очередь для хранения блоков
     private final ConcurrentLinkedDeque<RawFileBlock<T>> queue = new ConcurrentLinkedDeque<>();
+
+    private final AtomicInteger queueSize = new AtomicInteger(0);
 
     private final AtomicLong fileLength = new AtomicLong(0);
 
@@ -65,7 +68,7 @@ public class RawFileChannel<T extends ByteSerialization> {
         long length = file.length();
         while (currentPosition < length) {
             file.seek(currentPosition);
-            short writerFlag = file.readShort(); // Читаем 2 байта (short)
+            short statusCode = file.readShort(); // Читаем 2 байта (short)
             int dataLength = file.readInt(); // Читаем 4 байта (int) - длина данных
             if (dataLength == 0) { // Если длина данных 0 - значит данные закончились
                 break;
@@ -74,54 +77,33 @@ public class RawFileChannel<T extends ByteSerialization> {
             // Создаем объект BlockInfo и добавляем его в очередь
             RawFileBlock<T> rawFileBlock = new RawFileBlock<>(
                     currentPosition,
-                    writerFlag,
+                    statusCode,
                     dataLength,
                     cls
             );
             queue.add(rawFileBlock);
+            queueSize.incrementAndGet();
             // Перемещаем указатель на следующий блок
             currentPosition += 6 + dataLength; // 6 = 2 (short) + 4 (int)
         }
     }
 
-    public long getDataLength() {
-        return fileLength.get();
+    public List<RawFileBlock<T>> getCopyQueue() {
+        return new ArrayList<>(queue);
     }
 
-    public enum Update {
-        WRITER_FLAG,
-        DATA // Длина данных не может быть изменена
+    public void updateStatusCode(RawFileBlock<T> rawFileBlock) throws Exception {
+        int _ = channel.write(
+                ByteBuffer.wrap(UtilByte.shortToBytes(rawFileBlock.getStateCode())),
+                rawFileBlock.getPosition()
+        );
     }
 
-    public void update(RawFileBlock<T> rawFileBlock, Update update) throws Exception {
-        switch (update) {
-            case DATA -> {
-                int _ = channel.write(
-                        ByteBuffer.wrap(rawFileBlock.getBytes()),
-                        rawFileBlock.getPosition() + 6
-                );
-            }
-            case WRITER_FLAG -> {
-                int _ = channel.write(
-                        ByteBuffer.wrap(UtilByte.shortToBytes(rawFileBlock.getWriterFlag())),
-                        rawFileBlock.getPosition()
-                );
-            }
-        }
-    }
-
-    public RawFileBlock<T> append(ByteSerialization item) throws Exception {
-        RawFileBlock<T> rawFileBlock = allocate(item);
-
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        os.write(UtilByte.shortToBytes(rawFileBlock.getWriterFlag()));
-        os.write(UtilByte.intToBytes(rawFileBlock.getDataLength()));
-        os.write(rawFileBlock.getBytes());
-
-        int _ = channel.write(ByteBuffer.wrap(os.toByteArray()), rawFileBlock.getPosition());
-
-        queue.add(rawFileBlock);
-        return rawFileBlock;
+    public void updateData(RawFileBlock<T> rawFileBlock) throws Exception {
+        int _ = channel.write(
+                ByteBuffer.wrap(rawFileBlock.getBytes()),
+                rawFileBlock.getPosition() + 6
+        );
     }
 
     public void read(RawFileBlock<T> rawFileBlock) throws IOException {
@@ -134,32 +116,58 @@ public class RawFileChannel<T extends ByteSerialization> {
         rawFileBlock.setBytes(buffer);
     }
 
-    private RawFileBlock<T> allocate(ByteSerialization item) throws Exception {
+    public RawFileBlock<T> convert(T item) throws Exception {
         byte[] itemByte = item.toByte();
         int blockLength = 6 + itemByte.length;
         long position = fileLength.addAndGet(blockLength) - blockLength;
         return new RawFileBlock<>(
                 position,
-                item.getWriterFlag(),
+                item.getStatusCode(),
                 itemByte.length,
                 cls
         )
                 .setBytes(itemByte);
     }
 
+    @Override
+    public long size() {
+        return queueSize.get();
+    }
+
+    public long sizeByte() {
+        return fileLength.get();
+    }
+
+    @Override
+    public void add(RawFileBlock<T> rawFileBlock) throws Exception {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        os.write(UtilByte.shortToBytes(rawFileBlock.getStateCode()));
+        os.write(UtilByte.intToBytes(rawFileBlock.getDataLength()));
+        os.write(rawFileBlock.getBytes());
+
+        int _ = channel.write(ByteBuffer.wrap(os.toByteArray()), rawFileBlock.getPosition());
+
+        queue.add(rawFileBlock);
+        queueSize.incrementAndGet();
+    }
+
     public RawFileBlock<T> pollFirst() {
-        return queue.pollFirst();
+        RawFileBlock<T> tRawFileBlock = queue.pollFirst();
+        if (tRawFileBlock != null) {
+            queueSize.decrementAndGet();
+        }
+        return tRawFileBlock;
     }
 
     public RawFileBlock<T> pollLast() {
-        return queue.pollLast();
+        RawFileBlock<T> tRawFileBlock = queue.pollLast();
+        if (tRawFileBlock != null) {
+            queueSize.decrementAndGet();
+        }
+        return tRawFileBlock;
     }
 
-    public List<RawFileBlock<T>> getCopyQueue() {
-        return new ArrayList<>(queue);
-    }
-
-    public void close() throws IOException {
+    public void close() throws Exception {
         channel.close();
         file.close();
     }

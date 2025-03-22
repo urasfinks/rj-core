@@ -26,14 +26,14 @@ class RawFileChannelTest {
         );
 
         PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.INFO, RawFileChannelTest.class, "Hello");
-        persistentDataHeader.setWriterFlag((short) 4);
+        persistentDataHeader.setStatusCode((short) 4);
 
-        rawFileChannel.append(persistentDataHeader);
-        rawFileChannel.append(persistentDataHeader);
+        rawFileChannel.add(rawFileChannel.convert(persistentDataHeader));
+        rawFileChannel.add(rawFileChannel.convert(persistentDataHeader));
 
         rawFileChannel.close();
         UtilLog.printInfo(RawFileChannelTest.class, rawFileChannel.getCopyQueue());
-        Assertions.assertEquals(228, rawFileChannel.getDataLength());
+        Assertions.assertEquals(228, rawFileChannel.sizeByte());
     }
 
     @Test
@@ -46,11 +46,11 @@ class RawFileChannelTest {
         );
 
         PersistentDataHeader persistentDataHeader = new PersistentDataHeader(LogType.INFO, RawFileChannelTest.class, "Hello");
-        persistentDataHeader.setWriterFlag((short) 4);
+        persistentDataHeader.setStatusCode((short) 4);
 
-        rawFileChannel.append(persistentDataHeader);
+        rawFileChannel.add(rawFileChannel.convert(persistentDataHeader));
         // Ещё раз запишем
-        rawFileChannel.append(persistentDataHeader);
+        rawFileChannel.add(rawFileChannel.convert(persistentDataHeader));
 
         Assertions.assertEquals(2, rawFileChannel.getCopyQueue().size());
         Assertions.assertNotNull(rawFileChannel.getCopyQueue().getFirst().getBytes());
@@ -96,7 +96,7 @@ class RawFileChannelTest {
                                 RawFileChannelTest.class,
                                 name + " " + j
                         );
-                        rawFileChannel.append(persistentDataHeader);
+                        rawFileChannel.add(rawFileChannel.convert(persistentDataHeader));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

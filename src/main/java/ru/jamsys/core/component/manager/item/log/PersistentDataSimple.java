@@ -55,7 +55,7 @@ public class PersistentDataSimple implements PersistentData {
     public static PersistentDataSimple instanceFromBytes(byte[] bytes, short writerFlag) throws Exception {
         PersistentDataSimple persistentDataSimple = new PersistentDataSimple();
         persistentDataSimple.toObject(bytes);
-        persistentDataSimple.setWriterFlag(writerFlag);
+        persistentDataSimple.setStatusCode(writerFlag);
         return persistentDataSimple;
     }
 
@@ -79,12 +79,12 @@ public class PersistentDataSimple implements PersistentData {
     }
 
     @Override
-    public short getWriterFlag() {
+    public short getStatusCode() {
         return writerFlag;
     }
 
     @Override
-    public void setWriterFlag(short writerFlag) {
+    public void setStatusCode(short writerFlag) {
         this.writerFlag = writerFlag;
     }
 

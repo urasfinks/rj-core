@@ -4,12 +4,10 @@ public interface ResourceQueue<T> extends Closable {
 
     long size();
 
-    T readFirst();
+    T pollFirst();
 
-    T readLast();
+    T pollLast();
 
-    void writeFirst(T r);
-
-    void writeLast(T r);
+    void add(T r) throws Exception;
 
 }

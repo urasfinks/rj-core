@@ -22,7 +22,7 @@ import java.util.Map;
 @Getter
 @Setter
 @Accessors(chain = true)
-@JsonPropertyOrder({"writerFlag", "logType", "timeAdd", "header", "data"})
+@JsonPropertyOrder({"statusCode", "logType", "timeAdd", "header", "data"})
 public class PersistentDataHeader implements PersistentData {
 
     private short writerFlag;
@@ -61,12 +61,12 @@ public class PersistentDataHeader implements PersistentData {
     }
 
     @Override
-    public short getWriterFlag() {
+    public short getStatusCode() {
         return writerFlag;
     }
 
     @Override
-    public void setWriterFlag(short writerFlag) {
+    public void setStatusCode(short writerFlag) {
         this.writerFlag = writerFlag;
     }
 
@@ -97,7 +97,7 @@ public class PersistentDataHeader implements PersistentData {
     public static PersistentDataHeader instanceFromBytes(byte[] bytes, short writerFlag) throws Exception {
         PersistentDataHeader persistentDataHeader = new PersistentDataHeader();
         persistentDataHeader.toObject(bytes);
-        persistentDataHeader.setWriterFlag(writerFlag);
+        persistentDataHeader.setStatusCode(writerFlag);
         return persistentDataHeader;
     }
 

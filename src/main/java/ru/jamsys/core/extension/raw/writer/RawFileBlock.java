@@ -16,7 +16,7 @@ import ru.jamsys.core.extension.ByteSerialization;
 public class RawFileBlock<T extends ByteSerialization> {
 
     @Setter
-    private short writerFlag;
+    private short stateCode;
 
     private final long position; // Позиция начала блока
 
@@ -29,12 +29,12 @@ public class RawFileBlock<T extends ByteSerialization> {
 
     public RawFileBlock(
             long position,
-            short writerFlag,
+            short stateCode,
             int dataLength,
             Class<T> cls
     ) {
         this.position = position;
-        this.writerFlag = writerFlag;
+        this.stateCode = stateCode;
         this.dataLength = dataLength;
         this.cls = cls;
     }
@@ -47,14 +47,14 @@ public class RawFileBlock<T extends ByteSerialization> {
         return this;
     }
 
-    @JsonProperty("data")
-    public T cast() throws Exception {
+    @JsonProperty("object")
+    public T toObject() throws Exception {
         if (bytes == null || bytes.length == 0) {
             return null;
         }
         T item = cls.getConstructor().newInstance();
         item.toObject(bytes);
-        item.setWriterFlag(writerFlag);
+        item.setStatusCode(stateCode);
         return item;
     }
 
