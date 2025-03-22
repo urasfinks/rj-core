@@ -38,7 +38,9 @@ import java.util.concurrent.atomic.AtomicLong;
 // проверять дубли в случае повтора операции.
 
 public class RawFileChannel<T extends ByteSerialization>
-        implements Closable, ResourceQueue<RawFileBlock<T>> {
+        implements
+        Closable,
+        ResourceQueue<RawFileBlock<T>> {
 
     // Очередь для хранения блоков
     private final ConcurrentLinkedDeque<RawFileBlock<T>> queue = new ConcurrentLinkedDeque<>();
