@@ -25,7 +25,7 @@ import java.util.Map;
 @JsonPropertyOrder({"statusCode", "logType", "timeAdd", "header", "data"})
 public class PersistentDataHeader implements PersistentData {
 
-    private short writerFlag;
+    private short statusCode;
 
     public long timeAdd = System.currentTimeMillis();
 
@@ -62,12 +62,12 @@ public class PersistentDataHeader implements PersistentData {
 
     @Override
     public short getStatusCode() {
-        return writerFlag;
+        return statusCode;
     }
 
     @Override
-    public void setStatusCode(short writerFlag) {
-        this.writerFlag = writerFlag;
+    public void setStatusCode(short statusCode) {
+        this.statusCode = statusCode;
     }
 
     public byte[] toByte() throws Exception {
@@ -94,10 +94,10 @@ public class PersistentDataHeader implements PersistentData {
         return os.toByteArray();
     }
 
-    public static PersistentDataHeader instanceFromBytes(byte[] bytes, short writerFlag) throws Exception {
+    public static PersistentDataHeader instanceFromBytes(byte[] bytes, short statusCode) throws Exception {
         PersistentDataHeader persistentDataHeader = new PersistentDataHeader();
         persistentDataHeader.toObject(bytes);
-        persistentDataHeader.setStatusCode(writerFlag);
+        persistentDataHeader.setStatusCode(statusCode);
         return persistentDataHeader;
     }
 

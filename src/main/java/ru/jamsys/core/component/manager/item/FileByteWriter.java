@@ -192,7 +192,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                             byte[] d = item.toByte();
                             fos.write(UtilByte.shortToBytes(item.getStatusCode()));
                             fos.write(UtilByte.intToBytes(d.length));
-                            writeByteToCurrentFile.addAndGet(6); //2 byte writerFlag + 4 byte item byte length
+                            writeByteToCurrentFile.addAndGet(6); //2 byte statusCode + 4 byte item byte length
                             fos.write(d);
                             writeByteToCurrentFile.addAndGet(d.length);
 

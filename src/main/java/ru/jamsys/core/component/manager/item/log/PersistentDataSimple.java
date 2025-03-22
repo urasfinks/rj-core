@@ -18,10 +18,10 @@ import java.util.Map;
 @Getter
 @Setter
 @Accessors(chain = true)
-@JsonPropertyOrder({"writerFlag", "logType", "timeAdd", "header", "data"})
+@JsonPropertyOrder({"statusCode", "logType", "timeAdd", "header", "data"})
 public class PersistentDataSimple implements PersistentData {
 
-    private short writerFlag;
+    private short statusCode;
 
     public long timeAdd = System.currentTimeMillis();
 
@@ -48,10 +48,10 @@ public class PersistentDataSimple implements PersistentData {
         return os.toByteArray();
     }
 
-    public static PersistentDataSimple instanceFromBytes(byte[] bytes, short writerFlag) throws Exception {
+    public static PersistentDataSimple instanceFromBytes(byte[] bytes, short statusCode) throws Exception {
         PersistentDataSimple persistentDataSimple = new PersistentDataSimple();
         persistentDataSimple.toObject(bytes);
-        persistentDataSimple.setStatusCode(writerFlag);
+        persistentDataSimple.setStatusCode(statusCode);
         return persistentDataSimple;
     }
 
@@ -76,12 +76,12 @@ public class PersistentDataSimple implements PersistentData {
 
     @Override
     public short getStatusCode() {
-        return writerFlag;
+        return statusCode;
     }
 
     @Override
-    public void setStatusCode(short writerFlag) {
-        this.writerFlag = writerFlag;
+    public void setStatusCode(short statusCode) {
+        this.statusCode = statusCode;
     }
 
 }

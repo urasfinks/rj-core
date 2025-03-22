@@ -7,7 +7,7 @@ public interface ByteSerialization {
     // Будем это флаг (число) менять прямо в файле при помощи RandomAccessFile
     short getStatusCode();
 
-    void setStatusCode(short writerFlag);
+    void setStatusCode(short statusCode);
 
     byte[] toByte() throws Exception;
 
