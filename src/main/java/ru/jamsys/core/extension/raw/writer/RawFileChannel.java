@@ -99,13 +99,6 @@ public class RawFileChannel<T extends ByteSerialization> implements Closable, Re
         );
     }
 
-    public void updateData(RawFileBlock<T> rawFileBlock) throws Exception {
-        int _ = channel.write(
-                ByteBuffer.wrap(rawFileBlock.getBytes()),
-                rawFileBlock.getPosition() + 6
-        );
-    }
-
     public void read(RawFileBlock<T> rawFileBlock) throws IOException {
         if (rawFileBlock == null) {
             return;

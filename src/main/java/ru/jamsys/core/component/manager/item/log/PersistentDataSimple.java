@@ -31,10 +31,6 @@ public class PersistentDataSimple implements PersistentData {
 
     public PersistentDataSimple() {}
 
-    public PersistentDataSimple(LogType logType) {
-        this.logType = logType;
-    }
-
     public PersistentDataSimple setBody(String body) {
         this.body = body;
         return this;
