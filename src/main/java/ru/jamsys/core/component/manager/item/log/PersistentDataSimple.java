@@ -7,7 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.flat.UtilCodeStyle;
-import ru.jamsys.core.flat.util.UtilLogConverter;
+import ru.jamsys.core.flat.util.UtilFileByteReader;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -42,9 +42,9 @@ public class PersistentDataSimple implements PersistentData {
 
     public byte[] toByte() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        UtilLogConverter.writeShortString(os, logType.getNameCamel());
-        UtilLogConverter.writeShortString(os, timeAdd + "");
-        UtilLogConverter.writeString(os, body);
+        UtilFileByteReader.writeShortString(os, logType.getNameCamel());
+        UtilFileByteReader.writeShortString(os, timeAdd + "");
+        UtilFileByteReader.writeString(os, body);
         return os.toByteArray();
     }
 
@@ -58,9 +58,9 @@ public class PersistentDataSimple implements PersistentData {
     @Override
     public void toObject(byte[] bytes) throws Exception {
         InputStream fis = new ByteArrayInputStream(bytes);
-        logType = LogType.valueOf(UtilCodeStyle.camelToSnake(UtilLogConverter.readShortString(fis)));
-        timeAdd = Long.parseLong(UtilLogConverter.readShortString(fis));
-        setBody(UtilLogConverter.readString(fis));
+        logType = LogType.valueOf(UtilCodeStyle.camelToSnake(UtilFileByteReader.readShortString(fis)));
+        timeAdd = Long.parseLong(UtilFileByteReader.readShortString(fis));
+        setBody(UtilFileByteReader.readString(fis));
     }
 
     @JsonIgnore

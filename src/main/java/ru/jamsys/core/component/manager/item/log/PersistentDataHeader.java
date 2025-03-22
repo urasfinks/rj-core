@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.flat.util.UtilLogConverter;
+import ru.jamsys.core.flat.util.UtilFileByteReader;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -86,11 +86,11 @@ public class PersistentDataHeader implements PersistentData {
 
         // Запись заголовков
         for (String key : header.keySet()) {
-            UtilLogConverter.writeShortString(os, key);
-            UtilLogConverter.writeShortString(os, header.get(key));
+            UtilFileByteReader.writeShortString(os, key);
+            UtilFileByteReader.writeShortString(os, header.get(key));
         }
         // Запись тела
-        UtilLogConverter.writeString(os, getBody());
+        UtilFileByteReader.writeString(os, getBody());
         return os.toByteArray();
     }
 
@@ -107,9 +107,9 @@ public class PersistentDataHeader implements PersistentData {
         setLogType(LogType.valueOfOrdinal(UtilByte.bytesToShort(fis.readNBytes(2))));
         short countHeader = UtilByte.bytesToShort(fis.readNBytes(2));
         for (int i = 0; i < countHeader; i++) {
-            addHeader(UtilLogConverter.readShortString(fis), UtilLogConverter.readShortString(fis));
+            addHeader(UtilFileByteReader.readShortString(fis), UtilFileByteReader.readShortString(fis));
         }
-        setBody(UtilLogConverter.readString(fis));
+        setBody(UtilFileByteReader.readString(fis));
     }
 
     @JsonIgnore
