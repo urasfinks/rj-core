@@ -70,4 +70,50 @@ public class UtilByte {
         }
     }
 
+    /**
+     * Метод для получения битов числа в виде строки.
+     *
+     * @param number Число типа short.
+     * @return Строка, представляющая биты числа.
+     */
+    public static String getBits(short number) {
+        StringBuilder bits = new StringBuilder();
+        for (int i = 15; i >= 0; i--) {
+            int bit = (number >> i) & 1;
+            bits.append(bit);
+        }
+        return bits.toString();
+    }
+
+    /**
+     * Метод для получения значения конкретного бита.
+     *
+     * @param number Исходное число.
+     * @param bitIndex Индекс бита (начиная с 0).
+     * @return Значение бита (0 или 1).
+     */
+    public static int getBit(short number, int bitIndex) {
+        // Сдвигаем число вправо на bitIndex позиций и применяем побитовое AND с 1
+        return (number >> bitIndex) & 1;
+    }
+
+    /**
+     * Метод для установки конкретного бита в 1.
+     *
+     * @param number Исходное число.
+     * @param bitIndex Индекс бита, который нужно установить в 1 (начиная с 0).
+     * @return Число с измененным битом.
+     */
+    public static short setBit(short number, int bitIndex) {
+        // Создаем маску: 1 сдвинутое на bitIndex позиций влево
+        short mask = (short) (1 << bitIndex);
+        // Устанавливаем бит с помощью побитового OR
+        return (short) (number | mask);
+    }
+
+    public static short clearBit(short number, int bitIndex) {
+        short mask = (short) ~(1 << bitIndex); // Инвертированная маска
+        return (short) (number & mask);
+    }
+
 }

@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension.raw.writer;
 
+import com.google.common.base.Function;
 import lombok.Getter;
 import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.flat.util.UtilByte;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -35,7 +37,8 @@ import java.util.concurrent.atomic.AtomicLong;
 // Например вкладывать в данные идентификатор будущего запроса, и если операция где-то сломается, другая сторона должна
 // проверять дубли в случае повтора операции.
 
-public class RawFileChannel<T extends ByteSerialization> implements Closable, ResourceQueue<RawFileBlock<T>> {
+public class RawFileChannel<T extends ByteSerialization>
+        implements Closable, ResourceQueue<RawFileBlock<T>> {
 
     // Очередь для хранения блоков
     private final ConcurrentLinkedDeque<RawFileBlock<T>> queue = new ConcurrentLinkedDeque<>();
@@ -99,14 +102,32 @@ public class RawFileChannel<T extends ByteSerialization> implements Closable, Re
         );
     }
 
+    // Синхронизованное обновление StatusCode если предполагается конкуренция
+    public void updateStatusCode(
+            RawFileBlock<T> rawFileBlock,
+            Function<Short, Short> getNewStatusCode
+    ) throws Exception {
+        try (FileLock _ = channel.lock(rawFileBlock.getPosition(), 2, false)) {
+            // Считаем актуальные statusCode
+            ByteBuffer buffer = ByteBuffer.allocate(2);
+            channel.read(buffer, rawFileBlock.getPosition());
+            short currentStatusCode = UtilByte.bytesToShort(buffer.array());
+            int _ = channel.write(
+                    ByteBuffer.wrap(UtilByte.shortToBytes(getNewStatusCode.apply(currentStatusCode))),
+                    rawFileBlock.getPosition()
+            );
+        }
+    }
+
     public void read(RawFileBlock<T> rawFileBlock) throws IOException {
         if (rawFileBlock == null) {
             return;
         }
-        file.seek(rawFileBlock.getPosition() + 6);
-        byte[] buffer = new byte[rawFileBlock.getDataLength()];
-        int _ = file.read(buffer);
-        rawFileBlock.setBytes(buffer);
+        try (FileLock _ = channel.lock(rawFileBlock.getPosition() + 6, rawFileBlock.getDataLength(), true)) {
+            ByteBuffer buffer = ByteBuffer.allocate(rawFileBlock.getDataLength());
+            channel.read(buffer, rawFileBlock.getPosition() + 6);
+            rawFileBlock.setBytes(buffer.array());
+        }
     }
 
     public RawFileBlock<T> convert(T item) throws Exception {
