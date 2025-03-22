@@ -31,9 +31,9 @@ public class StatusCode<T extends StatusCodeModel> {
         this.cls = cls;
     }
 
-    public void set(T enumStatusCode, boolean enable) {
+    public void set(T enumStatusCodeModel, boolean enable) {
         for (StatusCodeModel statusCodeModel : cls.getEnumConstants()) {
-            if (statusCodeModel.equals(enumStatusCode)) {
+            if (statusCodeModel.equals(enumStatusCodeModel)) {
                 if (enable) {
                     this.statusCode = UtilByte.setBit(this.statusCode, statusCodeModel.getByteIndex());
                 } else {
