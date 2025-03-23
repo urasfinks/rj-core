@@ -25,11 +25,15 @@ import java.util.concurrent.ConcurrentHashMap;
 // новый. RawFileBlock содержит имя файла из которого он вычитан + индекс в этом документе. ManagerRawFileChannel
 // при иницаиализации добавляет все файлы с ФС по шаблону "имя_%". Подписчик не хранит offset что уже прочитал. Контроль
 // будет проходить за счёт фильтра по SubscriberRead (бывший writerFlag). При инициализации RawFileChannel должна
-// добавляться информация о том какие подписчики ещё что-то не дочитали
+// добавляться информация о том какие подписчики ещё что-то не дочитали. Когда подписчик подписывается, он
+// самостоятельно говорит на сколько глубоко заполнить его личную очередь RawFileMarkup + указывает маркер заполнения
+// с конца или начала. Памяти может не хватить держать все состояния всех подписчиков, пока останавливаюсь на том, что
+// надо бегать по файлам и фильтровать. Принимается вариант, что обратного пути отката статуса нет, что бы повторно не
+// прогонять весь файл на разметку и вычисления subscriberReadStatus
 
 @Getter
 @Setter
-public class ManagerRawFileChannel<T extends ByteSerialization> {
+public class PersistStream<T extends ByteSerialization> {
 
     private final ConcurrentHashMap<String, RawFileChannel<T>> map = new ConcurrentHashMap<>();
 
