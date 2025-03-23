@@ -44,4 +44,28 @@ class BTreeSearch<T extends Comparable<T>> extends BTreeOperations<T> {
         }
         return search(node.children.get(i), key);
     }
+
+    public BTreeNode<T> nativeSearch(BTreeNode<T> node, T key) {
+        if (node == null) return null;
+
+        // Ищем ключ в текущем узле
+        int i = 0;
+        while (i < node.keys.size() && key.compareTo(node.keys.get(i)) > 0) {
+            i++;
+        }
+
+        // Если ключ найден в этом узле - возвращаем его
+        if (i < node.keys.size() && key.equals(node.keys.get(i))) {
+            return node;
+        }
+
+        // Если дошли до листа - ключа точно нет
+        if (node.isLeaf) {
+            return null;
+        }
+
+        // Рекурсивно ищем в подходящем дочернем узле
+        return nativeSearch(node.children.get(i), key);
+    }
+
 }

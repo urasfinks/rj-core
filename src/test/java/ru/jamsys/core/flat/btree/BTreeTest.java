@@ -1,13 +1,15 @@
 package ru.jamsys.core.flat.btree;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.flat.util.UtilLog;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BTreeTest {
+
     @Test
     void test() {
         BTree<Integer> bTree = new BTree<>(3); // Создаем B-дерево с минимальной степенью 3
@@ -21,22 +23,15 @@ class BTreeTest {
         bTree.insert(7, 106);
         bTree.insert(17, 107);
 
-        UtilLog.printInfo(BTreeTest.class, bTree.getRoot());
+        //UtilLog.printInfo(BTreeTest.class, bTree.getRoot());
 
-//        List<Integer> result = bTree.searchRange(6, 20);
-//        System.out.println("Keys in range [6, 20]: " + result);
-//
-        //bTree.delete(6);
-        //UtilLog.printInfo(BTreeTest.class, bTree.search(6));
-        //UtilLog.printInfo(BTreeTest.class, bTree.searchRange(6, 20));
+        Map<Integer, List<Long>> integerListMap = bTree.searchRange(6, 20);
+        Assertions.assertEquals(6, integerListMap.size());
+        Assertions.assertNotNull(bTree.search(6));
+        Assertions.assertNull(bTree.search(4));
 
-        //System.out.println("Search for 6: " + bTree.search(6)); // true
-//        System.out.println("Search for 15: " + bTree.search(15)); // false
-//
-//
-//        System.out.println("Search for 6 after deletion: " + bTree.search(6)); // false
-
-
+        bTree.delete(6);
+        Assertions.assertNull(bTree.search(6));
     }
 
     @Test
@@ -54,7 +49,7 @@ class BTreeTest {
         bTree.insert(17, 107);
 
         // Проверяем корень
-        assertEquals(10, bTree.getRoot().keys.get(0));
+        assertEquals(10, bTree.getRoot().keys.getFirst());
 
         // Проверяем, что левый ребенок содержит [5, 6, 7]
         assertTrue(bTree.getRoot().children.get(0).keys.containsAll(List.of(5, 6, 7)));
@@ -149,7 +144,7 @@ class BTreeTest {
         BTree<Integer> bTree = new BTree<>(3);
 
         for (int i = 1; i <= 1000; i++) {
-            bTree.insert(i, (long) i);
+            bTree.insert(i, i);
         }
 
         for (int i = 1; i <= 1000; i++) {
@@ -162,7 +157,7 @@ class BTreeTest {
         BTree<Integer> bTree = new BTree<>(3);
 
         for (int i = 1; i <= 1000; i++) {
-            bTree.insert(i, (long) i);
+            bTree.insert(i, i);
         }
 
         for (int i = 1; i <= 500; i++) {
