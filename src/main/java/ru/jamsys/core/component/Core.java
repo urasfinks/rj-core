@@ -6,10 +6,10 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerFileByteWriter;
-import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.log.PersistentData;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.statistic.StatisticSec;
 
@@ -36,10 +36,10 @@ public class Core implements LifeCycleInterface {
     private final ConcurrentLinkedDeque<LifeCycleComponent> runComponent = new ConcurrentLinkedDeque<>();
 
     @Getter
-    private Broker<StatisticSec> statisticSecBroker;
+    private BrokerMemory<StatisticSec> statisticSecBroker;
 
     @Getter
-    private Broker<PersistentData> logBroker;
+    private BrokerMemory<PersistentData> logBroker;
 
     public Core(
             ServiceClassFinder serviceClassFinder,

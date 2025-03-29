@@ -5,11 +5,11 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerExpiration;
-import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
@@ -33,7 +33,7 @@ public class ServicePromise implements CascadeName, KeepAliveComponent, Statisti
 
     public static Set<Promise> queueMultipleCompleteSet = Util.getConcurrentHashSet();
 
-    Broker<Promise> broker;
+    BrokerMemory<Promise> broker;
 
     private final Expiration<PromiseTask> promiseTaskRetry;
 

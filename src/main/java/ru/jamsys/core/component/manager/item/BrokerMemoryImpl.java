@@ -10,6 +10,7 @@ import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.addable.AddToList;
+import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.AvgMetric;
@@ -29,26 +30,27 @@ import java.util.function.Consumer;
 // Брокер - циклическая очередь элементов, с timeout элементов (onExpired = 3 секунды)
 // Не является CascadeName - используйте каскадные имена в ключе
 
-public class Broker<TEO>
+public class BrokerMemoryImpl<T>
         extends ExpirationMsMutableImpl
         implements
+        BrokerMemory<T>,
         StatisticsFlush,
         ClassEquals,
         LifeCycleInterface,
         KeepAlive,
         AddToList<
-                ExpirationMsImmutableEnvelope<TEO>,
-                DisposableExpirationMsImmutableEnvelope<TEO> // Должны вернуть, что бы из вне можно было сделать remove
+                ExpirationMsImmutableEnvelope<T>,
+                DisposableExpirationMsImmutableEnvelope<T> // Должны вернуть, что бы из вне можно было сделать remove
                 > {
 
     private final AtomicInteger queueSize = new AtomicInteger(0);
 
     private final AtomicInteger tailQueueSize = new AtomicInteger(0);
 
-    private final ConcurrentLinkedDeque<DisposableExpirationMsImmutableEnvelope<TEO>> queue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<DisposableExpirationMsImmutableEnvelope<T>> queue = new ConcurrentLinkedDeque<>();
 
     //Последний сообщения проходящие через очередь
-    private final ConcurrentLinkedDeque<ExpirationMsImmutableEnvelope<TEO>> tailQueue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<ExpirationMsImmutableEnvelope<T>> tailQueue = new ConcurrentLinkedDeque<>();
 
     // Я подумал, при деградации хорошо увидеть, что очередь вообще читается
     private final AtomicInteger tpsDequeue = new AtomicInteger(0);
@@ -63,9 +65,9 @@ public class Broker<TEO>
     @Getter
     final String key;
 
-    private final Consumer<TEO> onDropConsumer;
+    private final Consumer<T> onDropConsumer;
 
-    private final Class<TEO> classItem;
+    private final Class<T> classItem;
 
     @SuppressWarnings("all")
     private final Expiration<DisposableExpirationMsImmutableEnvelope> expiration;
@@ -76,11 +78,11 @@ public class Broker<TEO>
     @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
-    public Broker(
+    public BrokerMemoryImpl(
             String key,
             ApplicationContext applicationContext,
-            Class<TEO> classItem,
-            Consumer<TEO> onDropConsumer
+            Class<T> classItem,
+            Consumer<T> onDropConsumer
     ) {
         this.key = key;
         this.classItem = classItem;
@@ -111,34 +113,34 @@ public class Broker<TEO>
         return queue.isEmpty();
     }
 
-    private void statistic(ExpirationMsImmutableEnvelope<TEO> envelope) {
+    private void statistic(ExpirationMsImmutableEnvelope<T> envelope) {
         //#1, что бы видеть реальное кол-во опросов изъятия
         tpsDequeue.incrementAndGet();
         timeInQueue.add(envelope.getInactivityTimeMs());
     }
 
-    public DisposableExpirationMsImmutableEnvelope<TEO> add(TEO element, long curTime, long timeOut) {
+    public DisposableExpirationMsImmutableEnvelope<T> add(T element, long curTime, long timeOut) {
         return add(new ExpirationMsImmutableEnvelope<>(element, timeOut, curTime));
     }
 
-    public DisposableExpirationMsImmutableEnvelope<TEO> add(TEO element, long timeOutMs) {
+    public DisposableExpirationMsImmutableEnvelope<T> add(T element, long timeOutMs) {
         return add(new ExpirationMsImmutableEnvelope<>(element, timeOutMs));
     }
 
     @Override
-    public DisposableExpirationMsImmutableEnvelope<TEO> add(ExpirationMsImmutableEnvelope<TEO> envelope) {
+    public DisposableExpirationMsImmutableEnvelope<T> add(ExpirationMsImmutableEnvelope<T> envelope) {
         if (envelope == null || envelope.isExpired()) {
             return null;
         }
         setActivity();
-        DisposableExpirationMsImmutableEnvelope<TEO> convert = DisposableExpirationMsImmutableEnvelope.convert(envelope);
+        DisposableExpirationMsImmutableEnvelope<T> convert = DisposableExpirationMsImmutableEnvelope.convert(envelope);
         // Проблема с производительностью
         // Мы не можем использовать queue.size() для расчёта переполнения
         // пример: вставка 100к записей занимаем 35сек
         if (queueSize.get() >= propertyBroker.getSize()) {
             // Он конечно протух не по своей воле, но что делать...
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
-            DisposableExpirationMsImmutableEnvelope<TEO> teoDisposableExpirationMsImmutableEnvelope = queue.removeFirst();
+            DisposableExpirationMsImmutableEnvelope<T> teoDisposableExpirationMsImmutableEnvelope = queue.removeFirst();
             onDrop(teoDisposableExpirationMsImmutableEnvelope);
         }
 
@@ -157,17 +159,17 @@ public class Broker<TEO>
         return convert;
     }
 
-    public ExpirationMsImmutableEnvelope<TEO> pollFirst() {
+    public ExpirationMsImmutableEnvelope<T> pollFirst() {
         return pool(true);
     }
 
-    public ExpirationMsImmutableEnvelope<TEO> pollLast() {
+    public ExpirationMsImmutableEnvelope<T> pollLast() {
         return pool(false);
     }
 
-    private ExpirationMsImmutableEnvelope<TEO> pool(boolean first) {
+    private ExpirationMsImmutableEnvelope<T> pool(boolean first) {
         do {
-            DisposableExpirationMsImmutableEnvelope<TEO> result = first ? queue.pollFirst() : queue.pollLast();
+            DisposableExpirationMsImmutableEnvelope<T> result = first ? queue.pollFirst() : queue.pollLast();
             if (result == null) {
                 return null;
             }
@@ -175,7 +177,7 @@ public class Broker<TEO>
                 onDrop(result);
                 continue;
             }
-            TEO value = result.getValue();
+            T value = result.getValue();
             if (value == null) {
                 continue;
             }
@@ -188,13 +190,13 @@ public class Broker<TEO>
         return null;
     }
 
-    public void remove(DisposableExpirationMsImmutableEnvelope<TEO> envelope) {
+    public void remove(DisposableExpirationMsImmutableEnvelope<T> envelope) {
         if (envelope != null) {
             // Это конечно так себе удалять пришедший в remove объект не проверяя что он вообще есть в очереди
             // Но как бы проверять наличие - это перебирать всё очередь, а то очень тяжело
             // Просто доверяем, что брокеры не перепутают.
             // Делаем так, что бы элемент больше не достался никому
-            TEO value = envelope.getValue();
+            T value = envelope.getValue();
             if (value != null) {
                 statistic(envelope);
                 // Когда явно получили эксклюзивный доступ к объекту - можно и статистику посчитать
@@ -207,12 +209,12 @@ public class Broker<TEO>
 
     //Обработка выпадающих сообщений
     @SuppressWarnings("all")
-    public void onDrop(DisposableExpirationMsImmutableEnvelope envelope) {
+    private void onDrop(DisposableExpirationMsImmutableEnvelope envelope) {
         if (envelope == null) {
             return;
         }
         @SuppressWarnings("unchecked")
-        TEO value = (TEO) envelope.getValue();
+        T value = (T) envelope.getValue();
         if (value != null) {
             queueSize.decrementAndGet();
             tpsDrop.incrementAndGet();
@@ -255,16 +257,16 @@ public class Broker<TEO>
     }
 
     // Отладочная
-    public List<TEO> getTailQueue(@Nullable AtomicBoolean run) {
-        final List<TEO> ret = new ArrayList<>();
-        UtilRisc.forEach(run, tailQueue, (ExpirationMsImmutableEnvelope<TEO> envelope) ->
+    public List<T> getTailQueue(@Nullable AtomicBoolean run) {
+        final List<T> ret = new ArrayList<>();
+        UtilRisc.forEach(run, tailQueue, (ExpirationMsImmutableEnvelope<T> envelope) ->
                 ret.add(envelope.getValue()));
         return ret;
     }
 
-    public List<TEO> getCloneQueue(@Nullable AtomicBoolean run) {
-        final List<TEO> cloned = new ArrayList<>();
-        UtilRisc.forEach(run, queue, (DisposableExpirationMsImmutableEnvelope<TEO> envelope)
+    public List<T> getCloneQueue(@Nullable AtomicBoolean run) {
+        final List<T> cloned = new ArrayList<>();
+        UtilRisc.forEach(run, queue, (DisposableExpirationMsImmutableEnvelope<T> envelope)
                 -> cloned.add(envelope.revert().getValue()));
         return cloned;
     }
@@ -283,7 +285,7 @@ public class Broker<TEO>
         // Как решение пробегать с начала очереди, до момента получения не нейтрализованного объекта
         while (threadRun.get()) {
             // так как ConcurrentLinkedDeque.remove() идёт с first() - будем тоже работать с конца
-            DisposableExpirationMsImmutableEnvelope<TEO> obj = queue.peekFirst();
+            DisposableExpirationMsImmutableEnvelope<T> obj = queue.peekFirst();
             if (obj == null || !obj.isNeutralized()) {
                 break;
             }

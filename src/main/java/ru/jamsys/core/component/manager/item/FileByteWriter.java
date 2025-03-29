@@ -5,6 +5,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilByte;
@@ -33,7 +34,7 @@ public class FileByteWriter extends ExpirationMsMutableImpl
         LifeCycleInterface {
 
     @Getter
-    private final Broker<ByteSerialization> broker;
+    private final BrokerMemory<ByteSerialization> broker;
 
     private String currentFilePath;
 

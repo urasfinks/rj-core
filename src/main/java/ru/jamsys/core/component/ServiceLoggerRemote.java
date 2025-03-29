@@ -6,13 +6,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.item.Broker;
-import ru.jamsys.core.component.manager.item.log.PersistentData;
 import ru.jamsys.core.component.manager.item.log.LogType;
+import ru.jamsys.core.component.manager.item.log.PersistentData;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.annotation.PropertyKey;
+import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.statistic.Statistic;
@@ -40,7 +40,7 @@ public class ServiceLoggerRemote extends AnnotationPropertyExtractor<Boolean> im
 
     private final Map<String, AtomicInteger> stat = new HashMap<>();
 
-    private final Broker<PersistentData> broker;
+    private final BrokerMemory<PersistentData> broker;
 
     @SuppressWarnings("all")
     @Getter

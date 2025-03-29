@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
-import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.BrokerProperty;
+import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 // IO time: 2.481
 // COMPUTE time: 2.457
 
-class BrokerTest {
+class BrokerMemoryImplTest {
 
     @BeforeAll
     static void beforeAll() {
@@ -36,7 +36,7 @@ class BrokerTest {
     @Test
     void testLiner() {
         List<XTest> droped = new ArrayList<>();
-        Broker<XTest> broker = App.get(ManagerBroker.class)
+        BrokerMemory<XTest> broker = App.get(ManagerBroker.class)
                 .initAndGet(XTest.class.getSimpleName() + "_1", XTest.class, xTest -> {
                     System.out.println("dropped: " + xTest);
                     droped.add(xTest);
@@ -99,7 +99,7 @@ class BrokerTest {
 
     @Test
     void testCyclic() {
-        Broker<XTest> broker = App.get(ManagerBroker.class)
+        BrokerMemory<XTest> broker = App.get(ManagerBroker.class)
                 .get(XTest.class.getSimpleName(), XTest.class);
 
         App.get(ServiceProperty.class)
@@ -160,7 +160,7 @@ class BrokerTest {
 
     @Test
     void testReference() {
-        Broker<XTest> broker = App.get(ManagerBroker.class)
+        BrokerMemory<XTest> broker = App.get(ManagerBroker.class)
                 .get(XTest.class.getSimpleName(), XTest.class);
         XTest obj = new XTest(1);
         DisposableExpirationMsImmutableEnvelope<XTest> o1 = broker.add(obj, 6_000L);
@@ -179,7 +179,7 @@ class BrokerTest {
     void testReference2() {
         AtomicBoolean run = new AtomicBoolean(true);
 
-        Broker<XTest> broker = App.get(ManagerBroker.class)
+        BrokerMemory<XTest> broker = App.get(ManagerBroker.class)
                 .get(XTest.class.getSimpleName(), XTest.class);
         XTest obj = new XTest(1);
         XTest obj2 = new XTest(2);
@@ -204,7 +204,7 @@ class BrokerTest {
     @Test
     void testExpired() {
         AtomicInteger counter = new AtomicInteger(0);
-        Broker<XTest> broker = App.get(ManagerBroker.class)
+        BrokerMemory<XTest> broker = App.get(ManagerBroker.class)
                 .initAndGet(XTest.class.getSimpleName() + "_2", XTest.class, _ -> counter.incrementAndGet());
 
         XTest obj = new XTest(1);
@@ -237,7 +237,7 @@ class BrokerTest {
 
     @Test
     void testProperty() {
-        Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
+        BrokerMemory<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker
                         .getPropertyDispatcher()
@@ -246,7 +246,12 @@ class BrokerTest {
                         .getPropertyKey(), null)
                 .set(3000);
 
-        Assertions.assertEquals(3000, broker.getPropertyBroker().getSize());
+        Assertions.assertEquals(3000, broker
+                .getPropertyDispatcher()
+                .getPropertyRepository()
+                .getByFieldNameConstants(BrokerProperty.Fields.size)
+                .getValue()
+        );
 
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker
@@ -256,14 +261,18 @@ class BrokerTest {
                         .getPropertyKey(), null)
                 .set(3001);
 
-        Assertions.assertEquals(3001, broker.getPropertyBroker().getSize());
+        Assertions.assertEquals(3001, broker
+                .getPropertyDispatcher()
+                .getPropertyRepository()
+                .getByFieldNameConstants(BrokerProperty.Fields.size)
+                .getValue());
     }
 
     @Test
     void testSpeedRemove() {
         int selection = 1_000_000;
 
-        Broker<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
+        BrokerMemory<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker
                         .getPropertyDispatcher()

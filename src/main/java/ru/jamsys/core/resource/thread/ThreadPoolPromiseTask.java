@@ -4,8 +4,8 @@ import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
-import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.ClassEquals;
+import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
@@ -18,7 +18,7 @@ public class ThreadPoolPromiseTask extends AbstractPoolPrivate<Void, Void, Threa
 
     AtomicInteger counter = new AtomicInteger(1);
 
-    private final Broker<PromiseTask> broker;
+    private final BrokerMemory<PromiseTask> broker;
 
     @Getter
     private final RateLimit rateLimit;

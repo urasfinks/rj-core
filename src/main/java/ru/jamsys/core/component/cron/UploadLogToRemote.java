@@ -8,11 +8,11 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.item.log.PersistentData;
 import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
+import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
@@ -40,7 +40,7 @@ import java.util.function.Function;
 @Getter
 public class UploadLogToRemote extends AnnotationPropertyExtractor<Object> implements Cron5s, PromiseGenerator {
 
-    private final Broker<PersistentData> broker;
+    private final BrokerMemory<PersistentData> broker;
 
     private final ServicePromise servicePromise;
 

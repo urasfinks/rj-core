@@ -11,10 +11,11 @@ import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
-import ru.jamsys.core.component.manager.item.Broker;
+import ru.jamsys.core.component.manager.item.BrokerMemoryImpl;
 import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.annotation.PropertyKey;
+import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
@@ -43,7 +44,7 @@ import java.util.function.Function;
 @Lazy
 public class UploadStatisticToRemote extends AnnotationPropertyExtractor<Object> implements Cron5s, PromiseGenerator, CascadeName {
 
-    final Broker<StatisticSec> broker;
+    final BrokerMemory<StatisticSec> broker;
 
     private final ServicePromise servicePromise;
 

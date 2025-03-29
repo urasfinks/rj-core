@@ -10,10 +10,10 @@ import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.annotation.PropertyKey;
+import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
@@ -34,9 +34,9 @@ import java.util.Map;
 @FieldNameConstants
 @Component
 @Lazy
-public class StatisticFlush extends AnnotationPropertyExtractor implements Cron1s, PromiseGenerator, CascadeName {
+public class StatisticFlush extends AnnotationPropertyExtractor<Boolean> implements Cron1s, PromiseGenerator, CascadeName {
 
-    final Broker<StatisticSec> broker;
+    final BrokerMemory<StatisticSec> broker;
 
     List<StatisticsFlushComponent> list = new ArrayList<>();
 
@@ -59,7 +59,7 @@ public class StatisticFlush extends AnnotationPropertyExtractor implements Cron1
         this.broker = applicationContext.getBean(Core.class).getStatisticSecBroker();
         serviceClassFinder.findByInstance(StatisticsFlushComponent.class).forEach(statisticsCollectorClass
                 -> list.add(applicationContext.getBean(statisticsCollectorClass)));
-        new PropertyDispatcher(
+        new PropertyDispatcher<>(
                 serviceProperty,
                 null,
                 this,

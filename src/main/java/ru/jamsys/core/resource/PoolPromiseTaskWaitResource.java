@@ -2,10 +2,10 @@ package ru.jamsys.core.resource;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
-import ru.jamsys.core.component.manager.item.Broker;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
 import ru.jamsys.core.extension.ClassEquals;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.pool.AbstractPool;
@@ -35,7 +35,7 @@ public class PoolPromiseTaskWaitResource<
     private final PoolSettings<PI> poolSettings;
 
     @SuppressWarnings("all")
-    final private Broker<PromiseTaskWithResource> broker;
+    final private BrokerMemory<PromiseTaskWithResource> broker;
 
     private final Class<PI> classItem;
 

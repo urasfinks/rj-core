@@ -3,15 +3,16 @@ package ru.jamsys.core.component.manager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.item.Broker;
+import ru.jamsys.core.component.manager.item.BrokerMemoryImpl;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.KeepAliveComponent;
+import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 
 import java.util.function.Consumer;
 
 @Component
-public class ManagerBroker extends AbstractManager<Broker<?>, Consumer<?>> implements KeepAliveComponent, CascadeName {
+public class ManagerBroker extends AbstractManager<BrokerMemory<?>, Consumer<?>> implements KeepAliveComponent, CascadeName {
 
     private final ApplicationContext applicationContext;
 
@@ -22,18 +23,18 @@ public class ManagerBroker extends AbstractManager<Broker<?>, Consumer<?>> imple
     // initAndGet должен вызываться раньше, чем может быть использован в других местах
     // Суть инициализации, что бы передать Consumer.onDrop, и что бы пользователей обменника оградить от понимания,
     // что будет происходить если сообщения начнуть протухать
-    public <T> Broker<T> initAndGet(String key, Class<T> classItem, Consumer<T> onDrop) {
-        return (Broker) getManagerElement(key, classItem, onDrop);
+    public <T> BrokerMemory<T> initAndGet(String key, Class<T> classItem, Consumer<T> onDrop) {
+        return (BrokerMemory) getManagerElement(key, classItem, onDrop);
     }
 
     // Получить ранее инициализированный обменник
-    public <T> Broker<T> get(String key, Class<T> classItem) {
-        return (Broker) getManagerElementUnsafe(key, classItem);
+    public <T> BrokerMemory<T> get(String key, Class<T> classItem) {
+        return (BrokerMemory) getManagerElementUnsafe(key, classItem);
     }
 
     @Override
-    public Broker<?> build(String key, Class<?> classItem, Consumer<?> builderArgument) {
-        return new Broker<>(
+    public BrokerMemory<?> build(String key, Class<?> classItem, Consumer<?> builderArgument) {
+        return new BrokerMemoryImpl<>(
                 getCascadeName(key, classItem),
                 applicationContext,
                 classItem,
