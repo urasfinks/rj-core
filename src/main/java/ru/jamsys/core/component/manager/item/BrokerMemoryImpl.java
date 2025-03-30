@@ -65,7 +65,7 @@ public class BrokerMemoryImpl<T>
     @Getter
     final String key;
 
-    private final Consumer<T> onDropConsumer;
+    private final Consumer<T> onDrop;
 
     private final Class<T> classItem;
 
@@ -82,17 +82,17 @@ public class BrokerMemoryImpl<T>
             String key,
             ApplicationContext applicationContext,
             Class<T> classItem,
-            Consumer<T> onDropConsumer
+            Consumer<T> onDrop
     ) {
         this.key = key;
         this.classItem = classItem;
-        this.onDropConsumer = onDropConsumer;
+        this.onDrop = onDrop;
 
         ServiceProperty serviceProperty = applicationContext.getBean(ServiceProperty.class);
         propertyDispatcher = new PropertyDispatcher<>(
                 serviceProperty,
                 null,
-                propertyBroker,
+                getPropertyBroker(),
                 key
         );
 
@@ -102,7 +102,6 @@ public class BrokerMemoryImpl<T>
                 DisposableExpirationMsImmutableEnvelope.class,
                 this::onDrop
         );
-
     }
 
     public int size() {
@@ -119,14 +118,6 @@ public class BrokerMemoryImpl<T>
         timeInQueue.add(envelope.getInactivityTimeMs());
     }
 
-    public DisposableExpirationMsImmutableEnvelope<T> add(T element, long curTime, long timeOut) {
-        return add(new ExpirationMsImmutableEnvelope<>(element, timeOut, curTime));
-    }
-
-    public DisposableExpirationMsImmutableEnvelope<T> add(T element, long timeOutMs) {
-        return add(new ExpirationMsImmutableEnvelope<>(element, timeOutMs));
-    }
-
     @Override
     public DisposableExpirationMsImmutableEnvelope<T> add(ExpirationMsImmutableEnvelope<T> envelope) {
         if (envelope == null || envelope.isExpired()) {
@@ -137,7 +128,7 @@ public class BrokerMemoryImpl<T>
         // Проблема с производительностью
         // Мы не можем использовать queue.size() для расчёта переполнения
         // пример: вставка 100к записей занимаем 35сек
-        if (queueSize.get() >= propertyBroker.getSize()) {
+        if (queueSize.get() >= getPropertyBroker().getSize()) {
             // Он конечно протух не по своей воле, но что делать...
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
             DisposableExpirationMsImmutableEnvelope<T> teoDisposableExpirationMsImmutableEnvelope = queue.removeFirst();
@@ -150,7 +141,7 @@ public class BrokerMemoryImpl<T>
         queue.add(convert);
         queueSize.incrementAndGet();
 
-        if (tailQueueSize.get() >= propertyBroker.getTailSize()) {
+        if (tailQueueSize.get() >= getPropertyBroker().getTailSize()) {
             tailQueue.removeFirst();
         } else {
             tailQueueSize.incrementAndGet();
@@ -218,8 +209,8 @@ public class BrokerMemoryImpl<T>
         if (value != null) {
             queueSize.decrementAndGet();
             tpsDrop.incrementAndGet();
-            if (onDropConsumer != null) {
-                onDropConsumer.accept(value);
+            if (onDrop != null) {
+                onDrop.accept(value);
             }
         }
     }
@@ -228,7 +219,7 @@ public class BrokerMemoryImpl<T>
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x
-        return queueSize.get() * 100 / propertyBroker.getSize();
+        return queueSize.get() * 100 / getPropertyBroker().getSize();
     }
 
     public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {

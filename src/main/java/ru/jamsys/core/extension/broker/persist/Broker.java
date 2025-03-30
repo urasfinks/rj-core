@@ -27,10 +27,14 @@ public interface Broker<T> extends
     int getOccupancyPercentage(); // Процент заполненности очереди
 
     // Добавление с явным указанием времени
-    DisposableExpirationMsImmutableEnvelope<T> add(T element, long curTime, long timeOut);
+    default DisposableExpirationMsImmutableEnvelope<T> add(T element, long curTime, long timeOut){
+        return add(new ExpirationMsImmutableEnvelope<>(element, timeOut, curTime));
+    }
 
     // Добавление без явного указания времени
-    DisposableExpirationMsImmutableEnvelope<T> add(T element, long timeOutMs);
+    default DisposableExpirationMsImmutableEnvelope<T> add(T element, long timeOutMs){
+        return add(new ExpirationMsImmutableEnvelope<>(element, timeOutMs));
+    }
 
     PropertyDispatcher<Integer> getPropertyDispatcher(); // Получить диспетчер настроек брокера
 
