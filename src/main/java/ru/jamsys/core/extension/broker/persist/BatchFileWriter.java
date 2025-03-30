@@ -17,16 +17,17 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 // Теперь многопоточная запись в файл пачками по 4кб
 // C - callback
 @Getter
-public class BatchFileWriter<C> implements AutoCloseable {
+public class BatchFileWriter<C extends FileDataPosition> implements AutoCloseable {
 
     @Getter
     @Setter
-    public static class ComplexData<C> {
+    private static class ComplexData<C> {
         private final byte[] data;
         private final C callback;
 
@@ -36,19 +37,29 @@ public class BatchFileWriter<C> implements AutoCloseable {
         }
     }
 
+    // Минимальный размер пачки в килобайтах, перед тем как данные будут записаны на файловую систему
     @Setter
-    private static int batchSize = (int) UtilByte.kilobytesToBytes(4); // 4KB
+    private volatile static int minBatchSize = (int) UtilByte.kilobytesToBytes(4); // 4KB
 
-    private final OutputStream outputStream;
+    private final OutputStream fileOutputStream;
 
-    private boolean closed;
+    // Состояние закрытия файла, что бы не получилось сделать двойное закрытие и вставлять данные если файл закрыт
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
+    // Конкурентная не блокирующая очередь, порядок добавления нам не критичен, главное, что бы не было блокировок
     private final ConcurrentLinkedDeque<ComplexData<C>> queue = new ConcurrentLinkedDeque<>();
 
-    private final AtomicBoolean lock = new AtomicBoolean(false);
+    // Блокировка на запись, что бы только 1 поток мог писать данные на файловую систему
+    private final ReentrantLock flushLock = new ReentrantLock(true); // fair lock
 
-    private final AtomicLong size = new AtomicLong();
+    // Приблизительный размер наполнения пачки, состояние может быть не консистентно
+    // Для нас этот показатель не критичен, так как есть фоновый процесс, который каждую секунду вызывает flush(false)
+    private final AtomicLong writeBatchSize = new AtomicLong();
 
+    // Точная позиция смещения данных относительно начала файла
+    private final AtomicLong position = new AtomicLong(0);
+
+    // Consumer в который передаются callback объекты записанные на файловую систему
     @Setter
     private Consumer<List<C>> onFlush;
 
@@ -58,25 +69,28 @@ public class BatchFileWriter<C> implements AutoCloseable {
     }
 
     public BatchFileWriter(Path filePath) throws IOException {
-        this.outputStream = Files.newOutputStream(
+        this.fileOutputStream = Files.newOutputStream(
                 filePath,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.WRITE,
-                StandardOpenOption.APPEND,
+                StandardOpenOption.TRUNCATE_EXISTING,
                 // в таком режиме atime, mtime, размер файла может быть не синхронизован,
                 // но данные при восстановлении будут вычитаны корректно
                 StandardOpenOption.DSYNC
         );
-        this.closed = false;
     }
 
-    public void write(@NotNull ComplexData<C> data) throws Exception {
-        if (closed) {
+    private void write(@NotNull ComplexData<C> data) throws Exception {
+        if (closed.get()) {
             throw new IOException("Writer is closed");
         }
         queue.add(data);
-        if (size.addAndGet(data.getData().length) >= batchSize) {
-            flush();
+        if (writeBatchSize.addAndGet(data.getData().length) >= minBatchSize) {
+            // Так как мы оперируем ресурсом потока, который просто хотел закинуть свою порцию данных
+            // мы будем писать только одну пачку, а если там наваливают без остановки, нельзя так использовать поток
+            // Там должен подключится фоновый процесс, если конечно у него получится втиснуться,
+            // но как будто надо писать логику хитрую, что бы
+            flush(true);
         }
     }
 
@@ -88,46 +102,64 @@ public class BatchFileWriter<C> implements AutoCloseable {
         write(new ComplexData<>(data, null));
     }
 
-    private void flush() throws IOException {
-        // Что бы только кто-то один мог писать
-        if (lock.compareAndSet(false, true)) {
+    private void flush(boolean onlyOneBatch) throws IOException {
+        // Что бы только один поток мог писать на файловую систему
+        if (!flushLock.tryLock()) {
+            return;
+        }
+        try {
             List<C> result = new ArrayList<>();
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            // Да, может случиться такое, что будет isEmpty и мы выйдем из цикла,
+            // но реально другой поток положит в очередь новую порцию данных, а мы ещё не переключили lock в false
+            // Тут должен подключится планировщик, который каждую секунду будет вызывать flush в режиме
+            // onlyOneBatch = false, то есть без остановки будет писать на ФС столько пачек, сколько получится
             while (!queue.isEmpty()) {
                 ComplexData<C> complexData = queue.pollFirst();
                 if (complexData == null) {
                     continue;
                 }
                 C callback = complexData.getCallback();
+                // Вся эта история сделана только для того, что бы отслеживать запись на диск,
+                // для того, что бы можно было запускать дальнейшую обработку этой информации.
+                // Поэтому проверять наличие onFlush != null тут не будем.
+                // Отсутствие callback и так говорит о том, что нет onFlush
                 if (callback != null) {
+                    int newLength = complexData.getData().length;
+                    callback
+                            .setFileDataPosition(position.getAndAdd(newLength))
+                            .setFileDataLength(newLength);
                     result.add(callback);
                 }
                 byteArrayOutputStream.write(complexData.getData());
-                if (byteArrayOutputStream.size() >= batchSize) {
-                    outputStream.write(byteArrayOutputStream.toByteArray());
+                if (byteArrayOutputStream.size() >= minBatchSize) {
+                    fileOutputStream.write(byteArrayOutputStream.toByteArray());
                     byteArrayOutputStream.reset();
+                    if (onlyOneBatch) {
+                        break;
+                    }
                 }
             }
             // Допустим сменился batchSize и мы не добрали на пачку, надо всё равно записать
             if (byteArrayOutputStream.size() > 0) {
-                outputStream.write(byteArrayOutputStream.toByteArray());
+                fileOutputStream.write(byteArrayOutputStream.toByteArray());
             }
-            if (onFlush != null) {
+            if (onFlush != null && !result.isEmpty()) {
                 onFlush.accept(result);
             }
-            size.set(0);
-            lock.set(false);
+            writeBatchSize.set(0);
+        } finally {
+            flushLock.unlock();
         }
     }
 
     @Override
     public void close() throws IOException {
-        if (!closed) {
+        if (closed.compareAndSet(false, true)) {
             try {
-                flush();
+                flush(false);
             } finally {
-                outputStream.close();
-                closed = true;
+                fileOutputStream.close();
             }
         }
     }
