@@ -21,7 +21,7 @@ class BatchFileWriterTest {
     private Path testFile;
 
     @BeforeEach
-    void setUp(@TempDir Path tempDir) throws IOException {
+    void setUp(@TempDir Path tempDir) {
         testFile = tempDir.resolve("test.bin");
     }
 
@@ -30,7 +30,7 @@ class BatchFileWriterTest {
         Files.deleteIfExists(testFile);
         assertFalse(Files.exists(testFile));
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> _ = new BatchFileWriter<>(testFile)) {
             assertTrue(Files.exists(testFile));
         }
     }
@@ -41,7 +41,7 @@ class BatchFileWriterTest {
         byte[] smallData = new byte[100];
         Arrays.fill(smallData, (byte) 1);
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(smallData);
             assertEquals(0, Files.size(testFile));
         }
@@ -57,7 +57,7 @@ class BatchFileWriterTest {
         byte[] data1 = new byte[MIN_BATCH_SIZE - 100];
         byte[] data2 = new byte[200]; // Суммарно превысит MIN_BATCH_SIZE
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(data1);
             assertEquals(0, Files.size(testFile));
 
@@ -73,7 +73,7 @@ class BatchFileWriterTest {
         byte[] largeData = new byte[MIN_BATCH_SIZE * 2];
         Arrays.fill(largeData, (byte) 2);
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(largeData);
             // Большие данные должны записаться сразу
             assertEquals(largeData.length, Files.size(testFile));
@@ -87,7 +87,7 @@ class BatchFileWriterTest {
         byte[] data2 = new byte[MIN_BATCH_SIZE];
         byte[] data3 = new byte[50];
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(data1);
             writer.write(data2);
             writer.write(data3);
@@ -107,7 +107,7 @@ class BatchFileWriterTest {
         byte[] hugeData = new byte[MIN_BATCH_SIZE * 10];
         Arrays.fill(hugeData, (byte) 3);
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(hugeData);
             assertEquals(hugeData.length, Files.size(testFile));
         }
@@ -118,7 +118,7 @@ class BatchFileWriterTest {
         Files.deleteIfExists(testFile);
         byte[] data = new byte[100];
 
-        BatchFileWriter writer = new BatchFileWriter(testFile);
+        BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile);
         writer.write(data);
         assertEquals(0, Files.size(testFile));
 
@@ -129,7 +129,7 @@ class BatchFileWriterTest {
     @Test
     void testWriteAfterCloseThrowsException() throws Exception {
         Files.deleteIfExists(testFile);
-        BatchFileWriter writer = new BatchFileWriter(testFile);
+        BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile);
         writer.close();
 
         assertThrows(IOException.class, () -> writer.write(new byte[1]));
@@ -149,7 +149,7 @@ class BatchFileWriterTest {
             pattern2[i] = (byte) (i % 256);
         }
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(pattern1);
             writer.write(pattern2);
             writer.write(pattern1);
@@ -172,7 +172,7 @@ class BatchFileWriterTest {
     @Test
     void testWriteSingleByte() throws Exception {
         Files.deleteIfExists(testFile);
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(new byte[]{42});
         }
 
@@ -184,7 +184,7 @@ class BatchFileWriterTest {
     @Test
     void testManySmallWrites() throws Exception {
         Files.deleteIfExists(testFile);
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             for (int i = 0; i < 1000; i++) {
                 writer.write(new byte[]{(byte) i});
             }
@@ -208,7 +208,7 @@ class BatchFileWriterTest {
         byte[] chunk = new byte[chunkSize];
         Arrays.fill(chunk, (byte) 7);
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             for (int i = 0; i < chunks; i++) {
                 writer.write(chunk);
             }
@@ -221,7 +221,7 @@ class BatchFileWriterTest {
     void testConstructorWithInvalidPath() throws IOException {
         Files.deleteIfExists(testFile);
         Path invalidPath = Path.of("/invalid/path/to/file.bin");
-        assertThrows(IOException.class, () -> new BatchFileWriter(invalidPath));
+        assertThrows(IOException.class, () -> new BatchFileWriter<>(invalidPath));
     }
 
     @Test
@@ -238,7 +238,7 @@ class BatchFileWriterTest {
 
         // Проверяем, что попытка записи вызывает IOException
         IOException exception = assertThrows(IOException.class, () -> {
-            try (BatchFileWriter writer = new BatchFileWriter(readOnlyFile)) {
+            try (BatchFileWriter<Void> writer = new BatchFileWriter<>(readOnlyFile)) {
                 writer.write(new byte[100]);
             }
         });
@@ -273,7 +273,7 @@ class BatchFileWriterTest {
 
         // Проверяем обработку ошибки
         assertThrows(IOException.class, () -> {
-            try (BatchFileWriter writer = new BatchFileWriter(readOnlyFile)) {
+            try (BatchFileWriter<Void> writer = new BatchFileWriter<>(readOnlyFile)) {
                 writer.write(new byte[100]);
             }
         });
@@ -285,7 +285,7 @@ class BatchFileWriterTest {
         byte[] largeData = new byte[MIN_BATCH_SIZE * 2];
         Arrays.fill(largeData, (byte) 2);
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(largeData);
             // Большие данные должны записаться сразу
             assertEquals(largeData.length, Files.size(testFile));
@@ -315,7 +315,7 @@ class BatchFileWriterTest {
         byte[] smallData = new byte[100];
         Arrays.fill(smallData, (byte) 3);
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(largeData1);
             assertEquals(largeData1.length, Files.size(testFile));
 
@@ -334,7 +334,7 @@ class BatchFileWriterTest {
         byte[] large = new byte[MIN_BATCH_SIZE * 2];
         byte[] small2 = new byte[200];
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(small1);
             assertEquals(0, Files.size(testFile));
 
@@ -351,7 +351,7 @@ class BatchFileWriterTest {
     @Test
     void testWriteAfterCloseThrowsException2() throws Exception {
         Files.deleteIfExists(testFile);
-        BatchFileWriter writer = new BatchFileWriter(testFile);
+        BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile);
         writer.close();
 
         IOException exception = assertThrows(IOException.class,
@@ -363,7 +363,7 @@ class BatchFileWriterTest {
     @Test
     void testDoubleCloseIsSafe() throws Exception {
         Files.deleteIfExists(testFile);
-        BatchFileWriter writer = new BatchFileWriter(testFile);
+        BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile);
         writer.close();
         assertDoesNotThrow(writer::close); // Повторное закрытие не должно бросать исключение
     }
@@ -380,7 +380,7 @@ class BatchFileWriterTest {
         byte[] data2 = new byte[200];
         Arrays.fill(data2, (byte) 2);
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             // Первая запись - данные остаются в буфере
             writer.write(data1);
             assertEquals(0, Files.size(testFile), "Данные не должны быть записаны сразу");
@@ -408,7 +408,7 @@ class BatchFileWriterTest {
         byte[] exactSizeData = new byte[MIN_BATCH_SIZE];
         Arrays.fill(exactSizeData, (byte) 3);
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(exactSizeData);
             assertEquals(MIN_BATCH_SIZE, Files.size(testFile));
         }
@@ -419,14 +419,14 @@ class BatchFileWriterTest {
         Files.deleteIfExists(testFile);
         // Данные ровно MIN_BATCH_SIZE
         byte[] exactSize = new byte[MIN_BATCH_SIZE];
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(exactSize);
             assertEquals(MIN_BATCH_SIZE, Files.size(testFile));
         }
         Files.deleteIfExists(testFile);
         // Данные на 1 байт меньше
         byte[] oneLess = new byte[MIN_BATCH_SIZE - 1];
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(oneLess);
             assertEquals(0, Files.size(testFile)); // Не должно записаться
             writer.write(new byte[1]); // Дописываем 1 байт
@@ -441,7 +441,7 @@ class BatchFileWriterTest {
         int[] sizes = {1, 100, 511, 1023, 2047, 4095, 4096, 4097};
         for (int size : sizes) {
             Path tempFile = testFile.resolveSibling("chunk_" + size + ".bin");
-            try (BatchFileWriter writer = new BatchFileWriter(tempFile)) {
+            try (BatchFileWriter<Void> writer = new BatchFileWriter<>(tempFile)) {
                 writer.write(new byte[size]);
                 if (size >= MIN_BATCH_SIZE) {
                     assertEquals(size, Files.size(tempFile));
@@ -456,7 +456,7 @@ class BatchFileWriterTest {
     void testExactBatchSizeWrite() throws Exception {
         Files.deleteIfExists(testFile);
         byte[] exactSizeData = new byte[MIN_BATCH_SIZE];
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(exactSizeData);
             assertEquals(MIN_BATCH_SIZE, Files.size(testFile));
         }
@@ -468,7 +468,7 @@ class BatchFileWriterTest {
         byte[] exactSize = new byte[MIN_BATCH_SIZE];
         byte[] oneByte = new byte[1];
 
-        try (BatchFileWriter writer = new BatchFileWriter(testFile)) {
+        try (BatchFileWriter<Void> writer = new BatchFileWriter<>(testFile)) {
             writer.write(exactSize);
             assertEquals(MIN_BATCH_SIZE, Files.size(testFile));
 
