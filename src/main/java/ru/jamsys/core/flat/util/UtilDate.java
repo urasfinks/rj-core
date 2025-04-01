@@ -26,6 +26,7 @@ public class UtilDate {
         return formatter.format(now);
     }
 
+    // Если использовать int - конец наступит 19 января 2038 года, 03:14:07 UTC
     public static long getTimestamp() {
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         return timestamp.getTime() / 1000;
