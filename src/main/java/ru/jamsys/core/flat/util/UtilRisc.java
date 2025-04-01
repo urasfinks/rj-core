@@ -88,6 +88,11 @@ public class UtilRisc {
                 K[] objects = map.keySet().toArray(getEmptyType());
                 for (K key : objects) {
                     if (run == null || run.get()) {
+                        // Так как мы бежим по копии ключей, то есть вероятность, что ключ уже удалили
+                        // поэтому каждый раз надо проверять
+                        if (!map.containsKey(key)) {
+                            continue;
+                        }
                         if (!consumer.apply(key, map.get(key))) {
                             break;
                         }
@@ -107,6 +112,11 @@ public class UtilRisc {
                 K[] objects = map.keySet().toArray(getEmptyType());
                 for (K key : objects) {
                     if (run == null || run.get()) {
+                        // Так как мы бежим по копии ключей, то есть вероятность, что ключ уже удалили
+                        // поэтому каждый раз надо проверять
+                        if (!map.containsKey(key)) {
+                            continue;
+                        }
                         consumer.accept(key, map.get(key));
                     } else {
                         break;
