@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 // Теперь многопоточная запись в файл пачками по 4кб
@@ -50,7 +49,7 @@ public class BatchFileWriter<C extends FileDataPosition> implements AutoCloseabl
     private final ConcurrentLinkedDeque<ComplexData<C>> queue = new ConcurrentLinkedDeque<>();
 
     // Блокировка на запись, что бы только 1 поток мог писать данные на файловую систему
-    private final ReentrantLock flushLock = new ReentrantLock(true); // fair lock
+    private final AtomicBoolean flushLock = new AtomicBoolean(false);
 
     // Приблизительный размер наполнения пачки, состояние может быть не консистентно
     // Для нас этот показатель не критичен, так как есть фоновый процесс, который каждую секунду вызывает flush(false)
@@ -104,52 +103,51 @@ public class BatchFileWriter<C extends FileDataPosition> implements AutoCloseabl
 
     private void flush(boolean onlyOneBatch) throws IOException {
         // Что бы только один поток мог писать на файловую систему
-        if (!flushLock.tryLock()) {
-            return;
-        }
-        try {
-            List<C> result = new ArrayList<>();
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            // Да, может случиться такое, что будет isEmpty и мы выйдем из цикла,
-            // но реально другой поток положит в очередь новую порцию данных, а мы ещё не переключили lock в false
-            // Тут должен подключится планировщик, который каждую секунду будет вызывать flush в режиме
-            // onlyOneBatch = false, то есть без остановки будет писать на ФС столько пачек, сколько получится
-            while (!queue.isEmpty()) {
-                ComplexData<C> complexData = queue.pollFirst();
-                if (complexData == null) {
-                    continue;
-                }
-                C callback = complexData.getCallback();
-                // Вся эта история сделана только для того, что бы отслеживать запись на диск,
-                // для того, что бы можно было запускать дальнейшую обработку этой информации.
-                // Поэтому проверять наличие onFlush != null тут не будем.
-                // Отсутствие callback и так говорит о том, что нет onFlush
-                if (callback != null) {
-                    int newLength = complexData.getData().length;
-                    callback
-                            .setFileDataPosition(position.getAndAdd(newLength))
-                            .setFileDataLength(newLength);
-                    result.add(callback);
-                }
-                byteArrayOutputStream.write(complexData.getData());
-                if (byteArrayOutputStream.size() >= minBatchSize) {
-                    fileOutputStream.write(byteArrayOutputStream.toByteArray());
-                    byteArrayOutputStream.reset();
-                    if (onlyOneBatch) {
-                        break;
+        if (flushLock.compareAndSet(false, true)) {
+            try {
+                List<C> result = new ArrayList<>();
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                // Да, может случиться такое, что будет isEmpty и мы выйдем из цикла,
+                // но реально другой поток положит в очередь новую порцию данных, а мы ещё не переключили lock в false
+                // Тут должен подключится планировщик, который каждую секунду будет вызывать flush в режиме
+                // onlyOneBatch = false, то есть без остановки будет писать на ФС столько пачек, сколько получится
+                while (!queue.isEmpty()) {
+                    ComplexData<C> complexData = queue.pollFirst();
+                    if (complexData == null) {
+                        continue;
+                    }
+                    C callback = complexData.getCallback();
+                    // Вся эта история сделана только для того, что бы отслеживать запись на диск,
+                    // для того, что бы можно было запускать дальнейшую обработку этой информации.
+                    // Поэтому проверять наличие onFlush != null тут не будем.
+                    // Отсутствие callback и так говорит о том, что нет onFlush
+                    if (callback != null) {
+                        int newLength = complexData.getData().length;
+                        callback
+                                .setFileDataPosition(position.getAndAdd(newLength))
+                                .setFileDataLength(newLength);
+                        result.add(callback);
+                    }
+                    byteArrayOutputStream.write(complexData.getData());
+                    if (byteArrayOutputStream.size() >= minBatchSize) {
+                        fileOutputStream.write(byteArrayOutputStream.toByteArray());
+                        byteArrayOutputStream.reset();
+                        if (onlyOneBatch) {
+                            break;
+                        }
                     }
                 }
+                // Допустим сменился batchSize и мы не добрали на пачку, надо всё равно записать
+                if (byteArrayOutputStream.size() > 0) {
+                    fileOutputStream.write(byteArrayOutputStream.toByteArray());
+                }
+                if (onFlush != null && !result.isEmpty()) {
+                    onFlush.accept(result);
+                }
+                writeBatchSize.set(0);
+            } finally {
+                flushLock.set(false);
             }
-            // Допустим сменился batchSize и мы не добрали на пачку, надо всё равно записать
-            if (byteArrayOutputStream.size() > 0) {
-                fileOutputStream.write(byteArrayOutputStream.toByteArray());
-            }
-            if (onFlush != null && !result.isEmpty()) {
-                onFlush.accept(result);
-            }
-            writeBatchSize.set(0);
-        } finally {
-            flushLock.unlock();
         }
     }
 
