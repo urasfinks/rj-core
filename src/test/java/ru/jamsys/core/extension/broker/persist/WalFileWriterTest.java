@@ -62,7 +62,7 @@ class WalFileWriterTest {
     }
 
     @Test
-    void testWriteLocking() throws IOException, InterruptedException {
+    void testWriteLocking() throws IOException {
         // Первая запись должна заблокировать диапазон
         walWriter.write(1L, (short) 1);
 

@@ -66,7 +66,7 @@ class WalDataStatusTest {
         List<Long> result = walDataStatus.getFirst(TEST_GROUP, 1);
 
         assertEquals(1, result.size());
-        assertEquals(TEST_ID, result.get(0));
+        assertEquals(TEST_ID, result.getFirst());
     }
 
     @Test
