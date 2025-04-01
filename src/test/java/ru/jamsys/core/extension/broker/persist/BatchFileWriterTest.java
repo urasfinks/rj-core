@@ -511,9 +511,7 @@ class BatchFileWriterTest {
         long time = System.currentTimeMillis();
         AtomicInteger counter = new AtomicInteger(0);
         try (BatchFileWriter<Callback> writer = new BatchFileWriter<>(testFile)) {
-            writer.setOnFlush(callbacks -> {
-                counter.addAndGet(callbacks.size());
-            });
+            writer.setOnFlush(callbacks -> counter.addAndGet(callbacks.size()));
             for (int i = 0; i < 400_000; i++) {
                 writer.write("Hello world".getBytes(StandardCharsets.UTF_8), new Callback());
             }
