@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 // short 16 бит (2 байта) Диапазон значений: от -32,768 до 32,767 (включительно)
 // int 32 бита (4 байта) Диапазон значений: от -2,147,483,648 до 2,147,483,647 (включительно)
+// long 64 бита	(8 байт) Диапазон значений: от -9 223 372 036 854 775 808 до 9 223 372 036 854 775 807
 
 public class UtilByte {
 
@@ -42,11 +43,11 @@ public class UtilByte {
     }
 
     public static byte[] intToBytes(int value) {
-        return new byte[]{(byte) (value >>> 24), (byte) (value >>> 16), (byte) (value >>> 8), (byte) value};
+        return ByteBuffer.allocate(8).putInt(value).array();
     }
 
     public static int bytesToInt(byte[] bytes) {
-        return ((bytes[0] & 0xFF) << 24) | ((bytes[1] & 0xFF) << 16) | ((bytes[2] & 0xFF) << 8) | ((bytes[3] & 0xFF));
+        return ByteBuffer.wrap(bytes).getInt();
     }
 
     public static byte[] shortToBytes(short s) {
@@ -55,6 +56,14 @@ public class UtilByte {
 
     public static short bytesToShort(byte[] bytes) {
         return ByteBuffer.wrap(bytes).getShort();
+    }
+
+    public static byte[] longToBytes(long value) {
+        return ByteBuffer.allocate(8).putLong(value).array();
+    }
+
+    public static long bytesToLong(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getLong();
     }
 
     public static void reverseBytes(byte[] array) {
