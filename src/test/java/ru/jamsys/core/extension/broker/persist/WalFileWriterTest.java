@@ -89,4 +89,14 @@ class WalFileWriterTest {
         assertThrows(IOException.class, () -> walWriter.write(2L, (short) 2));
     }
 
+    @Test
+    void testTiming() throws IOException {
+        walWriter.setCapacity(400_000);
+        long time = System.currentTimeMillis();
+        for (int i = 0; i < 400_000; i++) {
+            walWriter.write(1L, (short) 1);
+        }
+        System.out.println("timing: " + (System.currentTimeMillis() - time));
+    }
+
 }

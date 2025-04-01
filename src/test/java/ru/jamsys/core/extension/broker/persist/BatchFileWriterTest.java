@@ -3,12 +3,14 @@ package ru.jamsys.core.extension.broker.persist;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import ru.jamsys.core.flat.util.UtilLog;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,6 +18,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -501,6 +504,22 @@ class BatchFileWriterTest {
             writer.write(b2, new Callback());
             assertEquals(MIN_BATCH_SIZE * 2, Files.size(testFile));
         }
+    }
+
+    @Test
+    void testTiming() throws Exception {
+        long time = System.currentTimeMillis();
+        AtomicInteger counter = new AtomicInteger(0);
+        try (BatchFileWriter<Callback> writer = new BatchFileWriter<>(testFile)) {
+            writer.setOnFlush(callbacks -> {
+                counter.addAndGet(callbacks.size());
+            });
+            for (int i = 0; i < 400_000; i++) {
+                writer.write("Hello world".getBytes(StandardCharsets.UTF_8), new Callback());
+            }
+        }
+        Assertions.assertEquals(400_000, counter.get());
+        System.out.println("timing: " + (System.currentTimeMillis() - time) + "; callback: " + counter.get());
     }
 
 }

@@ -1,5 +1,7 @@
 package ru.jamsys.core.extension.broker.persist;
 
+import lombok.Setter;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -24,7 +26,8 @@ public class WalFileWriter implements AutoCloseable {
 
     private final AtomicLong fileLength = new AtomicLong(0); // Текущий размер на файловой системе
 
-    private final long capacity; // Размер аллокации WAL файла сразу на файловой системе
+    @Setter
+    private long capacity; // Размер аллокации WAL файла сразу на файловой системе
 
     private final WalDataStatus walDataStatus = new WalDataStatus();
 
