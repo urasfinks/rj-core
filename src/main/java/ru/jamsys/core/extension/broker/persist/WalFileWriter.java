@@ -29,7 +29,7 @@ public class WalFileWriter implements AutoCloseable {
     @Setter
     private long capacity; // Размер аллокации WAL файла сразу на файловой системе
 
-    private final WalDataStatus walDataStatus = new WalDataStatus();
+
 
     public WalFileWriter(String filePath, long capacity) throws IOException {
         this.file = new RandomAccessFile(filePath, "rwd");
@@ -46,7 +46,7 @@ public class WalFileWriter implements AutoCloseable {
     // Не хочется делать write на вставке данных в .log файл (idGroup = 0 - это фиксация, что существуют такие данные)
     // Но тут необходимо как-то узнать
     public void write(long id, short idGroup) throws IOException {
-        walDataStatus.unsubscribe(id, idGroup);
+        //walDataStatus.unsubscribe(id, idGroup);
         long offset = dataOffset.getAndAdd(RECORD_SIZE);
         if (offset > fileLength.get()) {
             if (lock.compareAndSet(false, true)) {

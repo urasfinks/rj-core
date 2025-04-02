@@ -117,4 +117,10 @@ class UtilByteTest {
         assertEquals(Long.MAX_VALUE, UtilByte.bytesToLong(UtilByte.longToBytes(Long.MAX_VALUE)));
         assertEquals(Long.MIN_VALUE, UtilByte.bytesToLong(UtilByte.longToBytes(Long.MIN_VALUE)));
     }
+
+    @Test
+    void test(){
+        System.out.println(UtilByte.getBits((byte) 127));
+    }
+
 }

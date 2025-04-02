@@ -5,6 +5,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+// byte (8 бит) Диапазон значений: от -128 до 127 (включительно)
 // short 16 бит (2 байта) Диапазон значений: от -32,768 до 32,767 (включительно)
 // int 32 бита (4 байта) Диапазон значений: от -2,147,483,648 до 2,147,483,647 (включительно)
 // long 64 бита	(8 байт) Диапазон значений: от -9 223 372 036 854 775 808 до 9 223 372 036 854 775 807
@@ -90,6 +91,14 @@ public class UtilByte {
         for (int i = 15; i >= 0; i--) {
             int bit = (number >> i) & 1;
             bits.append(bit);
+        }
+        return bits.toString();
+    }
+
+    public static String getBits(byte b) {
+        StringBuilder bits = new StringBuilder(8);
+        for (int i = 7; i >= 0; i--) {
+            bits.append((b >> i) & 1);
         }
         return bits.toString();
     }

@@ -1,125 +1,139 @@
 package ru.jamsys.core.extension.broker.persist;
 
 import lombok.Setter;
+import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.flat.util.UtilRisc;
 
+import java.nio.ByteBuffer;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Потокобезопасный менеджер для отслеживания статусов данных в WAL (Write-Ahead Log).
- * <p>
- * Основные функции:
- * <ul>
- *   <li>Подписка/отписка элементов в группах</li>
- *   <li>Получение непрочитанных элементов (с начала или конца группы)</li>
- *   <li>Контроль интервалов повторной обработки через {@code timeRetryMs}</li>
- * </ul>
- *
- * <p>Все операции потокобезопасны и оптимизированы для многопоточной работы.
- */
-public class WalDataStatus {
+// [ operation = [insert_data|insert_group|pool|commit] | id | timestamp |  idGroup ]
 
-    /**
-     * Задержка (в миллисекундах) перед повторной обработкой элемента.
-     * По умолчанию: 60 000 мс (1 минута).
-     * <p>
-     * Может быть изменено через {@link #setTimeRetryMs(long)}.
-     */
+
+public class WalDataStatus implements LifeCycleInterface {
+
+    public enum Operation {
+        SUBSCRIBE_GROUP((byte) 1), //Подписана группа
+        INSERT_DATA((byte) 2), // Добавлены данные
+        POLL_DATA_GROUP((byte) 3), // Данные были выданы для группы
+        COMMIT_DATA_GROUP((byte) 4), // Данные были обработаны группой
+        UNSUBSCRIBE_GROUP((byte) 5), // Группа отписана
+        ;
+
+        private final byte operation;
+
+        Operation(byte operation) {
+            this.operation = operation;
+        }
+
+        public byte getByte() {
+            return operation;
+        }
+
+    }
+
     @Setter
     private volatile long timeRetryMs = 60_000;
 
-    /**
-     * Основное хранилище данных:
-     * <pre>
-     *   ID группы → (ID элемента → Время последней обработки)
-     * </pre>
-     * Где:
-     * <ul>
-     *   <li>{@code null} - элемент ещё не обрабатывался</li>
-     *   <li>Не-null значение - timestamp когда последний раз была выдача элемента</li>
-     * </ul>
-     */
-    private final ConcurrentHashMap<Short, ConcurrentSkipListMap<Long, Long>> map = new ConcurrentHashMap<>();
+    private BatchFileWriter batchFileWriter;
 
-    /**
-     * Блокировки для каждой группы (обеспечивают потокобезопасность операций).
-     */
-    private final ConcurrentHashMap<Short, AtomicBoolean> groupLock = new ConcurrentHashMap<>();
+    AtomicBoolean run = new AtomicBoolean(false);
 
-    /**
-     * Регистрирует элемент в указанных группах.
-     *
-     * @param id       ID элемента
-     * @param idGroups Список ID групп для подписки
-     * @throws IllegalArgumentException если {@code idGroups} равен null
-     * @example // Добавление элемента 123 в группы 1 и 2
-     * subscribe(123L, List.of((short)1, (short)2));
-     */
-    public void subscribe(long id, List<Short> idGroups) {
-        long now = System.currentTimeMillis();
-        idGroups.forEach(
-                idGroup -> map
-                        .computeIfAbsent(idGroup, _ -> new ConcurrentSkipListMap<>())
-                        .put(id, now - timeRetryMs)
+    private final String filePath;
+
+    public WalDataStatus(String filePath) {
+        this.filePath = filePath;
+    }
+
+    private final ConcurrentHashMap<
+            Byte, //idGroup
+            AtomicBoolean //lock
+            > groupLock = new ConcurrentHashMap<>();
+
+    ConcurrentHashMap<
+            Byte, //idGroup
+            ConcurrentSkipListMap<
+                    Long, //idData
+                    Long //timestamp
+                    >
+            > groupMap = new ConcurrentHashMap<>();
+
+    public void subscribeGroup(byte idGroup, long timestamp) {
+        groupLock.computeIfAbsent(idGroup, _ -> new AtomicBoolean(false));
+        groupMap.computeIfAbsent(idGroup, _ -> {
+            createRecord(
+                    timestamp,
+                    Operation.SUBSCRIBE_GROUP.getByte(),
+                    0,
+                    idGroup
+            );
+            return new ConcurrentSkipListMap<>();
+        });
+    }
+
+    public void unsubscribeGroup(byte idGroup, long timestamp) {
+        createRecord(
+                timestamp,
+                Operation.UNSUBSCRIBE_GROUP.getByte(),
+                0,
+                idGroup
         );
+        groupLock.remove(idGroup);
+        groupMap.remove(idGroup);
     }
 
-    /**
-     * Удаляет элемент из группы.
-     *
-     * @param id      ID элемента
-     * @param idGroup ID группы
-     * @example // Удаление элемента 123 из группы 1
-     * unsubscribe(123L, (short)1);
-     */
-    public void unsubscribe(long id, Short idGroup) {
-        Map<Long, Long> longLongMap = map.get(idGroup);
-        if (longLongMap != null) {
-            longLongMap.remove(id);
-        }
+    public void addData(long idData, long timestamp) {
+        UtilRisc.forEach(null, groupMap, (idGroup, longLongConcurrentSkipListMap) -> {
+            createRecord(
+                    timestamp,
+                    Operation.INSERT_DATA.getByte(),
+                    idData,
+                    idGroup
+            );
+            longLongConcurrentSkipListMap.put(idData, timestamp);
+        });
     }
 
-    /**
-     * Возвращает непрочитанные элементы <b>с начала</b> указанной группы.
-     * <p>
-     * Элемент считается непрочитанным если:
-     * <ul>
-     *   <li>Он никогда не обрабатывался ({@code timestamp == null}), ИЛИ</li>
-     *   <li>Прошло больше {@code timeRetryMs} с момента последней обработки</li>
-     * </ul>
-     *
-     * @param idGroup ID группы
-     * @param size    Максимальное количество элементов
-     * @return Список ID элементов для обработки (может быть пустым)
-     * @example // Получить первые 10 непрочитанных из группы 1
-     * List<Long> unprocessed = getFirst((short)1, 10);
-     */
-    public List<Long> getFirst(Short idGroup, int size) {
+    private byte[] createRecord(long timestamp, byte operation, long idData, byte idGroup) {
+        return ByteBuffer.allocate(18)
+                .putLong(timestamp)
+                .put(operation)
+                .putLong(idData)
+                .put(idGroup)
+                .flip()
+                .array();
+    }
+
+    public List<Long> getFirst(byte idGroup, int size) {
         return getFirst(idGroup, size,  System.currentTimeMillis());
     }
 
-    public List<Long> getFirst(Short idGroup, int size, long now) {
+    public List<Long> getFirst(byte idGroup, int size, long now) {
         List<Long> result = new ArrayList<>();
         AtomicBoolean lock = groupLock.computeIfAbsent(idGroup, _ -> new AtomicBoolean(false));
         if (lock.compareAndSet(false, true)) {
             try {
-                ConcurrentSkipListMap<Long, Long> groupMap = map.get(idGroup);
-                if (groupMap == null || groupMap.isEmpty()) {
+                ConcurrentSkipListMap<Long, Long> groupDataMap = groupMap.get(idGroup);
+                if (groupDataMap == null || groupDataMap.isEmpty()) {
                     return result;
                 }
-                Map.Entry<Long, Long> idEntity = groupMap.firstEntry();
+                Map.Entry<Long, Long> idEntity = groupDataMap.firstEntry();
                 while (size > 0 && idEntity != null) {
                     Long timestamp = idEntity.getValue();
                     Long id = idEntity.getKey();
-                    if ((now >= timestamp + timeRetryMs) && groupMap.replace(id, timestamp, now)) {
+                    if ((now >= timestamp + timeRetryMs) && groupDataMap.replace(id, timestamp, now)) {
                         result.add(id);
                         size--;
                     }
-                    idEntity = groupMap.higherEntry(idEntity.getKey());
+                    idEntity = groupDataMap.higherEntry(idEntity.getKey());
                 }
             } finally {
                 lock.set(false);
@@ -128,40 +142,61 @@ public class WalDataStatus {
         return result;
     }
 
-    /**
-     * Возвращает непрочитанные элементы <b>с конца</b> указанной группы.
-     * <p>
-     * Аналогично {@link #getFirst(Short, int)}, но обход начинается с конца.
-     */
-
-    public List<Long> getLast(Short idGroup, int size) {
+    public List<Long> getLast(byte idGroup, int size) {
         return getLast(idGroup, size,  System.currentTimeMillis());
     }
 
-    public List<Long> getLast(Short idGroup, int size, long now) {
+    public List<Long> getLast(byte idGroup, int size, long now) {
         List<Long> result = new ArrayList<>();
         AtomicBoolean lock = groupLock.computeIfAbsent(idGroup, _ -> new AtomicBoolean(false));
         if (lock.compareAndSet(false, true)) {
             try {
-                ConcurrentSkipListMap<Long, Long> groupMap = map.get(idGroup);
-                if (groupMap == null || groupMap.isEmpty()) {
+                ConcurrentSkipListMap<Long, Long> groupDataMap = groupMap.get(idGroup);
+                if (groupDataMap == null || groupDataMap.isEmpty()) {
                     return result;
                 }
-                Map.Entry<Long, Long> idEntity = groupMap.lastEntry();
+                Map.Entry<Long, Long> idEntity = groupDataMap.lastEntry();
                 while (size > 0 && idEntity != null) {
                     Long timestamp = idEntity.getValue();
                     Long id = idEntity.getKey();
-                    if ((now >= timestamp + timeRetryMs) && groupMap.replace(id, timestamp, now)) {
+                    if ((now >= timestamp + timeRetryMs) && groupDataMap.replace(id, timestamp, now)) {
                         result.add(id);
                         size--;
                     }
-                    idEntity = groupMap.lowerEntry(idEntity.getKey());
+                    idEntity = groupDataMap.lowerEntry(idEntity.getKey());
                 }
             } finally {
                 lock.set(false);
             }
         }
         return result;
+    }
+
+    private final Lock runLock = new ReentrantLock();
+
+    @Override
+    public boolean isRun() {
+        return run.get();
+    }
+
+    @Override
+    public void run() {
+        if (run.compareAndSet(false, true)) {
+            batchFileWriter = new BatchFileWriter(filePath);
+            batchFileWriter.setOpenOption(StandardOpenOption.APPEND);
+            batchFileWriter.run();
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        if (run.compareAndSet(true, false)) {
+            if (batchFileWriter != null) {
+                groupMap.clear();
+                groupLock.clear();
+                batchFileWriter.shutdown();
+            }
+        }
     }
 
 }

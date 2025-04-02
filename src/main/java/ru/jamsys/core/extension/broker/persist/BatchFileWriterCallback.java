@@ -3,39 +3,50 @@ package ru.jamsys.core.extension.broker.persist;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
-import ru.jamsys.core.App;
-import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.UtilByte;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 // Теперь многопоточная запись в файл пачками по 4кб
 // C - callback
 @Getter
-public class BatchFileWriter implements AutoCloseable, LifeCycleInterface {
+public class BatchFileWriterCallback<C extends FileDataPosition> implements AutoCloseable {
 
+    @Getter
+    @Setter
+    private static class ComplexData<C> {
+        private final byte[] data;
+        private final C callback;
+
+        public ComplexData(byte[] data, C callback) {
+            this.data = data;
+            this.callback = callback;
+        }
+    }
 
     // Минимальный размер пачки в килобайтах, перед тем как данные будут записаны на файловую систему
     @Setter
     private volatile static int minBatchSize = (int) UtilByte.kilobytesToBytes(4); // 4KB
 
-    private OutputStream fileOutputStream;
+    private final OutputStream fileOutputStream;
 
     // Состояние закрытия файла, что бы не получилось сделать двойное закрытие и вставлять данные если файл закрыт
-    private final AtomicBoolean run = new AtomicBoolean(false);
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     // Конкурентная не блокирующая очередь, порядок добавления нам не критичен, главное, что бы не было блокировок
-    private final ConcurrentLinkedDeque<byte[]> queue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<ComplexData<C>> queue = new ConcurrentLinkedDeque<>();
 
     // Блокировка на запись, что бы только 1 поток мог писать данные на файловую систему
     private final AtomicBoolean flushLock = new AtomicBoolean(false);
@@ -47,22 +58,33 @@ public class BatchFileWriter implements AutoCloseable, LifeCycleInterface {
     // Точная позиция смещения данных относительно начала файла
     private final AtomicLong position = new AtomicLong(0);
 
-    private final String filePath;
-
+    // Consumer в который передаются callback объекты записанные на файловую систему
     @Setter
-    private OpenOption openOption = StandardOpenOption.TRUNCATE_EXISTING;
+    private Consumer<List<C>> onFlush;
 
     @SuppressWarnings("unused")
-    public BatchFileWriter(String filePath) {
-        this.filePath = filePath;
+    public BatchFileWriterCallback(String filePath) throws IOException {
+        this(Paths.get(filePath));
     }
 
-    private void write(@NotNull byte[] data) throws Exception {
-        if (!run.get()) {
+    public BatchFileWriterCallback(Path filePath) throws IOException {
+        this.fileOutputStream = Files.newOutputStream(
+                filePath,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.TRUNCATE_EXISTING,
+                // в таком режиме atime, mtime, размер файла может быть не синхронизован,
+                // но данные при восстановлении будут вычитаны корректно
+                StandardOpenOption.DSYNC
+        );
+    }
+
+    private void write(@NotNull ComplexData<C> data) throws Exception {
+        if (closed.get()) {
             throw new IOException("Writer is closed");
         }
         queue.add(data);
-        if (writeBatchSize.addAndGet(data.length) >= minBatchSize) {
+        if (writeBatchSize.addAndGet(data.getData().length) >= minBatchSize) {
             // Так как мы оперируем ресурсом потока, который просто хотел закинуть свою порцию данных
             // мы будем писать только одну пачку, а если там наваливают без остановки, нельзя так использовать поток
             // Там должен подключится фоновый процесс, если конечно у него получится втиснуться,
@@ -71,21 +93,42 @@ public class BatchFileWriter implements AutoCloseable, LifeCycleInterface {
         }
     }
 
+    public void write(@NotNull byte[] data, C callback) throws Exception {
+        write(new ComplexData<>(data, callback));
+    }
+
+    public void write(@NotNull byte[] data) throws Exception {
+        write(new ComplexData<>(data, null));
+    }
+
     private void flush(boolean onlyOneBatch) throws IOException {
         // Что бы только один поток мог писать на файловую систему
         if (flushLock.compareAndSet(false, true)) {
             try {
+                List<C> result = new ArrayList<>();
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 // Да, может случиться такое, что будет isEmpty и мы выйдем из цикла,
                 // но реально другой поток положит в очередь новую порцию данных, а мы ещё не переключили lock в false
                 // Тут должен подключится планировщик, который каждую секунду будет вызывать flush в режиме
                 // onlyOneBatch = false, то есть без остановки будет писать на ФС столько пачек, сколько получится
                 while (!queue.isEmpty()) {
-                    byte[] data = queue.pollFirst();
-                    if (data == null) {
+                    ComplexData<C> complexData = queue.pollFirst();
+                    if (complexData == null) {
                         continue;
                     }
-                    byteArrayOutputStream.write(data);
+                    C callback = complexData.getCallback();
+                    // Вся эта история сделана только для того, что бы отслеживать запись на диск,
+                    // для того, что бы можно было запускать дальнейшую обработку этой информации.
+                    // Поэтому проверять наличие onFlush != null тут не будем.
+                    // Отсутствие callback и так говорит о том, что нет onFlush
+                    if (callback != null) {
+                        int newLength = complexData.getData().length;
+                        callback
+                                .setFileDataPosition(position.getAndAdd(newLength))
+                                .setFileDataLength(newLength);
+                        result.add(callback);
+                    }
+                    byteArrayOutputStream.write(complexData.getData());
                     if (byteArrayOutputStream.size() >= minBatchSize) {
                         fileOutputStream.write(byteArrayOutputStream.toByteArray());
                         byteArrayOutputStream.reset();
@@ -98,6 +141,9 @@ public class BatchFileWriter implements AutoCloseable, LifeCycleInterface {
                 if (byteArrayOutputStream.size() > 0) {
                     fileOutputStream.write(byteArrayOutputStream.toByteArray());
                 }
+                if (onFlush != null && !result.isEmpty()) {
+                    onFlush.accept(result);
+                }
                 writeBatchSize.set(0);
             } finally {
                 flushLock.set(false);
@@ -107,46 +153,11 @@ public class BatchFileWriter implements AutoCloseable, LifeCycleInterface {
 
     @Override
     public void close() throws IOException {
-        shutdown();
-    }
-
-    @Override
-    public boolean isRun() {
-        return run.get();
-    }
-
-    @Override
-    public void run() {
-        if (run.compareAndSet(false, true)) {
-            try {
-                this.fileOutputStream = Files.newOutputStream(
-                        Paths.get(filePath),
-                        StandardOpenOption.CREATE,
-                        StandardOpenOption.WRITE,
-                        openOption,
-                        // в таком режиме atime, mtime, размер файла может быть не синхронизован,
-                        // но данные при восстановлении будут вычитаны корректно
-                        StandardOpenOption.DSYNC
-                );
-            } catch (Throwable th) {
-                throw new ForwardException(th);
-            }
-        }
-    }
-
-    @Override
-    public void shutdown() {
-        if (run.compareAndSet(true, false)) {
+        if (closed.compareAndSet(false, true)) {
             try {
                 flush(false);
-            } catch (Throwable th) {
-                App.error(th);
             } finally {
-                try {
-                    fileOutputStream.close();
-                } catch (Throwable th) {
-                    App.error(th);
-                }
+                fileOutputStream.close();
             }
         }
     }
