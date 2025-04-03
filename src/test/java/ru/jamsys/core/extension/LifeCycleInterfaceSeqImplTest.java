@@ -19,7 +19,7 @@ class LifeCycleInterfaceSeqImplTest {
     }
 
     @AfterEach
-    void tearDown() throws InterruptedException {
+    void tearDown() {
         // Ensure we don't leave the object in a locked state
         if (lifeCycle.isRun()) {
             assertTrue(lifeCycle.shutdown(emptyProcedure).isComplete());
@@ -49,9 +49,7 @@ class LifeCycleInterfaceSeqImplTest {
     @Timeout(1)
     void testRunWaitsForShutdownToComplete() throws InterruptedException {
         // Simulate shutdown in progress in another thread
-        new Thread(() -> {
-            assertFalse(lifeCycle.shutdown(emptyProcedure).isComplete());
-        }).start();
+        new Thread(() -> assertFalse(lifeCycle.shutdown(emptyProcedure).isComplete())).start();
 
         // Give the shutdown thread time to start
         Thread.sleep(50);
@@ -84,7 +82,7 @@ class LifeCycleInterfaceSeqImplTest {
         // Give the shutdown thread time to start
         try {
             Thread.sleep(50);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException _) {
         }
 
         assertFalse(lifeCycle.getRunning().get());
@@ -94,7 +92,7 @@ class LifeCycleInterfaceSeqImplTest {
         assertFalse(lifeCycle.run(emptyProcedure).isComplete());
         try {
             Thread.sleep(1000);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException _) {
         }
         assertTrue(lifeCycle.run(emptyProcedure).isComplete());
     }
@@ -146,7 +144,7 @@ class LifeCycleInterfaceSeqImplTest {
         // Give the run thread time to start
         try {
             Thread.sleep(50);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException _) {
         }
         assertFalse(lifeCycle.shutdown(emptyProcedure).isComplete());
     }
@@ -160,9 +158,7 @@ class LifeCycleInterfaceSeqImplTest {
 
     @Test
     void testInterruptedExceptionHandling() {
-        ProcedureThrowing interruptingProcedure = () -> {
-            Thread.currentThread().interrupt();
-        };
+        ProcedureThrowing interruptingProcedure = () -> Thread.currentThread().interrupt();
 
         assertTrue(lifeCycle.run(interruptingProcedure).isComplete());
         assertTrue(Thread.interrupted()); // clear the interrupt flag
