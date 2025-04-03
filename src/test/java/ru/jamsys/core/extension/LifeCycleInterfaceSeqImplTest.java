@@ -22,7 +22,7 @@ class LifeCycleInterfaceSeqImplTest {
     void tearDown() throws InterruptedException {
         // Ensure we don't leave the object in a locked state
         if (lifeCycle.isRun()) {
-            lifeCycle.shutdown(emptyProcedure);
+            assertTrue(lifeCycle.shutdown(emptyProcedure).isComplete());
         }
     }
 
@@ -31,8 +31,7 @@ class LifeCycleInterfaceSeqImplTest {
         AtomicBoolean executed = new AtomicBoolean(false);
         ProcedureThrowing procedure = () -> executed.set(true);
 
-        lifeCycle.run(procedure);
-
+        assertTrue(lifeCycle.run(procedure).isComplete());
         assertTrue(executed.get());
         assertTrue(lifeCycle.isRun());
     }
@@ -41,7 +40,7 @@ class LifeCycleInterfaceSeqImplTest {
     void testRunSetsRunningFlag() {
         ProcedureThrowing procedure = () -> assertFalse(lifeCycle.isRun());
 
-        lifeCycle.run(procedure);
+        assertTrue(lifeCycle.run(procedure).isComplete());
 
         assertTrue(lifeCycle.isRun());
     }
@@ -51,7 +50,7 @@ class LifeCycleInterfaceSeqImplTest {
     void testRunWaitsForShutdownToComplete() throws InterruptedException {
         // Simulate shutdown in progress in another thread
         new Thread(() -> {
-            lifeCycle.shutdown(emptyProcedure);
+            assertFalse(lifeCycle.shutdown(emptyProcedure).isComplete());
         }).start();
 
         // Give the shutdown thread time to start
@@ -60,7 +59,7 @@ class LifeCycleInterfaceSeqImplTest {
         AtomicBoolean executed = new AtomicBoolean(false);
         ProcedureThrowing procedure = () -> executed.set(true);
 
-        lifeCycle.run(procedure);
+        assertTrue(lifeCycle.run(procedure).isComplete());
 
         assertTrue(executed.get());
     }
@@ -68,9 +67,7 @@ class LifeCycleInterfaceSeqImplTest {
     @Test
     void testRunThrowsOnTimeout() {
         // Simulate long shutdown in another thread
-        lifeCycle.run(() -> {
-
-        });
+        assertTrue(lifeCycle.run(() -> {}).isComplete());
 
         assertFalse(lifeCycle.getRunning().get());
         assertFalse(lifeCycle.getShuttingDown().get());
@@ -78,7 +75,7 @@ class LifeCycleInterfaceSeqImplTest {
 
         new Thread(() -> {
             try {
-                lifeCycle.shutdown(() -> Thread.sleep(1000));
+                assertTrue(lifeCycle.shutdown(() -> Thread.sleep(1000)).isComplete());
             } catch (Exception e) {
                 // ignore
             }
@@ -94,15 +91,12 @@ class LifeCycleInterfaceSeqImplTest {
         assertTrue(lifeCycle.getShuttingDown().get());
         assertTrue(lifeCycle.isRun());
 
-        assertThrows(RuntimeException.class, () -> {
-            lifeCycle.run(emptyProcedure);
-        });
-
+        assertFalse(lifeCycle.run(emptyProcedure).isComplete());
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
         }
-        lifeCycle.run(emptyProcedure);
+        assertTrue(lifeCycle.run(emptyProcedure).isComplete());
     }
 
     @Test
@@ -110,9 +104,8 @@ class LifeCycleInterfaceSeqImplTest {
         AtomicBoolean executed = new AtomicBoolean(false);
         ProcedureThrowing procedure = () -> executed.set(true);
 
-        lifeCycle.run(emptyProcedure);
-        lifeCycle.shutdown(procedure);
-
+        assertTrue(lifeCycle.run(emptyProcedure).isComplete());
+        assertTrue(lifeCycle.shutdown(procedure).isComplete());
         assertTrue(executed.get());
         assertFalse(lifeCycle.isRun());
     }
@@ -125,7 +118,7 @@ class LifeCycleInterfaceSeqImplTest {
         // Start run in another thread that will take some time
         new Thread(() -> {
             try {
-                lifeCycle.run(() -> Thread.sleep(200));
+                assertTrue(lifeCycle.run(() -> Thread.sleep(200)).isComplete());
             } catch (Exception e) {
                 // ignore
             }
@@ -133,10 +126,7 @@ class LifeCycleInterfaceSeqImplTest {
 
         // Give the run thread time to start
         Thread.sleep(50);
-
-        assertThrows(RuntimeException.class, () -> {
-            lifeCycle.shutdown(shutdownProcedure);
-        });
+        assertFalse(lifeCycle.shutdown(shutdownProcedure).isComplete());
 
         // Так как run ещё не прошёл - останавливать нельзя
         assertFalse(shutdownExecuted.get());
@@ -147,7 +137,7 @@ class LifeCycleInterfaceSeqImplTest {
         // Start long-running operation in another thread
         new Thread(() -> {
             try {
-                lifeCycle.run(() -> Thread.sleep(1000));
+                assertTrue(lifeCycle.run(() -> Thread.sleep(1000)).isComplete());
             } catch (Exception e) {
                 // ignore
             }
@@ -158,17 +148,12 @@ class LifeCycleInterfaceSeqImplTest {
             Thread.sleep(50);
         } catch (InterruptedException e) {
         }
-
-        assertThrows(RuntimeException.class, () -> {
-            lifeCycle.shutdown(emptyProcedure);
-        });
+        assertFalse(lifeCycle.shutdown(emptyProcedure).isComplete());
     }
 
     @Test
     void testShutdownWithoutRun() {
-        assertThrows(RuntimeException.class, () -> {
-            lifeCycle.shutdown(emptyProcedure);
-        });
+        assertFalse(lifeCycle.shutdown(emptyProcedure).isComplete());
         // Should not throw, just log error
         assertFalse(lifeCycle.isRun());
     }
@@ -179,12 +164,11 @@ class LifeCycleInterfaceSeqImplTest {
             Thread.currentThread().interrupt();
         };
 
-        lifeCycle.run(interruptingProcedure);
+        assertTrue(lifeCycle.run(interruptingProcedure).isComplete());
         assertTrue(Thread.interrupted()); // clear the interrupt flag
 
-
-        assertThrows(RuntimeException.class, () -> lifeCycle.run(emptyProcedure));
-        lifeCycle.shutdown(interruptingProcedure);
+        assertFalse(lifeCycle.run(emptyProcedure).isComplete());
+        assertTrue(lifeCycle.shutdown(interruptingProcedure).isComplete());
         assertTrue(Thread.interrupted()); // clear the interrupt flag
     }
 
