@@ -49,7 +49,11 @@ class LifeCycleInterfaceSeqImplTest {
     @Timeout(1)
     void testRunWaitsForShutdownToComplete() throws InterruptedException {
         // Simulate shutdown in progress in another thread
-        new Thread(() -> assertFalse(lifeCycle.shutdown(emptyProcedure).isComplete())).start();
+        new Thread(() -> {
+            LifeCycleInterfaceSeqImpl.ResultOperation shutdown = lifeCycle.shutdown(emptyProcedure);
+            assertFalse(shutdown.isComplete());
+            assertEquals(LifeCycleInterfaceSeqImpl.Cause.NOT_RUN ,shutdown.getCause());
+        }).start();
 
         // Give the shutdown thread time to start
         Thread.sleep(50);
@@ -89,7 +93,9 @@ class LifeCycleInterfaceSeqImplTest {
         assertTrue(lifeCycle.getShuttingDown().get());
         assertTrue(lifeCycle.isRun());
 
-        assertFalse(lifeCycle.run(emptyProcedure).isComplete());
+        LifeCycleInterfaceSeqImpl.ResultOperation run = lifeCycle.run(emptyProcedure);
+        assertFalse(run.isComplete());
+        assertEquals(LifeCycleInterfaceSeqImpl.Cause.ALREADY_RUN, run.getCause());
         try {
             Thread.sleep(1000);
         } catch (InterruptedException _) {
@@ -124,7 +130,9 @@ class LifeCycleInterfaceSeqImplTest {
 
         // Give the run thread time to start
         Thread.sleep(50);
-        assertFalse(lifeCycle.shutdown(shutdownProcedure).isComplete());
+        LifeCycleInterfaceSeqImpl.ResultOperation shutdown = lifeCycle.shutdown(shutdownProcedure);
+        assertFalse(shutdown.isComplete());
+        assertEquals(LifeCycleInterfaceSeqImpl.Cause.NOT_RUN, shutdown.getCause());
 
         // Так как run ещё не прошёл - останавливать нельзя
         assertFalse(shutdownExecuted.get());
@@ -146,12 +154,16 @@ class LifeCycleInterfaceSeqImplTest {
             Thread.sleep(50);
         } catch (InterruptedException _) {
         }
-        assertFalse(lifeCycle.shutdown(emptyProcedure).isComplete());
+        LifeCycleInterfaceSeqImpl.ResultOperation shutdown = lifeCycle.shutdown(emptyProcedure);
+        assertFalse(shutdown.isComplete());
+        assertEquals(LifeCycleInterfaceSeqImpl.Cause.NOT_RUN, shutdown.getCause());
     }
 
     @Test
     void testShutdownWithoutRun() {
-        assertFalse(lifeCycle.shutdown(emptyProcedure).isComplete());
+        LifeCycleInterfaceSeqImpl.ResultOperation shutdown = lifeCycle.shutdown(emptyProcedure);
+        assertFalse(shutdown.isComplete());
+        assertEquals(LifeCycleInterfaceSeqImpl.Cause.NOT_RUN, shutdown.getCause());
         // Should not throw, just log error
         assertFalse(lifeCycle.isRun());
     }
@@ -163,7 +175,9 @@ class LifeCycleInterfaceSeqImplTest {
         assertTrue(lifeCycle.run(interruptingProcedure).isComplete());
         assertTrue(Thread.interrupted()); // clear the interrupt flag
 
-        assertFalse(lifeCycle.run(emptyProcedure).isComplete());
+        LifeCycleInterfaceSeqImpl.ResultOperation run = lifeCycle.run(emptyProcedure);
+        assertFalse(run.isComplete());
+        assertEquals(LifeCycleInterfaceSeqImpl.Cause.ALREADY_RUN, run.getCause());
         assertTrue(lifeCycle.shutdown(interruptingProcedure).isComplete());
         assertTrue(Thread.interrupted()); // clear the interrupt flag
     }

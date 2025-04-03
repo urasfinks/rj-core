@@ -9,12 +9,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Getter
 public class LifeCycleInterfaceSeqImpl {
 
+    public enum Cause {
+        ALREADY_RUN, // Уже запущен
+        ALREADY_RUNNING, // В процессе запуска
+        SHUTTING_DOWN, // В процессе остановки
+        NOT_RUN, // Не запущен
+        SUCCESS // Успех
+    }
+
     @Getter
     public static class ResultOperation{
         private final boolean complete;
-        private final String cause;
+        private final Cause cause;
 
-        public ResultOperation(boolean complete, String cause) {
+        public ResultOperation(boolean complete, Cause cause) {
             this.complete = complete;
             this.cause = cause;
         }
@@ -29,10 +37,10 @@ public class LifeCycleInterfaceSeqImpl {
     // Запускать можем только полностью остановленное
     public ResultOperation run(ProcedureThrowing procedure) {
         if (isRun()) {
-            return new ResultOperation(false, "Already run");
+            return new ResultOperation(false, Cause.ALREADY_RUN);
         }
         if (shuttingDown.get()) {
-            return new ResultOperation(false, "Cannot be called while shuttingDown");
+            return new ResultOperation(false, Cause.SHUTTING_DOWN);
         }
         if (running.compareAndSet(false, true)) {
             try {
@@ -44,15 +52,15 @@ public class LifeCycleInterfaceSeqImpl {
                 running.set(false);
             }
         } else {
-            return new ResultOperation(false, "Already running");
+            return new ResultOperation(false, Cause.ALREADY_RUNNING);
         }
-        return new ResultOperation(true, "Ok");
+        return new ResultOperation(true, Cause.SUCCESS);
     }
 
     // Завершаем только запущенное
     public ResultOperation shutdown(ProcedureThrowing procedure) {
         if (!isRun()) {
-            return new ResultOperation(false, "Not run");
+            return new ResultOperation(false, Cause.NOT_RUN);
         }
         if (shuttingDown.compareAndSet(false, true)) {
             try {
@@ -64,9 +72,9 @@ public class LifeCycleInterfaceSeqImpl {
                 shuttingDown.set(false);
             }
         } else {
-            return new ResultOperation(false, "Already shuttingDown");
+            return new ResultOperation(false, Cause.SHUTTING_DOWN);
         }
-        return new ResultOperation(true, "Ok");
+        return new ResultOperation(true, Cause.SUCCESS);
     }
 
     public boolean isRun() {
