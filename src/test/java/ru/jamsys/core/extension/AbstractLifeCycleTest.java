@@ -219,9 +219,7 @@ class AbstractLifeCycleTest {
 
         Thread thread1 = new Thread(() -> {
             lifeCycleInterfaceSeq.run();
-            assertThrows(ForwardException.class, () -> {
-                lifeCycleInterfaceSeq.shutdown();
-            });
+            assertThrows(ForwardException.class, lifeCycleInterfaceSeq::shutdown);
         });
         thread1.start();
         Util.testSleepMs(100);
@@ -280,7 +278,7 @@ class AbstractLifeCycleTest {
         };
         LifeCycleInterface.ResultOperation resultOperation = failingImpl.run();
         assertTrue(resultOperation.isComplete());
-        assertThrows(RuntimeException.class, () -> failingImpl.reload());
+        assertThrows(RuntimeException.class, failingImpl::reload);
     }
 
 }

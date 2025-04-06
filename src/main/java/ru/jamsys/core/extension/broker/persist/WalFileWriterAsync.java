@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.LifeCycleInterface;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WalFileWriterAsync implements LifeCycleInterface {
@@ -26,7 +25,7 @@ public class WalFileWriterAsync implements LifeCycleInterface {
 
     private final BatchFileWriter batchFileWriter;
 
-    public WalFileWriterAsync(String filePath) throws IOException {
+    public WalFileWriterAsync(String filePath) {
         this.batchFileWriter = new BatchFileWriter(filePath);
     }
 
@@ -36,16 +35,12 @@ public class WalFileWriterAsync implements LifeCycleInterface {
 
     @Override
     public void runOperation() {
-        if (run.compareAndSet(false, true)) {
-            restore();
-        }
+        restore();
     }
 
     @Override
     public void shutdownOperation() {
-        if (run.compareAndSet(true, false)) {
 
-        }
     }
 
 }

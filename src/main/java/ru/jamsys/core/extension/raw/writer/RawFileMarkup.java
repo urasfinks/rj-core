@@ -25,7 +25,6 @@ public class RawFileMarkup<T extends ByteSerialization> {
 
     public RawFileMarkup(
             long position,
-            short stateCode,
             int dataLength,
             Class<T> cls
     ) {

@@ -96,9 +96,10 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
             UtilLog.printError(ThreadResourcePromiseTask.class, "Поток не закончил работу после spin.set(false) -> interrupt()");
             thread.interrupt();
         });
-        Util.await(threadWork, 1500, 100, () -> {
-            UtilLog.printError(ThreadResourcePromiseTask.class, "Поток не закончил работу после interrupt()");
-        });
+        Util.await(threadWork, 1500, 100, () -> UtilLog.printError(
+                ThreadResourcePromiseTask.class,
+                "Поток не закончил работу после interrupt()"
+        ));
         // Так как мы не можем больше повлиять на остановку
         // В java 22 больше нет функционала принудительной остановки thread.stop()
         // Таску мы не будем удалять из тайминга - пусть растёт время, а то слишком круто будет новым житься
