@@ -10,7 +10,7 @@ import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
@@ -18,14 +18,14 @@ import java.util.function.Function;
 @Component
 @Scope("prototype")
 public class ReCaptchaResource
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements Resource<String, HttpResponse> {
 
     private final SecurityComponent securityComponent;
 
     private final ReCaptchaProperty reCaptchaProperty = new ReCaptchaProperty();
 
-    private PropertyDispatcher propertyDispatcher;
+    private PropertyDispatcher<String> propertyDispatcher;
 
     public ReCaptchaResource(SecurityComponent securityComponent) {
         this.securityComponent = securityComponent;
@@ -33,7 +33,7 @@ public class ReCaptchaResource
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
                 reCaptchaProperty,
@@ -67,20 +67,12 @@ public class ReCaptchaResource
     }
 
     @Override
-    public boolean isRun() {
-        if (propertyDispatcher != null) {
-            return propertyDispatcher.isRun();
-        }
-        return false;
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         propertyDispatcher.run();
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         propertyDispatcher.shutdown();
     }
 

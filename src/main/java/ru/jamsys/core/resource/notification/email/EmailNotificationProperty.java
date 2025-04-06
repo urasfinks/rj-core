@@ -8,7 +8,7 @@ import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 @SuppressWarnings({"UnusedDeclaration"})
 @FieldNameConstants
 @Getter
-public class EmailNotificationProperty extends AnnotationPropertyExtractor {
+public class EmailNotificationProperty extends AnnotationPropertyExtractor<Object> {
 
     @PropertyKey("notification.email.host")
     private String host;

@@ -5,6 +5,8 @@ package ru.jamsys.core.extension.broker.persist;
 // дубликаты. Асинхронная запись может породить только дубликаты, так как если не успеет записаться блок коммита
 // произойдёт повторная выдача данных, но это укладывается в механизм гарантированной доставки
 
+import lombok.Getter;
+import lombok.Setter;
 import ru.jamsys.core.extension.LifeCycleInterface;
 
 import java.io.IOException;
@@ -12,7 +14,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WalFileWriterAsync implements LifeCycleInterface {
 
-    AtomicBoolean run = new AtomicBoolean(false);
+    @Getter
+    private final AtomicBoolean operation = new AtomicBoolean(false);
+
+    @Getter
+    private final AtomicBoolean run = new AtomicBoolean(false);
+
+    @Getter
+    @Setter
+    private Thread threadOperation;
 
     private final BatchFileWriter batchFileWriter;
 
@@ -25,19 +35,14 @@ public class WalFileWriterAsync implements LifeCycleInterface {
     }
 
     @Override
-    public boolean isRun() {
-        return run.get();
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         if (run.compareAndSet(false, true)) {
             restore();
         }
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         if (run.compareAndSet(true, false)) {
 
         }

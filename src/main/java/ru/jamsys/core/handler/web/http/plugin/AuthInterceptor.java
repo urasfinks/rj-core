@@ -31,7 +31,7 @@ public class AuthInterceptor implements HttpInterceptor {
 
     public AuthInterceptor(ServiceProperty serviceProperty, SecurityComponent securityComponent) {
         this.securityComponent = securityComponent;
-        new PropertyDispatcher(
+        new PropertyDispatcher<>(
                 serviceProperty,
                 null,
                 users,
@@ -40,7 +40,7 @@ public class AuthInterceptor implements HttpInterceptor {
                 .addSubscriptionRegexp("run\\.args\\.web\\.auth\\.user\\.password\\.alias\\.*")
                 .run();
 
-        new PropertyDispatcher(
+        new PropertyDispatcher<>(
                 serviceProperty,
                 null,
                 uriRegexp,

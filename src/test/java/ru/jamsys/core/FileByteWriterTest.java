@@ -228,7 +228,7 @@ class FileByteWriterTest {
         PersistentDataHeader log1 = new PersistentDataHeader(LogType.INFO, FileByteWriterTest.class, "Hello");
         byte[] x = log1.toByte();
 
-        PersistentDataHeader log2 = PersistentDataHeader.instanceFromBytes(x, (short) 0);
+        PersistentDataHeader log2 = PersistentDataHeader.instanceFromBytes(x);
         System.out.println(log2);
         Assertions.assertEquals(log1.toString(), log2.toString());
 

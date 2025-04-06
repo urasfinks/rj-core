@@ -1,15 +1,13 @@
 package ru.jamsys.core.component;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleComponent;
-import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.util.*;
 import ru.jamsys.core.flat.util.crypto.UtilRsa;
 
@@ -28,28 +26,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @FieldNameConstants
 @Component
-public class SecurityComponent extends AnnotationPropertyExtractor<String> implements LifeCycleComponent {
-
-    @Setter
-    @PropertyKey("run.args.security.path.storage")
-    private String pathStorage;
-
-    @Setter
-    @PropertyKey("run.args.security.path.public.key")
-    private String pathPublicKey;
-
-    @Setter
-    @PropertyKey("run.args.security.path.init")
-    private String pathJsonCred;
+public class SecurityComponent extends AbstractLifeCycle implements LifeCycleComponent {
 
     @Getter
-    @SuppressWarnings("all")
-    @PropertyKey("run.args.security.path.java")
-    private String pathInitSecurityKeyJava;
+    private final SecurityComponentProperty property = new SecurityComponentProperty();
 
     final private ExceptionHandler exceptionHandler;
 
@@ -67,13 +50,11 @@ public class SecurityComponent extends AnnotationPropertyExtractor<String> imple
 
     private final PropertyDispatcher<String> propertyDispatcher;
 
-    private final AtomicBoolean run = new AtomicBoolean(false);
-
     public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
         propertyDispatcher = new PropertyDispatcher<>(
                 serviceProperty,
                 null,
-                this,
+                property,
                 null
         );
         this.exceptionHandler = exceptionHandler;
@@ -86,7 +67,7 @@ public class SecurityComponent extends AnnotationPropertyExtractor<String> imple
 
     private void updateDataFromJsonCred(char[] password) {
         try {
-            byte[] initJson = UtilFile.readBytes(pathJsonCred);
+            byte[] initJson = UtilFile.readBytes(property.getPathJsonCred());
             if (initJson.length > 0) {
                 String initString = new String(initJson, StandardCharsets.UTF_8);
                 Map<String, Object> mapOrThrow = UtilJson.getMapOrThrow(initString);
@@ -119,7 +100,7 @@ public class SecurityComponent extends AnnotationPropertyExtractor<String> imple
 
     private String getPasswordFromJsonCred(byte[] initJson) {
         if (initJson == null || initJson.length == 0) {
-            throw new RuntimeException("File: [" + pathJsonCred + "] is empty");
+            throw new RuntimeException("File: [" + property.getPathJsonCred() + "] is empty");
         }
         String result = null;
         String initString = new String(initJson, StandardCharsets.UTF_8);
@@ -133,7 +114,7 @@ public class SecurityComponent extends AnnotationPropertyExtractor<String> imple
             result = (String) mapOrThrow.get("password");
         }
         if (result == null || result.trim().isEmpty()) {
-            throw new RuntimeException("Password json field from [" + pathJsonCred + "] is empty");
+            throw new RuntimeException("Password json field from [" + property.getPathJsonCred() + "] is empty");
         }
         return result;
     }
@@ -143,19 +124,19 @@ public class SecurityComponent extends AnnotationPropertyExtractor<String> imple
             if (password != null && !password.trim().isEmpty()) {
                 KeyPair keyPair = UtilRsa.genKeyPair();
                 byte[] token = UtilRsa.encrypt(password.getBytes(StandardCharsets.UTF_8), keyPair);
-                UtilFile.writeBytes(pathPublicKey, token, FileWriteOptions.CREATE_OR_REPLACE);
+                UtilFile.writeBytes(property.getPathPublicKey(), token, FileWriteOptions.CREATE_OR_REPLACE);
                 String privateKey = UtilBase64.encode(keyPair.getPrivate().getEncoded(), true);
                 System.err.println("== INIT SECURITY ===========================");
                 byte[] securityKeyJava = UtilFileResource.get("SecurityKey.java").readAllBytes();
                 UtilFile.writeBytes(
-                        pathInitSecurityKeyJava,
+                        property.getPathInitSecurityKeyJava(),
                         new String(securityKeyJava).replace("{privateKey}", privateKey).getBytes(),
                         FileWriteOptions.CREATE_OR_REPLACE
                 );
-                System.err.println("Create file: [" + pathInitSecurityKeyJava + "] please restart application");
+                System.err.println("Create file: [" + property.getPathInitSecurityKeyJava() + "] please restart application");
             } else {
                 System.err.println("== INIT SECURITY ===========================");
-                System.err.println("** Update file [" + pathJsonCred + "]; password field must not be empty");
+                System.err.println("** Update file [" + property.getPathJsonCred() + "]; password field must not be empty");
             }
         } catch (Exception e) {
             throw new ForwardException("Other problem", e);
@@ -173,11 +154,11 @@ public class SecurityComponent extends AnnotationPropertyExtractor<String> imple
         try {
             bytesPasswordKeyStore = UtilRsa.decrypt(input, UtilRsa.getPrivateKey(bytesPrivateKey));
         } catch (Exception e) {
-            UtilFile.removeIfExist(pathPublicKey);
-            throw new ForwardException("Decrypt token exception. File: [" + pathPublicKey + "] removed, please restart application", e);
+            UtilFile.removeIfExist(property.getPathPublicKey());
+            throw new ForwardException("Decrypt token exception. File: [" + property.getPathPublicKey() + "] removed, please restart application", e);
         }
         if (bytesPasswordKeyStore == null || bytesPasswordKeyStore.length == 0) {
-            throw new RuntimeException("Decrypt Token empty. Change/remove token file: [" + pathPublicKey + "]");
+            throw new RuntimeException("Decrypt Token empty. Change/remove token file: [" + property.getPathPublicKey() + "]");
         }
         return bytesPasswordKeyStore;
     }
@@ -185,20 +166,20 @@ public class SecurityComponent extends AnnotationPropertyExtractor<String> imple
     private byte[] getOrCreateJsonCred() {
         byte[] init;
         try {
-            init = UtilFile.readBytes(pathJsonCred);
+            init = UtilFile.readBytes(property.getPathJsonCred());
         } catch (FileNotFoundException | NoSuchFileException exception) {
             //Если нет - создадим
             System.err.println("== NEED INIT SECURITY ===========================");
-            System.err.println("** Update file [" + pathJsonCred + "]");
+            System.err.println("** Update file [" + property.getPathJsonCred() + "]");
             System.err.println("== NEED INIT SECURITY ===========================");
             try {
                 init = UtilFileResource.get("security.json").readAllBytes();
-                UtilFile.writeBytes(pathJsonCred, init, FileWriteOptions.CREATE_OR_REPLACE);
+                UtilFile.writeBytes(property.getPathJsonCred(), init, FileWriteOptions.CREATE_OR_REPLACE);
             } catch (Exception e) {
                 throw new ForwardException(e);
             }
             //Нет смысла продолжать работу, когда файл инициализации в данный момент пустой
-            throw new RuntimeException("Update file [" + pathJsonCred + "]");
+            throw new RuntimeException("Update file [" + property.getPathJsonCred() + "]");
         } catch (IOException e) {
             //Если возникли другие проблемы при чтении файла инициализации прекратим работу
             throw new ForwardException(e);
@@ -222,17 +203,17 @@ public class SecurityComponent extends AnnotationPropertyExtractor<String> imple
 
     public void loadKeyStorage(char[] password) throws Exception {
         if (password == null || password.length == 0) {
-            throw new RuntimeException("Password is empty; Change/remove token file: [" + pathPublicKey + "]");
+            throw new RuntimeException("Password is empty; Change/remove token file: [" + property.getPathPublicKey() + "]");
         }
         hashPassword = new String(Util.getHashByte(UtilByte.charsToBytes(password), hashPasswordType), StandardCharsets.UTF_8);
         keyStorePP = new KeyStore.PasswordProtection(password);
-        File f = new File(pathStorage);
+        File f = new File(property.getPathStorage());
         if (!f.exists()) {
             keyStore = KeyStore.getInstance(typeStorage);
             keyStore.load(null, password);
             save(password);
         } else {
-            try (InputStream stream = new ByteArrayInputStream(UtilFile.readBytes(pathStorage))) {
+            try (InputStream stream = new ByteArrayInputStream(UtilFile.readBytes(property.getPathStorage()))) {
                 keyStore = KeyStore.getInstance(typeStorage);
                 keyStore.load(stream, password);
             } catch (Exception e) {
@@ -292,7 +273,7 @@ public class SecurityComponent extends AnnotationPropertyExtractor<String> imple
     private void save(char[] password) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         keyStore.store(byteArrayOutputStream, password);
-        UtilFile.writeBytes(pathStorage, byteArrayOutputStream.toByteArray(), FileWriteOptions.CREATE_OR_REPLACE);
+        UtilFile.writeBytes(property.getPathStorage(), byteArrayOutputStream.toByteArray(), FileWriteOptions.CREATE_OR_REPLACE);
     }
 
     @Deprecated
@@ -330,65 +311,55 @@ public class SecurityComponent extends AnnotationPropertyExtractor<String> imple
     }
 
     @Override
-    public boolean isRun() {
-        if (propertyDispatcher != null) {
-            return propertyDispatcher.isRun();
-        }
-        return false;
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         propertyDispatcher.run();
-        if (run.compareAndSet(false, true)) {
-            byte[] publicKey = UtilFile.readBytes(pathPublicKey, null);
+        byte[] publicKey = UtilFile.readBytes(property.getPathPublicKey(), null);
 
-            UtilLog.printInfo(
-                    getClass(),
-                    "Security Check privateKey: " + (privateKey != null && privateKey.length > 0)
-                            + "\r\n"
-                            + "Security Check publicKey: " + (publicKey != null && publicKey.length > 0)
-            );
+        UtilLog.printInfo(
+                getClass(),
+                "Security Check privateKey: " + (privateKey != null && privateKey.length > 0)
+                        + "\r\n"
+                        + "Security Check publicKey: " + (publicKey != null && publicKey.length > 0)
+        );
 
-            if (publicKey != null && publicKey.length > 0 && privateKey != null && privateKey.length > 0) {
-                // У нас всё установлено можем просто работать
-                byte[] passwordKeyStore = decryptStoragePassword(publicKey);
-                if (passwordKeyStore.length == 0) {
-                    throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + pathPublicKey + "]");
-                }
-                try {
-                    loadKeyStorage(UtilByte.bytesToChars(passwordKeyStore));
-                } catch (Exception e) {
-                    throw new ForwardException(e);
-                }
-                if (UtilFile.ifExist(pathJsonCred)) {
-                    UtilLog.printError(
-                            getClass(),
-                            "Please remove file [" + pathJsonCred + "] with credentials information"
-                    );
-                    updateDataFromJsonCred(UtilByte.bytesToChars(passwordKeyStore));
-                }
-                try {
-                    UtilLog.info(getClass(), getAvailableAliases())
-                            .addHeader("description", "KeyStore available aliases")
-                            .print();
-                } catch (Exception ignore) {
-
-                }
-                setPrivateKey(new char[]{});
-            } else {
-                UtilFile.removeIfExist(pathStorage);
-                //У нас чего-то не хватает выводим предупреждения
-                byte[] initJson = getOrCreateJsonCred();
-                String passwordFromInfoJson = getPasswordFromJsonCred(initJson);
-                printNotice(passwordFromInfoJson);
-                System.exit(0);
+        if (publicKey != null && publicKey.length > 0 && privateKey != null && privateKey.length > 0) {
+            // У нас всё установлено можем просто работать
+            byte[] passwordKeyStore = decryptStoragePassword(publicKey);
+            if (passwordKeyStore.length == 0) {
+                throw new RuntimeException("Decrypt password KeyStore is empty; Change/Remove [" + property.getPathPublicKey() + "]");
             }
+            try {
+                loadKeyStorage(UtilByte.bytesToChars(passwordKeyStore));
+            } catch (Exception e) {
+                throw new ForwardException(e);
+            }
+            if (UtilFile.ifExist(property.getPathJsonCred())) {
+                UtilLog.printError(
+                        getClass(),
+                        "Please remove file [" + property.getPathJsonCred() + "] with credentials information"
+                );
+                updateDataFromJsonCred(UtilByte.bytesToChars(passwordKeyStore));
+            }
+            try {
+                UtilLog.info(getClass(), getAvailableAliases())
+                        .addHeader("description", "KeyStore available aliases")
+                        .print();
+            } catch (Exception ignore) {
+
+            }
+            setPrivateKey(new char[]{});
+        } else {
+            UtilFile.removeIfExist(property.getPathStorage());
+            //У нас чего-то не хватает выводим предупреждения
+            byte[] initJson = getOrCreateJsonCred();
+            String passwordFromInfoJson = getPasswordFromJsonCred(initJson);
+            printNotice(passwordFromInfoJson);
+            System.exit(0);
         }
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         propertyDispatcher.shutdown();
     }
 

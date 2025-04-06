@@ -13,21 +13,21 @@ import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.function.Function;
 
 @Component
 @Scope("prototype")
 public class EmailNotificationResource
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Resource<EmailNotificationRequest, Void>,
         ResourceCheckException {
 
     private SecurityComponent securityComponent;
 
-    private PropertyDispatcher propertyDispatcher;
+    private PropertyDispatcher<Object> propertyDispatcher;
 
     @Getter
     private final EmailNotificationProperty property = new EmailNotificationProperty();
@@ -35,7 +35,7 @@ public class EmailNotificationResource
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         securityComponent = App.get(SecurityComponent.class);
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
                 property,
@@ -84,22 +84,13 @@ public class EmailNotificationResource
     }
 
     @Override
-    public boolean isRun() {
-        if (propertyDispatcher != null) {
-            return propertyDispatcher.isRun();
-        }
-        return false;
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         propertyDispatcher.run();
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         propertyDispatcher.shutdown();
-
     }
 
 }

@@ -26,7 +26,8 @@ public class Util {
 
     static final String defaultCharset = "UTF-8";
 
-    public static void sleepMs(long ms) {
+    // Использовать только для тестов, так как проглатывается InterruptedException
+    public static void testSleepMs(long ms) {
         try {
             Thread.sleep(ms);
             //TimeUnit.MILLISECONDS.sleep(ms);

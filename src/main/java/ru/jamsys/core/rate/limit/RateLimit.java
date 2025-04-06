@@ -15,11 +15,10 @@ import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.statistic.expiration.ExpirationMs;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 // RateLimit - набор RateLimitItem
 // Так как это набор, можно добавить RateLimitItem разных типов, на подобии TPS + TPD
@@ -29,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Getter
 @SuppressWarnings("unused")
 public class RateLimit
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         StatisticsCollectorMap<RateLimitItem>,
         ClassEquals,
@@ -38,9 +37,6 @@ public class RateLimit
 
     @JsonView(ExpirationMs.class)
     final Map<String, RateLimitItem> map = new ConcurrentHashMap<>();
-
-    @JsonIgnore
-    private final AtomicBoolean run = new AtomicBoolean(false);
 
     @Getter
     private final String key;
@@ -111,19 +107,14 @@ public class RateLimit
     }
 
     @Override
-    public boolean isRun() {
-        return run.get();
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         UtilRisc.forEach(null, map, (s, rateLimitItem) -> {
             rateLimitItem.run();
         });
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         UtilRisc.forEach(null, map, (s, rateLimitItem) -> {
             rateLimitItem.shutdown();
         });

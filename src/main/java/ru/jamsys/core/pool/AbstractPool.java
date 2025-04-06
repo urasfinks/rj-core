@@ -15,7 +15,7 @@ import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ import java.util.function.Function;
 
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Resource<RA, RR>>
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements Pool<RA, RR, PI>, LifeCycleInterface, KeepAlive {
 
     @Setter
@@ -66,10 +66,6 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     // Общая очередь, где находятся все объекты
     protected final Set<PI> itemQueue = Util.getConcurrentHashSet();
-
-    protected final AtomicBoolean run = new AtomicBoolean(false);
-
-    private final AtomicBoolean restartOperation = new AtomicBoolean(false);
 
     @Setter
     private Function<Integer, Integer> formulaAddCount = (need) -> need;
@@ -103,11 +99,6 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
                 abstractPoolProperty,
                 key
         );
-    }
-
-    @Override
-    public boolean isRun() {
-        return run.get();
     }
 
     public boolean isParkQueueEmpty() {
@@ -180,10 +171,10 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     // Бассейн может поместить новые объекты для плаванья
     private boolean isSizePoolAllowsExtend() {
-        if (!run.get()) {
+        if (!isRun()) {
             App.error(new RuntimeException("Пул " + key + " не может поместить в себя ничего, так как он выключен"));
         }
-        return run.get() && getRealActiveItem() < abstractPoolProperty.getMax();
+        return isRun() && getRealActiveItem() < abstractPoolProperty.getMax();
     }
 
     private int getRealActiveItem() {
@@ -264,8 +255,9 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
             }
             if (poolItem.isValid()) {
                 return poolItem;
+            } else {
+                exceptionQueue.add(poolItem);
             }
-            exceptionQueue.add(poolItem);
         }
         return null;
     }
@@ -332,7 +324,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
 
     // Не конкурентный вызов
     private void removeInactive() {
-        if (run.get()) {
+        if (isRun()) {
             final long curTimeMs = System.currentTimeMillis();
             final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
             // ЧТо бы избежать расползание ссылок будем изымать и если всё "ок" добавлять обратно
@@ -377,26 +369,14 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
     }
 
     @Override
-    public void run() {
-        if (restartOperation.compareAndSet(false, true)) {
-            run.set(true);
-            overclocking(abstractPoolProperty.getMin());
-            restartOperation.set(false);
-        }
+    public void runOperation() {
+        overclocking(abstractPoolProperty.getMin());
         propertyDispatcher.run();
     }
 
     @Override
-    public void shutdown() {
-        if (restartOperation.compareAndSet(false, true)) {
-            run.set(false);
-            UtilRisc.forEach(
-                    null,
-                    itemQueue,
-                    this::removeAndClose
-            );
-            restartOperation.set(false);
-        }
+    public void shutdownOperation() {
+        UtilRisc.forEach(null, itemQueue, this::removeAndClose);
         propertyDispatcher.shutdown();
     }
 
@@ -432,7 +412,7 @@ public abstract class AbstractPool<RA, RR, PI extends ExpirationMsMutable & Reso
                     .addHeader("actionOverclocking", getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty())
                     .print();
         }
-        if (run.get()) {
+        if (isRun()) {
             updateParkStatistic();
             try {
                 // Если паркинг был пуст уже больше секунды начнём увеличивать

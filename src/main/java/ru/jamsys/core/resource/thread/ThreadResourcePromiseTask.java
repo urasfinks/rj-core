@@ -4,33 +4,31 @@ import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerRateLimit;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
 
-public class ThreadResourcePromiseTask extends ExpirationMsMutableImpl implements Resource<Void, Void> {
+public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLifeCycle implements Resource<Void, Void> {
 
-    private final Thread thread;
+    private Thread thread;
 
-    private final AtomicBoolean init = new AtomicBoolean(false);
-
-    protected final AtomicBoolean run = new AtomicBoolean(false);
-
-    @Getter
     private final AtomicBoolean spin = new AtomicBoolean(true);
 
-    private final AtomicBoolean inPark = new AtomicBoolean(false);
-
-    private final AtomicBoolean shutdown = new AtomicBoolean(false);
+    private final AtomicBoolean threadWork = new AtomicBoolean(true);
 
     private final ThreadPoolPromiseTask pool;
+
+    private final RateLimit rateLimit;
+
+    private final int indexThread;
 
     @Getter
     private final String key;
@@ -38,123 +36,73 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImpl implement
     public ThreadResourcePromiseTask(String key, int indexThread, ThreadPoolPromiseTask pool) {
         this.key = key;
         this.pool = pool;
+        this.indexThread = indexThread;
         // RateLimit будем запрашивать через родительское каскадное имя, так как key для потока - это
         // всего лишь имя, а поток должен подчиняться правилам (лимитам) пула
-        RateLimit rateLimit = App.get(ManagerRateLimit.class).get(key);
+        rateLimit = App.get(ManagerRateLimit.class).get(key);
+    }
 
+    @Override
+    public void runOperation() {
         thread = new Thread(() -> {
-            while (spin.get() && isNotInterrupted() && !shutdown.get()) {
-                setActivity();
-                if (!rateLimit.check()) {
-                    goToTheParking();
-                    continue;
-                }
-                ExpirationMsImmutableEnvelope<PromiseTask> promiseTaskEnvelope = pool.getPromiseTask();
-                if (promiseTaskEnvelope != null) {
-                    try {
-                        PromiseTask promiseTask = promiseTaskEnvelope.getValue();
-                        promiseTask.setThreadRun(spin);
-                        promiseTask.run();
-                    } catch (Exception e) {
-                        App.error(e);
+            threadWork.set(true);
+            // При создании экземпляра в ThreadPoolPromiseTask.createPoolItem() происходит автоматически run()
+            // Это означает, что поток начинает крутиться и после того, как задач больше нет - он выполняет
+            // pool.completePoolItem(this, null); и происходит "Этот код не должен был случиться! Проверить логику!"
+            // так как поток ещё из парка не изымали, а мы без разрешения стартанули сами и пытаемся ещё раз себя
+            // закинуть в парк, поэтому сразу блокируемся
+            LockSupport.park(thread);
+            try {
+                while (spin.get() && !thread.isInterrupted()) {
+                    setActivity();
+                    if (!rateLimit.check()) {
+                        pool.completePoolItem(this, null);
+                        LockSupport.park(thread);
+                        continue;
                     }
-                    continue; // Если таска была - перепрыгиваем pause()
+                    ExpirationMsImmutableEnvelope<PromiseTask> promiseTaskEnvelope = pool.getPromiseTask();
+                    if (promiseTaskEnvelope != null) {
+                        try {
+                            PromiseTask promiseTask = promiseTaskEnvelope.getValue();
+                            promiseTask.setThreadRun(spin);
+                            promiseTask.run();
+                        } catch (Exception e) {
+                            App.error(e);
+                        }
+                        continue; // Если таска была - перепрыгиваем toParking()
+                    }
+                    //Конец итерации цикла -> всегда pause()
+                    pool.completePoolItem(this, null);
+                    LockSupport.park(thread);
                 }
-                //Конец итерации цикла -> всегда pause()
-                goToTheParking();
+            } catch (Throwable th) {
+                App.error(th);
+            } finally {
+                // Это если что-то пойдёт не так и поток перестанет работать не потому что вызвали shutdownOperation
+                // надо его удалить из пула, он всё равно уже не рабочий
+                pool.remove(this);
+                threadWork.set(false);
             }
-            run.set(false);
         });
         thread.setName(key + "_" + indexThread);
-    }
-
-    public boolean isInit() {
-        return init.get();
-    }
-
-    public boolean isNotInterrupted() {
-        return !thread.isInterrupted();
-    }
-
-    private void raiseUp(String cause, String action) {
-        App.error(new RuntimeException("action: " + action + "; cause: " + cause));
-    }
-
-    private void goToTheParking() {
-        if (!init.get()) {
-            raiseUp("Thread not initialize", "pause()");
-            return;
-        }
-        if (inPark.compareAndSet(false, true)) {
-            if (shutdown.get()) {
-                pool.remove(this);
-            } else {
-                pool.completePoolItem(this, null);
-            }
-        }
-        // В любом случае поток хотят тормознуть, не важно какие статусы сейчас
-        LockSupport.park(thread);
+        thread.start();
     }
 
     @Override
-    public void shutdown() {
-        if (!init.get()) {
-            raiseUp("Подавление остановки, поток не инициализирован", "shutdown()");
-            //return false;
-        }
-        if (shutdown.compareAndSet(false, true)) { //Что бы больше никто не смог начать останавливать
-            doShutdown();
-            //return true;
-        } else {
-            raiseUp("Подавление остановки, поток уже остановлен", "shutdown()");
-        }
-        //return false;
-    }
-
-    @Override
-    public boolean isRun() {
-        return run.get();
-    }
-
-    @Override
-    public void run() {
-        if (shutdown.get()) {
-            raiseUp("Подавление запуска, поток остановлен", "run()");
-            //return false;
-        } else if (init.compareAndSet(false, true)) {
-            //Что бы второй раз не получилось запустить поток после остановки проверим на isRun
-            if (run.compareAndSet(false, true)) {
-                thread.start(); //start() - create new thread / run() - Runnable run in main thread
-                //return true;
-            } else {
-                raiseUp("Подавление запуска, поток в работе", "run()");
-            }
-        } else if (inPark.compareAndSet(true, false)) {
-            LockSupport.unpark(thread);
-            //return true;
-        }
-        //return false;
-    }
-
-    @SuppressWarnings("all")
-    private void doShutdown() {
-        //#1
+    public void shutdownOperation() {
         spin.set(false); //Говорим закончить
-        //#2
-        if (inPark.compareAndSet(true, false)) {
-            LockSupport.unpark(thread);
-        }
-        Util.await(run, 1500, "Поток не закончил работу после isWhile.set(false)");
-        if (run.get()) {
-            // Мы сами не реализуем sleep, но внутренние процеесы его могут реализовать
+        LockSupport.unpark(thread);
+        Util.await(threadWork, 1500, 100, () -> {
+            UtilLog.printError(ThreadResourcePromiseTask.class, "Поток не закончил работу после spin.set(false) -> interrupt()");
             thread.interrupt();
-        }
-        Util.await(run, 1500, "Поток не закончил работу после interrupt()");
+        });
+        Util.await(threadWork, 1500, 100, () -> {
+            UtilLog.printError(ThreadResourcePromiseTask.class, "Поток не закончил работу после interrupt()");
+        });
         // Так как мы не можем больше повлиять на остановку
-        // В java 22 борльше нет функционала принудительной остановки thread.stop()
+        // В java 22 больше нет функционала принудительной остановки thread.stop()
         // Таску мы не будем удалять из тайминга - пусть растёт время, а то слишком круто будет новым житься
         pool.remove(this);
-        run.set(false);
     }
 
     @Override
@@ -164,7 +112,7 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImpl implement
 
     @Override
     public Void execute(Void arguments) {
-        run();
+        LockSupport.unpark(thread);
         return null;
     }
 

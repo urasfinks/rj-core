@@ -15,7 +15,7 @@ import ru.jamsys.core.flat.util.UtilText;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class FileByteWriter extends ExpirationMsMutableImpl
+public class FileByteWriter extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         KeepAlive,
         StatisticsFlush,
@@ -191,7 +191,6 @@ public class FileByteWriter extends ExpirationMsMutableImpl
                         if (itemExpirationMsMutableEnvelope != null) {
                             ByteSerialization item = itemExpirationMsMutableEnvelope.getValue();
                             byte[] d = item.toByte();
-                            fos.write(UtilByte.shortToBytes(item.getSubscriberStatusRead()));
                             fos.write(UtilByte.intToBytes(d.length));
                             writeByteToCurrentFile.addAndGet(6); //2 byte subscriberStatusRead + 4 byte item byte length
                             fos.write(d);
@@ -229,17 +228,12 @@ public class FileByteWriter extends ExpirationMsMutableImpl
     }
 
     @Override
-    public boolean isRun() {
-        return propertyDispatcher.isRun();
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         propertyDispatcher.run();
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         // Запишем если были накопления в брокере
         keepAlive(new AtomicBoolean(true));
         // Переименуем файл, что бы при следующем старте его не удалили как ошибочный.

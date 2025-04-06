@@ -32,7 +32,7 @@ class SessionTest {
         Assertions.assertEquals(1, test.sizeExpiration());
         Assertions.assertEquals(s.hashCode(), test.get(10).hashCode());
         Assertions.assertEquals(s.hashCode(), test.get(10).hashCode());
-        Util.sleepMs(2000);
+        Util.testSleepMs(2000);
         Assertions.assertEquals(0, test.size());
         Assertions.assertEquals(0, test.sizeExpiration());
     }

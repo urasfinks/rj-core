@@ -9,7 +9,7 @@ import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.File;
 import java.util.function.Function;
@@ -17,7 +17,7 @@ import java.util.function.Function;
 @Component
 @Scope("prototype")
 public class YandexSpeechResource
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Resource<YandexSpeechRequest, Void>,
         PropertyListener {
@@ -56,17 +56,13 @@ public class YandexSpeechResource
     }
 
     @Override
-    public void run() {
-        if (propertyDispatcher != null) {
-            propertyDispatcher.run();
-        }
+    public void runOperation() {
+        propertyDispatcher.run();
     }
 
     @Override
-    public void shutdown() {
-        if (propertyDispatcher != null) {
-            propertyDispatcher.shutdown();
-        }
+    public void shutdownOperation() {
+        propertyDispatcher.shutdown();
         try {
             client.shutdown();
         } catch (Exception e) {

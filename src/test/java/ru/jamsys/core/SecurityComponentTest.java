@@ -27,7 +27,7 @@ class SecurityComponentTest {
     @Test
     void get() throws Exception {
         SecurityComponent securityComponent = App.get(SecurityComponent.class);
-        securityComponent.setPathStorage("unit-test.jks");
+        securityComponent.getProperty().setPathStorage("unit-test.jks");
         char[] password = "12345".toCharArray();
         securityComponent.loadKeyStorage(password);
         securityComponent.add("test", "12345".toCharArray(), password);

@@ -6,13 +6,13 @@ import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpResponse;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.function.Function;
 
 @Component
 @Scope("prototype")
-public class HttpResource extends ExpirationMsMutableImpl implements Resource<HttpConnector, HttpResponse> {
+public class HttpResource extends ExpirationMsMutableImplAbstractLifeCycle implements Resource<HttpConnector, HttpResponse> {
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) {
@@ -36,12 +36,12 @@ public class HttpResource extends ExpirationMsMutableImpl implements Resource<Ht
     }
 
     @Override
-    public void run() {
+    public void runOperation() {
 
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
 
     }
 

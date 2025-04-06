@@ -46,19 +46,19 @@ class PromiseImplTest {
         Promise promise = servicePromise.get("test", 6_000L); //new PromiseImpl("test", 6_000L);
         promise
                 .append("test", (_, _, promise1) -> {
-                    Util.sleepMs(1000);
+                    Util.testSleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H1");
                     ArrayList<PromiseTask> objects = new ArrayList<>();
                     objects.add(new PromiseTask("test2", promise, PromiseTaskExecuteType.COMPUTE, (_, _, _) -> System.out.println(Thread.currentThread().getName() + " EXTRA")));
                     promise1.addToHead(objects);
                 })
                 .append("test", (_, _, _) -> {
-                    Util.sleepMs(1000);
+                    Util.testSleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H2");
 
                 })
                 .then("test", (_, _, _) -> {
-                    Util.sleepMs(1000);
+                    Util.testSleepMs(1000);
                     System.out.println(Thread.currentThread().getName() + " H3");
                 })
                 .append("test", (_, _, _) -> System.out.println(Thread.currentThread().getName() + " FINISH"))
@@ -206,15 +206,15 @@ class PromiseImplTest {
         promise
                 .append("1", (_, _, _) -> {
                     exec.incrementAndGet();
-                    Util.sleepMs(1000);
+                    Util.testSleepMs(1000);
                 })
                 .then("2", (_, _, _) -> {
                     exec.incrementAndGet();
-                    Util.sleepMs(1000);
+                    Util.testSleepMs(1000);
                 })
                 .then("3", (_, _, _) -> {
                     exec.incrementAndGet();
-                    Util.sleepMs(1000);
+                    Util.testSleepMs(1000);
                 })
                 .onError((_, _, _) -> error.incrementAndGet())
                 .onComplete((_, _, _) -> complete.incrementAndGet())
@@ -235,15 +235,15 @@ class PromiseImplTest {
         promise
                 .append("1", (_, _, _) -> {
                     exec.incrementAndGet();
-                    Util.sleepMs(1000);
+                    Util.testSleepMs(1000);
                 })
                 .append("2", (_, _, _) -> {
                     exec.incrementAndGet();
-                    Util.sleepMs(1500);
+                    Util.testSleepMs(1500);
                 })
                 .then("3", (_, _, _) -> {
                     exec.incrementAndGet();
-                    Util.sleepMs(1000);
+                    Util.testSleepMs(1000);
                 })
                 .onError((_, _, _) -> error.incrementAndGet())
                 .onComplete((_, _, _) -> complete.incrementAndGet())
@@ -344,7 +344,7 @@ class PromiseImplTest {
         AtomicInteger counter = new AtomicInteger(0);
         promise
                 .append("longTimeout", (_, _, _)
-                        -> Util.sleepMs(2000))
+                        -> Util.testSleepMs(2000))
                 .onError((_, _, _) -> counter.incrementAndGet())
                 .run().await(2010);
 
@@ -548,7 +548,7 @@ class PromiseImplTest {
         promise.then("index0", (_, _, _) -> list.add(0))
                 .then("index1", servicePromise.get("log2", 6_000L)
                         .then("sub1", (_, _, _) -> {
-                            Util.sleepMs(300);
+                            Util.testSleepMs(300);
                             list.add(1);
                         })
                         .then("sub1", (_, _, _) -> list.add(2))
@@ -566,7 +566,7 @@ class PromiseImplTest {
         promise.then("index0", (_, _, _) -> list.add(0))
                 .append("index1", servicePromise.get("log2", 6_000L)
                         .then("sub1", (_, _, _) -> {
-                            Util.sleepMs(300);
+                            Util.testSleepMs(300);
                             list.add(1);
                         })
                         .then("sub1", (_, _, _) -> list.add(2))

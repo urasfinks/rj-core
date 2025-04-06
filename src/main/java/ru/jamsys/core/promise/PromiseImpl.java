@@ -236,7 +236,7 @@ public class PromiseImpl extends AbstractPromiseBuilder {
             logString = getLogString();
             UtilLog.printInfo(getClass(), logString);
         }
-        if (isLog() && App.get(ServiceLoggerRemote.class).getRemote()) {
+        if (isLog() && App.get(ServiceLoggerRemote.class).getProperty().getRemote()) {
             if (logString == null) {
                 logString = getLogString();
             }

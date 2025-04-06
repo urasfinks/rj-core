@@ -1,6 +1,7 @@
 package ru.jamsys.core.extension.broker.persist;
 
 import lombok.Setter;
+import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -12,13 +13,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 // [ operation = [insert_data|insert_group|pool|commit] | id | timestamp |  idGroup ]
 
 
-public class WalDataStatus implements LifeCycleInterface {
+public class WalDataStatus extends AbstractLifeCycle implements LifeCycleInterface {
 
     public enum Operation {
         SUBSCRIBE_GROUP((byte) 1), //Подписана группа
@@ -44,8 +43,6 @@ public class WalDataStatus implements LifeCycleInterface {
     private volatile long timeRetryMs = 60_000;
 
     private BatchFileWriter batchFileWriter;
-
-    AtomicBoolean run = new AtomicBoolean(false);
 
     private final String filePath;
 
@@ -172,30 +169,19 @@ public class WalDataStatus implements LifeCycleInterface {
         return result;
     }
 
-    private final Lock runLock = new ReentrantLock();
-
     @Override
-    public boolean isRun() {
-        return run.get();
+    public void runOperation() {
+        batchFileWriter = new BatchFileWriter(filePath);
+        batchFileWriter.setOpenOption(StandardOpenOption.APPEND);
+        batchFileWriter.run();
     }
 
     @Override
-    public void run() {
-        if (run.compareAndSet(false, true)) {
-            batchFileWriter = new BatchFileWriter(filePath);
-            batchFileWriter.setOpenOption(StandardOpenOption.APPEND);
-            batchFileWriter.run();
-        }
-    }
-
-    @Override
-    public void shutdown() {
-        if (run.compareAndSet(true, false)) {
-            if (batchFileWriter != null) {
-                groupMap.clear();
-                groupLock.clear();
-                batchFileWriter.shutdown();
-            }
+    public void shutdownOperation() {
+        if (batchFileWriter != null) {
+            groupMap.clear();
+            groupLock.clear();
+            batchFileWriter.shutdown();
         }
     }
 

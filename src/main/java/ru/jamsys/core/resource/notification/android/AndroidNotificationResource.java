@@ -12,7 +12,7 @@ import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +23,7 @@ import java.util.function.Function;
 
 @Component
 public class AndroidNotificationResource
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Resource<AndroidNotificationRequest, HttpResponse>,
         PropertyListener {
@@ -88,22 +88,14 @@ public class AndroidNotificationResource
     }
 
     @Override
-    public boolean isRun() {
-        if (propertyDispatcher != null) {
-            return propertyDispatcher.isRun();
-        }
-        return false;
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         if (propertyDispatcher != null) {
             propertyDispatcher.run();
         }
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         if (propertyDispatcher != null) {
             propertyDispatcher.shutdown();
         }

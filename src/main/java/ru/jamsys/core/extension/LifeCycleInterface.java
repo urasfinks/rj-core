@@ -1,16 +1,127 @@
 package ru.jamsys.core.extension;
 
+import lombok.Getter;
+import ru.jamsys.core.extension.exception.ForwardException;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public interface LifeCycleInterface {
 
-    boolean isRun();
+    void runOperation(); // Обычный метод запуска, который требует реализацию, однако вызывать стоит runSequential
 
-    void run();
+    void shutdownOperation(); // Обычный метод остановки, который требует реализацию, однако вызывать стоит shutdownSequential
 
-    void shutdown();
+    AtomicBoolean getOperation(); // Глобальный мьютекс для всех операций
 
-    default void reload() {
-        shutdown();
-        run();
+    AtomicBoolean getRun(); // Статус на текущий момент
+
+    void setThreadOperation(Thread thread);
+
+    Thread getThreadOperation();
+
+    enum Cause {
+        ALREADY_RUN, // Уже запущен
+        NOT_RUN, // Не запущен
+        SUCCESS, // Успех
+        OTHER_OPERATION_START
+    }
+
+    enum Process {
+        RUN, //  Запуск
+        SHUTDOWN, // Остановка
+        RELOAD //Перезагрузка
+    }
+
+    @Getter
+    class ResultOperation {
+        private final Process process;
+        private final boolean complete;
+        private final Cause cause;
+
+
+        public ResultOperation(Process process, boolean complete, Cause cause) {
+            this.process = process;
+            this.complete = complete;
+            this.cause = cause;
+        }
+    }
+
+    default ResultOperation run() {
+        return run(false);
+    }
+
+    default ResultOperation run(boolean fromReload) {
+        if (fromReload || getOperation().compareAndSet(false, true)) {
+            setThreadOperation(Thread.currentThread());
+            try {
+                if (getRun().get()) {
+                    return new ResultOperation(Process.RUN, false, Cause.ALREADY_RUN);
+                }
+                runOperation();
+                getRun().set(true);
+                return new ResultOperation(Process.RUN, true, Cause.SUCCESS);
+            } finally {
+                setThreadOperation(null);
+                getOperation().set(false);
+            }
+        } else {
+            return new ResultOperation(Process.RUN, false, Cause.OTHER_OPERATION_START);
+        }
+    }
+
+    default ResultOperation shutdown() {
+        return shutdown(false);
+    }
+
+    default ResultOperation shutdown(boolean fromReload) {
+        if (fromReload || getOperation().compareAndSet(false, true)) {
+            setThreadOperation(Thread.currentThread());
+            try {
+                if (!getRun().get()) {
+                    return new ResultOperation(Process.SHUTDOWN, false, Cause.NOT_RUN);
+                }
+                shutdownOperation();
+                getRun().set(false);
+                return new ResultOperation(Process.SHUTDOWN, true, Cause.SUCCESS);
+            } finally {
+                getOperation().set(false);
+                setThreadOperation(null);
+            }
+        } else {
+            return new ResultOperation(Process.SHUTDOWN, false, Cause.OTHER_OPERATION_START);
+        }
+    }
+
+    default ResultOperation reload() {
+        if (getOperation().compareAndSet(false, true)) {
+            try {
+                // Любой результат завершения нас устроит, так как в случае с fromReload = true может быть только
+                // NOT_RUN и для перезагрузки это нормально
+                shutdown(true);
+                return run(true);
+            } finally {
+                getOperation().set(false);
+            }
+        } else {
+            return new ResultOperation(Process.RELOAD, false, Cause.OTHER_OPERATION_START);
+        }
+    }
+
+    default ResultOperation forceReload() {
+        Thread threadOperation = getThreadOperation();
+        if (threadOperation != null) {
+            threadOperation.interrupt();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ie) {
+                throw new ForwardException(ie);
+            }
+        }
+        return reload();
+    }
+
+    default boolean isRun() {
+        return getRun().get();
     }
 
 }

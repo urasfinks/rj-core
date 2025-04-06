@@ -9,7 +9,7 @@ import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 public class Session<K, V>
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Map<K, V>,
         StatisticsFlush,
@@ -32,8 +32,6 @@ public class Session<K, V>
 
     // Помещаем в эту карту элементы из брокера, что бы можно удалить из брокера ключ, не дожидаясь его onDrop
     private final Map<K, DisposableExpirationMsImmutableEnvelope<K>> mapExpiration = new ConcurrentHashMap<>();
-
-    private final AtomicBoolean run = new AtomicBoolean(false);
 
     @Getter
     private final String key;
@@ -178,18 +176,13 @@ public class Session<K, V>
     }
 
     @Override
-    public boolean isRun() {
-        return run.get();
+    public void runOperation() {
+
     }
 
     @Override
-    public void run() {
-        run.set(true);
-    }
+    public void shutdownOperation() {
 
-    @Override
-    public void shutdown() {
-        run.set(false);
     }
 
     public List<Statistic> flushAndGetStatistic(

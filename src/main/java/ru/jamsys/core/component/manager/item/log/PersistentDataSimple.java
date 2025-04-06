@@ -74,14 +74,4 @@ public class PersistentDataSimple implements PersistentData {
         return Map.of();
     }
 
-    @Override
-    public short getSubscriberStatusRead() {
-        return subscriberStatusRead;
-    }
-
-    @Override
-    public void setSubscriberStatusRead(short subscriberStatusRead) {
-        this.subscriberStatusRead = subscriberStatusRead;
-    }
-
 }

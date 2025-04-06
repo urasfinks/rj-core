@@ -16,8 +16,8 @@ public class LineWriterList implements LineWriter {
     }
 
     @Override
-    public void addLine(String s) {
-        result.add(s);
+    public void addLine(String data) {
+        result.add(data);
     }
 
 }

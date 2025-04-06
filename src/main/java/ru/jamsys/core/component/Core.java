@@ -9,6 +9,7 @@ import ru.jamsys.core.component.manager.ManagerFileByteWriter;
 import ru.jamsys.core.component.manager.item.log.PersistentData;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.statistic.StatisticSec;
@@ -17,11 +18,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
-public class Core implements LifeCycleInterface {
+public class Core extends AbstractLifeCycle implements LifeCycleInterface {
 
     private final ServiceClassFinder serviceClassFinder;
 
@@ -30,8 +30,6 @@ public class Core implements LifeCycleInterface {
     private final ManagerBroker managerBroker;
 
     public static String lastOperation;
-
-    private final AtomicBoolean run = new AtomicBoolean(false);
 
     private final ConcurrentLinkedDeque<LifeCycleComponent> runComponent = new ConcurrentLinkedDeque<>();
 
@@ -52,13 +50,7 @@ public class Core implements LifeCycleInterface {
     }
 
     @Override
-    public boolean isRun() {
-        return run.get();
-    }
-
-    @Override
-    public void run() {
-        run.set(true);
+    public void runOperation() {
         UtilLog.info(getClass(), null).addHeader("description", "run");
         // Это работает так: инициализируем 2 очереди для логов и статистики
         // Планируем, что из этих очередей будет своевременно вычитывать обещания из крона,
@@ -103,7 +95,7 @@ public class Core implements LifeCycleInterface {
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         UtilLog.printInfo(getClass(), "shutdown()");
         while (!runComponent.isEmpty()) {
             LifeCycleComponent lifeCycleComponent = runComponent.pollLast();
@@ -118,7 +110,6 @@ public class Core implements LifeCycleInterface {
                         .print();
             }
         }
-        run.set(false);
     }
 
 }

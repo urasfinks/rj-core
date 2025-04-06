@@ -5,12 +5,11 @@ import lombok.experimental.FieldNameConstants;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.component.manager.item.log.PersistentDataHeader;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.exception.PromiseException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
-import ru.jamsys.core.extension.line.writer.LineWriterString;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.util.UtilDate;
@@ -41,23 +40,18 @@ public class ExceptionHandler extends AnnotationPropertyExtractor<Object> {
     }
 
     public void handler(Throwable th) {
+        LineWriterList lineWriterList = new LineWriterList();
+        lineWriterList.addLine(
+                UtilDate.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
+        );
+        getTextException(th, lineWriterList);
+        PersistentDataHeader error = UtilLog.error(getClass(), lineWriterList.getResult());
         if (consoleOutput) {
-            LineWriter lineWriter = new LineWriterString();
-            if (th instanceof PromiseException promiseException) {
-                UtilLog.printInfo(getClass(), promiseException.toString());
-            } else {
-                UtilLog.printInfo(getClass(), getTextException(th, lineWriter));
-            }
+            error.print();
         }
         if (remote) {
-            LineWriterList lineWriterList = new LineWriterList();
-            lineWriterList.addLine(
-                    UtilDate.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
-            );
-            getTextException(th, lineWriterList);
-            UtilLog.error(ExceptionHandler.class, lineWriterList.getResult()).sendRemote();
+            error.sendRemote();
         }
-
     }
 
     public static String getTextException(Throwable th, LineWriter sw) {

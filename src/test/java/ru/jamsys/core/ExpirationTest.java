@@ -147,7 +147,7 @@ class ExpirationTest {
                     long cur = System.currentTimeMillis();
                     ExpirationKeepAliveResult keepAliveResult = test.keepAlive(threadRun, cur);
                     System.out.println(keepAliveResult);
-                    Util.sleepMs(sleepKeepAlive);
+                    Util.testSleepMs(sleepKeepAlive);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -157,7 +157,7 @@ class ExpirationTest {
 
         for (int i = 0; i < 4; i++) {
             final int x = i;
-            Util.sleepMs(333 * i); // Сделаем рассинхрон вставок по времени
+            Util.testSleepMs(333 * i); // Сделаем рассинхрон вставок по времени
             new Thread(() -> {
                 Thread.currentThread().setName("IOSIF " + x);
                 try {
@@ -165,7 +165,7 @@ class ExpirationTest {
                         for (int j = 0; j < 1000; j++) {
                             test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), timeoutMs));
                         }
-                        Util.sleepMs((100 * x) + 10);
+                        Util.testSleepMs((100 * x) + 10);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -175,9 +175,9 @@ class ExpirationTest {
         }
 
 
-        Util.sleepMs(5000);
+        Util.testSleepMs(5000);
         run.set(false);
-        Util.sleepMs(timeoutMs + sleepKeepAlive);
+        Util.testSleepMs(timeoutMs + sleepKeepAlive);
         run2.set(false);
         Map<String, Object> flush = avgMetric.flush("");
         Map<String, Object> fields = test.flushAndGetStatistic(null, null, null).getFirst().getFields();

@@ -4,11 +4,9 @@ import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.annotation.PropertyDescription;
-import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.statistic.Statistic;
@@ -23,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @FieldNameConstants
 public class RateLimitItemPeriodic
-        extends AnnotationPropertyExtractor
+        extends AbstractLifeCycle
         implements RateLimitItem,
         LifeCycleInterface {
 
@@ -41,28 +39,25 @@ public class RateLimitItemPeriodic
     @Getter
     private final String namespace;
 
-    @SuppressWarnings("all")
-    @PropertyKey("max")
-    @PropertyDescription("Максимальное кол-во итераций")
-    private volatile Integer max = 999999;
+    private final RateLimitItemProperty property = new RateLimitItemProperty();
 
-    private final PropertyDispatcher propertyDispatcher;
+    private final PropertyDispatcher<Integer> propertyDispatcher;
 
     public RateLimitItemPeriodic(TimeUnit period, String namespace) {
         this.namespace = namespace;
         this.period = period;
         this.periodName = period.getNameCamel();
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
-                this,
+                property,
                 namespace
         );
     }
 
     @Override
     public boolean check() {
-        return tpu.incrementAndGet() <= max; // -1 = infinity; 0 = reject
+        return tpu.incrementAndGet() <= property.getMax(); // -1 = infinity; 0 = reject
     }
 
     @Override
@@ -72,7 +67,7 @@ public class RateLimitItemPeriodic
 
     @Override
     public int getMax() {
-        return max;
+        return property.getMax();
     }
 
     @Override
@@ -90,7 +85,7 @@ public class RateLimitItemPeriodic
     public Statistic flushAndGetStatistic(long curTime, Map<String, String> parentTags, Map<String, Object> parentFields) {
         Statistic statistic = new Statistic(parentTags, parentFields);
         statistic.addField("period", periodName);
-        statistic.addField("max", max);
+        statistic.addField("max", property.getMax());
         if (nextTimeFlush.get() <= curTime) {
             Calendar now = Calendar.getInstance();
             now.setTimeInMillis(curTime);
@@ -108,17 +103,12 @@ public class RateLimitItemPeriodic
     }
 
     @Override
-    public boolean isRun() {
-        return propertyDispatcher.isRun();
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         propertyDispatcher.run();
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         propertyDispatcher.shutdown();
     }
 

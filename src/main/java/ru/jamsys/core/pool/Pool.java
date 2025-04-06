@@ -27,7 +27,7 @@ public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlu
     // Ручное удаление ресурса из пула + вызов closePoolItem
     void removeAndClose(PI poolItem);
 
-    // Если min = 0, и в пуле никого нет, но есть внешний потребитель, которому нужны ресурсы в пуле
+    // Если min = 0, и в пуле никого нет, но есть внешний потребитель, которому нужны ресурсы в пуле.
     // Добавляет ресурс в пустой пул
     boolean isAvailablePoolItem();
 
@@ -36,5 +36,8 @@ public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlu
 
     // Если есть потребители, которые ждут ресурс - отдаём ресурс без перевставок в park
     boolean forwardResourceWithoutParking(PI poolItem);
+
+    // Забрать взят ресурс из парка
+    PI getFromPark();
 
 }

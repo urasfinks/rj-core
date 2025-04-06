@@ -25,8 +25,6 @@ import java.util.Map;
 @JsonPropertyOrder({"subscriberStatusRead", "logType", "timeAdd", "header", "data"})
 public class PersistentDataHeader implements PersistentData {
 
-    private short subscriberStatusRead;
-
     public long timeAdd = System.currentTimeMillis();
 
     public Map<String, String> header = new LinkedHashMap<>();
@@ -60,24 +58,7 @@ public class PersistentDataHeader implements PersistentData {
         return this;
     }
 
-    public short getSubscriberStatusRead() {
-        return subscriberStatusRead;
-    }
-
-    public void setSubscriberStatusRead(short subscriberStatusRead) {
-        this.subscriberStatusRead = subscriberStatusRead;
-    }
-
     public byte[] toByte() throws Exception {
-        // [2] LogType
-        // [2] SizeHeader
-        //*[2] KeyHeaderLength
-        // ...
-        //*[4] ValueHeaderLength
-        // ..s
-        // [4] BodyLength
-        // ...
-
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         os.write(UtilByte.shortToBytes((short) logType.ordinal())); //Записали тип лога в первые 2 байта
         os.write(UtilByte.shortToBytes((short) header.size())); // В следующие 2 байта записали кол-во заголовков
@@ -92,10 +73,9 @@ public class PersistentDataHeader implements PersistentData {
         return os.toByteArray();
     }
 
-    public static PersistentDataHeader instanceFromBytes(byte[] bytes, short subscriberStatusRead) throws Exception {
+    public static PersistentDataHeader instanceFromBytes(byte[] bytes) throws Exception {
         PersistentDataHeader persistentDataHeader = new PersistentDataHeader();
         persistentDataHeader.toObject(bytes);
-        persistentDataHeader.setSubscriberStatusRead(subscriberStatusRead);
         return persistentDataHeader;
     }
 

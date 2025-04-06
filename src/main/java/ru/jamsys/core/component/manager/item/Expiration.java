@@ -12,7 +12,7 @@ import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 // Для избежания выполнения одномоментного выполнения используется одноразовая обёртка (DisposableExpiredMsImmutableEnvelope)
 
 public class Expiration<V>
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         AddToList<
                 ExpirationMsImmutableEnvelope<V>,
@@ -53,8 +53,6 @@ public class Expiration<V>
     private final Class<?> classItem;
 
     private final Consumer<DisposableExpirationMsImmutableEnvelope<?>> onExpired;
-
-    private final AtomicBoolean run = new AtomicBoolean(false);
 
     public Expiration(
             String key,
@@ -173,13 +171,8 @@ public class Expiration<V>
     }
 
     @Override
-    public boolean isRun() {
-        return run.get();
-    }
+    public void runOperation() {
 
-    @Override
-    public void run() {
-        run.set(true);
     }
 
     public boolean isEmpty() {
@@ -187,12 +180,12 @@ public class Expiration<V>
     }
 
     @Override
-    public void shutdown() {
-        run.set(false);
+    public void shutdownOperation() {
         // Я считаю это не гуманно при стопе чистить корзины, а вдруг его включат через секунду,
         // а мы уже удалил все данные. Я против такого.
-        //bucket.clear();
-        //bucketQueueSize.clear();
+        // Спустя много времени .... а на сколько гуманно делать остановку, того, что должно работать?
+        bucket.clear();
+        bucketQueueSize.clear();
     }
 
 }

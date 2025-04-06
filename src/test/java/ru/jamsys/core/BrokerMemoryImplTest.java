@@ -211,7 +211,7 @@ class BrokerMemoryImplTest {
         broker.add(obj, 1_000L);
 
         Assertions.assertEquals(0, counter.get());
-        Util.sleepMs(2001);
+        Util.testSleepMs(2001);
         Assertions.assertEquals(1, counter.get());
     }
 

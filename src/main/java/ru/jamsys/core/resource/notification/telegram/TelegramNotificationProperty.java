@@ -8,7 +8,7 @@ import ru.jamsys.core.extension.annotation.PropertyKey;
 @SuppressWarnings({"UnusedDeclaration"})
 @FieldNameConstants
 @Getter
-public class TelegramNotificationProperty extends AnnotationPropertyExtractor {
+public class TelegramNotificationProperty extends AnnotationPropertyExtractor<Object> {
 
     @PropertyKey("notification.telegram.security.alias")
     private String securityAlias;

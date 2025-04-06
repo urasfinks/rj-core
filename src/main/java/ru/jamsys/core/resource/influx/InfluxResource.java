@@ -16,7 +16,7 @@ import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.List;
 import java.util.function.Function;
@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 @Component
 @Scope("prototype")
 public class InfluxResource
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Resource<List<Point>, Void>,
         PropertyListener,
@@ -110,21 +110,13 @@ public class InfluxResource
     }
 
     @Override
-    public boolean isRun() {
-        if (propertyDispatcher != null) {
-            return propertyDispatcher.isRun();
-        }
-        return false;
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         propertyDispatcher.run();
         up();
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         propertyDispatcher.shutdown();
         down();
     }

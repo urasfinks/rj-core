@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.functional.SupplierThrowing;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.resource.virtual.file.system.view.FileView;
 import ru.jamsys.core.statistic.Statistic;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class File extends ExpirationMsMutableImpl
+public class File extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         StatisticsFlush,
         KeepAlive,
@@ -38,8 +38,6 @@ public class File extends ExpirationMsMutableImpl
     protected String extension; //Расширение файла (думаю сделать поиск по расширениям)
 
     protected SupplierThrowing<byte[]> loader = () -> null;
-
-    private final AtomicBoolean run = new AtomicBoolean(false);
 
     @Setter
     private ConsumerThrowing<byte[]> saver = null;
@@ -179,19 +177,13 @@ public class File extends ExpirationMsMutableImpl
     }
 
     @Override
-    public boolean isRun() {
-        return run.get();
+    public void runOperation() {
+
     }
 
     @Override
-    public void run() {
-        run.set(true);
-    }
-
-    @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         reset();
-        run.set(false);
     }
 
 }

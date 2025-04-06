@@ -8,7 +8,7 @@ import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.ResourceCheckException;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -19,7 +19,7 @@ import java.util.function.Function;
 @Component
 @Scope("prototype")
 public class FileByteReaderResource
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Resource<FileByteReaderRequest, List<ByteSerialization>>,
         ResourceCheckException {
@@ -35,7 +35,6 @@ public class FileByteReaderResource
         try (BufferedInputStream fis = new BufferedInputStream(new FileInputStream(arguments.getFilePath()))) {
             while (fis.available() > 0) {
                 ByteSerialization item = arguments.getClsItem().getConstructor().newInstance();
-                item.setSubscriberStatusRead(UtilByte.bytesToShort(fis.readNBytes(2)));
                 int lenData = UtilByte.bytesToInt(fis.readNBytes(4));
                 item.toObject(fis.readNBytes(lenData));
                 result.add(item);
@@ -57,12 +56,12 @@ public class FileByteReaderResource
     }
 
     @Override
-    public void run() {
+    public void runOperation() {
 
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
 
     }
 

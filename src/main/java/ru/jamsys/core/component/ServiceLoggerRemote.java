@@ -8,13 +8,12 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.component.manager.item.log.PersistentData;
+import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -31,21 +30,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 @FieldNameConstants
 @Component
 @Lazy
-public class ServiceLoggerRemote extends AnnotationPropertyExtractor<Boolean> implements
+public class ServiceLoggerRemote
+        extends AbstractLifeCycle
+        implements
         StatisticsFlushComponent,
         LifeCycleComponent,
         CascadeName {
-
-    private final AtomicBoolean run = new AtomicBoolean(false);
 
     private final Map<String, AtomicInteger> stat = new HashMap<>();
 
     private final BrokerMemory<PersistentData> broker;
 
-    @SuppressWarnings("all")
     @Getter
-    @PropertyKey("remote")
-    private Boolean remote = false;
+    private final LoggerRemoteProperty property = new LoggerRemoteProperty();
 
     final PropertyDispatcher<Boolean> propertyDispatcher;
 
@@ -57,14 +54,14 @@ public class ServiceLoggerRemote extends AnnotationPropertyExtractor<Boolean> im
         propertyDispatcher = new PropertyDispatcher<>(
                 applicationContext.getBean(ServiceProperty.class),
                 null,
-                this,
+                property,
                 "log.uploader"
         );
     }
 
     public DisposableExpirationMsImmutableEnvelope<PersistentData> add(PersistentData persistentData) {
         stat.get(persistentData.getLogType().getNameCamel()).incrementAndGet();
-        if (remote) {
+        if (property.getRemote()) {
             return broker.add(new ExpirationMsImmutableEnvelope<>(persistentData, 6_000));
         }
         return null;
@@ -87,20 +84,13 @@ public class ServiceLoggerRemote extends AnnotationPropertyExtractor<Boolean> im
     }
 
     @Override
-    public boolean isRun() {
-        return run.get();
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         propertyDispatcher.run();
-        run.set(true);
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         propertyDispatcher.shutdown();
-        run.set(false);
     }
 
     @Override
@@ -112,4 +102,5 @@ public class ServiceLoggerRemote extends AnnotationPropertyExtractor<Boolean> im
     public CascadeName getParentCascadeName() {
         return App.cascadeName;
     }
+
 }

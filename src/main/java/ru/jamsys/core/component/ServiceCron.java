@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.cron.CronTask;
+import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.CascadeName;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -23,15 +24,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class ServiceCron implements LifeCycleComponent, CascadeName {
+public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent, CascadeName {
 
-    final private Thread thread;
+    private Thread thread;
 
     final private List<CronTask> listItem = new ArrayList<>();
 
     final private AtomicBoolean spin = new AtomicBoolean(true);
 
-    final private AtomicBoolean run = new AtomicBoolean(true);
+    final private AtomicBoolean threadWork = new AtomicBoolean(false);
 
     @SuppressWarnings("all")
     public ServiceCron(
@@ -40,38 +41,6 @@ public class ServiceCron implements LifeCycleComponent, CascadeName {
             ApplicationContext applicationContext
     ) {
         initList(serviceClassFinder, exceptionHandler);
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                long nextStartMs = System.currentTimeMillis();
-                try {
-                    while (spin.get() && !thread.isInterrupted()) {
-                        nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
-                        long curTimeMs = System.currentTimeMillis();
-
-                        runCronTask(curTimeMs);
-
-                        if (spin.get()) {
-                            long calcSleepMs = nextStartMs - System.currentTimeMillis();
-                            if (calcSleepMs > 0) {
-                                Thread.sleep(calcSleepMs);
-                            } else {
-                                Thread.sleep(1);//Что бы поймать Interrupt
-                                nextStartMs = System.currentTimeMillis();
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-                } catch (InterruptedException ie) {
-                    UtilLog.printError(getClass(), "interrupt()");
-                } catch (Throwable th) {
-                    App.error(th);
-                }
-                run.set(false);
-            }
-        });
-        thread.setName(getCascadeName());
     }
 
     private void runCronTask(long curTimeMs) {
@@ -117,21 +86,52 @@ public class ServiceCron implements LifeCycleComponent, CascadeName {
     }
 
     @Override
-    public boolean isRun() {
-        return run.get();
-    }
+    public void runOperation() {
+        spin.set(true);
+        thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                threadWork.set(true);
+                long nextStartMs = System.currentTimeMillis();
+                try {
+                    while (spin.get() && !thread.isInterrupted()) {
+                        nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
+                        long curTimeMs = System.currentTimeMillis();
 
-    @Override
-    public void run() {
-        run.set(true);
+                        runCronTask(curTimeMs);
+
+                        if (spin.get()) {
+                            long calcSleepMs = nextStartMs - System.currentTimeMillis();
+                            if (calcSleepMs > 0) {
+                                Thread.sleep(calcSleepMs);
+                            } else {
+                                Thread.sleep(1);//Что бы поймать Interrupt
+                                nextStartMs = System.currentTimeMillis();
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                } catch (InterruptedException ie) {
+                    UtilLog.printError(getClass(), "interrupt()");
+                } catch (Throwable th) {
+                    App.error(th);
+                } finally {
+                    threadWork.set(false);
+                }
+            }
+        });
+        thread.setName(getCascadeName());
         thread.start();
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         spin.set(false);
-        thread.interrupt();
-        Util.await(run, 1500,  App.getUniqueClassName(getClass()) + " not stop interrupt");
+        Util.await(threadWork, 1500, 100, () -> {
+            thread.interrupt();
+            UtilLog.printError(ServiceCron.class, "interrupt");
+        });
     }
 
     @Override

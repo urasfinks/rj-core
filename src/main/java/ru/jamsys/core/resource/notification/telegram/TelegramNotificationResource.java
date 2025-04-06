@@ -10,7 +10,7 @@ import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -20,19 +20,19 @@ import java.util.function.Function;
 @Component
 @Scope("prototype")
 public class TelegramNotificationResource
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements Resource<TelegramNotificationRequest, HttpResponse> {
 
     private SecurityComponent securityComponent;
 
-    private PropertyDispatcher propertyDispatcher;
+    private PropertyDispatcher<Object> propertyDispatcher;
 
     private final TelegramNotificationProperty telegramNotificationProperty = new TelegramNotificationProperty();
 
     @Override
     public void setArguments(ResourceArguments resourceArguments) throws Throwable {
         securityComponent = App.get(SecurityComponent.class);
-        propertyDispatcher = new PropertyDispatcher(
+        propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
                 telegramNotificationProperty,
@@ -71,20 +71,12 @@ public class TelegramNotificationResource
     }
 
     @Override
-    public boolean isRun() {
-        if (propertyDispatcher != null) {
-            return propertyDispatcher.isRun();
-        }
-        return false;
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         propertyDispatcher.run();
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         propertyDispatcher.shutdown();
     }
 

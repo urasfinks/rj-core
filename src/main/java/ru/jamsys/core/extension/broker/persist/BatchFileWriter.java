@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.UtilByte;
@@ -22,7 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
 // Теперь многопоточная запись в файл пачками по 4кб
 // C - callback
 @Getter
-public class BatchFileWriter implements AutoCloseable, LifeCycleInterface {
+public class BatchFileWriter extends AbstractLifeCycle implements AutoCloseable, LifeCycleInterface {
 
 
     // Минимальный размер пачки в килобайтах, перед тем как данные будут записаны на файловую систему
@@ -30,9 +31,6 @@ public class BatchFileWriter implements AutoCloseable, LifeCycleInterface {
     private volatile static int minBatchSize = (int) UtilByte.kilobytesToBytes(4); // 4KB
 
     private OutputStream fileOutputStream;
-
-    // Состояние закрытия файла, что бы не получилось сделать двойное закрытие и вставлять данные если файл закрыт
-    private final AtomicBoolean run = new AtomicBoolean(false);
 
     // Конкурентная не блокирующая очередь, порядок добавления нам не критичен, главное, что бы не было блокировок
     private final ConcurrentLinkedDeque<byte[]> queue = new ConcurrentLinkedDeque<>();
@@ -58,7 +56,7 @@ public class BatchFileWriter implements AutoCloseable, LifeCycleInterface {
     }
 
     private void write(@NotNull byte[] data) throws Exception {
-        if (!run.get()) {
+        if (!isRun()) {
             throw new IOException("Writer is closed");
         }
         queue.add(data);
@@ -111,42 +109,33 @@ public class BatchFileWriter implements AutoCloseable, LifeCycleInterface {
     }
 
     @Override
-    public boolean isRun() {
-        return run.get();
-    }
-
-    @Override
-    public void run() {
-        if (run.compareAndSet(false, true)) {
-            try {
-                this.fileOutputStream = Files.newOutputStream(
-                        Paths.get(filePath),
-                        StandardOpenOption.CREATE,
-                        StandardOpenOption.WRITE,
-                        openOption,
-                        // в таком режиме atime, mtime, размер файла может быть не синхронизован,
-                        // но данные при восстановлении будут вычитаны корректно
-                        StandardOpenOption.DSYNC
-                );
-            } catch (Throwable th) {
-                throw new ForwardException(th);
-            }
+    public void runOperation() {
+        try {
+            this.fileOutputStream = Files.newOutputStream(
+                    Paths.get(filePath),
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.WRITE,
+                    openOption,
+                    // в таком режиме atime, mtime, размер файла может быть не синхронизован,
+                    // но данные при восстановлении будут вычитаны корректно
+                    StandardOpenOption.DSYNC
+            );
+        } catch (Throwable th) {
+            throw new ForwardException(th);
         }
     }
 
     @Override
-    public void shutdown() {
-        if (run.compareAndSet(true, false)) {
+    public void shutdownOperation() {
+        try {
+            flush(false);
+        } catch (Throwable th) {
+            App.error(th);
+        } finally {
             try {
-                flush(false);
+                fileOutputStream.close();
             } catch (Throwable th) {
                 App.error(th);
-            } finally {
-                try {
-                    fileOutputStream.close();
-                } catch (Throwable th) {
-                    App.error(th);
-                }
             }
         }
     }

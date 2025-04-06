@@ -53,7 +53,13 @@ public class ThreadPoolPromiseTask extends AbstractPoolPrivate<Void, Void, Threa
 
     @Override
     public ThreadResourcePromiseTask createPoolItem() {
-        return new ThreadResourcePromiseTask(getKey(), counter.getAndIncrement(), this);
+        ThreadResourcePromiseTask threadResourcePromiseTask = new ThreadResourcePromiseTask(
+                getKey(),
+                counter.getAndIncrement(),
+                this
+        );
+        threadResourcePromiseTask.run();
+        return threadResourcePromiseTask;
     }
 
     @Override

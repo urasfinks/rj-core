@@ -43,20 +43,20 @@ public class UtilByte {
         return Arrays.copyOf(charBuffer.array(), charBuffer.limit());
     }
 
-    public static byte[] intToBytes(int value) {
-        return ByteBuffer.allocate(8).putInt(value).array();
-    }
-
-    public static int bytesToInt(byte[] bytes) {
-        return ByteBuffer.wrap(bytes).getInt();
-    }
-
     public static byte[] shortToBytes(short s) {
         return ByteBuffer.allocate(2).putShort(s).array();
     }
 
     public static short bytesToShort(byte[] bytes) {
         return ByteBuffer.wrap(bytes).getShort();
+    }
+
+    public static byte[] intToBytes(int value) {
+        return ByteBuffer.allocate(4).putInt(value).array();
+    }
+
+    public static int bytesToInt(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getInt();
     }
 
     public static byte[] longToBytes(long value) {

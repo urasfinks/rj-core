@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.property;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.item.PropertySubscription;
 import ru.jamsys.core.extension.property.repository.PropertyEnvelopeRepository;
@@ -11,7 +12,6 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 // PropertySubscriber связывает ServiceProperty и PropertyRepository
 // Задача донести изменения Property до PropertyRepository
@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // Классная функция - это использовать namespace, не надо в репозитории использовать абсолютные ключи Property
 
 @Getter
-public class PropertyDispatcher<T> implements LifeCycleInterface {
+public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycleInterface {
 
     @JsonIgnore
     private final PropertyListener propertyListener;
@@ -31,8 +31,6 @@ public class PropertyDispatcher<T> implements LifeCycleInterface {
     private final PropertyRepository<T> propertyRepository;
 
     private final String namespace;
-
-    private final AtomicBoolean run = new AtomicBoolean(false);
 
     private final Set<PropertySubscription<T>> subscriptions = Util.getConcurrentHashSet();
 
@@ -141,41 +139,32 @@ public class PropertyDispatcher<T> implements LifeCycleInterface {
     }
 
     @Override
-    public boolean isRun() {
-        return run.get();
+    public void runOperation() {
+        UtilRisc.forEach(null, regexp, serviceProperty::addSubscription);
+        UtilRisc.forEach(null, this.propertyRepository.getListPropertyEnvelopeRepository(), propertyEnvelopeRepository -> {
+            PropertySubscription<T> propertySubscription = new PropertySubscription<>(this)
+                    .setPropertyKey(propertyEnvelopeRepository.getPropertyKey());
+            serviceProperty.addSubscription(propertySubscription);
+            subscriptions.add(propertySubscription);
+        });
+
+        UtilRisc.forEach(null, propertyRepository.getListPropertyEnvelopeRepository(), tPropertyEnvelopeRepository -> {
+            ServiceProperty.Equals equals = tPropertyEnvelopeRepository.propertyEquals();
+            if (!equals.isEquals()) {
+                onPropertyUpdate(
+                        tPropertyEnvelopeRepository.getPropertyKey(),
+                        equals.getOldValue(),
+                        equals.getNewValue()
+                );
+            }
+        });
     }
 
     @Override
-    public void run() {
-        if (run.compareAndSet(false, true)) {
-            UtilRisc.forEach(null, regexp, serviceProperty::addSubscription);
-            UtilRisc.forEach(null, this.propertyRepository.getListPropertyEnvelopeRepository(), propertyEnvelopeRepository -> {
-                PropertySubscription<T> propertySubscription = new PropertySubscription<>(this)
-                        .setPropertyKey(propertyEnvelopeRepository.getPropertyKey());
-                serviceProperty.addSubscription(propertySubscription);
-                subscriptions.add(propertySubscription);
-            });
-
-            UtilRisc.forEach(null, propertyRepository.getListPropertyEnvelopeRepository(), tPropertyEnvelopeRepository -> {
-                ServiceProperty.Equals equals = tPropertyEnvelopeRepository.propertyEquals();
-                if (!equals.isEquals()) {
-                    onPropertyUpdate(
-                            tPropertyEnvelopeRepository.getPropertyKey(),
-                            equals.getOldValue(),
-                            equals.getNewValue()
-                    );
-                }
-            });
-        }
-    }
-
-    @Override
-    public void shutdown() {
-        if (run.compareAndSet(true, false)) {
-            UtilRisc.forEach(null, subscriptions, serviceProperty::removeSubscription);
-            UtilRisc.forEach(null, regexp, serviceProperty::removeSubscription);
-            subscriptions.clear();
-        }
+    public void shutdownOperation() {
+        UtilRisc.forEach(null, subscriptions, serviceProperty::removeSubscription);
+        UtilRisc.forEach(null, regexp, serviceProperty::removeSubscription);
+        subscriptions.clear();
     }
 
 }

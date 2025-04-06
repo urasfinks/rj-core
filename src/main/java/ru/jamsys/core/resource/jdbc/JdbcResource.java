@@ -14,7 +14,7 @@ import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceArguments;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -26,7 +26,7 @@ import java.util.function.Function;
 @Component
 @Scope("prototype")
 public class JdbcResource
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Resource<JdbcRequest, List<Map<String, Object>>>,
         JdbcExecute,
@@ -152,15 +152,7 @@ public class JdbcResource
     }
 
     @Override
-    public boolean isRun() {
-        if (propertyDispatcher != null) {
-            return propertyDispatcher.isRun();
-        }
-        return false;
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         propertyDispatcher.run();
         up();
         if (connection == null) {
@@ -169,7 +161,7 @@ public class JdbcResource
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         propertyDispatcher.shutdown();
         down();
     }

@@ -15,7 +15,7 @@ import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.FileLoaderFactory;
 import ru.jamsys.core.resource.virtual.file.system.view.FileViewKeyStore;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
@@ -24,7 +24,7 @@ import java.util.function.Function;
 
 @Component
 public class AppleNotificationResource
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Resource<AppleNotificationRequest, HttpResponse>,
         PropertyListener {
@@ -90,25 +90,13 @@ public class AppleNotificationResource
     }
 
     @Override
-    public boolean isRun() {
-        if (propertyDispatcher != null) {
-            return propertyDispatcher.isRun();
-        }
-        return false;
+    public void runOperation() {
+        propertyDispatcher.run();
     }
 
     @Override
-    public void run() {
-        if (propertyDispatcher != null) {
-            propertyDispatcher.run();
-        }
-    }
-
-    @Override
-    public void shutdown() {
-        if (propertyDispatcher != null) {
-            propertyDispatcher.shutdown();
-        }
+    public void shutdownOperation() {
+        propertyDispatcher.shutdown();
     }
 
     @Override

@@ -30,6 +30,7 @@ public abstract class AbstractManager<
                 & LifeCycleInterface
                 & ClassEquals,
         EBA>
+        extends AbstractLifeCycle
         implements
         StatisticsCollectorMap<E>,
         KeepAlive,
@@ -40,8 +41,6 @@ public abstract class AbstractManager<
     private final Map<String, E> map = new ConcurrentHashMap<>();
 
     private final Map<String, E> mapReserved = new ConcurrentHashMap<>();
-
-    private final AtomicBoolean run = new AtomicBoolean(false);
 
     @Setter
     protected boolean cleanableMap = true;
@@ -156,18 +155,13 @@ public abstract class AbstractManager<
     }
 
     @Override
-    public boolean isRun() {
-        return run.get();
-    }
-
-    @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         UtilRisc.forEach(new AtomicBoolean(true), map, (String _, E element) -> element.shutdown());
         UtilRisc.forEach(new AtomicBoolean(true), mapReserved, (String _, E element) -> element.shutdown());
     }
 
     @Override
-    public void run() {
+    public void runOperation() {
         UtilRisc.forEach(new AtomicBoolean(true), map, (String _, E element) -> element.run());
         UtilRisc.forEach(new AtomicBoolean(true), mapReserved, (String _, E element) -> element.run());
     }

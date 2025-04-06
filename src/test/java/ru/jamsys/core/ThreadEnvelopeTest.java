@@ -43,7 +43,7 @@ class ThreadEnvelopeTest {
 
             }).start();
         }
-        Util.sleepMs(4000);
+        Util.testSleepMs(4000);
         System.out.println("map.size() = " + map.size() + "; counter: " + counter.get());
         Assertions.assertEquals(3, map.size());
         Assertions.assertEquals(3, counter.get());

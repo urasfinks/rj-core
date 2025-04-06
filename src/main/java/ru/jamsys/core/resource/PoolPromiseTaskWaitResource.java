@@ -83,12 +83,6 @@ public class PoolPromiseTaskWaitResource<
     }
 
     @Override
-    public void shutdown() {
-        super.shutdown();
-        run.set(false);
-    }
-
-    @Override
     public boolean classEquals(Class<?> classItem) {
         return this.classItem.equals(classItem);
     }
@@ -139,4 +133,5 @@ public class PoolPromiseTaskWaitResource<
         }
         return false;
     }
+
 }

@@ -17,7 +17,7 @@ import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 // Не является CascadeName - используйте каскадные имена в ключе
 
 public class BrokerMemoryImpl<T>
-        extends ExpirationMsMutableImpl
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         BrokerMemory<T>,
         StatisticsFlush,
@@ -42,6 +42,7 @@ public class BrokerMemoryImpl<T>
                 ExpirationMsImmutableEnvelope<T>,
                 DisposableExpirationMsImmutableEnvelope<T> // Должны вернуть, что бы из вне можно было сделать remove
                 > {
+
 
     private final AtomicInteger queueSize = new AtomicInteger(0);
 
@@ -96,8 +97,7 @@ public class BrokerMemoryImpl<T>
                 key
         );
 
-        ManagerExpiration managerExpiration = applicationContext.getBean(ManagerExpiration.class);
-        expiration = managerExpiration.get(
+        expiration = applicationContext.getBean(ManagerExpiration.class).get(
                 key,
                 DisposableExpirationMsImmutableEnvelope.class,
                 this::onDrop
@@ -285,17 +285,12 @@ public class BrokerMemoryImpl<T>
     }
 
     @Override
-    public boolean isRun() {
-        return propertyDispatcher.isRun();
-    }
-
-    @Override
-    public void run() {
+    public void runOperation() {
         propertyDispatcher.run();
     }
 
     @Override
-    public void shutdown() {
+    public void shutdownOperation() {
         propertyDispatcher.shutdown();
         lastTimeInQueue = null;
     }

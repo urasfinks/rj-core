@@ -8,7 +8,7 @@ import ru.jamsys.core.extension.annotation.PropertyKey;
 @SuppressWarnings({"UnusedDeclaration"})
 @Getter
 @FieldNameConstants
-public class ReCaptchaProperty extends AnnotationPropertyExtractor {
+public class ReCaptchaProperty extends AnnotationPropertyExtractor<String> {
 
     @PropertyKey("re.captcha.security.alias")
     private String securityAlias;

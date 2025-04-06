@@ -3,7 +3,6 @@ package ru.jamsys.core.extension.raw.writer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.extension.ByteSerialization;
 
@@ -14,9 +13,6 @@ import ru.jamsys.core.extension.ByteSerialization;
 @Getter
 @Accessors(chain = true)
 public class RawFileMarkup<T extends ByteSerialization> {
-
-    @Setter
-    private short stateCode;
 
     private final long position; // Позиция начала блока
 
@@ -34,7 +30,6 @@ public class RawFileMarkup<T extends ByteSerialization> {
             Class<T> cls
     ) {
         this.position = position;
-        this.stateCode = stateCode;
         this.dataLength = dataLength;
         this.cls = cls;
     }
@@ -54,7 +49,6 @@ public class RawFileMarkup<T extends ByteSerialization> {
         }
         T item = cls.getConstructor().newInstance();
         item.toObject(bytes);
-        item.setSubscriberStatusRead(stateCode);
         return item;
     }
 
