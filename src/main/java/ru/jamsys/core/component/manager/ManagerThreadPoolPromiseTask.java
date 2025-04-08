@@ -3,14 +3,14 @@ package ru.jamsys.core.component.manager;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.resource.thread.ThreadPoolPromiseTask;
 import ru.jamsys.core.resource.thread.ThreadResourcePromiseTask;
 
 @Component
-public class ManagerThreadPoolPromiseTask extends AbstractManager<ThreadPoolPromiseTask, Void> implements CascadeName {
+public class ManagerThreadPoolPromiseTask extends AbstractManager<ThreadPoolPromiseTask, Void> implements CascadeKey {
 
     public void addPromiseTask(PromiseTask promiseTask) {
         getManagerElement(promiseTask.getIndex(), ThreadResourcePromiseTask.class, null)
@@ -19,7 +19,7 @@ public class ManagerThreadPoolPromiseTask extends AbstractManager<ThreadPoolProm
 
     @Override
     public ThreadPoolPromiseTask build(String key, Class<?> classItem, Void builderArgument) {
-        ThreadPoolPromiseTask threadPoolPromiseTask = new ThreadPoolPromiseTask(getCascadeName(key, classItem));
+        ThreadPoolPromiseTask threadPoolPromiseTask = new ThreadPoolPromiseTask(getCascadeKey(key, classItem));
         threadPoolPromiseTask.run();
         return threadPoolPromiseTask;
     }
@@ -35,7 +35,7 @@ public class ManagerThreadPoolPromiseTask extends AbstractManager<ThreadPoolProm
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 

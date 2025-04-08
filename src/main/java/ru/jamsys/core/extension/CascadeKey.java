@@ -10,26 +10,26 @@ package ru.jamsys.core.extension;
 
 import ru.jamsys.core.App;
 
-public interface CascadeName {
+public interface CascadeKey {
 
     String getKey();
 
-    CascadeName getParentCascadeName();
+    CascadeKey getParentCascadeKey();
 
-    default String getCascadeName(String ns) {
-        return getCascadeName() + append(ns);
+    default String getCascadeKey(String ns) {
+        return getCascadeKey() + append(ns);
     }
 
-    default String getCascadeName(String ns, Class<?> classItem) {
-        return getCascadeName(ns) + "<" + App.getUniqueClassName(classItem) + ">";
+    default String getCascadeKey(String ns, Class<?> classItem) {
+        return getCascadeKey(ns) + "<" + App.getUniqueClassName(classItem) + ">";
     }
 
-    default String getCascadeName() {
+    default String getCascadeKey() {
         String key = getKey();
         if (key == null) {
-            return getParentCascadeName().getCascadeName() + append(App.getUniqueClassName(getClass()));
+            return getParentCascadeKey().getCascadeKey() + append(App.getUniqueClassName(getClass()));
         } else {
-            return getParentCascadeName().getCascadeName() + append(App.getUniqueClassName(getClass())) + append(key);
+            return getParentCascadeKey().getCascadeKey() + append(App.getUniqueClassName(getClass())) + append(key);
         }
     }
 

@@ -172,8 +172,7 @@ public class Cron {
         // Если занулен либо где-то дальше от текущего момента - закончили
         CompileResult compileResult = new CompileResult().setBeforeTimestamp(nextTimestamp);
         if (nextTimestamp == null || nextTimestamp > curTime) {
-            return compileResult
-                    .setNextTimestamp(nextTimestamp);
+            return compileResult.setNextTimestamp(nextTimestamp);
         }
         AvgMetric avgMetric = new AvgMetric();
         for (TimeVariant timeVariant : listTimeVariant) {

@@ -12,7 +12,7 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.extension.ByteSerialization;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -41,7 +41,7 @@ import java.util.function.Function;
 @FieldNameConstants
 @Component
 @Lazy
-public class UploadStatisticToRemote extends AnnotationPropertyExtractor<Object> implements Cron5s, PromiseGenerator, CascadeName {
+public class UploadStatisticToRemote extends AnnotationPropertyExtractor<Object> implements Cron5s, PromiseGenerator, CascadeKey {
 
     final BrokerMemory<StatisticSec> broker;
 
@@ -68,7 +68,7 @@ public class UploadStatisticToRemote extends AnnotationPropertyExtractor<Object>
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 
@@ -133,7 +133,7 @@ public class UploadStatisticToRemote extends AnnotationPropertyExtractor<Object>
                     }
                 })
                 .then("readDirectory", (_, _, promise) -> {
-                    String indexStatistic = getCascadeName();
+                    String indexStatistic = getCascadeKey();
                     List<String> filesRecursive = UtilFile.getFilesRecursive(getFolder(), false);
                     List<String> restore = new ArrayList<>();
                     for (String filePath : filesRecursive) {

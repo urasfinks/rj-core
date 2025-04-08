@@ -9,7 +9,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.component.manager.item.log.PersistentData;
 import ru.jamsys.core.extension.AbstractLifeCycle;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
@@ -35,7 +35,7 @@ public class ServiceLoggerRemote
         implements
         StatisticsFlushComponent,
         LifeCycleComponent,
-        CascadeName {
+        CascadeKey {
 
     private final Map<String, AtomicInteger> stat = new HashMap<>();
 
@@ -99,7 +99,7 @@ public class ServiceLoggerRemote
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 

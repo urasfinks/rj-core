@@ -10,7 +10,7 @@ import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
@@ -34,7 +34,7 @@ import java.util.Map;
 @FieldNameConstants
 @Component
 @Lazy
-public class StatisticFlush extends AnnotationPropertyExtractor<Boolean> implements Cron1s, PromiseGenerator, CascadeName {
+public class StatisticFlush extends AnnotationPropertyExtractor<Boolean> implements Cron1s, PromiseGenerator, CascadeKey {
 
     final BrokerMemory<StatisticSec> broker;
 
@@ -100,7 +100,7 @@ public class StatisticFlush extends AnnotationPropertyExtractor<Boolean> impleme
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 

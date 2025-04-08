@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.cron.CronTask;
 import ru.jamsys.core.extension.AbstractLifeCycle;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.template.cron.Cron;
@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("unused")
 @Component
 @Lazy
-public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent, CascadeName {
+public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent, CascadeKey {
 
     private Thread thread;
 
@@ -105,7 +105,6 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
                             if (calcSleepMs > 0) {
                                 Thread.sleep(calcSleepMs);
                             } else {
-                                Thread.sleep(1);//Что бы поймать Interrupt
                                 nextStartMs = System.currentTimeMillis();
                             }
                         } else {
@@ -121,7 +120,7 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
                 }
             }
         });
-        thread.setName(getCascadeName());
+        thread.setName(getCascadeKey());
         thread.start();
     }
 
@@ -145,7 +144,7 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 

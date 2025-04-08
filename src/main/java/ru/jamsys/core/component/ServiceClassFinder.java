@@ -4,7 +4,7 @@ import com.google.common.reflect.ClassPath;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
@@ -29,7 +29,7 @@ import java.util.List;
 // полное_имя_класса = true, то есть игнорирование включено, если поставить false => игнорирование выключено
 
 @Component
-public class ServiceClassFinder implements CascadeName {
+public class ServiceClassFinder implements CascadeKey {
 
     private final List<Class<?>> availableClass = new ArrayList<>();
 
@@ -60,9 +60,9 @@ public class ServiceClassFinder implements CascadeName {
                     availableClass.addAll(getAvailableClass(pkg));
                 },
                 ignoredClassMap,
-                getCascadeName("ignore")
+                getCascadeKey("ignore")
         )
-                .addSubscriptionRegexp(getCascadeName("ignore.*"));
+                .addSubscriptionRegexp(getCascadeKey("ignore.*"));
         propertyDispatcher.run();
         availableClass.clear();
         availableClass.addAll(getAvailableClass(pkg));
@@ -173,7 +173,7 @@ public class ServiceClassFinder implements CascadeName {
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 

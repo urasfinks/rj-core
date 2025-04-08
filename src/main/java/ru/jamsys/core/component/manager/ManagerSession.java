@@ -4,12 +4,12 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.Session;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.KeepAliveComponent;
 
 @Component
 public class ManagerSession extends AbstractManager<Session, Integer>
-        implements KeepAliveComponent, CascadeName {
+        implements KeepAliveComponent, CascadeKey {
 
     public <K, V> Session<K, V> get(String index, Integer keepAliveOnInactivityMs) {
         @SuppressWarnings("all")
@@ -19,7 +19,7 @@ public class ManagerSession extends AbstractManager<Session, Integer>
 
     @Override
     public Session build(String key, Class<?> classItem, Integer builderArgument) {
-        return new Session(getCascadeName(key, classItem), builderArgument);
+        return new Session(getCascadeKey(key, classItem), builderArgument);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class ManagerSession extends AbstractManager<Session, Integer>
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 

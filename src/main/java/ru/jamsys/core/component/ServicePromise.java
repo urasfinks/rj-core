@@ -6,7 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerBroker;
 import ru.jamsys.core.component.manager.ManagerExpiration;
 import ru.jamsys.core.component.manager.item.Expiration;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Lazy
-public class ServicePromise implements CascadeName, KeepAliveComponent, StatisticsFlushComponent {
+public class ServicePromise implements CascadeKey, KeepAliveComponent, StatisticsFlushComponent {
 
     public static Set<Promise> queueMultipleCompleteSet = Util.getConcurrentHashSet();
 
@@ -45,7 +45,7 @@ public class ServicePromise implements CascadeName, KeepAliveComponent, Statisti
 
     public ServicePromise(ManagerBroker managerBroker, ManagerExpiration managerExpiration) {
         this.broker = managerBroker.initAndGet(
-                getCascadeName(),
+                getCascadeKey(),
                 Promise.class,
                 promise -> promise.timeOut(App.getUniqueClassName(getClass()) + ".onPromiseTaskExpired")
         );
@@ -122,7 +122,7 @@ public class ServicePromise implements CascadeName, KeepAliveComponent, Statisti
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 

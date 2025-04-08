@@ -7,7 +7,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // TODO: Нужен RateLimit на Http запросы
 
 @SpringBootApplication
-public class App implements CascadeName {
+public class App implements CascadeKey {
 
     public static App cascadeName = new App();
 
@@ -132,12 +132,12 @@ public class App implements CascadeName {
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return null;
     }
 
     @Override
-    public String getCascadeName() {
+    public String getCascadeKey() {
         return App.class.getSimpleName();
     }
 

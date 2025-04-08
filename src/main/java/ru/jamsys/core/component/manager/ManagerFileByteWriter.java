@@ -4,14 +4,14 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.FileByteWriter;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.KeepAliveComponent;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 public class ManagerFileByteWriter extends AbstractManager<FileByteWriter, Void>
-        implements KeepAliveComponent, CascadeName {
+        implements KeepAliveComponent, CascadeKey {
 
     public FileByteWriter get(String key, Class<?> classItem) {
         return getManagerElement(key, classItem, null);
@@ -19,7 +19,7 @@ public class ManagerFileByteWriter extends AbstractManager<FileByteWriter, Void>
 
     @Override
     public FileByteWriter build(String key, Class<?> classItem, Void builderArgument) {
-        return new FileByteWriter(getCascadeName(key, classItem));
+        return new FileByteWriter(getCascadeKey(key, classItem));
     }
 
     @Override
@@ -33,7 +33,7 @@ public class ManagerFileByteWriter extends AbstractManager<FileByteWriter, Void>
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 

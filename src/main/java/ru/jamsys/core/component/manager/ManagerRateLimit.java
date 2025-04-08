@@ -3,11 +3,11 @@ package ru.jamsys.core.component.manager;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.rate.limit.RateLimit;
 
 @Component
-public class ManagerRateLimit extends AbstractManager<RateLimit, Void> implements CascadeName {
+public class ManagerRateLimit extends AbstractManager<RateLimit, Void> implements CascadeKey {
 
     public ManagerRateLimit() {
         setCleanableMap(false);
@@ -19,7 +19,7 @@ public class ManagerRateLimit extends AbstractManager<RateLimit, Void> implement
 
     @Override
     public RateLimit build(String key, Class<?> classItem, Void builderArgument) {
-        return new RateLimit(getCascadeName(key, classItem));
+        return new RateLimit(getCascadeKey(key, classItem));
     }
 
     @Override
@@ -33,7 +33,7 @@ public class ManagerRateLimit extends AbstractManager<RateLimit, Void> implement
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 

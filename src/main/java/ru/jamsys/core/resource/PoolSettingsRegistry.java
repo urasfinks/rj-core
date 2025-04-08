@@ -3,7 +3,7 @@ package ru.jamsys.core.resource;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.sub.PoolSettings;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +14,7 @@ public class PoolSettingsRegistry<
         R extends Resource<?, RC> & ResourceCheckException,
         RC extends ResourceArguments
         >
-        implements CascadeName {
+        implements CascadeKey {
 
     private final Map<Class<R>, Function<Throwable, Boolean>> fn = new ConcurrentHashMap<>();
 
@@ -22,7 +22,7 @@ public class PoolSettingsRegistry<
 
     @SuppressWarnings("all")
     public PoolSettings<?> get(Class<R> cls, String ns) {
-        return registry.computeIfAbsent(getCascadeName(ns, cls), key -> {
+        return registry.computeIfAbsent(getCascadeKey(ns, cls), key -> {
             return (PoolSettings<R>) new PoolSettings<>(
                     key,
                     cls,
@@ -38,7 +38,7 @@ public class PoolSettingsRegistry<
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 

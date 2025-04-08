@@ -5,14 +5,14 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.BrokerMemoryImpl;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.KeepAliveComponent;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 
 import java.util.function.Consumer;
 
 @Component
-public class ManagerBroker extends AbstractManager<BrokerMemory<?>, Consumer<?>> implements KeepAliveComponent, CascadeName {
+public class ManagerBroker extends AbstractManager<BrokerMemory<?>, Consumer<?>> implements KeepAliveComponent, CascadeKey {
 
     private final ApplicationContext applicationContext;
 
@@ -35,7 +35,7 @@ public class ManagerBroker extends AbstractManager<BrokerMemory<?>, Consumer<?>>
     @Override
     public BrokerMemory<?> build(String key, Class<?> classItem, Consumer<?> builderArgument) {
         return new BrokerMemoryImpl<>(
-                getCascadeName(key, classItem),
+                getCascadeKey(key, classItem),
                 applicationContext,
                 classItem,
                 (Consumer) builderArgument
@@ -53,7 +53,7 @@ public class ManagerBroker extends AbstractManager<BrokerMemory<?>, Consumer<?>>
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 

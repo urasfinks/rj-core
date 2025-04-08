@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.item.Expiration;
 import ru.jamsys.core.component.manager.sub.AbstractManager;
-import ru.jamsys.core.extension.CascadeName;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 
 import java.util.function.Consumer;
@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 public class ManagerExpiration extends
         AbstractManager<Expiration<?>,
                 Consumer<DisposableExpirationMsImmutableEnvelope<?>>>
-        implements CascadeName {
+        implements CascadeKey {
 
     @SuppressWarnings("all")
     public <T> Expiration<T> get(
@@ -33,7 +33,7 @@ public class ManagerExpiration extends
             Consumer<DisposableExpirationMsImmutableEnvelope<?>> builderArgument
     ) {
         return new Expiration<>(
-                getCascadeName(key, classItem),
+                getCascadeKey(key, classItem),
                 classItem,
                 builderArgument
         );
@@ -50,7 +50,7 @@ public class ManagerExpiration extends
     }
 
     @Override
-    public CascadeName getParentCascadeName() {
+    public CascadeKey getParentCascadeKey() {
         return App.cascadeName;
     }
 }
