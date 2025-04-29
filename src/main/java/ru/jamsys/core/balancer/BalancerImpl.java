@@ -9,12 +9,10 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class BalancerImpl<T> implements Balancer {
+public class BalancerImpl implements Balancer {
 
     @Getter
     List<BalancerItem> list = new ArrayList<>();
-
-    List<BalancerItem> active = new CopyOnWriteArrayList<>();
 
     final BalancerAlgorithm balancerAlgorithm;
 
@@ -30,11 +28,6 @@ public class BalancerImpl<T> implements Balancer {
     @Override
     public BalancerItem get(@Nullable String index) {
         return this.balancerAlgorithm.get(index);
-    }
-
-    @Override
-    public void keepAlive(AtomicBoolean threadRun) {
-        balancerAlgorithm.keepAlive(threadRun);
     }
 
 }

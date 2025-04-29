@@ -1,11 +1,13 @@
 package ru.jamsys.core.rate.limit;
 
+import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.CamelNormalization;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.rate.limit.item.RateLimitItemPeriodic;
 import ru.jamsys.core.rate.limit.item.RateLimitItemTps;
 
+@FieldNameConstants
 public enum RateLimitFactory implements CamelNormalization {
 
     TPS, // В секунду

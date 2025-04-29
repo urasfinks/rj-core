@@ -3,12 +3,12 @@ package ru.jamsys.core.resource.notification.apple;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.ManagerVirtualFileSystem;
+import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceArguments;
+import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
@@ -29,20 +29,18 @@ public class AppleNotificationResource
         Resource<AppleNotificationRequest, HttpResponse>,
         PropertyListener {
 
-    private ManagerVirtualFileSystem managerVirtualFileSystem;
-
     private PropertyDispatcher<Object> propertyDispatcher;
 
     private final AppleNotificationProperty appleNotificationProperty = new AppleNotificationProperty();
 
     @Override
-    public void setArguments(ResourceArguments resourceArguments) throws Throwable {
-        managerVirtualFileSystem = App.get(ManagerVirtualFileSystem.class);
+    public void init(ResourceConfiguration resourceConfiguration) throws Throwable {
+
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 appleNotificationProperty,
-                resourceArguments.ns
+                resourceConfiguration.ns
         );
     }
 
@@ -71,7 +69,7 @@ public class AppleNotificationResource
         httpConnector.setRequestHeader("apns-topic", appleNotificationProperty.getTopic());
 
         httpConnector.setKeyStore(
-                managerVirtualFileSystem.get(appleNotificationProperty.getVirtualPath()),
+                App.get(Manager.class).get(File.class, appleNotificationProperty.getVirtualPath()),
                 FileViewKeyStore.prop.SECURITY_KEY.name(), appleNotificationProperty.getSecurityAlias(),
                 FileViewKeyStore.prop.TYPE.name(), "PKCS12"
         );
@@ -104,8 +102,10 @@ public class AppleNotificationResource
         if (appleNotificationProperty.getVirtualPath() == null || appleNotificationProperty.getStorage() == null) {
             return;
         }
-        managerVirtualFileSystem.add(
-                new File(appleNotificationProperty.getVirtualPath(), FileLoaderFactory.fromFileSystem(appleNotificationProperty.getStorage()))
+        App.get(Manager.class).configure(
+                File.class,
+                appleNotificationProperty.getVirtualPath(),
+                path -> new File(path, FileLoaderFactory.fromFileSystem(appleNotificationProperty.getStorage()))
         );
     }
 

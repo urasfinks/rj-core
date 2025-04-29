@@ -1,31 +1,31 @@
 package ru.jamsys.core.pool;
 
-import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.extension.StatisticsFlush;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
-// RA - ResourceArguments
+// RT - ResourceArgument
 // RR - ResourceResult
 // PI - PoolItem
 
-public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlush {
+public interface Pool<T extends ExpirationMsMutable & Valid> extends StatisticsFlush {
 
     //После работы с ресурсом его надо вернуть в пул
-    void completePoolItem(PI ret, Throwable e);
+    void releasePoolItem(T ret, Throwable e);
 
     // overclocking / onInitPool min resource / addPoolItemIfEmpty
-    PI createPoolItem() ;
+    T createPoolItem() ;
 
     // Реализация закрытия ресурса
-    void closePoolItem(PI poolItem);
+    void closePoolItem(T poolItem);
 
     //Реализация проверки ошибки, для принятия решений выкидывания ресурса из пула
-    boolean checkFatalException(Throwable th);
+    boolean checkFatalException(T poolItem, Throwable th);
 
     // Ручное удаление ресурса из пула, желательно конечно лишний раз не использовать
-    void remove(PI poolItem);
+    void remove(T poolItem);
 
     // Ручное удаление ресурса из пула + вызов closePoolItem
-    void removeAndClose(PI poolItem);
+    void removeAndClose(T poolItem);
 
     // Если min = 0, и в пуле никого нет, но есть внешний потребитель, которому нужны ресурсы в пуле.
     // Добавляет ресурс в пустой пул
@@ -35,9 +35,9 @@ public interface Pool<RA, RR, PI extends Resource<RA, RR>> extends StatisticsFlu
     void onParkUpdate();
 
     // Если есть потребители, которые ждут ресурс - отдаём ресурс без перевставок в park
-    boolean forwardResourceWithoutParking(PI poolItem);
+    boolean forwardResourceWithoutParking(T poolItem);
 
-    // Забрать взят ресурс из парка
-    PI getFromPark();
+    // Забрать ресурс из парка
+    T get();
 
 }

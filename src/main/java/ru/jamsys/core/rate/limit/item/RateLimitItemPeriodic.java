@@ -4,26 +4,25 @@ import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.AbstractLifeCycle;
-import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.UtilDate;
-import ru.jamsys.core.statistic.Statistic;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 @FieldNameConstants
 public class RateLimitItemPeriodic
-        extends AbstractLifeCycle
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements RateLimitItem,
-        LifeCycleInterface {
+        ManagerElement {
 
     private final AtomicInteger tpu = new AtomicInteger(0);
 
@@ -71,10 +70,10 @@ public class RateLimitItemPeriodic
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         long curTime = System.currentTimeMillis();
-        List<Statistic> result = new ArrayList<>();
-        result.add(flushAndGetStatistic(curTime, parentTags, parentFields));
+        List<DataHeader> result = new ArrayList<>();
+        result.add(flushAndGetStatistic(curTime));
         return result;
     }
 
@@ -82,10 +81,10 @@ public class RateLimitItemPeriodic
         return nextTimeFlushFormat;
     }
 
-    public Statistic flushAndGetStatistic(long curTime, Map<String, String> parentTags, Map<String, Object> parentFields) {
-        Statistic statistic = new Statistic(parentTags, parentFields);
-        statistic.addField("period", periodName);
-        statistic.addField("max", property.getMax());
+    public DataHeader flushAndGetStatistic(long curTime) {
+        DataHeader statistic = new DataHeader().setBody(namespace);
+        statistic.put("period", periodName);
+        statistic.put("max", property.getMax());
         if (nextTimeFlush.get() <= curTime) {
             Calendar now = Calendar.getInstance();
             now.setTimeInMillis(curTime);
@@ -93,11 +92,11 @@ public class RateLimitItemPeriodic
             long timeInMs = now.getTimeInMillis();
             nextTimeFlush.set(timeInMs);
             nextTimeFlushFormat = UtilDate.msFormat(timeInMs);
-            statistic.addField("tpu", tpu.getAndSet(0));
-            statistic.addField("flushed", true);
+            statistic.put("tpu", tpu.getAndSet(0));
+            statistic.put("flushed", true);
         } else {
-            statistic.addField("tpu", tpu.get());
-            statistic.addField("flushed", false);
+            statistic.put("tpu", tpu.get());
+            statistic.put("flushed", false);
         }
         return statistic;
     }

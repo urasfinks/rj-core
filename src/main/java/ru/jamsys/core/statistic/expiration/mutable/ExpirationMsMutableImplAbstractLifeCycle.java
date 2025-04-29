@@ -7,6 +7,8 @@ import ru.jamsys.core.extension.AbstractLifeCycle;
 
 import java.io.Serializable;
 
+// TODO: попробовать убрать Serializable
+
 @Setter
 @Getter
 @ToString

@@ -4,8 +4,8 @@ import lombok.Getter;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterString;
+import ru.jamsys.core.promise.AbstractPromiseTask;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseTask;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -15,11 +15,11 @@ public class PromiseException extends RuntimeException {
 
     Promise promise;
 
-    PromiseTask promiseTask;
+    AbstractPromiseTask promiseTask;
 
     Throwable throwable;
 
-    public PromiseException(Promise promise, PromiseTask promiseTask, Throwable throwable) {
+    public PromiseException(Promise promise, AbstractPromiseTask promiseTask, Throwable throwable) {
         this.promise = promise;
         this.promiseTask = promiseTask;
         this.throwable = throwable;

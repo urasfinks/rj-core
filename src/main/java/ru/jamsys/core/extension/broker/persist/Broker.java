@@ -1,7 +1,5 @@
 package ru.jamsys.core.extension.broker.persist;
 
-import ru.jamsys.core.extension.ClassEquals;
-import ru.jamsys.core.extension.KeepAlive;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.addable.AddToList;
@@ -13,9 +11,8 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 public interface Broker<T> extends
         StatisticsFlush,
         ExpirationMsMutable,
-        ClassEquals,
         LifeCycleInterface,
-        KeepAlive, AddToList<
+        AddToList<
         ExpirationMsImmutableEnvelope<T>,
         DisposableExpirationMsImmutableEnvelope<T> // Должны вернуть, что бы из вне можно было сделать remove
         > {
@@ -31,7 +28,6 @@ public interface Broker<T> extends
         return add(new ExpirationMsImmutableEnvelope<>(element, timeOut, curTime));
     }
 
-    // Добавление без явного указания времени
     default DisposableExpirationMsImmutableEnvelope<T> add(T element, long timeOutMs){
         return add(new ExpirationMsImmutableEnvelope<>(element, timeOutMs));
     }

@@ -289,13 +289,13 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
                 HashSet<String> strings = new HashSet<>(Collections.list(keyStore.aliases()));
                 KeyStore finalKeyStore1 = keyStore;
                 strings.forEach((String key) -> {
-                    System.out.println(key);
+                    UtilLog.printInfo(SecurityComponent.class, key);
                     try {
                         KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) finalKeyStore1.getEntry(key, keyStorePP);
                         if (ske != null) {
                             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
                             PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(ske.getSecretKey(), PBEKeySpec.class);
-                            System.out.println(keySpec.getPassword());
+                            UtilLog.printInfo(SecurityComponent.class, keySpec.getPassword());
                         }
                     } catch (Exception e) {
                         throw new ForwardException(e);

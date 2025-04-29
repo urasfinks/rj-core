@@ -4,17 +4,13 @@ import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.ManagerExpiration;
-import ru.jamsys.core.extension.ClassEquals;
-import ru.jamsys.core.extension.KeepAlive;
-import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.StatisticsFlush;
+import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.AvgMetric;
-import ru.jamsys.core.statistic.Statistic;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
@@ -27,30 +23,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-// Брокер - циклическая очередь элементов, с timeout элементов (onExpired = 3 секунды)
-// Не является CascadeName - используйте каскадные имена в ключе
+// Брокер - циклическая очередь элементов, с timeout элементов
 
 public class BrokerMemoryImpl<T>
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         BrokerMemory<T>,
-        StatisticsFlush,
-        ClassEquals,
-        LifeCycleInterface,
-        KeepAlive,
         AddToList<
                 ExpirationMsImmutableEnvelope<T>,
                 DisposableExpirationMsImmutableEnvelope<T> // Должны вернуть, что бы из вне можно было сделать remove
                 > {
 
 
-    private final AtomicInteger queueSize = new AtomicInteger(0);
+    private final AtomicInteger mainQueueSize = new AtomicInteger(0);
 
     private final AtomicInteger tailQueueSize = new AtomicInteger(0);
 
-    private final ConcurrentLinkedDeque<DisposableExpirationMsImmutableEnvelope<T>> queue = new ConcurrentLinkedDeque<>();
+    // Основная очередь сообщений
+    private final ConcurrentLinkedDeque<DisposableExpirationMsImmutableEnvelope<T>> mainQueue = new ConcurrentLinkedDeque<>();
 
-    //Последний сообщения проходящие через очередь
+    // Последний сообщения проходящие через очередь
     private final ConcurrentLinkedDeque<ExpirationMsImmutableEnvelope<T>> tailQueue = new ConcurrentLinkedDeque<>();
 
     // Я подумал, при деградации хорошо увидеть, что очередь вообще читается
@@ -61,17 +53,9 @@ public class BrokerMemoryImpl<T>
     private final AvgMetric timeInQueue = new AvgMetric();
 
     @Getter
-    private Double lastTimeInQueue;
-
-    @Getter
     final String key;
 
     private final Consumer<T> onDrop;
-
-    private final Class<T> classItem;
-
-    @SuppressWarnings("all")
-    private final Expiration<DisposableExpirationMsImmutableEnvelope> expiration;
 
     @Getter
     private final BrokerProperty propertyBroker = new BrokerProperty();
@@ -79,43 +63,36 @@ public class BrokerMemoryImpl<T>
     @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
+    private final Manager.Configuration<ExpirationList> expirationListConfiguration;
+
     public BrokerMemoryImpl(
             String key,
             ApplicationContext applicationContext,
-            Class<T> classItem,
             Consumer<T> onDrop
     ) {
         this.key = key;
-        this.classItem = classItem;
         this.onDrop = onDrop;
 
-        ServiceProperty serviceProperty = applicationContext.getBean(ServiceProperty.class);
         propertyDispatcher = new PropertyDispatcher<>(
-                serviceProperty,
+                applicationContext.getBean(ServiceProperty.class),
                 null,
                 getPropertyBroker(),
                 key
         );
 
-        expiration = applicationContext.getBean(ManagerExpiration.class).get(
+        expirationListConfiguration = applicationContext.getBean(Manager.class).configure(
+                ExpirationList.class,
                 key,
-                DisposableExpirationMsImmutableEnvelope.class,
-                this::onDrop
+                (k) -> new ExpirationList<>(k, this::onExpired)
         );
     }
 
     public int size() {
-        return queueSize.get();
+        return mainQueueSize.get();
     }
 
     public boolean isEmpty() {
-        return queue.isEmpty();
-    }
-
-    private void statistic(ExpirationMsImmutableEnvelope<T> envelope) {
-        //#1, что бы видеть реальное кол-во опросов изъятия
-        tpsDequeue.incrementAndGet();
-        timeInQueue.add(envelope.getInactivityTimeMs());
+        return mainQueue.isEmpty();
     }
 
     @Override
@@ -123,23 +100,22 @@ public class BrokerMemoryImpl<T>
         if (envelope == null || envelope.isExpired()) {
             return null;
         }
-        setActivity();
+        isNotRunThrow();
+        markActive();
         DisposableExpirationMsImmutableEnvelope<T> convert = DisposableExpirationMsImmutableEnvelope.convert(envelope);
         // Проблема с производительностью
         // Мы не можем использовать queue.size() для расчёта переполнения
         // пример: вставка 100к записей занимаем 35сек
-        if (queueSize.get() >= getPropertyBroker().getSize()) {
+        if (mainQueueSize.get() >= getPropertyBroker().getSize()) {
             // Он конечно протух не по своей воле, но что делать...
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
-            DisposableExpirationMsImmutableEnvelope<T> teoDisposableExpirationMsImmutableEnvelope = queue.removeFirst();
-            onDrop(teoDisposableExpirationMsImmutableEnvelope);
+            onExpired(mainQueue.removeFirst());
         }
 
-        // Не важно есть onDropConsumer или нет, мы при помощи её будем удалять сообщения из брокера
-        expiration.add((DisposableExpirationMsImmutableEnvelope) convert);
+        expirationListConfiguration.get().add(convert);
 
-        queue.add(convert);
-        queueSize.incrementAndGet();
+        mainQueue.add(convert);
+        mainQueueSize.incrementAndGet();
 
         if (tailQueueSize.get() >= getPropertyBroker().getTailSize()) {
             tailQueue.removeFirst();
@@ -160,24 +136,24 @@ public class BrokerMemoryImpl<T>
 
     private ExpirationMsImmutableEnvelope<T> pool(boolean first) {
         do {
-            DisposableExpirationMsImmutableEnvelope<T> result = first ? queue.pollFirst() : queue.pollLast();
+            DisposableExpirationMsImmutableEnvelope<T> result = first ? mainQueue.pollFirst() : mainQueue.pollLast();
             if (result == null) {
                 return null;
             }
             if (result.isExpired()) {
-                onDrop(result);
+                onExpired(result);
                 continue;
             }
             T value = result.getValue();
             if (value == null) {
                 continue;
             }
-            statistic(result);
+            onQueueLoss(result);
             // Все операции делаем в конце, когда получаем нейтрализованный объект
             // Так как многопоточная среда, могут выхватить из-под носа
-            queueSize.decrementAndGet();
+            mainQueueSize.decrementAndGet();
             return result.revert();
-        } while (!queue.isEmpty());
+        } while (!mainQueue.isEmpty());
         return null;
     }
 
@@ -189,25 +165,36 @@ public class BrokerMemoryImpl<T>
             // Делаем так, что бы элемент больше не достался никому
             T value = envelope.getValue();
             if (value != null) {
-                statistic(envelope);
+                onQueueLoss(envelope);
                 // Когда явно получили эксклюзивный доступ к объекту - можно и статистику посчитать
-                queueSize.decrementAndGet();
+                mainQueueSize.decrementAndGet();
                 // Объект уже нейтрализован, поэтому просто его удаляем из expiration
-                expiration.remove((DisposableExpirationMsImmutableEnvelope) envelope, false);
+                expirationListConfiguration.get().remove(envelope, false);
             }
         }
     }
 
+    // Когда произошло изъятие элемента из очереди любым способом
+    private void onQueueLoss(ExpirationMsImmutableEnvelope<T> envelope) {
+        markActive();
+        tpsDequeue.incrementAndGet();
+        timeInQueue.add(envelope.getInactivityTimeMs());
+    }
+
     //Обработка выпадающих сообщений
     @SuppressWarnings("all")
-    private void onDrop(DisposableExpirationMsImmutableEnvelope envelope) {
+    private void onExpired(DisposableExpirationMsImmutableEnvelope envelope) {
         if (envelope == null) {
             return;
         }
         @SuppressWarnings("unchecked")
         T value = (T) envelope.getValue();
         if (value != null) {
-            queueSize.decrementAndGet();
+            // На самомом деле мы не удаляем из очереди, однако вызываем onQueueLoss, что бы увеличть счётчик на вставку
+            // так как бегать по очереди в поисках элемента - накладная операция, когда poll дойдёт до этого элемента
+            // он просто провернёт через continue его. При этом вставку в очередь будем разрешать, не смотря на
+            // то что в очереди может находится реально больше элементов, чем положено.
+            onQueueLoss(envelope);
             tpsDrop.incrementAndGet();
             if (onDrop != null) {
                 onDrop.accept(value);
@@ -219,29 +206,29 @@ public class BrokerMemoryImpl<T>
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x
-        return queueSize.get() * 100 / getPropertyBroker().getSize();
+        return mainQueueSize.get() * 100 / getPropertyBroker().getSize();
     }
 
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
-        List<Statistic> result = new ArrayList<>();
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<DataHeader> result = new ArrayList<>();
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
         int tpsDropFlush = tpsDrop.getAndSet(0);
-        int sizeFlush = queueSize.get();
+        int sizeFlush = mainQueueSize.get();
         Map<String, Object> flush = timeInQueue.flush("time");
-        lastTimeInQueue = (Double) flush.get("timeAvg");
-        result.add(new Statistic(parentTags, parentFields)
-                .addField("tpsDeq", tpsDequeueFlush)
-                .addField("tpsDrop", tpsDropFlush)
-                .addField("size", sizeFlush)
-                .addFields(flush)
+        result.add(new DataHeader()
+                .setBody(key)
+                .put("tpsDeq", tpsDequeueFlush)
+                .put("tpsDrop", tpsDropFlush)
+                .put("size", sizeFlush)
+                .putAll(flush)
         );
         return result;
     }
 
     // Рекомендуется использовать только для тестов
     public void reset() {
-        queue.clear();
-        queueSize.set(0);
+        mainQueue.clear();
+        mainQueueSize.set(0);
         tailQueue.clear();
         tpsDequeue.set(0);
         tailQueueSize.set(0);
@@ -257,31 +244,9 @@ public class BrokerMemoryImpl<T>
 
     public List<T> getCloneQueue(@Nullable AtomicBoolean run) {
         final List<T> cloned = new ArrayList<>();
-        UtilRisc.forEach(run, queue, (DisposableExpirationMsImmutableEnvelope<T> envelope)
+        UtilRisc.forEach(run, mainQueue, (DisposableExpirationMsImmutableEnvelope<T> envelope)
                 -> cloned.add(envelope.revert().getValue()));
         return cloned;
-    }
-
-    @Override
-    public boolean classEquals(Class<?> classItem) {
-        return this.classItem.equals(classItem);
-    }
-
-    @Override
-    public void keepAlive(AtomicBoolean threadRun) {
-        // Если в очередь добавлять сообщения - будет вызываться active()
-        // Брокер будет жить и при переполнении при вставке даже будет чистить очередь с начала
-        // Но если очистка будет из вне при помощи remove или onDrop, да объекты будут обезврежены от
-        // повторного использования, но ссылки в очереди останутся
-        // Как решение пробегать с начала очереди, до момента получения не нейтрализованного объекта
-        while (threadRun.get()) {
-            // так как ConcurrentLinkedDeque.remove() идёт с first() - будем тоже работать с конца
-            DisposableExpirationMsImmutableEnvelope<T> obj = queue.peekFirst();
-            if (obj == null || !obj.isNeutralized()) {
-                break;
-            }
-            queue.remove(obj);
-        }
     }
 
     @Override
@@ -291,8 +256,20 @@ public class BrokerMemoryImpl<T>
 
     @Override
     public void shutdownOperation() {
+        // Ничего светлого больше не будет, если объект останавливают. Что бы хоть как-то отразить свою недосказанность
+        // запихаем все не считанные сообщения в onDrop
+        if (onDrop != null) {
+            while (!mainQueue.isEmpty()) {
+                DisposableExpirationMsImmutableEnvelope<T> poll = mainQueue.pollFirst();
+                if (poll != null) {
+                    T value = poll.getValue();
+                    if (value != null) {
+                        onDrop.accept(value);
+                    }
+                }
+            }
+        }
         propertyDispatcher.shutdown();
-        lastTimeInQueue = null;
     }
 
 }

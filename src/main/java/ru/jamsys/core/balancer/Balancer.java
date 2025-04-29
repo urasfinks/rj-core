@@ -1,11 +1,10 @@
 package ru.jamsys.core.balancer;
 
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.extension.KeepAlive;
 
 import java.util.List;
 
-public interface Balancer extends KeepAlive {
+public interface Balancer {
 
     BalancerItem get(@Nullable String index);
 

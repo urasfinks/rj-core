@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.component.manager.ManagerVirtualFileSystem;
+import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.FileLoaderFactory;
 import ru.jamsys.core.resource.virtual.file.system.FileSaverFactory;
@@ -81,12 +81,15 @@ class FileTest {
 
     @Test
     void testComponent() {
-        File file = new File("hello/world/1.txt", FileLoaderFactory.fromString("Hello world", "UTF-8"));
-        ManagerVirtualFileSystem managerVirtualFileSystem = App.get(ManagerVirtualFileSystem.class);
-        managerVirtualFileSystem.add(file);
-        File file1 = managerVirtualFileSystem.get("/hello/world/1.txt");
+        Manager.Configuration<File> fileConfiguration = App.get(Manager.class).configure(
+                File.class,
+                "hello/world/1.txt",
+                path -> new File(path, FileLoaderFactory.fromString("Hello world", "UTF-8"))
+        );
 
-        Assertions.assertEquals(file, file1, "Файлы не равны");
+        File file1 = fileConfiguration.get();
+
+        Assertions.assertEquals("1.txt", file1.getFileName());
     }
 
     @Test

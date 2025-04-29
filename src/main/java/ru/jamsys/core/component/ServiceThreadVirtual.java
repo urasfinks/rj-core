@@ -3,7 +3,7 @@ package ru.jamsys.core.component;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleComponent;
-import ru.jamsys.core.promise.PromiseTask;
+import ru.jamsys.core.promise.AbstractPromiseTask;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,7 +18,7 @@ public class ServiceThreadVirtual extends AbstractLifeCycle implements LifeCycle
     private final ExecutorService executorService = Executors
             .newThreadPerTaskExecutor(Thread.ofVirtual().name("v-thread-", 0).factory());
 
-    public void execute(PromiseTask arguments) {
+    public void execute(AbstractPromiseTask arguments) {
         arguments.setThreadRun(getRun());
         executorService.submit(arguments);
     }

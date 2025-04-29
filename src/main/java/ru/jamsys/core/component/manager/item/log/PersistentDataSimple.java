@@ -63,15 +63,14 @@ public class PersistentDataSimple implements PersistentData {
         setBody(UtilFileByteReader.readString(fis));
     }
 
-    @JsonIgnore
     @Override
-    public String getView() {
-        return "";
+    public Map<String, Object> getHeader() {
+        return Map.of();
     }
 
     @Override
-    public Map<String, String> getHeader() {
-        return Map.of();
+    public void print() {
+
     }
 
 }

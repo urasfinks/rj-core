@@ -5,10 +5,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.ManagerBroker;
+import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.item.BrokerMemoryImpl;
 import ru.jamsys.core.component.manager.item.BrokerProperty;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
@@ -25,7 +27,11 @@ class BrokerMemoryImplTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runCore();
-        App.get(ManagerBroker.class).initAndGet(XTest.class.getSimpleName(), XTest.class, _ -> System.out.println("DROP"));
+        App.get(Manager.class).configure(
+                BrokerMemory.class,
+                XTest.class.getSimpleName(),
+                (k) -> new BrokerMemoryImpl<>(k, App.context, _ -> UtilLog.printInfo(BrokerMemoryImplTest.class, "DROP"))
+        );
     }
 
     @AfterAll
@@ -35,12 +41,15 @@ class BrokerMemoryImplTest {
 
     @Test
     void testLiner() {
-        List<XTest> droped = new ArrayList<>();
-        BrokerMemory<XTest> broker = App.get(ManagerBroker.class)
-                .initAndGet(XTest.class.getSimpleName() + "_1", XTest.class, xTest -> {
-                    System.out.println("dropped: " + xTest);
-                    droped.add(xTest);
-                });
+        List<XTest> dropped = new ArrayList<>();
+        BrokerMemory<XTest> broker = App.get(Manager.class).configure(
+                        BrokerMemory.class,
+                        XTest.class.getSimpleName() + "_1",
+                        (k) -> new BrokerMemoryImpl<XTest>(k, App.context, xTest -> {
+                            dropped.add(xTest);
+                        })
+                )
+                .getGeneric();
 
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker
@@ -89,7 +98,7 @@ class BrokerMemoryImplTest {
 
         List<XTest> tail = broker.getTailQueue(null);
         Assertions.assertEquals("[XTest{x=12}, XTest{x=13}, XTest{x=14}]", tail.toString(), "#8");
-        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}]", droped.toString(), "#8");
+        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}]", dropped.toString(), "#8");
 
         List<XTest> cloneQueue = broker.getCloneQueue(null);
         Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", cloneQueue.toString(), "#9");
@@ -99,8 +108,8 @@ class BrokerMemoryImplTest {
 
     @Test
     void testCyclic() {
-        BrokerMemory<XTest> broker = App.get(ManagerBroker.class)
-                .get(XTest.class.getSimpleName(), XTest.class);
+        BrokerMemory<XTest> broker = App.get(Manager.class)
+                .getGeneric(BrokerMemory.class, XTest.class.getSimpleName());
 
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker
@@ -160,8 +169,8 @@ class BrokerMemoryImplTest {
 
     @Test
     void testReference() {
-        BrokerMemory<XTest> broker = App.get(ManagerBroker.class)
-                .get(XTest.class.getSimpleName(), XTest.class);
+        BrokerMemory<XTest> broker = App.get(Manager.class)
+                .getGeneric(BrokerMemory.class, XTest.class.getSimpleName());
         XTest obj = new XTest(1);
         DisposableExpirationMsImmutableEnvelope<XTest> o1 = broker.add(obj, 6_000L);
 
@@ -179,8 +188,8 @@ class BrokerMemoryImplTest {
     void testReference2() {
         AtomicBoolean run = new AtomicBoolean(true);
 
-        BrokerMemory<XTest> broker = App.get(ManagerBroker.class)
-                .get(XTest.class.getSimpleName(), XTest.class);
+        BrokerMemory<XTest> broker = App.get(Manager.class)
+                .getGeneric(BrokerMemory.class, XTest.class.getSimpleName());
         XTest obj = new XTest(1);
         XTest obj2 = new XTest(2);
         DisposableExpirationMsImmutableEnvelope<XTest> o1 = null;
@@ -204,8 +213,15 @@ class BrokerMemoryImplTest {
     @Test
     void testExpired() {
         AtomicInteger counter = new AtomicInteger(0);
-        BrokerMemory<XTest> broker = App.get(ManagerBroker.class)
-                .initAndGet(XTest.class.getSimpleName() + "_2", XTest.class, _ -> counter.incrementAndGet());
+
+        BrokerMemory<XTest> broker = App.get(Manager.class).configure(
+                        BrokerMemory.class,
+                        XTest.class.getSimpleName() + "_2",
+                        (k) -> new BrokerMemoryImpl<XTest>(k, App.context, _ -> {
+                            counter.incrementAndGet();
+                        })
+                )
+                .getGeneric();
 
         XTest obj = new XTest(1);
         broker.add(obj, 1_000L);
@@ -237,7 +253,8 @@ class BrokerMemoryImplTest {
 
     @Test
     void testProperty() {
-        BrokerMemory<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
+        BrokerMemory<XTest> broker = App.get(Manager.class)
+                .getGeneric(BrokerMemory.class, XTest.class.getSimpleName());
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker
                         .getPropertyDispatcher()
@@ -272,7 +289,8 @@ class BrokerMemoryImplTest {
     void testSpeedRemove() {
         int selection = 1_000_000;
 
-        BrokerMemory<XTest> broker = App.get(ManagerBroker.class).get(XTest.class.getSimpleName(), XTest.class);
+        BrokerMemory<XTest> broker = App.get(Manager.class)
+                .getGeneric(BrokerMemory.class, XTest.class.getSimpleName());
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker
                         .getPropertyDispatcher()
@@ -289,19 +307,19 @@ class BrokerMemoryImplTest {
             list.add(add);
         }
         long timeAdd = System.currentTimeMillis() - start;
-        System.out.println("add time: " + timeAdd);
+        UtilLog.printInfo(BrokerMemoryImplTest.class, "add time: " + timeAdd);
         Assertions.assertTrue(timeAdd < 600, "#3");
         start = System.currentTimeMillis();
         for (int i = 0; i < selection; i++) {
             broker.remove(list.get(selection - i - 1));
         }
         long timeRem = System.currentTimeMillis() - start;
-        System.out.println("remove time: " + timeRem);
+        UtilLog.printInfo(BrokerMemoryImplTest.class, "remove time: " + timeRem);
         Assertions.assertTrue(timeRem < 500, "#3");
         Assertions.assertEquals(0, broker.size(), "#3");
         start = System.currentTimeMillis();
         ExpirationMsImmutableEnvelope<XTest> xTestExpirationMsImmutableEnvelope = broker.pollLast();
-        System.out.println("pool time: " + (System.currentTimeMillis() - start));
+        UtilLog.printInfo(BrokerMemoryImplTest.class, "pool time: " + (System.currentTimeMillis() - start));
         Assertions.assertNull(xTestExpirationMsImmutableEnvelope, "#3");
     }
 

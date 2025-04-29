@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilLog;
 
 import java.text.ParseException;
 
@@ -12,7 +13,7 @@ class UtilDateTest {
     @Test
     void t1() {
         long timestamp = UtilDate.getTimestamp();
-        System.out.println(timestamp);
+        UtilLog.printInfo(UtilDateTest.class, timestamp);
     }
 
     @Test

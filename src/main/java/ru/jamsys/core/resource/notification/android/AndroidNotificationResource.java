@@ -8,7 +8,7 @@ import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceArguments;
+import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
@@ -35,12 +35,12 @@ public class AndroidNotificationResource
     private final AndroidNotificationProperty androidNotificationProperty = new AndroidNotificationProperty();
 
     @Override
-    public void setArguments(ResourceArguments resourceArguments) throws Throwable {
+    public void init(ResourceConfiguration resourceConfiguration) throws Throwable {
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 androidNotificationProperty,
-                resourceArguments.ns
+                resourceConfiguration.ns
         );
     }
 

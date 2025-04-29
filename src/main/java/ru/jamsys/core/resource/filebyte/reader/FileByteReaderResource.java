@@ -6,7 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceArguments;
+import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
@@ -25,7 +25,7 @@ public class FileByteReaderResource
         ResourceCheckException {
 
     @Override
-    public void setArguments(ResourceArguments resourceArguments) throws Throwable {
+    public void init(ResourceConfiguration resourceConfiguration) throws Throwable {
 
     }
 

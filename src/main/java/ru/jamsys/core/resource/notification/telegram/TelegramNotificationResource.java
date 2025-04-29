@@ -7,7 +7,7 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceArguments;
+import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
@@ -30,13 +30,13 @@ public class TelegramNotificationResource
     private final TelegramNotificationProperty telegramNotificationProperty = new TelegramNotificationProperty();
 
     @Override
-    public void setArguments(ResourceArguments resourceArguments) throws Throwable {
+    public void init(ResourceConfiguration resourceConfiguration) throws Throwable {
         securityComponent = App.get(SecurityComponent.class);
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
                 telegramNotificationProperty,
-                resourceArguments.ns
+                resourceConfiguration.ns
         );
     }
 

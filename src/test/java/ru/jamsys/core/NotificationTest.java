@@ -41,11 +41,9 @@ class NotificationTest {
         promise
                 .appendWithResource("http", TelegramNotificationResource.class, (_, threadRun, _, telegramNotificationResource) -> {
                     HttpResponse execute = telegramNotificationResource.execute(new TelegramNotificationRequest("Привет", "Мир"));
-                    System.out.println(execute);
                 })
                 .run()
                 .await(2000);
-        System.out.println(promise.getLogString());
     }
 
     @SuppressWarnings("unused")
@@ -55,11 +53,9 @@ class NotificationTest {
                 .appendWithResource("http", AppleNotificationResource.class, (_, _, _, appleNotificationResource) -> {
                     HashMapBuilder<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 123);
                     HttpResponse execute = appleNotificationResource.execute(new AppleNotificationRequest("Привет", data, "e81156eeb16246fd0498c53f55f870dfc5892806dde0a6e073cbf586e761382c"));
-                    System.out.println(execute);
                 })
                 .run()
                 .await(2000);
-        System.out.println(promise.getLogString());
     }
 
     @SuppressWarnings("unused")
@@ -79,9 +75,7 @@ class NotificationTest {
                 )
                 .run()
                 .await(3000);
-        System.out.println(promise.getLogString());
-        Assertions.assertFalse(promise.isException());
-        System.out.println(promise.getLogString());
+        Assertions.assertEquals(Promise.TerminalStatus.SUCCESS, promise.getTerminalStatus());
     }
 
     @SuppressWarnings("unused")
@@ -94,9 +88,7 @@ class NotificationTest {
                 })
                 .run()
                 .await(3000);
-        System.out.println(promise.getLogString());
-        Assertions.assertFalse(promise.isException());
-        System.out.println(promise.getLogString());
+        Assertions.assertEquals(Promise.TerminalStatus.SUCCESS, promise.getTerminalStatus());
     }
 
     @SuppressWarnings("unused")
@@ -118,8 +110,6 @@ class NotificationTest {
                 })
                 .run()
                 .await(3000);
-        System.out.println(promise.getLogString());
-        Assertions.assertFalse(promise.isException());
-        System.out.println(promise.getLogString());
+        Assertions.assertEquals(Promise.TerminalStatus.SUCCESS, promise.getTerminalStatus());
     }
 }

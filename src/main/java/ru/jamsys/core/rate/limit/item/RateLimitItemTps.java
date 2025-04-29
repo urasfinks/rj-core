@@ -4,23 +4,23 @@ import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.statistic.Statistic;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @FieldNameConstants
 public class RateLimitItemTps
-        extends AbstractLifeCycle
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
-        RateLimitItem,
-        LifeCycleInterface {
+        RateLimitItem {
 
     private final AtomicInteger tps = new AtomicInteger(0);
 
@@ -57,15 +57,12 @@ public class RateLimitItemTps
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(
-            Map<String, String> parentTags,
-            Map<String, Object> parentFields,
-            AtomicBoolean threadRun
-    ) {
-        List<Statistic> result = new ArrayList<>();
-        result.add(new Statistic(parentTags, parentFields)
-                .addField("tps", tps.getAndSet(0))
-                .addField("max", property.getMax())
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<DataHeader> result = new ArrayList<>();
+        result.add(new DataHeader()
+                .setBody(namespace)
+                .put("tps", tps.getAndSet(0))
+                .put("max", property.getMax())
         );
         return result;
     }

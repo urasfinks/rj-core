@@ -2,14 +2,13 @@ package ru.jamsys.core.component;
 
 import com.sun.management.OperatingSystemMXBean;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.statistic.Statistic;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
@@ -33,32 +32,29 @@ public class ServiceSystemStatistic implements StatisticsFlushComponent {
         prevProcessCpuTime = operatingSystemMXBean.getProcessCpuTime();
     }
 
-    public void runSecond(Statistic statistic) {
+    public void runSecond() {
         operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         long upTime = runtimeMXBean.getUptime();
         long processCpuTime = operatingSystemMXBean.getProcessCpuTime();
         long elapsedCpu = processCpuTime - prevProcessCpuTime;
         long elapsedTime = upTime - prevUpTime;
         cpuUsage = Math.min(99F, elapsedCpu / (elapsedTime * 10000F * availableProcessors));
-        statistic.addField("cpu", cpuUsage);
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
-        List<Statistic> result = new ArrayList<>();
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<DataHeader> result = new ArrayList<>();
         if (first) {
             runFirst();
         } else {
-            Statistic statistic = new Statistic(parentTags, parentFields);
-            runSecond(statistic);
-            result.add(statistic);
+            runSecond();
         }
         first = !first;
-        Statistic statistic = new Statistic(parentTags, parentFields);
-        statistic.addField("heapSize", Runtime.getRuntime().totalMemory());
-        statistic.addField("heapSizeMax", Runtime.getRuntime().maxMemory());
-        statistic.addField("heapSizeFree", Runtime.getRuntime().freeMemory());
-        result.add(statistic);
+        result.add(new DataHeader(getClass())
+                .put("cpu", cpuUsage)
+                .put("heapSize", Runtime.getRuntime().totalMemory())
+                .put("heapSizeMax", Runtime.getRuntime().maxMemory())
+                .put("heapSizeFree", Runtime.getRuntime().freeMemory()));
         return result;
     }
 }

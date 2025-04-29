@@ -9,8 +9,8 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 // Так как все объекты пула живут своей жизнью, они могут пойти поспать или вообще перестать работать
 // Для синхронизации с внешним миром - есть звоночек (это как вызов официанта ServiceBell) - что бы взбодрить пул
 
-public abstract class AbstractPoolPrivate<RA, RR, PI extends ExpirationMsMutable & Resource<RA, RR>>
-        extends AbstractPool<RA, RR, PI> {
+public abstract class AbstractPoolPrivate<RA, RR, T extends ExpirationMsMutable & Resource<RA, RR>>
+        extends AbstractPool<T> {
 
     public AbstractPoolPrivate(String key) {
         super(key);
@@ -18,10 +18,10 @@ public abstract class AbstractPoolPrivate<RA, RR, PI extends ExpirationMsMutable
 
     // Звоночек, что бы взбодрить приватные ресурсы
     public void serviceBell() {
-        PI pi = getFromPark();
-        if (pi != null) {
+        T resource = get();
+        if (resource != null) {
             try {
-                pi.execute(null);
+                resource.execute(null);
             } catch (Throwable th) {
                 App.error(th);
             }
@@ -34,7 +34,7 @@ public abstract class AbstractPoolPrivate<RA, RR, PI extends ExpirationMsMutable
     }
 
     @Override
-    public boolean forwardResourceWithoutParking(PI poolItem) {
+    public boolean forwardResourceWithoutParking(T poolItem) {
         return false;
     }
 

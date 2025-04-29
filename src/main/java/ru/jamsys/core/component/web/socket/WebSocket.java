@@ -11,6 +11,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.RouteGenerator;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
+import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.*;
@@ -128,11 +129,11 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
-        List<Statistic> result = new ArrayList<>();
-        result.add(new Statistic(parentTags, parentFields)
-                .addField("connections", connections.size())
-                .addField("subscription", subscription.size())
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<DataHeader> result = new ArrayList<>();
+        result.add(new DataHeader(getClass())
+                .put("connections", connections.size())
+                .put("subscription", subscription.size())
         );
         return result;
     }

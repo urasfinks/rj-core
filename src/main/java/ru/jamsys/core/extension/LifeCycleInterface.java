@@ -1,6 +1,7 @@
 package ru.jamsys.core.extension;
 
 import lombok.Getter;
+import lombok.ToString;
 import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,6 +34,7 @@ public interface LifeCycleInterface {
     }
 
     @Getter
+    @ToString
     class ResultOperation {
         private final Process process;
         private final boolean complete;
@@ -118,6 +120,12 @@ public interface LifeCycleInterface {
             }
         }
         return reload();
+    }
+
+    default void isNotRunThrow() {
+        if (!getRun().get()) {
+            throw new RuntimeException("isNotRun");
+        }
     }
 
     default boolean isRun() {

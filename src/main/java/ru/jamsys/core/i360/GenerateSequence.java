@@ -23,7 +23,6 @@ public class GenerateSequence {
             });
         });
 
-        System.out.println(UtilJson.toStringPretty(x, "[]"));
         ArrayList<List<Entity>> lists = new ArrayList<>(x.keySet());
         Map<List<Entity>, List<List<Entity>>> seqSource = new HashMap<>();
         for (int i = 0; i < lists.size(); i++) {
@@ -68,11 +67,7 @@ public class GenerateSequence {
                     null
             );
             seq.put(key, adapterSequence);
-//            System.out.println(key);
-//            System.out.println("min: " + min + "; max: " + max);
-
         });
-        System.out.println(UtilJson.toStringPretty(seq, "[]"));
     }
 
     public static Integer removeContains(List<Entity> l1, List<Entity> l2) {
@@ -98,17 +93,6 @@ public class GenerateSequence {
 
     public static List<List<Entity>> evclid(EntityChain entityChain) {
         List<Entity> listEntity = entityChain.getChain();
-        //System.out.println("> " + listEntity);
-        /*
-         * 0 0 9
-         * --
-         * 0
-         * 0 0
-         * 0 0 9
-         * 0
-         * 0 9
-         * 9
-         * */
         List<List<Entity>> listResult = new ArrayList<>();
         for (int i = 0; i < listEntity.size(); i++) {
             for (int j = i; j < listEntity.size(); j++) {
@@ -123,7 +107,6 @@ public class GenerateSequence {
         for (int i = start; i <= end; i++) {
             list.add(listEntity.get(i));
         }
-        //System.out.println("copy " + start + " - " + end + " = " + list);
         return list;
     }
 

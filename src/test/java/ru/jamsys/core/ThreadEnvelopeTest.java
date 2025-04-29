@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.flat.util.Util;
 
@@ -44,7 +45,7 @@ class ThreadEnvelopeTest {
             }).start();
         }
         Util.testSleepMs(4000);
-        System.out.println("map.size() = " + map.size() + "; counter: " + counter.get());
+        UtilLog.printInfo(ThreadEnvelopeTest.class, "map.size() = " + map.size() + "; counter: " + counter.get());
         Assertions.assertEquals(3, map.size());
         Assertions.assertEquals(3, counter.get());
     }

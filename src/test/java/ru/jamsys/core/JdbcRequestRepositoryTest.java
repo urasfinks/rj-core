@@ -102,14 +102,12 @@ class JdbcRequestRepositoryTest {
                 .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, _, jdbcResource) -> {
                     try {
                         List<Map<String, Object>> execute = jdbcResource.execute(new JdbcRequest(TestJdbcRequestRepository.GET_LOG));
-                        System.out.println(execute);
                     } catch (Throwable th) {
                         App.error(th);
                     }
                 })
                 .run()
                 .await(2000);
-        //System.out.println(promise.getLog());
     }
 
     void testInsertLog() {
@@ -131,14 +129,12 @@ class JdbcRequestRepositoryTest {
                             ;
                         }
                         List<Map<String, Object>> execute = jdbcResource.execute(jdbcRequest);
-                        System.out.println(execute);
                     } catch (Throwable th) {
                         App.error(th);
                     }
                 })
                 .run()
                 .await(2000);
-        //System.out.println(promise.getLog());
     }
 
     @Getter

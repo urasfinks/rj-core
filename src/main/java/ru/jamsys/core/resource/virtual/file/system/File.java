@@ -3,6 +3,8 @@ package ru.jamsys.core.resource.virtual.file.system;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
@@ -24,10 +26,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class File extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         StatisticsFlush,
-        KeepAlive,
         RepositoryMap<String, Object>,
-        LifeCycleInterface,
-        ClassEquals
+        ManagerElement
 {
 
     @Getter
@@ -91,7 +91,7 @@ public class File extends ExpirationMsMutableImplAbstractLifeCycle
 
     private void init(String path, SupplierThrowing<byte[]> loader) {
         this.loader = loader;
-        setActivity();
+        markActive();
         parsePath(path);
     }
 
@@ -100,7 +100,7 @@ public class File extends ExpirationMsMutableImplAbstractLifeCycle
             if (fileData == null) {
                 fileData = loader.get();
             }
-            setActivity();
+            markActive();
         } catch (Throwable th) {
             App.error(th);
         }
@@ -160,20 +160,8 @@ public class File extends ExpirationMsMutableImplAbstractLifeCycle
     }
 
     @Override
-    public List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
+    public List<DataHeader> flushAndGetStatistic( AtomicBoolean threadRun) {
         return new ArrayList<>();
-    }
-
-    @Override
-    public void keepAlive(AtomicBoolean threadRun) {
-        if (isExpired()) {
-            reset();
-        }
-    }
-
-    @Override
-    public boolean classEquals(Class<?> classItem) {
-        return true;
     }
 
     @Override

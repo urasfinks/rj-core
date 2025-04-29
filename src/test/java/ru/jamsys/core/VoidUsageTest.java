@@ -18,7 +18,7 @@ class VoidUsageTest {
         try {
             Property property = new Property("", "").setDescriptionIfNull(null);
             PropertySubscription<?> propertySubscription = new ServiceProperty(null).addSubscription(null);
-            PersistentData persistentData = UtilLog.info(VoidUsageTest.class, null).sendRemote();
+            UtilLog.info(VoidUsageTest.class, null).sendRemote();
         } catch (Throwable ignore) {
         }
     }

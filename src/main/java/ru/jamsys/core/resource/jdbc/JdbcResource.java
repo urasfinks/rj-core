@@ -13,7 +13,7 @@ import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceArguments;
+import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.sql.Connection;
@@ -41,12 +41,12 @@ public class JdbcResource
     private final JdbcProperty jdbcProperty = new JdbcProperty();
 
     @Override
-    public void setArguments(ResourceArguments resourceArguments) throws Exception {
+    public void init(ResourceConfiguration resourceConfiguration) throws Exception {
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 jdbcProperty,
-                resourceArguments.ns
+                resourceConfiguration.ns
         );
         this.statementControl = new DefaultStatementControl();
     }
@@ -150,6 +150,8 @@ public class JdbcResource
             return false;
         };
     }
+
+
 
     @Override
     public void runOperation() {

@@ -3,10 +3,7 @@ package ru.jamsys.core.resource.yandex.speech;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseTask;
-import ru.jamsys.core.promise.PromiseTaskExecuteType;
-import ru.jamsys.core.promise.PromiseTaskWait;
+import ru.jamsys.core.promise.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +20,7 @@ public class YandexSpeechRequest {
     @Setter
     private String role = "neutral";
 
-    private final PromiseTask asyncPromiseTask;
+    private final AbstractPromiseTask asyncPromiseTask;
 
     private final String filePath;
 
@@ -32,7 +29,7 @@ public class YandexSpeechRequest {
     public YandexSpeechRequest(Promise promise, String filePath, String text) {
         this.text = text;
         this.filePath = filePath;
-        List<PromiseTask> add = new ArrayList<>();
+        List<AbstractPromiseTask> add = new ArrayList<>();
         asyncPromiseTask = new PromiseTask(
                 App.getUniqueClassName(getClass()),
                 promise,
@@ -41,7 +38,7 @@ public class YandexSpeechRequest {
         );
         add.add(asyncPromiseTask);
         add.add(new PromiseTaskWait(promise));
-        promise.addToHead(add);
+        promise.getQueueTask().addFirst(add);
     }
 
 }

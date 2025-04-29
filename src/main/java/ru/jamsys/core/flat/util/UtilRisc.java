@@ -16,12 +16,12 @@ public class UtilRisc {
         return Arrays.copyOf(array, 0);
     }
 
-    public static <T> void forEach(AtomicBoolean run, Collection<T> collection, Function<T, Boolean> consumer) {
-        forEach(run, collection, consumer, false);
+    public static <T> void forEach(AtomicBoolean threadRun, Collection<T> collection, Function<T, Boolean> consumer) {
+        forEach(threadRun, collection, consumer, false);
     }
 
     @SuppressWarnings("ConstantConditions")
-    public static <T> void forEach(AtomicBoolean run, Collection<T> collection, Function<T, Boolean> consumer, boolean reverse) {
+    public static <T> void forEach(AtomicBoolean threadRun, Collection<T> collection, Function<T, Boolean> consumer, boolean reverse) {
         if (collection != null && !collection.isEmpty()) {
             try {
                 T[] objects = collection.toArray(getEmptyType());
@@ -32,7 +32,7 @@ public class UtilRisc {
                 int index = reverse ? objects.length - 1 : 0;
                 int inc = reverse ? -1 : 1;
                 while (true) {
-                    if (run == null || run.get()) {
+                    if (threadRun == null || threadRun.get()) {
                         if (!consumer.apply(objects[index])) {
                             break;
                         }
@@ -50,12 +50,12 @@ public class UtilRisc {
         }
     }
 
-    public static <T> void forEach(AtomicBoolean run, Collection<T> collection, Consumer<T> consumer) {
-        forEach(run, collection, consumer, false);
+    public static <T> void forEach(AtomicBoolean threadRun, Collection<T> collection, Consumer<T> consumer) {
+        forEach(threadRun, collection, consumer, false);
     }
 
     @SuppressWarnings("ConstantConditions")
-    public static <T> void forEach(AtomicBoolean run, Collection<T> collection, Consumer<T> consumer, boolean reverse) {
+    public static <T> void forEach(AtomicBoolean threadRun, Collection<T> collection, Consumer<T> consumer, boolean reverse) {
         if (collection != null && !collection.isEmpty()) {
             try {
                 T[] objects = collection.toArray(getEmptyType());
@@ -66,7 +66,7 @@ public class UtilRisc {
                 int index = reverse ? objects.length - 1 : 0;
                 int inc = reverse ? -1 : 1;
                 while (true) {
-                    if (run == null || run.get()) {
+                    if (threadRun == null || threadRun.get()) {
                         consumer.accept(objects[index]);
                     } else {
                         break;
@@ -82,12 +82,12 @@ public class UtilRisc {
         }
     }
 
-    public static <K, V> void forEach(AtomicBoolean run, Map<K, V> map, BiFunction<K, V, Boolean> consumer) {
+    public static <K, V> void forEach(AtomicBoolean threadRun, Map<K, V> map, BiFunction<K, V, Boolean> consumer) {
         if (map != null && !map.isEmpty()) {
             try {
                 K[] objects = map.keySet().toArray(getEmptyType());
                 for (K key : objects) {
-                    if (run == null || run.get()) {
+                    if (threadRun == null || threadRun.get()) {
                         // Так как мы бежим по копии ключей, то есть вероятность, что ключ уже удалили
                         // поэтому каждый раз надо проверять
                         if (!map.containsKey(key)) {
@@ -106,12 +106,12 @@ public class UtilRisc {
         }
     }
 
-    public static <K, V> void forEach(AtomicBoolean run, Map<K, V> map, BiConsumer<K, V> consumer) {
+    public static <K, V> void forEach(AtomicBoolean threadRun, Map<K, V> map, BiConsumer<K, V> consumer) {
         if (map != null && !map.isEmpty()) {
             try {
                 K[] objects = map.keySet().toArray(getEmptyType());
                 for (K key : objects) {
-                    if (run == null || run.get()) {
+                    if (threadRun == null || threadRun.get()) {
                         // Так как мы бежим по копии ключей, то есть вероятность, что ключ уже удалили
                         // поэтому каждый раз надо проверять
                         if (!map.containsKey(key)) {

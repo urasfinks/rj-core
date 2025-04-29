@@ -7,8 +7,9 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
+import ru.jamsys.core.promise.AbstractPromiseTask;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceArguments;
+import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.File;
@@ -29,12 +30,12 @@ public class YandexSpeechResource
     private final YandexSpeechProperty yandexSpeechProperty = new YandexSpeechProperty();
 
     @Override
-    public void setArguments(ResourceArguments resourceArguments) throws Throwable {
+    public void init(ResourceConfiguration resourceConfiguration) throws Throwable {
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 yandexSpeechProperty,
-                resourceArguments.ns
+                resourceConfiguration.ns
         );
     }
 
@@ -44,8 +45,14 @@ public class YandexSpeechResource
                 arguments.getText(),
                 new File(arguments.getFilePath()),
                 arguments,
-                () -> arguments.getAsyncPromiseTask().externalComplete(),
-                (Throwable th) -> arguments.getAsyncPromiseTask().externalError(th)
+                () -> {
+                    AbstractPromiseTask asyncPromiseTask = arguments.getAsyncPromiseTask();
+                    asyncPromiseTask.getPromise().completePromiseTask(asyncPromiseTask);
+                },
+                (Throwable th) -> {
+                    AbstractPromiseTask asyncPromiseTask = arguments.getAsyncPromiseTask();
+                    asyncPromiseTask.getPromise().setError(asyncPromiseTask.getIndex(), th);
+                }
         );
         return null;
     }

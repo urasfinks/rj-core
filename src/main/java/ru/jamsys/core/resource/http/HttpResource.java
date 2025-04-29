@@ -3,7 +3,7 @@ package ru.jamsys.core.resource.http;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceArguments;
+import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
@@ -15,7 +15,7 @@ import java.util.function.Function;
 public class HttpResource extends ExpirationMsMutableImplAbstractLifeCycle implements Resource<HttpConnector, HttpResponse> {
 
     @Override
-    public void setArguments(ResourceArguments resourceArguments) {
+    public void init(ResourceConfiguration resourceConfiguration) {
 
     }
 

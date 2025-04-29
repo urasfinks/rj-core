@@ -14,7 +14,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceArguments;
+import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
@@ -43,12 +43,12 @@ public class InfluxResource
     private final InfluxProperty influxProperty = new InfluxProperty();
 
     @Override
-    public void setArguments(ResourceArguments resourceArguments) {
+    public void init(ResourceConfiguration resourceConfiguration) {
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 influxProperty,
-                resourceArguments.ns
+                resourceConfiguration.ns
         );
     }
 

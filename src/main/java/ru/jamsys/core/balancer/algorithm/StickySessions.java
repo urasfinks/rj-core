@@ -51,12 +51,12 @@ public class StickySessions implements BalancerAlgorithm {
             return balancerItemExpirationMsMutableEnvelope;
         });
         ExpirationMsMutableEnvelope<BalancerItem> balancerItemExpirationMsMutableEnvelope = map.get(index);
-        balancerItemExpirationMsMutableEnvelope.setActivity();
+        balancerItemExpirationMsMutableEnvelope.markActive();
         return balancerItemExpirationMsMutableEnvelope.getValue();
     }
 
     @Override
-    public void keepAlive(AtomicBoolean threadRun) {
+    public void helper(AtomicBoolean threadRun) {
         UtilRisc.forEach(threadRun, map, (String key, ExpirationMsMutableEnvelope<BalancerItem> expiredMsMutableEnvelope) -> {
             if (expiredMsMutableEnvelope.isExpired()) {
                 map.remove(key);

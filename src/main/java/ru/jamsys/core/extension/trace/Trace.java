@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.flat.util.UtilDate;
@@ -27,6 +26,7 @@ public class Trace<K, V> {
         return UtilDate.msFormat(timeAdd);
     }
 
+    @SuppressWarnings("unused")
     @JsonIgnore
     public V getValueRaw() {
         return value;
@@ -34,9 +34,9 @@ public class Trace<K, V> {
 
     public Object getValue() {
         if (value != null) {
-            if (value instanceof Throwable) {
+            if (value instanceof Throwable valueCast) {
                 LineWriterList lineWriterList = new LineWriterList();
-                App.get(ExceptionHandler.class).getTextException((Throwable) value, lineWriterList);
+                ExceptionHandler.getTextException(valueCast, lineWriterList);
                 return lineWriterList.getResult();
             }
         }

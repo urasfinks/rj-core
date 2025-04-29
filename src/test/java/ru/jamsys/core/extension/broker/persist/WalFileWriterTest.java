@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.broker.persist;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.flat.util.UtilLog;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -96,7 +97,7 @@ class WalFileWriterTest {
         for (int i = 0; i < 400_000; i++) {
             walWriter.write(1L, (short) 1);
         }
-        System.out.println("timing: " + (System.currentTimeMillis() - time));
+        UtilLog.printInfo(WalFileWriterTest.class, "timing: " + (System.currentTimeMillis() - time));
     }
 
 }

@@ -6,7 +6,7 @@ import lombok.ToString;
 // RR - ResourceResult
 // PI - PoolItem
 @ToString(onlyExplicitlyIncluded = true)
-public class PromiseTaskWait extends PromiseTask {
+public class PromiseTaskWait extends AbstractPromiseTask {
 
     public PromiseTaskWait(Promise promise) {
         super(PromiseTaskExecuteType.WAIT.getNameCamel(), promise, PromiseTaskExecuteType.WAIT, null);

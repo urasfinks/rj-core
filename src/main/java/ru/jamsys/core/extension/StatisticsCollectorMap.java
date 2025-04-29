@@ -1,11 +1,10 @@
 package ru.jamsys.core.extension;
 
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.flat.util.UtilRisc;
-import ru.jamsys.core.statistic.Statistic;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,18 +14,15 @@ public interface StatisticsCollectorMap<E extends StatisticsFlush> extends Stati
     Map<String, E> getMapForFlushStatistic();
 
     @Override
-    default List<Statistic> flushAndGetStatistic(Map<String, String> parentTags, Map<String, Object> parentFields, AtomicBoolean threadRun) {
-        List<Statistic> result = new ArrayList<>();
+    default List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<DataHeader> result = new ArrayList<>();
         String clsName = App.getUniqueClassName(getClass());
         UtilRisc.forEach(
                 threadRun,
                 getMapForFlushStatistic(),
-                (String key, E element) -> {
-                    //TODO: почему то element бывает = null
+                (String _, E element) -> {
                     if(element != null){
-                        LinkedHashMap<String, String> newParentTags = new LinkedHashMap<>(parentTags);
-                        newParentTags.put(clsName, key);
-                        List<Statistic> statistics = element.flushAndGetStatistic(newParentTags, parentFields, threadRun);
+                        List<DataHeader> statistics = element.flushAndGetStatistic(threadRun);
                         if (statistics != null) {
                             result.addAll(statistics);
                         }

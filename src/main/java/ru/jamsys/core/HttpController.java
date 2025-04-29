@@ -13,6 +13,7 @@ import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.PropertyRepositoryList;
 import ru.jamsys.core.flat.util.UtilFile;
+import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.handler.web.http.HttpHandler;
@@ -161,18 +162,18 @@ public class HttpController {
                 return servletHandler.getServletResponse();
             }
 
-            if (!promise.isSetErrorHandler()) {
+            if (!promise.hasErrorHandler()) {
                 promise.onError((_, _, p) -> {
                     ServletHandler srvHandler = p.getRepositoryMapClass(ServletHandler.class);
-                    srvHandler.setResponseBody(p.getLogString());
+                    srvHandler.setResponseBody(UtilJson.toStringPretty(p, "{}"));
                     srvHandler.responseComplete();
                 });
             }
-            if (!promise.isSetCompleteHandler()) {
+            if (!promise.hasCompleteHandler()) {
                 promise.onComplete((_, _, p) -> {
                     ServletHandler srvHandler = p.getRepositoryMapClass(ServletHandler.class);
                     if (srvHandler.isEmptyBody()) {
-                        srvHandler.setBodyIfEmpty(p.getLogString());
+                        srvHandler.setBodyIfEmpty(UtilJson.toStringPretty(p, "{}"));
                     }
                     srvHandler.responseComplete();
                 });

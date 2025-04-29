@@ -12,17 +12,17 @@ import java.util.List;
 @Accessors(chain = true)
 public class PromiseTest {
 
-    final AbstractPromise abstractPromise;
+    final Promise abstractPromise;
 
     public PromiseTest(Promise abstractPromise) {
-        this.abstractPromise = (AbstractPromise) abstractPromise;
+        this.abstractPromise = abstractPromise;
     }
 
-    public PromiseTest replace(String index, PromiseTask task) {
-        PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
-        abstractPromise.listPendingTasks.clear();
+    public PromiseTest replace(String index, AbstractPromiseTask task) {
+        AbstractPromiseTask[] array = abstractPromise.getQueueTask().getMainQueue().toArray(new AbstractPromiseTask[0]);
+        abstractPromise.getQueueTask().getMainQueue().clear();
         index = abstractPromise.getComplexIndex(index);
-        for (PromiseTask promiseTask : array) {
+        for (AbstractPromiseTask promiseTask : array) {
             // Столкнулся с проблемой, что хочу поменять для тестов тип задачи
             // ранее была promiseTaskWithResource::IO, но для тестов мне это избыточно
             // мне не нужна БД, поэтому комментирую проверку типа замены
@@ -32,41 +32,41 @@ public class PromiseTest {
                             && !promiseTask.getType().equals(PromiseTaskExecuteType.WAIT)
                 //&& promiseTask.getType().equals(task.getType())
             ) {
-                abstractPromise.listPendingTasks.add(task);
+                abstractPromise.getQueueTask().getMainQueue().add(task);
             } else {
-                abstractPromise.listPendingTasks.add(promiseTask);
+                abstractPromise.getQueueTask().getMainQueue().add(promiseTask);
             }
         }
         return this;
     }
 
     public PromiseTest remove(String index) {
-        PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
-        abstractPromise.listPendingTasks.clear();
+        AbstractPromiseTask[] array = abstractPromise.getQueueTask().getMainQueue().toArray(new AbstractPromiseTask[0]);
+        abstractPromise.getQueueTask().getMainQueue().clear();
         index = abstractPromise.getComplexIndex(index);
-        for (PromiseTask promiseTask : array) {
+        for (AbstractPromiseTask promiseTask : array) {
             if (!promiseTask.getIndex().equals(index)) {
-                abstractPromise.listPendingTasks.add(promiseTask);
+                abstractPromise.getQueueTask().getMainQueue().add(promiseTask);
             }
         }
         return this;
     }
 
     public PromiseTest removeAfter(String index) {
-        PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
-        abstractPromise.listPendingTasks.clear();
+        AbstractPromiseTask[] array = abstractPromise.getQueueTask().getMainQueue().toArray(new AbstractPromiseTask[0]);
+        abstractPromise.getQueueTask().getMainQueue().clear();
         index = abstractPromise.getComplexIndex(index);
-        PromiseTask removeTask = null;
-        for (PromiseTask promiseTask : array) {
+        AbstractPromiseTask removeTask = null;
+        for (AbstractPromiseTask promiseTask : array) {
             if (promiseTask.getIndex().equals(index)) {
                 removeTask = promiseTask;
             }
         }
         if (removeTask != null) {
             boolean remove = false;
-            for (PromiseTask promiseTask : array) {
+            for (AbstractPromiseTask promiseTask : array) {
                 if (!remove) {
-                    abstractPromise.listPendingTasks.add(promiseTask);
+                    abstractPromise.getQueueTask().getMainQueue().add(promiseTask);
                 }
                 if (promiseTask.equals(removeTask)) {
                     remove = true;
@@ -77,16 +77,16 @@ public class PromiseTest {
     }
 
     public PromiseTest removeBefore(String index) {
-        PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
-        abstractPromise.listPendingTasks.clear();
+        AbstractPromiseTask[] array = abstractPromise.getQueueTask().getMainQueue().toArray(new AbstractPromiseTask[0]);
+        abstractPromise.getQueueTask().getMainQueue().clear();
         index = abstractPromise.getComplexIndex(index);
         boolean remove = true;
-        for (PromiseTask promiseTask : array) {
+        for (AbstractPromiseTask promiseTask : array) {
             if (promiseTask.getIndex().equals(index)) {
                 remove = false;
             }
             if (!remove) {
-                abstractPromise.listPendingTasks.add(promiseTask);
+                abstractPromise.getQueueTask().getMainQueue().add(promiseTask);
             }
         }
         return this;
@@ -94,8 +94,8 @@ public class PromiseTest {
 
     public List<String> getIndex() {
         List<String> result = new ArrayList<>();
-        PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
-        for (PromiseTask promiseTask : array) {
+        AbstractPromiseTask[] array = abstractPromise.getQueueTask().getMainQueue().toArray(new AbstractPromiseTask[0]);
+        for (AbstractPromiseTask promiseTask : array) {
             result.add(
                     promiseTask.getIndex().substring(abstractPromise.getIndex().length() + 1)
                             + "::" + promiseTask.getType().toString()
@@ -105,11 +105,11 @@ public class PromiseTest {
     }
 
 
-    public PromiseTask get(String index, PromiseTaskExecuteType type) {
-        PromiseTask[] array = abstractPromise.listPendingTasks.toArray(new PromiseTask[0]);
-        abstractPromise.listPendingTasks.clear();
+    public AbstractPromiseTask get(String index, PromiseTaskExecuteType type) {
+        AbstractPromiseTask[] array = abstractPromise.getQueueTask().getMainQueue().toArray(new AbstractPromiseTask[0]);
+        abstractPromise.getQueueTask().getMainQueue().clear();
         index = abstractPromise.getComplexIndex(index);
-        for (PromiseTask promiseTask : array) {
+        for (AbstractPromiseTask promiseTask : array) {
             if (promiseTask.getIndex().equals(index) && promiseTask.getType().equals(type)) {
                 return promiseTask;
             }

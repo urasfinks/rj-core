@@ -1,6 +1,5 @@
 package ru.jamsys.core.component.manager.item.log;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,43 +8,61 @@ import lombok.experimental.Accessors;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilDate;
-import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilFileByteReader;
+import ru.jamsys.core.flat.util.UtilJson;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @ToString
 @Getter
 @Setter
 @Accessors(chain = true)
-@JsonPropertyOrder({"subscriberStatusRead", "logType", "timeAdd", "header", "data"})
-public class PersistentDataHeader implements PersistentData {
-
-    public long timeAdd = System.currentTimeMillis();
-
-    public Map<String, String> header = new LinkedHashMap<>();
-
-    public Object body;
-
-    public LogType logType;
+@JsonPropertyOrder({"header", "data"})
+public class PersistentDataHeader extends DataHeader implements PersistentData {
 
     public PersistentDataHeader() {
     }
 
-    public PersistentDataHeader(LogType logType, Class<?> cls, Object body) {
-        this.logType = logType;
+    public PersistentDataHeader(Class<?> cls, Object body) {
         this.body = body;
         addHeader("time", timeAdd);
         addHeader("thread", Thread.currentThread().getName());
         addHeader("source", cls.getName());
     }
 
+    @Override
+    public PersistentDataHeader putAll(Map<String, ?> map) {
+        return (PersistentDataHeader) super.putAll(map);
+    }
+
+    @Override
+    public PersistentDataHeader put(String key, Object value) {
+        return (PersistentDataHeader) super.put(key, value);
+    }
+
+    public Object getRawBody() {
+        return body;
+    }
+
     public String getBody() {
         return String.valueOf(body);
+    }
+
+    @Override
+    public void print() {
+        System.out.println(UtilJson.toStringPretty(
+                new HashMapBuilder<String, Object>()
+                        .append(
+                                "header",
+                                new HashMapBuilder<>(header)
+                                        .append("time", UtilDate.msFormat(timeAdd))
+                        )
+                        .append("body", body),
+                "--"
+        ));
     }
 
     public PersistentDataHeader addHeader(String key, Object value) {
@@ -60,13 +77,12 @@ public class PersistentDataHeader implements PersistentData {
 
     public byte[] toByte() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        os.write(UtilByte.shortToBytes((short) logType.ordinal())); //Записали тип лога в первые 2 байта
         os.write(UtilByte.shortToBytes((short) header.size())); // В следующие 2 байта записали кол-во заголовков
 
         // Запись заголовков
         for (String key : header.keySet()) {
             UtilFileByteReader.writeShortString(os, key);
-            UtilFileByteReader.writeShortString(os, header.get(key));
+            UtilFileByteReader.writeShortString(os, String.valueOf(header.get(key)));
         }
         // Запись тела
         UtilFileByteReader.writeString(os, getBody());
@@ -82,27 +98,11 @@ public class PersistentDataHeader implements PersistentData {
     @Override
     public void toObject(byte[] bytes) throws Exception {
         InputStream fis = new ByteArrayInputStream(bytes);
-        setLogType(LogType.valueOfOrdinal(UtilByte.bytesToShort(fis.readNBytes(2))));
         short countHeader = UtilByte.bytesToShort(fis.readNBytes(2));
         for (int i = 0; i < countHeader; i++) {
             addHeader(UtilFileByteReader.readShortString(fis), UtilFileByteReader.readShortString(fis));
         }
         setBody(UtilFileByteReader.readString(fis));
-    }
-
-    @JsonIgnore
-    @Override
-    public String getView() {
-        return UtilJson.toStringPretty(
-                new HashMapBuilder<String, Object>()
-                        .append(
-                                "header",
-                                new HashMapBuilder<>(header)
-                                        .append("time", UtilDate.msFormat(timeAdd))
-                        )
-                        .append("body", body),
-                "--"
-        );
     }
 
 }

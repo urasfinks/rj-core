@@ -2,10 +2,11 @@ package ru.jamsys.core.rate.limit.item;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsFlush;
 
-public interface RateLimitItem extends StatisticsFlush, LifeCycleInterface {
+public interface RateLimitItem extends ManagerElement {
 
     boolean check();
 

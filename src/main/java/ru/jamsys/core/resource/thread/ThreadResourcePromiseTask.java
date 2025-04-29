@@ -2,13 +2,13 @@ package ru.jamsys.core.resource.thread;
 
 import lombok.Getter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.ManagerRateLimit;
+import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.promise.PromiseTask;
-import ru.jamsys.core.rate.limit.RateLimit;
+import ru.jamsys.core.promise.AbstractPromiseTask;
+import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceArguments;
+import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
@@ -24,22 +24,22 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
 
     private final AtomicBoolean threadWork = new AtomicBoolean(true);
 
-    private final ThreadPoolPromiseTask pool;
+    private final PoolThreadPromiseTask pool;
 
-    private final RateLimit rateLimit;
+    private final Manager.Configuration<RateLimitItem> rateLimitConfiguration;
 
     private final int indexThread;
 
     @Getter
     private final String key;
 
-    public ThreadResourcePromiseTask(String key, int indexThread, ThreadPoolPromiseTask pool) {
+    public ThreadResourcePromiseTask(String key, int indexThread, PoolThreadPromiseTask pool) {
         this.key = key;
         this.pool = pool;
         this.indexThread = indexThread;
         // RateLimit будем запрашивать через родительское каскадное имя, так как key для потока - это
         // всего лишь имя, а поток должен подчиняться правилам (лимитам) пула
-        rateLimit = App.get(ManagerRateLimit.class).get(key);
+        rateLimitConfiguration = App.get(Manager.class).configure(RateLimitItem.class, key);
     }
 
     @Override
@@ -54,16 +54,16 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
             LockSupport.park(thread);
             try {
                 while (spin.get() && !thread.isInterrupted()) {
-                    setActivity();
-                    if (!rateLimit.check()) {
-                        pool.completePoolItem(this, null);
+                    markActive();
+                    if (!rateLimitConfiguration.get().check()) {
+                        pool.releasePoolItem(this, null);
                         LockSupport.park(thread);
                         continue;
                     }
-                    ExpirationMsImmutableEnvelope<PromiseTask> promiseTaskEnvelope = pool.getPromiseTask();
+                    ExpirationMsImmutableEnvelope<AbstractPromiseTask> promiseTaskEnvelope = pool.getPromiseTask();
                     if (promiseTaskEnvelope != null) {
                         try {
-                            PromiseTask promiseTask = promiseTaskEnvelope.getValue();
+                            AbstractPromiseTask promiseTask = promiseTaskEnvelope.getValue();
                             promiseTask.setThreadRun(spin);
                             promiseTask.run();
                         } catch (Exception e) {
@@ -72,7 +72,7 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
                         continue; // Если таска была - перепрыгиваем toParking()
                     }
                     //Конец итерации цикла -> всегда pause()
-                    pool.completePoolItem(this, null);
+                    pool.releasePoolItem(this, null);
                     LockSupport.park(thread);
                 }
             } catch (Throwable th) {
@@ -107,7 +107,7 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
     }
 
     @Override
-    public void setArguments(ResourceArguments resourceArguments) {
+    public void init(ResourceConfiguration resourceConfiguration) {
 
     }
 

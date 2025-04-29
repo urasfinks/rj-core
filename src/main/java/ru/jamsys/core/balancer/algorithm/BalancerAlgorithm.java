@@ -2,14 +2,18 @@ package ru.jamsys.core.balancer.algorithm;
 
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.balancer.BalancerItem;
-import ru.jamsys.core.extension.KeepAlive;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public interface BalancerAlgorithm extends KeepAlive {
+// TODO: нет использования helper
+
+public interface BalancerAlgorithm {
 
     void update(List<BalancerItem> list);
 
     BalancerItem get(@Nullable String index);
+
+    void helper(AtomicBoolean threadRun);
 
 }

@@ -38,7 +38,6 @@ class CronTest {
         Assertions.assertEquals("Template({Second=[0], Minute=[0], HourOfDay=[0], DayOfMonth=[1], Month=[], DayOfWeek=[]})", new Cron("0 0 0 1 *").toString());
 
 
-        System.out.println("Start time: " + UtilDate.msFormat(curTime));
         Assertions.assertEquals("[{Second=1, Minute=null, HourOfDay=null, DayOfMonth=null, Month=null, DayOfWeek=null}]", new Cron("1 * * * *").getListTimeVariant().toString());
 
         //RateLimit test

@@ -172,7 +172,6 @@ class WalDataStatusTest {
 //        for (int i = 0; i < 400_000; i++) {
 //            walDataStatus.subscribe(TEST_ID, List.of(TEST_GROUP));
 //        }
-//        System.out.println("timing: " + (System.currentTimeMillis() - time));
 //    }
 
 }

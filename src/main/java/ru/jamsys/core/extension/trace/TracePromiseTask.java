@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@JsonPropertyOrder({"prepare", "start", "index", "class", "retry", "type", "value", "taskTrace", "exceptionTrace", "stop", "nano"})
+@JsonPropertyOrder({"prepare", "start", "index", "class", "retry", "type", "value", "taskTrace", "stop", "nano"})
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TracePromiseTask<K, V> extends TraceClass<K, V> {
 
@@ -23,10 +23,6 @@ public class TracePromiseTask<K, V> extends TraceClass<K, V> {
 
     @Getter
     final Collection<Trace<String, ?>> taskTrace = new ArrayList<>();
-
-    @JsonProperty("exceptionTrace")
-    @Getter
-    private final List<Trace<String, Throwable>> exceptionTrace = new ArrayList<>();
 
     @JsonProperty
     @Setter

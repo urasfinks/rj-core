@@ -1,6 +1,7 @@
 package ru.jamsys.core.extension.broker.persist;
 
 import org.springframework.context.ApplicationContext;
+import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.item.BrokerMemoryImpl;
 import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
@@ -16,22 +17,23 @@ import java.util.function.Consumer;
 //3. Потом данные помещаются в SubscriberDataCommit (DSYNC запись в файл .wal) SubscriberDataCommit состоит из списка DataPosition которые не закомичены как обработанные
 //4. После того как данные будут сохранены на диске, мы проверим наличие очереди с short = 0 и если такая есть - положим туда DataPosition
 //5. В BrokerPersist может прийти подписчик с short id. Для этого id будет создана очередь и можно в многопоточном режиме из этой очереди получать не прочитанные данные, записанные поставщиком. Если будет 2 подписчика, значит будет 2 очереди, значит данные, которые представляет поставщик - будут записаны в 2 очереди для разных подписчиков.
-//6. Очереди подписчиков - это стандартный Broker, если за отведённое время данные не будут вычитаны - они будут очищены. Что бы очереди наполнились - надо запросить данные. Получение данных из брокера будет не на прямую а через прокси, которое будет проверять пустоту и наполненность.
+//6. Очереди подписчиков - это стандартный Broker, если за отведённое время данные не будут вычитаны - они будут очищены. Что бы очереди наполнились - надо запросить данные. Получение данных из брокера будет не на прямую, а через прокси, которое будет проверять пустоту и наполненность.
 //7. При старте приложения - будет медленный старт (и у нас нет задачи быстрого старта), так как, что бы восстановить SubscriberDataCommit - прийдётся прочитать весь .wal
 //8. Когда в SubscriberDataCommit остаётся 0 не обработанных записей - .log и .wal удаляются
 //9. Для систем с возможной дубликацией нужна специальная общая архитектура идемпотентности. Работа в режиме потери (автокомит при изъятии) рассматривать вообще не будем в BrokerPersist (просто используйте Broker и всё).
 
+@SuppressWarnings("unused")
 public class BrokerPersistImpl<T extends ByteSerialization>
         extends BrokerMemoryImpl<T>
-        implements Broker<T>, BrokerPersist<T> {
+        implements Broker<T>, BrokerPersist<T>,
+        ManagerElement {
 
     public BrokerPersistImpl(
             String key,
             ApplicationContext applicationContext,
-            Class<T> classItem,
             Consumer<T> onDrop
     ) {
-        super(key, applicationContext, classItem, onDrop);
+        super(key, applicationContext, onDrop);
     }
 
     @Override
@@ -51,7 +53,7 @@ public class BrokerPersistImpl<T extends ByteSerialization>
 
     @Override
     public DisposableExpirationMsImmutableEnvelope<T> add(ExpirationMsImmutableEnvelope<T> envelope) {
-        DisposableExpirationMsImmutableEnvelope<T> add = super.add(envelope);
-        return add;
+        return super.add(envelope);
     }
+
 }

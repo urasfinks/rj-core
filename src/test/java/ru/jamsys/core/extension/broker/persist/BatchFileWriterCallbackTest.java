@@ -517,7 +517,7 @@ class BatchFileWriterCallbackTest {
             }
         }
         Assertions.assertEquals(400_000, counter.get());
-        System.out.println("timing: " + (System.currentTimeMillis() - time) + "; callback: " + counter.get());
+        UtilLog.printInfo(BatchFileWriterCallbackTest.class, "timing: " + (System.currentTimeMillis() - time) + "; callback: " + counter.get());
     }
 
 }
