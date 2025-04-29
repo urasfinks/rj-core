@@ -1,24 +1,18 @@
 package ru.jamsys.core;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
-import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.promise.*;
-import ru.jamsys.core.rate.limit.RateLimitFactory;
-import ru.jamsys.core.rate.limit.item.RateLimitItem;
-import ru.jamsys.core.resource.http.HttpResource;
-import ru.jamsys.core.resource.jdbc.JdbcResource;
+import ru.jamsys.core.promise.AbstractPromiseTask;
+import ru.jamsys.core.promise.Promise;
+import ru.jamsys.core.promise.PromiseTask;
+import ru.jamsys.core.promise.PromiseTaskExecuteType;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // IO time: 16.956 (17885)
@@ -26,42 +20,101 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class PromiseImplTest {
 
-//    public static ServicePromise servicePromise;
-//
-//    static long start;
-//
-//    @BeforeAll
-//    static void beforeAll() {
-//        start = System.currentTimeMillis();
-//        App.getRunBuilder().addTestArguments().runCore();
-//        servicePromise = App.get(ServicePromise.class);
-//    }
-//
-//    @AfterAll
-//    static void shutdown() {
-//        App.shutdown();
-//        UtilLog.printInfo(PromiseImplTest.class, "Test time: " + (System.currentTimeMillis() - start));
-//    }
-//
-//    @Test
-//    void test1() {
-//        Promise promise = servicePromise.get("test", 6_000L); //new PromiseImpl("test", 6_000L);
-//        promise
-//                .append("test", (_, _, promise1) -> {
-//                    Util.testSleepMs(1000);
-//                    ArrayList<AbstractPromiseTask> objects = new ArrayList<>();
-//                    objects.add(new PromiseTask("test2", promise, PromiseTaskExecuteType.COMPUTE, (_, _, _) -> UtilLog.printInfo(PromiseImplTest.class, "EXTRA")));
-//                    promise1.addToHead(objects);
-//                })
-//                .append("test", (_, _, _) -> {
-//                    Util.testSleepMs(1000);
-//                })
-//                .then("test", (_, _, _) -> {
-//                    Util.testSleepMs(1000);
-//                })
-//                .run()
-//                .await(4000);
-//    }
+    public static ServicePromise servicePromise;
+
+    static long start;
+
+    @BeforeAll
+    static void beforeAll() {
+        start = System.currentTimeMillis();
+        App.getRunBuilder().addTestArguments().runCore();
+        servicePromise = App.get(ServicePromise.class);
+    }
+
+    @AfterAll
+    static void shutdown() {
+        App.shutdown();
+        UtilLog.printInfo(PromiseImplTest.class, "Test time: " + (System.currentTimeMillis() - start));
+    }
+
+    @Test
+    void test01() {
+        Promise promise = servicePromise.get("test", 6_000L); //new PromiseImpl("test", 6_000L);
+        AtomicInteger x = new AtomicInteger(0);
+        promise
+                .append("test", (_, _, _) -> {
+                    x.incrementAndGet();
+                })
+                .run()
+                .await(4000);
+        Assertions.assertEquals(1, x.get());
+    }
+
+    @Test
+    void test02() {
+        Promise promise = servicePromise.get("test", 6_000L); //new PromiseImpl("test", 6_000L);
+        AtomicInteger x = new AtomicInteger(0);
+        promise
+                .append("test1", (_, _, _) -> {
+                    x.incrementAndGet();
+                })
+                .append("test2", (_, _, _) -> {
+                    x.incrementAndGet();
+                })
+                .run()
+                .await(4000);
+        Assertions.assertEquals(2, x.get());
+    }
+
+    @Test
+    void test03() {
+        // Это проверка, что первый then генерирует 0 элемент в очереди wait, логика должна пропустить его
+        Promise promise = servicePromise.get("test", 6_000L); //new PromiseImpl("test", 6_000L);
+        StringBuilder sb = new StringBuilder();
+        promise
+                .then("test1", (_, _, _) -> sb.append("1"))
+                .then("test2", (_, _, _) -> sb.append("2"))
+                .then("test3", (_, _, _) -> sb.append("3"))
+                .run()
+                .await(4000);
+        Assertions.assertEquals("123", sb.toString());
+    }
+
+    @Test
+    void test04() {
+        // Тут тестируем последний элемент wait, который не должен привести к бесконечным ожиданиям
+        Promise promise = servicePromise.get("test", 6_000L); //new PromiseImpl("test", 6_000L);
+        StringBuilder sb = new StringBuilder();
+        promise
+                .then("test1", (_, _, _) -> sb.append("1"))
+                .then("test2", (_, _, _) -> sb.append("2"))
+                .then("test3", (_, _, _) -> sb.append("3"))
+                .appendWait("mey")
+                .run()
+                .await(4000);
+        Assertions.assertEquals("123", sb.toString());
+        Assertions.assertEquals(Promise.TerminalStatus.SUCCESS, promise.getTerminalStatus());
+    }
+
+    @Test
+    void test1() {
+        Promise promise = servicePromise.get("test", 6_000L); //new PromiseImpl("test", 6_000L);
+        promise
+                .append("test", (_, _, promise1) -> {
+                    Util.testSleepMs(1000);
+                    ArrayList<AbstractPromiseTask> objects = new ArrayList<>();
+                    objects.add(new PromiseTask("test2", promise, PromiseTaskExecuteType.COMPUTE, (_, _, _) -> UtilLog.printInfo(PromiseImplTest.class, "EXTRA")));
+                    promise1.getQueueTask().addFirst(objects);
+                })
+                .append("test", (_, _, _) -> {
+                    Util.testSleepMs(1000);
+                })
+                .then("test", (_, _, _) -> {
+                    Util.testSleepMs(1000);
+                })
+                .run()
+                .await(4000);
+    }
 //
 //    @Test
 //    void test2() {

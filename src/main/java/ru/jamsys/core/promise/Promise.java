@@ -114,9 +114,13 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         }
         if (hasCompleteHandler()) {
             if (completeRun.compareAndSet(false, true)) {
-                onComplete.prepareLaunch(() -> run.set(false));
+                onComplete.prepareLaunch(() -> {
+                    terminalStatus = TerminalStatus.SUCCESS;
+                    run.set(false);
+                });
             }
         } else {
+            terminalStatus = TerminalStatus.SUCCESS;
             run.set(false);
         }
     }

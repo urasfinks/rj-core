@@ -37,6 +37,12 @@ public class WaitQueue<T extends WaitQueueElement> {
                 break;
             }
             if (poll.isWait()) {
+                // Мы наткнулись на wait, мы в эксклюзивном доступе по lock.lock();
+                // бывает такое, что задач на обработку нет просто в очереди двойные ожидания, надо проверить это,
+                // прежде чем останавливать процесс
+                if (polledQueue.isEmpty()) {
+                    continue;
+                }
                 break;
             }
             polledQueue.add(poll);
