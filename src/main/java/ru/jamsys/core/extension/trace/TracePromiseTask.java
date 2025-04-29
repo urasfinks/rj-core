@@ -12,7 +12,6 @@ import ru.jamsys.core.statistic.timer.nano.TimerNano;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @JsonPropertyOrder({"prepare", "start", "index", "class", "retry", "type", "value", "taskTrace", "stop", "nano"})
 @JsonInclude(JsonInclude.Include.NON_EMPTY)

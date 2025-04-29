@@ -2,7 +2,6 @@ package ru.jamsys.core;
 
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.item.log.PersistentData;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.item.PropertySubscription;
 import ru.jamsys.core.flat.util.UtilLog;

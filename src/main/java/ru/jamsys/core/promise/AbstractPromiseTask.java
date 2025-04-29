@@ -85,6 +85,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
         if (promise.getLogType() == LogType.DEBUG) {
             if (promise.getRepositoryMap() instanceof PromiseRepositoryDebug promiseRepositoryDebug) {
                 Collection<Trace<String, ?>> traces = promiseRepositoryDebug.flushChange();
+                promise.getTrace().add(new Trace<>("RepositoryChange(" + getIndex() + ")", traces));
             }
         }
     }

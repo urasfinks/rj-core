@@ -1,7 +1,6 @@
 package ru.jamsys.core.i360;
 
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.i360.entity.Entity;
 import ru.jamsys.core.i360.entity.EntityChain;
 import ru.jamsys.core.i360.entity.adapter.AdapterSequence;
