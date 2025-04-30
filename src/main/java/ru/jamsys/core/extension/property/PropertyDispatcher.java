@@ -30,7 +30,7 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
 
     private final PropertyRepository<T> propertyRepository;
 
-    private final String namespace;
+    private final String ns;
 
     private final Set<PropertySubscription<T>> subscriptions = Util.getConcurrentHashSet();
 
@@ -40,12 +40,12 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
             ServiceProperty serviceProperty,
             PropertyListener propertyListener,
             PropertyRepository<T> propertyRepository,
-            String namespace
+            String ns
     ) {
         this.propertyListener = propertyListener;
         this.serviceProperty = serviceProperty;
         this.propertyRepository = propertyRepository;
-        this.namespace = namespace;
+        this.ns = ns;
 
         if (this.propertyRepository != null) {
             this.propertyRepository.init(this);
@@ -110,31 +110,31 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
     // Получить ключик с ns, как будет полностью выглядеть ключ в .properties
     public String getPropertyKey(String repositoryPropertyKey) {
         if (repositoryPropertyKey.isEmpty()) {
-            if (namespace == null) {
+            if (ns == null) {
                 // Не надо таких поворотов, когда и ns = null и ключ пустой
                 // На что это ссылка получается в property?
                 // Допустим есть ns = run.args.x1 и ключ пустота => подписываемся на run.args.x1
                 // Если ns = "" и ключ = "" мы подписываемся на "" - а это исключено
                 throw new RuntimeException("Определитесь либо ns = null либо key.isEmpty()");
             }
-            return namespace;
+            return ns;
         } else {
-            return namespace != null ? (namespace + "." + repositoryPropertyKey) : repositoryPropertyKey;
+            return ns != null ? (ns + "." + repositoryPropertyKey) : repositoryPropertyKey;
         }
     }
 
     // Получить ключик без ns, как он числится в репозитории
     private String getRepositoryPropertyKey(String propertyKey) {
-        if (namespace == null && propertyKey.isEmpty()) {
+        if (ns == null && propertyKey.isEmpty()) {
             throw new RuntimeException("Определитесь либо ns = null либо key.isEmpty()");
-        } else if (namespace == null) {
+        } else if (ns == null) {
             return propertyKey;
         } else if (propertyKey.isEmpty()) {
-            return namespace;
-        } else if (propertyKey.equals(namespace)) {
+            return ns;
+        } else if (propertyKey.equals(ns)) {
             return "";
         } else {
-            return propertyKey.substring(namespace.length() + 1);
+            return propertyKey.substring(ns.length() + 1);
         }
     }
 

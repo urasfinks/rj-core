@@ -27,19 +27,19 @@ public class PoolThreadPromiseTask
     @Getter
     private final Manager.Configuration<BrokerMemory> brokerPromiseTaskConfiguration;
 
-    public PoolThreadPromiseTask(String namespace) {
-        super(namespace);
+    public PoolThreadPromiseTask(String ns) {
+        super(ns);
         rateLimitConfiguration = App.get(Manager.class).configure(
                 RateLimitItem.class,
-                namespace,
+                ns,
                 RateLimitFactory.TPS::create
         );
 
         brokerPromiseTaskConfiguration = App.get(Manager.class).configure(
                 BrokerMemory.class,
-                namespace,
-                namespace1 -> new BrokerMemoryImpl<AbstractPromiseTask>(
-                        namespace1,
+                ns,
+                ns1 -> new BrokerMemoryImpl<AbstractPromiseTask>(
+                        ns1,
                         App.context,
                         promiseTask -> promiseTask.getPromise().setError(
                                 "::drop",
@@ -68,7 +68,7 @@ public class PoolThreadPromiseTask
     @Override
     public ThreadResourcePromiseTask createPoolItem() {
         ThreadResourcePromiseTask threadResourcePromiseTask = new ThreadResourcePromiseTask(
-                namespace,
+                ns,
                 counter.getAndIncrement(),
                 this
         );

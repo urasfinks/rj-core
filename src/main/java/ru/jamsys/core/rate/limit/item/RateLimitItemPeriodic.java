@@ -36,21 +36,21 @@ public class RateLimitItemPeriodic
 
     private String nextTimeFlushFormat = "";
 
-    private final String namespace;
+    private final String ns;
 
     private final RateLimitItemProperty property = new RateLimitItemProperty();
 
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
-    public RateLimitItemPeriodic(TimeUnit period, String namespace) {
-        this.namespace = namespace;
+    public RateLimitItemPeriodic(TimeUnit period, String ns) {
+        this.ns = ns;
         this.period = period;
         this.periodName = period.getNameCamel();
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
                 property,
-                getCascadeKey(namespace)
+                getCascadeKey(ns)
         );
     }
 
@@ -71,7 +71,7 @@ public class RateLimitItemPeriodic
 
     @Override
     public String getPropertyKey() {
-        return getCascadeKey(namespace);
+        return getCascadeKey(ns);
     }
 
     @Override
@@ -87,7 +87,7 @@ public class RateLimitItemPeriodic
     }
 
     public DataHeader flushAndGetStatistic(long curTime) {
-        DataHeader statistic = new DataHeader().setBody(namespace);
+        DataHeader statistic = new DataHeader().setBody(ns);
         statistic.put("period", periodName);
         statistic.put("max", property.getMax());
         if (nextTimeFlush.get() <= curTime) {

@@ -47,7 +47,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid>
 
     @Getter
     @ToString.Include
-    protected final String namespace;
+    protected final String ns;
 
     private final ConcurrentLinkedDeque<T> parkQueue = new ConcurrentLinkedDeque<>();
 
@@ -82,13 +82,13 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid>
     @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
-    public AbstractPool(String namespace) {
-        this.namespace = namespace;
+    public AbstractPool(String ns) {
+        this.ns = ns;
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
                 poolProperty,
-                getCascadeKey(namespace)
+                getCascadeKey(ns)
         );
     }
 
@@ -163,7 +163,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid>
     // Проверка, что пул может поместить новые объекты
     private boolean isSizePoolAllowsExtend() {
         if (!isRun()) {
-            App.error(new RuntimeException("Пул " + namespace + " не может поместить в себя ничего, так как он выключен"));
+            App.error(new RuntimeException("Пул " + ns + " не может поместить в себя ничего, так как он выключен"));
         }
         return isRun() && getRealActiveItem() < poolProperty.getMax();
     }
@@ -367,7 +367,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid>
             markActive();
         }
         result.add(new DataHeader()
-                .setBody(getCascadeKey(namespace))
+                .setBody(getCascadeKey(ns))
                 .put("tpsComplete", tpsCompleteFlush)
                 .put("item", itemQueue.size())
                 .put("park", parkQueue.size())

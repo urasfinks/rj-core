@@ -3,7 +3,6 @@ package ru.jamsys.core.component.manager.item;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
@@ -56,7 +55,7 @@ public class BrokerMemoryImpl<T>
     private final AvgMetric timeInQueue = new AvgMetric();
 
     @Getter
-    final String namespace;
+    final String ns;
 
     private final Consumer<T> onDrop;
 
@@ -69,24 +68,24 @@ public class BrokerMemoryImpl<T>
     private final Manager.Configuration<ExpirationList> expirationListConfiguration;
 
     public BrokerMemoryImpl(
-            String namespace,
+            String ns,
             ApplicationContext applicationContext,
             Consumer<T> onDrop
     ) {
-        this.namespace = namespace;
+        this.ns = ns;
         this.onDrop = onDrop;
 
         propertyDispatcher = new PropertyDispatcher<>(
                 applicationContext.getBean(ServiceProperty.class),
                 null,
                 getPropertyBroker(),
-                getCascadeKey(namespace)
+                getCascadeKey(ns)
         );
 
         expirationListConfiguration = applicationContext.getBean(Manager.class).configure(
                 ExpirationList.class,
-                namespace,
-                (namespace1) -> new ExpirationList<>(namespace1, this::onExpired)
+                ns,
+                (ns1) -> new ExpirationList<>(ns1, this::onExpired)
         );
     }
 
@@ -219,7 +218,7 @@ public class BrokerMemoryImpl<T>
         int sizeFlush = mainQueueSize.get();
         Map<String, Object> flush = timeInQueue.flush("time");
         result.add(new DataHeader()
-                .setBody(getCascadeKey(namespace))
+                .setBody(getCascadeKey(ns))
                 .put("tpsDeq", tpsDequeueFlush)
                 .put("tpsDrop", tpsDropFlush)
                 .put("size", sizeFlush)

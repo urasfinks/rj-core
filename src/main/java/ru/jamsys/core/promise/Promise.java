@@ -146,12 +146,12 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     }
 
     public void skipAllStep(AbstractPromiseTask promiseTask, String cause) {
-        trace.add(new Trace<>(promiseTask.getNamespace() + ".skipAllStep(" + cause + ")", null));
+        trace.add(new Trace<>(promiseTask.getNs() + ".skipAllStep(" + cause + ")", null));
         queueTask.skipAll();
     }
 
     public void goTo(AbstractPromiseTask promiseTask, String toIndexTask) {
-        trace.add(new Trace<>(promiseTask.getNamespace() + ".goTo(" + toIndexTask + ")", null));
+        trace.add(new Trace<>(promiseTask.getNs() + ".goTo(" + toIndexTask + ")", null));
         queueTask.skipUntil(toIndexTask);
     }
 
@@ -267,7 +267,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
                 index,
                 (_, promiseTask, promise) -> externalPromise
                         .onError((_, _, externalPromise1) -> {
-                            promise.setError(promiseTask.getNamespace(), new RuntimeException("ExternalPromiseException"));
+                            promise.setError(promiseTask.getNs(), new RuntimeException("ExternalPromiseException"));
                             promise.getTrace().addAll(externalPromise1.getTrace());
                         })
                         .onComplete((_, _, _) -> promise.completePromiseTask(promiseTask))
@@ -293,7 +293,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     }
 
     public Promise then(AbstractPromiseTask task) {
-        appendWait(task.getNamespace()).append(task);
+        appendWait(task.getNs()).append(task);
         return this;
     }
 

@@ -1,6 +1,5 @@
 package ru.jamsys.core.rate.limit.item;
 
-import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
@@ -22,19 +21,19 @@ public class RateLimitItemTps
 
     private final AtomicInteger tps = new AtomicInteger(0);
 
-    private final String namespace;
+    private final String ns;
 
     private final RateLimitItemProperty property = new RateLimitItemProperty();
 
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
-    public RateLimitItemTps(String namespace) {
-        this.namespace = namespace;
+    public RateLimitItemTps(String ns) {
+        this.ns = ns;
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
                 property,
-                getCascadeKey(namespace)
+                getCascadeKey(ns)
         );
     }
 
@@ -55,14 +54,14 @@ public class RateLimitItemTps
 
     @Override
     public String getPropertyKey() {
-        return getCascadeKey(namespace);
+        return getCascadeKey(ns);
     }
 
     @Override
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         List<DataHeader> result = new ArrayList<>();
         result.add(new DataHeader()
-                .setBody(getCascadeKey(namespace))
+                .setBody(getCascadeKey(ns))
                 .put("tps", tps.getAndSet(0))
                 .put("max", property.getMax())
         );

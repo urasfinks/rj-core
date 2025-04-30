@@ -24,8 +24,8 @@ class WaitQueueTest {
         queue.getMainQueue().add(new SimpleTask("3", true)); // wait элемент
 
         List<SimpleTask> polled = queue.poll();
-        assertEquals("1", polled.getFirst().getNamespace());
-        assertEquals("2", polled.getLast().getNamespace());
+        assertEquals("1", polled.getFirst().getNs());
+        assertEquals("2", polled.getLast().getNs());
 
         assertEquals(0, queue.getMainQueue().size());
         assertEquals(2, polled.size(), "Should poll 2 tasks before wait task");
@@ -45,8 +45,8 @@ class WaitQueueTest {
         // Первый poll — до wait
         List<SimpleTask> firstBatch = queue.poll();
         assertEquals(2, firstBatch.size(), "First batch should have 2 tasks");
-        assertEquals("task1", firstBatch.get(0).getNamespace());
-        assertEquals("task2", firstBatch.get(1).getNamespace());
+        assertEquals("task1", firstBatch.get(0).getNs());
+        assertEquals("task2", firstBatch.get(1).getNs());
 
         assertEquals(2, queue.getMainQueue().size());
 
@@ -61,8 +61,8 @@ class WaitQueueTest {
         // Теперь можно вызывать poll снова — должны получить вторую пачку
         List<SimpleTask> secondBatch = queue.poll();
         assertEquals(2, secondBatch.size(), "Second batch should have 2 tasks after first batch is committed");
-        assertEquals("task3", secondBatch.get(0).getNamespace());
-        assertEquals("task4", secondBatch.get(1).getNamespace());
+        assertEquals("task3", secondBatch.get(0).getNs());
+        assertEquals("task4", secondBatch.get(1).getNs());
     }
 
     @Test
@@ -96,7 +96,7 @@ class WaitQueueTest {
         List<SimpleTask> secondPoll = queue.poll();
 
         assertEquals(1, secondPoll.size(), "Should be able to poll again after full commit");
-        assertEquals("3", secondPoll.getFirst().getNamespace());
+        assertEquals("3", secondPoll.getFirst().getNs());
     }
 
     @Test
@@ -110,18 +110,18 @@ class WaitQueueTest {
 
         assertEquals(2, queue.getMainQueue().size(), "After goTo 2 tasks should remain");
         assert queue.getMainQueue().peekFirst() != null;
-        assertEquals("3", queue.getMainQueue().peekFirst().getNamespace(), "First remaining task should be 3");
+        assertEquals("3", queue.getMainQueue().peekFirst().getNs(), "First remaining task should be 3");
     }
 
     @Getter
     @Setter
     static class SimpleTask implements WaitQueueElement {
 
-        private final String namespace;
+        private final String ns;
         private final boolean wait;
 
-        public SimpleTask(String namespace, boolean wait) {
-            this.namespace = namespace;
+        public SimpleTask(String ns, boolean wait) {
+            this.ns = ns;
             this.wait = wait;
         }
 

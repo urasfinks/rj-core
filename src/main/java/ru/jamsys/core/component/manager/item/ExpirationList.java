@@ -1,7 +1,6 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
-import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
@@ -37,7 +36,7 @@ public class ExpirationList<T>
         ManagerElement, CascadeKey {
 
     @Getter
-    private final String namespace;
+    private final String ns;
 
     public static Set<ExpirationList<?>> expirationListSet = Util.getConcurrentHashSet();
 
@@ -48,10 +47,10 @@ public class ExpirationList<T>
     private final Consumer<DisposableExpirationMsImmutableEnvelope<T>> onExpired;
 
     public ExpirationList(
-            String namespace,
+            String ns,
             Consumer<DisposableExpirationMsImmutableEnvelope<T>> onExpired
     ) {
-        this.namespace = namespace;
+        this.ns = ns;
         this.onExpired = onExpired;
     }
 
@@ -110,7 +109,7 @@ public class ExpirationList<T>
                 }
         );
         result.add(new DataHeader()
-                .setBody(getCascadeKey(namespace))
+                .setBody(getCascadeKey(ns))
                 .put("ItemSize", summaryCountItem.get())
                 .put("BucketSize", countBucket.get())
         );

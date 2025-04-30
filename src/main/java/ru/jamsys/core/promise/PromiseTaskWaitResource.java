@@ -41,7 +41,7 @@ public class PromiseTaskWaitResource<T extends ExpirationMsMutable & Resource<?,
         this.afterBlockExecution = afterExecuteBlock;
         PoolResourcePromiseTaskWaitResource poolResourcePromiseTaskWaitResource = poolResourcePromiseTaskWaitConfiguration.get();
         getPromise().getTrace().add(new Trace<>(
-                this.getNamespace() + ".Pool-Subscribe(" + poolResourcePromiseTaskWaitResource.getKey() + ")",
+                this.getNs() + ".Pool-Subscribe(" + poolResourcePromiseTaskWaitResource.getKey() + ")",
                 null
         ));
         poolResourcePromiseTaskWaitResource.addPromiseTask(this);
@@ -71,7 +71,7 @@ public class PromiseTaskWaitResource<T extends ExpirationMsMutable & Resource<?,
     // Пул вызывает этот метод, когда появляется доступный ресурс
     public void onReceiveResource(PoolItemCompletable<T> poolItem) {
         this.receiveResource = poolItem;
-        getPromise().getTrace().add(new Trace<>(this.getNamespace() + ".Pool-Receive(" + poolResourcePromiseTaskWaitConfiguration.get().getKey() + ")", null));
+        getPromise().getTrace().add(new Trace<>(this.getNs() + ".Pool-Receive(" + poolResourcePromiseTaskWaitConfiguration.get().getKey() + ")", null));
         super.prepareLaunch(null);
     }
 

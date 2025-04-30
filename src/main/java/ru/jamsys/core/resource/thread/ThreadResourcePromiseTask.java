@@ -14,7 +14,6 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
 
@@ -34,15 +33,15 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
     private final int indexThread;
 
     @Getter
-    private final String namespace;
+    private final String ns;
 
-    public ThreadResourcePromiseTask(String namespace, int indexThread, PoolThreadPromiseTask pool) {
-        this.namespace = namespace;
+    public ThreadResourcePromiseTask(String ns, int indexThread, PoolThreadPromiseTask pool) {
+        this.ns = ns;
         this.pool = pool;
         this.indexThread = indexThread;
         // RateLimit будем запрашивать через родительское каскадное имя, так как key для потока - это
         // всего лишь имя, а поток должен подчиняться правилам (лимитам) пула
-        rateLimitConfiguration = App.get(Manager.class).configure(RateLimitItem.class, namespace);
+        rateLimitConfiguration = App.get(Manager.class).configure(RateLimitItem.class, ns);
     }
 
     @Override
@@ -89,7 +88,7 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
                 threadWork.set(false);
             }
         });
-        thread.setName(getCascadeKey(namespace) + "_" + indexThread);
+        thread.setName(getCascadeKey(ns) + "_" + indexThread);
         thread.start();
     }
 

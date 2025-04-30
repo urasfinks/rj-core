@@ -53,7 +53,7 @@ public class YandexSpeechResource
                 },
                 (Throwable th) -> {
                     AbstractPromiseTask asyncPromiseTask = arguments.getAsyncPromiseTask();
-                    asyncPromiseTask.getPromise().setError(asyncPromiseTask.getNamespace(), th);
+                    asyncPromiseTask.getPromise().setError(asyncPromiseTask.getNs(), th);
                 }
         );
         return null;
