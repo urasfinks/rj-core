@@ -1,5 +1,6 @@
 package ru.jamsys.core.promise;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
@@ -23,7 +24,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
 
     final PromiseTaskExecuteType type;
 
-    private final PromiseTaskConsumerThrowing<AbstractPromiseTask, AtomicBoolean, Promise> procedure;
+    private final PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> procedure;
 
     private final Promise promise;
 
@@ -44,13 +45,14 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     @Setter
     protected AtomicBoolean threadRun;
 
+    @JsonIgnore
     private final Manager.Configuration<PoolThreadPromiseTask> configure;
 
     public AbstractPromiseTask(
             String ns,
             Promise promise,
             PromiseTaskExecuteType type,
-            PromiseTaskConsumerThrowing<AbstractPromiseTask, AtomicBoolean, Promise> procedure
+            PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> procedure
     ) {
         this.ns = ns;
         this.promise = promise;

@@ -18,16 +18,16 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 public class ServicePromise implements CascadeKey {
 
     @SuppressWarnings("all")
-    private final Manager.Configuration<ExpirationList> timeOutExporationList;
+    private final Manager.Configuration<ExpirationList> timeOutExpirationList;
 
     @SuppressWarnings("all")
     private final Manager.Configuration<ExpirationList> retryExporationList;
 
     public ServicePromise(Manager manager) {
-        timeOutExporationList = manager.configure(
+        timeOutExpirationList = manager.configure(
                 ExpirationList.class,
                 getCascadeKey("timeOut"),
-                (key1) -> new ExpirationList<>(key1, this::onTimeOut)
+                (ns1) -> new ExpirationList<>(ns1, this::onTimeOut)
         );
         retryExporationList = manager.configure(
                 ExpirationList.class,
@@ -43,13 +43,13 @@ public class ServicePromise implements CascadeKey {
     @SuppressWarnings("unchecked")
     public Promise get(String index, long timeOutMs) {
         Promise promise = new Promise(index, timeOutMs);
-        promise.setRegisteredTimeOutExpiration(timeOutExporationList.get().add(promise, timeOutMs));
+        promise.setRegisteredTimeOutExpiration(timeOutExpirationList.get().add(promise, timeOutMs));
         return promise;
     }
 
     @SuppressWarnings("unchecked")
     public boolean removeTimeout(DisposableExpirationMsImmutableEnvelope<Promise> envelopeTimeout) {
-        return timeOutExporationList.get().remove(envelopeTimeout);
+        return timeOutExpirationList.get().remove(envelopeTimeout);
     }
 
     @SuppressWarnings("unchecked")

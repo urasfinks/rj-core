@@ -1,7 +1,7 @@
 package ru.jamsys.core.extension.functional;
 
 @FunctionalInterface
-public interface PromiseTaskWithResourceConsumerThrowing<T, A, P, R> {
+public interface PromiseTaskWithResourceConsumerThrowing<A, T, P, R> {
 
     /**
      * Performs the operation given the specified arguments.

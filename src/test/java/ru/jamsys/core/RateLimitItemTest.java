@@ -38,7 +38,7 @@ class RateLimitItemTest {
         long aLong = 60_000L;
 
         RateLimitItemPeriodic rateLimitItemPeriodic = new RateLimitItemPeriodic(TimeUnit.MINUTE, "min");
-        rateLimitItemPeriodic.set(999999);
+        rateLimitItemPeriodic.setMax(999999);
         Assertions.assertEquals("{period=Minute, max=999999, tpu=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());
         Assertions.assertEquals("2024-03-06T17:12:04.056", rateLimitItemPeriodic.getNextTime());
         rateLimitItemPeriodic.check();
@@ -52,17 +52,17 @@ class RateLimitItemTest {
         Assertions.assertEquals("2024-03-06T17:13:04.056", rateLimitItemPeriodic.getNextTime());
 
         rateLimitItemPeriodic = new RateLimitItemPeriodic(TimeUnit.HOUR_OF_DAY, "hour");
-        rateLimitItemPeriodic.set(999999);
+        rateLimitItemPeriodic.setMax(999999);
         Assertions.assertEquals("{period=HourOfDay, max=999999, tpu=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());
         Assertions.assertEquals("2024-03-06T18:11:04.056", rateLimitItemPeriodic.getNextTime());
 
         rateLimitItemPeriodic = new RateLimitItemPeriodic(TimeUnit.DAY_OF_WEEK, "day");
-        rateLimitItemPeriodic.set(999999);
+        rateLimitItemPeriodic.setMax(999999);
         Assertions.assertEquals("{period=DayOfWeek, max=999999, tpu=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());
         Assertions.assertEquals("2024-03-07T17:11:04.056", rateLimitItemPeriodic.getNextTime());
 
         rateLimitItemPeriodic = new RateLimitItemPeriodic(TimeUnit.MONTH, "month");
-        rateLimitItemPeriodic.set(999999);
+        rateLimitItemPeriodic.setMax(999999);
         Assertions.assertEquals("{period=Month, max=999999, tpu=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());
         Assertions.assertEquals("2024-04-06T17:11:04.056", rateLimitItemPeriodic.getNextTime());
         rateLimitItemPeriodic.check();
@@ -98,7 +98,7 @@ class RateLimitItemTest {
     void testTps() {
         RateLimitItem rateLimitTps = new RateLimitItemTps("tps");
         rateLimitTps.run();
-        rateLimitTps.set(2);
+        rateLimitTps.setMax(2);
         Assertions.assertTrue(rateLimitTps.check());
         Assertions.assertTrue(rateLimitTps.check());
         Assertions.assertFalse(rateLimitTps.check());

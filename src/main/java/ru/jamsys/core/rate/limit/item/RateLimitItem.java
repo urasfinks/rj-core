@@ -14,7 +14,7 @@ public interface RateLimitItem extends ManagerElement {
 
     String getPropertyKey();
 
-    default void set(int value) {
+    default void setMax(int value) {
         //+.max потому что поле в репозитории называется max
         App.get(ServiceProperty.class)
                 .computeIfAbsent(getPropertyKey() + ".max", null)

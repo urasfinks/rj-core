@@ -47,13 +47,12 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
     @Override
     public void runOperation() {
         thread = new Thread(() -> {
-            //System.out.println("!! "+(key + "_" + indexThread));
             threadWork.set(true);
             // При создании экземпляра в ThreadPoolPromiseTask.createPoolItem() происходит автоматически run()
-            // Это означает, что поток начинает крутиться и после того, как задач больше нет - он выполняет
-            // pool.completePoolItem(this, null); и происходит "Этот код не должен был случиться! Проверить логику!"
-            // так как поток ещё из парка не изымали, а мы без разрешения стартанули сами и пытаемся ещё раз себя
-            // закинуть в парк, поэтому сразу блокируемся
+            // При этом Pool его паркует, поэтому нам в ручную надо его LockSupport.park(thread);
+            // Если не запарковать, получим: "Этот код не должен был случиться! Проверить логику!"
+            // потому что если не выполнить LockSupport.park(thread); поток прокрутит логику и попытается сам
+            // запарковаться в пуле, а там мы встретим дубликат и ошибку ествественно
             LockSupport.park(thread);
             try {
                 while (spin.get() && !thread.isInterrupted()) {
@@ -117,6 +116,12 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
 
     @Override
     public Void execute(Void arguments) {
+        if (pool.isEmpty()) {
+            return null;
+        }
+        if (!threadWork.get()) {
+            UtilLog.printError(getClass(), "Поток ещё не запустился");
+        }
         LockSupport.unpark(thread);
         return null;
     }

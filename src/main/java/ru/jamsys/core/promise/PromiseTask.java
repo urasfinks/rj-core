@@ -13,7 +13,7 @@ public class PromiseTask extends AbstractPromiseTask {
             String index,
             Promise promise,
             PromiseTaskExecuteType type,
-            PromiseTaskConsumerThrowing<AbstractPromiseTask, AtomicBoolean, Promise> procedure
+            PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> procedure
     ) {
         super(index, promise, type, procedure);
     }

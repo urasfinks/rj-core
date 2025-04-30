@@ -142,7 +142,7 @@ class PromiseImplTest {
                 Promise.getComplexIndex("test", "test"),
                 RateLimitFactory.TPS::create
         );
-        rateLimitItemConfiguration.get().set(10000);
+        rateLimitItemConfiguration.get().setMax(10000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
@@ -165,7 +165,7 @@ class PromiseImplTest {
         );
 
         UtilLog.printInfo(PromiseImplTest.class, rateLimitItemConfiguration);
-        rateLimitItemConfiguration.get().set(1);
+        rateLimitItemConfiguration.get().setMax(1);
         UtilLog.printInfo(PromiseImplTest.class, rateLimitItemConfiguration);
         Promise promise = servicePromise.get("seq", 6_000L);
         AtomicInteger c = new AtomicInteger(0);
@@ -176,122 +176,129 @@ class PromiseImplTest {
         // Для IO потоков нет ограничений по tps, поэтому там будет expected = 2 это нормально!
         Assertions.assertEquals(1, c.get());
     }
-//
-//    @Test
-//    void test3_2() {
-//        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = App.get(Manager.class).configure(
-//                RateLimitItem.class,
-//                Promise.getComplexIndex("seq2", "then1"),
-//                RateLimitFactory.TPS::create
-//        );
-//        rateLimitItemConfiguration.get().set(0);
-//        AtomicInteger c = new AtomicInteger(0);
-//        Promise promise = servicePromise.get("seq2", 6_000L)
-//                .then("then1", (_, _, _) -> c.incrementAndGet())
-//                .run().
-//                await(2000);
-//        // Для IO потоков нет ограничений по tps, поэтому там будет expected = 2 это нормально!
-//        Assertions.assertFalse(promise.isException());
-//        Assertions.assertEquals(0, c.get());
-//    }
-//
-//
-//    @Test
-//    void test4() {
-//        Promise promise = servicePromise.get("test", 6_000L);
-//        ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
-//        ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
-//        for (int i = 0; i < 10; i++) {
-//            final int x = i;
-//            promise.then("test", (_, _, _) -> deque.add(x));
-//            dequeRes.add(i);
-//        }
-//        promise.run().await(3000);
-//        Assertions.assertEquals(dequeRes.toString(), deque.toString());
-//    }
-//
-//    @Test
-//    void test5() {
-//        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = App.get(Manager.class).configure(
-//                RateLimitItem.class,
-//                Promise.getComplexIndex("test", "test"),
-//                RateLimitFactory.TPS::create
-//        );
-//        rateLimitItemConfiguration.get().set(100000000);
-//        Promise promise = servicePromise.get("test", 6_000L);
-//        ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
-//        ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
-//        for (int i = 0; i < 1000; i++) {
-//            final int x = i;
-//            promise.then("test", (_, _, _) -> deque.add(x));
-//            dequeRes.add(i);
-//        }
-//        promise.run();
-//        promise.await(5000);
-//        Assertions.assertEquals(dequeRes.toString(), deque.toString());
-//
-//    }
-//
-//    @Test
-//    void test6() {
-//        long start = System.currentTimeMillis();
-//        for (int i = 0; i < 1000; i++) {
-//            test5();
-//            Thread.onSpinWait();
-//        }
-//        UtilLog.printInfo(PromiseImplTest.class, "sum time: " + (System.currentTimeMillis() - start));
-//    }
-//
-//    @Test
-//    void test7() {
-//        Promise promise = servicePromise.get("test", 6_000L);
-//        AtomicInteger retry = new AtomicInteger(0);
-//        AtomicInteger error = new AtomicInteger(0);
-//        AtomicInteger complete = new AtomicInteger(0);
-//        promise
-//                .append("test", (_, _, _) -> {
-//                    retry.incrementAndGet();
-//                    throw new RuntimeException("Hello world");
-//                })
-//                .getLastTask().setRetryCount(1, 1000).getPromise()
-//                .onError((_, _, _) -> error.incrementAndGet())
-//                .onComplete((_, _, _) -> complete.incrementAndGet())
-//                .run()
-//                .await(3000);
-//        Assertions.assertEquals(2, retry.get());
-//        Assertions.assertEquals(1, error.get());
-//        Assertions.assertEquals(0, complete.get());
-//
-//    }
-//
-//    @Test
-//    void testTimeOut() {
-//        AtomicInteger error = new AtomicInteger(0);
-//        AtomicInteger complete = new AtomicInteger(0);
-//        AtomicInteger exec = new AtomicInteger(0);
-//
-//        Promise promise = servicePromise.get("test", 1_500L);
-//        promise
-//                .append("1", (_, _, _) -> {
-//                    exec.incrementAndGet();
-//                    Util.testSleepMs(1000);
-//                })
-//                .then("2", (_, _, _) -> {
-//                    exec.incrementAndGet();
-//                    Util.testSleepMs(1000);
-//                })
-//                .then("3", (_, _, _) -> {
-//                    exec.incrementAndGet();
-//                    Util.testSleepMs(1000);
-//                })
-//                .onError((_, _, _) -> error.incrementAndGet())
-//                .onComplete((_, _, _) -> complete.incrementAndGet())
-//                .run()
-//                .await(2100);
-//        Assertions.assertEquals(1, error.get());
-//        Assertions.assertEquals(0, complete.get());
-//        Assertions.assertEquals(2, exec.get());
-//    }
+
+    @Test
+    void test3_2() {
+        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = App.get(Manager.class).configure(
+                RateLimitItem.class,
+                Promise.getComplexIndex("seq2", "then1"),
+                RateLimitFactory.TPS::create
+        );
+        rateLimitItemConfiguration.get().setMax(0);
+        AtomicInteger c = new AtomicInteger(0);
+        Promise promise = servicePromise.get("seq2", 1_500L)
+                .then("then1", (_, _, _) -> c.incrementAndGet())
+                .run().
+                await(3000);
+        // Для IO потоков нет ограничений по tps, поэтому там будет expected = 2 это нормально!
+        Assertions.assertEquals(Promise.TerminalStatus.ERROR, promise.getTerminalStatus());
+        Assertions.assertEquals(0, c.get());
+    }
+
+
+    @Test
+    void test4() {
+        Promise promise = servicePromise.get("test", 6_000L);
+        ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
+        ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
+        for (int i = 0; i < 10; i++) {
+            final int x = i;
+            promise.then("test", (_, _, _) -> deque.add(x));
+            dequeRes.add(i);
+        }
+        promise.run().await(3000);
+        Assertions.assertEquals(dequeRes.toString(), deque.toString());
+    }
+
+    @Test
+    void test5() {
+        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = App.get(Manager.class).configure(
+                RateLimitItem.class,
+                Promise.getComplexIndex("test", "test"),
+                RateLimitFactory.TPS::create
+        );
+        rateLimitItemConfiguration.get().setMax(100000000);
+        Promise promise = servicePromise.get("test", 6_000L);
+        ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
+        ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
+        for (int i = 0; i < 1000; i++) {
+            final int x = i;
+            promise.then("test", (_, _, _) -> deque.add(x));
+            dequeRes.add(i);
+        }
+        promise.run();
+        promise.await(5000);
+        Assertions.assertEquals(dequeRes.toString(), deque.toString());
+
+    }
+
+    @Test
+    void test6() {
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 1000; i++) {
+            test5();
+            Thread.onSpinWait();
+        }
+        UtilLog.printInfo(PromiseImplTest.class, "sum time: " + (System.currentTimeMillis() - start));
+    }
+
+    @Test
+    void test7() {
+        Promise promise = servicePromise.get("test", 6_000L);
+        AtomicInteger retry = new AtomicInteger(0);
+        AtomicInteger error = new AtomicInteger(0);
+        AtomicInteger complete = new AtomicInteger(0);
+        promise
+                .append("test", (_, _, _) -> {
+                    retry.incrementAndGet();
+                    throw new RuntimeException("Hello world");
+                })
+                .modifyLastPromiseTask(abstractPromiseTask -> {
+                    abstractPromiseTask.setRetryCount(1);
+                    abstractPromiseTask.setRetryDelayMs(1000);
+                })
+                .onError((_, _, _) -> error.incrementAndGet())
+                .onComplete((_, _, _) -> complete.incrementAndGet())
+                .run()
+                .await(3000);
+        Assertions.assertEquals(2, retry.get());
+        Assertions.assertEquals(1, error.get());
+        Assertions.assertEquals(0, complete.get());
+    }
+
+    @Test
+    void testTimeOut() {
+        AtomicInteger error = new AtomicInteger(0);
+        AtomicInteger complete = new AtomicInteger(0);
+        AtomicInteger exec = new AtomicInteger(0);
+
+        Promise promise = servicePromise.get("test", 1_500L);
+        promise
+                .append("1", (_, _, _) -> {
+                    UtilLog.printInfo(getClass(), "!!1");
+                    exec.incrementAndGet();
+                    Util.testSleepMs(1000);
+                })
+                .then("2", (_, _, _) -> {
+                    UtilLog.printInfo(getClass(), "!!2");
+                    exec.incrementAndGet();
+                    Util.testSleepMs(1000);
+                })
+                .then("3", (_, _, _) -> {
+                    UtilLog.printInfo(getClass(), "!!3");
+                    exec.incrementAndGet();
+                    Util.testSleepMs(1000);
+                })
+                .onError((_, _, _) -> {
+                    error.incrementAndGet();
+                })
+                .onComplete((_, _, _) -> complete.incrementAndGet())
+                .run()
+                .await(3000);
+        Assertions.assertEquals(1, error.get());
+        Assertions.assertEquals(0, complete.get());
+        Assertions.assertEquals(2, exec.get());
+    }
 //
 //    @Test
 //    void testTimeOutParallel() {

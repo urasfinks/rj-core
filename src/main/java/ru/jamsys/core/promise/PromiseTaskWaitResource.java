@@ -15,7 +15,7 @@ public class PromiseTaskWaitResource<T extends ExpirationMsMutable & Resource<?,
 
     private PoolItemCompletable<T> receiveResource;
 
-    private final PromiseTaskWithResourceConsumerThrowing<AbstractPromiseTask, AtomicBoolean, Promise, T> executeBlock;
+    private final PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> executeBlock;
 
     @SuppressWarnings("all")
     private final Manager.Configuration<PoolResourcePromiseTaskWaitResource> poolResourcePromiseTaskWaitConfiguration;
@@ -24,7 +24,7 @@ public class PromiseTaskWaitResource<T extends ExpirationMsMutable & Resource<?,
     public PromiseTaskWaitResource(
             String indexTask,
             Promise promise,
-            PromiseTaskWithResourceConsumerThrowing<AbstractPromiseTask, AtomicBoolean, Promise, T> executeBlock,
+            PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> executeBlock,
             Manager.Configuration<PoolResourcePromiseTaskWaitResource> poolResourcePromiseTaskWaitConfiguration
     ) {
         super(indexTask, promise, PromiseTaskExecuteType.IO, null);

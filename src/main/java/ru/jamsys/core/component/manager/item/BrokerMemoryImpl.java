@@ -10,6 +10,7 @@ import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
@@ -84,7 +85,7 @@ public class BrokerMemoryImpl<T>
 
         expirationListConfiguration = applicationContext.getBean(Manager.class).configure(
                 ExpirationList.class,
-                ns,
+                getCascadeKey(ns),
                 (ns1) -> new ExpirationList<>(ns1, this::onExpired)
         );
     }
@@ -100,6 +101,7 @@ public class BrokerMemoryImpl<T>
     @Override
     public DisposableExpirationMsImmutableEnvelope<T> add(ExpirationMsImmutableEnvelope<T> envelope) {
         if (envelope == null || envelope.isExpired()) {
+            UtilLog.printError(getClass(), envelope);
             return null;
         }
         isNotRunThrow();

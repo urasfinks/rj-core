@@ -1,7 +1,7 @@
 package ru.jamsys.core.extension.functional;
 
 @FunctionalInterface
-public interface PromiseTaskConsumerThrowing<T, A, P> {
+public interface PromiseTaskConsumerThrowing<A, T, P> {
 
     /**
      * Весь этот сыр бор из-за структурирования ошибок и принадлежности их к задачам
