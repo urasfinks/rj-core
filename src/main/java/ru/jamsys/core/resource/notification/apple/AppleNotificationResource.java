@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -27,6 +28,7 @@ public class AppleNotificationResource
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Resource<AppleNotificationRequest, HttpResponse>,
+        CascadeKey,
         PropertyListener {
 
     private PropertyDispatcher<Object> propertyDispatcher;
@@ -40,7 +42,7 @@ public class AppleNotificationResource
                 App.get(ServiceProperty.class),
                 this,
                 appleNotificationProperty,
-                resourceConfiguration.ns
+                getCascadeKey(resourceConfiguration.ns)
         );
     }
 

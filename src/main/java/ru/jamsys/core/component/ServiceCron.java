@@ -138,14 +138,4 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
         return 6;
     }
 
-    @Override
-    public String getKey() {
-        return null;
-    }
-
-    @Override
-    public CascadeKey getParentCascadeKey() {
-        return App.cascadeName;
-    }
-
 }

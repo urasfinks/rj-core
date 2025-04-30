@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceConfiguration;
@@ -19,7 +20,7 @@ import java.util.function.Function;
 @Scope("prototype")
 public class ReCaptchaResource
         extends ExpirationMsMutableImplAbstractLifeCycle
-        implements Resource<String, HttpResponse> {
+        implements Resource<String, HttpResponse>, CascadeKey {
 
     private final SecurityComponent securityComponent;
 
@@ -37,7 +38,7 @@ public class ReCaptchaResource
                 App.get(ServiceProperty.class),
                 null,
                 reCaptchaProperty,
-                resourceConfiguration.ns
+                getCascadeKey(resourceConfiguration.ns)
         );
     }
 

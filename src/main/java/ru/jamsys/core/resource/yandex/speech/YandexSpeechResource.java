@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.promise.AbstractPromiseTask;
@@ -21,6 +22,7 @@ public class YandexSpeechResource
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Resource<YandexSpeechRequest, Void>,
+        CascadeKey,
         PropertyListener {
 
     YandexSpeechClient client = null;
@@ -35,7 +37,7 @@ public class YandexSpeechResource
                 App.get(ServiceProperty.class),
                 this,
                 yandexSpeechProperty,
-                resourceConfiguration.ns
+                getCascadeKey(resourceConfiguration.ns)
         );
     }
 
@@ -51,7 +53,7 @@ public class YandexSpeechResource
                 },
                 (Throwable th) -> {
                     AbstractPromiseTask asyncPromiseTask = arguments.getAsyncPromiseTask();
-                    asyncPromiseTask.getPromise().setError(asyncPromiseTask.getIndex(), th);
+                    asyncPromiseTask.getPromise().setError(asyncPromiseTask.getNamespace(), th);
                 }
         );
         return null;

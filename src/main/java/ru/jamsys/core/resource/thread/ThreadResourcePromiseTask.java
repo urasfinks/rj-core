@@ -3,6 +3,7 @@ package ru.jamsys.core.resource.thread;
 import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.AbstractPromiseTask;
@@ -13,10 +14,12 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
 
-public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLifeCycle implements Resource<Void, Void> {
+public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLifeCycle
+        implements Resource<Void, Void>, CascadeKey {
 
     private Thread thread;
 
@@ -31,20 +34,21 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
     private final int indexThread;
 
     @Getter
-    private final String key;
+    private final String namespace;
 
-    public ThreadResourcePromiseTask(String key, int indexThread, PoolThreadPromiseTask pool) {
-        this.key = key;
+    public ThreadResourcePromiseTask(String namespace, int indexThread, PoolThreadPromiseTask pool) {
+        this.namespace = namespace;
         this.pool = pool;
         this.indexThread = indexThread;
         // RateLimit будем запрашивать через родительское каскадное имя, так как key для потока - это
         // всего лишь имя, а поток должен подчиняться правилам (лимитам) пула
-        rateLimitConfiguration = App.get(Manager.class).configure(RateLimitItem.class, key);
+        rateLimitConfiguration = App.get(Manager.class).configure(RateLimitItem.class, namespace);
     }
 
     @Override
     public void runOperation() {
         thread = new Thread(() -> {
+            //System.out.println("!! "+(key + "_" + indexThread));
             threadWork.set(true);
             // При создании экземпляра в ThreadPoolPromiseTask.createPoolItem() происходит автоматически run()
             // Это означает, что поток начинает крутиться и после того, как задач больше нет - он выполняет
@@ -61,6 +65,7 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
                         continue;
                     }
                     ExpirationMsImmutableEnvelope<AbstractPromiseTask> promiseTaskEnvelope = pool.getPromiseTask();
+
                     if (promiseTaskEnvelope != null) {
                         try {
                             AbstractPromiseTask promiseTask = promiseTaskEnvelope.getValue();
@@ -84,7 +89,7 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
                 threadWork.set(false);
             }
         });
-        thread.setName(key + "_" + indexThread);
+        thread.setName(getCascadeKey(namespace) + "_" + indexThread);
         thread.start();
     }
 

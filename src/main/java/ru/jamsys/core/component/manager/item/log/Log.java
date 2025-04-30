@@ -34,7 +34,9 @@ public class Log extends PersistentDataHeader {
             } else {
                 sb.append(s).append(": ").append(o);
             }
-            sb.append("; ");
+            // Если просто пробел, то текст сливается. Если включить Soft-Wrap продолжение всегда будет с отступом.
+            // Это позволяет хорошо видеть разделение между несколькими принтами (дата начинается без отступа)
+            sb.append(";\t");
         });
         Object body1 = getRawBody();
         if (body1 != null) {

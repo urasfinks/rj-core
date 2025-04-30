@@ -88,7 +88,7 @@ public class WaitQueue<T extends WaitQueueElement> {
             lock.lock();
             for (Iterator<T> it = mainQueue.iterator(); it.hasNext(); ) {
                 T elem = it.next();
-                if (elem.getIndex().equals(index)) {
+                if (elem.getNamespace().equals(index)) {
                     break;
                 }
                 it.remove();

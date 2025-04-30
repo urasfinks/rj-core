@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.resource.Resource;
@@ -30,6 +31,7 @@ public class InfluxResource
         implements
         Resource<List<Point>, Void>,
         PropertyListener,
+        CascadeKey,
         ResourceCheckException {
 
     //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token ''
@@ -48,7 +50,7 @@ public class InfluxResource
                 App.get(ServiceProperty.class),
                 this,
                 influxProperty,
-                resourceConfiguration.ns
+                getCascadeKey(resourceConfiguration.ns)
         );
     }
 

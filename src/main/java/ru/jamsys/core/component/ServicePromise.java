@@ -71,14 +71,4 @@ public class ServicePromise implements CascadeKey {
         }
     }
 
-    @Override
-    public String getKey() {
-        return null;
-    }
-
-    @Override
-    public CascadeKey getParentCascadeKey() {
-        return App.cascadeName;
-    }
-
 }

@@ -28,7 +28,7 @@ public class PromiseTest {
             // мне не нужна БД, поэтому комментирую проверку типа замены
             // Но проверка типа была, что бы WAIT не поменять, так что меняем всё кроме WAIT
             if (
-                    promiseTask.getIndex().equals(index)
+                    promiseTask.getNamespace().equals(index)
                             && !promiseTask.getType().equals(PromiseTaskExecuteType.WAIT)
                 //&& promiseTask.getType().equals(task.getType())
             ) {
@@ -45,7 +45,7 @@ public class PromiseTest {
         abstractPromise.getQueueTask().getMainQueue().clear();
         index = abstractPromise.getComplexIndex(index);
         for (AbstractPromiseTask promiseTask : array) {
-            if (!promiseTask.getIndex().equals(index)) {
+            if (!promiseTask.getNamespace().equals(index)) {
                 abstractPromise.getQueueTask().getMainQueue().add(promiseTask);
             }
         }
@@ -58,7 +58,7 @@ public class PromiseTest {
         index = abstractPromise.getComplexIndex(index);
         AbstractPromiseTask removeTask = null;
         for (AbstractPromiseTask promiseTask : array) {
-            if (promiseTask.getIndex().equals(index)) {
+            if (promiseTask.getNamespace().equals(index)) {
                 removeTask = promiseTask;
             }
         }
@@ -82,7 +82,7 @@ public class PromiseTest {
         index = abstractPromise.getComplexIndex(index);
         boolean remove = true;
         for (AbstractPromiseTask promiseTask : array) {
-            if (promiseTask.getIndex().equals(index)) {
+            if (promiseTask.getNamespace().equals(index)) {
                 remove = false;
             }
             if (!remove) {
@@ -97,7 +97,7 @@ public class PromiseTest {
         AbstractPromiseTask[] array = abstractPromise.getQueueTask().getMainQueue().toArray(new AbstractPromiseTask[0]);
         for (AbstractPromiseTask promiseTask : array) {
             result.add(
-                    promiseTask.getIndex().substring(abstractPromise.getIndex().length() + 1)
+                    promiseTask.getNamespace().substring(abstractPromise.getIndex().length() + 1)
                             + "::" + promiseTask.getType().toString()
             );
         }
@@ -110,7 +110,7 @@ public class PromiseTest {
         abstractPromise.getQueueTask().getMainQueue().clear();
         index = abstractPromise.getComplexIndex(index);
         for (AbstractPromiseTask promiseTask : array) {
-            if (promiseTask.getIndex().equals(index) && promiseTask.getType().equals(type)) {
+            if (promiseTask.getNamespace().equals(index) && promiseTask.getType().equals(type)) {
                 return promiseTask;
             }
         }

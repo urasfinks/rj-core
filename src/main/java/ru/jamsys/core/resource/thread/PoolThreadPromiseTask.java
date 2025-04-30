@@ -24,21 +24,22 @@ public class PoolThreadPromiseTask
     private final Manager.Configuration<RateLimitItem> rateLimitConfiguration;
 
     @SuppressWarnings("all")
-    private final Manager.Configuration<BrokerMemory> brokerMemoryConfiguration;
+    @Getter
+    private final Manager.Configuration<BrokerMemory> brokerPromiseTaskConfiguration;
 
-    public PoolThreadPromiseTask(String key) {
-        super(key);
+    public PoolThreadPromiseTask(String namespace) {
+        super(namespace);
         rateLimitConfiguration = App.get(Manager.class).configure(
                 RateLimitItem.class,
-                key,
+                namespace,
                 RateLimitFactory.TPS::create
         );
 
-        brokerMemoryConfiguration = App.get(Manager.class).configure(
+        brokerPromiseTaskConfiguration = App.get(Manager.class).configure(
                 BrokerMemory.class,
-                key,
-                key1 -> new BrokerMemoryImpl<AbstractPromiseTask>(
-                        key1,
+                namespace,
+                namespace1 -> new BrokerMemoryImpl<AbstractPromiseTask>(
+                        namespace1,
                         App.context,
                         promiseTask -> promiseTask.getPromise().setError(
                                 "::drop",
@@ -54,20 +55,20 @@ public class PoolThreadPromiseTask
         // окей, просто что-то умрёт в брокере, но вставку как будто не надо ограничивать
         // rateLimit.checkOrThrow();
         long timeout = promiseTask.getPromise().getExpiryRemainingMs();
-        brokerMemoryConfiguration.get().add(new ExpirationMsImmutableEnvelope<>(promiseTask, timeout));
+        brokerPromiseTaskConfiguration.get().add(new ExpirationMsImmutableEnvelope<>(promiseTask, timeout));
         isAvailablePoolItem();
         serviceBell();
     }
 
     @SuppressWarnings("unchecked")
     public ExpirationMsImmutableEnvelope<AbstractPromiseTask> getPromiseTask() {
-        return brokerMemoryConfiguration.get().pollLast();
+        return brokerPromiseTaskConfiguration.get().pollLast();
     }
 
     @Override
     public ThreadResourcePromiseTask createPoolItem() {
         ThreadResourcePromiseTask threadResourcePromiseTask = new ThreadResourcePromiseTask(
-                getKey(),
+                namespace,
                 counter.getAndIncrement(),
                 this
         );
@@ -85,5 +86,10 @@ public class PoolThreadPromiseTask
         return false;
     }
 
+    @Override
+    public void helper() {
+        // Если потоки остановились из-за RateLimit, их надо пошевелить немного
+        serviceBell();
+    }
 
 }

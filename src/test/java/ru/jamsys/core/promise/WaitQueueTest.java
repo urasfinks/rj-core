@@ -1,5 +1,7 @@
 package ru.jamsys.core.promise;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,8 +24,8 @@ class WaitQueueTest {
         queue.getMainQueue().add(new SimpleTask("3", true)); // wait элемент
 
         List<SimpleTask> polled = queue.poll();
-        assertEquals("1", polled.getFirst().getIndex());
-        assertEquals("2", polled.getLast().getIndex());
+        assertEquals("1", polled.getFirst().getNamespace());
+        assertEquals("2", polled.getLast().getNamespace());
 
         assertEquals(0, queue.getMainQueue().size());
         assertEquals(2, polled.size(), "Should poll 2 tasks before wait task");
@@ -43,8 +45,8 @@ class WaitQueueTest {
         // Первый poll — до wait
         List<SimpleTask> firstBatch = queue.poll();
         assertEquals(2, firstBatch.size(), "First batch should have 2 tasks");
-        assertEquals("task1", firstBatch.get(0).getIndex());
-        assertEquals("task2", firstBatch.get(1).getIndex());
+        assertEquals("task1", firstBatch.get(0).getNamespace());
+        assertEquals("task2", firstBatch.get(1).getNamespace());
 
         assertEquals(2, queue.getMainQueue().size());
 
@@ -59,8 +61,8 @@ class WaitQueueTest {
         // Теперь можно вызывать poll снова — должны получить вторую пачку
         List<SimpleTask> secondBatch = queue.poll();
         assertEquals(2, secondBatch.size(), "Second batch should have 2 tasks after first batch is committed");
-        assertEquals("task3", secondBatch.get(0).getIndex());
-        assertEquals("task4", secondBatch.get(1).getIndex());
+        assertEquals("task3", secondBatch.get(0).getNamespace());
+        assertEquals("task4", secondBatch.get(1).getNamespace());
     }
 
     @Test
@@ -94,7 +96,7 @@ class WaitQueueTest {
         List<SimpleTask> secondPoll = queue.poll();
 
         assertEquals(1, secondPoll.size(), "Should be able to poll again after full commit");
-        assertEquals("3", secondPoll.getFirst().getIndex());
+        assertEquals("3", secondPoll.getFirst().getNamespace());
     }
 
     @Test
@@ -108,28 +110,21 @@ class WaitQueueTest {
 
         assertEquals(2, queue.getMainQueue().size(), "After goTo 2 tasks should remain");
         assert queue.getMainQueue().peekFirst() != null;
-        assertEquals("3", queue.getMainQueue().peekFirst().getIndex(), "First remaining task should be 3");
+        assertEquals("3", queue.getMainQueue().peekFirst().getNamespace(), "First remaining task should be 3");
     }
 
+    @Getter
+    @Setter
     static class SimpleTask implements WaitQueueElement {
 
-        private final String index;
-        private final boolean isWait;
+        private final String namespace;
+        private final boolean wait;
 
-        public SimpleTask(String index, boolean isWait) {
-            this.index = index;
-            this.isWait = isWait;
+        public SimpleTask(String namespace, boolean wait) {
+            this.namespace = namespace;
+            this.wait = wait;
         }
 
-        @Override
-        public boolean isWait() {
-            return isWait;
-        }
-
-        @Override
-        public String getIndex() {
-            return index;
-        }
     }
 
 }

@@ -3,6 +3,7 @@ package ru.jamsys.core.resource;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.pool.AbstractPool;
@@ -46,7 +47,7 @@ public class PoolResourcePromiseTaskWaitResource<
 
     @Override
     public T createPoolItem() {
-        return supplierPoolItem.apply(key);
+        return supplierPoolItem.apply(namespace);
     }
 
     @Override

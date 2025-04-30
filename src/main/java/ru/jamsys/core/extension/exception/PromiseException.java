@@ -45,7 +45,7 @@ public class PromiseException extends RuntimeException {
         LineWriter lineWriter = new LineWriterString();
         lineWriter.addLine("Promise: " + getPromise().getIndex());
         if (getPromiseTask() != null) {
-            lineWriter.addLine("Task: " + getPromiseTask().getIndex());
+            lineWriter.addLine("Task: " + getPromiseTask().getNamespace());
         }
         return ExceptionHandler.getTextException(getThrowable(), lineWriter);
     }

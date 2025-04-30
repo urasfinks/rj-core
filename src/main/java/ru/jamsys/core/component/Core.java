@@ -42,7 +42,7 @@ public class Core extends AbstractLifeCycle implements LifeCycleInterface {
             ResultOperation resultOperation = lifeCycleComponent.run();
             UtilLog.info(getClass(), null)
                     .addHeader("runIndex", lifeCycleComponent.getInitializationIndex())
-                    .addHeader("runClass", lifeCycleComponent.getInitializationIndex())
+                    .addHeader("runClass", lifeCycleComponent.getClass().getName())
                     .addHeader("runTime", (System.currentTimeMillis() - start) + "ms")
                     .addHeader("resultOperation", resultOperation)
                     .print();

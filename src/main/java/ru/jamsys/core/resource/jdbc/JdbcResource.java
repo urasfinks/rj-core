@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
@@ -30,6 +31,7 @@ public class JdbcResource
         implements
         Resource<JdbcRequest, List<Map<String, Object>>>,
         JdbcExecute,
+        CascadeKey,
         PropertyListener {
 
     private StatementControl statementControl;
@@ -46,7 +48,7 @@ public class JdbcResource
                 App.get(ServiceProperty.class),
                 this,
                 jdbcProperty,
-                resourceConfiguration.ns
+                getCascadeKey(resourceConfiguration.ns)
         );
         this.statementControl = new DefaultStatementControl();
     }

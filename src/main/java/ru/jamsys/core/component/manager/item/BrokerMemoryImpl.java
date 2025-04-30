@@ -3,9 +3,11 @@ package ru.jamsys.core.component.manager.item;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
@@ -29,6 +31,7 @@ public class BrokerMemoryImpl<T>
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         BrokerMemory<T>,
+        CascadeKey,
         AddToList<
                 ExpirationMsImmutableEnvelope<T>,
                 DisposableExpirationMsImmutableEnvelope<T> // Должны вернуть, что бы из вне можно было сделать remove
@@ -53,7 +56,7 @@ public class BrokerMemoryImpl<T>
     private final AvgMetric timeInQueue = new AvgMetric();
 
     @Getter
-    final String key;
+    final String namespace;
 
     private final Consumer<T> onDrop;
 
@@ -66,24 +69,24 @@ public class BrokerMemoryImpl<T>
     private final Manager.Configuration<ExpirationList> expirationListConfiguration;
 
     public BrokerMemoryImpl(
-            String key,
+            String namespace,
             ApplicationContext applicationContext,
             Consumer<T> onDrop
     ) {
-        this.key = key;
+        this.namespace = namespace;
         this.onDrop = onDrop;
 
         propertyDispatcher = new PropertyDispatcher<>(
                 applicationContext.getBean(ServiceProperty.class),
                 null,
                 getPropertyBroker(),
-                key
+                getCascadeKey(namespace)
         );
 
         expirationListConfiguration = applicationContext.getBean(Manager.class).configure(
                 ExpirationList.class,
-                key,
-                (k) -> new ExpirationList<>(k, this::onExpired)
+                namespace,
+                (namespace1) -> new ExpirationList<>(namespace1, this::onExpired)
         );
     }
 
@@ -216,7 +219,7 @@ public class BrokerMemoryImpl<T>
         int sizeFlush = mainQueueSize.get();
         Map<String, Object> flush = timeInQueue.flush("time");
         result.add(new DataHeader()
-                .setBody(key)
+                .setBody(getCascadeKey(namespace))
                 .put("tpsDeq", tpsDequeueFlush)
                 .put("tpsDrop", tpsDropFlush)
                 .put("size", sizeFlush)

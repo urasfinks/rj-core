@@ -146,12 +146,12 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     }
 
     public void skipAllStep(AbstractPromiseTask promiseTask, String cause) {
-        trace.add(new Trace<>(promiseTask.getIndex() + ".skipAllStep(" + cause + ")", null));
+        trace.add(new Trace<>(promiseTask.getNamespace() + ".skipAllStep(" + cause + ")", null));
         queueTask.skipAll();
     }
 
     public void goTo(AbstractPromiseTask promiseTask, String toIndexTask) {
-        trace.add(new Trace<>(promiseTask.getIndex() + ".goTo(" + toIndexTask + ")", null));
+        trace.add(new Trace<>(promiseTask.getNamespace() + ".goTo(" + toIndexTask + ")", null));
         queueTask.skipUntil(toIndexTask);
     }
 
@@ -267,7 +267,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
                 index,
                 (_, promiseTask, promise) -> externalPromise
                         .onError((_, _, externalPromise1) -> {
-                            promise.setError(promiseTask.getIndex(), new RuntimeException("ExternalPromiseException"));
+                            promise.setError(promiseTask.getNamespace(), new RuntimeException("ExternalPromiseException"));
                             promise.getTrace().addAll(externalPromise1.getTrace());
                         })
                         .onComplete((_, _, _) -> promise.completePromiseTask(promiseTask))
@@ -293,7 +293,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     }
 
     public Promise then(AbstractPromiseTask task) {
-        appendWait(task.getIndex()).append(task);
+        appendWait(task.getNamespace()).append(task);
         return this;
     }
 
@@ -325,7 +325,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return getComplexIndex(getIndex(), index);
     }
 
-    static String getComplexIndex(String promiseIndex, String promiseTaskIndex) {
+    public static String getComplexIndex(String promiseIndex, String promiseTaskIndex) {
         return promiseIndex + CascadeKey.append(promiseTaskIndex);
     }
 

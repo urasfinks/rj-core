@@ -4,6 +4,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -26,7 +27,7 @@ public class AndroidNotificationResource
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Resource<AndroidNotificationRequest, HttpResponse>,
-        PropertyListener {
+        PropertyListener, CascadeKey {
 
     private String accessToken;
 
@@ -40,7 +41,7 @@ public class AndroidNotificationResource
                 App.get(ServiceProperty.class),
                 this,
                 androidNotificationProperty,
-                resourceConfiguration.ns
+                getCascadeKey(resourceConfiguration.ns)
         );
     }
 
@@ -121,5 +122,15 @@ public class AndroidNotificationResource
         } catch (Exception e) {
             App.error(e);
         }
+    }
+
+    @Override
+    public String getKey() {
+        return App.getUniqueClassName(getClass());
+    }
+
+    @Override
+    public CascadeKey getParentCascadeKey() {
+        return null;
     }
 }

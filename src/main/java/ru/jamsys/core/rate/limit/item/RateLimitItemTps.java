@@ -5,6 +5,7 @@ import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
@@ -17,11 +18,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RateLimitItemTps
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements
-        RateLimitItem {
+        RateLimitItem, CascadeKey {
 
     private final AtomicInteger tps = new AtomicInteger(0);
 
-    @Getter
     private final String namespace;
 
     private final RateLimitItemProperty property = new RateLimitItemProperty();
@@ -34,7 +34,7 @@ public class RateLimitItemTps
                 App.get(ServiceProperty.class),
                 null,
                 property,
-                namespace
+                getCascadeKey(namespace)
         );
     }
 
@@ -54,10 +54,15 @@ public class RateLimitItemTps
     }
 
     @Override
+    public String getPropertyKey() {
+        return getCascadeKey(namespace);
+    }
+
+    @Override
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         List<DataHeader> result = new ArrayList<>();
         result.add(new DataHeader()
-                .setBody(namespace)
+                .setBody(getCascadeKey(namespace))
                 .put("tps", tps.getAndSet(0))
                 .put("max", property.getMax())
         );

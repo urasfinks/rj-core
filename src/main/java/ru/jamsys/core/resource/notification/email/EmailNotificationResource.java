@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.resource.Resource;
@@ -23,6 +24,7 @@ public class EmailNotificationResource
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Resource<EmailNotificationRequest, Void>,
+        CascadeKey,
         ResourceCheckException {
 
     private SecurityComponent securityComponent;
@@ -39,7 +41,7 @@ public class EmailNotificationResource
                 App.get(ServiceProperty.class),
                 null,
                 property,
-                resourceConfiguration.ns
+                getCascadeKey(resourceConfiguration.ns)
         );
     }
 

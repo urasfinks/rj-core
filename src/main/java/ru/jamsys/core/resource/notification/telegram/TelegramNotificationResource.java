@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceConfiguration;
@@ -21,7 +22,7 @@ import java.util.function.Function;
 @Scope("prototype")
 public class TelegramNotificationResource
         extends ExpirationMsMutableImplAbstractLifeCycle
-        implements Resource<TelegramNotificationRequest, HttpResponse> {
+        implements Resource<TelegramNotificationRequest, HttpResponse>, CascadeKey {
 
     private SecurityComponent securityComponent;
 
@@ -36,7 +37,7 @@ public class TelegramNotificationResource
                 App.get(ServiceProperty.class),
                 null,
                 telegramNotificationProperty,
-                resourceConfiguration.ns
+                getCascadeKey(resourceConfiguration.ns)
         );
     }
 

@@ -6,6 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerElement;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.UtilDate;
@@ -22,7 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RateLimitItemPeriodic
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements RateLimitItem,
-        ManagerElement {
+        ManagerElement, CascadeKey {
 
     private final AtomicInteger tpu = new AtomicInteger(0);
 
@@ -35,7 +36,6 @@ public class RateLimitItemPeriodic
 
     private String nextTimeFlushFormat = "";
 
-    @Getter
     private final String namespace;
 
     private final RateLimitItemProperty property = new RateLimitItemProperty();
@@ -50,7 +50,7 @@ public class RateLimitItemPeriodic
                 App.get(ServiceProperty.class),
                 null,
                 property,
-                namespace
+                getCascadeKey(namespace)
         );
     }
 
@@ -67,6 +67,11 @@ public class RateLimitItemPeriodic
     @Override
     public int getMax() {
         return property.getMax();
+    }
+
+    @Override
+    public String getPropertyKey() {
+        return getCascadeKey(namespace);
     }
 
     @Override

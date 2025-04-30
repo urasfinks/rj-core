@@ -12,9 +12,15 @@ import ru.jamsys.core.App;
 
 public interface CascadeKey {
 
-    String getKey();
+    // Если реализация является фабрикой, допустимо возвращать null
+    default String getKey() {
+        return null;
+    }
 
-    CascadeKey getParentCascadeKey();
+    // Нельзя возвращать null, если нет родителя, используйте return App.cascadeName;
+    default CascadeKey getParentCascadeKey() {
+        return App.cascadeName;
+    }
 
     default String getCascadeKey(String ns) {
         return getCascadeKey() + append(ns);

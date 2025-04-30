@@ -7,6 +7,7 @@ import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.Util;
@@ -40,13 +41,13 @@ import java.util.function.Function;
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<T extends ExpirationMsMutable & Valid>
         extends ExpirationMsMutableImplAbstractLifeCycle
-        implements Pool<T>, LifeCycleInterface {
+        implements Pool<T>, LifeCycleInterface, CascadeKey {
 
     public static Set<AbstractPool<?>> registerPool = Util.getConcurrentHashSet();
 
     @Getter
     @ToString.Include
-    protected final String key;
+    protected final String namespace;
 
     private final ConcurrentLinkedDeque<T> parkQueue = new ConcurrentLinkedDeque<>();
 
@@ -81,13 +82,13 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid>
     @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
-    public AbstractPool(String key) {
-        this.key = key;
+    public AbstractPool(String namespace) {
+        this.namespace = namespace;
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
                 poolProperty,
-                key
+                getCascadeKey(namespace)
         );
     }
 
@@ -159,10 +160,10 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid>
         }
     }
 
-    // Бассейн может поместить новые объекты для плаванья
+    // Проверка, что пул может поместить новые объекты
     private boolean isSizePoolAllowsExtend() {
         if (!isRun()) {
-            App.error(new RuntimeException("Пул " + key + " не может поместить в себя ничего, так как он выключен"));
+            App.error(new RuntimeException("Пул " + namespace + " не может поместить в себя ничего, так как он выключен"));
         }
         return isRun() && getRealActiveItem() < poolProperty.getMax();
     }
@@ -366,7 +367,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid>
             markActive();
         }
         result.add(new DataHeader()
-                .setBody(key)
+                .setBody(getCascadeKey(namespace))
                 .put("tpsComplete", tpsCompleteFlush)
                 .put("item", itemQueue.size())
                 .put("park", parkQueue.size())
@@ -376,7 +377,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid>
     }
 
     // Этот метод нельзя вызывать под бизнес задачи, система сама должна это контролировать
-    public void helper() {
+    public void balance() {
         updateParkStatistic();
         try {
             // Если паркинг был пуст уже больше секунды начнём увеличивать

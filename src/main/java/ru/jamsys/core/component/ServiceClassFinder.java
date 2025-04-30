@@ -167,16 +167,6 @@ public class ServiceClassFinder implements CascadeKey {
         return listClass;
     }
 
-    @Override
-    public String getKey() {
-        return null;
-    }
-
-    @Override
-    public CascadeKey getParentCascadeKey() {
-        return App.cascadeName;
-    }
-
     @SuppressWarnings("unused")
     public <T> List<Class<T>> getTypeSuperclass(Class<?> cls, Class<T> fnd) {
         return new ArrayList<>(getActualType(new Type[]{cls.getGenericSuperclass()}, fnd));

@@ -33,7 +33,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     @Setter
     private int retryDelayMs = 1000;
 
-    private final String index;
+    private final String namespace;
 
     // Используется, когда вызывается терминальный блок, который фиксирует, что Promise закончен.
     // Но есть ещё функция onComplete/onError которую как бы надо выполнить и до тех пор, пока эта функция не выполниться
@@ -44,16 +44,27 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     @Setter
     protected AtomicBoolean threadRun;
 
+    private final Manager.Configuration<PoolThreadPromiseTask> configure;
+
     public AbstractPromiseTask(
-            String index,
+            String namespace,
             Promise promise,
             PromiseTaskExecuteType type,
             PromiseTaskConsumerThrowing<AbstractPromiseTask, AtomicBoolean, Promise> procedure
     ) {
-        this.index = index;
+        this.namespace = namespace;
         this.promise = promise;
         this.type = type;
         this.procedure = procedure;
+        configure = App.get(Manager.class).configure(
+                PoolThreadPromiseTask.class,
+                namespace,
+                (namespace1) -> {
+                    PoolThreadPromiseTask poolThreadPromiseTask = new PoolThreadPromiseTask(namespace1);
+                    poolThreadPromiseTask.run();
+                    return poolThreadPromiseTask;
+                }
+        );
     }
 
     // execute on another thread
@@ -62,18 +73,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
         if (hasProcedure()) {
             switch (type) {
                 case IO, EXTERNAL_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);
-                case COMPUTE, EXTERNAL_WAIT_COMPUTE -> {
-                    Manager.Configuration<PoolThreadPromiseTask> configure = App.get(Manager.class).configure(
-                            PoolThreadPromiseTask.class,
-                            index,
-                            (key) -> {
-                                PoolThreadPromiseTask poolThreadPromiseTask = new PoolThreadPromiseTask(key);
-                                poolThreadPromiseTask.run();
-                                return poolThreadPromiseTask;
-                            }
-                    );
-                    configure.get().addPromiseTask(this);
-                }
+                case COMPUTE, EXTERNAL_WAIT_COMPUTE -> configure.get().addPromiseTask(this);
             }
         } else {
             // Исполняемого блока нет, в этом же потоке провернём, что бы статистику записать и всё
@@ -85,7 +85,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
         if (promise.getLogType() == LogType.DEBUG) {
             if (promise.getRepositoryMap() instanceof PromiseRepositoryDebug promiseRepositoryDebug) {
                 Collection<Trace<String, ?>> traces = promiseRepositoryDebug.flushChange();
-                promise.getTrace().add(new Trace<>("RepositoryChange(" + getIndex() + ")", traces));
+                promise.getTrace().add(new Trace<>("RepositoryChange(" + this.getNamespace() + ")", traces));
             }
         }
     }
@@ -109,8 +109,8 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
 
     @Override
     public void run() {
-        TimerNanoEnvelope<String> timerEnvelope = App.get(ServiceTimer.class).get(getIndex());
-        getPromise().getTrace().add(new Trace<>(getIndex()+".run()", null));
+        TimerNanoEnvelope<String> timerEnvelope = App.get(ServiceTimer.class).get(this.getNamespace());
+        getPromise().getTrace().add(new Trace<>(this.getNamespace() + ".run()", null));
         try {
             executeProcedure();
             if (afterBlockExecution != null) {
@@ -118,13 +118,13 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
             }
             getPromise().completePromiseTask(this);
         } catch (Throwable th) {
-            getPromise().getTrace().add(new Trace<>(getIndex(), th));
+            getPromise().getTrace().add(new Trace<>(this.getNamespace(), th));
             if (retryCount > 0) {
                 retryCount--;
                 App.get(ServicePromise.class).addRetryDelay(this);
-                getPromise().getTrace().add(new Trace<>(getIndex()+".addRetryDelay(" + retryCount + ")", null));
+                getPromise().getTrace().add(new Trace<>(this.getNamespace() + ".addRetryDelay(" + retryCount + ")", null));
             } else {
-                getPromise().setError(getIndex(), th);
+                getPromise().setError(this.getNamespace(), th);
             }
         } finally {
             flushRepositoryChange();

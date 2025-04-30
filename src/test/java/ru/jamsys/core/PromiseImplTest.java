@@ -5,14 +5,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
+import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.AbstractPromiseTask;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseTask;
 import ru.jamsys.core.promise.PromiseTaskExecuteType;
+import ru.jamsys.core.rate.limit.RateLimitFactory;
+import ru.jamsys.core.rate.limit.item.RateLimitItem;
 
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // IO time: 16.956 (17885)
@@ -115,64 +119,63 @@ class PromiseImplTest {
                 .run()
                 .await(4000);
     }
-//
-//    @Test
-//    void test2() {
-//        Promise promise = servicePromise.get("test", 6_000L);
-//        ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
-//        ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
-//        for (int i = 0; i < 10; i++) {
-//            final int x = i;
-//            promise.then("test", (_, _, _) -> deque.add(x));
-//            dequeRes.add(i);
-//        }
-//        promise.run().await(500);
-//        Assertions.assertEquals(dequeRes.toString(), deque.toString());
-//        App.error(new RuntimeException("Hello"));
-//    }
-//
-//    @Test
-//    void test3() {
-//        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = App.get(Manager.class).configure(
-//                RateLimitItem.class,
-//                Promise.getComplexIndex("test", "test"),
-//                RateLimitFactory.TPS::create
-//        );
-//        rateLimitItemConfiguration.get().set(10000);
-//        Promise promise = servicePromise.get("test", 6_000L);
-//        ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
-//        ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
-//
-//        for (int i = 0; i < 1000; i++) {
-//            final int x = i;
-//            promise.then("test", (_, _, _) -> deque.add(x));
-//            dequeRes.add(i);
-//        }
-//        promise.run().await(1100);
-//        Assertions.assertEquals(dequeRes.toString(), deque.toString());
-//    }
-//
-//    @Test
-//    void test3_1() {
-//        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = App.get(Manager.class).configure(
-//                RateLimitItem.class,
-//                Promise.getComplexIndex("seq", "then1"),
-//                RateLimitFactory.TPS::create
-//        );
-//
-//        UtilLog.printInfo(PromiseImplTest.class, rateLimitItemConfiguration);
-//        rateLimitItemConfiguration.get().set(1);
-//        UtilLog.printInfo(PromiseImplTest.class, rateLimitItemConfiguration);
-//        Promise promise = servicePromise.get("seq", 6_000L);
-//        AtomicInteger c = new AtomicInteger(0);
-//        promise.then("then1", (_, _, _) -> c.incrementAndGet());
-//        promise.then("then1", (_, _, _) -> c.incrementAndGet());
-//
-//        promise.run().await(1000);
-//        UtilLog.printInfo(PromiseImplTest.class, promise.getLogString());
-//        // Для IO потоков нет ограничений по tps, поэтому там будет expected = 2 это нормально!
-//        Assertions.assertEquals(1, c.get());
-//    }
+
+    @Test
+    void test2() {
+        Promise promise = servicePromise.get("test", 6_000L);
+        ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
+        ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
+        for (int i = 0; i < 10; i++) {
+            final int x = i;
+            promise.then("test", (_, _, _) -> deque.add(x));
+            dequeRes.add(i);
+        }
+        promise.run().await(500);
+        Assertions.assertEquals(dequeRes.toString(), deque.toString());
+        App.error(new RuntimeException("Hello"));
+    }
+
+    @Test
+    void test3() {
+        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = App.get(Manager.class).configure(
+                RateLimitItem.class,
+                Promise.getComplexIndex("test", "test"),
+                RateLimitFactory.TPS::create
+        );
+        rateLimitItemConfiguration.get().set(10000);
+        Promise promise = servicePromise.get("test", 6_000L);
+        ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
+        ConcurrentLinkedDeque<Integer> dequeRes = new ConcurrentLinkedDeque<>();
+
+        for (int i = 0; i < 1000; i++) {
+            final int x = i;
+            promise.then("test", (_, _, _) -> deque.add(x));
+            dequeRes.add(i);
+        }
+        promise.run().await(1100);
+        Assertions.assertEquals(dequeRes.toString(), deque.toString());
+    }
+
+    @Test
+    void test3_1() {
+        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = App.get(Manager.class).configure(
+                RateLimitItem.class,
+                Promise.getComplexIndex("seq", "then1"),
+                RateLimitFactory.TPS::create
+        );
+
+        UtilLog.printInfo(PromiseImplTest.class, rateLimitItemConfiguration);
+        rateLimitItemConfiguration.get().set(1);
+        UtilLog.printInfo(PromiseImplTest.class, rateLimitItemConfiguration);
+        Promise promise = servicePromise.get("seq", 6_000L);
+        AtomicInteger c = new AtomicInteger(0);
+        promise.then("then1", (_, _, _) -> c.incrementAndGet());
+        promise.then("then1", (_, _, _) -> c.incrementAndGet());
+
+        promise.run().await(1000);
+        // Для IO потоков нет ограничений по tps, поэтому там будет expected = 2 это нормально!
+        Assertions.assertEquals(1, c.get());
+    }
 //
 //    @Test
 //    void test3_2() {
