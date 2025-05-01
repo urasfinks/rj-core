@@ -1,5 +1,6 @@
 package ru.jamsys.core.rate.limit.item;
 
+import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
@@ -21,6 +22,7 @@ public class RateLimitItemTps
 
     private final AtomicInteger tps = new AtomicInteger(0);
 
+    @Getter
     private final String ns;
 
     private final RateLimitItemProperty property = new RateLimitItemProperty();

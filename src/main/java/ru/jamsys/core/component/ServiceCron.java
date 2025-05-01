@@ -112,7 +112,7 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
                         }
                     }
                 } catch (InterruptedException ie) {
-                    UtilLog.printError(getClass(), "interrupt()");
+                    UtilLog.printError("interrupt()");
                 } catch (Throwable th) {
                     App.error(th);
                 } finally {
@@ -129,7 +129,7 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
         spin.set(false);
         Util.await(threadWork, 1500, 100, () -> {
             thread.interrupt();
-            UtilLog.printError(ServiceCron.class, "interrupt");
+            UtilLog.printError("interrupt");
         });
     }
 

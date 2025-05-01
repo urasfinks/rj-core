@@ -498,7 +498,7 @@ class BatchFileWriterCallbackTest {
         byte[] b1 = new byte[MIN_BATCH_SIZE];
         byte[] b2 = new byte[MIN_BATCH_SIZE];
         try (BatchFileWriterCallback<Callback> writer = new BatchFileWriterCallback<>(testFile)) {
-            writer.setOnFlush(callbacks -> UtilLog.printInfo(BatchFileWriterCallbackTest.class, callbacks));
+            writer.setOnFlush(UtilLog::printInfo);
             writer.write(b1, new Callback());
             assertEquals(MIN_BATCH_SIZE, Files.size(testFile));
             writer.write(b2, new Callback());
@@ -517,7 +517,7 @@ class BatchFileWriterCallbackTest {
             }
         }
         Assertions.assertEquals(400_000, counter.get());
-        UtilLog.printInfo(BatchFileWriterCallbackTest.class, "timing: " + (System.currentTimeMillis() - time) + "; callback: " + counter.get());
+        UtilLog.printInfo("timing: " + (System.currentTimeMillis() - time) + "; callback: " + counter.get());
     }
 
 }

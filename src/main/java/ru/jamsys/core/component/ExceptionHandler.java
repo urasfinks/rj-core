@@ -45,7 +45,7 @@ public class ExceptionHandler extends AnnotationPropertyExtractor<Object> {
                 UtilDate.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
         );
         getTextException(th, lineWriterList);
-        PersistentDataHeader error = UtilLog.error(getClass(), lineWriterList.getResult());
+        PersistentDataHeader error = UtilLog.error(lineWriterList.getResult());
         if (consoleOutput) {
             error.print();
         }

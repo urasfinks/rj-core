@@ -130,7 +130,7 @@ class RepositoryMapTest {
 
         @Override
         public void onPropertyUpdate(String key, String oldValue, String newValue) {
-            UtilLog.printInfo(getClass(), key);
+            UtilLog.printInfo(key);
         }
     }
 

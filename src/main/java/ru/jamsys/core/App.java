@@ -43,7 +43,7 @@ public class App implements CascadeKey {
     public static void main(String[] args) {
         init();
         application.addListeners((ApplicationListener<ContextClosedEvent>) _ -> {
-            UtilLog.printInfo(App.class, "App shutdown process...");
+            UtilLog.printInfo("App shutdown process...");
 
             AtomicBoolean run = new AtomicBoolean(true);
 
@@ -57,10 +57,9 @@ public class App implements CascadeKey {
             shutdownThread.start();
 
             if (Util.await(run, 5000, 0, () -> UtilLog.printError(
-                    App.class,
                     "App stop with error timeout shutdown; last running: " + Core.lastOperation
             ))) {
-                UtilLog.printInfo(App.class, "App stop. I wish you good luck, see you soon!");
+                UtilLog.printInfo("App stop. I wish you good luck, see you soon!");
             }
         });
         run(args);
@@ -96,7 +95,7 @@ public class App implements CascadeKey {
     public static void run(String[] args) {
         init();
         if (context == null) {
-            UtilLog.info(App.class, args)
+            UtilLog.info(args)
                     .addHeader("description", "Run arguments")
                     .print();
             context = application.run(args);

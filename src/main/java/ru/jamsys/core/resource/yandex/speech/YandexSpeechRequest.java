@@ -33,7 +33,7 @@ public class YandexSpeechRequest {
         asyncPromiseTask = new PromiseTask(
                 App.getUniqueClassName(getClass()),
                 promise,
-                PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
+                PromiseTaskExecuteType.ASYNC_COMPUTE,
                 null
         );
         add.add(asyncPromiseTask);

@@ -8,7 +8,10 @@ import ru.jamsys.core.flat.util.UtilLog;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -97,7 +100,7 @@ class WalFileWriterTest {
         for (int i = 0; i < 400_000; i++) {
             walWriter.write(1L, (short) 1);
         }
-        UtilLog.printInfo(WalFileWriterTest.class, "timing: " + (System.currentTimeMillis() - time));
+        UtilLog.printInfo("timing: " + (System.currentTimeMillis() - time));
     }
 
 }

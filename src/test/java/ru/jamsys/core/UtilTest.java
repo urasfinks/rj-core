@@ -189,7 +189,7 @@ class UtilTest {
         list.add("google");
         list.add("android");
         UtilListSort.shuffle(list);
-        UtilLog.printInfo(UtilTest.class, list);
+        UtilLog.printInfo(list);
     }
 
     @Test
@@ -249,7 +249,7 @@ class UtilTest {
     @Test
     void test(){
         FileByteProperty fileByteProperty = new FileByteProperty();
-        UtilLog.printInfo(UtilTest.class, fileByteProperty.getByFieldNameConstants(FileByteProperty.Fields.folder));
+        UtilLog.printInfo(fileByteProperty.getByFieldNameConstants(FileByteProperty.Fields.folder));
     }
 
 }

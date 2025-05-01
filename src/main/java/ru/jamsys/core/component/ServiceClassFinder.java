@@ -55,7 +55,7 @@ public class ServiceClassFinder implements CascadeKey {
         PropertyDispatcher<Boolean> propertyDispatcher = new PropertyDispatcher<>(
                 serviceProperty,
                 (_, _, newValue) -> {
-                    UtilLog.printInfo(getClass(), "onUpdate ServiceClassFinderIgnore: " + newValue);
+                    UtilLog.printInfo("onUpdate ServiceClassFinderIgnore: " + newValue);
                     availableClass.clear();
                     availableClass.addAll(getAvailableClass(pkg));
                 },
@@ -117,7 +117,7 @@ public class ServiceClassFinder implements CascadeKey {
     }
 
     public void removeAvailableClass(Class<?> cls, String cause) {
-        UtilLog.error(getClass(), null)
+        UtilLog.error(null)
                 .addHeader("description", "removeAvailableClass")
                 .addHeader("classRemove", cls.getName())
                 .addHeader("cause", cause)

@@ -6,6 +6,8 @@ import ru.jamsys.core.component.manager.ManagerElement;
 
 public interface RateLimitItem extends ManagerElement {
 
+    String getNs();
+
     boolean check();
 
     int getCount();

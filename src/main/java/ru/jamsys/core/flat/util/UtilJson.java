@@ -110,7 +110,7 @@ public class UtilJson {
             Map<String, Object> map = (Map<String, Object>) objectMapper.readValue(json, Map.class);
             return map;
         } catch (Throwable th) {
-            UtilLog.printError(UtilJson.class, json);
+            UtilLog.printError(json);
             throw th;
         }
     }

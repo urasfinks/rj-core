@@ -13,7 +13,7 @@ class UtilXorTest {
         String key = "thisIsAKey";
 
         String encrypt = UtilXor.encrypt(value, key);
-        UtilLog.printInfo(UtilXorTest.class, encrypt);
+        UtilLog.printInfo(encrypt);
         Assertions.assertEquals("270904032516123f17101a0f3d1c0b160425060b0d181d162d", encrypt);
 
         Assertions.assertEquals(value, UtilXor.decrypt(encrypt, key));

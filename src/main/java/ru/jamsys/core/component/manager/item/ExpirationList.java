@@ -143,7 +143,7 @@ public class ExpirationList<T>
 
     public boolean remove(DisposableExpirationMsImmutableEnvelope<T> obj, boolean doNeutralize) {
         // Удаление с нейтрализацией, если конечно doNeutralize = true
-        boolean neutralize = doNeutralize && obj.getValue() != null;
+        boolean neutralize = doNeutralize && obj != null && obj.getValue() != null;
         // Если объект нейтрализован, будем перерасчитывать размер корзины
         if (neutralize) {
             deqQueueSize(Util.zeroLastNDigits(obj.getExpiredMs(), 3));

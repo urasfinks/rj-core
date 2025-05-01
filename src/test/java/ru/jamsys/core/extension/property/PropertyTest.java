@@ -8,7 +8,7 @@ class PropertyTest {
     @Test
     void getKeyStructure() {
         KeyStructure keyStructure = PropertyUtil.getKeyStructure("App.ManagerFileByteWriter.StatisticSec<StatisticSec><X>.file.name<Log>");
-        UtilLog.printInfo(PropertyTest.class, keyStructure);
+        UtilLog.printInfo(keyStructure);
     }
 
 }

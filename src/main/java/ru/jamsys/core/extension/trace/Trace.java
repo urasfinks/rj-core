@@ -1,16 +1,14 @@
 package ru.jamsys.core.extension.trace;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.flat.util.UtilDate;
 
-@JsonPropertyOrder({"start", "index", "value"})
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Trace<K, V> {
 
     @JsonIgnore
@@ -27,20 +25,27 @@ public class Trace<K, V> {
     }
 
     @SuppressWarnings("unused")
-    @JsonIgnore
     public V getValueRaw() {
         return value;
     }
 
-    public Object getValue() {
-        if (value != null) {
-            if (value instanceof Throwable valueCast) {
-                LineWriterList lineWriterList = new LineWriterList();
-                ExceptionHandler.getTextException(valueCast, lineWriterList);
-                return lineWriterList.getResult();
-            }
+    public Object getValueWrap() {
+        if (value instanceof Throwable valueCast) {
+            LineWriterList lineWriterList = new LineWriterList();
+            ExceptionHandler.getTextException(valueCast, lineWriterList);
+            return lineWriterList.getResult();
         }
         return value;
+    }
+
+    @JsonValue
+    public Object getValue() {
+        if (value == null) {
+            return UtilDate.msFormat(timeAdd) + " " + index;
+        } else {
+            return new HashMapBuilder<String, Object>()
+                    .append(UtilDate.msFormat(timeAdd) + " " + index, getValueWrap());
+        }
     }
 
     public Trace(K index, V value) {

@@ -12,7 +12,7 @@ import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
-import ru.jamsys.core.resource.thread.PoolThreadPromiseTask;
+import ru.jamsys.core.resource.thread.ThreadPoolExecutePromiseTask;
 import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.Collection;
@@ -46,7 +46,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     protected AtomicBoolean threadRun;
 
     @JsonIgnore
-    private final Manager.Configuration<PoolThreadPromiseTask> configure;
+    private final Manager.Configuration<ThreadPoolExecutePromiseTask> computeThreadConfiguration;
 
     public AbstractPromiseTask(
             String ns,
@@ -58,13 +58,13 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
         this.promise = promise;
         this.type = type;
         this.procedure = procedure;
-        configure = App.get(Manager.class).configure(
-                PoolThreadPromiseTask.class,
+        computeThreadConfiguration = App.get(Manager.class).configure(
+                ThreadPoolExecutePromiseTask.class,
                 ns,
                 (ns1) -> {
-                    PoolThreadPromiseTask poolThreadPromiseTask = new PoolThreadPromiseTask(ns1);
-                    poolThreadPromiseTask.run();
-                    return poolThreadPromiseTask;
+                    ThreadPoolExecutePromiseTask threadPoolExecutePromiseTask = new ThreadPoolExecutePromiseTask(ns1);
+                    threadPoolExecutePromiseTask.run();
+                    return threadPoolExecutePromiseTask;
                 }
         );
     }
@@ -74,8 +74,8 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
         this.afterBlockExecution = afterExecuteBlock;
         if (hasProcedure()) {
             switch (type) {
-                case IO, EXTERNAL_WAIT_IO -> App.get(ServiceThreadVirtual.class).execute(this);
-                case COMPUTE, EXTERNAL_WAIT_COMPUTE -> configure.get().addPromiseTask(this);
+                case IO, ASYNC_IO -> App.get(ServiceThreadVirtual.class).execute(this);
+                case COMPUTE, ASYNC_COMPUTE -> computeThreadConfiguration.get().addPromiseTask(this);
             }
         } else {
             // Исполняемого блока нет, в этом же потоке провернём, что бы статистику записать и всё
@@ -118,7 +118,13 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
             if (afterBlockExecution != null) {
                 afterBlockExecution.run();
             }
-            getPromise().completePromiseTask(this);
+            // Если эта задача не относится к асинхронным ожиданиям
+            if (
+                    type != PromiseTaskExecuteType.ASYNC_IO
+                            && type != PromiseTaskExecuteType.ASYNC_COMPUTE
+            ) {
+                getPromise().completePromiseTask(this);
+            }
         } catch (Throwable th) {
             getPromise().getTrace().add(new Trace<>(this.getNs(), th));
             if (retryCount > 0) {

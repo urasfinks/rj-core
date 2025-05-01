@@ -93,7 +93,10 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         this.index = index;
     }
 
-    public void completePromiseTask(@NonNull AbstractPromiseTask task) {
+    public void completePromiseTask(AbstractPromiseTask task) {
+        if (task != null) {
+            trace.add(new Trace<>(task.getNs() + ".complete()", null));
+        }
         List<AbstractPromiseTask> promiseTasks = queueTask.commitAndPoll(task);
         if (!promiseTasks.isEmpty()) {
             for (AbstractPromiseTask promiseTask : promiseTasks) {
@@ -175,15 +178,10 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
 
     // Запускаем цепочку задач от текущего потока
     public Promise run() {
-        trace.add(new Trace<>(index + ".Run()", null));
+        trace.add(new Trace<>(index + "::run()", null));
         run.set(true);
         terminalStatus = TerminalStatus.IN_PROCESS;
-        List<AbstractPromiseTask> promiseTasks = queueTask.poll();
-        if (!promiseTasks.isEmpty()) {
-            for (AbstractPromiseTask promiseTask : promiseTasks) {
-                promiseTask.prepareLaunch(null);
-            }
-        }
+        completePromiseTask(null);
         return this;
     }
 
@@ -344,7 +342,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     }
 
     public AbstractPromiseTask createTaskExternal(String index, PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
-        return new PromiseTask(getComplexIndex(index), this, PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE, fn);
+        return new PromiseTask(getComplexIndex(index), this, PromiseTaskExecuteType.ASYNC_COMPUTE, fn);
     }
 
     public AbstractPromiseTask createTaskWait(String index) {

@@ -101,7 +101,7 @@ public class BrokerMemoryImpl<T>
     @Override
     public DisposableExpirationMsImmutableEnvelope<T> add(ExpirationMsImmutableEnvelope<T> envelope) {
         if (envelope == null || envelope.isExpired()) {
-            UtilLog.printError(getClass(), envelope);
+            UtilLog.printError(envelope);
             return null;
         }
         isNotRunThrow();

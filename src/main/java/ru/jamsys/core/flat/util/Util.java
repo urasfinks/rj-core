@@ -185,7 +185,7 @@ public class Util {
     public static boolean await(AtomicBoolean run, long timeoutMs, String exceptionMessage) {
         return await(run, timeoutMs, 0, () -> {
             if (exceptionMessage != null) {
-                UtilLog.printError(Util.class, exceptionMessage);
+                UtilLog.printError(exceptionMessage);
             }
         });
     }
@@ -193,7 +193,7 @@ public class Util {
     public static boolean await(AtomicBoolean run, long timeoutMs, int sleepIterationMs, String exceptionMessage) {
         return await(run, timeoutMs, sleepIterationMs, () -> {
             if (exceptionMessage != null) {
-                UtilLog.printError(Util.class, exceptionMessage);
+                UtilLog.printError(exceptionMessage);
             }
         });
     }

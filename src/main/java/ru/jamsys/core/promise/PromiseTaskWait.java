@@ -1,11 +1,5 @@
 package ru.jamsys.core.promise;
 
-import lombok.ToString;
-
-// RA - ResourceArguments
-// RR - ResourceResult
-// PI - PoolItem
-@ToString(onlyExplicitlyIncluded = true)
 public class PromiseTaskWait extends AbstractPromiseTask {
 
     public PromiseTaskWait(Promise promise) {

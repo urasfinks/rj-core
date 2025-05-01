@@ -15,20 +15,19 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class PoolThreadPromiseTask
-        extends AbstractPoolPrivate<Void, Void, ThreadResourcePromiseTask>
+@Getter
+public class ThreadPoolExecutePromiseTask
+        extends AbstractPoolPrivate<Void, Void, ThreadExecutePromiseTask>
         implements ManagerElement, CascadeKey {
 
     AtomicInteger counter = new AtomicInteger(1);
 
-    @Getter
     private final Manager.Configuration<RateLimitItem> rateLimitConfiguration;
 
     @SuppressWarnings("all")
-    @Getter
     private final Manager.Configuration<BrokerMemory> brokerPromiseTaskConfiguration;
 
-    public PoolThreadPromiseTask(String ns) {
+    public ThreadPoolExecutePromiseTask(String ns) {
         super(ns);
         rateLimitConfiguration = App.get(Manager.class).configure(
                 RateLimitItem.class,
@@ -46,7 +45,7 @@ public class PoolThreadPromiseTask
                             System.out.println("::DROP::" + promiseTask.getNs());
                             promiseTask.getPromise().setError(
                                     "::drop",
-                                    new RuntimeException(App.getUniqueClassName(PoolThreadPromiseTask.class))
+                                    new RuntimeException(App.getUniqueClassName(ThreadPoolExecutePromiseTask.class))
                             );
                         }
                 )
@@ -73,23 +72,23 @@ public class PoolThreadPromiseTask
     }
 
     @Override
-    public ThreadResourcePromiseTask createPoolItem() {
-        ThreadResourcePromiseTask threadResourcePromiseTask = new ThreadResourcePromiseTask(
+    public ThreadExecutePromiseTask createPoolItem() {
+        ThreadExecutePromiseTask threadExecutePromiseTask = new ThreadExecutePromiseTask(
                 getCascadeKey(ns),
                 counter.getAndIncrement(),
                 this
         );
-        threadResourcePromiseTask.run();
-        return threadResourcePromiseTask;
+        threadExecutePromiseTask.run();
+        return threadExecutePromiseTask;
     }
 
     @Override
-    public void closePoolItem(ThreadResourcePromiseTask poolItem) {
+    public void closePoolItem(ThreadExecutePromiseTask poolItem) {
         poolItem.shutdown();
     }
 
     @Override
-    public boolean checkFatalException(ThreadResourcePromiseTask poolItem, Throwable th) {
+    public boolean checkFatalException(ThreadExecutePromiseTask poolItem, Throwable th) {
         return false;
     }
 

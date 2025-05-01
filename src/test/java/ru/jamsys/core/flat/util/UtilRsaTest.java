@@ -28,7 +28,7 @@ class UtilRsaTest {
         KeyPair keyPair = UtilRsa.genKeyPair();
         String msg = "Hello world Hello world Hello world Hello world Hello world Hello world";
         String sig = UtilBase64.encode(UtilRsa.sign(msg, keyPair.getPrivate()), false);
-        UtilLog.printInfo(UtilRsaTest.class, sig);
+        UtilLog.printInfo(sig);
         Assertions.assertTrue(UtilRsa.verify(msg, sig, keyPair.getPublic()));
     }
 

@@ -289,13 +289,13 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
                 HashSet<String> strings = new HashSet<>(Collections.list(keyStore.aliases()));
                 KeyStore finalKeyStore1 = keyStore;
                 strings.forEach((String key) -> {
-                    UtilLog.printInfo(SecurityComponent.class, key);
+                    UtilLog.printInfo(key);
                     try {
                         KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) finalKeyStore1.getEntry(key, keyStorePP);
                         if (ske != null) {
                             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
                             PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(ske.getSecretKey(), PBEKeySpec.class);
-                            UtilLog.printInfo(SecurityComponent.class, keySpec.getPassword());
+                            UtilLog.printInfo(keySpec.getPassword());
                         }
                     } catch (Exception e) {
                         throw new ForwardException(e);
@@ -306,7 +306,7 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
                 App.error(e);
             }
         } else {
-            UtilLog.printInfo(SecurityComponent.class, "file not exist");
+            UtilLog.printInfo("file not exist");
         }
     }
 
@@ -315,12 +315,9 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
         propertyDispatcher.run();
         byte[] publicKey = UtilFile.readBytes(property.getPathPublicKey(), null);
 
-        UtilLog.printInfo(
-                getClass(),
-                "Security Check privateKey: " + (privateKey != null && privateKey.length > 0)
+        UtilLog.printInfo("Security Check privateKey: " + (privateKey != null && privateKey.length > 0)
                         + "\r\n"
-                        + "Security Check publicKey: " + (publicKey != null && publicKey.length > 0)
-        );
+                        + "Security Check publicKey: " + (publicKey != null && publicKey.length > 0));
 
         if (publicKey != null && publicKey.length > 0 && privateKey != null && privateKey.length > 0) {
             // У нас всё установлено можем просто работать
@@ -334,14 +331,11 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
                 throw new ForwardException(e);
             }
             if (UtilFile.ifExist(property.getPathJsonCred())) {
-                UtilLog.printError(
-                        getClass(),
-                        "Please remove file [" + property.getPathJsonCred() + "] with credentials information"
-                );
+                UtilLog.printError("Please remove file [" + property.getPathJsonCred() + "] with credentials information");
                 updateDataFromJsonCred(UtilByte.bytesToChars(passwordKeyStore));
             }
             try {
-                UtilLog.info(getClass(), getAvailableAliases())
+                UtilLog.info(getAvailableAliases())
                         .addHeader("description", "KeyStore available aliases")
                         .print();
             } catch (Exception ignore) {

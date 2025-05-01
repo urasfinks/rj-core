@@ -137,7 +137,7 @@ public class AppConfiguration implements WebSocketConfigurer {
                     .computeIfAbsent("run.args.web.ssl.security.alias", "")
                     .get(String.class);
             if (!securityAlias.isEmpty()) {
-                UtilLog.printInfo(getClass(), "Init web ssl context");
+                UtilLog.printInfo("Init web ssl context");
                 // Так как мы тут лезем в перёд батьки) Извольте - надо подгрузить компонент, который должен был
                 // в своём порядке загрузиться самостоятельно в Core.run()
                 applicationContext.getBean(SecurityKey.class);

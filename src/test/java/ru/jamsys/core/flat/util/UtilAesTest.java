@@ -15,7 +15,7 @@ class UtilAesTest {
         SecretKey key = UtilAes.generateKey(128);
         IvParameterSpec ivParameterSpec = UtilAes.generateIv();
         byte[] encrypt = UtilAes.encrypt(UtilAes.algorithm, input.getBytes(), key, ivParameterSpec);
-        UtilLog.info(UtilAesTest.class, UtilBase64.encode(encrypt, false));
+        UtilLog.info(UtilBase64.encode(encrypt, false));
         byte[] decrypt = UtilAes.decrypt(UtilAes.algorithm, encrypt, key, UtilAes.generateIv(ivParameterSpec.getIV()));
         Assertions.assertEquals(input, new String(decrypt));
     }

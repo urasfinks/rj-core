@@ -38,7 +38,7 @@ class PromiseImplTest {
     @AfterAll
     static void shutdown() {
         App.shutdown();
-        UtilLog.printInfo(PromiseImplTest.class, "Test time: " + (System.currentTimeMillis() - start));
+        UtilLog.printInfo("Test time: " + (System.currentTimeMillis() - start));
     }
 
     @Test
@@ -107,7 +107,7 @@ class PromiseImplTest {
                 .append("test", (_, _, promise1) -> {
                     Util.testSleepMs(1000);
                     ArrayList<AbstractPromiseTask> objects = new ArrayList<>();
-                    objects.add(new PromiseTask("test2", promise, PromiseTaskExecuteType.COMPUTE, (_, _, _) -> UtilLog.printInfo(PromiseImplTest.class, "EXTRA")));
+                    objects.add(new PromiseTask("test2", promise, PromiseTaskExecuteType.COMPUTE, (_, _, _) -> UtilLog.printInfo("EXTRA")));
                     promise1.getQueueTask().addFirst(objects);
                 })
                 .append("test", (_, _, _) -> {
@@ -132,7 +132,6 @@ class PromiseImplTest {
         }
         promise.run().await(500);
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
-        App.error(new RuntimeException("Hello"));
     }
 
     @Test
@@ -158,18 +157,19 @@ class PromiseImplTest {
 
     @Test
     void test3_1() {
-        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = App.get(Manager.class).configure(
-                RateLimitItem.class,
-                Promise.getComplexIndex("seq", "then1"),
-                RateLimitFactory.TPS::create
-        );
-
-        UtilLog.printInfo(PromiseImplTest.class, rateLimitItemConfiguration);
-        rateLimitItemConfiguration.get().setMax(1);
-        UtilLog.printInfo(PromiseImplTest.class, rateLimitItemConfiguration);
         Promise promise = servicePromise.get("seq", 6_000L);
         AtomicInteger c = new AtomicInteger(0);
         promise.then("then1", (_, _, _) -> c.incrementAndGet());
+
+        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = promise
+                .getQueueTask()
+                .get("seq.then1")
+                .getComputeThreadConfiguration().get()
+                .getRateLimitConfiguration();
+        Assertions.assertEquals(999999, rateLimitItemConfiguration.get().getMax());
+        rateLimitItemConfiguration.get().setMax(1);
+        Assertions.assertEquals(1, rateLimitItemConfiguration.get().getMax());
+
         promise.then("then1", (_, _, _) -> c.incrementAndGet());
 
         promise.run().await(1000);
@@ -179,15 +179,15 @@ class PromiseImplTest {
 
     @Test
     void test3_2() {
-        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = App.get(Manager.class).configure(
-                RateLimitItem.class,
-                Promise.getComplexIndex("seq2", "then1"),
-                RateLimitFactory.TPS::create
-        );
-        rateLimitItemConfiguration.get().setMax(0);
         AtomicInteger c = new AtomicInteger(0);
         Promise promise = servicePromise.get("seq2", 1_500L)
                 .then("then1", (_, _, _) -> c.incrementAndGet())
+                .modifyLastPromiseTask(abstractPromiseTask -> {
+                    abstractPromiseTask
+                            .getComputeThreadConfiguration().get()
+                            .getRateLimitConfiguration().get()
+                            .setMax(0);
+                })
                 .run().
                 await(3000);
         // Для IO потоков нет ограничений по tps, поэтому там будет expected = 2 это нормально!
@@ -229,7 +229,6 @@ class PromiseImplTest {
         promise.run();
         promise.await(5000);
         Assertions.assertEquals(dequeRes.toString(), deque.toString());
-
     }
 
     @Test
@@ -239,7 +238,7 @@ class PromiseImplTest {
             test5();
             Thread.onSpinWait();
         }
-        UtilLog.printInfo(PromiseImplTest.class, "sum time: " + (System.currentTimeMillis() - start));
+        UtilLog.printInfo("sum time: " + (System.currentTimeMillis() - start));
     }
 
     @Test
@@ -275,17 +274,14 @@ class PromiseImplTest {
         Promise promise = servicePromise.get("test", 1_500L);
         promise
                 .append("1", (_, _, _) -> {
-                    UtilLog.printInfo(getClass(), "!!1");
                     exec.incrementAndGet();
                     Util.testSleepMs(1000);
                 })
                 .then("2", (_, _, _) -> {
-                    UtilLog.printInfo(getClass(), "!!2");
                     exec.incrementAndGet();
                     Util.testSleepMs(1000);
                 })
                 .then("3", (_, _, _) -> {
-                    UtilLog.printInfo(getClass(), "!!3");
                     exec.incrementAndGet();
                     Util.testSleepMs(1000);
                 })
@@ -299,96 +295,83 @@ class PromiseImplTest {
         Assertions.assertEquals(0, complete.get());
         Assertions.assertEquals(2, exec.get());
     }
-//
-//    @Test
-//    void testTimeOutParallel() {
-//        AtomicInteger error = new AtomicInteger(0);
-//        AtomicInteger complete = new AtomicInteger(0);
-//        AtomicInteger exec = new AtomicInteger(0);
-//
-//        Promise promise = servicePromise.get("test", 1_500L);
-//        promise
-//                .append("1", (_, _, _) -> {
-//                    exec.incrementAndGet();
-//                    Util.testSleepMs(1000);
-//                })
-//                .append("2", (_, _, _) -> {
-//                    exec.incrementAndGet();
-//                    Util.testSleepMs(1500);
-//                })
-//                .then("3", (_, _, _) -> {
-//                    exec.incrementAndGet();
-//                    Util.testSleepMs(1000);
-//                })
-//                .onError((_, _, _) -> error.incrementAndGet())
-//                .onComplete((_, _, _) -> complete.incrementAndGet())
-//                .run()
-//                .await(2000);
-//        Assertions.assertEquals(1, error.get());
-//        Assertions.assertEquals(0, complete.get());
-//        Assertions.assertEquals(2, exec.get());
-//    }
-//
-//    @Test
-//    void toLog() {
-//        Promise promise = servicePromise.get("test", 1_500L);
-//        promise
-//                .append("1", (_, _, _) -> UtilLog.printInfo(PromiseImplTest.class, 1))
-//                .append("2", (_, _, _) -> UtilLog.printInfo(PromiseImplTest.class,2))
-//                .then("3", (_, _, _) -> {
-//                    throw new RuntimeException("Test");
-//                })
-//                .run()
-//                .await(1000);
-//    }
-//
-//    @Test
-//    void testOneTaskExecutionTime() {
-//        AtomicInteger x = new AtomicInteger(0);
-//        Promise promise = servicePromise.get("testOneTaskExecutionTime", 1_500L);
-//        promise
-//                .append("1", (_, _, _) -> {
-//
-//                })
-//                .onComplete((_, _, _) -> x.incrementAndGet())
-//                .run()
-//                .await(3000);
-//        Assertions.assertEquals(1, x.get());
-//    }
-//
-//    @Test
-//    void testNoTask() {
-//        // Выполнение onComplete если нет задач у обещания
-//        AtomicInteger x = new AtomicInteger(0);
-//        Promise promise = servicePromise.get("test", 1_500L);
-//        promise
-//                .onComplete((_, _, _) -> x.incrementAndGet())
-//                .run()
-//                .await(1000);
-//        Assertions.assertEquals(1, x.get());
-//    }
-//
-//    @Test
-//    void testExternalWait() {
-//        Promise promise = servicePromise.get("Async", 6_000L);
-//        AbstractPromiseTask promiseTask = new PromiseTask(
-//                "test",
-//                promise,
-//                PromiseTaskExecuteType.EXTERNAL_WAIT_COMPUTE,
-//                null
-//        );
-//        promise.append(promiseTask);
-//        promise.run().await(1000);
-//
-//        Assertions.assertEquals(2, promise.getTrace().size()); // Так как добавился Run
-//        Assertions.assertEquals(0, promise.getExceptionTrace().size());
-//        Assertions.assertTrue(promise.isRun());
-//
-//        promiseTask.externalComplete();
-//        Assertions.assertFalse(promise.isRun());
-//        Assertions.assertEquals(3, promise.getTrace().size());
-//
-//    }
+
+    @Test
+    void testTimeOutParallel() {
+        AtomicInteger error = new AtomicInteger(0);
+        AtomicInteger complete = new AtomicInteger(0);
+        AtomicInteger exec = new AtomicInteger(0);
+
+        Promise promise = servicePromise.get("test", 1_500L);
+        promise
+                .append("1", (_, _, _) -> {
+                    exec.incrementAndGet();
+                    Util.testSleepMs(1000);
+                })
+                .append("2", (_, _, _) -> {
+                    exec.incrementAndGet();
+                    Util.testSleepMs(1500);
+                })
+                .then("3", (_, _, _) -> {
+                    exec.incrementAndGet();
+                    Util.testSleepMs(1000);
+                })
+                .onError((_, _, _) -> error.incrementAndGet())
+                .onComplete((_, _, _) -> complete.incrementAndGet())
+                .run()
+                .await(2000);
+        Assertions.assertEquals(1, error.get());
+        Assertions.assertEquals(0, complete.get());
+        Assertions.assertEquals(2, exec.get());
+    }
+
+    @Test
+    void testOneTaskExecutionTime() {
+        AtomicInteger x = new AtomicInteger(0);
+        Promise promise = servicePromise.get("testOneTaskExecutionTime", 1_500L);
+        promise
+                .append("1", (_, _, _) -> {
+
+                })
+                .onComplete((_, _, _) -> x.incrementAndGet())
+                .run()
+                .await(3000);
+        Assertions.assertEquals(1, x.get());
+    }
+
+    @Test
+    void testNoTask() {
+        // Выполнение onComplete если нет задач у обещания
+        AtomicInteger x = new AtomicInteger(0);
+        Promise promise = servicePromise.get("test", 1_500L);
+        promise
+                .onComplete((_, _, _) -> x.incrementAndGet())
+                .run()
+                .await(1000);
+        Assertions.assertEquals(1, x.get());
+    }
+
+    @Test
+    void testExternalWait() {
+        Promise promise = servicePromise.get("Async", 6_000L);
+        AbstractPromiseTask externalPromiseTask = new PromiseTask(
+                "test",
+                promise,
+                PromiseTaskExecuteType.ASYNC_COMPUTE,
+                null
+        );
+        promise.append(externalPromiseTask);
+        promise.run().await(1000);
+
+        Assertions.assertEquals(2, promise.getTrace().size()); // Так как добавился Run
+        Assertions.assertTrue(promise.isRun());
+
+        externalPromiseTask.getPromise().completePromiseTask(externalPromiseTask);
+        Assertions.assertFalse(promise.isRun());
+        UtilLog.printInfo(promise);
+        Assertions.assertEquals(3, promise.getTrace().size());
+
+    }
 //
 //    @Test
 //    void testAsyncNoWait() {

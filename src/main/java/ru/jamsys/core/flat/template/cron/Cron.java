@@ -188,7 +188,7 @@ public class Cron {
             return compileResult.setNextTimestamp(null);
         }
         if (debug) {
-            UtilLog.info(getClass(), null)
+            UtilLog.info(null)
                     .addHeader("min", UtilDate.msFormat(flush.getMin()))
                     .addHeader("realMs", flush.getMin())
                     .print();

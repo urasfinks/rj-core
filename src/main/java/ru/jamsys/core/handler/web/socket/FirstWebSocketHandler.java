@@ -22,7 +22,7 @@ public class FirstWebSocketHandler implements PromiseGenerator, WebSocketHandler
     @Override
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 7_000L)
-                .append("input", (_, _, promise) -> UtilLog.printInfo(FirstWebSocketHandler.class, "Hello world"));
+                .append("input", (_, _, promise) -> UtilLog.printInfo("Hello world"));
     }
 
 }

@@ -28,7 +28,7 @@ public class Core extends AbstractLifeCycle implements LifeCycleInterface {
 
     @Override
     public void runOperation() {
-        UtilLog.printInfo(getClass(), "run()");
+        UtilLog.printInfo("run()");
         List<LifeCycleComponent> sortedList = new ArrayList<>();
         serviceClassFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
             if (!ServiceClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
@@ -40,7 +40,7 @@ public class Core extends AbstractLifeCycle implements LifeCycleInterface {
             runComponent.add(lifeCycleComponent);
             long start = System.currentTimeMillis();
             ResultOperation resultOperation = lifeCycleComponent.run();
-            UtilLog.info(getClass(), null)
+            UtilLog.info(null)
                     .addHeader("runIndex", lifeCycleComponent.getInitializationIndex())
                     .addHeader("runClass", lifeCycleComponent.getClass().getName())
                     .addHeader("runTime", (System.currentTimeMillis() - start) + "ms")
@@ -51,14 +51,14 @@ public class Core extends AbstractLifeCycle implements LifeCycleInterface {
 
     @Override
     public void shutdownOperation() {
-        UtilLog.printInfo(getClass(), "shutdown()");
+        UtilLog.printInfo("shutdown()");
         while (!runComponent.isEmpty()) {
             LifeCycleComponent lifeCycleComponent = runComponent.pollLast();
             if (lifeCycleComponent != null) {
                 lastOperation = lifeCycleComponent.getClass().getName();
                 long start = System.currentTimeMillis();
                 ResultOperation resultOperation = lifeCycleComponent.shutdown();
-                UtilLog.info(getClass(), null)
+                UtilLog.info( null)
                         .addHeader("shutdownIndex", lifeCycleComponent.getInitializationIndex())
                         .addHeader("shutdownClass", lifeCycleComponent.getClass().getName())
                         .addHeader("shutdownTime", (System.currentTimeMillis() - start) + "ms")

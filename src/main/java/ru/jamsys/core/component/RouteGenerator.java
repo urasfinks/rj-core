@@ -71,7 +71,7 @@ public class RouteGenerator {
             repository.put(s, tmp.get(s));
         });
 
-        UtilLog.info(getClass(), info)
+        UtilLog.info(info)
                 .addHeader("annotation", "@" + App.getUniqueClassName(clsAnnotation))
                 .addHeader("interfaceMatcher", App.getUniqueClassName(interfaceMatcher))
                 .print();

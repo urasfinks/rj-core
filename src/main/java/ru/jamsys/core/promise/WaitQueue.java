@@ -74,7 +74,9 @@ public class WaitQueue<T extends WaitQueueElement> {
     public List<T> commitAndPoll(T t) {
         try {
             lock.lock();
-            polledQueue.remove(t);
+            if (t != null) {
+                polledQueue.remove(t);
+            }
             return pollWithoutLock();
         } finally {
             lock.unlock();
@@ -83,12 +85,12 @@ public class WaitQueue<T extends WaitQueueElement> {
 
     // Это история совсем не поточная, предполагается, что должно это всё вызываться из блока самой таски
     // Мы не нарушаем wait, так как удаляем только будущие задачи
-    public void skipUntil(String index) {
+    public void skipUntil(String ns) {
         try {
             lock.lock();
             for (Iterator<T> it = mainQueue.iterator(); it.hasNext(); ) {
-                T elem = it.next();
-                if (elem.getNs().equals(index)) {
+                T t = it.next();
+                if (t.getNs().equals(ns)) {
                     break;
                 }
                 it.remove();
@@ -152,6 +154,17 @@ public class WaitQueue<T extends WaitQueueElement> {
     public boolean isTerminal() {
         // Если очередь пустая и все изъятые закомичены - у нас терминальный статус
         return mainQueue.isEmpty() && polledQueue.isEmpty();
+    }
+
+    public T get(String ns) {
+        for (Iterator<T> it = mainQueue.iterator(); it.hasNext(); ) {
+            T t = it.next();
+            if (t.getNs().equals(ns)) {
+                return t;
+            }
+            it.remove();
+        }
+        return null;
     }
 
 }

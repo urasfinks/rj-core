@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
 
-public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLifeCycle
+public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLifeCycle
         implements Resource<Void, Void>, CascadeKey {
 
     private Thread thread;
@@ -26,7 +26,7 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
 
     private final AtomicBoolean threadWork = new AtomicBoolean(true);
 
-    private final PoolThreadPromiseTask pool;
+    private final ThreadPoolExecutePromiseTask pool;
 
     private final Manager.Configuration<RateLimitItem> rateLimitConfiguration;
 
@@ -35,12 +35,12 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
     @Getter
     private final String ns;
 
-    public ThreadResourcePromiseTask(String ns, int indexThread, PoolThreadPromiseTask pool) {
+    public ThreadExecutePromiseTask(String ns, int indexThread, ThreadPoolExecutePromiseTask pool) {
         this.ns = ns;
         this.pool = pool;
         this.indexThread = indexThread;
         // RateLimit будем запрашивать через родительское каскадное имя, так как key для потока - это
-        // всего лишь имя, а поток должен подчиняться правилам (лимитам) пула
+        // всего лишь имя, а поток должен подчиняться правилам (лимитам) пула, то есть ns без обёртки getCascadeKey(ns)
         rateLimitConfiguration = App.get(Manager.class).configure(RateLimitItem.class, ns);
     }
 
@@ -87,6 +87,7 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
                 threadWork.set(false);
             }
         });
+        // Поток должен называться явно с указанием кто он
         thread.setName(getCascadeKey(ns) + "_" + indexThread);
         thread.start();
     }
@@ -96,11 +97,10 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
         spin.set(false); //Говорим закончить
         LockSupport.unpark(thread);
         Util.await(threadWork, 1500, 100, () -> {
-            UtilLog.printError(ThreadResourcePromiseTask.class, "Поток не закончил работу после spin.set(false) -> interrupt()");
+            UtilLog.printError("Поток не закончил работу после spin.set(false) -> interrupt()");
             thread.interrupt();
         });
         Util.await(threadWork, 1500, 100, () -> UtilLog.printError(
-                ThreadResourcePromiseTask.class,
                 "Поток не закончил работу после interrupt()"
         ));
         // Так как мы не можем больше повлиять на остановку
@@ -120,7 +120,7 @@ public class ThreadResourcePromiseTask extends ExpirationMsMutableImplAbstractLi
             return null;
         }
         if (!threadWork.get()) {
-            UtilLog.printError(getClass(), "Поток ещё не запустился");
+            UtilLog.printError("Поток ещё не запустился");
         }
         LockSupport.unpark(thread);
         return null;

@@ -55,7 +55,7 @@ public class HttpController {
             updateStaticFile();
             subscribeIgnoreFile();
             subscribeIgnoreDir();
-            UtilLog.info(getClass(), ignoredStaticFile)
+            UtilLog.info(ignoredStaticFile)
                     .addHeader("description", "IgnoredStaticFile")
                     .print();
         }
@@ -69,7 +69,7 @@ public class HttpController {
         new PropertyDispatcher<>(
                 serviceProperty,
                 (key, _, newValue) -> {
-                    UtilLog.info(getClass(), newValue)
+                    UtilLog.info(newValue)
                             .addHeader("description", "IgnoreWebStatic.File")
                             .print();
                     updateStaticFile();
@@ -85,7 +85,7 @@ public class HttpController {
         new PropertyDispatcher<>(
                 serviceProperty,
                 (key, _, newValue) -> {
-                    UtilLog.info(getClass(), newValue)
+                    UtilLog.info(newValue)
                             .addHeader("description", "IgnoreWebStatic.Dir")
                             .print();
                     updateStaticFile();

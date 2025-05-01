@@ -9,8 +9,8 @@ public enum PromiseTaskExecuteType implements CamelNormalization {
     WAIT, // Ждём когда все предыдущие запущенные задачи будут исполнены
     IO, //Запускаем эту задачу в VirtualThread
     COMPUTE, //Запускаем эту задачу в RealThread
-    EXTERNAL_WAIT_IO, // complete будет вызван сторонними средствами
-    EXTERNAL_WAIT_COMPUTE, // complete будет вызван сторонними средствами
+    ASYNC_IO, // complete будет вызван сторонними средствами
+    ASYNC_COMPUTE, // complete будет вызван сторонними средствами
 
     // Нельзя такое делать, так как ошибки исполнения не к чему будет привязать. Если есть необходимость,
     // создавайте новый Promise и запускайте его, он в своих потоках и исполнится

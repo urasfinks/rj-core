@@ -6,10 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.flat.util.UtilByte;
-import ru.jamsys.core.flat.util.UtilDate;
-import ru.jamsys.core.flat.util.UtilFileByteReader;
-import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,11 +23,10 @@ public class PersistentDataHeader extends DataHeader implements PersistentData {
     public PersistentDataHeader() {
     }
 
-    public PersistentDataHeader(Class<?> cls, Object body) {
+    public PersistentDataHeader(Object body) {
         this.body = body;
         addHeader("time", timeAdd);
         addHeader("thread", Thread.currentThread().getName());
-        addHeader("source", cls.getName());
     }
 
     @Override

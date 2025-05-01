@@ -20,9 +20,10 @@ public class Log extends PersistentDataHeader {
 
     private final LogType logType;
 
-    public Log(LogType logType, Class<?> cls, Object body) {
-        super(cls, body);
+    public Log(LogType logType, String caller, Object body) {
+        super(body);
         this.logType = logType;
+        addHeader("caller", caller);
     }
 
     @Override

@@ -13,7 +13,7 @@ class UtilDateTest {
     @Test
     void t1() {
         long timestamp = UtilDate.getTimestamp();
-        UtilLog.printInfo(UtilDateTest.class, timestamp);
+        UtilLog.printInfo(timestamp);
     }
 
     @Test

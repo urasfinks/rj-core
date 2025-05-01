@@ -41,7 +41,7 @@ class PropertySubscriptionTest {
                 .addSubscriptionRegexp("run\\.args\\.ServiceClassFinderIgnore.*");
 
         propertyDispatcher.run();
-        UtilLog.printInfo(PropertySubscriptionTest.class, propertyDispatcher);
+        UtilLog.printInfo(propertyDispatcher);
 
         Assertions.assertEquals("""
                 [

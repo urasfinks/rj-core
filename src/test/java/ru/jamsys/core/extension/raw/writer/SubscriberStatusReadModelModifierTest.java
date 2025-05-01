@@ -28,7 +28,7 @@ class SubscriberStatusReadModelModifierTest {
     @Test
     void test() {
         SubscriberStatusRead<TestSubscriberStatusReadModelModel> subscriberStatusRead = new SubscriberStatusRead<>((short) 0, TestSubscriberStatusReadModelModel.class);
-        UtilLog.printInfo(SubscriberStatusReadModelModifierTest.class, subscriberStatusRead);
+        UtilLog.printInfo(subscriberStatusRead);
 
         Assertions.assertFalse(subscriberStatusRead.getStatus(TestSubscriberStatusReadModelModel.STATISTIC));
         Assertions.assertFalse(subscriberStatusRead.getStatus(TestSubscriberStatusReadModelModel.STATISTIC));
@@ -40,10 +40,10 @@ class SubscriberStatusReadModelModifierTest {
         Assertions.assertFalse(subscriberStatusRead.getStatus(TestSubscriberStatusReadModelModel.STATISTIC));
         Assertions.assertEquals(1, subscriberStatusRead.getSubscriberStatusRead());
 
-        UtilLog.printInfo(SubscriberStatusReadModelModifierTest.class, subscriberStatusRead);
+        UtilLog.printInfo(subscriberStatusRead);
 
         subscriberStatusRead.set(TestSubscriberStatusReadModelModel.STATISTIC2, true);
-        UtilLog.printInfo(SubscriberStatusReadModelModifierTest.class, subscriberStatusRead);
+        UtilLog.printInfo(subscriberStatusRead);
         Assertions.assertEquals(-32767, subscriberStatusRead.getSubscriberStatusRead());
 
     }

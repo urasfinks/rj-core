@@ -13,7 +13,7 @@ public class ExampleWebSocketCheckConnection implements WebSocketCheckConnection
 
     @Override
     public boolean check(@NotNull WebSocketSession webSocketSession) {
-        UtilLog.printInfo(getClass(), "Hello");
+        UtilLog.printInfo("Hello");
         return true;
     }
 

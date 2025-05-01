@@ -36,6 +36,7 @@ public class RateLimitItemPeriodic
 
     private String nextTimeFlushFormat = "";
 
+    @Getter
     private final String ns;
 
     private final RateLimitItemProperty property = new RateLimitItemProperty();

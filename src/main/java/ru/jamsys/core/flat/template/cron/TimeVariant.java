@@ -40,30 +40,30 @@ public class TimeVariant {
 
     public int getNext(long curTime, AvgMetric avgMetric, boolean debug) {
         if (debug) {
-            UtilLog.printInfo(TimeVariant.class, new HashMapBuilder<String, Object>()
+            UtilLog.printInfo(new HashMapBuilder<String, Object>()
                     .append("value", timeValue)
                     .append("emptyUnit", listEmptyTimeUnit)
             );
         }
         if (listEmptyTimeUnit.size() == 1 && listEmptyTimeUnit.getFirst().equals(TimeUnit.DAY_OF_WEEK)) {
             if (debug) {
-                UtilLog.printInfo(TimeVariant.class, "Нет смысла перебирать дни недели, так как дата стабильна");
+                UtilLog.printInfo("Нет смысла перебирать дни недели, так как дата стабильна");
             }
             return -1;
         }
         for (TimeUnit curEmptyTimeUnit : listEmptyTimeUnit) {
             if (debug) {
-                UtilLog.printInfo(TimeVariant.class, "====EmptyUnit " + curEmptyTimeUnit.getNameCache() + " for time: " + UtilDate.msFormat(curTime));
+                UtilLog.printInfo("====EmptyUnit " + curEmptyTimeUnit.getNameCache() + " for time: " + UtilDate.msFormat(curTime));
             }
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(curTime);
             resetDynamicUnitBefore(calendar, curEmptyTimeUnit, debug);
             if (debug) {
-                UtilLog.printInfo(TimeVariant.class, "reset: " + UtilDate.msFormat(calendar.getTimeInMillis()));
+                UtilLog.printInfo("reset: " + UtilDate.msFormat(calendar.getTimeInMillis()));
             }
             timeInsert(calendar);
             if (debug) {
-                UtilLog.printInfo(TimeVariant.class,"timeInsert: " + UtilDate.msFormat(calendar.getTimeInMillis()));
+                UtilLog.printInfo("timeInsert: " + UtilDate.msFormat(calendar.getTimeInMillis()));
             }
             int count = 0;
             //Если мы сейчас переставляем дни месяца, то надо проверить наличие присутствия дня недели
@@ -80,7 +80,7 @@ public class TimeVariant {
                 now.setTimeInMillis(curTime);
                 curEmptyTimeUnit.setValue(calendar, curEmptyTimeUnit.getValue(now));
                 if (debug) {
-                    UtilLog.printInfo(TimeVariant.class, "preSet: " + curEmptyTimeUnit + " = " + curEmptyTimeUnit.getValue(now) + " " + UtilDate.msFormat(calendar.getTimeInMillis()));
+                    UtilLog.printInfo("preSet: " + curEmptyTimeUnit + " = " + curEmptyTimeUnit.getValue(now) + " " + UtilDate.msFormat(calendar.getTimeInMillis()));
                 }
             }
 
@@ -88,7 +88,7 @@ public class TimeVariant {
                 long n = calendar.getTimeInMillis();
                 if (n > curTime) {
                     if (debug) {
-                        UtilLog.printInfo(TimeVariant.class,"[" + UtilDate.msFormat(n) + "] because > curTime: " + UtilDate.msFormat(curTime) + " realMs: " + n);
+                        UtilLog.printInfo("[" + UtilDate.msFormat(n) + "] because > curTime: " + UtilDate.msFormat(curTime) + " realMs: " + n);
                     }
                     avgMetric.add(n);
                     if (listEmptyTimeUnit.size() == 1 && count == 0) {
@@ -100,7 +100,7 @@ public class TimeVariant {
                 count++;
             }
             if (debug) {
-                UtilLog.printInfo(TimeVariant.class,"total count: " + count);
+                UtilLog.printInfo("total count: " + count);
             }
         }
         return -1;
@@ -115,12 +115,12 @@ public class TimeVariant {
             // Не конкурентная проверка
             if (!listEmptyTimeUnit.contains(vectorTimeUnit)) {
                 if (debug) {
-                    UtilLog.printInfo(TimeVariant.class,">r Unit." + vectorTimeUnit.getNameCache() + " continue because it is value template");
+                    UtilLog.printInfo(">r Unit." + vectorTimeUnit.getNameCache() + " continue because it is value template");
                 }
                 continue;
             }
             if (debug) {
-                UtilLog.printInfo(TimeVariant.class,">r " + vectorTimeUnit.getNameCache() + " = 0");
+                UtilLog.printInfo(">r " + vectorTimeUnit.getNameCache() + " = 0");
             }
             vectorTimeUnit.setValue(calendar, 0);
         }

@@ -120,7 +120,7 @@ class UtilByteTest {
 
     @Test
     void test(){
-        UtilLog.printInfo(UtilByteTest.class, UtilByte.getBits((byte) 127));
+        UtilLog.printInfo(UtilByte.getBits((byte) 127));
     }
 
 }
