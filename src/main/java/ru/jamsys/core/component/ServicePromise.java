@@ -67,7 +67,7 @@ public class ServicePromise implements CascadeKey {
     private void onTimeOut(DisposableExpirationMsImmutableEnvelope<Promise> env) {
         Promise promise = env.getValue();
         if (promise != null) {
-            promise.timeOut(App.getUniqueClassName(getClass()));
+            promise.timeOut();
         }
     }
 

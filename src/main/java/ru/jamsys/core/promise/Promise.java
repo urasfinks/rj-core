@@ -1,9 +1,6 @@
 package ru.jamsys.core.promise;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -13,6 +10,7 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
@@ -34,12 +32,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 // Цепочка обещаний
-@JsonPropertyOrder({"correlation", "index", "addTime", "expTime", "stopTime", "diffTimeMs", "exception", "trace", "property"})
-@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
+//@JsonPropertyOrder({"index", "addTime", "expTime", "stopTime", "diffTimeMs", "exception", "trace", "property"})
+//@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
 @Getter
 public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapClass<Object> {
 
-    private final String index;
+    private final String ns;
 
     @Setter
     @Accessors(chain = true)
@@ -50,14 +48,11 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     private final AtomicBoolean run = new AtomicBoolean(false);
 
     // Очередь задач
-    @JsonIgnore
     private final WaitQueue<AbstractPromiseTask> queueTask = new WaitQueue<>();
 
-    @JsonProperty
     private final Collection<Trace<String, ?>> trace = new ConcurrentLinkedQueue<>();
 
     // Контекст между AbstractPromiseTask
-    @JsonIgnore
     private final Map<String, Object> repositoryMap = new ConcurrentHashMap<>();
 
     // Добавление задачи, которая выполнится после фатального завершения цепочки Promise.
@@ -81,22 +76,38 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
 
     @SuppressWarnings("all")
     @Setter
-    DisposableExpirationMsImmutableEnvelope<Promise> registeredTimeOutExpiration;
+    private DisposableExpirationMsImmutableEnvelope<Promise> registeredTimeOutExpiration;
 
-    public Promise(String index, long keepAliveOnInactivityMs, long lastActivityMs) {
+    public Promise(String ns, long keepAliveOnInactivityMs, long lastActivityMs) {
         super(keepAliveOnInactivityMs, lastActivityMs);
-        this.index = index;
+        this.ns = ns;
     }
 
-    public Promise(String index, long keepAliveOnInactivityMs) {
+    public Promise(String ns, long keepAliveOnInactivityMs) {
         super(keepAliveOnInactivityMs);
-        this.index = index;
+        this.ns = ns;
     }
 
     public void completePromiseTask(AbstractPromiseTask task) {
+        // Promise.run() запускает completePromiseTask(null), что бы не дублировать логику commitAndPoll
         if (task != null) {
-            trace.add(new Trace<>(task.getNs() + ".complete()", null));
+            trace.add(new Trace<>(task.getNs() + "::complete()", null));
         }
+        // Если обещание не запущено, допустим если уже отработал setError. Не надо уже ничего добавлять и обрабатывать
+        // Если используется PersistBroker для логирование, состояние уже сброшено на диск и его не дополнить и не
+        // переписать
+        if (!isRun()) {
+            return;
+        }
+        // Если время promise истекло
+        if (this.isExpired()) {
+            // Удаляем timeout, так как сами сейчас его запустим, без ожидания общего планировщика
+            App.get(ServicePromise.class).removeTimeout(registeredTimeOutExpiration);
+            timeOut();
+            return;
+        }
+        // Закомитим таску, что она выполнена и получим новую пачку задач, конечно в том случае если все задачи до WAIT
+        // были исполнены (эта логика внутри WaitQueue)
         List<AbstractPromiseTask> promiseTasks = queueTask.commitAndPoll(task);
         if (!promiseTasks.isEmpty()) {
             for (AbstractPromiseTask promiseTask : promiseTasks) {
@@ -106,7 +117,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
             if (App.get(ServicePromise.class).removeTimeout(registeredTimeOutExpiration)) {
                 runCompleteHandler();
             } else {
-                trace.add(new Trace<>("::ServicePromise.removeTimeOut(false)", null));
+                trace.add(new Trace<>(getNs() + "::removeTimeOut()->false->::runErrorHandler()", null));
                 runErrorHandler();
             }
         }
@@ -142,20 +153,19 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         }
     }
 
-    public void timeOut(String cause) {
-        // Timeout может прилетать уже после того, как
+    public void timeOut() {
         if (isRun()) {
-            setError("::timeOut", new ForwardException(cause, genExpiredException()));
+            setError(getNs() + "::timeOut()", genExpiredException());
         }
     }
 
     public void skipAllStep(AbstractPromiseTask promiseTask, String cause) {
-        trace.add(new Trace<>(promiseTask.getNs() + ".skipAllStep(" + cause + ")", null));
+        trace.add(new Trace<>(promiseTask.getNs() + "::skipAllStep(" + cause + ")", null));
         queueTask.skipAll();
     }
 
     public void goTo(AbstractPromiseTask promiseTask, String toIndexTask) {
-        trace.add(new Trace<>(promiseTask.getNs() + ".goTo(" + toIndexTask + ")", null));
+        trace.add(new Trace<>(promiseTask.getNs() + "::goTo(" + toIndexTask + ")", null));
         queueTask.skipUntil(toIndexTask);
     }
 
@@ -178,14 +188,13 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
 
     // Запускаем цепочку задач от текущего потока
     public Promise run() {
-        trace.add(new Trace<>(index + "::run()", null));
+        trace.add(new Trace<>(ns + "::run()", null));
         run.set(true);
         terminalStatus = TerminalStatus.IN_PROCESS;
         completePromiseTask(null);
         return this;
     }
 
-    @JsonProperty
     public boolean isRun() {
         return run.get();
     }
@@ -208,12 +217,12 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     }
 
     public Promise onComplete(PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
-        AbstractPromiseTask promiseTask = createTaskCompute("::CompleteTask", fn);
+        AbstractPromiseTask promiseTask = createTaskCompute("onComplete", fn);
         return setOnComplete(promiseTask);
     }
 
     public Promise onError(PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
-        AbstractPromiseTask promiseTask = createTaskCompute("::ErrorTask", fn);
+        AbstractPromiseTask promiseTask = createTaskCompute("onError", fn);
         return setOnError(promiseTask);
     }
 
@@ -326,7 +335,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     }
 
     public String getComplexIndex(String index) {
-        return getComplexIndex(getIndex(), index);
+        return getComplexIndex(getNs(), index);
     }
 
     public static String getComplexIndex(String promiseIndex, String promiseTaskIndex) {
@@ -399,30 +408,23 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return this;
     }
 
-    @JsonProperty
-    public String getAddTime() {
-        return getLastActivityFormat();
-    }
-
-    @JsonProperty
-    public String getExpTime() { //Сократил, что бы время InitTime было ровно над временем ExprTime
-        return getExpiredFormat();
-    }
-
-    @JsonProperty
-    public long getDiffTimeMs() { //Сократил, что бы время InitTime было ровно над временем ExprTime
-        return getInactivityTimeMs();
-    }
-
-    @JsonProperty
-    public String getStopTime() { //Сократил, что бы время InitTime было ровно над временем ExprTime
-        return getStopFormat();
-    }
-
     public enum TerminalStatus {
         SUCCESS,
         ERROR,
         IN_PROCESS
+    }
+
+    @JsonValue
+    public Object getValue() {
+        return new HashMapBuilder<String, Object>()
+                .append("addTime", getLastActivityFormat())
+                .append("expiration", getExpiredFormat())
+                .append("diffTime", getInactivityTimeMs())
+                .append("ns", ns)
+                .append("run", run.get())
+                .append("terminalStatus", terminalStatus)
+                .append("trace", trace)
+                ;
     }
 
 }

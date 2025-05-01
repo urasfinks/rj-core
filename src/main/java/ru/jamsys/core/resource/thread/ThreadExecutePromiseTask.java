@@ -116,12 +116,9 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
 
     @Override
     public Void execute(Void arguments) {
-        if (pool.isEmpty()) {
-            return null;
-        }
-        if (!threadWork.get()) {
-            UtilLog.printError("Поток ещё не запустился");
-        }
+        // Мы не можем в этом блоке делать никакие проверки, так как execute был вызван, когда ресурс был изъят из пула
+        // Нам тут надо либо извращаться с возращением в пул, либо пустить всё своим ходом. То есть никаких проверок
+        // тут делать нельзя на подобии: pool.isEmpty() или !threadWork.get()
         LockSupport.unpark(thread);
         return null;
     }

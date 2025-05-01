@@ -372,44 +372,24 @@ class PromiseImplTest {
         Assertions.assertEquals(3, promise.getTrace().size());
 
     }
-//
-//    @Test
-//    void testAsyncNoWait() {
-//
-//        // Наболюдал картину "ERROR" залогировалось в консоле
-//        // Но проверка Assertions.assertEquals(1, c.get()); не прошла
-//        // c.get() = 0 без малейшего понятия как такое могло получится
-//        // добавил final c + c.incrementAndGet() уже равно не 1 а 2
-//        // Буду наблюдать дальше
-//
-//        Promise promise = servicePromise.get("AsyncNoWait", 6_000L);
-//        AbstractPromiseTask promiseTask = new PromiseTask("test", promise, PromiseTaskExecuteType.ASYNC_NO_WAIT_IO, (_, _, _) -> {
-//            throw new RuntimeException("ERROR");
-//        });
-//        promise.append(promiseTask);
-//        promise.run().await(1000);
-//
-//        Assertions.assertFalse(promise.isRun());
-//    }
-//
-//    @Test
-//    void testExpiration() {
-//        Promise promise = servicePromise.get("Expiration", 1_000L);
-//        AtomicInteger counter = new AtomicInteger(0);
-//        promise
-//                .append("longTimeout", (_, _, _)
-//                        -> Util.testSleepMs(2000))
-//                .onError((_, _, _) -> counter.incrementAndGet())
-//                .run()
-//                .await(2010);
-//
-//        Assertions.assertFalse(promise.isRun());
-//        Assertions.assertTrue(promise.isException());
-//        Assertions.assertEquals(1, counter.get());
-//        Assertions.assertEquals(1, promise.getExceptionTrace().size());
-//        Assertions.assertEquals("TimeOut cause: ServicePromise.onPromiseTaskExpired", promise.getThrowableSource().getMessage());
-//
-//    }
+
+
+    @Test
+    void testExpiration() {
+        Promise promise = servicePromise.get("Expiration", 1_000L);
+        AtomicInteger counter = new AtomicInteger(0);
+        promise
+                .append("longTimeout", (_, _, _)
+                        -> Util.testSleepMs(2000))
+                .onError((_, _, _) -> counter.incrementAndGet())
+                .run()
+                .await(2010);
+
+        Assertions.assertFalse(promise.isRun());
+        Assertions.assertEquals(Promise.TerminalStatus.ERROR, promise.getTerminalStatus());
+        Assertions.assertEquals(1, counter.get());
+        UtilLog.printInfo(promise);
+    }
 //
 //    @SuppressWarnings("unused")
 //    void promiseTaskWithPool() {

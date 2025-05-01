@@ -3,7 +3,6 @@ package ru.jamsys.core.component;
 import com.google.common.reflect.ClassPath;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.App;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.exception.ForwardException;

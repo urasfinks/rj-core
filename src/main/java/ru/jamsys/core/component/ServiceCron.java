@@ -51,7 +51,7 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
                 try {
                     Promise promise = cronTask.getPromiseGenerator().generate();
                     if (promise != null) {
-                        indexPromise = promise.getIndex();
+                        indexPromise = promise.getNs();
                         promise.run();
                     }
                 } catch (Exception e) {

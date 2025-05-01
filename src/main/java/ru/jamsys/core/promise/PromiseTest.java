@@ -97,7 +97,7 @@ public class PromiseTest {
         AbstractPromiseTask[] array = abstractPromise.getQueueTask().getMainQueue().toArray(new AbstractPromiseTask[0]);
         for (AbstractPromiseTask promiseTask : array) {
             result.add(
-                    promiseTask.getNs().substring(abstractPromise.getIndex().length() + 1)
+                    promiseTask.getNs().substring(abstractPromise.getNs().length() + 1)
                             + "::" + promiseTask.getType().toString()
             );
         }

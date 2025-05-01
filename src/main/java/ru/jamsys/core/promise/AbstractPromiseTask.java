@@ -112,7 +112,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     @Override
     public void run() {
         TimerNanoEnvelope<String> timerEnvelope = App.get(ServiceTimer.class).get(this.getNs());
-        getPromise().getTrace().add(new Trace<>(this.getNs() + ".run()", null));
+        getPromise().getTrace().add(new Trace<>(this.getNs() + "::run()", null));
         try {
             executeProcedure();
             if (afterBlockExecution != null) {
@@ -130,7 +130,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
             if (retryCount > 0) {
                 retryCount--;
                 App.get(ServicePromise.class).addRetryDelay(this);
-                getPromise().getTrace().add(new Trace<>(this.getNs() + ".addRetryDelay(" + retryCount + ")", null));
+                getPromise().getTrace().add(new Trace<>(this.getNs() + "::addRetryDelay(" + retryCount + ")", null));
             } else {
                 getPromise().setError(this.getNs(), th);
             }

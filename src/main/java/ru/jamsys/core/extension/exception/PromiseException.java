@@ -43,7 +43,7 @@ public class PromiseException extends RuntimeException {
     @Override
     public String toString() {
         LineWriter lineWriter = new LineWriterString();
-        lineWriter.addLine("Promise: " + getPromise().getIndex());
+        lineWriter.addLine("Promise: " + getPromise().getNs());
         if (getPromiseTask() != null) {
             lineWriter.addLine("Task: " + getPromiseTask().getNs());
         }
