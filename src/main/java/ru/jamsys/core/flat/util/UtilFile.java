@@ -44,26 +44,6 @@ public class UtilFile {
         }
     }
 
-    public static String getExtension(String uri) {
-        String[] split = uri.split("\\?");
-        if (split.length > 0) {
-            uri = split[0].trim();
-        }
-        split = uri.split("/");
-        if (split.length > 0) {
-            uri = split[split.length - 1].trim();
-        }
-        split = uri.split("\\\\");
-        if (split.length > 0) {
-            uri = split[split.length - 1].trim();
-        }
-        split = uri.split("\\.");
-        if (split.length > 0) {
-            uri = split[split.length - 1].trim();
-        }
-        return uri;
-    }
-
     @SuppressWarnings("unused")
     public static void writeBytes(String pathTarget, InputStream data) throws IOException {
         Path path = Paths.get(pathTarget);
@@ -143,11 +123,6 @@ public class UtilFile {
             }
             return UtilListSort.sort(result2, UtilListSort.Type.ASC);
         }
-    }
-
-    @SuppressWarnings("unused")
-    public static String getFileName(String path) {
-        return Paths.get(path).getFileName().toString();
     }
 
     @SuppressWarnings("all")

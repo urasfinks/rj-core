@@ -11,31 +11,26 @@ import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.SupplierThrowing;
 import ru.jamsys.core.flat.util.UtilBase64;
+import ru.jamsys.core.flat.util.UtilUri;
 import ru.jamsys.core.resource.virtual.file.system.view.FileView;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Getter
 public class File extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         StatisticsFlush,
         RepositoryMap<String, Object>,
         ManagerElement
 {
-
-    @Getter
-    protected String folder; //Абсолютный путь виртуальной папки
-    @Getter
-    protected String fileName; //Имя файла
-    @Getter
-    protected String extension; //Расширение файла (думаю сделать поиск по расширениям)
+    final private UtilUri.FilePath filePath;
 
     protected SupplierThrowing<byte[]> loader = () -> null;
 
@@ -48,9 +43,6 @@ public class File extends ExpirationMsMutableImplAbstractLifeCycle
 
     @Getter
     Map<String, Object> repositoryMap = new ConcurrentHashMap<>();
-
-    @Getter
-    private String absolutePath = null;
 
     private <T extends FileView> FileView setView(Class<T> cls) {
         return view.computeIfAbsent(cls, _ -> {
@@ -82,17 +74,18 @@ public class File extends ExpirationMsMutableImplAbstractLifeCycle
 
     public File(String path, SupplierThrowing<byte[]> loader) {
         init(path, loader);
+        this.filePath = UtilUri.parsePath(path);
     }
 
     public File(String path, SupplierThrowing<byte[]> loader, int cacheTimeMillis) {
         setKeepAliveOnInactivityMs(cacheTimeMillis);
         init(path, loader);
+        this.filePath = UtilUri.parsePath(path);
     }
 
     private void init(String path, SupplierThrowing<byte[]> loader) {
         this.loader = loader;
         markActive();
-        parsePath(path);
     }
 
     private void init() {
@@ -103,28 +96,6 @@ public class File extends ExpirationMsMutableImplAbstractLifeCycle
             markActive();
         } catch (Throwable th) {
             App.error(th);
-        }
-    }
-
-    private void parsePath(String path) {
-        ArrayList<String> items = new ArrayList<>(Arrays.asList(path.trim().split("/")));
-        while (true) {
-            String s = items.getFirst();
-            if (s == null || s.isEmpty() || s.equals("..")) {
-                items.removeFirst();
-            } else {
-                break;
-            }
-        }
-        String name = items.removeLast();
-        String[] split = name.split("\\.");
-        this.extension = split[split.length - 1].trim();
-        this.fileName = name.substring(0, name.length() - this.extension.length() - 1);
-        this.folder = "/" + String.join("/", items);
-        if (folder.equals("/")) {
-            this.absolutePath = "/" + fileName + "." + extension;
-        } else {
-            this.absolutePath = folder + "/" + fileName + "." + extension;
         }
     }
 
@@ -147,7 +118,7 @@ public class File extends ExpirationMsMutableImplAbstractLifeCycle
 
     public void save(byte[] data) throws Throwable {
         if (saver == null) {
-            throw new Exception("Consumer saver not found. File: " + getAbsolutePath());
+            throw new Exception("Consumer saver not found. File: " + filePath.getPath());
         }
         fileData = data;
         saver.accept(data);
