@@ -59,11 +59,6 @@ public class PoolResourcePromiseTaskWaitResource<
         poolItem.shutdown();
     }
 
-    @Override
-    public boolean checkFatalException(T poolItem, Throwable th) {
-        return poolItem.getFatalException().apply(th);
-    }
-
     @SuppressWarnings("unchecked")
     public void addPromiseTask(PromiseTaskWaitResource<?> promiseTaskWaitResource) {
         markActive();

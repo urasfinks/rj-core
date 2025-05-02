@@ -14,7 +14,6 @@ import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.File;
-import java.util.function.Function;
 
 @Component
 @Scope("prototype")
@@ -81,11 +80,6 @@ public class YandexSpeechResource
     }
 
     @Override
-    public Function<Throwable, Boolean> getFatalException() {
-        return _ -> false;
-    }
-
-    @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
         if (yandexSpeechProperty.getHost() == null || yandexSpeechProperty.getPort() == null || yandexSpeechProperty.getAlias() == null) {
             return;
@@ -100,4 +94,9 @@ public class YandexSpeechResource
         );
     }
 
+    @Override
+    public boolean checkFatalException(Throwable th) {
+        return false;
+    }
+    
 }

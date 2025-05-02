@@ -13,7 +13,6 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 @Component
 @Scope("prototype")
@@ -50,11 +49,6 @@ public class FileByteReaderResource
     }
 
     @Override
-    public Function<Throwable, Boolean> getFatalException() {
-        return _ -> false;
-    }
-
-    @Override
     public void runOperation() {
 
     }
@@ -62,6 +56,11 @@ public class FileByteReaderResource
     @Override
     public void shutdownOperation() {
 
+    }
+
+    @Override
+    public boolean checkFatalException(Throwable th) {
+        return false;
     }
 
 }

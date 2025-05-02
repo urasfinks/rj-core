@@ -12,6 +12,7 @@ import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
+import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
@@ -39,7 +40,7 @@ import java.util.function.Function;
 
 
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<T extends ExpirationMsMutable & Valid>
+public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & ResourceCheckException>
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements Pool<T>, LifeCycleInterface, CascadeKey {
 
@@ -203,7 +204,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid>
             return;
         }
         // Если ошибка является критичной для пловца - выбрасываем его из пула
-        if (e != null && checkFatalException(poolItem, e)) {
+        if (e != null && poolItem.checkFatalException(e)) {
             exceptionQueue.add(poolItem);
             return;
         }

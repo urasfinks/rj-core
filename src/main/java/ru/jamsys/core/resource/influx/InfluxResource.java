@@ -19,7 +19,6 @@ import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -95,22 +94,6 @@ public class InfluxResource
     }
 
     @Override
-    public Function<Throwable, Boolean> getFatalException() {
-        return throwable -> {
-            if (throwable != null) {
-                String msg = throwable.getMessage();
-                if (msg == null) {
-                    App.error(throwable);
-                    return false;
-                }
-                // Не конкурентная проверка
-                return msg.contains("Failed to connect");
-            }
-            return false;
-        };
-    }
-
-    @Override
     public void runOperation() {
         propertyDispatcher.run();
         up();
@@ -130,4 +113,19 @@ public class InfluxResource
         }
         up();
     }
+
+    @Override
+    public boolean checkFatalException(Throwable th) {
+        if (th != null) {
+            String msg = th.getMessage();
+            if (msg == null) {
+                App.error(th);
+                return false;
+            }
+            // Не конкурентная проверка
+            return msg.contains("Failed to connect");
+        }
+        return false;
+    }
+
 }

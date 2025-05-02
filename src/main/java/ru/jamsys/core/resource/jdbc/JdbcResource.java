@@ -21,7 +21,6 @@ import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 @Component
 @Scope("prototype")
@@ -131,12 +130,11 @@ public class JdbcResource
     }
 
     @Override
-    public Function<Throwable, Boolean> getFatalException() {
-        return throwable -> {
-            if (throwable != null) {
-                String msg = throwable.getMessage();
+    public boolean checkFatalException(Throwable th) {
+        if (th != null) {
+            String msg = th.getMessage();
                 if (msg == null) {
-                    App.error(throwable);
+                    App.error(th);
                     return false;
                 }
                 // Не конкурентная проверка
@@ -149,10 +147,7 @@ public class JdbcResource
                         || msg.contains("Ошибка ввода/вывода при отправке бэкенду");
             }
             return false;
-        };
     }
-
-
 
     @Override
     public void runOperation() {

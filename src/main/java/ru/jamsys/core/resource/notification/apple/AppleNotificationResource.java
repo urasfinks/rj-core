@@ -20,7 +20,6 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstra
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 @Component
 public class AppleNotificationResource
@@ -84,11 +83,6 @@ public class AppleNotificationResource
     }
 
     @Override
-    public Function<Throwable, Boolean> getFatalException() {
-        return _ -> false;
-    }
-
-    @Override
     public void runOperation() {
         propertyDispatcher.run();
     }
@@ -108,6 +102,11 @@ public class AppleNotificationResource
                 appleNotificationProperty.getVirtualPath(),
                 path -> new File(path, FileLoaderFactory.fromFileSystem(appleNotificationProperty.getStorage()))
         );
+    }
+
+    @Override
+    public boolean checkFatalException(Throwable th) {
+        return false;
     }
 
 }

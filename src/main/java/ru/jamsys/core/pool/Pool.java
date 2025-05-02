@@ -1,13 +1,14 @@
 package ru.jamsys.core.pool;
 
 import ru.jamsys.core.extension.StatisticsFlush;
+import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
 // RT - ResourceArgument
 // RR - ResourceResult
 // PI - PoolItem
 
-public interface Pool<T extends ExpirationMsMutable & Valid> extends StatisticsFlush {
+public interface Pool<T extends ExpirationMsMutable & Valid & ResourceCheckException> extends StatisticsFlush {
 
     //После работы с ресурсом его надо вернуть в пул
     void releasePoolItem(T ret, Throwable e);
@@ -17,9 +18,6 @@ public interface Pool<T extends ExpirationMsMutable & Valid> extends StatisticsF
 
     // Реализация закрытия ресурса
     void closePoolItem(T poolItem);
-
-    //Реализация проверки ошибки, для принятия решений выкидывания ресурса из пула
-    boolean checkFatalException(T poolItem, Throwable th);
 
     // Ручное удаление ресурса из пула, желательно конечно лишний раз не использовать
     void remove(T poolItem);

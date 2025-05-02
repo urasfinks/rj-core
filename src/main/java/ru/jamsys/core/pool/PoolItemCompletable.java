@@ -2,6 +2,7 @@ package ru.jamsys.core.pool;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
 // Этот объект передаётся во внешнее управление.
@@ -10,7 +11,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
 @Getter
 @Setter
-public class PoolItemCompletable<T extends ExpirationMsMutable & Valid> implements AutoCloseable {
+public class PoolItemCompletable<T extends ExpirationMsMutable & Valid & ResourceCheckException> implements AutoCloseable {
 
     private final Pool<T> pool;
 

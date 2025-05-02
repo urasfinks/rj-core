@@ -14,7 +14,6 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstra
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.function.Function;
 
 // TODO: морально ресурс устарел, нужен рефактор
 @Component
@@ -66,11 +65,6 @@ public class TelegramNotificationResource
     }
 
     @Override
-    public Function<Throwable, Boolean> getFatalException() {
-        return _ -> false;
-    }
-
-    @Override
     public void runOperation() {
         propertyDispatcher.run();
     }
@@ -78,6 +72,11 @@ public class TelegramNotificationResource
     @Override
     public void shutdownOperation() {
         propertyDispatcher.shutdown();
+    }
+
+    @Override
+    public boolean checkFatalException(Throwable th) {
+        return false;
     }
 
 }

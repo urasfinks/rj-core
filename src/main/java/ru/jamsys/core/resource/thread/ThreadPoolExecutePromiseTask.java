@@ -88,11 +88,6 @@ public class ThreadPoolExecutePromiseTask
     }
 
     @Override
-    public boolean checkFatalException(ThreadExecutePromiseTask poolItem, Throwable th) {
-        return false;
-    }
-
-    @Override
     public void helper() {
         // Если потоки остановились из-за RateLimit или задачи закончились, их надо пошевелить немного
         serviceBell();

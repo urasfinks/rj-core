@@ -13,7 +13,6 @@ import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.nio.charset.StandardCharsets;
-import java.util.function.Function;
 
 @Component
 @Scope("prototype")
@@ -62,11 +61,6 @@ public class ReCaptchaResource
     }
 
     @Override
-    public Function<Throwable, Boolean> getFatalException() {
-        return _ -> false;
-    }
-
-    @Override
     public void runOperation() {
         propertyDispatcher.run();
     }
@@ -74,6 +68,11 @@ public class ReCaptchaResource
     @Override
     public void shutdownOperation() {
         propertyDispatcher.shutdown();
+    }
+
+    @Override
+    public boolean checkFatalException(Throwable th) {
+        return false;
     }
 
 }

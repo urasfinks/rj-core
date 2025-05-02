@@ -7,8 +7,6 @@ import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
-import java.util.function.Function;
-
 @Component
 @Scope("prototype")
 public class HttpResource extends ExpirationMsMutableImplAbstractLifeCycle implements Resource<HttpConnector, HttpResponse> {
@@ -30,11 +28,6 @@ public class HttpResource extends ExpirationMsMutableImplAbstractLifeCycle imple
     }
 
     @Override
-    public Function<Throwable, Boolean> getFatalException() {
-        return _ -> false;
-    }
-
-    @Override
     public void runOperation() {
 
     }
@@ -42,6 +35,11 @@ public class HttpResource extends ExpirationMsMutableImplAbstractLifeCycle imple
     @Override
     public void shutdownOperation() {
 
+    }
+
+    @Override
+    public boolean checkFatalException(Throwable th) {
+        return false;
     }
 
 }

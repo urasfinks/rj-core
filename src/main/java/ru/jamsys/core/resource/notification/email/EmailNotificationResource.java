@@ -15,8 +15,6 @@ import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
-import java.util.function.Function;
-
 @Component
 @Scope("prototype")
 public class EmailNotificationResource
@@ -80,11 +78,6 @@ public class EmailNotificationResource
     }
 
     @Override
-    public Function<Throwable, Boolean> getFatalException() {
-        return _ -> false;
-    }
-
-    @Override
     public void runOperation() {
         propertyDispatcher.run();
     }
@@ -92,6 +85,11 @@ public class EmailNotificationResource
     @Override
     public void shutdownOperation() {
         propertyDispatcher.shutdown();
+    }
+
+    @Override
+    public boolean checkFatalException(Throwable th) {
+        return false;
     }
 
 }

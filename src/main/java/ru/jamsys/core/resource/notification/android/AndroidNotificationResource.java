@@ -19,7 +19,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 @Component
 public class AndroidNotificationResource
@@ -102,11 +101,6 @@ public class AndroidNotificationResource
     }
 
     @Override
-    public Function<Throwable, Boolean> getFatalException() {
-        return _ -> false;
-    }
-
-    @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
         if (androidNotificationProperty.getScope() == null || androidNotificationProperty.getStorageCredentials() == null) {
             return;
@@ -132,4 +126,10 @@ public class AndroidNotificationResource
     public CascadeKey getParentCascadeKey() {
         return null;
     }
+
+    @Override
+    public boolean checkFatalException(Throwable th) {
+        return false;
+    }
+
 }

@@ -14,7 +14,6 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstra
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
-import java.util.function.Function;
 
 public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLifeCycle
         implements Resource<Void, Void>, CascadeKey {
@@ -128,8 +127,8 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
     }
 
     @Override
-    public Function<Throwable, Boolean> getFatalException() {
-        return _ -> false;
+    public boolean checkFatalException(Throwable th) {
+        return false;
     }
 
 }
