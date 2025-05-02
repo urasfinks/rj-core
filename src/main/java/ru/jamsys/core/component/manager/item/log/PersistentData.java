@@ -14,9 +14,4 @@ public interface PersistentData extends ByteSerialization {
 
     void print();
 
-    default void sendRemote() {
-        // TODO: доделать
-        // App.get(ServiceLoggerRemote.class).add(this);
-    }
-
 }

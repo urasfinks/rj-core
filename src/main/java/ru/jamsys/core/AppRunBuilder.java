@@ -12,8 +12,6 @@ public class AppRunBuilder {
     public AppRunBuilder addTestArguments() {
         return this
                 .add("run.mode", "test")
-                .add("log.uploader.remote", false)
-                .add("statistic.uploader.remote", false)
                 .add("run.args.web", false)
                 .add("spring.main.web-application-type", "none");
     }

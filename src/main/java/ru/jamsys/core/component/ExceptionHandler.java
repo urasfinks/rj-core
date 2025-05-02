@@ -24,12 +24,6 @@ public class ExceptionHandler extends AnnotationPropertyExtractor<Object> {
     @SuppressWarnings("all")
     private static int maxLine = 50;
 
-    @PropertyKey("log.uploader.remote")
-    private Boolean remote = false;
-
-    @PropertyKey("run.args.console.output")
-    private Boolean consoleOutput = true;
-
     public ExceptionHandler(ApplicationContext applicationContext) {
         new PropertyDispatcher<>(
                 applicationContext.getBean(ServiceProperty.class),
@@ -45,13 +39,9 @@ public class ExceptionHandler extends AnnotationPropertyExtractor<Object> {
                 UtilDate.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
         );
         getTextException(th, lineWriterList);
-        PersistentDataHeader error = UtilLog.error(lineWriterList.getResult());
-        if (consoleOutput) {
-            error.print();
-        }
-        if (remote) {
-            error.sendRemote();
-        }
+        UtilLog
+                .error(lineWriterList.getResult())
+                .print();
     }
 
     public static void getTextException(Throwable th, LineWriter sw) {
