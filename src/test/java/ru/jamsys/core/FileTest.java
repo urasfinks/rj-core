@@ -91,7 +91,7 @@ class FileTest {
 
         File file1 = fileConfiguration.get();
 
-        //Assertions.assertEquals("1.txt", file1.getFileName());
+        Assertions.assertEquals("1.txt", file1.getFilePath().getFileName());
     }
 
     @Test
