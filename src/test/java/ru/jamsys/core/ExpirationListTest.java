@@ -9,6 +9,7 @@ import ru.jamsys.core.component.manager.item.ExpirationList;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
@@ -50,17 +51,25 @@ class ExpirationListTest {
 
 
         ExpirationMsImmutableEnvelope<XItem> add = test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
-        //Останавливаем задачу, что не выполнился onExpired
+        //Останавливаем задачу, что бы не выполнился onExpired
         add.stop();
-        List<DataHeader> dataHeadersBefore = test.flushAndGetStatistic(threadRun);
+        List<DataHeader> s1 = test.flushAndGetStatistic(threadRun);
+        Assertions.assertEquals("{ItemSize=1, BucketSize=1, helperRemove=0, helperOnExpired=0}", s1.getFirst().getHeader().toString());
         test.helper(threadRun, curTimeMs + 1001);
-        List<DataHeader> dataHeadersAfter = test.flushAndGetStatistic(threadRun);
-        Assertions.assertEquals(dataHeadersBefore, dataHeadersAfter);
+        List<DataHeader> s2 = test.flushAndGetStatistic(threadRun);
+        // helperRemove=1 так как выше выполнили add.stop();
+        Assertions.assertEquals("{ItemSize=0, BucketSize=0, helperRemove=1, helperOnExpired=0}", s2.getFirst().getHeader().toString());
 
         Assertions.assertEquals(0, counterExpired.get());
 
-        DataHeader statistics = test.flushAndGetStatistic(null).getFirst();
-        Assertions.assertEquals("{ItemSize=0, BucketSize=0}", statistics.getHeader().toString());
+        List<DataHeader> s3 = test.flushAndGetStatistic(null);
+        Assertions.assertEquals("{ItemSize=0, BucketSize=0, helperRemove=0, helperOnExpired=0}", s3.getFirst().getHeader().toString());
+
+        test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
+        test.helper(threadRun, curTimeMs + 1001);
+        List<DataHeader> s4 = test.flushAndGetStatistic(null);
+        Assertions.assertEquals("{ItemSize=0, BucketSize=0, helperRemove=0, helperOnExpired=1}", s4.getFirst().getHeader().toString());
+
     }
 
     @Test
@@ -95,46 +104,32 @@ class ExpirationListTest {
         Assertions.assertEquals("[1709734265000, 1709734266000, 1709734267000, 1709734268000, 1709734269000]", test.getBucketKey().toString());
 
         DataHeader statistics = test.flushAndGetStatistic(null).getFirst();
-        Assertions.assertEquals("{ItemSize=10, BucketSize=5}", statistics.getHeader().toString());
+        Assertions.assertEquals("{ItemSize=10, BucketSize=5, helperRemove=0, helperOnExpired=0}", statistics.getHeader().toString());
 
         for (int i = 10; i < 100; i++) {
             test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + (500 * i)));
         }
 
         List<DataHeader> before = test.flushAndGetStatistic(null);
-        Assertions.assertEquals("{ItemSize=100, BucketSize=50}", before.getFirst().getHeader().toString());
+        Assertions.assertEquals("{ItemSize=100, BucketSize=50, helperRemove=0, helperOnExpired=0}", before.getFirst().getHeader().toString());
 
         test.helper(threadRun, curTimeMs);
         List<DataHeader> after = test.flushAndGetStatistic(null);
         Assertions.assertEquals(before.getFirst().getHeader().toString(), after.getFirst().getHeader().toString());
 
         before = test.flushAndGetStatistic(null);
-        Assertions.assertEquals("{ItemSize=100, BucketSize=50}", before.getFirst().getHeader().toString());
+        Assertions.assertEquals("{ItemSize=100, BucketSize=50, helperRemove=0, helperOnExpired=0}", before.getFirst().getHeader().toString());
 
         test.helper(threadRun, curTimeMs + 100);
         after = test.flushAndGetStatistic(null);
         Assertions.assertEquals(before.getFirst().getHeader().toString(), after.getFirst().getHeader().toString());
         statistics = test.flushAndGetStatistic(null).getFirst();
-        Assertions.assertEquals("{ItemSize=100, BucketSize=50}", statistics.getHeader().toString());
+        Assertions.assertEquals("{ItemSize=100, BucketSize=50, helperRemove=0, helperOnExpired=0}", statistics.getHeader().toString());
 
         Assertions.assertEquals("2024-03-06T17:11:05.006", UtilDate.msFormat(curTimeMs + 950));
         Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msFormat(Util.zeroLastNDigits(curTimeMs + 950, 3)));
 
         test.helper(threadRun, curTimeMs + 950);
-
-//        Assertions.assertEquals(2, keepAliveResult.getCountRemove().get());
-//        Assertions.assertEquals("[2024-03-06T17:11:05.000]", keepAliveResult.getReadBucketFormat().toString());
-//        statistics = test.flushAndGetStatistic(null, null, null).getFirst();
-//        Assertions.assertEquals("{ItemSize=98, BucketSize=49}", statistics.getFields().toString());
-//
-//        keepAliveResult = test.helper(threadRun, curTimeMs + (500 * 10));
-//        // 8 потому что 2 уже были удалены до этого
-//        Assertions.assertEquals(8, keepAliveResult.getCountRemove().get());
-//        // Это значит пробежка была от 2024-03-06T17:11:05.000 до 2024-03-06T17:11:05.999
-//
-//        Assertions.assertEquals("[2024-03-06T17:11:06.000, 2024-03-06T17:11:07.000, 2024-03-06T17:11:08.000, 2024-03-06T17:11:09.000]", keepAliveResult.getReadBucketFormat().toString());
-//        statistics = test.flushAndGetStatistic(null, null, null).getFirst();
-//        Assertions.assertEquals("{ItemSize=90, BucketSize=45}", statistics.getFields().toString());
 
     }
 
@@ -145,6 +140,7 @@ class ExpirationListTest {
                 "test",
                 s -> new ExpirationList<>(s, env -> {
                     if (env.getExpiryRemainingMs() > 0) {
+                        UtilLog.printError("ALARM");
                         Assertions.fail("ALARM");
                     } else {
                         avgMetric.add(env.getExpiryRemainingMs() * -1);
@@ -158,11 +154,16 @@ class ExpirationListTest {
         //Сначала надо запустить keepAlive потому что старт потоков будет медленный и мы начнём терять секунды так как не запущенны
 
         Thread ka = new Thread(() -> {
-            Thread.currentThread().setName("TMP KeepAlive");
+            Thread.currentThread().setName("TMP Helper");
             while (run2.get()) {
                 try {
                     long cur = System.currentTimeMillis();
                     test.helper(threadRun, cur);
+                    UtilLog.info(null)
+                            .addHeader("helperRemove", test.getHelperRemove().getAndSet(0))
+                            .addHeader("helperOnExpired", test.getHelperOnExpired().getAndSet(0))
+                            .print();
+
                     Util.testSleepMs(sleepKeepAlive);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -186,7 +187,6 @@ class ExpirationListTest {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
             }).start();
         }
 

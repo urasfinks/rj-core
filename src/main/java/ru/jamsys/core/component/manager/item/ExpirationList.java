@@ -18,14 +18,19 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
-// Для задач, когда надо сформировать ошибки по timeOut
-// Но надо помнить, что всегда есть лаг срабатывания onExpired, так как removeExpired вызывается по расписанию.
-// Мы не можем себе позволить постфактум менять timeout, так как в map заносится expiredTime из .getExpiredMs()
-// Для избежания выполнения одномоментного выполнения используется одноразовая обёртка
-// (DisposableExpiredMsImmutableEnvelope), кто-то один сможет забрать элемент, либо onExpired, либо remove.
+// Уничтожающийся список элементов по времени. Если время объекта заканчивается и его не нейтрализовали
+// объект передаётся в onExpired, иначе просто выбрасывается. Так как механизм зачистки вызывается планировщиком
+// 1 раз в секунду, может быть лаг по времени, допустим: время жизни 1000мс, положили 00:00:00.050 ожидаем, что
+// в 00:00:01.050 будет вызван onExpired, но нет, планировщик вызывался в 00:00:00.000 -> 00:00:01.000 -> 00:00:02.000
+// то есть задержка onExpired может быть до секунды (это величина планировщика) больше или меньше будет изменяться в
+// зависимости от того, когда вы в ExpirationList вставите данные. Для избежания одномоментного выполнения используется
+// одноразовая обёртка (DisposableExpiredMsImmutableEnvelope). Время жизни объекта менять нельзя, так как
+// не предусматривается реализацией ExpirationList
 
+@Getter
 public class ExpirationList<T>
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements
@@ -35,7 +40,7 @@ public class ExpirationList<T>
                 >,
         ManagerElement, CascadeKey {
 
-    @Getter
+
     private final String ns;
 
     public static Set<ExpirationList<?>> expirationListSet = Util.getConcurrentHashSet();
@@ -45,6 +50,12 @@ public class ExpirationList<T>
     private final ConcurrentSkipListMap<Long, AtomicInteger> bucketQueueSize = new ConcurrentSkipListMap<>();
 
     private final Consumer<DisposableExpirationMsImmutableEnvelope<T>> onExpired;
+
+    // Сколько было просто удалено, так как объект был нейтрализован
+    private final AtomicLong helperRemove = new AtomicLong(0);
+
+    // Сколько было передано в обработчик OnExpired
+    private final AtomicLong helperOnExpired = new AtomicLong(0);
 
     public ExpirationList(
             String ns,
@@ -78,9 +89,11 @@ public class ExpirationList<T>
             UtilRisc.forEach(threadRun, queue, (DisposableExpirationMsImmutableEnvelope<T> envelope) -> {
                 if (envelope.isNeutralized() || envelope.isStop()) {
                     queue.remove(envelope);
+                    helperRemove.incrementAndGet();
                 } else if (envelope.isExpired()) {
                     onExpired.accept(envelope);
                     queue.remove(envelope);
+                    helperOnExpired.incrementAndGet();
                 }
             });
             if (queue.isEmpty()) {
@@ -112,6 +125,8 @@ public class ExpirationList<T>
                 .setBody(getCascadeKey(ns))
                 .put("ItemSize", summaryCountItem.get())
                 .put("BucketSize", countBucket.get())
+                .put("helperRemove", helperRemove.getAndSet(0))
+                .put("helperOnExpired", helperOnExpired.getAndSet(0))
         );
         if (!bucket.isEmpty()) {
             markActive();
