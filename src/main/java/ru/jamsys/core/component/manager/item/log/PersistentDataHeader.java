@@ -25,8 +25,6 @@ public class PersistentDataHeader extends DataHeader implements PersistentData {
 
     public PersistentDataHeader(Object body) {
         this.body = body;
-        addHeader("time", timeAdd);
-        addHeader("thread", Thread.currentThread().getName());
     }
 
     @Override

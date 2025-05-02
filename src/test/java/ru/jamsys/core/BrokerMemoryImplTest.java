@@ -30,7 +30,7 @@ class BrokerMemoryImplTest {
         App.get(Manager.class).configure(
                 BrokerMemory.class,
                 XTest.class.getSimpleName(),
-                (k) -> new BrokerMemoryImpl<>(k, App.context, _ -> UtilLog.printInfo("DROP"))
+                (k) -> new BrokerMemoryImpl<>(k, App.context, _ -> UtilLog.printAction("DROP"))
         );
     }
 
@@ -303,19 +303,19 @@ class BrokerMemoryImplTest {
             list.add(add);
         }
         long timeAdd = System.currentTimeMillis() - start;
-        UtilLog.printInfo("add time: " + timeAdd);
+        UtilLog.printAction("add time: " + timeAdd);
         Assertions.assertTrue(timeAdd < 600, "#3");
         start = System.currentTimeMillis();
         for (int i = 0; i < selection; i++) {
             broker.remove(list.get(selection - i - 1));
         }
         long timeRem = System.currentTimeMillis() - start;
-        UtilLog.printInfo("remove time: " + timeRem);
+        UtilLog.printAction("remove time: " + timeRem);
         Assertions.assertTrue(timeRem < 500, "#3");
         Assertions.assertEquals(0, broker.size(), "#3");
         start = System.currentTimeMillis();
         ExpirationMsImmutableEnvelope<XTest> xTestExpirationMsImmutableEnvelope = broker.pollLast();
-        UtilLog.printInfo("pool time: " + (System.currentTimeMillis() - start));
+        UtilLog.printAction("pool time: " + (System.currentTimeMillis() - start));
         Assertions.assertNull(xTestExpirationMsImmutableEnvelope, "#3");
     }
 

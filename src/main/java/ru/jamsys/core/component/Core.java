@@ -28,7 +28,7 @@ public class Core extends AbstractLifeCycle implements LifeCycleInterface {
 
     @Override
     public void runOperation() {
-        UtilLog.printInfo("run()");
+        UtilLog.printAction("run()");
         List<LifeCycleComponent> sortedList = new ArrayList<>();
         serviceClassFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
             if (!ServiceClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
@@ -51,7 +51,7 @@ public class Core extends AbstractLifeCycle implements LifeCycleInterface {
 
     @Override
     public void shutdownOperation() {
-        UtilLog.printInfo("shutdown()");
+        UtilLog.printAction("shutdown()");
         while (!runComponent.isEmpty()) {
             LifeCycleComponent lifeCycleComponent = runComponent.pollLast();
             if (lifeCycleComponent != null) {

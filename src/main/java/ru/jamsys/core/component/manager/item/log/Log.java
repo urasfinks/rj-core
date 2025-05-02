@@ -7,7 +7,6 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.io.PrintStream;
 
@@ -23,22 +22,20 @@ public class Log extends PersistentDataHeader {
     public Log(LogType logType, String caller, Object body) {
         super(body);
         this.logType = logType;
+        // Мы должны это записать в заголовки, иначе это не доедет до Persistent хранилища
+        addHeader("logType", logType);
+        addHeader("thread", Thread.currentThread().getName());
         addHeader("caller", caller);
     }
 
     @Override
     public void print() {
         StringBuilder sb = new StringBuilder();
-        UtilRisc.forEach(null, getHeader(), (s, o) -> {
-            if (s.equals("time")) {
-                sb.append(UtilDate.msFormat(getTimeAdd()));
-            } else {
-                sb.append(s).append(": ").append(o);
-            }
-            // Если просто пробел, то текст сливается. Если включить Soft-Wrap продолжение всегда будет с отступом.
-            // Это позволяет хорошо видеть разделение между несколькими принтами (дата начинается без отступа)
-            sb.append(";\t");
-        });
+        sb
+                .append(UtilDate.msFormat(getTimeAdd()))
+                .append("\t")
+                .append(UtilJson.toString(getHeader(), "{}"));
+
         Object body1 = getRawBody();
         if (body1 != null) {
             sb.append("\n");

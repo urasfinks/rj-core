@@ -19,19 +19,21 @@ public class UtilLog {
     }
 
     public static void printError(Object data) {
-        Log log = new Log(LogType.ERROR, getCaller(), data);
-        log.print();
+        new Log(LogType.ERROR, getCaller(), data).print();
+
     }
 
     public static void printInfo(Object data) {
-        Log log = new Log(LogType.INFO, getCaller(), data);
-        log.print();
+        new Log(LogType.INFO, getCaller(), data).print();
     }
 
     @SuppressWarnings("unused")
     public static void printDebug(Object data) {
-        Log log = new Log(LogType.DEBUG, getCaller(), data);
-        log.print();
+        new Log(LogType.DEBUG, getCaller(), data).print();
+    }
+
+    public static void printAction(String action) {
+        new Log(LogType.INFO, getCaller(), null).addHeader("action", action).print();
     }
 
     public static String getCaller() {
