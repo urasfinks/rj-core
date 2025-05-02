@@ -1,7 +1,6 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
@@ -100,6 +99,7 @@ public class BrokerMemoryImpl<T>
         return mainQueue.isEmpty();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public DisposableExpirationMsImmutableEnvelope<T> add(ExpirationMsImmutableEnvelope<T> envelope) {
         if (envelope == null || envelope.isExpired()) {
@@ -163,6 +163,7 @@ public class BrokerMemoryImpl<T>
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     public void remove(DisposableExpirationMsImmutableEnvelope<T> envelope) {
         if (envelope != null) {
             // Это конечно так себе удалять пришедший в remove объект не проверяя что он вообще есть в очереди

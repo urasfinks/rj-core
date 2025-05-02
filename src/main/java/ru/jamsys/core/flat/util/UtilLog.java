@@ -3,39 +3,35 @@ package ru.jamsys.core.flat.util;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.component.manager.item.log.Log;
 import ru.jamsys.core.component.manager.item.log.LogType;
-import ru.jamsys.core.component.manager.item.log.PersistentDataHeader;
 
 public class UtilLog {
 
-    public static PersistentDataHeader error(Object data) {
+    public static Log error(Object data) {
         return new Log(LogType.ERROR, getCaller(), data);
     }
 
-    public static PersistentDataHeader info(Object data) {
+    public static Log info(Object data) {
         return new Log(LogType.INFO, getCaller(), data);
     }
 
-    public static PersistentDataHeader debug(Object data) {
+    public static Log debug(Object data) {
         return new Log(LogType.DEBUG, getCaller(), data);
     }
 
-    public static Log printError(Object data) {
+    public static void printError(Object data) {
         Log log = new Log(LogType.ERROR, getCaller(), data);
         log.print();
-        return log;
     }
 
-    public static PersistentDataHeader printInfo(Object data) {
+    public static void printInfo(Object data) {
         Log log = new Log(LogType.INFO, getCaller(), data);
         log.print();
-        return log;
     }
 
     @SuppressWarnings("unused")
-    public static PersistentDataHeader printDebug(Object data) {
+    public static void printDebug(Object data) {
         Log log = new Log(LogType.DEBUG, getCaller(), data);
         log.print();
-        return log;
     }
 
     public static String getCaller() {
