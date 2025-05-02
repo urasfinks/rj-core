@@ -531,115 +531,116 @@ class PromiseImplTest {
         Assertions.assertEquals(1, onError.get());
         Assertions.assertEquals(0, onComplete.get());
     }
-//
-//    @Test
-//    void testThenPromise() {
-//        Promise promise = servicePromise.get("testThenPromise", 6_000L);
-//        promise.setDebug(true);
-//        List<Integer> list = new ArrayList<>();
-//        promise.then("index0", (_, _, _) -> list.add(0))
-//                .then("index1", servicePromise.get("log2", 6_000L)
-//                        .then("sub1", (_, _, _) -> {
-//                            Util.testSleepMs(300);
-//                            list.add(1);
-//                        })
-//                        .then("sub1", (_, _, _) -> list.add(2))
-//                )
-//                .then("index2", (_, _, _) -> list.add(3))
-//                .run().await(7000);
-//        Assertions.assertEquals("[0, 1, 2, 3]", list.toString());
-//    }
-//
-//    @Test
-//    void testThenPromise2() {
-//        Promise promise = servicePromise.get("testThenPromise2", 6_000L);
-//        promise.setDebug(true);
-//        List<Integer> list = new ArrayList<>();
-//        promise.then("index0", (_, _, _) -> list.add(0))
-//                .append("index1", servicePromise.get("log2", 6_000L)
-//                        .then("sub1", (_, _, _) -> {
-//                            Util.testSleepMs(300);
-//                            list.add(1);
-//                        })
-//                        .then("sub1", (_, _, _) -> list.add(2))
-//                )
-//                .append("index2", (_, _, _) -> list.add(3))
-//                .then("index3", (_, _, _) -> list.add(4))
-//                .run().await(7000);
-//        Assertions.assertEquals("[0, 3, 1, 2, 4]", list.toString());
-//    }
-//
-//    @Test
-//    void testThenPromise3() {
-//        Promise promise = servicePromise.get("testThenPromise3", 6_000L);
-//        promise.setDebug(false);
-//        AtomicInteger x = new AtomicInteger(0);
-//        promise
-//                .then("subPromise", servicePromise.get("log2", 6_000L)
-//                        .then("sub1", (_, _, promise1)
-//                                -> promise1.setRepositoryMap("hello", "world"))
-//                )
-//                .then("getResultSubPromise", (_, _, promise1) -> {
-//                    Promise subPromise = promise1.getRepositoryMapClass(Promise.class, "subPromise");
-//                    String hello = subPromise.getRepositoryMap(String.class, "hello");
-//                    if (hello.equals("world")) {
-//                        x.incrementAndGet();
-//                    }
-//                })
-//                .run().await(7000);
-//        Assertions.assertEquals(1, x.get());
-//    }
-//
-//    @Test
-//    void testPromise() {
-//        Promise promise = servicePromise.get("testPromise", 6_000L);
-//        promise.setDebug(false);
-//        AtomicInteger x = new AtomicInteger(0);
-//        promise
-//                .then("i1", (_, _, _) -> x.incrementAndGet())
-//                .then("i2", (_, _, _) -> x.incrementAndGet())
-//                .then("i3", (_, _, _) -> x.incrementAndGet());
-//
-//        new PromiseTest(promise)
-//                .remove("i1")
-//                .replace("i2", promise.createTaskCompute("i2_2", (_, _, _) -> x.addAndGet(4)));
-//        promise.run().await(7000);
-//        Assertions.assertEquals(5, x.get());
-//    }
-//
-//    @Test
-//    void testPromiseAfter() {
-//        Promise promise = servicePromise.get("testPromiseAfter", 6_000L);
-//        promise.setDebug(false);
-//        AtomicInteger x = new AtomicInteger(0);
-//        promise
-//                .then("i1", (_, _, _) -> x.incrementAndGet())
-//                .then("i2", (_, _, _) -> x.incrementAndGet())
-//                .then("i3", (_, _, _) -> x.incrementAndGet())
-//                .then("i4", (_, _, _) -> x.incrementAndGet())
-//                .then("i5", (_, _, _) -> x.incrementAndGet())
-//                .then("i6", (_, _, _) -> x.incrementAndGet())
-//        ;
-//
-//        PromiseTest promiseTest = new PromiseTest(promise);
-//
-//        Assertions.assertEquals("[i3::WAIT, i3::COMPUTE, i4::WAIT, i4::COMPUTE, i5::WAIT, i5::COMPUTE, i6::WAIT, i6::COMPUTE]", promiseTest.removeBefore("i3").getIndex().toString());
-//        Assertions.assertEquals("[i3::WAIT, i3::COMPUTE, i4::WAIT, i4::COMPUTE, i5::WAIT, i5::COMPUTE]", promiseTest.removeAfter("i5").getIndex().toString());
-//    }
-//
-//    @Test
-//    void testPromiseExternal() {
-//        Promise promise = servicePromise.get("testPromiseExternal", 6_000L);
-//        promise.setDebug(false);
-//        promise
-//                .then("i1", (_, _, _) -> {
-//                })
-//                .then("subPromise", servicePromise.get("log", 6_000L))
-//        ;
-//
-//        PromiseTest promiseTest = new PromiseTest(promise);
-//
-//        Assertions.assertEquals("[i1::COMPUTE, subPromise::WAIT, subPromise::EXTERNAL_WAIT_COMPUTE]", promiseTest.getIndex().toString());
-//    }
+
+    @Test
+    void testThenPromise() {
+        Promise promise = servicePromise.get("testThenPromise", 6_000L);
+        //promise.setLogType(LogType.DEBUG);
+        List<Integer> list = new ArrayList<>();
+        promise.then("index0", (_, _, _) -> list.add(0))
+                .then("index1", servicePromise.get("log2", 6_000L)
+                        .then("sub1", (_, _, _) -> {
+                            Util.testSleepMs(300);
+                            list.add(1);
+                        })
+                        .then("sub1", (_, _, _) -> list.add(2))
+                )
+                .then("index2", (_, _, _) -> list.add(3))
+                .run()
+                .await(7000);
+        Assertions.assertEquals("[0, 1, 2, 3]", list.toString());
+    }
+
+    @Test
+    void testThenPromise2() {
+        Promise promise = servicePromise.get("testThenPromise2", 6_000L);
+        //promise.setLogType(LogType.DEBUG);
+        List<Integer> list = new ArrayList<>();
+        promise.then("index0", (_, _, _) -> list.add(0))
+                .append("index1", servicePromise.get("log2", 6_000L)
+                        .then("sub1", (_, _, _) -> {
+                            Util.testSleepMs(300);
+                            list.add(1);
+                        })
+                        .then("sub1", (_, _, _) -> list.add(2))
+                )
+                .append("index2", (_, _, _) -> list.add(3))
+                .then("index3", (_, _, _) -> list.add(4))
+                .run().await(7000);
+        Assertions.assertEquals("[0, 3, 1, 2, 4]", list.toString());
+    }
+
+    @Test
+    void testThenPromise3() {
+        Promise promise = servicePromise.get("testThenPromise3", 6_000L);
+        //promise.setLogType(LogType.DEBUG);
+        AtomicInteger x = new AtomicInteger(0);
+        promise
+                .then("subPromise", servicePromise.get("log2", 6_000L)
+                        .then("sub1", (_, _, promise1)
+                                -> promise1.setRepositoryMap("hello", "world"))
+                )
+                .then("getResultSubPromise", (_, _, promise1) -> {
+                    Promise subPromise = promise1.getRepositoryMapClass(Promise.class, "subPromise");
+                    String hello = subPromise.getRepositoryMap(String.class, "hello");
+                    if (hello.equals("world")) {
+                        x.incrementAndGet();
+                    }
+                })
+                .run().await(7000);
+        Assertions.assertEquals(1, x.get());
+    }
+
+    @Test
+    void testPromise() {
+        Promise promise = servicePromise.get("testPromise", 6_000L);
+        //promise.setLogType(LogType.DEBUG);
+        AtomicInteger x = new AtomicInteger(0);
+        promise
+                .then("i1", (_, _, _) -> x.incrementAndGet())
+                .then("i2", (_, _, _) -> x.incrementAndGet())
+                .then("i3", (_, _, _) -> x.incrementAndGet());
+
+        new PromiseTest(promise)
+                .remove("i1")
+                .replace("i2", promise.createTaskCompute("i2_2", (_, _, _) -> x.addAndGet(4)));
+        promise.run().await(7000);
+        Assertions.assertEquals(5, x.get());
+    }
+
+    @Test
+    void testPromiseAfter() {
+        Promise promise = servicePromise.get("testPromiseAfter", 6_000L);
+        //promise.setLogType(LogType.DEBUG);
+        AtomicInteger x = new AtomicInteger(0);
+        promise
+                .then("i1", (_, _, _) -> x.incrementAndGet())
+                .then("i2", (_, _, _) -> x.incrementAndGet())
+                .then("i3", (_, _, _) -> x.incrementAndGet())
+                .then("i4", (_, _, _) -> x.incrementAndGet())
+                .then("i5", (_, _, _) -> x.incrementAndGet())
+                .then("i6", (_, _, _) -> x.incrementAndGet())
+        ;
+
+        PromiseTest promiseTest = new PromiseTest(promise);
+
+        Assertions.assertEquals("[i3::WAIT, i3::COMPUTE, i4::WAIT, i4::COMPUTE, i5::WAIT, i5::COMPUTE, i6::WAIT, i6::COMPUTE]", promiseTest.removeBefore("i3").getIndex().toString());
+        Assertions.assertEquals("[i3::WAIT, i3::COMPUTE, i4::WAIT, i4::COMPUTE, i5::WAIT, i5::COMPUTE]", promiseTest.removeAfter("i5").getIndex().toString());
+    }
+
+    @Test
+    void testPromiseExternal() {
+        Promise promise = servicePromise.get("testPromiseExternal", 6_000L);
+        //promise.setLogType(LogType.DEBUG);
+        promise
+                .then("i1", (_, _, _) -> {
+                })
+                .then("subPromise", servicePromise.get("log", 6_000L))
+        ;
+
+        PromiseTest promiseTest = new PromiseTest(promise);
+
+        Assertions.assertEquals("[i1::COMPUTE, subPromise::WAIT, subPromise::ASYNC_COMPUTE]", promiseTest.getIndex().toString());
+    }
 
 }
