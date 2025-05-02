@@ -1,7 +1,6 @@
 package ru.jamsys.core.component;
 
 import lombok.Setter;
-import lombok.experimental.FieldNameConstants;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,6 @@ import ru.jamsys.core.flat.util.UtilLog;
 @Setter
 @Component
 @Lazy
-@FieldNameConstants
 public class ExceptionHandler extends AnnotationPropertyExtractor<Object> {
 
     @SuppressWarnings("all")
