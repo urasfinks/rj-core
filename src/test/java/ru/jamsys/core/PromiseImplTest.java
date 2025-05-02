@@ -420,11 +420,11 @@ class PromiseImplTest {
     }
 
     @Test
-    void testGoTo() {
+    void testSkipUntil() {
         AtomicInteger xx = new AtomicInteger(0);
         Promise promise = servicePromise.get("goTo", 6_000L);
         promise
-                .then("1task", (_, promiseTask1, promise1) -> promise1.goTo(promiseTask1, "task3"))
+                .then("1task", (_, promiseTask1, promise1) -> promise1.skipUntil(promiseTask1, "task3"))
                 .then("task2", (_, _, _) -> xx.incrementAndGet())
                 .then("task3", (_, _, _) -> xx.incrementAndGet());
         promise.run().await(1000);
@@ -432,11 +432,11 @@ class PromiseImplTest {
     }
 
     @Test
-    void testGoTo2() {
+    void testSkipUntil2() {
         AtomicInteger xx = new AtomicInteger(0);
         Promise promise = servicePromise.get("goTo", 6_000L);
         promise
-                .then("1task", (_, promiseTask1, promise1) -> promise1.goTo(promiseTask1, "task5"))
+                .then("1task", (_, promiseTask1, promise1) -> promise1.skipUntil(promiseTask1, "task5"))
                 .then("task2", (_, _, _) -> xx.incrementAndGet())
                 .then("task3", (_, _, _) -> xx.incrementAndGet())
                 .then("task4", (_, _, _) -> xx.incrementAndGet())
@@ -446,11 +446,11 @@ class PromiseImplTest {
     }
 
     @Test
-    void testGoToError() {
+    void testSkipUntilError() {
         AtomicInteger xx = new AtomicInteger(0);
         Promise promise = servicePromise.get("goTo", 6_000L);
         promise.then("1task", (_, promiseTask1, promise1) -> {
-                    promise1.goTo(promiseTask1, "task6");
+                    promise1.skipUntil(promiseTask1, "task6");
                 })
                 .then("task2", (_, _, _) -> xx.incrementAndGet())
                 .then("task3", (_, _, _) -> xx.incrementAndGet())
@@ -508,14 +508,14 @@ class PromiseImplTest {
     }
 
     @Test
-    void testGoToAndSkippAll() {
+    void testSkipUntilAndSkippAll() {
         Promise promise = servicePromise.get("log", 6_000L);
         promise.setLogType(LogType.DEBUG);
         AtomicInteger onError = new AtomicInteger(0);
         AtomicInteger onComplete = new AtomicInteger(0);
 
         promise.then("index", (_, promiseTask1, promise1) -> {
-                    promise1.goTo(promiseTask1, "NotExist");
+                    promise1.skipUntil(promiseTask1, "NotExist");
                     promise1.skipAllStep(promiseTask1,"system");
                 })
                 .then("index2", (_, _, _) -> {

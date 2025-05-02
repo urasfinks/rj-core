@@ -161,8 +161,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         queueTask.skipAll();
     }
 
-    // TODO: rename skipUntil
-    public void goTo(AbstractPromiseTask promiseTask, String toNsTask) {
+    public void skipUntil(AbstractPromiseTask promiseTask, String toNsTask) {
         String title = promiseTask.getNs() + "::goTo(" + toNsTask + ")";
         if (queueTask.skipUntil(getComplexIndex(toNsTask))) {
             trace.add(new Trace<>(title, null));
