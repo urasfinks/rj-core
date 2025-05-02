@@ -23,6 +23,7 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
     public Collection<Map<String, Object>> flushChange() {
         Collection<Map<String, Object>> result = new ArrayList<>();
         usage.forEach((key, cache) -> {
+            @SuppressWarnings("all")
             Object value = repositoryMap.get(key);
             String newCache = UtilJson.toString(value, "");
             if (!cache.equals(newCache)) {
