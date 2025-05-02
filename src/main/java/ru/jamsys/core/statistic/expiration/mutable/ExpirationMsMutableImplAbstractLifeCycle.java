@@ -5,16 +5,12 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.extension.AbstractLifeCycle;
 
-import java.io.Serializable;
-
-// TODO: попробовать убрать Serializable
-
 @Setter
 @Getter
 @ToString
 public abstract class ExpirationMsMutableImplAbstractLifeCycle
         extends AbstractLifeCycle
-        implements ExpirationMsMutable, Serializable {
+        implements ExpirationMsMutable {
 
     private long keepAliveOnInactivityMs = 6_000; // Время жизни если нет активности
 
