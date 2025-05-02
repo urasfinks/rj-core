@@ -1,9 +1,8 @@
 package ru.jamsys.core.promise;
 
 import org.jetbrains.annotations.NotNull;
-import ru.jamsys.core.extension.RepositoryMap;
-import ru.jamsys.core.extension.trace.Trace;
-import ru.jamsys.core.extension.trace.TraceClass;
+import ru.jamsys.core.App;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilJson;
 
 import java.util.*;
@@ -21,18 +20,39 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
         this.repositoryMap = repositoryMap;
     }
 
-    public Collection<Trace<String, ?>> flushChange() {
-        Collection<Trace<String, ?>> result = new ArrayList<>();
+    public Collection<Map<String, Object>> flushChange() {
+        Collection<Map<String, Object>> result = new ArrayList<>();
         usage.forEach((key, cache) -> {
             Object value = repositoryMap.get(key);
             String newCache = UtilJson.toString(value, "");
             if (!cache.equals(newCache)) {
-                result.add(new TraceClass<>(
-                        "change(" + key + ")", UtilJson.toLog(value), RepositoryMap.class
-                ));
+                result.add(new HashMapBuilder<String, Object>()
+                        .append("key", key)
+                        .append("class", App.getUniqueClassName(value.getClass()))
+                        .append("value", UtilJson.toLog(value))
+                );
             }
         });
         return result;
+    }
+
+    public static boolean isWrapperType(Class<?> clazz) {
+        return clazz == Integer.class ||
+                clazz == Double.class ||
+                clazz == Long.class ||
+                clazz == Boolean.class ||
+                clazz == Character.class ||
+                clazz == Byte.class ||
+                clazz == Short.class ||
+                clazz == Float.class;
+    }
+
+    public static boolean isPrimitiveOrWrapper(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        Class<?> clazz = obj.getClass();
+        return clazz.isPrimitive() || isWrapperType(clazz) || clazz.equals(String.class);
     }
 
     @Override
@@ -48,7 +68,9 @@ public class PromiseRepositoryDebug extends HashMap<String, Object> {
     @Override
     public Object get(Object key) {
         Object o = repositoryMap.get(key);
-        usage.computeIfAbsent(key, _ -> UtilJson.toString(o, ""));
+        if (!isPrimitiveOrWrapper(o)) {
+            usage.computeIfAbsent(key, _ -> UtilJson.toString(o, ""));
+        }
         return o;
     }
 

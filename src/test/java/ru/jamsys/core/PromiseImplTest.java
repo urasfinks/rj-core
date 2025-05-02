@@ -484,18 +484,21 @@ class PromiseImplTest {
         promise.extension(promise1 -> promise1.setRepositoryMap("x", ""));
         promise.extension(promise1 -> promise1.setRepositoryMap("y", "z"));
         promise.extension(promise1 -> promise1.setRepositoryMapClass(X.class, new X()));
-        promise.thenWithResource("http", HttpResource.class, (_, _, _, _) -> {
+        promise
+                .thenWithResource("http", HttpResource.class, (_, _, _, _) -> {
                 })
                 .then("1task", (_, _, promise1) -> {
                     X x = promise1.getRepositoryMapClass(X.class);
                     x.setValue("Hello world");
                 })
-                .then("2task", (_, _, _) -> {
-                });
-
-        promise
+                .then("2task", (_, _, promise1) -> {
+                    X x = promise1.getRepositoryMapClass(X.class);
+                    Assertions.assertEquals("Hello world", x.getValue());
+                })
                 .run()
-                .await(1000);
+                .await(1000)
+        ;
+        UtilLog.printInfo(promise);
     }
 
     @Getter

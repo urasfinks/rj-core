@@ -17,6 +17,7 @@ import ru.jamsys.core.resource.thread.ThreadPoolExecutePromiseTask;
 import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @ToString(onlyExplicitlyIncluded = true)
@@ -89,8 +90,10 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     protected void flushRepositoryChange() {
         if (promise.getLogType() == LogType.DEBUG) {
             if (promise.getRepositoryMap() instanceof PromiseRepositoryDebug promiseRepositoryDebug) {
-                Collection<Trace<String, ?>> traces = promiseRepositoryDebug.flushChange();
-                promise.getTrace().add(new Trace<>("RepositoryChange(" + this.getNs() + ")", traces));
+                Collection<Map<String, Object>> traces = promiseRepositoryDebug.flushChange();
+                if (!traces.isEmpty()) {
+                    promise.getTrace().add(new Trace<>("RepositoryChange(" + this.getNs() + ")", traces));
+                }
             }
         }
     }
