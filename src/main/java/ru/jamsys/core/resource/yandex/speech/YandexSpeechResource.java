@@ -6,6 +6,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.promise.AbstractPromiseTask;
@@ -52,7 +53,7 @@ public class YandexSpeechResource
                 },
                 (Throwable th) -> {
                     AbstractPromiseTask asyncPromiseTask = arguments.getAsyncPromiseTask();
-                    asyncPromiseTask.getPromise().setError(asyncPromiseTask.getNs(), th);
+                    asyncPromiseTask.getPromise().setError(asyncPromiseTask.getNs(), new ForwardException(th));
                 }
         );
         return null;

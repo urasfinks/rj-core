@@ -10,6 +10,7 @@ import ru.jamsys.core.component.ServiceThreadVirtual;
 import ru.jamsys.core.component.ServiceTimer;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.LogType;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
@@ -43,7 +44,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     // Используется, когда вызывается терминальный блок, который фиксирует, что Promise закончен.
     // Но есть ещё функция onComplete/onError которую как бы надо выполнить и до тех пор, пока эта функция не выполниться
     // Нельзя Promise устанавливать run.set(false)
-    protected ProcedureThrowing afterBlockExecution;
+    protected ProcedureThrowing terminalExecute;
 
     // Флаг от потока, который исполняет данную задачу
     @Setter
@@ -74,8 +75,8 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     }
 
     // execute on another thread
-    public void prepareLaunch(ProcedureThrowing afterExecuteBlock) {
-        this.afterBlockExecution = afterExecuteBlock;
+    public void prepareLaunch(ProcedureThrowing terminalExecute) {
+        this.terminalExecute = terminalExecute;
         if (hasProcedure()) {
             switch (type) {
                 case IO, ASYNC_IO -> App.get(ServiceThreadVirtual.class).execute(this);
@@ -121,9 +122,6 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
         getPromise().getTrace().add(new Trace<>(this.getNs() + "::run()", null));
         try {
             executeProcedure();
-            if (afterBlockExecution != null) {
-                afterBlockExecution.run();
-            }
             // Если эта задача не относится к асинхронным ожиданиям
             if (
                     type != PromiseTaskExecuteType.ASYNC_IO
@@ -132,15 +130,23 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
                 getPromise().completePromiseTask(this);
             }
         } catch (Throwable th) {
-            getPromise().getTrace().add(new Trace<>(this.getNs(), th));
             if (retryCount > 0) {
                 retryCount--;
                 App.get(ServicePromise.class).addRetryDelay(this);
-                getPromise().getTrace().add(new Trace<>(this.getNs() + "::addRetryDelay(" + retryCount + ")", null));
+                getPromise().getTrace().add(new Trace<>(this.getNs() + "::addRetryDelay(" + retryCount + ")", th));
             } else {
-                getPromise().setError(this.getNs(), th);
+                getPromise().setError(this.getNs(), new ForwardException(th));
             }
         } finally {
+            // Используется только в терминальных задачах onComplete / onError для того, что бы перевести Promise
+            // run.set(false) и указать terminalStatus
+            try {
+                if (terminalExecute != null) {
+                    terminalExecute.run();
+                }
+            } catch (Throwable th) {
+                getPromise().setError(this.getNs(), new ForwardException(th));
+            }
             flushRepositoryChange();
             timerEnvelope.stop();
         }

@@ -37,8 +37,8 @@ public class PromiseTaskWaitResource<T extends ExpirationMsMutable & Resource<?,
     // Пул сам вызовет start с передачей туда ресурса, там то мы и вызовем ::run из внешнего потока
     @SuppressWarnings("all")
     @Override
-    public void prepareLaunch(ProcedureThrowing afterExecuteBlock) {
-        this.afterBlockExecution = afterExecuteBlock;
+    public void prepareLaunch(ProcedureThrowing terminalExecute) {
+        this.terminalExecute = terminalExecute;
         PoolResourcePromiseTaskWaitResource poolResourcePromiseTaskWaitResource = poolResourcePromiseTaskWaitConfiguration.get();
         getPromise().getTrace().add(new Trace<>(
                 getNs() + "::poolSubscribe(" + poolResourcePromiseTaskWaitResource.getKey() + ")",

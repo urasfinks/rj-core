@@ -506,26 +506,31 @@ class PromiseImplTest {
     public static class X {
         private String value;
     }
-//
-//    @Test
-//    void testGoToAndSkippAll() {
-//        Promise promise = servicePromise.get("log", 6_000L);
-//        promise.setDebug(true);
-//        promise.then("index", (_, _, promise1) -> {
-//                    promise1.goTo("NotExist");
-//                    promise1.skipAllStep("system");
-//                })
-//                .then("index2", (_, _, _) -> {
-//
-//                })
-//                .onError((_, _, _) -> {
-//                    throw new RuntimeException("OPA BUG");
-//                })
-//                .onComplete((_, _, _) -> {
-//                    Assertions.fail();
-//                })
-//                .run().await(7000);
-//    }
+
+    @Test
+    void testGoToAndSkippAll() {
+        Promise promise = servicePromise.get("log", 6_000L);
+        promise.setLogType(LogType.DEBUG);
+        AtomicInteger onError = new AtomicInteger(0);
+        AtomicInteger onComplete = new AtomicInteger(0);
+
+        promise.then("index", (_, promiseTask1, promise1) -> {
+                    promise1.goTo(promiseTask1, "NotExist");
+                    promise1.skipAllStep(promiseTask1,"system");
+                })
+                .then("index2", (_, _, _) -> {
+
+                })
+                .onError((_, _, _) -> {
+                    onError.incrementAndGet();
+                    throw new RuntimeException("OPA BUG");
+                })
+                .onComplete((_, _, _) -> onComplete.incrementAndGet())
+                .run().await(7000);
+        UtilLog.printInfo(promise);
+        Assertions.assertEquals(1, onError.get());
+        Assertions.assertEquals(0, onComplete.get());
+    }
 //
 //    @Test
 //    void testThenPromise() {

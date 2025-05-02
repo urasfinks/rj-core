@@ -54,21 +54,19 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     // Контекст между AbstractPromiseTask
     private final Map<String, Object> repositoryMap = new ConcurrentHashMap<>();
 
+    private final AtomicBoolean terminalRun = new AtomicBoolean(false); // что бы двойных вызовов не было
+
     // Добавление задачи, которая выполнится после фатального завершения цепочки Promise.
     // Вызовется если произошло исключение
     @Setter
     @Accessors(chain = true)
     private AbstractPromiseTask onError = null;
 
-    private final AtomicBoolean errorRun = new AtomicBoolean(false); // что бы двойных вызовов не было
-
     // Добавление задачи, которая выполнится после успешного завершения цепочки Promise.
     // Вызовется если все задачи пройдут успешно
     @Setter
     @Accessors(chain = true)
     private AbstractPromiseTask onComplete = null;
-
-    private final AtomicBoolean completeRun = new AtomicBoolean(false); // что бы двойных вызовов не было
 
     // Для DEBUG режима кешируем репозиторий отладки
     private PromiseRepositoryDebug promiseRepositoryDebug;
@@ -127,7 +125,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
             return;
         }
         if (hasCompleteHandler()) {
-            if (completeRun.compareAndSet(false, true)) {
+            if (terminalRun.compareAndSet(false, true)) {
                 onComplete.prepareLaunch(() -> {
                     terminalStatus = TerminalStatus.SUCCESS;
                     run.set(false);
@@ -144,7 +142,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
             return;
         }
         if (hasErrorHandler()) {
-            if (errorRun.compareAndSet(false, true)) {
+            if (terminalRun.compareAndSet(false, true)) {
                 onError.prepareLaunch(() -> run.set(false));
             }
         } else {
@@ -163,9 +161,10 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         queueTask.skipAll();
     }
 
-    public void goTo(AbstractPromiseTask promiseTask, String toIndexTask) {
-        String title = promiseTask.getNs() + "::goTo(" + toIndexTask + ")";
-        if (queueTask.skipUntil(getComplexIndex(toIndexTask))) {
+    // TODO: rename skipUntil
+    public void goTo(AbstractPromiseTask promiseTask, String toNsTask) {
+        String title = promiseTask.getNs() + "::goTo(" + toNsTask + ")";
+        if (queueTask.skipUntil(getComplexIndex(toNsTask))) {
             trace.add(new Trace<>(title, null));
         } else {
             setError(title, new RuntimeException("Not found"));
