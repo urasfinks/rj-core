@@ -54,14 +54,13 @@ public class ExceptionHandler extends AnnotationPropertyExtractor<Object> {
         }
     }
 
-    public static String getTextException(Throwable th, LineWriter sw) {
+    public static void getTextException(Throwable th, LineWriter sw) {
         printStackTrace(th, sw, (th instanceof ForwardException) ? 1 : null);
         Throwable cause = th.getCause();
         if (cause != null) {
             sw.addLine("Caused by: ");
             getTextException(cause, sw);
         }
-        return sw.toString();
     }
 
     public static String getLineStack(StackTraceElement element){

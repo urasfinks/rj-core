@@ -103,6 +103,7 @@ public class WaitQueue<T extends WaitQueueElement> {
         return find;
     }
 
+    @SuppressWarnings("unused")
     public void addFirst(T t) {
         try {
             lock.lock();
@@ -124,6 +125,7 @@ public class WaitQueue<T extends WaitQueueElement> {
         }
     }
 
+    @SuppressWarnings("unused")
     public void addLast(T t) {
         try {
             lock.lock();
@@ -133,6 +135,7 @@ public class WaitQueue<T extends WaitQueueElement> {
         }
     }
 
+    @SuppressWarnings("unused")
     public void addLast(List<T> list) {
         try {
             lock.lock();

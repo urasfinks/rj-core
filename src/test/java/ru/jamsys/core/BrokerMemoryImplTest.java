@@ -45,9 +45,7 @@ class BrokerMemoryImplTest {
         BrokerMemory<XTest> broker = App.get(Manager.class).configure(
                         BrokerMemory.class,
                         XTest.class.getSimpleName() + "_1",
-                        (k) -> new BrokerMemoryImpl<XTest>(k, App.context, xTest -> {
-                            dropped.add(xTest);
-                        })
+                        (k) -> new BrokerMemoryImpl<XTest>(k, App.context, dropped::add)
                 )
                 .getGeneric();
 
@@ -217,9 +215,7 @@ class BrokerMemoryImplTest {
         BrokerMemory<XTest> broker = App.get(Manager.class).configure(
                         BrokerMemory.class,
                         XTest.class.getSimpleName() + "_2",
-                        (k) -> new BrokerMemoryImpl<XTest>(k, App.context, _ -> {
-                            counter.incrementAndGet();
-                        })
+                        (k) -> new BrokerMemoryImpl<XTest>(k, App.context, _ -> counter.incrementAndGet())
                 )
                 .getGeneric();
 

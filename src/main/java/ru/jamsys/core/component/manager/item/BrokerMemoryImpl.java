@@ -1,6 +1,7 @@
 package ru.jamsys.core.component.manager.item;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
@@ -66,6 +67,7 @@ public class BrokerMemoryImpl<T>
     @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
+    @SuppressWarnings("all")
     private final Manager.Configuration<ExpirationList> expirationListConfiguration;
 
     public BrokerMemoryImpl(

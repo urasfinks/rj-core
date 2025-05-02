@@ -48,9 +48,7 @@ class PromiseImplTest {
         Promise promise = servicePromise.get("test", 6_000L); //new PromiseImpl("test", 6_000L);
         AtomicInteger x = new AtomicInteger(0);
         promise
-                .append("test", (_, _, _) -> {
-                    x.incrementAndGet();
-                })
+                .append("test", (_, _, _) -> x.incrementAndGet())
                 .run()
                 .await(4000);
         Assertions.assertEquals(1, x.get());
@@ -61,12 +59,8 @@ class PromiseImplTest {
         Promise promise = servicePromise.get("test", 6_000L); //new PromiseImpl("test", 6_000L);
         AtomicInteger x = new AtomicInteger(0);
         promise
-                .append("test1", (_, _, _) -> {
-                    x.incrementAndGet();
-                })
-                .append("test2", (_, _, _) -> {
-                    x.incrementAndGet();
-                })
+                .append("test1", (_, _, _) -> x.incrementAndGet())
+                .append("test2", (_, _, _) -> x.incrementAndGet())
                 .run()
                 .await(4000);
         Assertions.assertEquals(2, x.get());
@@ -112,12 +106,8 @@ class PromiseImplTest {
                     objects.add(new PromiseTask("test2", promise, PromiseTaskExecuteType.COMPUTE, (_, _, _) -> UtilLog.printInfo("EXTRA")));
                     promise1.getQueueTask().addFirst(objects);
                 })
-                .append("test", (_, _, _) -> {
-                    Util.testSleepMs(1000);
-                })
-                .then("test", (_, _, _) -> {
-                    Util.testSleepMs(1000);
-                })
+                .append("test", (_, _, _) -> Util.testSleepMs(1000))
+                .then("test", (_, _, _) -> Util.testSleepMs(1000))
                 .run()
                 .await(4000);
     }
@@ -185,6 +175,7 @@ class PromiseImplTest {
         Promise promise = servicePromise.get("seq2", 1_500L)
                 .then("then1", (_, _, _) -> c.incrementAndGet())
                 .modifyLastPromiseTask(abstractPromiseTask -> {
+                    //System.out.println(1);
                     abstractPromiseTask
                             .getComputeThreadConfiguration().get()
                             .getRateLimitConfiguration().get()
@@ -287,9 +278,7 @@ class PromiseImplTest {
                     exec.incrementAndGet();
                     Util.testSleepMs(1000);
                 })
-                .onError((_, _, _) -> {
-                    error.incrementAndGet();
-                })
+                .onError((_, _, _) -> error.incrementAndGet())
                 .onComplete((_, _, _) -> complete.incrementAndGet())
                 .run()
                 .await(3000);
@@ -450,6 +439,7 @@ class PromiseImplTest {
         AtomicInteger xx = new AtomicInteger(0);
         Promise promise = servicePromise.get("goTo", 6_000L);
         promise.then("1task", (_, promiseTask1, promise1) -> {
+                    // --
                     promise1.skipUntil(promiseTask1, "task6");
                 })
                 .then("task2", (_, _, _) -> xx.incrementAndGet())

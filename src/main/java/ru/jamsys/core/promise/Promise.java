@@ -315,6 +315,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return then(createTaskCompute(index, fn));
     }
 
+    @SuppressWarnings("all")
     public Promise appendWait() {
         if (queueTask.getMainQueue().isEmpty()) {
             return this;
@@ -359,6 +360,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return new PromiseTask(getComplexIndex(index), this, PromiseTaskExecuteType.COMPUTE, fn);
     }
 
+    @SuppressWarnings("unused")
     public AbstractPromiseTask createTaskIo(String index, PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
         return new PromiseTask(getComplexIndex(index), this, PromiseTaskExecuteType.IO, fn);
     }
@@ -367,6 +369,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return new PromiseTask(getComplexIndex(index), this, PromiseTaskExecuteType.ASYNC_COMPUTE, fn);
     }
 
+    @SuppressWarnings("unused")
     public AbstractPromiseTask createTaskWait(String index) {
         return new PromiseTaskWait(index, this);
     }
@@ -377,6 +380,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
             String ns,
             PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> procedure
     ) {
+        @SuppressWarnings("all")
         Manager.Configuration<PoolResourcePromiseTaskWaitResource> poolResourcePromiseTaskWaitResourceConfiguration = App.get(Manager.class).configure(
                 PoolResourcePromiseTaskWaitResource.class,
                 ns,
@@ -401,6 +405,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         );
     }
 
+    @SuppressWarnings("unused")
     public <T extends Resource<?, ?>> AbstractPromiseTask createTaskResource(
             String index,
             Class<T> classResource,
@@ -415,6 +420,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return this;
     }
 
+    @SuppressWarnings("unused")
     // Синхронное ожидание выполнения Promise
     public Promise await(long timeoutMs, int sleepIterationMs) {
         Util.await(getRun(), timeoutMs, sleepIterationMs, "await(" + timeoutMs + ", " + sleepIterationMs + ") -> Promise not terminated");

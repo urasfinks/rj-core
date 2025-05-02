@@ -88,36 +88,33 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
     @Override
     public void runOperation() {
         spin.set(true);
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                threadWork.set(true);
-                long nextStartMs = System.currentTimeMillis();
-                try {
-                    while (spin.get() && !thread.isInterrupted()) {
-                        nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
-                        long curTimeMs = System.currentTimeMillis();
+        thread = new Thread(() -> {
+            threadWork.set(true);
+            long nextStartMs = System.currentTimeMillis();
+            try {
+                while (spin.get() && !thread.isInterrupted()) {
+                    nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
+                    long curTimeMs = System.currentTimeMillis();
 
-                        runCronTask(curTimeMs);
+                    runCronTask(curTimeMs);
 
-                        if (spin.get()) {
-                            long calcSleepMs = nextStartMs - System.currentTimeMillis();
-                            if (calcSleepMs > 0) {
-                                Thread.sleep(calcSleepMs);
-                            } else {
-                                nextStartMs = System.currentTimeMillis();
-                            }
+                    if (spin.get()) {
+                        long calcSleepMs = nextStartMs - System.currentTimeMillis();
+                        if (calcSleepMs > 0) {
+                            Thread.sleep(calcSleepMs);
                         } else {
-                            break;
+                            nextStartMs = System.currentTimeMillis();
                         }
+                    } else {
+                        break;
                     }
-                } catch (InterruptedException ie) {
-                    UtilLog.printError("interrupt()");
-                } catch (Throwable th) {
-                    App.error(th);
-                } finally {
-                    threadWork.set(false);
                 }
+            } catch (InterruptedException ie) {
+                UtilLog.printError("interrupt()");
+            } catch (Throwable th) {
+                App.error(th);
+            } finally {
+                threadWork.set(false);
             }
         });
         thread.setName(getCascadeKey());

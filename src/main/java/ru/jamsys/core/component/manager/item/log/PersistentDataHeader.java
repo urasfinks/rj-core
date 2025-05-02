@@ -85,6 +85,7 @@ public class PersistentDataHeader extends DataHeader implements PersistentData {
         return os.toByteArray();
     }
 
+    @SuppressWarnings("unused")
     public static PersistentDataHeader instanceFromBytes(byte[] bytes) throws Exception {
         PersistentDataHeader persistentDataHeader = new PersistentDataHeader();
         persistentDataHeader.toObject(bytes);

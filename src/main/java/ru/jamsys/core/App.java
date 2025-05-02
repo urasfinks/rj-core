@@ -126,11 +126,6 @@ public class App implements CascadeKey {
     }
 
     @Override
-    public String getKey() {
-        return null;
-    }
-
-    @Override
     public CascadeKey getParentCascadeKey() {
         return null;
     }
