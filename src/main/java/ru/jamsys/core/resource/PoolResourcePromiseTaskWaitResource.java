@@ -3,6 +3,7 @@ package ru.jamsys.core.resource;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.component.manager.item.BrokerMemoryImpl;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.pool.AbstractPool;
@@ -36,12 +37,16 @@ public class PoolResourcePromiseTaskWaitResource<
     final private Function<String, T> supplierPoolItem;
 
     public PoolResourcePromiseTaskWaitResource(
-            String key,
+            String ns,
             Function<String, T> supplierPoolItem
     ) {
-        super(key);
+        super(ns);
         this.supplierPoolItem = supplierPoolItem;
-        brokerMemoryConfiguration = App.get(Manager.class).configure(BrokerMemory.class, key, null);
+        brokerMemoryConfiguration = App.get(Manager.class).configure(
+                BrokerMemory.class,
+                ns,
+                (ns1) -> new BrokerMemoryImpl<PromiseTaskWaitResource<?>>(ns1, App.context, null)
+        );
     }
 
     @Override
@@ -62,10 +67,12 @@ public class PoolResourcePromiseTaskWaitResource<
     @SuppressWarnings("unchecked")
     public void addPromiseTask(PromiseTaskWaitResource<?> promiseTaskWaitResource) {
         markActive();
-        brokerMemoryConfiguration.get().add(new ExpirationMsImmutableEnvelope<>(
-                promiseTaskWaitResource,
-                promiseTaskWaitResource.getPromise().getExpiryRemainingMs())
-        );
+        brokerMemoryConfiguration
+                .get()
+                .add(new ExpirationMsImmutableEnvelope<>(
+                        promiseTaskWaitResource,
+                        promiseTaskWaitResource.getPromise().getExpiryRemainingMs()
+                ));
         // Если пул был пустой, создаётся ресурс и вызывается onParkUpdate()
         // Если же в пуле были ресурсы, то вернётся false и мы самостоятельно запустим onParkUpdate()
         // Что бы попытаться найти свободный ресурс и запустить только что добавленную задачу

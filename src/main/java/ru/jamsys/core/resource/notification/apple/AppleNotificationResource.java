@@ -9,7 +9,6 @@ import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
@@ -36,13 +35,13 @@ public class AppleNotificationResource
     private final AppleNotificationProperty appleNotificationProperty = new AppleNotificationProperty();
 
     @Override
-    public void init(ResourceConfiguration resourceConfiguration) throws Throwable {
+    public void init(String ns) throws Throwable {
 
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 appleNotificationProperty,
-                getCascadeKey(resourceConfiguration.ns)
+                getCascadeKey(ns)
         );
     }
 

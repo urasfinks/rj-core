@@ -12,7 +12,6 @@ import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
@@ -35,13 +34,13 @@ public class EmailNotificationResource
     private final EmailNotificationProperty property = new EmailNotificationProperty();
 
     @Override
-    public void init(ResourceConfiguration resourceConfiguration) throws Throwable {
+    public void init(String ns) throws Throwable {
         securityComponent = App.get(SecurityComponent.class);
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
                 property,
-                getCascadeKey(resourceConfiguration.ns)
+                getCascadeKey(ns)
         );
     }
 

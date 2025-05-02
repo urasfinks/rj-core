@@ -14,7 +14,6 @@ import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.sql.Connection;
@@ -43,12 +42,12 @@ public class JdbcResource
     private final JdbcProperty jdbcProperty = new JdbcProperty();
 
     @Override
-    public void init(ResourceConfiguration resourceConfiguration) throws Exception {
+    public void init(String ns) throws Exception {
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 jdbcProperty,
-                getCascadeKey(resourceConfiguration.ns)
+                getCascadeKey(ns)
         );
         this.statementControl = new DefaultStatementControl();
     }

@@ -9,7 +9,6 @@ import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.AbstractPromiseTask;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
@@ -110,7 +109,7 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
     }
 
     @Override
-    public void init(ResourceConfiguration resourceConfiguration) {
+    public void init(String ns) {
 
     }
 

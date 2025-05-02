@@ -1,21 +1,23 @@
 package ru.jamsys.core;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.promise.AbstractPromiseTask;
-import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseTask;
-import ru.jamsys.core.promise.PromiseTaskExecuteType;
+import ru.jamsys.core.promise.*;
 import ru.jamsys.core.rate.limit.RateLimitFactory;
 import ru.jamsys.core.rate.limit.item.RateLimitItem;
+import ru.jamsys.core.resource.http.HttpResource;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -373,7 +375,6 @@ class PromiseImplTest {
 
     }
 
-
     @Test
     void testExpiration() {
         Promise promise = servicePromise.get("Expiration", 1_000L);
@@ -390,161 +391,118 @@ class PromiseImplTest {
         Assertions.assertEquals(1, counter.get());
         UtilLog.printInfo(promise);
     }
-//
-//    @SuppressWarnings("unused")
-//    void promiseTaskWithPool() {
-//        Promise promise = servicePromise.get("testPromise", 6_000L);
-//        promise
-//                .appendWithResource("http", HttpResource.class, (_, _, _, _) -> {
-//                    //HttpResponseEnvelope execute = httpClientResource.execute(new Http2ClientImpl());
-//
-//                })
-//                .appendWithResource("jdbc", JdbcResource.class, (_, _, _, jdbcResource)
-//                        -> UtilLog.printInfo(PromiseImplTest.class, jdbcResource)
-//                )
-//                .run()
-//                .await(2000);
-//    }
-//
-//    @Test
-//    void appendBeforeRun() {
-//        Promise promise = servicePromise.get("testPromise", 6_000L);
-//        promise.append("test", (_, _, promise1)
-//                -> promise1.append("hey", (_, _, _) -> {
-//        }));
-//        promise.run().await(1000);
-//        Assertions.assertTrue(promise.isException());
-//    }
-//
-//    @Test
-//    void waitBeforeExternalTask() {
-//        Promise promise = servicePromise.get("testPromise", 1_000L);
-//        promise
-//                .append("st", (_, _, promise1) -> {
-//                    AbstractPromiseTask asyncPromiseTask = new PromiseTask(
-//                            "async",
-//                            promise1,
-//                            PromiseTaskExecuteType.EXTERNAL_WAIT_IO,
-//                            null
-//                    );
-//                    List<AbstractPromiseTask> add = new ArrayList<>();
-//                    add.add(asyncPromiseTask);
-//                    add.add(new PromiseTaskWait(promise1));
-//                    promise1.getQueueTask().addFirst(add);
-//                })
-//                .run()
-//                .await(2000);
-//
-//        //Мы по timeout должны упасть
-//        Assertions.assertTrue(promise.isException());
-//        // Мы дали 1 секунду время жизни, EXTERNAL_WAIT не финишировал -> сработал timeout
-//        Assertions.assertFalse(promise.isRun());
-//
-//    }
-//
-//    @Test
-//    void testGoTo() {
-//        AtomicInteger xx = new AtomicInteger(0);
-//        Promise promise = servicePromise.get("goTo", 6_000L);
-//        promise
-//                .then("1task", (_, _, promise1) -> promise1.goTo("task3"))
-//                .then("task2", (_, _, _) -> xx.incrementAndGet())
-//                .then("task3", (_, _, _) -> xx.incrementAndGet());
-//        promise.run().await(1000);
-//        Assertions.assertEquals(1, xx.get());
-//    }
-//
-//    @Test
-//    void testGoTo2() {
-//        AtomicInteger xx = new AtomicInteger(0);
-//        Promise promise = servicePromise.get("goTo", 6_000L);
-//        promise
-//                .then("1task", (_, _, promise1) -> promise1.goTo("task5"))
-//                .then("task2", (_, _, _) -> xx.incrementAndGet())
-//                .then("task3", (_, _, _) -> xx.incrementAndGet())
-//                .then("task4", (_, _, _) -> xx.incrementAndGet())
-//                .then("task5", (_, _, _) -> xx.incrementAndGet());
-//        promise.run().await(1000);
-//        Assertions.assertEquals(1, xx.get());
-//    }
-//
-//    @Test
-//    void testGoTo3() {
-//        AtomicInteger xx = new AtomicInteger(0);
-//        Promise promise = servicePromise.get("goTo", 6_000L);
-//        promise.then("1task", (_, _, promise1) -> {
-//                    // Сначала добежим до task3 и выполним
-//                    // потом пробежим до task5 и выполним
-//                    promise1.goTo("task3");
-//                    promise1.goTo("task5");
-//                })
-//                .then("task2", (_, _, _) -> xx.incrementAndGet())
-//                .then("task3", (_, _, _) -> xx.incrementAndGet())
-//                .then("task4", (_, _, _) -> xx.incrementAndGet())
-//                .then("task5", (_, _, _) -> xx.incrementAndGet());
-//        promise.run().await(1000);
-//        Assertions.assertEquals(2, xx.get());
-//    }
-//
-//    @Test
-//    void testGoToError() {
-//        AtomicInteger xx = new AtomicInteger(0);
-//        Promise promise = servicePromise.get("goTo", 6_000L);
-//        promise.then("1task", (_, _, promise1) -> {
-//                    // Сначала добежим до task3 и выполним
-//                    // потом пробежим до task5 и выполним
-//                    promise1.goTo("task3");
-//                    promise1.goTo("task6");
-//                })
-//                .then("task2", (_, _, _) -> xx.incrementAndGet())
-//                .then("task3", (_, _, _) -> xx.incrementAndGet())
-//                .then("task4", (_, _, _) -> xx.incrementAndGet())
-//                .then("task5", (_, _, _) -> xx.incrementAndGet());
-//        promise.run().await(1000);
-//        Assertions.assertEquals(1, xx.get());
-//        Assertions.assertTrue(promise.isException());
-//    }
-//
-//    @Test
-//    void testAppendWait() {
-//        Promise promise = servicePromise.get("log", 6_000L);
-//        promise.setDebug(true);
-//        promise.appendWait();
-//        PromiseImpl promiseImpl = (PromiseImpl) promise;
-//        Assertions.assertEquals("[]", promiseImpl.getListPendingTasks().toString());
-//        promise.then("index", (_, _, _) -> {
-//        });
-//        Assertions.assertEquals("[PromiseTask(type=COMPUTE, index=log.index)]", promiseImpl.getListPendingTasks().toString());
-//        promise.appendWait();
-//        Assertions.assertEquals("[PromiseTask(type=COMPUTE, index=log.index), PromiseTaskWait()]", promiseImpl.getListPendingTasks().toString());
-//        promise.appendWait();
-//        Assertions.assertEquals("[PromiseTask(type=COMPUTE, index=log.index), PromiseTaskWait()]", promiseImpl.getListPendingTasks().toString());
-//    }
-//
-//    @Test
-//    void testLog() {
-//        Promise promise = servicePromise.get("log", 6_000L);
-//        promise.setDebug(true);
-//        promise.extension(promise1 -> promise1.setRepositoryMap("x", ""));
-//        promise.extension(promise1 -> promise1.setRepositoryMap("y", "z"));
-//        promise.extension(promise1 -> promise1.setRepositoryMapClass(X.class, new X()));
-//        promise.thenWithResource("http", HttpResource.class, (_, _, _, _) -> {
-//                })
-//                .then("1task", (_, _, promise1) -> {
-//                    X x = promise1.getRepositoryMapClass(X.class);
-//                    x.setValue("Hello world");
-//                })
-//                .then("2task", (_, _, _) -> {
-//                });
-//
-//        promise.run().await(1000);
-//    }
-//
-//    @Getter
-//    @Setter
-//    public static class X {
-//        private String value;
-//    }
+
+    @Test
+    void waitBeforeExternalTask() {
+        Promise promise = servicePromise.get("testPromise", 1_000L);
+        promise
+                .append("st", (_, _, promise1) -> {
+                    AbstractPromiseTask asyncPromiseTask = new PromiseTask(
+                            "async",
+                            promise1,
+                            PromiseTaskExecuteType.ASYNC_IO,
+                            null
+                    );
+                    List<AbstractPromiseTask> add = new ArrayList<>();
+                    add.add(asyncPromiseTask);
+                    add.add(new PromiseTaskWait(promise1));
+                    promise1.getQueueTask().addFirst(add);
+                })
+                .run()
+                .await(2000);
+
+        //Мы по timeout должны упасть
+        Assertions.assertEquals(Promise.TerminalStatus.ERROR, promise.getTerminalStatus());
+        // Мы дали 1 секунду время жизни, EXTERNAL_WAIT не финишировал -> сработал timeout
+        Assertions.assertFalse(promise.isRun());
+        UtilLog.printInfo(promise);
+
+    }
+
+    @Test
+    void testGoTo() {
+        AtomicInteger xx = new AtomicInteger(0);
+        Promise promise = servicePromise.get("goTo", 6_000L);
+        promise
+                .then("1task", (_, promiseTask1, promise1) -> promise1.goTo(promiseTask1, "task3"))
+                .then("task2", (_, _, _) -> xx.incrementAndGet())
+                .then("task3", (_, _, _) -> xx.incrementAndGet());
+        promise.run().await(1000);
+        Assertions.assertEquals(1, xx.get());
+    }
+
+    @Test
+    void testGoTo2() {
+        AtomicInteger xx = new AtomicInteger(0);
+        Promise promise = servicePromise.get("goTo", 6_000L);
+        promise
+                .then("1task", (_, promiseTask1, promise1) -> promise1.goTo(promiseTask1, "task5"))
+                .then("task2", (_, _, _) -> xx.incrementAndGet())
+                .then("task3", (_, _, _) -> xx.incrementAndGet())
+                .then("task4", (_, _, _) -> xx.incrementAndGet())
+                .then("task5", (_, _, _) -> xx.incrementAndGet());
+        promise.run().await(1000);
+        Assertions.assertEquals(1, xx.get());
+    }
+
+    @Test
+    void testGoToError() {
+        AtomicInteger xx = new AtomicInteger(0);
+        Promise promise = servicePromise.get("goTo", 6_000L);
+        promise.then("1task", (_, promiseTask1, promise1) -> {
+                    promise1.goTo(promiseTask1, "task6");
+                })
+                .then("task2", (_, _, _) -> xx.incrementAndGet())
+                .then("task3", (_, _, _) -> xx.incrementAndGet())
+                .then("task4", (_, _, _) -> xx.incrementAndGet())
+                .then("task5", (_, _, _) -> xx.incrementAndGet());
+        promise.run().await(1000);
+        Assertions.assertEquals(0, xx.get());
+        Assertions.assertEquals(Promise.TerminalStatus.ERROR, promise.getTerminalStatus());
+        UtilLog.printInfo(promise);
+    }
+
+    @Test
+    void testAppendWait() {
+        Promise promise = servicePromise.get("log", 6_000L);
+        promise.setLogType(LogType.DEBUG);
+        promise.appendWait();
+        Assertions.assertEquals("[]", promise.getQueueTask().getMainQueue().toString());
+        promise.then("index", (_, _, _) -> {
+        });
+        Assertions.assertEquals("[AbstractPromiseTask(type=COMPUTE, ns=log.index)]", promise.getQueueTask().getMainQueue().toString());
+        promise.appendWait();
+        Assertions.assertEquals("[AbstractPromiseTask(type=COMPUTE, ns=log.index), PromiseTaskWait()]", promise.getQueueTask().getMainQueue().toString());
+        promise.appendWait();
+        Assertions.assertEquals("[AbstractPromiseTask(type=COMPUTE, ns=log.index), PromiseTaskWait()]", promise.getQueueTask().getMainQueue().toString());
+    }
+
+    @Test
+    void testLog() {
+        Promise promise = servicePromise.get("log", 6_000L);
+        promise.setLogType(LogType.DEBUG);
+        promise.extension(promise1 -> promise1.setRepositoryMap("x", ""));
+        promise.extension(promise1 -> promise1.setRepositoryMap("y", "z"));
+        promise.extension(promise1 -> promise1.setRepositoryMapClass(X.class, new X()));
+        promise.thenWithResource("http", HttpResource.class, (_, _, _, _) -> {
+                })
+                .then("1task", (_, _, promise1) -> {
+                    X x = promise1.getRepositoryMapClass(X.class);
+                    x.setValue("Hello world");
+                })
+                .then("2task", (_, _, _) -> {
+                });
+
+        promise
+                .run()
+                .await(1000);
+    }
+
+    @Getter
+    @Setter
+    public static class X {
+        private String value;
+    }
 //
 //    @Test
 //    void testGoToAndSkippAll() {

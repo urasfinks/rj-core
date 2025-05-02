@@ -10,7 +10,6 @@ import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.promise.AbstractPromiseTask;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.File;
@@ -32,12 +31,12 @@ public class YandexSpeechResource
     private final YandexSpeechProperty yandexSpeechProperty = new YandexSpeechProperty();
 
     @Override
-    public void init(ResourceConfiguration resourceConfiguration) throws Throwable {
+    public void init(String ns) throws Throwable {
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 yandexSpeechProperty,
-                getCascadeKey(resourceConfiguration.ns)
+                getCascadeKey(ns)
         );
     }
 

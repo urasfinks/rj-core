@@ -10,7 +10,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 public interface Resource<T, R> extends ResourceCheckException, LifeCycleInterface, Valid, ExpirationMsMutable {
 
     // Вызывается при создании экземпляра ресурса
-    void init(ResourceConfiguration resourceConfiguration) throws Throwable;
+    void init(String ns) throws Throwable;
 
     R execute(T arguments) throws Throwable;
 

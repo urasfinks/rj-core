@@ -85,12 +85,14 @@ public class WaitQueue<T extends WaitQueueElement> {
 
     // Это история совсем не поточная, предполагается, что должно это всё вызываться из блока самой таски
     // Мы не нарушаем wait, так как удаляем только будущие задачи
-    public void skipUntil(String ns) {
+    public boolean skipUntil(String ns) {
+        boolean find = false;
         try {
             lock.lock();
             for (Iterator<T> it = mainQueue.iterator(); it.hasNext(); ) {
                 T t = it.next();
                 if (t.getNs().equals(ns)) {
+                    find = true;
                     break;
                 }
                 it.remove();
@@ -98,6 +100,7 @@ public class WaitQueue<T extends WaitQueueElement> {
         } finally {
             lock.unlock();
         }
+        return find;
     }
 
     public void addFirst(T t) {

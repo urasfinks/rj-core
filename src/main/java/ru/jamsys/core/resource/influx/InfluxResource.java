@@ -15,7 +15,6 @@ import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.resource.ResourceCheckException;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
@@ -45,12 +44,12 @@ public class InfluxResource
     private final InfluxProperty influxProperty = new InfluxProperty();
 
     @Override
-    public void init(ResourceConfiguration resourceConfiguration) {
+    public void init(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
                 influxProperty,
-                getCascadeKey(resourceConfiguration.ns)
+                getCascadeKey(ns)
         );
     }
 

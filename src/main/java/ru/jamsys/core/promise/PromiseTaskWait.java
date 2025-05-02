@@ -1,5 +1,8 @@
 package ru.jamsys.core.promise;
 
+import lombok.ToString;
+
+@ToString
 public class PromiseTaskWait extends AbstractPromiseTask {
 
     public PromiseTaskWait(Promise promise) {

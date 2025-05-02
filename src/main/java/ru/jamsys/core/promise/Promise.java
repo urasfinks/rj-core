@@ -19,7 +19,6 @@ import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.PoolResourcePromiseTaskWaitResource;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceConfiguration;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
 
@@ -165,8 +164,12 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     }
 
     public void goTo(AbstractPromiseTask promiseTask, String toIndexTask) {
-        trace.add(new Trace<>(promiseTask.getNs() + "::goTo(" + toIndexTask + ")", null));
-        queueTask.skipUntil(toIndexTask);
+        String title = promiseTask.getNs() + "::goTo(" + toIndexTask + ")";
+        if (queueTask.skipUntil(getComplexIndex(toIndexTask))) {
+            trace.add(new Trace<>(title, null));
+        } else {
+            setError(title, new RuntimeException("Not found"));
+        }
     }
 
     public Promise append(AbstractPromiseTask task) {
@@ -315,11 +318,23 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     }
 
     public Promise appendWait() {
+        if (queueTask.getMainQueue().isEmpty()) {
+            return this;
+        }
+        if(queueTask.getMainQueue().peekLast().isWait()){
+            return this;
+        }
         append(new PromiseTaskWait(this));
         return this;
     }
 
     public Promise appendWait(String key) {
+        if (queueTask.getMainQueue().isEmpty()) {
+            return this;
+        }
+        if(queueTask.getMainQueue().peekLast().isWait()){
+            return this;
+        }
         append(new PromiseTaskWait(key, this));
         return this;
     }
@@ -372,7 +387,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
                         ns2 -> {
                             T bean = App.context.getBean(classResource);
                             try {
-                                bean.init(new ResourceConfiguration(ns2));
+                                bean.init(ns2);
                             } catch (Throwable th) {
                                 throw new ForwardException(th);
                             }

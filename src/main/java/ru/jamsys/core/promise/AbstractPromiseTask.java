@@ -3,6 +3,7 @@ package ru.jamsys.core.promise;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadVirtual;
@@ -18,10 +19,11 @@ import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
+@ToString(onlyExplicitlyIncluded = true)
 @Getter
 public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement {
 
+    @ToString.Include
     final PromiseTaskExecuteType type;
 
     private final PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> procedure;
@@ -34,6 +36,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     @Setter
     private int retryDelayMs = 1000;
 
+    @ToString.Include
     private final String ns;
 
     // Используется, когда вызывается терминальный блок, который фиксирует, что Promise закончен.
