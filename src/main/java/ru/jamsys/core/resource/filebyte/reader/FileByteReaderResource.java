@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("unused")
 @Component
 @Scope("prototype")
 public class FileByteReaderResource

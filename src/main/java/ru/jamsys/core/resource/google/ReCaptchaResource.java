@@ -14,6 +14,7 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstra
 
 import java.nio.charset.StandardCharsets;
 
+@SuppressWarnings("unused")
 @Component
 @Scope("prototype")
 public class ReCaptchaResource

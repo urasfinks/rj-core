@@ -5,8 +5,6 @@ import lombok.experimental.FieldNameConstants;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.manager.item.log.PersistentDataHeader;
-import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
