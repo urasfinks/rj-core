@@ -3,7 +3,7 @@ package ru.jamsys.core.resource.virtual.file.system;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.RepositoryMap;
 import ru.jamsys.core.extension.StatisticsFlush;

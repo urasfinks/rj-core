@@ -2,8 +2,8 @@ package ru.jamsys.core.resource;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
-import ru.jamsys.core.component.manager.ManagerElement;
-import ru.jamsys.core.component.manager.item.BrokerMemory;
+import ru.jamsys.core.extension.ManagerElement;
+import ru.jamsys.core.extension.broker.memory.BrokerMemory;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemCompletable;

@@ -34,7 +34,7 @@ class ThreadEnvelopeTest {
         for (int i = 0; i < 10; i++) {
             new Thread(() -> {
                 while (map.size() < 3) {
-                    long sec = Util.zeroLastNDigits(System.currentTimeMillis(), 3);
+                    long sec = Util.resetLastNDigits(System.currentTimeMillis(), 3);
                     map.computeIfAbsent(sec, _ -> {
                         counter.incrementAndGet();
                         return new AvgMetric();

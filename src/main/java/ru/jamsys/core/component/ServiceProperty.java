@@ -10,7 +10,7 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.property.Property;
-import ru.jamsys.core.extension.property.item.PropertySubscription;
+import ru.jamsys.core.extension.property.PropertySubscription;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -58,7 +58,7 @@ public class ServiceProperty {
                     computeIfAbsent(
                             prop,
                             env.getProperty(prop),
-                            property -> property.getSetTrace().getLast().setResource(next.getName())
+                            property -> property.getTraceSetup().getLast().setResource(next.getName())
                     );
                 }
                 description.forEach((key, desc) -> {
@@ -69,7 +69,7 @@ public class ServiceProperty {
                         computeIfAbsent(
                                 key +".description",
                                 desc,
-                                property1 -> property1.getSetTrace().getLast().setResource(next.getName())
+                                property1 -> property1.getTraceSetup().getLast().setResource(next.getName())
                         );
                     }
                 });

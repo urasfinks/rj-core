@@ -38,14 +38,14 @@ public class JdbcResource
 
     private PropertyDispatcher<String> propertyDispatcher;
 
-    private final JdbcProperty jdbcProperty = new JdbcProperty();
+    private final JdbcRepositoryProperty jdbcRepositoryProperty = new JdbcRepositoryProperty();
 
     @Override
     public void init(String ns) throws Exception {
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
-                jdbcProperty,
+                jdbcRepositoryProperty,
                 getCascadeKey(ns)
         );
         this.statementControl = new DefaultStatementControl();
@@ -56,9 +56,9 @@ public class JdbcResource
             try {
                 SecurityComponent securityComponent = App.get(SecurityComponent.class);
                 this.connection = DriverManager.getConnection(
-                        jdbcProperty.getUri(),
-                        jdbcProperty.getUser(),
-                        new String(securityComponent.get(jdbcProperty.getSecurityAlias()))
+                        jdbcRepositoryProperty.getUri(),
+                        jdbcRepositoryProperty.getUser(),
+                        new String(securityComponent.get(jdbcRepositoryProperty.getSecurityAlias()))
                 );
             } catch (Throwable th) {
                 throw new ForwardException(th);
@@ -167,7 +167,7 @@ public class JdbcResource
     @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
         down();
-        if (jdbcProperty.getUri() == null || jdbcProperty.getUser() == null || jdbcProperty.getSecurityAlias() == null) {
+        if (jdbcRepositoryProperty.getUri() == null || jdbcRepositoryProperty.getUser() == null || jdbcRepositoryProperty.getSecurityAlias() == null) {
             return;
         }
         up();

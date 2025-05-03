@@ -5,9 +5,7 @@ import lombok.Getter;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.property.item.PropertySubscription;
-import ru.jamsys.core.extension.property.repository.PropertyEnvelopeRepository;
-import ru.jamsys.core.extension.property.repository.PropertyRepository;
+import ru.jamsys.core.extension.property.repository.AbstractRepositoryProperty;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -28,7 +26,7 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
     @JsonIgnore
     private final ServiceProperty serviceProperty;
 
-    private final PropertyRepository<T> propertyRepository;
+    private final AbstractRepositoryProperty<T> repositoryProperty;
 
     private final String ns;
 
@@ -39,17 +37,17 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
     public PropertyDispatcher(
             ServiceProperty serviceProperty,
             PropertyListener propertyListener,
-            PropertyRepository<T> propertyRepository,
+            AbstractRepositoryProperty<T> repositoryProperty,
             String ns
     ) {
         this.propertyListener = propertyListener;
         this.serviceProperty = serviceProperty;
-        this.propertyRepository = propertyRepository;
+        this.repositoryProperty = repositoryProperty;
         this.ns = ns;
 
-        if (this.propertyRepository != null) {
-            this.propertyRepository.init(this);
-            this.propertyRepository.checkNotNull();
+        if (this.repositoryProperty != null) {
+            this.repositoryProperty.init(this);
+            this.repositoryProperty.checkNotNull();
         }
     }
 
@@ -60,7 +58,7 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
                 new PropertySubscription<>(this)
                         .setRegexp(regexp));
         UtilRisc.forEach(null, serviceProperty.getByRegexp(regexp), property -> {
-            propertyRepository.append(getRepositoryPropertyKey(property.getKey()), this);
+            repositoryProperty.append(getRepositoryPropertyKey(property.getKey()), this);
         });
         if (isRun()) {
             reload();
@@ -87,8 +85,8 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
     // Вызывается из PropertySubscription, когда приходит уведомление от Property что значение изменено
     public void onPropertyUpdate(String propertyKey, String oldValue, String newValue) {
         String repositoryPropertyKey = getRepositoryPropertyKey(propertyKey);
-        if (propertyRepository != null) {
-            propertyRepository.updateRepository(repositoryPropertyKey, this);
+        if (repositoryProperty != null) {
+            repositoryProperty.updateRepository(repositoryPropertyKey, this);
         }
         if (propertyListener != null) {
             propertyListener.onPropertyUpdate(repositoryPropertyKey, oldValue, newValue);
@@ -96,15 +94,15 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
     }
 
     @SuppressWarnings("unused")
-    public String getPropertyKey(PropertyEnvelopeRepository<T> propertyEnvelopeRepository) {
-        if (propertyEnvelopeRepository == null) {
+    public String getPropertyKey(PropertyEnvelope<T> propertyEnvelope) {
+        if (propertyEnvelope == null) {
             throw new RuntimeException("PropertyEnvelopeRepository is null");
         }
-        PropertyRepository<T> propertyRepository = getPropertyRepository();
-        if (propertyRepository == null) {
+        AbstractRepositoryProperty<T> repositoryProperty = getRepositoryProperty();
+        if (repositoryProperty == null) {
             throw new RuntimeException("PropertyRepository is null");
         }
-        return getPropertyKey(propertyEnvelopeRepository.getRepositoryPropertyKey());
+        return getPropertyKey(propertyEnvelope.getRepositoryPropertyKey());
     }
 
     // Получить ключик с ns, как будет полностью выглядеть ключ в .properties
@@ -141,14 +139,14 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
     @Override
     public void runOperation() {
         UtilRisc.forEach(null, regexp, serviceProperty::addSubscription);
-        UtilRisc.forEach(null, this.propertyRepository.getListPropertyEnvelopeRepository(), propertyEnvelopeRepository -> {
+        UtilRisc.forEach(null, this.repositoryProperty.getListPropertyEnvelopeRepository(), propertyEnvelopeRepository -> {
             PropertySubscription<T> propertySubscription = new PropertySubscription<>(this)
                     .setPropertyKey(propertyEnvelopeRepository.getPropertyKey());
             serviceProperty.addSubscription(propertySubscription);
             subscriptions.add(propertySubscription);
         });
 
-        UtilRisc.forEach(null, propertyRepository.getListPropertyEnvelopeRepository(), tPropertyEnvelopeRepository -> {
+        UtilRisc.forEach(null, repositoryProperty.getListPropertyEnvelopeRepository(), tPropertyEnvelopeRepository -> {
             ServiceProperty.Equals equals = tPropertyEnvelopeRepository.propertyEquals();
             if (!equals.isEquals()) {
                 onPropertyUpdate(

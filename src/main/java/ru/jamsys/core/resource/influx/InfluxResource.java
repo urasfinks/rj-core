@@ -41,14 +41,14 @@ public class InfluxResource
 
     private PropertyDispatcher<String> propertyDispatcher;
 
-    private final InfluxProperty influxProperty = new InfluxProperty();
+    private final InfluxRepositoryProperty influxRepositoryProperty = new InfluxRepositoryProperty();
 
     @Override
     public void init(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
-                influxProperty,
+                influxRepositoryProperty,
                 getCascadeKey(ns)
         );
     }
@@ -67,7 +67,7 @@ public class InfluxResource
     private void up() {
         if (client == null) {
             SecurityComponent securityComponent = App.get(SecurityComponent.class);
-            client = InfluxDBClientFactory.create(influxProperty.getHost(), securityComponent.get(influxProperty.getAlias()));
+            client = InfluxDBClientFactory.create(influxRepositoryProperty.getHost(), securityComponent.get(influxRepositoryProperty.getAlias()));
             client.setLogLevel(LogLevel.NONE);
             // Как вы поняли - верхняя строчка не работает
             Logger.getLogger(AbstractRestClient.class.getName()).setLevel(Level.OFF);
@@ -81,7 +81,7 @@ public class InfluxResource
     @Override
     public Void execute(List<Point> arguments) {
         if (writer != null && !arguments.isEmpty()) {
-            writer.writePoints(influxProperty.getBucket(), influxProperty.getOrg(), arguments);
+            writer.writePoints(influxRepositoryProperty.getBucket(), influxRepositoryProperty.getOrg(), arguments);
         }
         return null;
     }
@@ -109,7 +109,7 @@ public class InfluxResource
     @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
         down();
-        if (influxProperty.getHost() == null || influxProperty.getAlias() == null) {
+        if (influxRepositoryProperty.getHost() == null || influxRepositoryProperty.getAlias() == null) {
             return;
         }
         up();

@@ -6,12 +6,14 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.flat.util.*;
+import ru.jamsys.core.flat.util.UtilByte;
+import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilFileByteReader;
+import ru.jamsys.core.flat.util.UtilJson;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.Map;
 
 @ToString
 @Getter
@@ -25,16 +27,6 @@ public class PersistentDataHeader extends DataHeader implements PersistentData {
 
     public PersistentDataHeader(Object body) {
         this.body = body;
-    }
-
-    @Override
-    public PersistentDataHeader putAll(Map<String, ?> map) {
-        return (PersistentDataHeader) super.putAll(map);
-    }
-
-    @Override
-    public PersistentDataHeader put(String key, Object value) {
-        return (PersistentDataHeader) super.put(key, value);
     }
 
     public Object getRawBody() {

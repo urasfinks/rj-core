@@ -51,10 +51,10 @@ public class ServiceSystemStatistic implements StatisticsFlushComponent {
         }
         first = !first;
         result.add(new DataHeader(getClass())
-                .put("cpu", cpuUsage)
-                .put("heapSize", Runtime.getRuntime().totalMemory())
-                .put("heapSizeMax", Runtime.getRuntime().maxMemory())
-                .put("heapSizeFree", Runtime.getRuntime().freeMemory()));
+                .addHeader("cpu", cpuUsage)
+                .addHeader("heapSize", Runtime.getRuntime().totalMemory())
+                .addHeader("heapSizeMax", Runtime.getRuntime().maxMemory())
+                .addHeader("heapSizeFree", Runtime.getRuntime().freeMemory()));
         return result;
     }
 }

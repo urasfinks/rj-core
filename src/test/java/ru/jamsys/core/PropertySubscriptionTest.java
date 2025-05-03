@@ -6,8 +6,8 @@ import org.junit.jupiter.api.*;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
-import ru.jamsys.core.extension.property.repository.PropertyRepositoryList;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotationField;
+import ru.jamsys.core.extension.property.repository.RepositoryProperty;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilLog;
 
@@ -31,7 +31,7 @@ class PropertySubscriptionTest {
     @Test
     @Order(1)
     public void collection() {
-        PropertyRepositoryList<String> propertyRepositoryList = new PropertyRepositoryList<>(String.class);
+        RepositoryProperty<String> propertyRepositoryList = new RepositoryProperty<>(String.class);
         PropertyDispatcher<String> propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
@@ -131,7 +131,7 @@ class PropertySubscriptionTest {
     @Order(2)
     public void onUpdate() {
         // ВНИМАТЕЛЬНО тесты выполняются по очереди, по отдельности выполнять нельзя
-        PropertyRepositoryList<String> propertiesRepositoryMap = new PropertyRepositoryList<>(String.class);
+        RepositoryProperty<String> propertiesRepositoryMap = new RepositoryProperty<>(String.class);
         AtomicInteger x = new AtomicInteger(0);
         PropertyDispatcher<String> propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
@@ -168,7 +168,7 @@ class PropertySubscriptionTest {
                     }
                   ],
                   "init" : true
-                }""", UtilJson.toStringPretty(propertyDispatcher.getPropertyRepository(), "--"));
+                }""", UtilJson.toStringPretty(propertyDispatcher.getRepositoryProperty(), "--"));
 
         // Инициализация подписчика, не вызывает событий обновления, она проливает данные до репозитория
         // События наступают только после обновления данных Property
@@ -222,7 +222,7 @@ class PropertySubscriptionTest {
                     }
                   ],
                   "init" : true
-                }""", UtilJson.toStringPretty(propertyDispatcher.getPropertyRepository(), "--"));
+                }""", UtilJson.toStringPretty(propertyDispatcher.getRepositoryProperty(), "--"));
         Assertions.assertEquals(2, x.get());
 
         App.get(ServiceProperty.class).computeIfAbsent("run.args.ServiceClassFinderIgnore.test3", null).set(true);
@@ -263,13 +263,13 @@ class PropertySubscriptionTest {
                     }
                   ],
                   "init" : true
-                }""", UtilJson.toStringPretty(propertyDispatcher.getPropertyRepository(), "--"));
+                }""", UtilJson.toStringPretty(propertyDispatcher.getRepositoryProperty(), "--"));
         Assertions.assertEquals(3, x.get());
     }
 
     @FieldNameConstants
     @Getter
-    public static class TypedProperty extends AnnotationPropertyExtractor<String> {
+    public static class TypedProperty extends RepositoryPropertyAnnotationField<String> {
 
         @SuppressWarnings("all")
         @PropertyKey("run.args.ServiceClassFinderIgnore.test1")

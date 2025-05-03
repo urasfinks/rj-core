@@ -7,8 +7,8 @@ import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.property.repository.PropertyEnvelopeRepository;
-import ru.jamsys.core.extension.property.repository.PropertyRepositoryList;
+import ru.jamsys.core.extension.property.PropertyEnvelope;
+import ru.jamsys.core.extension.property.repository.RepositoryProperty;
 import ru.jamsys.core.flat.util.UtilLog;
 
 import java.lang.annotation.Annotation;
@@ -34,7 +34,7 @@ public class ServiceClassFinder implements CascadeKey {
 
     private final ExceptionHandler exceptionHandler;
 
-    private final PropertyRepositoryList<Boolean> ignoredClassMap = new PropertyRepositoryList<>(Boolean.class);
+    private final RepositoryProperty<Boolean> ignoredClassMap = new RepositoryProperty<>(Boolean.class);
 
     private final ApplicationContext applicationContext;
 
@@ -143,10 +143,10 @@ public class ServiceClassFinder implements CascadeKey {
                             break;
                         }
                     }
-                    PropertyEnvelopeRepository<Boolean> propertyEnvelopeRepository = ignoredClassMap.getByRepositoryPropertyKey(aClass.getName());
+                    PropertyEnvelope<Boolean> propertyEnvelope = ignoredClassMap.getByRepositoryPropertyKey(aClass.getName());
                     Boolean s = null;
-                    if (propertyEnvelopeRepository != null) {
-                        s = propertyEnvelopeRepository.getValue();
+                    if (propertyEnvelope != null) {
+                        s = propertyEnvelope.getValue();
                     }
                     if (s != null) {
                         findUnusedAnnotation = s;

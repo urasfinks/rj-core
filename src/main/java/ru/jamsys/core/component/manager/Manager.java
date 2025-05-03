@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleComponent;
+import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilRisc;

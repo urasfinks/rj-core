@@ -29,7 +29,7 @@ public class EmailNotificationResource
     private PropertyDispatcher<Object> propertyDispatcher;
 
     @Getter
-    private final EmailNotificationProperty property = new EmailNotificationProperty();
+    private final EmailNotificationRepositoryProperty property = new EmailNotificationRepositoryProperty();
 
     @Override
     public void init(String ns) throws Throwable {

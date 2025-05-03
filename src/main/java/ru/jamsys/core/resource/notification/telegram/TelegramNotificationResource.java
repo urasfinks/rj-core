@@ -26,7 +26,7 @@ public class TelegramNotificationResource
 
     private PropertyDispatcher<Object> propertyDispatcher;
 
-    private final TelegramNotificationProperty telegramNotificationProperty = new TelegramNotificationProperty();
+    private final TelegramNotificationRepositoryProperty telegramNotificationRepositoryProperty = new TelegramNotificationRepositoryProperty();
 
     @Override
     public void init(String ns) throws Throwable {
@@ -34,7 +34,7 @@ public class TelegramNotificationResource
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
-                telegramNotificationProperty,
+                telegramNotificationRepositoryProperty,
                 getCascadeKey(ns)
         );
     }
@@ -48,13 +48,13 @@ public class TelegramNotificationResource
         }
         HttpConnectorDefault httpClient = new HttpConnectorDefault();
         httpClient.setUrl(String.format(
-                telegramNotificationProperty.getUrl(),
-                new String(securityComponent.get(telegramNotificationProperty.getSecurityAlias())),
-                telegramNotificationProperty.getIdChat(),
+                telegramNotificationRepositoryProperty.getUrl(),
+                new String(securityComponent.get(telegramNotificationRepositoryProperty.getSecurityAlias())),
+                telegramNotificationRepositoryProperty.getIdChat(),
                 URLEncoder.encode(bodyRequest, StandardCharsets.UTF_8))
         );
         httpClient.setConnectTimeoutMs(1_000);
-        httpClient.setReadTimeoutMs(telegramNotificationProperty.getTimeoutMs());
+        httpClient.setReadTimeoutMs(telegramNotificationRepositoryProperty.getTimeoutMs());
         httpClient.exec();
         return httpClient.getResponseObject();
     }

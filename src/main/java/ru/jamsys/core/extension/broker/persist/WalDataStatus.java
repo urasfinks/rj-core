@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.broker.persist;
 import lombok.Setter;
 import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.batch.writer.BatchFileWriter;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.nio.ByteBuffer;

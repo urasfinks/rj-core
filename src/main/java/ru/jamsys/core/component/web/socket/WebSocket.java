@@ -131,8 +131,8 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         List<DataHeader> result = new ArrayList<>();
         result.add(new DataHeader(getClass())
-                .put("connections", connections.size())
-                .put("subscription", subscription.size())
+                .addHeader("connections", connections.size())
+                .addHeader("subscription", subscription.size())
         );
         return result;
     }

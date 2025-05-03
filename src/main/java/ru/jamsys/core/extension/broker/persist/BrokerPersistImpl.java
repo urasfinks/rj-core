@@ -1,8 +1,9 @@
 package ru.jamsys.core.extension.broker.persist;
 
 import org.springframework.context.ApplicationContext;
-import ru.jamsys.core.component.manager.ManagerElement;
-import ru.jamsys.core.component.manager.item.BrokerMemory;
+import ru.jamsys.core.extension.ManagerElement;
+import ru.jamsys.core.extension.broker.Broker;
+import ru.jamsys.core.extension.broker.memory.BrokerMemory;
 import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;

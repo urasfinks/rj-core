@@ -28,14 +28,15 @@ public class DataHeader {
 
     public Object body;
 
-    public DataHeader put(String key, Object value) {
+    public DataHeader addHeader(String key, Object value) {
         header.put(key, value);
         return this;
     }
 
+    @SuppressWarnings("unused")
     public DataHeader putAll(Map<String, ?> map) {
         if (map != null) {
-            map.forEach(this::put);
+            map.forEach(this::addHeader);
         }
         return this;
     }

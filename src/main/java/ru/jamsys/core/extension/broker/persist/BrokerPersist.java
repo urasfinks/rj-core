@@ -1,6 +1,7 @@
 package ru.jamsys.core.extension.broker.persist;
 
 import ru.jamsys.core.extension.ByteSerialization;
+import ru.jamsys.core.extension.broker.Broker;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 public interface BrokerPersist<T extends ByteSerialization> extends Broker<T> {

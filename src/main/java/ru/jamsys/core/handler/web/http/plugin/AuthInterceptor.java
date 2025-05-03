@@ -10,8 +10,8 @@ import ru.jamsys.core.extension.exception.AuthException;
 import ru.jamsys.core.extension.http.ServletRequestReader;
 import ru.jamsys.core.extension.http.ServletResponseWriter;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.property.repository.PropertyEnvelopeRepository;
-import ru.jamsys.core.extension.property.repository.PropertyRepositoryList;
+import ru.jamsys.core.extension.property.PropertyEnvelope;
+import ru.jamsys.core.extension.property.repository.RepositoryProperty;
 import ru.jamsys.core.flat.util.UtilText;
 import ru.jamsys.core.handler.web.http.HttpInterceptor;
 
@@ -25,9 +25,9 @@ public class AuthInterceptor implements HttpInterceptor {
 
     private final SecurityComponent securityComponent;
 
-    private final PropertyRepositoryList<String> users = new PropertyRepositoryList<>(String.class);
+    private final RepositoryProperty<String> users = new RepositoryProperty<>(String.class);
 
-    private final PropertyRepositoryList<String> uriRegexp = new PropertyRepositoryList<>(String.class);
+    private final RepositoryProperty<String> uriRegexp = new RepositoryProperty<>(String.class);
 
     public AuthInterceptor(ServiceProperty serviceProperty, SecurityComponent securityComponent) {
         this.securityComponent = securityComponent;
@@ -54,8 +54,8 @@ public class AuthInterceptor implements HttpInterceptor {
     public boolean handle(HttpServletRequest request, HttpServletResponse response) {
         String requestURI = request.getRequestURI();
         boolean needAuth = false;
-        for (PropertyEnvelopeRepository<String> propertyEnvelopeRepository : uriRegexp.getListPropertyEnvelopeRepository()) {
-            String regexpPattern = propertyEnvelopeRepository.getValue();
+        for (PropertyEnvelope<String> propertyEnvelope : uriRegexp.getListPropertyEnvelopeRepository()) {
+            String regexpPattern = propertyEnvelope.getValue();
             if (regexpPattern != null && UtilText.regexpFind(requestURI, regexpPattern) != null) {
                 needAuth = true;
                 break;
@@ -68,8 +68,8 @@ public class AuthInterceptor implements HttpInterceptor {
             ServletRequestReader servletRequestReader = new ServletRequestReader(request);
             servletRequestReader.basicAuthHandler((user, password) -> {
                 String cred = null;
-                PropertyEnvelopeRepository<String> propertyEnvelopeRepository = users.getByRepositoryPropertyKey(user);
-                String userPasswordSecurityAlias = propertyEnvelopeRepository.getValue();
+                PropertyEnvelope<String> propertyEnvelope = users.getByRepositoryPropertyKey(user);
+                String userPasswordSecurityAlias = propertyEnvelope.getValue();
                 if (userPasswordSecurityAlias == null) {
                     throw new AuthException("Authorization failed for user: " + user);
                 }

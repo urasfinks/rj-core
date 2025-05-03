@@ -25,7 +25,7 @@ public class RateLimitItemTps
     @Getter
     private final String ns;
 
-    private final RateLimitItemProperty property = new RateLimitItemProperty();
+    private final RateLimitItemRepositoryProperty property = new RateLimitItemRepositoryProperty();
 
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
@@ -64,8 +64,8 @@ public class RateLimitItemTps
         List<DataHeader> result = new ArrayList<>();
         result.add(new DataHeader()
                 .setBody(getCascadeKey(ns))
-                .put("tps", tps.getAndSet(0))
-                .put("max", property.getMax())
+                .addHeader("tps", tps.getAndSet(0))
+                .addHeader("max", property.getMax())
         );
         return result;
     }

@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
-import ru.jamsys.core.component.manager.item.ExpirationList;
+import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
@@ -19,9 +19,7 @@ public class Helper1s implements Cron1s, PromiseGenerator {
 
     private final ServicePromise servicePromise;
 
-    public Helper1s(
-            ServicePromise servicePromise
-    ) {
+    public Helper1s(ServicePromise servicePromise) {
         this.servicePromise = servicePromise;
     }
 

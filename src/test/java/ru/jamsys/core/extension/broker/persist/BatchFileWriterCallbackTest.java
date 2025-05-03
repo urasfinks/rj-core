@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import ru.jamsys.core.extension.batch.writer.BatchFileWriterCallback;
 import ru.jamsys.core.flat.util.UtilLog;
 
 import java.io.IOException;

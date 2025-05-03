@@ -180,8 +180,8 @@ public class Cron {
                 break;
             }
         }
-        AvgMetric.Flush flush = avgMetric.flushInstance();
-        if (flush.getCount() == 0) {
+        AvgMetric.Statistic statistic = avgMetric.flushStatistic();
+        if (statistic.getCount() == 0) {
             // Если по каким-то причинам не было определено ни одного варианта в будущем
             // Этого момента не настанет, зануляем и compile больше никогда не вызовется
             nextTimestamp = null;
@@ -189,11 +189,11 @@ public class Cron {
         }
         if (debug) {
             UtilLog.info(null)
-                    .addHeader("min", UtilDate.msFormat(flush.getMin()))
-                    .addHeader("realMs", flush.getMin())
+                    .addHeader("min", UtilDate.msFormat(statistic.getMin()))
+                    .addHeader("realMs", statistic.getMin())
                     .print();
         }
-        nextTimestamp = flush.getMin();
+        nextTimestamp = statistic.getMin();
         return compileResult.setNextTimestamp(nextTimestamp);
     }
 

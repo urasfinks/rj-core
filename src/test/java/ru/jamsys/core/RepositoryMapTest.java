@@ -9,9 +9,9 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
-import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
-import ru.jamsys.core.extension.property.repository.PropertyEnvelopeRepository;
-import ru.jamsys.core.extension.property.repository.PropertyRepositoryList;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotationField;
+import ru.jamsys.core.extension.property.PropertyEnvelope;
+import ru.jamsys.core.extension.property.repository.RepositoryProperty;
 import ru.jamsys.core.flat.util.UtilLog;
 
 // IO time: 5ms
@@ -28,7 +28,7 @@ class RepositoryMapTest {
         App.shutdown();
     }
 
-    public static class XX extends PropertyRepositoryList<String> implements PropertyListener {
+    public static class XX extends RepositoryProperty<String> implements PropertyListener {
 
         int c = 0;
 
@@ -44,8 +44,8 @@ class RepositoryMapTest {
 
     @Test
     void eq() {
-        PropertyEnvelopeRepository<Object> p1 = new PropertyEnvelopeRepository<>(Object.class, "run.args.security.path.storage", null, false);
-        PropertyEnvelopeRepository<Object> p2 = new PropertyEnvelopeRepository<>(Object.class, "run.args.security.path.storage", null, false);
+        PropertyEnvelope<Object> p1 = new PropertyEnvelope<>(Object.class, "run.args.security.path.storage", null, false);
+        PropertyEnvelope<Object> p2 = new PropertyEnvelope<>(Object.class, "run.args.security.path.storage", null, false);
         Assertions.assertEquals(p1, p2);
     }
 
@@ -118,7 +118,7 @@ class RepositoryMapTest {
     }
 
     @FieldNameConstants
-    static class x2 extends AnnotationPropertyExtractor<String> implements PropertyListener {
+    static class x2 extends RepositoryPropertyAnnotationField<String> implements PropertyListener {
 
         @SuppressWarnings("all")
         @PropertyKey("security.path.storage")

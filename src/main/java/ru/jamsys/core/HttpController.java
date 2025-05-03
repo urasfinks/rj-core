@@ -11,7 +11,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
 import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.property.repository.PropertyRepositoryList;
+import ru.jamsys.core.extension.property.repository.RepositoryProperty;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -33,9 +33,9 @@ public class HttpController {
 
     private HttpInterceptor httpInterceptor;
 
-    private final PropertyRepositoryList<String> ignoreStaticFile = new PropertyRepositoryList<>(String.class);
+    private final RepositoryProperty<String> ignoreStaticFile = new RepositoryProperty<>(String.class);
 
-    private final PropertyRepositoryList<String> ignoreStaticDir = new PropertyRepositoryList<>(String.class);
+    private final RepositoryProperty<String> ignoreStaticDir = new RepositoryProperty<>(String.class);
 
     private final Set<String> ignoredStaticFile = new HashSet<>();
 

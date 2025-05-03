@@ -31,7 +31,7 @@ public class AppleNotificationResource
 
     private PropertyDispatcher<Object> propertyDispatcher;
 
-    private final AppleNotificationProperty appleNotificationProperty = new AppleNotificationProperty();
+    private final AppleNotificationRepositoryProperty appleNotificationRepositoryProperty = new AppleNotificationRepositoryProperty();
 
     @Override
     public void init(String ns) throws Throwable {
@@ -39,7 +39,7 @@ public class AppleNotificationResource
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
-                appleNotificationProperty,
+                appleNotificationRepositoryProperty,
                 getCascadeKey(ns)
         );
     }
@@ -48,9 +48,9 @@ public class AppleNotificationResource
     public HttpResponse execute(AppleNotificationRequest arguments) {
 
         HttpConnector httpConnector = new HttpConnectorDefault();
-        httpConnector.setUrl(appleNotificationProperty.getUrl() + arguments.getDevice());
+        httpConnector.setUrl(appleNotificationRepositoryProperty.getUrl() + arguments.getDevice());
         httpConnector.setConnectTimeoutMs(1_000);
-        httpConnector.setReadTimeoutMs(appleNotificationProperty.getTimeoutMs());
+        httpConnector.setReadTimeoutMs(appleNotificationRepositoryProperty.getTimeoutMs());
 
         Map<String, Object> root = new LinkedHashMap<>();
         Map<String, Object> aps = new LinkedHashMap<>();
@@ -63,14 +63,14 @@ public class AppleNotificationResource
             httpConnector.setPostData(postData.getBytes(StandardCharsets.UTF_8));
         }
 
-        httpConnector.setRequestHeader("apns-push-type", appleNotificationProperty.getPushType());
-        httpConnector.setRequestHeader("apns-expiration", appleNotificationProperty.getExpiration());
-        httpConnector.setRequestHeader("apns-priority", appleNotificationProperty.getPriority());
-        httpConnector.setRequestHeader("apns-topic", appleNotificationProperty.getTopic());
+        httpConnector.setRequestHeader("apns-push-type", appleNotificationRepositoryProperty.getPushType());
+        httpConnector.setRequestHeader("apns-expiration", appleNotificationRepositoryProperty.getExpiration());
+        httpConnector.setRequestHeader("apns-priority", appleNotificationRepositoryProperty.getPriority());
+        httpConnector.setRequestHeader("apns-topic", appleNotificationRepositoryProperty.getTopic());
 
         httpConnector.setKeyStore(
-                App.get(Manager.class).get(File.class, appleNotificationProperty.getVirtualPath()),
-                FileViewKeyStore.prop.SECURITY_KEY.name(), appleNotificationProperty.getSecurityAlias(),
+                App.get(Manager.class).get(File.class, appleNotificationRepositoryProperty.getVirtualPath()),
+                FileViewKeyStore.prop.SECURITY_KEY.name(), appleNotificationRepositoryProperty.getSecurityAlias(),
                 FileViewKeyStore.prop.TYPE.name(), "PKCS12"
         );
         httpConnector.exec();
@@ -94,13 +94,13 @@ public class AppleNotificationResource
 
     @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
-        if (appleNotificationProperty.getVirtualPath() == null || appleNotificationProperty.getStorage() == null) {
+        if (appleNotificationRepositoryProperty.getVirtualPath() == null || appleNotificationRepositoryProperty.getStorage() == null) {
             return;
         }
         App.get(Manager.class).configure(
                 File.class,
-                appleNotificationProperty.getVirtualPath(),
-                path -> new File(path, FileLoaderFactory.fromFileSystem(appleNotificationProperty.getStorage()))
+                appleNotificationRepositoryProperty.getVirtualPath(),
+                path -> new File(path, FileLoaderFactory.fromFileSystem(appleNotificationRepositoryProperty.getStorage()))
         );
     }
 

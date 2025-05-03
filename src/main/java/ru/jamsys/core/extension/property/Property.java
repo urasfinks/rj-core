@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import org.springframework.lang.NonNull;
-import ru.jamsys.core.extension.property.item.PropertySubscription;
+import ru.jamsys.core.extension.trace.TraceSetup;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.flat.util.UtilText;
@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class Property implements PropertyUtil {
 
     @Getter
-    ConcurrentLinkedDeque<SetTrace> setTrace = new ConcurrentLinkedDeque<>(); //key: who, value: value
+    ConcurrentLinkedDeque<TraceSetup> traceSetup = new ConcurrentLinkedDeque<>(); //key: who, value: value
 
     @Getter
     private final String key;
@@ -41,7 +41,7 @@ public class Property implements PropertyUtil {
     public Property(@NonNull String key, String value) {
         this.key = key;
         this.value = value;
-        setTrace.add(new SetTrace(value));
+        traceSetup.add(new TraceSetup(value));
     }
 
     @SuppressWarnings("unused")
@@ -100,9 +100,9 @@ public class Property implements PropertyUtil {
         String oldValue = value;
         if (!Objects.equals(value, newValue)) {
             this.value = newValue;
-            setTrace.add(new SetTrace(value));
-            if (setTrace.size() > 30) {
-                setTrace.removeFirst();
+            traceSetup.add(new TraceSetup(value));
+            if (traceSetup.size() > 30) {
+                traceSetup.removeFirst();
             }
             emit(oldValue);
         }

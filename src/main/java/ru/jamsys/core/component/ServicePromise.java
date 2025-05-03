@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
-import ru.jamsys.core.component.manager.item.ExpirationList;
+import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.promise.AbstractPromiseTask;
 import ru.jamsys.core.promise.Promise;

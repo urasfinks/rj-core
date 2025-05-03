@@ -78,7 +78,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
     private final Lock lockAddToRemove = new ReentrantLock();
 
     @Getter
-    private final PoolProperty poolProperty = new PoolProperty();
+    private final PoolRepositoryProperty poolRepositoryProperty = new PoolRepositoryProperty();
 
     @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;
@@ -88,7 +88,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
-                poolProperty,
+                poolRepositoryProperty,
                 getCascadeKey(ns)
         );
     }
@@ -131,30 +131,30 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
             return;
         }
         // Если хотят меньше минимума - очень резко опускаем максимум до минимума
-        if (want < poolProperty.getMin()) {
+        if (want < poolRepositoryProperty.getMin()) {
             App.get(ServiceProperty.class).set(
                     propertyDispatcher
-                            .getPropertyRepository()
-                            .getByFieldNameConstants(PoolProperty.Fields.max)
+                            .getRepositoryProperty()
+                            .getByFieldNameConstants(PoolRepositoryProperty.Fields.max)
                             .getPropertyKey(),
-                    poolProperty.getMin()
+                    poolRepositoryProperty.getMin()
             );
             return;
         }
         // Если желаемое значение элементов в пуле больше минимума, так как return не сработал
-        if (want > poolProperty.getMax()) { //Медленно поднимаем
+        if (want > poolRepositoryProperty.getMax()) { //Медленно поднимаем
             App.get(ServiceProperty.class).set(
                     propertyDispatcher
-                            .getPropertyRepository()
-                            .getByFieldNameConstants(PoolProperty.Fields.max)
+                            .getRepositoryProperty()
+                            .getByFieldNameConstants(PoolRepositoryProperty.Fields.max)
                             .getPropertyKey(),
-                    poolProperty.getMax() + 1
+                    poolRepositoryProperty.getMax() + 1
             );
         } else { //Но очень быстро опускаем
             App.get(ServiceProperty.class).set(
                     propertyDispatcher
-                            .getPropertyRepository()
-                            .getByFieldNameConstants(PoolProperty.Fields.max)
+                            .getRepositoryProperty()
+                            .getByFieldNameConstants(PoolRepositoryProperty.Fields.max)
                             .getPropertyKey(),
                     want
             );
@@ -166,7 +166,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
         if (!isRun()) {
             App.error(new RuntimeException("Пул " + ns + " не может поместить в себя ничего, так как он выключен"));
         }
-        return isRun() && getRealActiveItem() < poolProperty.getMax();
+        return isRun() && getRealActiveItem() < poolRepositoryProperty.getMax();
     }
 
     private int getRealActiveItem() {
@@ -191,7 +191,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
         // но только в том случае, если настройки парка могут быть равны 0 и кол-во активных элементов равны 0
         // Парк типо просто из-за неактивности ушёл в ноль, что бы не тратить ресурсы
         // иначе вернём false и просто задачи будут ждать, когда парк расширится автоматически от нагрузки
-        if (poolProperty.getMin() == 0 && getRealActiveItem() == 0) {
+        if (poolRepositoryProperty.getMin() == 0 && getRealActiveItem() == 0) {
             return add();
         }
         // Если нет возможности говорим - что не создали
@@ -287,7 +287,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
         // Добавлена блокировка, что бы избежать дублей в очереди на удаление
         boolean result = false;
         lockAddToRemove.lock();
-        if (getRealActiveItem() > poolProperty.getMin()) {
+        if (getRealActiveItem() > poolRepositoryProperty.getMin()) {
             result = true;
             // Что если объект уже был добавлен в очередь на удаление?
             // Мы должны вернуть result = true по факту удаление состоялось
@@ -369,10 +369,10 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
         }
         result.add(new DataHeader()
                 .setBody(getCascadeKey(ns))
-                .put("tpsComplete", tpsCompleteFlush)
-                .put("item", itemQueue.size())
-                .put("park", parkQueue.size())
-                .put("remove", removeQueue.size())
+                .addHeader("tpsComplete", tpsCompleteFlush)
+                .addHeader("item", itemQueue.size())
+                .addHeader("park", parkQueue.size())
+                .addHeader("remove", removeQueue.size())
         );
         return result;
     }
@@ -384,7 +384,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
             // Если паркинг был пуст уже больше секунды начнём увеличивать
             if (getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
                 overclocking(formulaAddCount.apply(1));
-            } else if (getRealActiveItem() > poolProperty.getMin()) { //Кол-во больше минимума
+            } else if (getRealActiveItem() > poolRepositoryProperty.getMin()) { //Кол-во больше минимума
                 // закрываем с прошлого раза всех из отставки
                 // так сделано специально, если на следующей итерации будет overclocking
                 // что бы можно было достать кого-то из отставки
@@ -416,7 +416,7 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
 
     @Override
     public void runOperation() {
-        overclocking(poolProperty.getMin());
+        overclocking(poolRepositoryProperty.getMin());
         propertyDispatcher.run();
         registerPool.add(this);
     }

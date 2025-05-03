@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.extension.expiration.ExpirationMap;
 import ru.jamsys.core.flat.util.Util;
 
 class ExpirationMapTest {

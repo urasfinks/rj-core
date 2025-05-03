@@ -93,7 +93,7 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
             long nextStartMs = System.currentTimeMillis();
             try {
                 while (spin.get() && !thread.isInterrupted()) {
-                    nextStartMs = Util.zeroLastNDigits(nextStartMs + 1000, 3);
+                    nextStartMs = Util.resetLastNDigits(nextStartMs + 1000, 3);
                     long curTimeMs = System.currentTimeMillis();
 
                     runCronTask(curTimeMs);

@@ -23,7 +23,7 @@ public class ReCaptchaResource
 
     private final SecurityComponent securityComponent;
 
-    private final ReCaptchaProperty reCaptchaProperty = new ReCaptchaProperty();
+    private final ReCaptchaRepositoryProperty reCaptchaRepositoryProperty = new ReCaptchaRepositoryProperty();
 
     private PropertyDispatcher<String> propertyDispatcher;
 
@@ -36,7 +36,7 @@ public class ReCaptchaResource
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 null,
-                reCaptchaProperty,
+                reCaptchaRepositoryProperty,
                 getCascadeKey(ns)
         );
     }
@@ -46,7 +46,7 @@ public class ReCaptchaResource
         HttpConnectorDefault httpClient = new HttpConnectorDefault();
         httpClient.setUrl("https://www.google.com/recaptcha/api/siteverify");
 
-        String body = "secret=" + new String(securityComponent.get(reCaptchaProperty.getSecurityAlias())) + "&response=" + captchaValue;
+        String body = "secret=" + new String(securityComponent.get(reCaptchaRepositoryProperty.getSecurityAlias())) + "&response=" + captchaValue;
         httpClient.setPostData(body.getBytes(StandardCharsets.UTF_8));
 
         httpClient.setConnectTimeoutMs(1_000);

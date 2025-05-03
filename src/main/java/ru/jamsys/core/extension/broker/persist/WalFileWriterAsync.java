@@ -8,6 +8,7 @@ package ru.jamsys.core.extension.broker.persist;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.batch.writer.BatchFileWriter;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

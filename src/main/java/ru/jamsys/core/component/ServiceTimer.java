@@ -43,11 +43,11 @@ public class ServiceTimer implements StatisticsFlushComponent {
             }
         });
         mapMetricNano.forEach((index, metric) -> {
-            LongSummaryStatistics flush = metric.flush();
+            LongSummaryStatistics flush = metric.flushLongSummaryStatistics();
             timeStatisticNano.put(index, flush);
             timerStatisticQueue.add(new DataHeader()
                     .setBody(index)
-                    .put("sum", flush.getSum())
+                    .addHeader("sum", flush.getSum())
             );
         });
     }

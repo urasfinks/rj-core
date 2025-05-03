@@ -1,12 +1,13 @@
 package ru.jamsys.core;
 
+import lombok.Getter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.manager.Manager;
-import ru.jamsys.core.component.manager.item.ExpirationList;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -14,12 +15,14 @@ import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// IO time: 1min 3 sec
-// COMPUTE time: 1min 3 sec
+// IO time:
+// COMPUTE time:
 
 class ExpirationListTest {
 
@@ -35,8 +38,9 @@ class ExpirationListTest {
         App.shutdown();
     }
 
+    @Getter
     public static class XItem {
-
+        private final int x = 0;
     }
 
     @Test
@@ -45,17 +49,21 @@ class ExpirationListTest {
         AtomicInteger counterExpired = new AtomicInteger(0);
         ExpirationList<XItem> test = App.get(Manager.class).configure(
                 ExpirationList.class,
-                "test",
+                "test1",
                 s -> new ExpirationList<>(s, _ -> counterExpired.incrementAndGet())
         ).getGeneric();
 
 
         ExpirationMsImmutableEnvelope<XItem> add = test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
+        // 2024-03-06T17:11:04.056 + 1000 = 2024-03-06T17:11:05.056
+        // resetLast3Digital (2024-03-06T17:11:05.000) = попал в корзину на удаление с ключом 2024-03-06T17:11:06.000
+
         //Останавливаем задачу, что бы не выполнился onExpired
         add.stop();
         List<DataHeader> s1 = test.flushAndGetStatistic(threadRun);
         Assertions.assertEquals("{ItemSize=1, BucketSize=1, helperRemove=0, helperOnExpired=0}", s1.getFirst().getHeader().toString());
-        test.helper(threadRun, curTimeMs + 1001);
+        Assertions.assertEquals("[1709734266000]", test.getBucketKey().toString());
+        test.helper(threadRun, curTimeMs + 2000);
         List<DataHeader> s2 = test.flushAndGetStatistic(threadRun);
         // helperRemove=1 так как выше выполнили add.stop();
         Assertions.assertEquals("{ItemSize=0, BucketSize=0, helperRemove=1, helperOnExpired=0}", s2.getFirst().getHeader().toString());
@@ -66,7 +74,7 @@ class ExpirationListTest {
         Assertions.assertEquals("{ItemSize=0, BucketSize=0, helperRemove=0, helperOnExpired=0}", s3.getFirst().getHeader().toString());
 
         test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
-        test.helper(threadRun, curTimeMs + 1001);
+        test.helper(threadRun, curTimeMs + 2000);
         List<DataHeader> s4 = test.flushAndGetStatistic(null);
         Assertions.assertEquals("{ItemSize=0, BucketSize=0, helperRemove=0, helperOnExpired=1}", s4.getFirst().getHeader().toString());
 
@@ -77,7 +85,7 @@ class ExpirationListTest {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         ExpirationList<XItem> test = App.get(Manager.class).configure(
                 ExpirationList.class,
-                "test",
+                "test2",
                 s -> new ExpirationList<>(
                         s,
                         _ -> {}
@@ -87,21 +95,21 @@ class ExpirationListTest {
 
 
         //Проверяем что пока 1 корзина
-        Assertions.assertEquals("[1709734265000]", test.getBucketKey().toString());
-        Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msFormat(test.getBucketKey().getFirst()));
+        Assertions.assertEquals("[1709734266000]", test.getBucketKey().toString());
+        Assertions.assertEquals("2024-03-06T17:11:06.000", UtilDate.msFormat(test.getBucketKey().getFirst()));
 
         //2024-03-06T17:11:04.056 + 500 => 11:04.556 + 1000 => 11:05.556 => 11:05.000
 
         test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + 500));
-        Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msFormat(test.getBucketKey().getFirst()));
+        Assertions.assertEquals("2024-03-06T17:11:06.000", UtilDate.msFormat(test.getBucketKey().getFirst()));
         //Проверяем что корзина не добавилась
-        Assertions.assertEquals("[1709734265000]", test.getBucketKey().toString());
+        Assertions.assertEquals("[1709734266000]", test.getBucketKey().toString());
 //
         for (int i = 2; i < 10; i++) {
             test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + (500 * i)));
         }
 
-        Assertions.assertEquals("[1709734265000, 1709734266000, 1709734267000, 1709734268000, 1709734269000]", test.getBucketKey().toString());
+        Assertions.assertEquals("[1709734266000, 1709734267000, 1709734268000, 1709734269000, 1709734270000]", test.getBucketKey().toString());
 
         DataHeader statistics = test.flushAndGetStatistic(null).getFirst();
         Assertions.assertEquals("{ItemSize=10, BucketSize=5, helperRemove=0, helperOnExpired=0}", statistics.getHeader().toString());
@@ -127,116 +135,74 @@ class ExpirationListTest {
         Assertions.assertEquals("{ItemSize=100, BucketSize=50, helperRemove=0, helperOnExpired=0}", statistics.getHeader().toString());
 
         Assertions.assertEquals("2024-03-06T17:11:05.006", UtilDate.msFormat(curTimeMs + 950));
-        Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msFormat(Util.zeroLastNDigits(curTimeMs + 950, 3)));
+        Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msFormat(Util.resetLastNDigits(curTimeMs + 950, 3)));
 
         test.helper(threadRun, curTimeMs + 950);
 
     }
 
-    Map<String, Object> multiThread(int sleepKeepAlive, int timeoutMs) {
+    @Test
+    public void multiThread() throws InterruptedException {
         AvgMetric avgMetric = new AvgMetric();
+        AtomicInteger err = new AtomicInteger(0);
+        AtomicInteger success = new AtomicInteger(0);
         ExpirationList<XItem> test = App.get(Manager.class).configure(
                 ExpirationList.class,
-                "test",
-                s -> new ExpirationList<>(s, env -> {
-                    if (env.getExpiryRemainingMs() > 0) {
+                "test3",
+                ns -> new ExpirationList<>(ns, env -> {
+                    // Положительное число, когда ещё не наступило истечение срока жизни
+                    if (env.getExpiryRemainingMs() >= 0) {
                         UtilLog.printError("ALARM");
-                        Assertions.fail("ALARM");
+                        err.incrementAndGet();
                     } else {
-                        avgMetric.add(env.getExpiryRemainingMs() * -1);
+                        success.incrementAndGet();
+                        avgMetric.add(env.getExpiryRemainingMs());
                     }
                 })
         ).getGeneric();
 
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         AtomicBoolean run = new AtomicBoolean(true);
-        AtomicBoolean run2 = new AtomicBoolean(true);
+        long now = System.currentTimeMillis();
+        long initialDelay = 1000 - (now % 1000);
+        scheduler.scheduleAtFixedRate(
+                () -> {
+                    System.out.println(UtilDate.msFormat(System.currentTimeMillis()));
+                    test.helper(run, System.currentTimeMillis());
+                },
+                initialDelay,
+                1000,
+                TimeUnit.MILLISECONDS
+        );
 
-        //Сначала надо запустить keepAlive потому что старт потоков будет медленный и мы начнём терять секунды так как не запущенны
-
-        Thread ka = new Thread(() -> {
-            Thread.currentThread().setName("TMP Helper");
-            while (run2.get()) {
-                try {
-                    long cur = System.currentTimeMillis();
-                    test.helper(threadRun, cur);
-                    UtilLog.info(null)
-                            .addHeader("helperRemove", test.getHelperRemove().getAndSet(0))
-                            .addHeader("helperOnExpired", test.getHelperOnExpired().getAndSet(0))
-                            .print();
-
-                    Util.testSleepMs(sleepKeepAlive);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        ka.start();
-
+        int c = 1_000_000;
         for (int i = 0; i < 4; i++) {
-            final int x = i;
-            Util.testSleepMs(333 * i); // Сделаем разбивку вставок по времени
-            new Thread(() -> {
-                Thread.currentThread().setName("IOSIF " + x);
+            Util.testSleepMs(250);
+            Thread thread = new Thread(() -> {
                 try {
-                    while (run.get()) {
-                        for (int j = 0; j < 1000; j++) {
-                            test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), timeoutMs));
-                        }
-                        Util.testSleepMs((100 * x) + 10);
+                    long time = System.currentTimeMillis();
+                    for (int j = 0; j < c; j++) {
+                        test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1333));
                     }
+                    UtilLog.printInfo(System.currentTimeMillis() - time);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }).start();
+            });
+            thread.start();
+            thread.join();
         }
+        Util.testSleepMs(3_000);
+        scheduler.shutdown();
+        UtilLog.printInfo(test);
+        AvgMetric.Statistic statistic = avgMetric.flushStatistic();
+        UtilLog.printInfo(statistic);
 
-
-        Util.testSleepMs(5000);
-        run.set(false);
-        Util.testSleepMs(timeoutMs + sleepKeepAlive);
-        run2.set(false);
-        Map<String, Object> flush = avgMetric.flush("");
-        Map<String, Object> fields = test.flushAndGetStatistic(null).getFirst().getHeader();
-        flush.putAll(fields);
-        Assertions.assertEquals(0, flush.get("ItemSize"));
-        Assertions.assertEquals(0, flush.get("BucketSize"));
-        return flush;
-    }
-
-    @Test
-    void runThreadAny() {
-        //{AvgCount=5357983, Min=-276, Max=-1, Sum=-449148926, Avg=-83.82798638965447, MapSize=0, BucketSize=0}
-
-        Map<String, Object> stat;
-        double timeAvg;
-
-        stat = multiThread(100, 500);
-        timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 100, timeAvg+"");
-
-        stat = multiThread(100, 1000);
-        timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 100, timeAvg + "");
-
-        stat = multiThread(200, 600);
-        timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 200, timeAvg+"");
-
-        stat = multiThread(600, 600);
-        timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 600, timeAvg+"");
-
-        stat = multiThread(1200, 600);
-        timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 1200, timeAvg+"");
-
-        stat = multiThread(2400, 600);
-        timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 2400, timeAvg+"");
-
-        stat = multiThread(4800, 600);
-        timeAvg = (double) stat.get("Avg");
-        Assertions.assertTrue(timeAvg <= 4800, timeAvg+"");
+        Assertions.assertEquals(0, err.get());
+        Assertions.assertEquals(4 * c, success.get());
+        // Надо что бы среднее укладывалось в 1 секунду
+        Assertions.assertTrue(statistic.getAvg() > -1000);
+        Assertions.assertTrue(statistic.getAvg() < 0);
 
     }
 

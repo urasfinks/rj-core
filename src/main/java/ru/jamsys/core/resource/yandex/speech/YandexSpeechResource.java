@@ -28,14 +28,14 @@ public class YandexSpeechResource
 
     private PropertyDispatcher<Object> propertyDispatcher;
 
-    private final YandexSpeechProperty yandexSpeechProperty = new YandexSpeechProperty();
+    private final YandexSpeechRepositoryProperty yandexSpeechRepositoryProperty = new YandexSpeechRepositoryProperty();
 
     @Override
     public void init(String ns) throws Throwable {
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
-                yandexSpeechProperty,
+                yandexSpeechRepositoryProperty,
                 getCascadeKey(ns)
         );
     }
@@ -81,16 +81,16 @@ public class YandexSpeechResource
 
     @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
-        if (yandexSpeechProperty.getHost() == null || yandexSpeechProperty.getPort() == null || yandexSpeechProperty.getAlias() == null) {
+        if (yandexSpeechRepositoryProperty.getHost() == null || yandexSpeechRepositoryProperty.getPort() == null || yandexSpeechRepositoryProperty.getAlias() == null) {
             return;
         }
         if (client != null) {
             client.shutdown();
         }
         client = new YandexSpeechClient(
-                yandexSpeechProperty.getHost(),
-                yandexSpeechProperty.getPort(),
-                new String(App.get(SecurityComponent.class).get(yandexSpeechProperty.getAlias()))
+                yandexSpeechRepositoryProperty.getHost(),
+                yandexSpeechRepositoryProperty.getPort(),
+                new String(App.get(SecurityComponent.class).get(yandexSpeechRepositoryProperty.getAlias()))
         );
     }
 
@@ -98,5 +98,5 @@ public class YandexSpeechResource
     public boolean checkFatalException(Throwable th) {
         return false;
     }
-    
+
 }

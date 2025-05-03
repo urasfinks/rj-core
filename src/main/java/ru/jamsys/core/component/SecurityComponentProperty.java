@@ -4,12 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.annotation.PropertyKey;
-import ru.jamsys.core.extension.property.repository.AnnotationPropertyExtractor;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotationField;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @FieldNameConstants
 @Getter
-public class SecurityComponentProperty extends AnnotationPropertyExtractor<String> {
+public class SecurityComponentProperty extends RepositoryPropertyAnnotationField<String> {
     @Setter
     @PropertyKey("run.args.security.path.storage")
     private String pathStorage;

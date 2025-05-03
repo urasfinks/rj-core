@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.ManagerElement;
+import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
@@ -39,7 +39,7 @@ public class RateLimitItemPeriodic
     @Getter
     private final String ns;
 
-    private final RateLimitItemProperty property = new RateLimitItemProperty();
+    private final RateLimitItemRepositoryProperty property = new RateLimitItemRepositoryProperty();
 
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
@@ -89,8 +89,8 @@ public class RateLimitItemPeriodic
 
     public DataHeader flushAndGetStatistic(long curTime) {
         DataHeader statistic = new DataHeader().setBody(ns);
-        statistic.put("period", periodName);
-        statistic.put("max", property.getMax());
+        statistic.addHeader("period", periodName);
+        statistic.addHeader("max", property.getMax());
         if (nextTimeFlush.get() <= curTime) {
             Calendar now = Calendar.getInstance();
             now.setTimeInMillis(curTime);
@@ -98,11 +98,11 @@ public class RateLimitItemPeriodic
             long timeInMs = now.getTimeInMillis();
             nextTimeFlush.set(timeInMs);
             nextTimeFlushFormat = UtilDate.msFormat(timeInMs);
-            statistic.put("tpu", tpu.getAndSet(0));
-            statistic.put("flushed", true);
+            statistic.addHeader("tpu", tpu.getAndSet(0));
+            statistic.addHeader("flushed", true);
         } else {
-            statistic.put("tpu", tpu.get());
-            statistic.put("flushed", false);
+            statistic.addHeader("tpu", tpu.get());
+            statistic.addHeader("flushed", false);
         }
         return statistic;
     }

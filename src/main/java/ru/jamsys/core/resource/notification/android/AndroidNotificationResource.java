@@ -31,14 +31,14 @@ public class AndroidNotificationResource
 
     private PropertyDispatcher<Object> propertyDispatcher;
 
-    private final AndroidNotificationProperty androidNotificationProperty = new AndroidNotificationProperty();
+    private final AndroidNotificationRepositoryProperty androidNotificationRepositoryProperty = new AndroidNotificationRepositoryProperty();
 
     @Override
     public void init(String ns) throws Throwable {
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
                 this,
-                androidNotificationProperty,
+                androidNotificationRepositoryProperty,
                 getCascadeKey(ns)
         );
     }
@@ -47,9 +47,9 @@ public class AndroidNotificationResource
     public HttpResponse execute(AndroidNotificationRequest arguments) {
         String postData = createPostData(arguments.getTitle(), arguments.getData(), arguments.getToken());
         HttpConnector httpConnector = new HttpConnectorDefault()
-                .setUrl(androidNotificationProperty.getUrl())
+                .setUrl(androidNotificationRepositoryProperty.getUrl())
                 .setConnectTimeoutMs(1_000)
-                .setReadTimeoutMs(androidNotificationProperty.getTimeoutMs())
+                .setReadTimeoutMs(androidNotificationRepositoryProperty.getTimeoutMs())
                 .setRequestHeader("Content-type", "application/json")
                 .setRequestHeader("Authorization", "Bearer " + accessToken)
                 .setPostData(postData.getBytes(StandardCharsets.UTF_8));
@@ -71,7 +71,7 @@ public class AndroidNotificationResource
 
         message.put("token", token);
 
-        notification.put("title", androidNotificationProperty.getApplicationName());
+        notification.put("title", androidNotificationRepositoryProperty.getApplicationName());
         notification.put("body", title);
         message.put("notification", notification);
 
@@ -102,13 +102,13 @@ public class AndroidNotificationResource
 
     @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
-        if (androidNotificationProperty.getScope() == null || androidNotificationProperty.getStorageCredentials() == null) {
+        if (androidNotificationRepositoryProperty.getScope() == null || androidNotificationRepositoryProperty.getStorageCredentials() == null) {
             return;
         }
         try {
-            String[] messagingScope = new String[]{androidNotificationProperty.getScope()};
+            String[] messagingScope = new String[]{androidNotificationRepositoryProperty.getScope()};
             GoogleCredentials googleCredentials = GoogleCredentials
-                    .fromStream(new FileInputStream(androidNotificationProperty.getStorageCredentials()))
+                    .fromStream(new FileInputStream(androidNotificationRepositoryProperty.getStorageCredentials()))
                     .createScoped(Arrays.asList(messagingScope));
             googleCredentials.refresh();
             this.accessToken = googleCredentials.getAccessToken().getTokenValue();

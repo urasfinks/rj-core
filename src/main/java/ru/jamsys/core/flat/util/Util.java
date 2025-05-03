@@ -142,7 +142,7 @@ public class Util {
         return escapeHtml4(value);
     }
 
-    public static long zeroLastNDigits(long x, long n) {
+    public static long resetLastNDigits(long x, long n) {
         long tenToTheN = (long) Math.pow(10, n);
         return (x / tenToTheN) * tenToTheN;
     }
