@@ -6,9 +6,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
-import ru.jamsys.core.component.manager.item.BrokerMemoryImpl;
+import ru.jamsys.core.component.manager.item.BrokerMemory;
 import ru.jamsys.core.component.manager.item.BrokerProperty;
-import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
@@ -22,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 // IO time: 2.481
 // COMPUTE time: 2.457
 
-class BrokerMemoryImplTest {
+class BrokerMemoryTest {
 
     @BeforeAll
     static void beforeAll() {
@@ -30,7 +29,7 @@ class BrokerMemoryImplTest {
         App.get(Manager.class).configure(
                 BrokerMemory.class,
                 XTest.class.getSimpleName(),
-                (k) -> new BrokerMemoryImpl<>(k, App.context, _ -> UtilLog.printAction("DROP"))
+                (k) -> new BrokerMemory<>(k, App.context, _ -> UtilLog.printAction("DROP"))
         );
     }
 
@@ -45,7 +44,7 @@ class BrokerMemoryImplTest {
         BrokerMemory<XTest> broker = App.get(Manager.class).configure(
                         BrokerMemory.class,
                         XTest.class.getSimpleName() + "_1",
-                        (k) -> new BrokerMemoryImpl<XTest>(k, App.context, dropped::add)
+                        (k) -> new BrokerMemory<XTest>(k, App.context, dropped::add)
                 )
                 .getGeneric();
 
@@ -215,7 +214,7 @@ class BrokerMemoryImplTest {
         BrokerMemory<XTest> broker = App.get(Manager.class).configure(
                         BrokerMemory.class,
                         XTest.class.getSimpleName() + "_2",
-                        (k) -> new BrokerMemoryImpl<XTest>(k, App.context, _ -> counter.incrementAndGet())
+                        (k) -> new BrokerMemory<XTest>(k, App.context, _ -> counter.incrementAndGet())
                 )
                 .getGeneric();
 

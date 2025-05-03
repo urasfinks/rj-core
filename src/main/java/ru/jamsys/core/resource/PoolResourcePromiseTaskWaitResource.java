@@ -3,9 +3,8 @@ package ru.jamsys.core.resource;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerElement;
-import ru.jamsys.core.component.manager.item.BrokerMemoryImpl;
+import ru.jamsys.core.component.manager.item.BrokerMemory;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemCompletable;
 import ru.jamsys.core.pool.Valid;
@@ -45,7 +44,7 @@ public class PoolResourcePromiseTaskWaitResource<
         brokerMemoryConfiguration = App.get(Manager.class).configure(
                 BrokerMemory.class,
                 ns,
-                (ns1) -> new BrokerMemoryImpl<PromiseTaskWaitResource<?>>(ns1, App.context, null)
+                (ns1) -> new BrokerMemory<PromiseTaskWaitResource<?>>(ns1, App.context, null)
         );
     }
 

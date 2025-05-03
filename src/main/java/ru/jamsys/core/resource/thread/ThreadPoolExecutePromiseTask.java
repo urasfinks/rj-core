@@ -4,9 +4,8 @@ import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerElement;
-import ru.jamsys.core.component.manager.item.BrokerMemoryImpl;
+import ru.jamsys.core.component.manager.item.BrokerMemory;
 import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.broker.persist.BrokerMemory;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.AbstractPromiseTask;
 import ru.jamsys.core.rate.limit.RateLimitFactory;
@@ -38,7 +37,7 @@ public class ThreadPoolExecutePromiseTask
         brokerPromiseTaskConfiguration = App.get(Manager.class).configure(
                 BrokerMemory.class,
                 getCascadeKey(ns),
-                ns1 -> new BrokerMemoryImpl<AbstractPromiseTask>(
+                ns1 -> new BrokerMemory<AbstractPromiseTask>(
                         ns1,
                         App.context,
                         promiseTask -> {

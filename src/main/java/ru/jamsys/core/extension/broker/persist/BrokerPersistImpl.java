@@ -2,7 +2,7 @@ package ru.jamsys.core.extension.broker.persist;
 
 import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.component.manager.ManagerElement;
-import ru.jamsys.core.component.manager.item.BrokerMemoryImpl;
+import ru.jamsys.core.component.manager.item.BrokerMemory;
 import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 public class BrokerPersistImpl<T extends ByteSerialization>
-        extends BrokerMemoryImpl<T>
+        extends BrokerMemory<T>
         implements Broker<T>, BrokerPersist<T>,
         ManagerElement {
 

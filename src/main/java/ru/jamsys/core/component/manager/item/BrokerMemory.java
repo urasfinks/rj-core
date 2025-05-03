@@ -8,14 +8,13 @@ import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.addable.AddToList;
-import ru.jamsys.core.extension.broker.persist.BrokerMemory;
+import ru.jamsys.core.extension.broker.persist.AbstractBrokerMemory;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +26,9 @@ import java.util.function.Consumer;
 
 // Брокер - циклическая очередь элементов, с timeout элементов
 
-public class BrokerMemoryImpl<T>
-        extends ExpirationMsMutableImplAbstractLifeCycle
+public class BrokerMemory<T>
+        extends AbstractBrokerMemory<T>
         implements
-        BrokerMemory<T>,
         CascadeKey,
         AddToList<
                 ExpirationMsImmutableEnvelope<T>,
@@ -69,7 +67,7 @@ public class BrokerMemoryImpl<T>
     @SuppressWarnings("all")
     private final Manager.Configuration<ExpirationList> expirationListConfiguration;
 
-    public BrokerMemoryImpl(
+    public BrokerMemory(
             String ns,
             ApplicationContext applicationContext,
             Consumer<T> onDrop
