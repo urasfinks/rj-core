@@ -3,10 +3,13 @@ package ru.jamsys.core.extension.batch.writer;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.UtilByte;
+import ru.jamsys.core.statistic.AvgMetric;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,11 +34,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
 // Многопоточная запись в файл пачками
 @Getter
-public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement> extends AbstractLifeCycle implements LifeCycleInterface {
+public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
+        extends AbstractLifeCycle
+        implements LifeCycleInterface, StatisticsFlush {
+
+    private static final int defSize = (int) UtilByte.kilobytesToBytes(4); // 4KB
 
     // Минимальный размер пачки в килобайтах, перед тем как данные будут записаны на файловую систему
     @Setter
-    private volatile static int minBatchSize = (int) UtilByte.kilobytesToBytes(4); // 4KB
+    private volatile static int minBatchSize = defSize;
 
     private OutputStream fileOutputStream;
 
@@ -48,12 +55,12 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement> extends A
     // Блокировка на запись, что бы только 1 поток мог писать данные на файловую систему
     private final AtomicBoolean flushLock = new AtomicBoolean(false);
 
-    // Приблизительный размер наполнения пачки, состояние может быть не консистентно
-    // Для нас этот показатель не критичен, так как есть фоновый процесс, который каждую секунду вызывает flush()
-    private final AtomicLong writeBatchSize = new AtomicLong();
-
     // Точная позиция смещения данных относительно начала файла
     private final AtomicLong position = new AtomicLong(0);
+
+    private final AvgMetric statisticSize = new AvgMetric();
+
+    private final AvgMetric statisticTime = new AvgMetric();
 
     private final String filePath;
 
@@ -72,33 +79,47 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement> extends A
         inputQueue.add(data);
     }
 
-    private void flush() throws IOException {
+    public void flush() throws IOException {
         // Что бы только один поток мог писать на файловую систему, планируется запись только в планировщике
         if (flushLock.compareAndSet(false, true)) {
             List<T> listPolled = new ArrayList<>();
+            // Ограничиваем, что бы запись длилась не более 1 секунды
+            long finishTime = System.currentTimeMillis() + 950;
+            long lastTimeWrite = 0;
             try {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 while (!inputQueue.isEmpty()) {
+                    long whiteStartTime = System.currentTimeMillis();
+                    if (whiteStartTime > finishTime) {
+                        break;
+                    }
                     T polled = inputQueue.pollFirst();
                     if (polled == null) {
                         continue;
                     }
+                    statisticSize.add((long) polled.getBytes().length);
                     polled.setPosition(position.getAndAdd(polled.getBytes().length));
                     listPolled.add(polled);
                     byteArrayOutputStream.write(polled.getBytes());
-                    if (byteArrayOutputStream.size() >= minBatchSize) {
+                    if (
+                            byteArrayOutputStream.size() >= minBatchSize // Наполнили минимальную пачку
+                                    || (whiteStartTime - lastTimeWrite) > 50 // Если с прошлой записи пачки прошло 50мс
+                    ) {
+                        lastTimeWrite = System.currentTimeMillis();
                         fileOutputStream.write(byteArrayOutputStream.toByteArray());
                         byteArrayOutputStream.reset();
                         outputQueue.addAll(listPolled);
                         listPolled.clear();
+                        statisticTime.add(System.currentTimeMillis() - lastTimeWrite);
                     }
                 }
                 // Если в буфере остались данные
                 if (byteArrayOutputStream.size() > 0) {
+                    long s = System.currentTimeMillis();
                     fileOutputStream.write(byteArrayOutputStream.toByteArray());
                     outputQueue.addAll(listPolled);
+                    statisticTime.add(System.currentTimeMillis() - s);
                 }
-                writeBatchSize.set(0);
             } finally {
                 flushLock.set(false);
             }
@@ -137,4 +158,24 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement> extends A
         }
     }
 
+    @Override
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        AvgMetric.Statistic sizeWrite = statisticSize.flushStatistic();
+        // Получаем статистику, сколько всего было записано байт на прошлой итерации, для того, что бы сократить IOPS
+        minBatchSize = (int) sizeWrite.getSum();
+        if (minBatchSize < defSize) {
+            minBatchSize = defSize;
+        }
+        float sByte = (float) minBatchSize;
+        float sKb = sByte / 1024;
+        float sMb = sKb / 1024;
+
+        return List.of(new DataHeader()
+                .addHeader("minBatchSizeByte", sByte)
+                .addHeader("minBatchSizeKb", sKb)
+                .addHeader("minBatchSizeMb", sMb)
+                .addHeader("size", sizeWrite)
+                .addHeader("time", statisticTime.flushStatistic())
+        );
+    }
 }
