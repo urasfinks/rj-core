@@ -17,7 +17,7 @@ public interface Broker<T> extends
         DisposableExpirationMsImmutableEnvelope<T> // Должны вернуть, что бы из вне можно было сделать remove
         > {
 
-    int size(); // Размер данных
+    long size(); // Размер данных
 
     boolean isEmpty(); // Пустой брокер
 
@@ -33,8 +33,6 @@ public interface Broker<T> extends
     }
 
     PropertyDispatcher<Integer> getPropertyDispatcher(); // Получить диспетчер настроек брокера
-
-    //BrokerProperty getPropertyBroke(); // Gjkexb
 
     // Рекомендуется использовать только для тестов
     void reset();

@@ -2,7 +2,6 @@ package ru.jamsys.core.extension.batch.writer;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleInterface;
@@ -16,15 +15,23 @@ import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-// Теперь многопоточная запись в файл пачками по 4кб
-// C - callback
-@Getter
-public class BatchFileWriter extends AbstractLifeCycle implements AutoCloseable, LifeCycleInterface {
+// public enum Operation {
+//        SUBSCRIBE_GROUP((byte) 1), //Подписана группа
+//        INSERT_DATA((byte) 2), // Добавлены данные
+//        POLL_DATA_GROUP((byte) 3), // Данные были выданы для группы
+//        COMMIT_DATA_GROUP((byte) 4), // Данные были обработаны группой
+//        UNSUBSCRIBE_GROUP((byte) 5), // Группа отписана
+//        ;
 
+// Многопоточная запись в файл пачками
+@Getter
+public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement> extends AbstractLifeCycle implements LifeCycleInterface {
 
     // Минимальный размер пачки в килобайтах, перед тем как данные будут записаны на файловую систему
     @Setter
@@ -33,13 +40,16 @@ public class BatchFileWriter extends AbstractLifeCycle implements AutoCloseable,
     private OutputStream fileOutputStream;
 
     // Конкурентная не блокирующая очередь, порядок добавления нам не критичен, главное, что бы не было блокировок
-    private final ConcurrentLinkedDeque<byte[]> queue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<T> inputQueue = new ConcurrentLinkedDeque<>();
+
+    // В выходную очередь будут записываться элементы записанные на FS
+    private final ConcurrentLinkedDeque<T> outputQueue = new ConcurrentLinkedDeque<>();
 
     // Блокировка на запись, что бы только 1 поток мог писать данные на файловую систему
     private final AtomicBoolean flushLock = new AtomicBoolean(false);
 
     // Приблизительный размер наполнения пачки, состояние может быть не консистентно
-    // Для нас этот показатель не критичен, так как есть фоновый процесс, который каждую секунду вызывает flush(false)
+    // Для нас этот показатель не критичен, так как есть фоновый процесс, который каждую секунду вызывает flush()
     private final AtomicLong writeBatchSize = new AtomicLong();
 
     // Точная позиция смещения данных относительно начала файла
@@ -51,61 +61,48 @@ public class BatchFileWriter extends AbstractLifeCycle implements AutoCloseable,
     private OpenOption openOption = StandardOpenOption.TRUNCATE_EXISTING;
 
     @SuppressWarnings("unused")
-    public BatchFileWriter(String filePath) {
+    public AsyncFileWriter(String filePath) {
         this.filePath = filePath;
     }
 
-    private void write(@NotNull byte[] data) throws Exception {
+    public void writeAsync(T data) throws Exception {
         if (!isRun()) {
             throw new IOException("Writer is closed");
         }
-        queue.add(data);
-        if (writeBatchSize.addAndGet(data.length) >= minBatchSize) {
-            // Так как мы оперируем ресурсом потока, который просто хотел закинуть свою порцию данных
-            // мы будем писать только одну пачку, а если там наваливают без остановки, нельзя так использовать поток
-            // Там должен подключится фоновый процесс, если конечно у него получится втиснуться,
-            // но как будто надо писать логику хитрую, что бы
-            flush(true);
-        }
+        inputQueue.add(data);
     }
 
-    private void flush(boolean onlyOneBatch) throws IOException {
-        // Что бы только один поток мог писать на файловую систему
+    private void flush() throws IOException {
+        // Что бы только один поток мог писать на файловую систему, планируется запись только в планировщике
         if (flushLock.compareAndSet(false, true)) {
+            List<T> listPolled = new ArrayList<>();
             try {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                // Да, может случиться такое, что будет isEmpty и мы выйдем из цикла,
-                // но реально другой поток положит в очередь новую порцию данных, а мы ещё не переключили lock в false
-                // Тут должен подключится планировщик, который каждую секунду будет вызывать flush в режиме
-                // onlyOneBatch = false, то есть без остановки будет писать на ФС столько пачек, сколько получится
-                while (!queue.isEmpty()) {
-                    byte[] data = queue.pollFirst();
-                    if (data == null) {
+                while (!inputQueue.isEmpty()) {
+                    T polled = inputQueue.pollFirst();
+                    if (polled == null) {
                         continue;
                     }
-                    byteArrayOutputStream.write(data);
+                    polled.setPosition(position.getAndAdd(polled.getBytes().length));
+                    listPolled.add(polled);
+                    byteArrayOutputStream.write(polled.getBytes());
                     if (byteArrayOutputStream.size() >= minBatchSize) {
                         fileOutputStream.write(byteArrayOutputStream.toByteArray());
                         byteArrayOutputStream.reset();
-                        if (onlyOneBatch) {
-                            break;
-                        }
+                        outputQueue.addAll(listPolled);
+                        listPolled.clear();
                     }
                 }
-                // Допустим сменился batchSize и мы не добрали на пачку, надо всё равно записать
+                // Если в буфере остались данные
                 if (byteArrayOutputStream.size() > 0) {
                     fileOutputStream.write(byteArrayOutputStream.toByteArray());
+                    outputQueue.addAll(listPolled);
                 }
                 writeBatchSize.set(0);
             } finally {
                 flushLock.set(false);
             }
         }
-    }
-
-    @Override
-    public void close() throws IOException {
-        shutdown();
     }
 
     @Override
@@ -128,7 +125,7 @@ public class BatchFileWriter extends AbstractLifeCycle implements AutoCloseable,
     @Override
     public void shutdownOperation() {
         try {
-            flush(false);
+            flush();
         } catch (Throwable th) {
             App.error(th);
         } finally {

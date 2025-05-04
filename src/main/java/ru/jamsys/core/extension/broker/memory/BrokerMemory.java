@@ -91,7 +91,7 @@ public class BrokerMemory<T>
         );
     }
 
-    public int size() {
+    public long size() {
         return mainQueueSize.get();
     }
 
