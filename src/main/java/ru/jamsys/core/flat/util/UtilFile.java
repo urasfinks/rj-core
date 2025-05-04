@@ -81,7 +81,11 @@ public class UtilFile {
                 App.error(e);
             }
         });
+    }
 
+    // Одно и тоже
+    public static void cleanDirectory(String path) throws IOException {
+        FileUtils.cleanDirectory(new File(path));
     }
 
     public static void listFilesForFolder(final File folder, List<String> list) {
@@ -159,10 +163,6 @@ public class UtilFile {
     @SuppressWarnings("unused")
     public static void deleteDirectory(File dir) throws IOException {
         FileUtils.deleteDirectory(dir);
-    }
-
-    public static void cleanDirectory(File dir) throws IOException {
-        FileUtils.cleanDirectory(dir);
     }
 
 }

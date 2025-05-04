@@ -11,7 +11,6 @@ import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilLog;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -54,7 +53,7 @@ class AsyncFileWriterTest {
         outputQueue.clear();
         if (writer != null) {
             writer.shutdown();
-            UtilFile.cleanDirectory(new File("LogManager"));
+            UtilFile.removeAllFilesInFolder("LogManager");
         }
     }
 
