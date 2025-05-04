@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 // public enum Operation {
 //        SUBSCRIBE_GROUP((byte) 1), //Подписана группа
@@ -49,9 +50,6 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
     // Конкурентная не блокирующая очередь, порядок добавления нам не критичен, главное, что бы не было блокировок
     private final ConcurrentLinkedDeque<T> inputQueue = new ConcurrentLinkedDeque<>();
 
-    // В выходную очередь будут записываться элементы записанные на FS
-    private final ConcurrentLinkedDeque<T> outputQueue = new ConcurrentLinkedDeque<>();
-
     // Блокировка на запись, что бы только 1 поток мог писать данные на файловую систему
     private final AtomicBoolean flushLock = new AtomicBoolean(false);
 
@@ -67,9 +65,12 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
     @Setter
     private OpenOption openOption = StandardOpenOption.TRUNCATE_EXISTING;
 
+    private final Consumer<List<T>> onWrite;
+
     @SuppressWarnings("unused")
-    public AsyncFileWriter(String filePath) {
+    public AsyncFileWriter(String filePath, Consumer<List<T>> onWrite) {
         this.filePath = filePath;
+        this.onWrite = onWrite;
     }
 
     public void writeAsync(T data) throws Exception {
@@ -108,7 +109,9 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                         lastTimeWrite = System.currentTimeMillis();
                         fileOutputStream.write(byteArrayOutputStream.toByteArray());
                         byteArrayOutputStream.reset();
-                        outputQueue.addAll(listPolled);
+                        if (onWrite != null) {
+                            onWrite.accept(listPolled);
+                        }
                         listPolled.clear();
                         statisticTime.add(System.currentTimeMillis() - lastTimeWrite);
                     }
@@ -117,7 +120,9 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                 if (byteArrayOutputStream.size() > 0) {
                     long s = System.currentTimeMillis();
                     fileOutputStream.write(byteArrayOutputStream.toByteArray());
-                    outputQueue.addAll(listPolled);
+                    if (onWrite != null) {
+                        onWrite.accept(listPolled);
+                    }
                     statisticTime.add(System.currentTimeMillis() - s);
                 }
             } finally {

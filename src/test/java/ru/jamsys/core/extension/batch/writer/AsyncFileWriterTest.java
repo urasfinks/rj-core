@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -25,17 +26,19 @@ class AsyncFileWriterTest {
 
     private Path tempFile;
     private AsyncFileWriter<TestElement> writer;
+    private final ConcurrentLinkedDeque<TestElement> outputQueue = new ConcurrentLinkedDeque<>();
 
     @BeforeEach
     void setUp() throws Exception {
         tempFile = Files.createTempFile("async-writer-test", ".dat");
-        writer = new AsyncFileWriter<>(tempFile.toString());
+        writer = new AsyncFileWriter<>(tempFile.toString(), outputQueue::addAll);
         writer.run();
     }
 
     @AfterEach
     void tearDown() {
         writer.shutdown();
+        outputQueue.clear();
         try {
             Files.deleteIfExists(tempFile);
         } catch (IOException ignored) {
@@ -53,7 +56,7 @@ class AsyncFileWriterTest {
 
         writer.flush();
 
-        assertEquals(2, writer.getOutputQueue().size());
+        assertEquals(2, outputQueue.size());
         assertEquals(0, element.getPosition());
         assertEquals(5, element2.getPosition());
 
@@ -75,7 +78,7 @@ class AsyncFileWriterTest {
 
         writer.flush();
 
-        assertEquals(3, writer.getOutputQueue().size());
+        assertEquals(3, outputQueue.size());
 
         long expectedPos = 0;
         for (TestElement el : elements) {
@@ -101,7 +104,7 @@ class AsyncFileWriterTest {
         writer.writeAsync(e3);
         writer.flush();
 
-        assertEquals(3, writer.getOutputQueue().size());
+        assertEquals(3, outputQueue.size());
 
         assertEquals(0, e1.getPosition());
         assertEquals(2048, e2.getPosition());
@@ -121,7 +124,7 @@ class AsyncFileWriterTest {
 
         writer.shutdown(); // should flush pending
 
-        assertEquals(2, writer.getOutputQueue().size());
+        assertEquals(2, outputQueue.size());
 
         byte[] bytes = Files.readAllBytes(tempFile);
         assertArrayEquals("abcdef".getBytes(), bytes);
@@ -171,15 +174,23 @@ class AsyncFileWriterTest {
 
         Util.testSleepMs(3_000);
         long start = System.currentTimeMillis();
-        while ((4 * c) != writer.getOutputQueue().size()) {
+        while (true) {
+            if ((4 * c) == outputQueue.size()) {
+                break;
+            }
+            if (System.currentTimeMillis() - start > 11_000) {
+                break;
+            }
             Thread.onSpinWait();
         }
+        long fin = System.currentTimeMillis() - start;
         run.set(false);
         //Assertions.assertEquals(4 * c, writer.getOutputQueue().size());
         UtilLog.printInfo(new HashMapBuilder<String, Object>()
                 .append("sizeMb", ((float) writer.getPosition().get()) / 1024 / 1024)
-                .append("time", System.currentTimeMillis() - start)
+                .append("time", fin)
         );
+        Assertions.assertTrue(fin < 50);
     }
 
     // Реализация тестового элемента
