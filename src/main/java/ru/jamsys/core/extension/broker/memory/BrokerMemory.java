@@ -5,10 +5,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
-import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.addable.AddToList;
+import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -213,7 +213,7 @@ public class BrokerMemory<T>
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x
-        return mainQueueSize.get() * 100 / getPropertyBroker().getSize();
+        return (int) (((float) mainQueueSize.get()) * 100 / getPropertyBroker().getSize());
     }
 
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {

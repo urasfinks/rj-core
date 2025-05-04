@@ -31,7 +31,10 @@ public abstract class AbstractRepositoryProperty<T> {
     public void checkNotNull() {
         UtilRisc.forEach(null, getListPropertyEnvelopeRepository(), fieldData -> {
             if (fieldData.isNotNull() && fieldData.getValue() == null) {
-                throw new RuntimeException(UtilJson.toStringPretty(this, "--"));
+                throw new RuntimeException(UtilJson.toStringPretty(new HashMapBuilder<String, Object>()
+                        .append("cause", "checkNotNull")
+                        .append("problemField", fieldData)
+                        .append("repository", this), "--"));
             }
         });
     }

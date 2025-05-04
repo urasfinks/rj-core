@@ -1,18 +1,16 @@
 package ru.jamsys.core.extension.batch.writer;
 
 import lombok.Getter;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
@@ -24,24 +22,38 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AsyncFileWriterTest {
 
-    private Path tempFile;
     private AsyncFileWriter<TestElement> writer;
     private final ConcurrentLinkedDeque<TestElement> outputQueue = new ConcurrentLinkedDeque<>();
+    private final AtomicBoolean run = new AtomicBoolean(true);
+
+    @BeforeAll
+    static void beforeAll() {
+        App.getRunBuilder().addTestArguments().runSpring();
+        App.get(ServiceProperty.class).set("App.AsyncFileWriter.test.file.path", "tmp.dat");
+    }
+
+    @AfterAll
+    static void shutdown() {
+        App.shutdown();
+    }
 
     @BeforeEach
-    void setUp() throws Exception {
-        tempFile = Files.createTempFile("async-writer-test", ".dat");
-        writer = new AsyncFileWriter<>(tempFile.toString(), outputQueue::addAll);
+    void setUp() {
+        run.set(true);
+        writer = new AsyncFileWriter<>("test", App.context, outputQueue::addAll);
         writer.run();
     }
 
     @AfterEach
     void tearDown() {
-        writer.shutdown();
+        run.set(false);
         outputQueue.clear();
-        try {
-            Files.deleteIfExists(tempFile);
-        } catch (IOException ignored) {
+        if (writer != null) {
+            writer.shutdown();
+            try {
+                Files.deleteIfExists(Paths.get(writer.getRepositoryProperty().getFilePath()));
+            } catch (IOException ignored) {
+            }
         }
     }
 
@@ -54,13 +66,13 @@ class AsyncFileWriterTest {
         Assertions.assertEquals(5, element2.getBytes().length);
         writer.writeAsync(element2);
 
-        writer.flush();
+        writer.flush(run);
 
         assertEquals(2, outputQueue.size());
         assertEquals(0, element.getPosition());
         assertEquals(5, element2.getPosition());
 
-        byte[] bytes = Files.readAllBytes(tempFile);
+        byte[] bytes = Files.readAllBytes(Paths.get(writer.getRepositoryProperty().getFilePath()));
         assertArrayEquals("HelloHello".getBytes(), bytes);
     }
 
@@ -76,7 +88,7 @@ class AsyncFileWriterTest {
             writer.writeAsync(el);
         }
 
-        writer.flush();
+        writer.flush(run);
 
         assertEquals(3, outputQueue.size());
 
@@ -86,7 +98,7 @@ class AsyncFileWriterTest {
             expectedPos += el.getBytes().length;
         }
 
-        byte[] bytes = Files.readAllBytes(tempFile);
+        byte[] bytes = Files.readAllBytes(Paths.get(writer.getRepositoryProperty().getFilePath()));
         assertArrayEquals("abc1234XYZ".getBytes(), bytes);
     }
 
@@ -98,11 +110,11 @@ class AsyncFileWriterTest {
         writer.writeAsync(e1);
         writer.writeAsync(e2);
 
-        writer.flush(); // should trigger batch flush due to 4KB size
+        writer.flush(run); // should trigger batch flush due to 4KB size
 
         TestElement e3 = new TestElement("C".repeat(100).getBytes());
         writer.writeAsync(e3);
-        writer.flush();
+        writer.flush(run);
 
         assertEquals(3, outputQueue.size());
 
@@ -110,7 +122,7 @@ class AsyncFileWriterTest {
         assertEquals(2048, e2.getPosition());
         assertEquals(4096, e3.getPosition());
 
-        byte[] bytes = Files.readAllBytes(tempFile);
+        byte[] bytes = Files.readAllBytes(Paths.get(writer.getRepositoryProperty().getFilePath()));
         assertEquals(4096 + 100, bytes.length);
     }
 
@@ -126,7 +138,7 @@ class AsyncFileWriterTest {
 
         assertEquals(2, outputQueue.size());
 
-        byte[] bytes = Files.readAllBytes(tempFile);
+        byte[] bytes = Files.readAllBytes(Paths.get(writer.getRepositoryProperty().getFilePath()));
         assertArrayEquals("abcdef".getBytes(), bytes);
     }
 
@@ -140,7 +152,6 @@ class AsyncFileWriterTest {
 
     @Test
     void multiThread() {
-        AtomicBoolean run = new AtomicBoolean(true);
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         long now = System.currentTimeMillis();
         long initialDelay = 1000 - (now % 1000);
@@ -148,7 +159,7 @@ class AsyncFileWriterTest {
                 () -> {
                     if (run.get()) {
                         try {
-                            writer.flush();
+                            writer.flush(run);
                             UtilLog.printInfo(writer.flushAndGetStatistic(run));
                         } catch (IOException e) {
                             App.error(e);

@@ -45,7 +45,7 @@ public class ExpirationList<T>
     private final String ns;
 
     @JsonIgnore
-    public static Set<ExpirationList<?>> expirationListSet = Util.getConcurrentHashSet();
+    public static Set<ExpirationList<?>> set = Util.getConcurrentHashSet();
 
     @JsonIgnore
     private final ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<T>>> bucket = new ConcurrentSkipListMap<>();
@@ -116,27 +116,6 @@ public class ExpirationList<T>
             bucket.remove(time);
             bucketQueueSize.remove(time);
         }
-//        UtilRisc.forEach(threadRun, bucket, (Long time, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<T>> queue) -> {
-//            if (time > curTimeMs) {
-//                return false;
-//            }
-//            UtilRisc.forEach(threadRun, queue, (DisposableExpirationMsImmutableEnvelope<T> envelope) -> {
-//                if (envelope.isNeutralized() || envelope.isStop()) {
-//                    queue.remove(envelope);
-//                    helperRemove.incrementAndGet();
-//                } else if (envelope.isExpired()) {
-//                    onExpired.accept(envelope);
-//                    queue.remove(envelope);
-//                    helperOnExpired.incrementAndGet();
-//                }
-//            });
-//            if (queue.isEmpty()) {
-//                bucket.remove(time);
-//                bucketQueueSize.remove(time);
-//                return true;
-//            }
-//            return false;
-//        });
     }
 
     @Override
@@ -206,7 +185,7 @@ public class ExpirationList<T>
 
     @Override
     public void runOperation() {
-        expirationListSet.add(this);
+        set.add(this);
     }
 
     public boolean isEmpty() {
@@ -220,7 +199,7 @@ public class ExpirationList<T>
         // Спустя много времени .... а на сколько гуманно делать остановку, того, что должно работать?
         bucket.clear();
         bucketQueueSize.clear();
-        expirationListSet.remove(this);
+        set.remove(this);
     }
 
 }

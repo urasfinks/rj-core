@@ -4,11 +4,15 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
+import ru.jamsys.core.extension.batch.writer.AsyncFileWriter;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
+
+import java.io.IOException;
 
 // Нам надо вызывать helper у ExpiredList 1 раз в секунду, а не 1раз в 3сек
 
@@ -26,10 +30,17 @@ public class Helper1s implements Cron1s, PromiseGenerator {
     @Override
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
-                .append(
-                        ExpirationList.class.getSimpleName(),
-                        (run, _, _) -> UtilRisc.forEach(run, ExpirationList.expirationListSet, expirationList -> {
+                .append(ExpirationList.class.getSimpleName(),
+                        (run, _, _) -> UtilRisc.forEach(run, ExpirationList.set, expirationList -> {
                             expirationList.helper(run, System.currentTimeMillis());
+                        }))
+                .append(AsyncFileWriter.class.getSimpleName(),
+                        (run, _, _) -> UtilRisc.forEach(run, AsyncFileWriter.set, expirationList -> {
+                            try {
+                                expirationList.flush(run);
+                            } catch (IOException e) {
+                                throw new ForwardException(e);
+                            }
                         }))
                 ;
     }

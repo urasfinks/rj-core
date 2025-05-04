@@ -14,6 +14,10 @@ public interface PropertyUtil {
     Map<Class<?>, Function<String, ?>> convertType = new HashMap<>() {{
         this.put(String.class, s -> s);
         this.put(Integer.class, Integer::parseInt);
+        this.put(Long.class, Long::parseLong);
+        this.put(Float.class, Float::parseFloat);
+        this.put(Double.class, Double::parseDouble);
+        this.put(Short.class, Short::parseShort);
         this.put(Boolean.class, Boolean::parseBoolean);
     }};
 

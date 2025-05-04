@@ -1,13 +1,19 @@
 package ru.jamsys.core.extension.batch.writer;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.AbstractLifeCycle;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
+import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.statistic.AvgMetric;
 
@@ -20,6 +26,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,7 +44,13 @@ import java.util.function.Consumer;
 @Getter
 public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         extends AbstractLifeCycle
-        implements LifeCycleInterface, StatisticsFlush {
+        implements
+        LifeCycleInterface,
+        StatisticsFlush,
+        CascadeKey {
+
+    @JsonIgnore
+    public static Set<AsyncFileWriter<?>> set = Util.getConcurrentHashSet();
 
     private static final int defSize = (int) UtilByte.kilobytesToBytes(4); // 4KB
 
@@ -60,8 +73,6 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
 
     private final AvgMetric statisticTime = new AvgMetric();
 
-    private final String filePath;
-
     @Setter
     private OpenOption openOption = StandardOpenOption.TRUNCATE_EXISTING;
 
@@ -69,29 +80,53 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
     // IO операции. Перекладывайте ответы в свою локальную очередь и разбирайте их в других потоках
     private final Consumer<List<T>> onWrite;
 
+    private final AsyncFileWriterRepositoryProperty repositoryProperty = new AsyncFileWriterRepositoryProperty();
+
+    private final PropertyDispatcher<Object> propertyDispatcher;
+
     @SuppressWarnings("unused")
-    public AsyncFileWriter(String filePath, Consumer<List<T>> onWrite) {
-        this.filePath = filePath;
+    public AsyncFileWriter(
+            String ns,
+            ApplicationContext applicationContext,
+            Consumer<List<T>> onWrite
+    ) {
         this.onWrite = onWrite;
+
+        propertyDispatcher = new PropertyDispatcher<>(
+                applicationContext.getBean(ServiceProperty.class),
+                null,
+                repositoryProperty,
+                getCascadeKey(ns)
+        );
     }
 
     public void writeAsync(T data) throws Exception {
         if (!isRun()) {
             throw new IOException("Writer is closed");
         }
+        if (position.get() > repositoryProperty.getMaxSize()) {
+            throw new IOException("Max file size");
+        }
         inputQueue.add(data);
     }
 
-    public void flush() throws IOException {
+    public int getOccupancyPercentage() {
+        // repositoryProperty.getMaxSize() - 100
+        // position - x
+        return (int) (((float) position.get()) * 100 / repositoryProperty.getMaxSize());
+    }
+
+    public void flush(AtomicBoolean threadRun) throws IOException {
         // Что бы только один поток мог писать на файловую систему, планируется запись только в планировщике
         if (flushLock.compareAndSet(false, true)) {
             List<T> listPolled = new ArrayList<>();
-            // Ограничиваем, что бы запись длилась не более 1 секунды
-            long finishTime = System.currentTimeMillis() + 950;
+            // Ограничиваем, что бы суммарная запись длилась не более 1с
+            long finishTime = System.currentTimeMillis() + repositoryProperty.getFlushMaxTimeMs();
+            int eachTime = repositoryProperty.getFlushEachTimeMs();
             long lastTimeWrite = 0;
             try {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                while (!inputQueue.isEmpty()) {
+                while (threadRun.get() && !inputQueue.isEmpty()) {
                     long whiteStartTime = System.currentTimeMillis();
                     if (whiteStartTime > finishTime) {
                         break;
@@ -106,7 +141,7 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                     byteArrayOutputStream.write(polled.getBytes());
                     if (
                             byteArrayOutputStream.size() >= minBatchSize // Наполнили минимальную пачку
-                                    || (whiteStartTime - lastTimeWrite) > 50 // Если с прошлой записи пачки прошло 50мс
+                                    || (whiteStartTime - lastTimeWrite) > eachTime // Если с прошлой записи пачки прошло 50мс
                     ) {
                         lastTimeWrite = System.currentTimeMillis();
                         fileOutputStream.write(byteArrayOutputStream.toByteArray());
@@ -127,6 +162,9 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                     }
                     statisticTime.add(System.currentTimeMillis() - s);
                 }
+            } catch (IOException ie) {
+                // Вернём, что изъяли, но не смогли записать
+                inputQueue.addAll(listPolled);
             } finally {
                 flushLock.set(false);
             }
@@ -135,9 +173,10 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
 
     @Override
     public void runOperation() {
+        propertyDispatcher.run();
         try {
             this.fileOutputStream = Files.newOutputStream(
-                    Paths.get(filePath),
+                    Paths.get(repositoryProperty.getFilePath()),
                     StandardOpenOption.CREATE,
                     StandardOpenOption.WRITE,
                     openOption,
@@ -148,12 +187,18 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         } catch (Throwable th) {
             throw new ForwardException(th);
         }
+        set.add(this);
     }
 
     @Override
     public void shutdownOperation() {
+        set.remove(this);
         try {
-            flush();
+            // getRun тут будет true, только после shutdownOperation станет false
+            // Вроде как не очень логично, крутить сброс на ФС ожидая статус false, когда сами на него влияем
+            // Однако у нас есть ограничения 1с, просто пытаемся сохранить что есть в очереди перед остановкой
+            // ничего плохого не должно произойти за секунду
+            flush(getRun());
         } catch (Throwable th) {
             App.error(th);
         } finally {
@@ -163,6 +208,7 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                 App.error(th);
             }
         }
+        propertyDispatcher.shutdown();
     }
 
     @Override
@@ -185,4 +231,5 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                 .addHeader("time", statisticTime.flushStatistic())
         );
     }
+
 }

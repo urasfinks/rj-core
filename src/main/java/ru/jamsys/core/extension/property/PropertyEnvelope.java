@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.repository.AbstractRepositoryProperty;
 import ru.jamsys.core.flat.util.UtilJson;
 
@@ -126,9 +127,14 @@ public class PropertyEnvelope<T> {
                         property1.setDescriptionIfNull(description);
                     }
                 });
-        @SuppressWarnings("unchecked")
-        T apply = (T) PropertyUtil.convertType.get(cls).apply(property.get());
-        this.value = apply;
+        try {
+            @SuppressWarnings("unchecked")
+            T apply = (T) PropertyUtil.convertType.get(cls).apply(property.get());
+            this.value = apply;
+        } catch (Throwable th) {
+            //"PropertyUtil.convertType.get(" + cls + ").apply(" + property.get() + ");"
+            throw new ForwardException(UtilJson.toStringPretty(this, "{}"), th);
+        }
         this.description = property.getDescription();
         return this;
     }
