@@ -7,9 +7,11 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
+import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilLog;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -31,7 +33,7 @@ class AsyncFileWriterTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runSpring();
-        App.get(ServiceProperty.class).set("App.AsyncFileWriter.test.file.path", "tmp.dat");
+        App.get(ServiceProperty.class).set("App.AsyncFileWriter.test.directory", "LogManager/");
     }
 
     @AfterAll
@@ -47,15 +49,12 @@ class AsyncFileWriterTest {
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws IOException {
         run.set(false);
         outputQueue.clear();
         if (writer != null) {
             writer.shutdown();
-            try {
-                Files.deleteIfExists(Paths.get(writer.getRepositoryProperty().getFilePath()));
-            } catch (IOException ignored) {
-            }
+            UtilFile.cleanDirectory(new File("LogManager"));
         }
     }
 
@@ -74,7 +73,7 @@ class AsyncFileWriterTest {
         assertEquals(0, element.getPosition());
         assertEquals(9, element2.getPosition());
 
-        byte[] bytes = Files.readAllBytes(Paths.get(writer.getRepositoryProperty().getFilePath()));
+        byte[] bytes = Files.readAllBytes(Paths.get(writer.getFilePath()));
         ByteArrayOutputStream i1 = new ByteArrayOutputStream();
         i1.write(UtilByte.intToBytes(5));
         i1.write("Hello".getBytes());
@@ -105,7 +104,7 @@ class AsyncFileWriterTest {
             expectedPos += el.getBytes().length + 4;
         }
 
-        byte[] bytes = Files.readAllBytes(Paths.get(writer.getRepositoryProperty().getFilePath()));
+        byte[] bytes = Files.readAllBytes(Paths.get(writer.getFilePath()));
 
         ByteArrayOutputStream i1 = new ByteArrayOutputStream();
         i1.write(UtilByte.intToBytes(3));
@@ -138,7 +137,7 @@ class AsyncFileWriterTest {
         assertEquals(2048 + 4, e2.getPosition());
         assertEquals(4096 + 8, e3.getPosition());
 
-        byte[] bytes = Files.readAllBytes(Paths.get(writer.getRepositoryProperty().getFilePath()));
+        byte[] bytes = Files.readAllBytes(Paths.get(writer.getFilePath()));
         assertEquals(4096 + 100 + 12, bytes.length);
     }
 
@@ -154,7 +153,7 @@ class AsyncFileWriterTest {
 
         assertEquals(2, outputQueue.size());
 
-        byte[] bytes = Files.readAllBytes(Paths.get(writer.getRepositoryProperty().getFilePath()));
+        byte[] bytes = Files.readAllBytes(Paths.get(writer.getFilePath()));
 
         ByteArrayOutputStream i1 = new ByteArrayOutputStream();
         i1.write(UtilByte.intToBytes(3));

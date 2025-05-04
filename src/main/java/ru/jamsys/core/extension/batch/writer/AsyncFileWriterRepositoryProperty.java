@@ -14,14 +14,16 @@ public class AsyncFileWriterRepositoryProperty extends RepositoryPropertyAnnotat
 
     @SuppressWarnings("all")
     @PropertyNotNull
-    @PropertyKey("file.path")
-    @PropertyDescription("Путь к файлу")
-    private volatile String filePath;
+    @PropertyKey("directory")
+    @PropertyDescription("Директория где будут лежать файлы")
+    private volatile String directoryWithSlash;
 
+    // Надо уточнить, файлы создаются в разрезе секунды (планировщик), если за секунду удасться записать больше данных
+    // они будут записаны, но в следующую секунду будет создан новый файл
     @SuppressWarnings("all")
     @PropertyKey("max.size")
     @PropertyDescription("Максимальный размер файла в байтах")
-    private volatile Long maxSize = UtilByte.gigabytesToBytes(4);
+    private volatile Long maxSize = UtilByte.megabytesToBytes(20);
 
     @SuppressWarnings("all")
     @PropertyKey("flush.max.time.ms")

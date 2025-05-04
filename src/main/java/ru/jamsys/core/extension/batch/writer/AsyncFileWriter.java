@@ -21,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -31,14 +30,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-
-// public enum Operation {
-//        SUBSCRIBE_GROUP((byte) 1), //Подписана группа
-//        INSERT_DATA((byte) 2), // Добавлены данные
-//        POLL_DATA_GROUP((byte) 3), // Данные были выданы для группы
-//        COMMIT_DATA_GROUP((byte) 4), // Данные были обработаны группой
-//        UNSUBSCRIBE_GROUP((byte) 5), // Группа отписана
-//        ;
 
 // Многопоточная запись в файл пачками
 @Getter
@@ -51,6 +42,8 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
 
     @JsonIgnore
     public static Set<AsyncFileWriter<?>> set = Util.getConcurrentHashSet();
+
+    public String filePath;
 
     private static final int defSize = (int) UtilByte.kilobytesToBytes(4); // 4KB
 
@@ -72,9 +65,6 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
     private final AvgMetric statisticSize = new AvgMetric();
 
     private final AvgMetric statisticTime = new AvgMetric();
-
-    @Setter
-    private OpenOption openOption = StandardOpenOption.TRUNCATE_EXISTING;
 
     // Надо понимать, что onWrite будет запускаться планировщиком 1 раз в секунду и нельзя туда вешать долгие
     // IO операции. Перекладывайте ответы в свою локальную очередь и разбирайте их в других потоках
@@ -104,9 +94,6 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         if (!isRun()) {
             throw new IOException("Writer is closed");
         }
-        if (position.get() > repositoryProperty.getMaxSize()) {
-            throw new IOException("Max file size");
-        }
         inputQueue.add(data);
     }
 
@@ -120,6 +107,11 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
     public void flush(AtomicBoolean threadRun) throws IOException {
         // Что бы только один поток мог писать на файловую систему, планируется запись только в планировщике
         if (flushLock.compareAndSet(false, true)) {
+            // Если размер файла вышел за рамки допустимого
+            if (position.get() > repositoryProperty.getMaxSize()) {
+                closeCurrentFile(); // закрываем текущий файл с кем работали
+                openNewFile(); // Открываем новый
+            }
             List<T> listPolled = new ArrayList<>();
             // Ограничиваем, что бы суммарная запись длилась не более 1с
             long finishTime = System.currentTimeMillis() + repositoryProperty.getFlushMaxTimeMs();
@@ -177,20 +169,38 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
     @Override
     public void runOperation() {
         propertyDispatcher.run();
+        openNewFile();
+        set.add(this);
+    }
+
+    private void openNewFile() {
+        filePath = repositoryProperty.getDirectoryWithSlash() + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID() + ".bin";
         try {
             this.fileOutputStream = Files.newOutputStream(
-                    Paths.get(repositoryProperty.getFilePath()),
+                    Paths.get(filePath),
                     StandardOpenOption.CREATE,
                     StandardOpenOption.WRITE,
-                    openOption,
+                    StandardOpenOption.TRUNCATE_EXISTING,
                     // в таком режиме atime, mtime, размер файла может быть не синхронизован,
                     // но данные при восстановлении будут вычитаны корректно
                     StandardOpenOption.DSYNC
             );
+            position.set(0); // Начинаем с 0 позиции в новом вайле
         } catch (Throwable th) {
             throw new ForwardException(th);
         }
-        set.add(this);
+    }
+
+    private void closeCurrentFile() {
+        try {
+            fileOutputStream.close();
+            // Если был открыт файл и в него записали ровно ничего - удалим его, зачем ему тут болтаться
+            if (position.get() == 0) {
+                Files.deleteIfExists(Paths.get(getFilePath()));
+            }
+        } catch (Throwable th) {
+            App.error(th);
+        }
     }
 
     @Override
@@ -205,11 +215,7 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         } catch (Throwable th) {
             App.error(th);
         } finally {
-            try {
-                fileOutputStream.close();
-            } catch (Throwable th) {
-                App.error(th);
-            }
+            closeCurrentFile();
         }
         propertyDispatcher.shutdown();
     }

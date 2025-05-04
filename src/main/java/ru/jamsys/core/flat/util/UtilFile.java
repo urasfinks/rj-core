@@ -157,8 +157,12 @@ public class UtilFile {
     }
 
     @SuppressWarnings("unused")
-    public static void removeDir(File dir) throws IOException {
+    public static void deleteDirectory(File dir) throws IOException {
         FileUtils.deleteDirectory(dir);
+    }
+
+    public static void cleanDirectory(File dir) throws IOException {
+        FileUtils.cleanDirectory(dir);
     }
 
 }
