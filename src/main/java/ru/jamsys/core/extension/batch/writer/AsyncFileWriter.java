@@ -110,6 +110,7 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         inputQueue.add(data);
     }
 
+    @SuppressWarnings("unused")
     public int getOccupancyPercentage() {
         // repositoryProperty.getMaxSize() - 100
         // position - x
