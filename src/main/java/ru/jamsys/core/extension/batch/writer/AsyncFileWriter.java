@@ -65,6 +65,8 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
     @Setter
     private OpenOption openOption = StandardOpenOption.TRUNCATE_EXISTING;
 
+    // Надо понимать, что onWrite будет запускаться планировщиком 1 раз в секунду и нельзя туда вешать долгие
+    // IO операции. Перекладывайте ответы в свою локальную очередь и разбирайте их в других потоках
     private final Consumer<List<T>> onWrite;
 
     @SuppressWarnings("unused")
