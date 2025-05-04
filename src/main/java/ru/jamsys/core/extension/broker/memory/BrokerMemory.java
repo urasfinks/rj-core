@@ -6,7 +6,6 @@ import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
-import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
 import ru.jamsys.core.extension.expiration.ExpirationList;
@@ -29,7 +28,6 @@ import java.util.function.Consumer;
 public class BrokerMemory<T>
         extends AbstractBrokerMemory<T>
         implements
-        CascadeKey,
         AddToList<
                 ExpirationMsImmutableEnvelope<T>,
                 DisposableExpirationMsImmutableEnvelope<T> // Должны вернуть, что бы из вне можно было сделать remove
