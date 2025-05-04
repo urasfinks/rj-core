@@ -6,8 +6,10 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilLog;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -70,10 +72,15 @@ class AsyncFileWriterTest {
 
         assertEquals(2, outputQueue.size());
         assertEquals(0, element.getPosition());
-        assertEquals(5, element2.getPosition());
+        assertEquals(9, element2.getPosition());
 
         byte[] bytes = Files.readAllBytes(Paths.get(writer.getRepositoryProperty().getFilePath()));
-        assertArrayEquals("HelloHello".getBytes(), bytes);
+        ByteArrayOutputStream i1 = new ByteArrayOutputStream();
+        i1.write(UtilByte.intToBytes(5));
+        i1.write("Hello".getBytes());
+        i1.write(UtilByte.intToBytes(5));
+        i1.write("Hello".getBytes());
+        assertArrayEquals(i1.toByteArray(), bytes);
     }
 
     @Test
@@ -95,11 +102,20 @@ class AsyncFileWriterTest {
         long expectedPos = 0;
         for (TestElement el : elements) {
             assertEquals(expectedPos, el.getPosition());
-            expectedPos += el.getBytes().length;
+            expectedPos += el.getBytes().length + 4;
         }
 
         byte[] bytes = Files.readAllBytes(Paths.get(writer.getRepositoryProperty().getFilePath()));
-        assertArrayEquals("abc1234XYZ".getBytes(), bytes);
+
+        ByteArrayOutputStream i1 = new ByteArrayOutputStream();
+        i1.write(UtilByte.intToBytes(3));
+        i1.write("abc".getBytes());
+        i1.write(UtilByte.intToBytes(4));
+        i1.write("1234".getBytes());
+        i1.write(UtilByte.intToBytes(3));
+        i1.write("XYZ".getBytes());
+        assertArrayEquals(i1.toByteArray(), bytes);
+        // assertArrayEquals("abc1234XYZ".getBytes(), bytes);
     }
 
     @Test
@@ -119,11 +135,11 @@ class AsyncFileWriterTest {
         assertEquals(3, outputQueue.size());
 
         assertEquals(0, e1.getPosition());
-        assertEquals(2048, e2.getPosition());
-        assertEquals(4096, e3.getPosition());
+        assertEquals(2048 + 4, e2.getPosition());
+        assertEquals(4096 + 8, e3.getPosition());
 
         byte[] bytes = Files.readAllBytes(Paths.get(writer.getRepositoryProperty().getFilePath()));
-        assertEquals(4096 + 100, bytes.length);
+        assertEquals(4096 + 100 + 12, bytes.length);
     }
 
     @Test
@@ -139,7 +155,14 @@ class AsyncFileWriterTest {
         assertEquals(2, outputQueue.size());
 
         byte[] bytes = Files.readAllBytes(Paths.get(writer.getRepositoryProperty().getFilePath()));
-        assertArrayEquals("abcdef".getBytes(), bytes);
+
+        ByteArrayOutputStream i1 = new ByteArrayOutputStream();
+        i1.write(UtilByte.intToBytes(3));
+        i1.write("abc".getBytes());
+        i1.write(UtilByte.intToBytes(3));
+        i1.write("def".getBytes());
+
+        assertArrayEquals(i1.toByteArray(), bytes);
     }
 
     @Test

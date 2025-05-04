@@ -136,9 +136,11 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                     if (polled == null) {
                         continue;
                     }
-                    statisticSize.add((long) polled.getBytes().length);
-                    polled.setPosition(position.getAndAdd(polled.getBytes().length));
+                    int dataLength = polled.getBytes().length;
+                    statisticSize.add((long) dataLength);
+                    polled.setPosition(position.getAndAdd(polled.getBytes().length + 4)); // 4 это int length
                     listPolled.add(polled);
+                    byteArrayOutputStream.write(UtilByte.intToBytes(dataLength));
                     byteArrayOutputStream.write(polled.getBytes());
                     if (
                             byteArrayOutputStream.size() >= minBatchSize // Наполнили минимальную пачку
