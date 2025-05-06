@@ -2,6 +2,7 @@ package ru.jamsys.core;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
@@ -69,6 +70,18 @@ public class App implements CascadeKey {
     public static <T> T get(Class<T> cls) {
         return (T) mapBean.computeIfAbsent(cls, aClass -> {
             T t = App.context.getBean(cls);
+            if (t == null) {
+                throw new RuntimeException("App.get(" + cls.getName() + ") return null");
+            }
+            return t;
+        });
+    }
+
+    // Для случаев, когда контекст ещё не определён
+    @SuppressWarnings("all")
+    public static <T> T get(Class<T> cls, ApplicationContext applicationContext) {
+        return (T) mapBean.computeIfAbsent(cls, aClass -> {
+            T t = applicationContext.getBean(cls);
             if (t == null) {
                 throw new RuntimeException("App.get(" + cls.getName() + ") return null");
             }
