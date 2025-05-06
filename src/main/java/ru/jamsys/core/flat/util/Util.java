@@ -4,6 +4,8 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -263,6 +265,14 @@ public class Util {
             break;
         }
         return sb.toString();
+    }
+
+    private static Type getSuperclassTypeParameter(Class<?> clazz) {
+        Type superClass = clazz.getGenericSuperclass();
+        if (superClass instanceof ParameterizedType) {
+            return ((ParameterizedType) superClass).getActualTypeArguments()[0];
+        }
+        throw new RuntimeException("Missing type parameter.");
     }
 
 }
