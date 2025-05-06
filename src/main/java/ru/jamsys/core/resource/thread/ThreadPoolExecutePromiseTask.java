@@ -75,7 +75,8 @@ public class ThreadPoolExecutePromiseTask
         ThreadExecutePromiseTask threadExecutePromiseTask = new ThreadExecutePromiseTask(
                 getCascadeKey(ns),
                 counter.getAndIncrement(),
-                this
+                this,
+                rateLimitConfiguration
         );
         threadExecutePromiseTask.run();
         return threadExecutePromiseTask;

@@ -33,13 +33,16 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
     @Getter
     private final String ns;
 
-    public ThreadExecutePromiseTask(String ns, int indexThread, ThreadPoolExecutePromiseTask pool) {
+    public ThreadExecutePromiseTask(
+            String ns,
+            int indexThread,
+            ThreadPoolExecutePromiseTask pool,
+            Manager.Configuration<RateLimitItem> rateLimitConfiguration
+    ) {
         this.ns = ns;
         this.pool = pool;
         this.indexThread = indexThread;
-        // RateLimit будем запрашивать через родительское каскадное имя, так как key для потока - это
-        // всего лишь имя, а поток должен подчиняться правилам (лимитам) пула, то есть ns без обёртки getCascadeKey(ns)
-        rateLimitConfiguration = App.get(Manager.class).configure(RateLimitItem.class, ns);
+        this.rateLimitConfiguration = rateLimitConfiguration;
     }
 
     @Override

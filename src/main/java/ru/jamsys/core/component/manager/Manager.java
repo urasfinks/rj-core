@@ -62,10 +62,6 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
 
     }
 
-    public <R extends ManagerElement> Configuration<R> configure(Class<R> cls, String ns) {
-        return new Configuration<>(cls, ns, this);
-    }
-
     public <R extends ManagerElement> Configuration<R> configure(Class<R> cls, String ns, Function<String, R> builder) {
         configureMap
                 .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
