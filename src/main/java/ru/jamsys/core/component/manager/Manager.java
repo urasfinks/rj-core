@@ -72,6 +72,8 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     // Вы должны помнить, элемент выданный этой функцией может быть остановлен если своевременно его не использовать.
     // Если у элемента не будет вызываться active() - он удалится из менеджера. Удаление - означает остановку сбора
     // статистики по нему и в целом shutdown() элемента. Работать с остановленным элементом - так себе затея.
+    // Как действовать? Получили результат get(), поработали с ним и выбросили. При новой необходимости снова get()
+    // не храните ссылки на результат get()
     public <R extends ManagerElement> R get(Class<R> cls, String ns) {
         @SuppressWarnings("unchecked")
         Function<String, R> builder = (Function<String, R>) configureMap.get(cls).get(ns);
