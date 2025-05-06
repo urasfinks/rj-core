@@ -48,7 +48,7 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         }
 
         @JsonValue
-        public Object jsonValue(){
+        public Object getValue() {
             return new HashMapBuilder<String, Object>()
                     .append("hashCode", Integer.toHexString(hashCode()))
                     .append("cls", cls)
@@ -60,6 +60,16 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
             return manager.get(cls, ns);
         }
 
+    }
+
+    public <R extends ManagerElement> Configuration<R> configureGeneric(Class<? extends ManagerElement> cls, String ns, Function<String, R> builder) {
+        configureMap
+                .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
+                .computeIfAbsent(ns, _ -> builder);
+
+        @SuppressWarnings("unchecked")
+        Class<R> newCls = (Class<R>) cls;
+        return new Configuration<>(newCls, ns, this);
     }
 
     public <R extends ManagerElement> Configuration<R> configure(Class<R> cls, String ns, Function<String, R> builder) {
