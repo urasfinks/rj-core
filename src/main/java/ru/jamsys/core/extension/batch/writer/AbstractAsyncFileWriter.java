@@ -8,16 +8,14 @@ import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
-import ru.jamsys.core.extension.AbstractLifeCycle;
-import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.StatisticsFlush;
+import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.statistic.AvgMetric;
+import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,10 +35,9 @@ import java.util.function.Consumer;
 
 @Getter
 public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
-        extends AbstractLifeCycle
+        extends ExpirationMsMutableImplAbstractLifeCycle
         implements
-        LifeCycleInterface,
-        StatisticsFlush,
+        ManagerElement,
         CascadeKey {
 
     @JsonIgnore
