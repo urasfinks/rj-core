@@ -282,6 +282,12 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
         }
     }
 
+    // Проверка, что в парке есть элемент, это необходимо для обработки ложных срабатываний (spurious wakeups)
+    // при использовании LockSupport.park(), хотя они происходят реже, чем при использовании Object.wait()
+    public boolean inPark(@NonNull T poolItem){
+        return parkQueue.contains(poolItem);
+    }
+
     // Это не явное удаление, а всего лишь маркировка, что в принципе объект может быть удалён
     private boolean addToRemove(@NonNull T poolItem) {
         // Добавлена блокировка, что бы избежать дублей в очереди на удаление

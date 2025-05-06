@@ -54,6 +54,12 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
             LockSupport.park(thread);
             try {
                 while (spin.get() && !thread.isInterrupted()) {
+                    // Обрабатываем ложные срабатывания (spurious wakeups) при использовании LockSupport.park(),
+                    // хотя они происходят реже, чем при использовании Object.wait()
+                    if (pool.inPark(this)) {
+                        LockSupport.park(thread);
+                        continue;
+                    }
                     markActive();
                     if (!rateLimitConfiguration.get().check()) {
                         pool.releasePoolItem(this, null);
@@ -75,6 +81,9 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
                     //Конец итерации цикла -> всегда pause()
                     pool.releasePoolItem(this, null);
                     LockSupport.park(thread);
+                    // На всякий пожарный, если кто-то допишет логику и забудет после паркинга сделать continue;
+                    //noinspection UnnecessaryContinue
+                    continue;
                 }
             } catch (Throwable th) {
                 App.error(th);
