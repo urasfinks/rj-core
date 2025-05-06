@@ -47,15 +47,13 @@ class AsyncFileWriterRollingTest {
                 "test",
                 "LogManager",
                 outputQueue::addAll,
-                fileName -> {
-                    System.out.println("SWAP: " + fileName);
-                }
+                fileName -> System.out.println("SWAP: " + fileName)
         );
         writer.run();
     }
 
     @AfterEach
-    void tearDown() throws IOException {
+    void tearDown() {
         run.set(false);
         outputQueue.clear();
         if (writer != null) {

@@ -12,8 +12,6 @@ import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 
-import java.io.IOException;
-
 // Нам надо вызывать helper у ExpiredList 1 раз в секунду, а не 1раз в 3сек
 
 @SuppressWarnings("unused")
