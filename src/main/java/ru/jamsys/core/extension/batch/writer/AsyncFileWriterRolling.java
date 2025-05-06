@@ -45,7 +45,7 @@ public class AsyncFileWriterRolling<T extends AbstractAsyncFileWriterElement>
     private void swap() {
         fileName = generateNewFileName.get();
         setFilePath(directory + "/" + fileName);
-        onSwap.accept(getFileName());
+        onSwap.accept(fileName);
         restartOutputStream();
     }
 

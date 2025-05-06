@@ -2,13 +2,21 @@ package ru.jamsys.core.extension.broker.persist;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.ByteSerialization;
-import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
+import ru.jamsys.core.extension.batch.writer.AbstractAsyncFileWriter;
+import ru.jamsys.core.extension.batch.writer.AsyncFileWriterRolling;
+import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
+import ru.jamsys.core.flat.util.UtilFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 // SSD 80K IOPS при 4KB на блок = 320 MB/s на диске в режиме RandomAccess и до 550 MB/s в линейной записи (секвентальная)
@@ -56,19 +64,49 @@ public class BrokerPersist<T extends ByteSerialization>
 
     private final ApplicationContext applicationContext;
 
-    private final BrokerRepositoryProperty propertyBroker = new BrokerRepositoryProperty();
+    private final BrokerPersistRepositoryProperty propertyBroker = new BrokerPersistRepositoryProperty();
 
-    private final PropertyDispatcher<Integer> propertyDispatcher;
+    private final PropertyDispatcher<Object> propertyDispatcher;
+
+    private final List<String> listFile = new ArrayList<>();
+
+    private final ConcurrentLinkedDeque<BrokerPersistElement<T>> queue = new ConcurrentLinkedDeque<>();
+
+    private final Manager.Configuration<AbstractAsyncFileWriter<BrokerPersistElement<T>>> configure;
 
     public BrokerPersist(String ns, ApplicationContext applicationContext) {
         this.ns = ns;
         this.applicationContext = applicationContext;
 
         propertyDispatcher = new PropertyDispatcher<>(
-                applicationContext.getBean(ServiceProperty.class),
+                App.get(ServiceProperty.class, applicationContext),
                 null,
                 getPropertyBroker(),
                 getCascadeKey(ns)
+        );
+
+        configure = App.get(Manager.class, applicationContext).configureGeneric(
+                AbstractAsyncFileWriter.class,
+                getCascadeKey(ns, AsyncFileWriterRolling.class),
+                ns1 -> new AsyncFileWriterRolling<>(
+                        applicationContext,
+                        ns1,
+                        propertyBroker.getDirectory(),
+                        queue::addAll,
+                        fileName -> {
+                            try {
+                                UtilFile.createNewFile(
+                                        propertyBroker.getDirectory()
+                                                + "/"
+                                                + fileName
+                                                + ".wal"
+                                );
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            listFile.add(fileName);
+                        }
+                )
         );
     }
 
@@ -112,12 +150,12 @@ public class BrokerPersist<T extends ByteSerialization>
         return List.of();
     }
 
-    public void add(T x) {
-
+    public void add(T element) throws Throwable {
+        configure.get().writeAsync(new BrokerPersistElement<>(element));
     }
 
     @Override
-    public void commit(T element, String groupRead) {
+    public void commit(BrokerPersistElement<T> element) {
 
     }
 

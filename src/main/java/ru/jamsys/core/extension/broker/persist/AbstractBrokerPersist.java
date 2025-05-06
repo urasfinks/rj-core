@@ -9,6 +9,6 @@ public abstract class AbstractBrokerPersist<T extends ByteSerialization>
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements Broker, ManagerElement {
 
-    abstract public void commit(T element, String groupRead);
+    abstract public void commit(BrokerPersistElement<T> element);
 
 }

@@ -41,7 +41,7 @@ class BrokerPersistTest {
     }
 
     @Test
-    public void test() {
+    public void test() throws Throwable {
         BrokerPersist<X> test = App.get(Manager.class).configure(
                 BrokerPersist.class,
                 "test",
