@@ -3,7 +3,6 @@ package ru.jamsys.core.extension.batch.writer;
 import lombok.Getter;
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
@@ -23,16 +22,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AsyncFileWriterTest {
+class AsyncFileWriterRollingTest {
 
-    private AsyncFileWriter<TestElement> writer;
+    private AsyncFileWriterRolling<TestElement> writer;
     private final ConcurrentLinkedDeque<TestElement> outputQueue = new ConcurrentLinkedDeque<>();
     private final AtomicBoolean run = new AtomicBoolean(true);
 
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runSpring();
-        App.get(ServiceProperty.class).set("App.AsyncFileWriter.test.directory", "LogManager/");
+        //App.get(ServiceProperty.class).set("App.AsyncFileWriter.test.directory", "LogManager/");
     }
 
     @AfterAll
@@ -43,7 +42,15 @@ class AsyncFileWriterTest {
     @BeforeEach
     void setUp() {
         run.set(true);
-        writer = new AsyncFileWriter<>("test", App.context, outputQueue::addAll);
+        writer = new AsyncFileWriterRolling<>(
+                App.context,
+                "test",
+                "LogManager",
+                outputQueue::addAll,
+                fileName -> {
+                    System.out.println("SWAP: " + fileName);
+                }
+        );
         writer.run();
     }
 
@@ -58,7 +65,7 @@ class AsyncFileWriterTest {
     }
 
     @Test
-    void testSingleWriteAndFlush() throws Exception {
+    void testSingleWriteAndFlush() throws Throwable {
         TestElement element = new TestElement("Hello".getBytes());
         writer.writeAsync(element);
 
@@ -82,7 +89,7 @@ class AsyncFileWriterTest {
     }
 
     @Test
-    void testMultipleWritesAndFlush() throws Exception {
+    void testMultipleWritesAndFlush() throws Throwable {
         List<TestElement> elements = List.of(
                 new TestElement("abc".getBytes()),
                 new TestElement("1234".getBytes()),
@@ -117,7 +124,7 @@ class AsyncFileWriterTest {
     }
 
     @Test
-    void testPositionIsUpdatedCorrectlyAfterFlushes() throws Exception {
+    void testPositionIsUpdatedCorrectlyAfterFlushes() throws Throwable {
         TestElement e1 = new TestElement("A".repeat(2048).getBytes()); // 2KB
         TestElement e2 = new TestElement("B".repeat(2048).getBytes()); // 2KB
 
@@ -141,7 +148,7 @@ class AsyncFileWriterTest {
     }
 
     @Test
-    void testShutdownFlushesRemainingData() throws Exception {
+    void testShutdownFlushesRemainingData() throws Throwable {
         TestElement e1 = new TestElement("abc".getBytes());
         TestElement e2 = new TestElement("def".getBytes());
 
@@ -182,7 +189,7 @@ class AsyncFileWriterTest {
                         try {
                             writer.flush(run);
                             UtilLog.printInfo(writer.flushAndGetStatistic(run));
-                        } catch (IOException e) {
+                        } catch (Throwable e) {
                             App.error(e);
                         }
                     }
@@ -198,7 +205,7 @@ class AsyncFileWriterTest {
                     for (int y = 0; y < c; y++) {
                         writer.writeAsync(new TestElement("Hello".getBytes()));
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     throw new RuntimeException(e);
                 }
             }).start();

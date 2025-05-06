@@ -4,19 +4,12 @@ import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.annotation.PropertyDescription;
 import ru.jamsys.core.extension.annotation.PropertyKey;
-import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotationField;
 import ru.jamsys.core.flat.util.UtilByte;
 
 @Getter
 @FieldNameConstants
 public class AsyncFileWriterRepositoryProperty extends RepositoryPropertyAnnotationField<Object> {
-
-    @SuppressWarnings("all")
-    @PropertyNotNull
-    @PropertyKey("directory")
-    @PropertyDescription("Директория где будут лежать файлы")
-    private volatile String directoryWithSlash;
 
     // Надо уточнить, файлы создаются в разрезе секунды (планировщик), если за секунду удасться записать больше данных
     // они будут записаны, но в следующую секунду будет создан новый файл

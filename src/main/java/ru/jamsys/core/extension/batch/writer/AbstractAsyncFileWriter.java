@@ -2,6 +2,7 @@ package ru.jamsys.core.extension.batch.writer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
@@ -12,6 +13,7 @@ import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
@@ -32,8 +34,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 // Многопоточная запись в файл пачками
+
 @Getter
-public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
+public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         extends AbstractLifeCycle
         implements
         LifeCycleInterface,
@@ -41,8 +44,9 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         CascadeKey {
 
     @JsonIgnore
-    public static Set<AsyncFileWriter<?>> set = Util.getConcurrentHashSet();
+    public static Set<AbstractAsyncFileWriter<?>> set = Util.getConcurrentHashSet();
 
+    @Setter
     public String filePath;
 
     private static final int defSize = (int) UtilByte.kilobytesToBytes(4); // 4KB
@@ -74,14 +78,25 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
 
     private final PropertyDispatcher<Object> propertyDispatcher;
 
-    @SuppressWarnings("unused")
-    public AsyncFileWriter(
-            String ns,
-            ApplicationContext applicationContext,
-            Consumer<List<T>> onWrite
-    ) {
-        this.onWrite = onWrite;
+    private final StandardOpenOption standardOpenOption;
 
+    @Setter
+    @NonNull
+    private ProcedureThrowing onOutOfPosition = () -> {
+        throw new RuntimeException("Out of position");
+    };
+
+    @SuppressWarnings("unused")
+    public AbstractAsyncFileWriter(
+            ApplicationContext applicationContext,
+            String ns,
+            String filePath,
+            Consumer<List<T>> onWrite,
+            StandardOpenOption standardOpenOption
+    ) {
+        this.filePath = filePath;
+        this.onWrite = onWrite;
+        this.standardOpenOption = standardOpenOption;
         propertyDispatcher = new PropertyDispatcher<>(
                 applicationContext.getBean(ServiceProperty.class),
                 null,
@@ -90,9 +105,12 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         );
     }
 
-    public void writeAsync(T data) throws Exception {
+    public void writeAsync(T data) throws Throwable {
         if (!isRun()) {
             throw new IOException("Writer is closed");
+        }
+        if (position.get() > repositoryProperty.getMaxSize()) {
+            onOutOfPosition.run();
         }
         inputQueue.add(data);
     }
@@ -104,13 +122,15 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         return (int) (((float) position.get()) * 100 / repositoryProperty.getMaxSize());
     }
 
-    public void flush(AtomicBoolean threadRun) throws IOException {
+    public void flush(AtomicBoolean threadRun) throws Throwable {
         // Что бы только один поток мог писать на файловую систему, планируется запись только в планировщике
         if (flushLock.compareAndSet(false, true)) {
-            // Если размер файла вышел за рамки допустимого
+            if (inputQueue.isEmpty()) {
+                flushLock.set(false);
+                return;
+            }
             if (position.get() > repositoryProperty.getMaxSize()) {
-                closeCurrentFile(); // закрываем текущий файл с кем работали
-                openNewFile(); // Открываем новый
+                onOutOfPosition.run();
             }
             List<T> listPolled = new ArrayList<>();
             // Ограничиваем, что бы суммарная запись длилась не более 1с
@@ -169,18 +189,17 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
     @Override
     public void runOperation() {
         propertyDispatcher.run();
-        openNewFile();
+        openOutputStream();
         set.add(this);
     }
 
-    private void openNewFile() {
-        filePath = repositoryProperty.getDirectoryWithSlash() + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID() + ".bin";
+    private void openOutputStream() {
         try {
             this.fileOutputStream = Files.newOutputStream(
-                    Paths.get(filePath),
+                    Paths.get(getFilePath()),
                     StandardOpenOption.CREATE,
                     StandardOpenOption.WRITE,
-                    StandardOpenOption.TRUNCATE_EXISTING,
+                    getStandardOpenOption(),
                     // в таком режиме atime, mtime, размер файла может быть не синхронизован,
                     // но данные при восстановлении будут вычитаны корректно
                     StandardOpenOption.DSYNC
@@ -191,7 +210,7 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         }
     }
 
-    private void closeCurrentFile() {
+    private void closeOutputStream() {
         try {
             fileOutputStream.close();
             // Если был открыт файл и в него записали ровно ничего - удалим его, зачем ему тут болтаться
@@ -201,6 +220,12 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         } catch (Throwable th) {
             App.error(th);
         }
+    }
+
+    // Может потребоваться если в runTime заменить filePath для rolling истории
+    public void restartOutputStream() {
+        closeOutputStream();
+        openOutputStream();
     }
 
     @Override
@@ -215,7 +240,7 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         } catch (Throwable th) {
             App.error(th);
         } finally {
-            closeCurrentFile();
+            closeOutputStream();
         }
         propertyDispatcher.shutdown();
     }
@@ -233,6 +258,8 @@ public class AsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         float sMb = sKb / 1024;
 
         return List.of(new DataHeader()
+                .addHeader("position", position.get())
+                .addHeader("maxPosition", repositoryProperty.getMaxSize())
                 .addHeader("minBatchSizeByte", sByte)
                 .addHeader("minBatchSizeKb", sKb)
                 .addHeader("minBatchSizeMb", sMb)

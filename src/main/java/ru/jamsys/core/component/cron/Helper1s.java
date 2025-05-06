@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
-import ru.jamsys.core.extension.batch.writer.AsyncFileWriter;
+import ru.jamsys.core.extension.batch.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
@@ -34,11 +34,11 @@ public class Helper1s implements Cron1s, PromiseGenerator {
                         (run, _, _) -> UtilRisc.forEach(run, ExpirationList.set, expirationList -> {
                             expirationList.helper(run, System.currentTimeMillis());
                         }))
-                .append(AsyncFileWriter.class.getSimpleName(),
-                        (run, _, _) -> UtilRisc.forEach(run, AsyncFileWriter.set, expirationList -> {
+                .append(AsyncFileWriterRolling.class.getSimpleName(),
+                        (run, _, _) -> UtilRisc.forEach(run, AsyncFileWriterRolling.set, expirationList -> {
                             try {
                                 expirationList.flush(run);
-                            } catch (IOException e) {
+                            } catch (Throwable e) {
                                 throw new ForwardException(e);
                             }
                         }))
