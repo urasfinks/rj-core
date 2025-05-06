@@ -224,8 +224,10 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
 
     // Может потребоваться если в runTime заменить filePath для rolling истории
     public void restartOutputStream() {
-        closeOutputStream();
-        openOutputStream();
+        if (isRun()) {
+            closeOutputStream();
+            openOutputStream();
+        }
     }
 
     @Override

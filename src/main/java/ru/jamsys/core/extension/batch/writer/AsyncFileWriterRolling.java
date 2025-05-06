@@ -20,8 +20,13 @@ public class AsyncFileWriterRolling<T extends AbstractAsyncFileWriterElement>
 
     private String fileName;
 
+    private final Consumer<String> onSwap;
+
     @Setter
-    private Supplier<String> generateNewFileName = () -> System.currentTimeMillis() + "_" + java.util.UUID.randomUUID() + ".afwr";
+    private Supplier<String> generateNewFileName = () -> System.currentTimeMillis()
+            + "_"
+            + java.util.UUID.randomUUID()
+            + ".afwr";
 
     public AsyncFileWriterRolling(
             ApplicationContext applicationContext,
@@ -32,25 +37,19 @@ public class AsyncFileWriterRolling<T extends AbstractAsyncFileWriterElement>
     ) {
         super(applicationContext, ns, null, onWrite, StandardOpenOption.TRUNCATE_EXISTING);
         this.directory = directory;
-        setNewFileName();
-        setNewFilePath();
-
-        setOnOutOfPosition(() -> {
-            setNewFileName();
-            setNewFilePath();
-            onSwap.accept(getFileName());
-            restartOutputStream();
-        });
+        this.onSwap = onSwap;
+        setOnOutOfPosition(this::swap);
+        swap();
     }
 
-    private void setNewFileName() {
-        this.fileName = generateNewFileName.get();
-    }
-
-    private void setNewFilePath() {
+    private void swap() {
+        fileName = generateNewFileName.get();
         setFilePath(directory + "/" + fileName);
+        onSwap.accept(getFileName());
+        restartOutputStream();
     }
 
+    // Переопределяем, чтобы не получить Exception на вставке, при выходе за границы maxPosition
     @Override
     public void writeAsync(T data) throws Throwable {
         if (!isRun()) {
