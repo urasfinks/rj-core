@@ -164,6 +164,7 @@ class AsyncFileWriterRollingTest {
         i1.write("abc".getBytes());
         i1.write(UtilByte.intToBytes(3));
         i1.write("def".getBytes());
+        i1.write(UtilByte.intToBytes(-1)); //-1 конец файла
 
         assertArrayEquals(i1.toByteArray(), bytes);
     }

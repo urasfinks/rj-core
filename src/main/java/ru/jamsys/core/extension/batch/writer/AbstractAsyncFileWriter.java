@@ -8,7 +8,8 @@ import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
-import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
@@ -201,13 +202,20 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                     // но данные при восстановлении будут вычитаны корректно
                     StandardOpenOption.DSYNC
             );
-            position.set(0); // Начинаем с 0 позиции в новом вайле
+            position.set(0); // Начинаем с 0 позиции в новом файле
         } catch (Throwable th) {
             throw new ForwardException(th);
         }
     }
 
     private void closeOutputStream() {
+        // Перед закрытием запишем, что размер следующего блока будет -1, это будет меткой, что в файл больше ничего не
+        // будет записано
+        try {
+            fileOutputStream.write(UtilByte.intToBytes(-1));
+        } catch (Throwable th) {
+            App.error(th);
+        }
         try {
             fileOutputStream.close();
             // Если был открыт файл и в него записали ровно ничего - удалим его, зачем ему тут болтаться
