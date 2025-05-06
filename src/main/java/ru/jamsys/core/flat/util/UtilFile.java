@@ -165,4 +165,9 @@ public class UtilFile {
         FileUtils.deleteDirectory(dir);
     }
 
+    public static boolean createNewFile(String filePath) throws IOException {
+        File file = new File(filePath);
+        return file.createNewFile();
+    }
+
 }
