@@ -267,12 +267,4 @@ public class Util {
         return sb.toString();
     }
 
-    private static Type getSuperclassTypeParameter(Class<?> clazz) {
-        Type superClass = clazz.getGenericSuperclass();
-        if (superClass instanceof ParameterizedType) {
-            return ((ParameterizedType) superClass).getActualTypeArguments()[0];
-        }
-        throw new RuntimeException("Missing type parameter.");
-    }
-
 }
