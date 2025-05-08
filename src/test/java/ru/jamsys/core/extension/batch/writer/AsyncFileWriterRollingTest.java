@@ -1,6 +1,7 @@
 package ru.jamsys.core.extension.batch.writer;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -31,7 +32,6 @@ class AsyncFileWriterRollingTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runSpring();
-        //App.get(ServiceProperty.class).set("App.AsyncFileWriter.test.directory", "LogManager/");
     }
 
     @AfterAll
@@ -233,9 +233,13 @@ class AsyncFileWriterRollingTest {
 
     // Реализация тестового элемента
     public static class TestElement extends AbstractAsyncFileWriterElement {
+
         private final byte[] data;
         @Getter
         private long position = -1;
+
+        @Setter
+        private String filePath;
 
         public TestElement(byte[] data) {
             this.data = data;

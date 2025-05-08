@@ -20,6 +20,8 @@ public class AsyncFileWriterElement extends AbstractAsyncFileWriterElement {
 
     private Consumer<AsyncFileWriterElement> onWrite;
 
+    private String filePath;
+
     public AsyncFileWriterElement(byte[] bytes) {
         this.bytes = bytes;
     }

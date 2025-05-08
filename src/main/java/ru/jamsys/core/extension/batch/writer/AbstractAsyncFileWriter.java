@@ -149,6 +149,7 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                     int dataLength = polled.getBytes().length;
                     statisticSize.add((long) dataLength);
                     polled.setPosition(position.getAndAdd(polled.getBytes().length + 4)); // 4 это int length
+                    polled.setFilePath(filePath);
                     listPolled.add(polled);
                     byteArrayOutputStream.write(UtilByte.intToBytes(dataLength));
                     byteArrayOutputStream.write(polled.getBytes());
