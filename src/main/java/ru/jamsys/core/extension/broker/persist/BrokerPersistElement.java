@@ -1,6 +1,7 @@
 package ru.jamsys.core.extension.broker.persist;
 
 import lombok.Getter;
+import lombok.Setter;
 import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.extension.batch.writer.AbstractAsyncFileWriterElement;
 
@@ -9,15 +10,14 @@ public  class BrokerPersistElement<T extends ByteSerialization> extends Abstract
 
     private final T element;
 
+    @Setter
     private long position;
+
+    @Setter
+    private String filePath;
 
     public BrokerPersistElement(T element) {
         this.element = element;
-    }
-
-    @Override
-    public void setPosition(long position) {
-        this.position = position;
     }
 
     @Override

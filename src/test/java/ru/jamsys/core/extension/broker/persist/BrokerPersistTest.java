@@ -28,6 +28,10 @@ class BrokerPersistTest {
 
         private String value;
 
+        public X(String value) {
+            this.value = value;
+        }
+
         @Override
         public byte[] toByte() {
             return value.getBytes();
@@ -47,7 +51,7 @@ class BrokerPersistTest {
                 "test",
                 ns -> new BrokerPersist<>(ns, App.context)
         ).getGeneric();
-        test.add(new X());
+        test.add(new X("Hello"));
 
     }
 }

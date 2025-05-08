@@ -18,28 +18,10 @@ public class AsyncFileWriterElement extends AbstractAsyncFileWriterElement {
 
     private long position; // Смещение байт от начала файла, где записаны данные
 
-    private Consumer<AsyncFileWriterElement> onWrite;
-
     private String filePath;
 
     public AsyncFileWriterElement(byte[] bytes) {
         this.bytes = bytes;
-    }
-
-    public AsyncFileWriterElement(byte[] bytes, Consumer<AsyncFileWriterElement> onWrite) {
-        this.bytes = bytes;
-        this.onWrite = onWrite;
-    }
-
-    public void callback() {
-        if (onWrite == null) {
-            return;
-        }
-        try {
-            onWrite.accept(this);
-        } catch (Throwable th) {
-            App.error(th);
-        }
     }
 
 }

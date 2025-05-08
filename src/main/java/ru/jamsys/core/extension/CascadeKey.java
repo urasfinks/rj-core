@@ -26,6 +26,10 @@ public interface CascadeKey {
         return getCascadeKey() + append(ns);
     }
 
+    default String getCascadeKey(String ns, String subClass) {
+        return getCascadeKey(ns) + "::" + subClass;
+    }
+
     default String getCascadeKey(String ns, Class<?> classItem) {
         return getCascadeKey(ns) + "<" + App.getUniqueClassName(classItem) + ">";
     }

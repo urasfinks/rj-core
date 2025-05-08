@@ -29,4 +29,9 @@ public class BrokerPersistRepositoryProperty extends RepositoryPropertyAnnotatio
     @PropertyDescription("Размер пробы очереди")
     private volatile Integer tailSize = 5;
 
+    @PropertyNotNull
+    @PropertyKey("retry.timeout")
+    @PropertyDescription("Повторный вброс, если не пришёл commit")
+    private volatile Integer retryTimeoutMs = 10 * 60 * 1000; // 10 минут
+
 }

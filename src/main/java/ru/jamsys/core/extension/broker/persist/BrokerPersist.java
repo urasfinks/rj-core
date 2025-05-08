@@ -14,8 +14,9 @@ import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -68,11 +69,15 @@ public class BrokerPersist<T extends ByteSerialization>
 
     private final PropertyDispatcher<Object> propertyDispatcher;
 
-    private final List<String> listFile = new ArrayList<>();
-
     private final ConcurrentLinkedDeque<BrokerPersistElement<T>> queue = new ConcurrentLinkedDeque<>();
 
     private final Manager.Configuration<AbstractAsyncFileWriter<BrokerPersistElement<T>>> configure;
+
+    // Конфиг может быть удалён, только если файл полностью обработан, до этого момента он должен быть тут 100%
+    private final Map<String, Manager.Configuration<CommitController>> riders = new ConcurrentHashMap<>();
+
+    // Последний зарегистрированный конфиг Rider, что бы можно было оповещать о новых поступлениях данных position
+    private Manager.Configuration<CommitController> lastRiderConfiguration;
 
     public BrokerPersist(String ns, ApplicationContext applicationContext) {
         this.ns = ns;
@@ -87,27 +92,69 @@ public class BrokerPersist<T extends ByteSerialization>
 
         configure = App.get(Manager.class, applicationContext).configureGeneric(
                 AbstractAsyncFileWriter.class,
-                getCascadeKey(ns, AsyncFileWriterRolling.class),
+                // ns уникально в пределах BrokerPersist, но нам надо больше уникальности, так как у нас несколько
+                // AbstractAsyncFileWriter.class (Rolling/Wal)
+                getCascadeKey(ns, "main"),
                 ns1 -> new AsyncFileWriterRolling<>(
                         applicationContext,
                         ns1,
                         propertyBroker.getDirectory(),
-                        queue::addAll,
-                        fileName -> {
+                        this::onMainWrite,
+                        this::onSwap
+                )
+        );
+    }
+
+    public void onMainWrite(List<BrokerPersistElement<T>> brokerPersistElements) {
+        queue.addAll(brokerPersistElements);
+        // На момент записи не может быть перескакивания записи по разным файлам, то есть пачка содержит точно все блоки
+        // принадлежащие одному файлу
+        BrokerPersistElement<T> first = brokerPersistElements.getFirst();
+        Manager.Configuration<CommitController> riderConfiguration = riders.get(first.getFilePath());
+        if (riderConfiguration == null) {
+            throw new RuntimeException("Rider(" + first.getFilePath() + ") not found");
+        }
+        if (!riderConfiguration.isAlive()) {
+            return;
+        }
+        CommitController commitController = riderConfiguration.get();
+        if (commitController == null) {
+            return;
+        }
+        commitController.addPosition(brokerPersistElements);
+    }
+
+    public void onSwap(String fileName) {
+        // Если последний зарегистрированный Rider был и жив оповестим, что запись закончена
+        if (lastRiderConfiguration != null && lastRiderConfiguration.isAlive()) {
+            lastRiderConfiguration.get().fileFinishWrite();
+        }
+        // Первым делом надо создать .wal файл, что бы если произойдёт рестарт, мы могли понять, что файл ещё не
+        // обработан, так как после обработки файл удаляется
+        String filePath = propertyBroker.getDirectory() + "/" + fileName;
+        try {
+            UtilFile.createNewFile(filePath + ".wal");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        lastRiderConfiguration = riders.computeIfAbsent(
+                filePath,
+                _ -> App.get(Manager.class, applicationContext).configure(
+                        CommitController.class,
+                        getCascadeKey(ns, fileName),
+                        ns1 -> {
                             try {
-                                UtilFile.createNewFile(
-                                        propertyBroker.getDirectory()
-                                                + "/"
-                                                + fileName
-                                                + ".wal"
+                                // передаём fileName, так как Rider должен прочитать
+                                return new CommitController(
+                                        applicationContext,
+                                        ns1,
+                                        filePath
                                 );
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
-                            listFile.add(fileName);
                         }
-                )
-        );
+                ));
     }
 
     @Override
@@ -155,8 +202,22 @@ public class BrokerPersist<T extends ByteSerialization>
     }
 
     @Override
-    public void commit(BrokerPersistElement<T> element) {
+    public void commit(BrokerPersistElement<T> element) throws Throwable {
+        // К моменту commit уже должна быть конфигурация Rider
+        Manager.Configuration<CommitController> riderConfiguration = riders.get(element.getFilePath() + ".wal");
+        if (riderConfiguration == null) {
+            throw new RuntimeException("Rider(" + element.getFilePath() + ") not found");
+        }
+        CommitController commitController = riderConfiguration.get();
+        commitController.asyncWrite(element.getPosition());
+        if (commitController.isComplete()) {
+            // rider.shutdown(); // Когда менеджер будет его выбрасывать, сам выключит
+            riders.remove(element.getFilePath());
+        }
+    }
 
+    public BrokerPersistElement<T> poll() {
+        return queue.poll();
     }
 
 }

@@ -20,6 +20,7 @@ import java.util.function.Function;
 // Менеджер объектов, которые могут прекращать свою работу по ExpirationMsMutable.
 // Если объектом не пользуются - он будет остановлен и удалён
 // Не надо сохранять результаты менеджера, так как они могут быть выключены
+// Менеджер работает с ключами (key), а не с пространствами имён (ns)
 
 @Component
 public class Manager extends AbstractLifeCycle implements LifeCycleComponent, StatisticsFlushComponent {
@@ -31,19 +32,19 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     // TODO: кеш бы добавить, что бы постоянно не перезапрашивать get
     public static class Configuration<T extends ManagerElement> {
         private final Class<T> cls;
-        private final String ns;
+        private final String key;
         private final Manager manager;
 
-        public Configuration(Class<T> cls, String ns, Manager manager) {
+        public Configuration(Class<T> cls, String key, Manager manager) {
             this.cls = cls;
-            this.ns = ns;
+            this.key = key;
             this.manager = manager;
         }
 
         // Получить элемент преобразованные по типу дженерика
         public <X> X getGeneric() {
             @SuppressWarnings("unchecked")
-            X t = (X) manager.get(cls, ns);
+            X t = (X) manager.get(cls, key);
             return t;
         }
 
@@ -52,31 +53,35 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
             return new HashMapBuilder<String, Object>()
                     .append("hashCode", Integer.toHexString(hashCode()))
                     .append("cls", cls)
-                    .append("namespace", ns)
-                    .append("reference", manager.get(cls, ns));
+                    .append("namespace", key)
+                    .append("reference", manager.get(cls, key));
+        }
+
+        public boolean isAlive() {
+            return manager.contains(cls, key);
         }
 
         public T get() {
-            return manager.get(cls, ns);
+            return manager.get(cls, key);
         }
 
     }
 
-    public <R extends ManagerElement> Configuration<R> configureGeneric(Class<? extends ManagerElement> cls, String ns, Function<String, R> builder) {
+    public <R extends ManagerElement> Configuration<R> configureGeneric(Class<? extends ManagerElement> cls, String key, Function<String, R> builder) {
         configureMap
                 .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
-                .computeIfAbsent(ns, _ -> builder);
+                .computeIfAbsent(key, _ -> builder);
 
         @SuppressWarnings("unchecked")
         Class<R> newCls = (Class<R>) cls;
-        return new Configuration<>(newCls, ns, this);
+        return new Configuration<>(newCls, key, this);
     }
 
-    public <R extends ManagerElement> Configuration<R> configure(Class<R> cls, String ns, Function<String, R> builder) {
+    public <R extends ManagerElement> Configuration<R> configure(Class<R> cls, String key, Function<String, R> builder) {
         configureMap
                 .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
-                .computeIfAbsent(ns, _ -> builder);
-        return new Configuration<>(cls, ns, this);
+                .computeIfAbsent(key, _ -> builder);
+        return new Configuration<>(cls, key, this);
     }
 
     // Вы должны помнить, элемент выданный этой функцией может быть остановлен если своевременно его не использовать.
@@ -84,36 +89,42 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     // статистики по нему и в целом shutdown() элемента. Работать с остановленным элементом - так себе затея.
     // Как действовать? Получили результат get(), поработали с ним и выбросили. При новой необходимости снова get()
     // не храните ссылки на результат get()
-    public <R extends ManagerElement> R get(Class<R> cls, String ns) {
+    public <R extends ManagerElement> R get(Class<R> cls, String key) {
         @SuppressWarnings("unchecked")
-        Function<String, R> builder = (Function<String, R>) configureMap.get(cls).get(ns);
-        return get(cls, ns, builder);
+        Function<String, R> builder = (Function<String, R>) configureMap.get(cls).get(key);
+        return get(cls, key, builder);
     }
 
-    public <X, R extends ManagerElement> X getGeneric(Class<R> cls, String ns) {
+    public <X, R extends ManagerElement> X getGeneric(Class<R> cls, String key) {
         @SuppressWarnings("unchecked")
-        Function<String, R> builder = (Function<String, R>) configureMap.get(cls).get(ns);
+        Function<String, R> builder = (Function<String, R>) configureMap.get(cls).get(key);
         @SuppressWarnings("unchecked")
-        X x = (X) get(cls, ns, builder);
+        X x = (X) get(cls, key, builder);
         return x;
     }
 
-    public <R extends ManagerElement> R get(Class<R> cls, String ns, Function<String, R> builder) {
+    public <R extends ManagerElement> R get(Class<R> cls, String key, Function<String, R> builder) {
         @SuppressWarnings("unchecked")
         Map<String, R> map = (Map<String, R>) mainMap.computeIfAbsent(cls, _ -> new ConcurrentHashMap<>());
-        return map.computeIfAbsent(ns, s -> {
+        return map.computeIfAbsent(key, s -> {
             R apply = builder.apply(s);
             apply.run();
             return apply;
         });
     }
 
+    public <R extends ManagerElement> boolean contains(Class<R> cls, String key) {
+        @SuppressWarnings("unchecked")
+        Map<String, R> map = (Map<String, R>) mainMap.computeIfAbsent(cls, _ -> new ConcurrentHashMap<>());
+        return map.containsKey(key);
+    }
+
     public void helper(AtomicBoolean threadRun) {
         UtilRisc.forEach(threadRun, mainMap, (_, mapManager) -> {
-            UtilRisc.forEach(threadRun, mapManager, (ns, managerElement) -> {
+            UtilRisc.forEach(threadRun, mapManager, (key, managerElement) -> {
                 if (managerElement.isExpiredWithoutStop()) {
                     managerElement.shutdown();
-                    mapManager.remove(ns);
+                    mapManager.remove(key);
                 } else {
                     managerElement.helper();
                 }
