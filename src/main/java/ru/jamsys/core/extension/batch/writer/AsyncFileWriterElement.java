@@ -3,9 +3,6 @@ package ru.jamsys.core.extension.batch.writer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.App;
-
-import java.util.function.Consumer;
 
 // Блок данных для записи на FS с возможностью вызова callback, когда данные буду сохранены на диске
 
