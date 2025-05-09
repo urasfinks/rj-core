@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Getter
 public class CommitController extends AbstractManagerElement {
 
-    private final Manager.Configuration<AsyncFileWriterWal<CommitElement>> configure;
+    private final Manager.Configuration<AsyncFileWriterWal<CommitElement>> asyncFileWriterWalConfiguration;
 
     private final ConcurrentHashMap<Long, Boolean> availablePosition = new ConcurrentHashMap<>(); // Доступные позиции
 
@@ -36,7 +36,7 @@ public class CommitController extends AbstractManagerElement {
     public CommitController(ApplicationContext applicationContext, String ns, String filePathOrigin) throws IOException {
         this.filePathOrigin = filePathOrigin;
         this.filePathWal = filePathOrigin + ".wal";
-        configure = App.get(Manager.class).configureGeneric(
+        asyncFileWriterWalConfiguration = App.get(Manager.class).configureGeneric(
                 AsyncFileWriterWal.class,
                 ns,
                 ns1 -> new AsyncFileWriterWal<>(
@@ -65,13 +65,7 @@ public class CommitController extends AbstractManagerElement {
 
     private void remove(long position) {
         if (availablePosition.remove(position) != null) {
-            if (remainingPosition.decrementAndGet() == 0) { // Все ключи обработаны
-                try {
-                    UtilFile.remove(filePathWal);
-                } catch (Exception e) {
-                    App.error(e);
-                }
-            }
+            remainingPosition.decrementAndGet();
         }
     }
 
@@ -110,7 +104,7 @@ public class CommitController extends AbstractManagerElement {
     }
 
     public void asyncWrite(long position) throws Throwable {
-        configure.get().writeAsync(new CommitElement(position));
+        asyncFileWriterWalConfiguration.get().writeAsync(new CommitElement(position));
     }
 
     // Если мы наткнулись на -1 в основном файле и все position закомичены
@@ -125,7 +119,13 @@ public class CommitController extends AbstractManagerElement {
 
     @Override
     public void shutdownOperation() {
-
+        if (isComplete()) {
+            try {
+                UtilFile.remove(filePathWal);
+            } catch (Exception e) {
+                App.error(e);
+            }
+        }
     }
 
     @Override

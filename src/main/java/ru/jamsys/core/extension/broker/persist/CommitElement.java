@@ -9,9 +9,9 @@ import ru.jamsys.core.flat.util.UtilByte;
 @Setter
 public class CommitElement extends AbstractAsyncFileWriterElement {
 
-    private final long key;
+    private final long key; // Это позиция оригинального блока данных .afwr
 
-    private long position;
+    private long position; // Это позиция записанных данных в .wal
 
     public CommitElement(long key) {
         this.key = key;
