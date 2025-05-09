@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // SSD 80K IOPS при 4KB на блок = 320 MB/s на диске в режиме RandomAccess и до 550 MB/s в линейной записи (секвентальная)
 // Для гарантии записи надо использовать StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.DSYNC
@@ -71,6 +72,8 @@ public class BrokerPersist<T extends ByteSerialization>
 
     private final ConcurrentLinkedDeque<BrokerPersistElement<T>> queue = new ConcurrentLinkedDeque<>();
 
+    private final AtomicInteger queueSize = new AtomicInteger(0);
+
     private final Manager.Configuration<AbstractAsyncFileWriter<BrokerPersistElement<T>>> asyncFileWriterRollingConfiguration;
 
     // Конфиг может быть удалён, только если файл полностью обработан, до этого момента он должен быть тут 100%
@@ -103,16 +106,40 @@ public class BrokerPersist<T extends ByteSerialization>
                         this::onSwap
                 )
         );
+
+        // При старте мы должны поднять все CommitController в карту commitControllers
+        UtilFile
+                .getFilesRecursive(propertyBroker.getDirectory())
+                .stream()
+                .filter(s -> s.endsWith(".wal"))
+                .toList()
+                .forEach(filePathWal -> {
+                    // Отрезаем .wal так как CommitController работает с оригинальными путями, что бы их
+                    registerCommitController(walToOrigin(filePathWal));
+                });
     }
 
+    // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
     public void onMainWrite(List<BrokerPersistElement<T>> brokerPersistElements) {
+
+        queueSize.addAndGet(brokerPersistElements.size());
         queue.addAll(brokerPersistElements);
+
+        while (queueSize.get() > 3000) { // Удаление из начала очереди, если превышен лимит
+            BrokerPersistElement<T> removed = queue.pollFirst();
+            if (removed != null) {
+                queueSize.decrementAndGet();
+            } else {
+                break; // защита от бесконечного цикла, если очередь пуста
+            }
+        }
+
         // На момент записи не может быть перескакивания записи по разным файлам, то есть пачка содержит точно все блоки
         // принадлежащие одному файлу
         BrokerPersistElement<T> first = brokerPersistElements.getFirst();
         Manager.Configuration<CommitController> riderConfiguration = commitControllers.get(first.getFilePath());
         if (riderConfiguration == null) {
-            throw new RuntimeException("Rider(" + first.getFilePath() + ") not found");
+            throw new RuntimeException("CommitController(" + first.getFilePath() + ") not found");
         }
         if (!riderConfiguration.isAlive()) {
             return;
@@ -133,30 +160,42 @@ public class BrokerPersist<T extends ByteSerialization>
         // обработан, так как после обработки файл удаляется
         String filePath = propertyBroker.getDirectory() + "/" + fileName;
         try {
-            UtilFile.createNewFile(filePath + ".wal");
+            UtilFile.createNewFile(originToWal(filePath));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        lastCommitControllerConfiguration = commitControllers.computeIfAbsent(
-                filePath,
+        lastCommitControllerConfiguration = registerCommitController(filePath);
+        // Запускаем сразу контроллер коммитов, что бы onMainWrite мог в него уже передавать записанные position
+        lastCommitControllerConfiguration.get();
+    }
+
+    private Manager.Configuration<CommitController> registerCommitController(String filePath) {
+        return commitControllers.computeIfAbsent(
+                filePath, // Нам тут нужна ссылка на origin так как BrokerPersistElement.getFilePath возвращает именно его
                 _ -> App.get(Manager.class, applicationContext).configure(
                         CommitController.class,
-                        getCascadeKey(ns, fileName),
+                        getCascadeKey(ns, filePath), // Тут вообще не важно origin или wal
                         ns1 -> {
                             try {
-                                // передаём fileName, так как Rider должен прочитать
+                                // передаём fileName, так как Rider должен прочитать его
                                 return new CommitController(
                                         applicationContext,
                                         ns1,
-                                        filePath
+                                        originToWal(filePath)
                                 );
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
                         }
                 ));
-        // Запускаем сразу контроллер коммитов, что бы onMainWrite мог в него уже передавать записанные position
-        lastCommitControllerConfiguration.get();
+    }
+
+    public static String originToWal(String filePathOrigin) {
+        return filePathOrigin + ".wal";
+    }
+
+    public static String walToOrigin(String filePathOrigin) {
+        return filePathOrigin.substring(0, filePathOrigin.length() - 4);
     }
 
     @Override
@@ -227,6 +266,7 @@ public class BrokerPersist<T extends ByteSerialization>
     }
 
     public BrokerPersistElement<T> poll() {
+        // Очередь цикличная
         return queue.poll();
     }
 

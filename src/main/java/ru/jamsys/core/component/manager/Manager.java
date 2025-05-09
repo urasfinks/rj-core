@@ -19,7 +19,7 @@ import java.util.function.Function;
 
 // Менеджер объектов, которые могут прекращать свою работу по ExpirationMsMutable.
 // Если объектом не пользуются - он будет остановлен и удалён
-// Не надо сохранять результаты менеджера, так как они могут быть выключены
+// Не надо сохранять результаты менеджера, так как они могут быть остановлены
 // Менеджер работает с ключами (key), а не с пространствами имён (ns)
 
 @Component
@@ -53,7 +53,7 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
             return new HashMapBuilder<String, Object>()
                     .append("hashCode", Integer.toHexString(hashCode()))
                     .append("cls", cls)
-                    .append("namespace", key)
+                    .append("key", key)
                     .append("reference", manager.get(cls, key));
         }
 
@@ -67,7 +67,13 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
 
     }
 
-    public <R extends ManagerElement> Configuration<R> configureGeneric(Class<? extends ManagerElement> cls, String key, Function<String, R> builder) {
+    // Помните, конфигурация не создаёт сразу же экземпляр через builder. Экземпляр создаётся только в момент получения
+    // get() и живёт до тех пор пока его не удалит Manager
+    public <R extends ManagerElement> Configuration<R> configureGeneric(
+            Class<? extends ManagerElement> cls,
+            String key,
+            Function<String, R> builder
+    ) {
         configureMap
                 .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
                 .computeIfAbsent(key, _ -> builder);
@@ -77,7 +83,13 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         return new Configuration<>(newCls, key, this);
     }
 
-    public <R extends ManagerElement> Configuration<R> configure(Class<R> cls, String key, Function<String, R> builder) {
+    // Помните, конфигурация не создаёт сразу же экземпляр через builder. Экземпляр создаётся только в момент получения
+    // get() и живёт до тех пор пока его не удалит Manager
+    public <R extends ManagerElement> Configuration<R> configure(
+            Class<R> cls,
+            String key,
+            Function<String, R> builder
+    ) {
         configureMap
                 .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
                 .computeIfAbsent(key, _ -> builder);

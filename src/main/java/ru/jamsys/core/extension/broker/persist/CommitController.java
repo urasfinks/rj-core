@@ -29,13 +29,10 @@ public class CommitController extends AbstractManagerElement {
 
     private final String filePathWal;
 
-    private final String filePathOrigin;
-
     private final AtomicBoolean finishState = new AtomicBoolean(false);
 
-    public CommitController(ApplicationContext applicationContext, String ns, String filePathOrigin) throws IOException {
-        this.filePathOrigin = filePathOrigin;
-        this.filePathWal = filePathOrigin + ".wal";
+    public CommitController(ApplicationContext applicationContext, String ns, String filePathWal) throws IOException {
+        this.filePathWal = filePathWal;
         asyncFileWriterWalConfiguration = App.get(Manager.class).configureGeneric(
                 AsyncFileWriterWal.class,
                 ns,
@@ -71,6 +68,7 @@ public class CommitController extends AbstractManagerElement {
 
     //  Восстановить данные с файловой системы
     public void restorePositionFromFile() throws IOException {
+        String filePathOrigin = BrokerPersist.walToOrigin(filePathWal);
         try (RandomAccessFile file = new RandomAccessFile(filePathOrigin, "r")) {
             long currentPosition = 0;
 
