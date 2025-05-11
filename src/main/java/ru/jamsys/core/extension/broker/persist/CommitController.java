@@ -13,7 +13,6 @@ import ru.jamsys.core.extension.batch.writer.AsyncFileWriterWal;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -33,7 +32,7 @@ public class CommitController extends AbstractManagerElement {
             String ns,
             String filePathCommit,
             Consumer<CommitController> onWrite
-    ) throws IOException {
+    ) {
         this.filePathCommit = filePathCommit;
         // То, что будут коммитить - это значит, что обработано и нам надо это удалять из списка на обработку
         // В asyncWrite залетает CommitElement содержащий bin (CommitElement.getBytes() возвращает позицию bin.position)

@@ -206,17 +206,13 @@ public class BrokerPersist<T extends ByteSerialization>
                             CommitController.class,
                             getCascadeKey(ns, filePathBin), // Тут главно, что бы просто было уникальным
                             ns1 -> {
-                                try {
-                                    // передаём fileName, так как Rider должен прочитать его
-                                    return new CommitController(
-                                            applicationContext,
-                                            ns1,
-                                            binToCommit(filePathBin),
-                                            this::onCommitWrite
-                                    );
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
+                                // передаём fileName, так как Rider должен прочитать его
+                                return new CommitController(
+                                        applicationContext,
+                                        ns1,
+                                        binToCommit(filePathBin),
+                                        this::onCommitWrite
+                                );
                             }
                     );
                     queueCommitControllerConfiguration.add(configure);
