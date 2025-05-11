@@ -131,6 +131,11 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         return map.containsKey(key);
     }
 
+    public <R extends ManagerElement> void remove(Class<R> cls, String key) {
+        configureMap.get(cls).remove(key);
+        mainMap.get(cls).remove(key);
+    }
+
     public void helper(AtomicBoolean threadRun) {
         UtilRisc.forEach(threadRun, mainMap, (_, mapManager) -> {
             UtilRisc.forEach(threadRun, mapManager, (key, managerElement) -> {

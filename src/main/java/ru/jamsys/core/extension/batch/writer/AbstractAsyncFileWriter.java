@@ -104,6 +104,7 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
     }
 
     public void writeAsync(T data) throws Throwable {
+        markActive();
         if (!isRun()) {
             throw new IOException("Writer is closed");
         }
@@ -158,6 +159,9 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                                     || (whiteStartTime - lastTimeWrite) > eachTime // Если с прошлой записи пачки прошло 50мс
                     ) {
                         lastTimeWrite = System.currentTimeMillis();
+                        // Должны пометить, что мы активны, так как может быть записи уже и нет, но мы ещё не успели
+                        // записать всё на файловую систему
+                        markActive();
                         fileOutputStream.write(byteArrayOutputStream.toByteArray());
                         byteArrayOutputStream.reset();
                         if (onWrite != null) {
@@ -170,6 +174,9 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                 // Если в буфере остались данные
                 if (byteArrayOutputStream.size() > 0) {
                     long s = System.currentTimeMillis();
+                    // Должны пометить, что мы активны, так как может быть записи уже и нет, но мы ещё не успели
+                    // записать всё на файловую систему
+                    markActive();
                     fileOutputStream.write(byteArrayOutputStream.toByteArray());
                     if (onWrite != null) {
                         onWrite.accept(listPolled);
@@ -229,6 +236,9 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
     }
 
     // Может потребоваться если в runTime заменить filePath для rolling истории
+    // Контролируйте, что бы этот метод вызывался из onOutOfPosition в .flush(), что бы не нарушить консистентность
+    // записи в файл, другими словами если в соседнем потоке вызвать перезапуск и в этот момент будет выполняться
+    // .flush(), который пишет в fileOutputStream и мы его остановим - это очень плохо
     public void restartOutputStream() {
         if (isRun()) {
             closeOutputStream();

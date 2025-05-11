@@ -38,15 +38,22 @@ public class AsyncFileWriterRolling<T extends AbstractAsyncFileWriterElement>
         super(applicationContext, ns, null, onWrite, StandardOpenOption.TRUNCATE_EXISTING);
         this.directory = directory;
         this.onSwap = onSwap;
-        setOnOutOfPosition(this::swap);
-        swap();
+
+        // До run надо установить имя файла, так как при старте будет создаваться файл и если этого не сделать будет NPE
+        setNewFilePath();
+
+        // При превышении размера, будем вызывать замену имени файла
+        setOnOutOfPosition(() -> {
+            setNewFilePath();
+            restartOutputStream();
+            onSwap.accept(fileName);
+        });
+
     }
 
-    private void swap() {
+    private void setNewFilePath() {
         fileName = generateNewFileName.get();
         setFilePath(directory + "/" + fileName);
-        onSwap.accept(fileName);
-        restartOutputStream();
     }
 
     // Переопределяем, чтобы не получить Exception на вставке, при выходе за границы maxPosition
@@ -56,6 +63,14 @@ public class AsyncFileWriterRolling<T extends AbstractAsyncFileWriterElement>
             throw new IOException("Writer is closed");
         }
         getInputQueue().add(data);
+    }
+
+    @Override
+    public void runOperation() {
+        super.runOperation();
+        // Это просто запуск, но в конструкторе мы не вызывали onSwap, потому что реально файл создаётся только в
+        // super.runOperation(), а onSwap по семантике должен вызываться, после того, как файл будет создан и замещён
+        onSwap.accept(fileName);
     }
 
 }

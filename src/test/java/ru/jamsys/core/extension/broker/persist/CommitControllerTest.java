@@ -74,9 +74,9 @@ class CommitControllerTest {
         test.add(new BrokerPersistTest.X("Hello"));
         // Данные добавлены в очередь на запись, но реально ещё не сохранились на файловую систему. То есть в последний
         // коммит контроллер они упадут только после записи и на текущий момент размер = 0
-        Assertions.assertEquals(0, test.getLastCommitControllerConfiguration().get().getAvailablePosition().size());
+        Assertions.assertEquals(0, test.getLastCommitConfiguration().get().getUncommitedPosition().size());
         // Записали на фс данные
-        test.getAsyncFileWriterRollingConfiguration().get().flush(run);
+        test.getBinConfiguration().get().flush(run);
         assertArrayEquals(
                 ((Supplier<byte[]>) () -> {
                     ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -88,25 +88,25 @@ class CommitControllerTest {
                     }
                     return output.toByteArray();
                 }).get(),
-                Files.readAllBytes(Paths.get(test.getAsyncFileWriterRollingConfiguration().get().getFilePath()))
+                Files.readAllBytes(Paths.get(test.getBinConfiguration().get().getFilePath()))
         );
 
         // В последнем коммит контроллере она должны появиться
-        Assertions.assertEquals(1, test.getLastCommitControllerConfiguration().get().getAvailablePosition().size());
+        Assertions.assertEquals(1, test.getLastCommitConfiguration().get().getUncommitedPosition().size());
         // Забираем элемент на обработку
         BrokerPersistElement<BrokerPersistTest.X> poll = test.poll();
         Assertions.assertEquals("Hello", new String(poll.getBytes()));
         // Теперь надо закоммитить
         test.commit(poll);
         // Должны получить, что элементов пока ещё 1, так как не произошла запись на диск
-        Assertions.assertEquals(1, test.getLastCommitControllerConfiguration().get().getAvailablePosition().size());
+        Assertions.assertEquals(1, test.getLastCommitConfiguration().get().getUncommitedPosition().size());
         // Запускаем запись wal
         test
-                .getLastCommitControllerConfiguration().get()
+                .getLastCommitConfiguration().get()
                 .getAsyncFileWriterWalConfiguration().get()
                 .flush(run);
         // Теперь после записи не должно остаться не обработанных элементов
-        Assertions.assertEquals(0, test.getLastCommitControllerConfiguration().get().getAvailablePosition().size());
+        Assertions.assertEquals(0, test.getLastCommitConfiguration().get().getUncommitedPosition().size());
 
         assertArrayEquals(
                 ((Supplier<byte[]>) () -> {
@@ -119,13 +119,13 @@ class CommitControllerTest {
                     }
                     return output.toByteArray();
                 }).get(),
-                Files.readAllBytes(Paths.get(test.getLastCommitControllerConfiguration().get().getFilePathWal()))
+                Files.readAllBytes(Paths.get(test.getLastCommitConfiguration().get().getFilePathCommit()))
         );
-        Assertions.assertFalse(test.getLastCommitControllerConfiguration().get().isComplete());
+        Assertions.assertFalse(test.getLastCommitConfiguration().get().isComplete());
         // Осталось обработать позиций 0
-        Assertions.assertEquals(0, test.getLastCommitControllerConfiguration().get().getRemainingPosition().get());
+        Assertions.assertEquals(0, test.getLastCommitConfiguration().get().getRemainingPosition().get());
         // Статус оригинального файла - не завершён
-        Assertions.assertFalse(test.getLastCommitControllerConfiguration().get().getFinishState().get());
+        Assertions.assertFalse(test.getLastCommitConfiguration().get().getFinishState().get());
 
         test.shutdown();
 
@@ -142,12 +142,12 @@ class CommitControllerTest {
                     }
                     return output.toByteArray();
                 }).get(),
-                Files.readAllBytes(Paths.get(test.getAsyncFileWriterRollingConfiguration().get().getFilePath()))
+                Files.readAllBytes(Paths.get(test.getBinConfiguration().get().getFilePath()))
         );
         // Проверим, что оригинальный файл достиг конца
-        Assertions.assertTrue(test.getLastCommitControllerConfiguration().get().getFinishState().get());
+        Assertions.assertTrue(test.getLastCommitConfiguration().get().getFinishState().get());
         // Проверим что файл удалился так как завершился CommitController и он был isComplete
-        Assertions.assertFalse(Files.exists(Paths.get(test.getLastCommitControllerConfiguration().get().getFilePathWal())));
+        Assertions.assertFalse(Files.exists(Paths.get(test.getLastCommitConfiguration().get().getFilePathCommit())));
 
     }
 }
