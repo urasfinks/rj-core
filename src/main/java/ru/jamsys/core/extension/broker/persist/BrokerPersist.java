@@ -50,7 +50,10 @@ public class BrokerPersist<T extends ByteSerialization>
     private Manager.Configuration<AbstractAsyncFileWriter<BrokerPersistElement<T>>> binConfiguration;
 
     // Конфиг может быть удалён, только если файл полностью обработан, до этого момента он должен быть тут 100%
-    private final Map<String, Manager.Configuration<CommitController>> mapCommitConfiguration = new ConcurrentHashMap<>();
+    private final Map<String, Manager.Configuration<CommitController>> mapCommitControllerConfiguration = new ConcurrentHashMap<>();
+
+    // Для того, что бы наполнять queue надо брать существующие CommitController по порядку и доить их
+    private final ConcurrentLinkedDeque<Manager.Configuration<CommitController>> queueCommitControllerConfiguration = new ConcurrentLinkedDeque<>();
 
     // Последний зарегистрированный конфиг Rider, что бы можно было оповещать о новых поступлениях данных position
     private Manager.Configuration<CommitController> lastCommitConfiguration;
@@ -72,6 +75,12 @@ public class BrokerPersist<T extends ByteSerialization>
     @Override
     public void helper() {
         if (queueSize.get() < propertyBroker.getFillThresholdMin()) {
+            Manager.Configuration<CommitController> commitControllerConfiguration
+                    = queueCommitControllerConfiguration.pollLast();
+            if (commitControllerConfiguration != null) {
+                CommitController commitController = commitControllerConfiguration.get();
+
+            }
             //commitControllers.
         }
     }
@@ -135,7 +144,7 @@ public class BrokerPersist<T extends ByteSerialization>
 
         // Работа с CommitController
         BrokerPersistElement<T> first = brokerPersistElements.getFirst();
-        Manager.Configuration<CommitController> commitControllerConfiguration = mapCommitConfiguration.get(first.getFilePath());
+        Manager.Configuration<CommitController> commitControllerConfiguration = mapCommitControllerConfiguration.get(first.getFilePath());
         if (commitControllerConfiguration == null) {
             throw new RuntimeException("CommitController(" + first.getFilePath() + ") not found");
         }
@@ -146,16 +155,20 @@ public class BrokerPersist<T extends ByteSerialization>
         }
         CommitController commitController = commitControllerConfiguration.get();
         if (commitController != null) {
-            commitController.addPosition(brokerPersistElements);
+            commitController.add(brokerPersistElements);
         }
     }
-
 
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
     public void onCommitWrite(CommitController commitController) {
         if (commitController.isComplete()) {
             // rider.shutdown(); // Когда менеджер будет его выбрасывать, сам выключит
-            mapCommitConfiguration.remove(commitToBin(commitController.getFilePathCommit()));
+            Manager.Configuration<CommitController> removedCommitControllerConfiguration
+                    = mapCommitControllerConfiguration.remove(commitToBin(commitController.getFilePathCommit()));
+            // Если контроллер найден по имени файла, удалим и из очереди
+            if (removedCommitControllerConfiguration != null) {
+                queueCommitControllerConfiguration.remove(removedCommitControllerConfiguration);
+            }
         }
     }
 
@@ -163,7 +176,7 @@ public class BrokerPersist<T extends ByteSerialization>
     public void onBinSwap(String fileName) {
         // Если последний зарегистрированный Rider существует и ещё жив - оповестим, что запись закончена
         if (lastCommitConfiguration != null && lastCommitConfiguration.isAlive()) {
-            lastCommitConfiguration.get().fileFinishWrite();
+            lastCommitConfiguration.get().getBinFileReaderResult().setFinishState(true);;
         }
         // Первым делом надо создать .commit файл, что бы если произойдёт рестарт, мы могли понять, что файл ещё не
         // обработан, так как после обработки файл удаляется
@@ -175,7 +188,9 @@ public class BrokerPersist<T extends ByteSerialization>
         }
         lastCommitConfiguration = computeIfAbsentCommitController(filePath);
         // Запускаем сразу контроллер коммитов, что бы onBinWrite мог в него уже передавать записанные position
-        lastCommitConfiguration.get();
+        if (lastCommitConfiguration != null) {
+            lastCommitConfiguration.get();
+        }
     }
 
     private Manager.Configuration<CommitController> computeIfAbsentCommitController(String filePathBin) {
@@ -184,25 +199,29 @@ public class BrokerPersist<T extends ByteSerialization>
         if (!Files.exists(Paths.get(binToCommit(filePathBin)))) {
             return null;
         }
-        return mapCommitConfiguration.computeIfAbsent(
+        return mapCommitControllerConfiguration.computeIfAbsent(
                 filePathBin, // Нам тут нужна ссылка на bin так как BrokerPersistElement.getFilePath возвращает именно его
-                _ -> App.get(Manager.class, applicationContext).configure(
-                        CommitController.class,
-                        getCascadeKey(ns, filePathBin), // Тут главно, что бы просто было уникальным
-                        ns1 -> {
-                            try {
-                                // передаём fileName, так как Rider должен прочитать его
-                                return new CommitController(
-                                        applicationContext,
-                                        ns1,
-                                        binToCommit(filePathBin),
-                                        this::onCommitWrite
-                                );
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
+                _ -> {
+                    Manager.Configuration<CommitController> configure = App.get(Manager.class, applicationContext).configure(
+                            CommitController.class,
+                            getCascadeKey(ns, filePathBin), // Тут главно, что бы просто было уникальным
+                            ns1 -> {
+                                try {
+                                    // передаём fileName, так как Rider должен прочитать его
+                                    return new CommitController(
+                                            applicationContext,
+                                            ns1,
+                                            binToCommit(filePathBin),
+                                            this::onCommitWrite
+                                    );
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
                             }
-                        }
-                ));
+                    );
+                    queueCommitControllerConfiguration.add(configure);
+                    return configure;
+                });
     }
 
     public static String binToCommit(String filePathBin) {
@@ -251,7 +270,7 @@ public class BrokerPersist<T extends ByteSerialization>
         }
         if (lastCommitConfiguration.isAlive()) {
             CommitController commitController = lastCommitConfiguration.get();
-            commitController.fileFinishWrite();
+            commitController.getBinFileReaderResult().setFinishState(true);
             commitController.shutdown();
         }
     }
@@ -261,7 +280,7 @@ public class BrokerPersist<T extends ByteSerialization>
         return List.of();
     }
 
-    public void add(T element) throws Throwable {
+    public void add(T element) {
         binConfiguration.get().writeAsync(new BrokerPersistElement<>(element));
     }
 
@@ -272,7 +291,7 @@ public class BrokerPersist<T extends ByteSerialization>
         if (commitControllerConfiguration == null) {
             throw new RuntimeException("CommitController(" + element.getFilePath() + ") not found");
         }
-        commitControllerConfiguration.get().asyncWrite(element.getPosition());
+        commitControllerConfiguration.get().asyncWrite(element);
     }
 
     public BrokerPersistElement<T> poll() {

@@ -103,13 +103,17 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
         );
     }
 
-    public void writeAsync(T data) throws Throwable {
+    public void writeAsync(T data) {
         markActive();
         if (!isRun()) {
-            throw new IOException("Writer is closed");
+            throw new RuntimeException("Writer is closed");
         }
         if (position.get() > repositoryProperty.getMaxSize()) {
-            onOutOfPosition.run();
+            try {
+                onOutOfPosition.run();
+            } catch (Throwable th) {
+                throw new RuntimeException(th);
+            }
         }
         inputQueue.add(data);
     }

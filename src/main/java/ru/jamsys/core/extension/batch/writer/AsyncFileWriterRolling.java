@@ -58,9 +58,9 @@ public class AsyncFileWriterRolling<T extends AbstractAsyncFileWriterElement>
 
     // Переопределяем, чтобы не получить Exception на вставке, при выходе за границы maxPosition
     @Override
-    public void writeAsync(T data) throws Throwable {
+    public void writeAsync(T data) {
         if (!isRun()) {
-            throw new IOException("Writer is closed");
+            throw new RuntimeException("Writer is closed");
         }
         getInputQueue().add(data);
     }

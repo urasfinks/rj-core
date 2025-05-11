@@ -24,10 +24,10 @@ public class AsyncFileWriterWal<T extends AbstractAsyncFileWriterElement>
     }
 
     @Override
-    public void writeAsync(T data) throws Throwable {
+    public void writeAsync(T data) {
         markActive();
         if (!isRun()) {
-            throw new IOException("Writer is closed");
+            throw new RuntimeException("Writer is closed");
         }
         getInputQueue().add(data);
     }
