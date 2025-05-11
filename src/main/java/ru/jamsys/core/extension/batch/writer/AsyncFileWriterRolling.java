@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 
-import java.io.IOException;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.function.Consumer;

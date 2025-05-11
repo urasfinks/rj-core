@@ -176,7 +176,7 @@ public class BrokerPersist<T extends ByteSerialization>
     public void onBinSwap(String fileName) {
         // Если последний зарегистрированный Rider существует и ещё жив - оповестим, что запись закончена
         if (lastCommitConfiguration != null && lastCommitConfiguration.isAlive()) {
-            lastCommitConfiguration.get().getBinFileReaderResult().setFinishState(true);;
+            lastCommitConfiguration.get().getBinFileReaderResult().setFinishState(true);
         }
         // Первым делом надо создать .commit файл, что бы если произойдёт рестарт, мы могли понять, что файл ещё не
         // обработан, так как после обработки файл удаляется
@@ -285,7 +285,7 @@ public class BrokerPersist<T extends ByteSerialization>
     }
 
     @Override
-    public void commit(BrokerPersistElement<T> element) throws Throwable {
+    public void commit(BrokerPersistElement<T> element) {
         // К моменту commit уже должна быть конфигурация Rider
         Manager.Configuration<CommitController> commitControllerConfiguration = computeIfAbsentCommitController(element.getFilePath());
         if (commitControllerConfiguration == null) {
