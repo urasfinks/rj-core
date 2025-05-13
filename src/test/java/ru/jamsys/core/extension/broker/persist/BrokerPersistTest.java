@@ -94,7 +94,7 @@ class BrokerPersistTest {
         BrokerPersist<X> test = App.get(Manager.class).configure(
                 BrokerPersist.class,
                 "test",
-                s -> new BrokerPersist<>(s, App.context)
+                s -> new BrokerPersist<>(s, App.context, (s1, dataPayload) -> null)
         ).getGeneric();
         test.add(new X("Hello"));
         // Данные добавлены в очередь на запись, но реально ещё не сохранились на файловую систему. То есть в последний

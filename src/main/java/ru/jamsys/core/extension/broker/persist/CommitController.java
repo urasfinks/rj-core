@@ -10,6 +10,7 @@ import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.extension.batch.writer.AbstractAsyncFileReader;
 import ru.jamsys.core.extension.batch.writer.AbstractAsyncFileWriter;
 import ru.jamsys.core.extension.batch.writer.AsyncFileWriterWal;
+import ru.jamsys.core.extension.batch.writer.FileReaderResult;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
 
@@ -24,7 +25,7 @@ public class CommitController extends AbstractManagerElement {
 
     private final String filePathCommit;
 
-    private final AbstractAsyncFileReader.FileReaderResult binFileReaderResult = new AbstractAsyncFileReader.FileReaderResult();
+    private final FileReaderResult binFileReaderResult;
 
     // Экземпляр создаётся в onSwap и в commit
     public CommitController(
@@ -34,6 +35,7 @@ public class CommitController extends AbstractManagerElement {
             Consumer<CommitController> onWrite
     ) {
         this.filePathCommit = filePathCommit;
+        binFileReaderResult = new FileReaderResult();
         // То, что будут коммитить - это значит, что обработано и нам надо это удалять из списка на обработку
         // В asyncWrite залетает CommitElement содержащий bin (CommitElement.getBytes() возвращает позицию bin.position)
         // В onWrite залетает список CommitElement и мы должны bin.position удалить из binReader
@@ -82,7 +84,7 @@ public class CommitController extends AbstractManagerElement {
         // при одновременной записи
         try {
             AbstractAsyncFileReader.read(BrokerPersist.commitToBin(filePathCommit), binFileReaderResult);
-            AbstractAsyncFileReader.FileReaderResult commitFileReaderResult = new AbstractAsyncFileReader.FileReaderResult();
+            FileReaderResult commitFileReaderResult = new FileReaderResult();
             AbstractAsyncFileReader.read(filePathCommit, commitFileReaderResult);
             commitFileReaderResult.getMapData().forEach((_, dataPayload) -> {
                 long binPosition = UtilByte.bytesToLong(dataPayload.getBytes());

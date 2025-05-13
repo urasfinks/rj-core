@@ -9,6 +9,7 @@ import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.ByteSerialization;
 import ru.jamsys.core.extension.batch.writer.AbstractAsyncFileWriter;
 import ru.jamsys.core.extension.batch.writer.AsyncFileWriterRolling;
+import ru.jamsys.core.extension.batch.writer.DataPayload;
 import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
@@ -23,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 
 // SSD 80K IOPS при 4KB на блок = 320 MB/s на диске в режиме RandomAccess и до 550 MB/s в линейной записи (секвентальная)
 // Для гарантии записи надо использовать StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.DSYNC
@@ -58,9 +60,16 @@ public class BrokerPersist<T extends ByteSerialization>
     // Последний зарегистрированный конфиг Rider, что бы можно было оповещать о новых поступлениях данных position
     private Manager.Configuration<CommitController> lastCommitConfiguration;
 
-    public BrokerPersist(String ns, ApplicationContext applicationContext) {
+    private final BiFunction<String, DataPayload, BrokerPersistElement<T>> builderPrototype;
+
+    public BrokerPersist(
+            String ns,
+            ApplicationContext applicationContext,
+            BiFunction<String, DataPayload, BrokerPersistElement<T>> builderPrototype
+    ) {
         this.ns = ns;
         this.applicationContext = applicationContext;
+        this.builderPrototype = builderPrototype;
 
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class, applicationContext),
@@ -79,9 +88,18 @@ public class BrokerPersist<T extends ByteSerialization>
                     = queueCommitControllerConfiguration.pollLast();
             if (commitControllerConfiguration != null) {
                 CommitController commitController = commitControllerConfiguration.get();
-
+                ConcurrentHashMap<Long, DataPayload> mapData = commitController.getBinFileReaderResult().getMapData();
+                //String filePath = commitController.getBinFileReaderResult().getFilePath();
+//                DataPayload dataPayload = mapData.get(0L);
+//                T element;
+//                if (dataPayload.getObject() != null) {
+//                    @SuppressWarnings("unchecked")
+//                    BrokerPersistElement<T> cast = (BrokerPersistElement<T>) dataPayload.getObject();
+//                    queue.add(cast);
+//                } else {
+//                    queue.add(builderPrototype.apply(filePath, dataPayload));
+//                }
             }
-            //commitControllers.
         }
     }
 
