@@ -18,8 +18,11 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// Очередь данных, которые можно взять на обработку на какое-то время. Если за это время не выполнить commit, данные
+// снова вернуться в очередь и будут повторно выданы
+
 @Getter
-public class DataQueueExpiration implements DataReadable, StatisticsFlush {
+public class QueueRetry implements DataFromFile, StatisticsFlush {
 
     @Setter
     private volatile boolean error = false; // Ошибка чтения данных
@@ -29,15 +32,17 @@ public class DataQueueExpiration implements DataReadable, StatisticsFlush {
 
     private final ConcurrentLinkedDeque<DataPayload> queue = new ConcurrentLinkedDeque<>();
 
+    private final ConcurrentHashMap<Long, DataPayload> unique = new ConcurrentHashMap<>(); // key: position;
+
     private final AtomicInteger queueSize = new AtomicInteger();
 
     private final AtomicInteger polled = new AtomicInteger();
 
     private final Manager.Configuration<ExpirationList<DataPayload>> expirationListConfiguration;
 
-    private final Map<DataPayload, DisposableExpirationMsImmutableEnvelope<DataPayload>> map = new ConcurrentHashMap<>();
+    private final Map<DataPayload, DisposableExpirationMsImmutableEnvelope<DataPayload>> mapExpiration = new ConcurrentHashMap<>();
 
-    public DataQueueExpiration(String key) {
+    public QueueRetry(String key) {
         expirationListConfiguration = App.get(Manager.class).configureGeneric(
                 ExpirationList.class,
                 key,
@@ -51,14 +56,29 @@ public class DataQueueExpiration implements DataReadable, StatisticsFlush {
         );
     }
 
-    @Override
-    public void add(@NonNull DataPayload dataPayload) {
-        queue.add(dataPayload);
-        queueSize.incrementAndGet();
+    public int size() {
+        return queueSize.get();
     }
 
-    public void remove(DataPayload item) {
-        DisposableExpirationMsImmutableEnvelope<DataPayload> remove = map.remove(item);
+    @Override
+    public void add(@NonNull DataPayload dataPayload) {
+        unique.computeIfAbsent(dataPayload.getPosition(), _ -> {
+            queue.add(dataPayload);
+            queueSize.incrementAndGet();
+            return dataPayload;
+        });
+    }
+
+    public void remove(long position) {
+        DataPayload dataPayload = unique.remove(position);
+        if (dataPayload != null && queue.remove(dataPayload)) {
+            queueSize.decrementAndGet();
+            commit(dataPayload);
+        }
+    }
+
+    public void commit(DataPayload item) {
+        DisposableExpirationMsImmutableEnvelope<DataPayload> remove = mapExpiration.remove(item);
         if (remove != null && expirationListConfiguration.isAlive()) {
             expirationListConfiguration.get().remove(remove);
         }
@@ -69,7 +89,7 @@ public class DataQueueExpiration implements DataReadable, StatisticsFlush {
         if (dataPayload != null) {
             queueSize.decrementAndGet();
             polled.incrementAndGet();
-            map.put(dataPayload, expirationListConfiguration.get().add(dataPayload, timeoutMs));
+            mapExpiration.put(dataPayload, expirationListConfiguration.get().add(dataPayload, timeoutMs));
             return dataPayload;
         }
         return null;
@@ -80,7 +100,7 @@ public class DataQueueExpiration implements DataReadable, StatisticsFlush {
         if (dataPayload != null) {
             queueSize.decrementAndGet();
             polled.incrementAndGet();
-            map.put(dataPayload, expirationListConfiguration.get().add(dataPayload, timeoutMs));
+            mapExpiration.put(dataPayload, expirationListConfiguration.get().add(dataPayload, timeoutMs));
             return dataPayload;
         }
         return null;
@@ -91,7 +111,7 @@ public class DataQueueExpiration implements DataReadable, StatisticsFlush {
         if (dataPayload != null) {
             queueSize.decrementAndGet();
             polled.incrementAndGet();
-            map.put(
+            mapExpiration.put(
                     dataPayload,
                     expirationListConfiguration
                             .get()

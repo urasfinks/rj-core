@@ -1,10 +1,10 @@
 package ru.jamsys.core.component.manager.item.log;
 
-import ru.jamsys.core.extension.ByteSerialization;
+import ru.jamsys.core.extension.ByteCodec;
 
 import java.util.Map;
 
-public interface PersistentData extends ByteSerialization {
+public interface PersistentData extends ByteCodec {
 
     String getBody();
 

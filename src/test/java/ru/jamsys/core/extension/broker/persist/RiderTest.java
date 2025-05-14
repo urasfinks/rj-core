@@ -10,12 +10,9 @@ import ru.jamsys.core.flat.util.UtilFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-class CommitControllerTest {
-
-    AtomicBoolean run = new AtomicBoolean(true);
+class RiderTest {
 
     @BeforeAll
     static void beforeAll() {
@@ -62,18 +59,18 @@ class CommitControllerTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        CommitController commitController = App.get(Manager.class).configure(
-                CommitController.class,
+        Rider rider = App.get(Manager.class).configure(
+                Rider.class,
                 "test",
-                key1 -> new CommitController(
+                key1 -> new Rider(
                         App.context,
                         key1,
                         "LogManager/test.bin.commit",
-                        commitController1 -> {
+                        rider1 -> {
                         }
                 )
         ).get();
-        Assertions.assertEquals(1, commitController.getBinFileReaderResult().size());
-        Assertions.assertEquals("world", new String(commitController.getBinFileReaderResult().getMapData().get(9L).getBytes()));
+        Assertions.assertEquals(1, rider.getQueueRetry().size());
+        Assertions.assertEquals("world", new String(rider.getQueueRetry().getUnique().get(9L).getBytes()));
     }
 }

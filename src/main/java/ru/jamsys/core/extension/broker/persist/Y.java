@@ -1,0 +1,26 @@
+package ru.jamsys.core.extension.broker.persist;
+
+import lombok.Getter;
+import lombok.Setter;
+import ru.jamsys.core.extension.ByteSerializable;
+import ru.jamsys.core.extension.batch.writer.Position;
+import ru.jamsys.core.flat.util.UtilByte;
+
+@Getter
+@Setter
+public class Y implements ByteSerializable, Position {
+
+    private final Position x; // Это блок данных .afwr
+
+    private long position; // Это позиция записанных данных в .commit (нам не понадобится)
+
+    public Y(Position x) {
+        this.x = x;
+    }
+
+    @Override
+    public byte[] toBytes() {
+        return UtilByte.longToBytes(x.getPosition());
+    }
+
+}

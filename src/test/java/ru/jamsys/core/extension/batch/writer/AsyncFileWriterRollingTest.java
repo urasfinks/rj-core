@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
@@ -11,7 +12,6 @@ import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilLog;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -46,7 +46,7 @@ class AsyncFileWriterRollingTest {
                 App.context,
                 "test",
                 "LogManager",
-                outputQueue::addAll,
+                (_, testElements) -> outputQueue.addAll(testElements),
                 fileName -> System.out.println("SWAP: " + fileName)
         );
         writer.run();
@@ -68,7 +68,7 @@ class AsyncFileWriterRollingTest {
         writer.writeAsync(element);
 
         TestElement element2 = new TestElement("Hello".getBytes());
-        Assertions.assertEquals(5, element2.getBytes().length);
+        Assertions.assertEquals(5, element2.toBytes().length);
         writer.writeAsync(element2);
 
         writer.flush(run);
@@ -105,7 +105,7 @@ class AsyncFileWriterRollingTest {
         long expectedPos = 0;
         for (TestElement el : elements) {
             assertEquals(expectedPos, el.getPosition());
-            expectedPos += el.getBytes().length + 4;
+            expectedPos += el.toBytes().length + 4;
         }
 
         byte[] bytes = Files.readAllBytes(Paths.get(writer.getFilePath()));
@@ -173,7 +173,7 @@ class AsyncFileWriterRollingTest {
     void testWriteAfterShutdownThrowsException() {
         writer.shutdown();
         TestElement e = new TestElement("error".getBytes());
-        IOException ex = assertThrows(IOException.class, () -> writer.writeAsync(e));
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> writer.writeAsync(e));
         assertEquals("Writer is closed", ex.getMessage());
     }
 
@@ -232,7 +232,7 @@ class AsyncFileWriterRollingTest {
     }
 
     // Реализация тестового элемента
-    public static class TestElement extends AbstractAsyncFileWriterElement {
+    public static class TestElement implements Position, ByteSerializable {
 
         private final byte[] data;
         @Getter
@@ -246,7 +246,7 @@ class AsyncFileWriterRollingTest {
         }
 
         @Override
-        public byte[] getBytes() {
+        public byte[] toBytes() {
             return data;
         }
 

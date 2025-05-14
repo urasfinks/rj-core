@@ -6,10 +6,13 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
-import ru.jamsys.core.extension.ByteSerialization;
+import ru.jamsys.core.extension.AbstractManagerElement;
+import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.batch.writer.AbstractAsyncFileWriter;
 import ru.jamsys.core.extension.batch.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.batch.writer.DataPayload;
+import ru.jamsys.core.extension.batch.writer.Position;
+import ru.jamsys.core.extension.broker.Broker;
 import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
@@ -33,9 +36,9 @@ import java.util.function.BiFunction;
 
 @Getter
 @SuppressWarnings("unused")
-public class BrokerPersist<T extends ByteSerialization>
-        extends AbstractBrokerPersist<T>
-        implements PropertyListener {
+public class BrokerPersist<T extends Position & ByteSerializable>
+        extends AbstractManagerElement
+        implements PropertyListener, Broker {
 
     private final String ns;
 
@@ -45,31 +48,31 @@ public class BrokerPersist<T extends ByteSerialization>
 
     private final PropertyDispatcher<Object> propertyDispatcher;
 
-    private final ConcurrentLinkedDeque<BrokerPersistElement<T>> queue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<X<T>> queue = new ConcurrentLinkedDeque<>();
 
     private final AtomicInteger queueSize = new AtomicInteger(0);
 
-    private Manager.Configuration<AbstractAsyncFileWriter<BrokerPersistElement<T>>> binConfiguration;
+    private Manager.Configuration<AbstractAsyncFileWriter<X<T>>> xWriterConfiguration;
 
     // Конфиг может быть удалён, только если файл полностью обработан, до этого момента он должен быть тут 100%
-    private final Map<String, Manager.Configuration<CommitController>> mapCommitControllerConfiguration = new ConcurrentHashMap<>();
+    private final Map<String, Manager.Configuration<Rider>> mapRiderConfiguration = new ConcurrentHashMap<>();
 
     // Для того, что бы наполнять queue надо брать существующие CommitController по порядку и доить их
-    private final ConcurrentLinkedDeque<Manager.Configuration<CommitController>> queueCommitControllerConfiguration = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<Manager.Configuration<Rider>> queueRiderConfiguration = new ConcurrentLinkedDeque<>();
 
     // Последний зарегистрированный конфиг Rider, что бы можно было оповещать о новых поступлениях данных position
-    private Manager.Configuration<CommitController> lastCommitConfiguration;
+    private Manager.Configuration<Rider> lastRiderConfiguration;
 
-    private final BiFunction<String, DataPayload, BrokerPersistElement<T>> builderPrototype;
+    private final BiFunction<String, DataPayload, X<T>> byteDeserialize;
 
     public BrokerPersist(
             String ns,
             ApplicationContext applicationContext,
-            BiFunction<String, DataPayload, BrokerPersistElement<T>> builderPrototype
+            BiFunction<String, DataPayload, X<T>> byteDeserialize
     ) {
         this.ns = ns;
         this.applicationContext = applicationContext;
-        this.builderPrototype = builderPrototype;
+        this.byteDeserialize = byteDeserialize;
 
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class, applicationContext),
@@ -78,37 +81,22 @@ public class BrokerPersist<T extends ByteSerialization>
                 getCascadeKey(ns)
         );
 
-        binWriteConfiguration();
+        xWriterInit();
     }
 
     @Override
     public void helper() {
         if (queueSize.get() < propertyBroker.getFillThresholdMin()) {
-            Manager.Configuration<CommitController> commitControllerConfiguration
-                    = queueCommitControllerConfiguration.pollLast();
-            if (commitControllerConfiguration != null) {
-                CommitController commitController = commitControllerConfiguration.get();
-                ConcurrentHashMap<Long, DataPayload> mapData = commitController.getBinFileReaderResult().getMapData();
-                //String filePath = commitController.getBinFileReaderResult().getFilePath();
-//                DataPayload dataPayload = mapData.get(0L);
-//                T element;
-//                if (dataPayload.getObject() != null) {
-//                    @SuppressWarnings("unchecked")
-//                    BrokerPersistElement<T> cast = (BrokerPersistElement<T>) dataPayload.getObject();
-//                    queue.add(cast);
-//                } else {
-//                    queue.add(builderPrototype.apply(filePath, dataPayload));
-//                }
-            }
+
         }
     }
 
-    public void binWriteConfiguration() {
+    public void xWriterInit() {
         String key = getCascadeKey(ns, "bin");
-        if (binConfiguration != null) {
+        if (xWriterConfiguration != null) {
             App.get(Manager.class, applicationContext).remove(AbstractAsyncFileWriter.class, key);
         }
-        binConfiguration = App.get(Manager.class, applicationContext).configureGeneric(
+        xWriterConfiguration = App.get(Manager.class, applicationContext).configureGeneric(
                 AbstractAsyncFileWriter.class,
                 // ns уникально в пределах BrokerPersist, но нам надо больше уникальности, так как у нас несколько
                 // AbstractAsyncFileWriter.class (Rolling/Wal)
@@ -117,8 +105,8 @@ public class BrokerPersist<T extends ByteSerialization>
                         applicationContext,
                         ns1,
                         propertyBroker.getDirectory(),
-                        this::onBinWrite,
-                        this::onBinSwap
+                        this::onXWrite,
+                        this::onXFileSwap
                 )
         );
         // При старте мы должны поднять все CommitController в карту commitControllers это надо, что бы наполнять
@@ -128,27 +116,24 @@ public class BrokerPersist<T extends ByteSerialization>
                 .stream()
                 .filter(s -> s.endsWith(".commit"))
                 .toList()
-                .forEach(filePathCommit -> {
-                    // Отрезаем .commit так как CommitController работает с оригинальными путями, что бы их
-                    computeIfAbsentCommitController(commitToBin(filePathCommit));
-                });
+                .forEach(filePathY -> getRiderConfiguration(filePathYToX(filePathY)));
     }
 
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
-    public void onBinWrite(List<BrokerPersistElement<T>> brokerPersistElements) {
+    public void onXWrite(String filePath, List<X<T>> listX) {
         int maxSize = propertyBroker.getSize();
 
-        if (brokerPersistElements.size() > maxSize) {
+        if (listX.size() > maxSize) {
             // Берём только последние maxSize элементов
-            int fromIndex = brokerPersistElements.size() - maxSize;
-            List<BrokerPersistElement<T>> tail = brokerPersistElements.subList(fromIndex, brokerPersistElements.size());
+            int fromIndex = listX.size() - maxSize;
+            List<X<T>> tail = listX.subList(fromIndex, listX.size());
 
             queue.clear();
             queue.addAll(tail);
             queueSize.set(tail.size()); // Обновляем после добавления
         } else {
-            queue.addAll(brokerPersistElements);
-            queueSize.addAndGet(brokerPersistElements.size());
+            queue.addAll(listX);
+            queueSize.addAndGet(listX.size());
 
             // Удаление из начала очереди при переполнении
             while (queueSize.get() > maxSize) {
@@ -160,90 +145,80 @@ public class BrokerPersist<T extends ByteSerialization>
             }
         }
 
-        // Работа с CommitController
-        BrokerPersistElement<T> first = brokerPersistElements.getFirst();
-        Manager.Configuration<CommitController> commitControllerConfiguration = mapCommitControllerConfiguration.get(first.getFilePath());
-        if (commitControllerConfiguration == null) {
-            throw new RuntimeException("CommitController(" + first.getFilePath() + ") not found");
+        Manager.Configuration<Rider> riderConfiguration = mapRiderConfiguration.get(filePath);
+        if (riderConfiguration == null) {
+            throw new RuntimeException("Rider(" + filePath + ") not found");
         }
         // Бывает такое, что конфигурации останавливаются, из-за того, что не используются. Используются, это когда
         // в них коммитят позиции, извлекают из них не закоммиченные позиции
-        if (!commitControllerConfiguration.isAlive()) {
-            return;
-        }
-        CommitController commitController = commitControllerConfiguration.get();
-        if (commitController != null) {
-            commitController.add(brokerPersistElements);
-        }
+        riderConfiguration.executeIfAlive(rider -> rider.onWriteX(listX));
     }
 
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
-    public void onCommitWrite(CommitController commitController) {
-        if (commitController.isComplete()) {
+    // Каждая запись Y может быть последней, так как будут обработаны все X
+    public void onYWrite(Rider rider) {
+        if (rider.isComplete()) {
             // rider.shutdown(); // Когда менеджер будет его выбрасывать, сам выключит
-            Manager.Configuration<CommitController> removedCommitControllerConfiguration
-                    = mapCommitControllerConfiguration.remove(commitToBin(commitController.getFilePathCommit()));
+            Manager.Configuration<Rider> removedRiderConfiguration
+                    = mapRiderConfiguration.remove(filePathYToX(rider.getFilePathY()));
             // Если контроллер найден по имени файла, удалим и из очереди
-            if (removedCommitControllerConfiguration != null) {
-                queueCommitControllerConfiguration.remove(removedCommitControllerConfiguration);
+            if (removedRiderConfiguration != null) {
+                queueRiderConfiguration.remove(removedRiderConfiguration);
             }
         }
     }
 
     // Вызывается когда меняется bin файл, так как он достиг максимального размера
-    public void onBinSwap(String fileName) {
+    public void onXFileSwap(String fileName) {
         // Если последний зарегистрированный Rider существует и ещё жив - оповестим, что запись закончена
-        if (lastCommitConfiguration != null && lastCommitConfiguration.isAlive()) {
-            lastCommitConfiguration.get().getBinFileReaderResult().setFinishState(true);
+        if (lastRiderConfiguration != null && lastRiderConfiguration.isAlive()) {
+            lastRiderConfiguration.get().getQueueRetry().setFinishState(true);
         }
         // Первым делом надо создать .commit файл, что бы если произойдёт рестарт, мы могли понять, что файл ещё не
         // обработан, так как после обработки файл удаляется
         String filePath = propertyBroker.getDirectory() + "/" + fileName;
         try {
-            UtilFile.createNewFile(binToCommit(filePath));
+            UtilFile.createNewFile(filePathXToY(filePath));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        lastCommitConfiguration = computeIfAbsentCommitController(filePath);
+        lastRiderConfiguration = getRiderConfiguration(filePath);
         // Запускаем сразу контроллер коммитов, что бы onBinWrite мог в него уже передавать записанные position
-        if (lastCommitConfiguration != null) {
-            lastCommitConfiguration.get();
+        if (lastRiderConfiguration != null) {
+            lastRiderConfiguration.get();
         }
     }
 
-    private Manager.Configuration<CommitController> computeIfAbsentCommitController(String filePathBin) {
+    private Manager.Configuration<Rider> getRiderConfiguration(String filePathX) {
         // Обязательно должен существовать commit файл, если пакет данных не обработан, после обработки commit
         // файл удаляется, если нет commit - то смысла в этом больше нет
-        if (!Files.exists(Paths.get(binToCommit(filePathBin)))) {
+        if (!Files.exists(Paths.get(filePathXToY(filePathX)))) {
             return null;
         }
-        return mapCommitControllerConfiguration.computeIfAbsent(
-                filePathBin, // Нам тут нужна ссылка на bin так как BrokerPersistElement.getFilePath возвращает именно его
+        return mapRiderConfiguration.computeIfAbsent(
+                filePathX, // Нам тут нужна ссылка на bin так как BrokerPersistElement.getFilePath возвращает именно его
                 _ -> {
-                    Manager.Configuration<CommitController> configure = App.get(Manager.class, applicationContext).configure(
-                            CommitController.class,
-                            getCascadeKey(ns, filePathBin), // Тут главно, что бы просто было уникальным
-                            ns1 -> {
-                                // передаём fileName, так как Rider должен прочитать его
-                                return new CommitController(
-                                        applicationContext,
-                                        ns1,
-                                        binToCommit(filePathBin),
-                                        this::onCommitWrite
-                                );
-                            }
+                    Manager.Configuration<Rider> configure = App.get(Manager.class, applicationContext).configure(
+                            Rider.class,
+                            getCascadeKey(ns, filePathX), // Тут главно, что бы просто было уникальным
+                            key1 -> new Rider(
+                                    applicationContext,
+                                    key1,
+                                    filePathXToY(filePathX),
+                                    this::onYWrite
+                            )
                     );
-                    queueCommitControllerConfiguration.add(configure);
+                    queueRiderConfiguration.add(configure);
                     return configure;
                 });
     }
 
-    public static String binToCommit(String filePathBin) {
-        return filePathBin + ".commit";
+    public static String filePathXToY(String filePathX) {
+        return filePathX + ".commit";
     }
 
-    public static String commitToBin(String filePathCommit) {
-        return filePathCommit.substring(0, filePathCommit.length() - 7);
+    public static String filePathYToX(String filePathY) {
+        return filePathY.substring(0, filePathY.length() - 7);
     }
 
     @Override
@@ -279,13 +254,13 @@ public class BrokerPersist<T extends ByteSerialization>
     @Override
     public void shutdownOperation() {
         propertyDispatcher.shutdown();
-        if (binConfiguration.isAlive()) {
-            binConfiguration.get().shutdown();
+        if (xWriterConfiguration.isAlive()) {
+            xWriterConfiguration.get().shutdown();
         }
-        if (lastCommitConfiguration.isAlive()) {
-            CommitController commitController = lastCommitConfiguration.get();
-            commitController.getBinFileReaderResult().setFinishState(true);
-            commitController.shutdown();
+        if (lastRiderConfiguration.isAlive()) {
+            Rider rider = lastRiderConfiguration.get();
+            rider.getQueueRetry().setFinishState(true);
+            rider.shutdown();
         }
     }
 
@@ -295,26 +270,26 @@ public class BrokerPersist<T extends ByteSerialization>
     }
 
     public void add(T element) {
-        binConfiguration.get().writeAsync(new BrokerPersistElement<>(element));
+        xWriterConfiguration.get().writeAsync(new X<>(element));
     }
 
-    @Override
-    public void commit(BrokerPersistElement<T> element) {
-        // К моменту commit уже должна быть конфигурация Rider
-        Manager.Configuration<CommitController> commitControllerConfiguration = computeIfAbsentCommitController(element.getFilePath());
-        if (commitControllerConfiguration == null) {
-            throw new RuntimeException("CommitController(" + element.getFilePath() + ") not found");
-        }
-        commitControllerConfiguration.get().asyncWrite(element);
+    public void commit(X<T> element) {
+//        // К моменту commit уже должна быть конфигурация Rider
+//        Manager.Configuration<Rider> riderConfiguration = getRiderConfiguration(element.getFilePath());
+//        if (riderConfiguration == null) {
+//            throw new RuntimeException("Rider(" + element.getFilePath() + ") not found");
+//        }
+//        riderConfiguration.get().onCommitX(element);
     }
 
-    public BrokerPersistElement<T> poll() {
+    public X<T> poll() {
         // Очередь цикличная,
         return queue.poll();
     }
 
     @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
-        binWriteConfiguration();
+        xWriterInit();
     }
+
 }

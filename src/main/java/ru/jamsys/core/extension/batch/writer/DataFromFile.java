@@ -1,6 +1,6 @@
 package ru.jamsys.core.extension.batch.writer;
 
-public interface DataReadable {
+public interface DataFromFile {
 
     void add(DataPayload dataPayload);
 

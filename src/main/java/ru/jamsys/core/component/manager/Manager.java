@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 // Менеджер объектов, которые могут прекращать свою работу по ExpirationMsMutable.
@@ -63,6 +64,20 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
 
         public T get() {
             return manager.get(cls, key);
+        }
+
+        public void execute(Consumer<T> managerElement) {
+            T t = get();
+            if (t != null) {
+                managerElement.accept(t);
+            }
+        }
+
+        public void executeIfAlive(Consumer<T> managerElement) {
+            if(!isAlive()){
+                return;
+            }
+            execute(managerElement);
         }
 
     }

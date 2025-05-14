@@ -39,7 +39,7 @@ public class PersistentDataSimple implements PersistentData {
         return String.valueOf(body);
     }
 
-    public byte[] toByte() throws Exception {
+    public byte[] toBytes() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         UtilFileByteReader.writeShortString(os, logType.getNameCamel());
         UtilFileByteReader.writeShortString(os, timeAdd + "");
@@ -49,13 +49,13 @@ public class PersistentDataSimple implements PersistentData {
 
     public static PersistentDataSimple instanceFromBytes(byte[] bytes, short subscriberStatusRead) throws Exception {
         PersistentDataSimple persistentDataSimple = new PersistentDataSimple();
-        persistentDataSimple.toObject(bytes);
+        persistentDataSimple.fromBytes(bytes);
         persistentDataSimple.setSubscriberStatusRead(subscriberStatusRead);
         return persistentDataSimple;
     }
 
     @Override
-    public void toObject(byte[] bytes) throws Exception {
+    public void fromBytes(byte[] bytes) throws Exception {
         InputStream fis = new ByteArrayInputStream(bytes);
         logType = LogType.valueOf(UtilCodeStyle.camelToSnake(UtilFileByteReader.readShortString(fis)));
         timeAdd = Long.parseLong(UtilFileByteReader.readShortString(fis));

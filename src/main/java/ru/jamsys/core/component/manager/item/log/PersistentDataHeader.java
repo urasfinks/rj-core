@@ -61,7 +61,7 @@ public class PersistentDataHeader extends DataHeader implements PersistentData {
         return this;
     }
 
-    public byte[] toByte() throws Exception {
+    public byte[] toBytes() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         os.write(UtilByte.shortToBytes((short) header.size())); // В следующие 2 байта записали кол-во заголовков
 
@@ -78,12 +78,12 @@ public class PersistentDataHeader extends DataHeader implements PersistentData {
     @SuppressWarnings("unused")
     public static PersistentDataHeader instanceFromBytes(byte[] bytes) throws Exception {
         PersistentDataHeader persistentDataHeader = new PersistentDataHeader();
-        persistentDataHeader.toObject(bytes);
+        persistentDataHeader.fromBytes(bytes);
         return persistentDataHeader;
     }
 
     @Override
-    public void toObject(byte[] bytes) throws Exception {
+    public void fromBytes(byte[] bytes) throws Exception {
         InputStream fis = new ByteArrayInputStream(bytes);
         short countHeader = UtilByte.bytesToShort(fis.readNBytes(2));
         for (int i = 0; i < countHeader; i++) {

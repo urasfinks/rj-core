@@ -6,20 +6,15 @@ import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
-import ru.jamsys.core.extension.ByteSerialization;
-import ru.jamsys.core.extension.batch.writer.AbstractAsyncFileWriterElement;
-import ru.jamsys.core.extension.batch.writer.AsyncFileWriterElement;
-import ru.jamsys.core.extension.batch.writer.AsyncFileWriterRolling;
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.extension.ByteCodec;
+import ru.jamsys.core.extension.batch.writer.Position;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
-import ru.jamsys.core.flat.util.UtilLog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -29,7 +24,9 @@ class BrokerPersistTest {
 
     @Getter
     @Setter
-    public static class X implements ByteSerialization {
+    public static class X implements ByteCodec, Position {
+
+        private long position;
 
         private String value;
 
@@ -38,12 +35,12 @@ class BrokerPersistTest {
         }
 
         @Override
-        public byte[] toByte() {
+        public byte[] toBytes() {
             return value.getBytes();
         }
 
         @Override
-        public void toObject(byte[] bytes) {
+        public void fromBytes(byte[] bytes) {
             setValue(new String(bytes));
         }
 
@@ -69,27 +66,6 @@ class BrokerPersistTest {
     }
 
     @Test
-    public void test() throws Throwable {
-        ConcurrentLinkedDeque<AbstractAsyncFileWriterElement> outputQueue = new ConcurrentLinkedDeque<>();
-
-        AsyncFileWriterRolling<AbstractAsyncFileWriterElement> writer = new AsyncFileWriterRolling<>(
-                App.context,
-                "test",
-                "LogManager",
-                outputQueue::addAll,
-                fileName -> System.out.println("SWAP: " + fileName)
-        );
-        writer.run();
-        writer.writeAsync(new AsyncFileWriterElement("Hello".getBytes()));
-        writer.writeAsync(new AsyncFileWriterElement("world".getBytes()));
-        writer.flush(run);
-        Util.testSleepMs(100);
-        UtilLog.printInfo(outputQueue);
-
-        writer.shutdown();
-    }
-
-    @Test
     public void test2() throws Throwable {
         BrokerPersist<X> test = App.get(Manager.class).configure(
                 BrokerPersist.class,
@@ -98,10 +74,10 @@ class BrokerPersistTest {
         ).getGeneric();
         test.add(new X("Hello"));
         // Данные добавлены в очередь на запись, но реально ещё не сохранились на файловую систему. То есть в последний
-        // коммит контроллер они упадут только после записи и на текущий момент размер = 0
-        Assertions.assertEquals(0, test.getLastCommitConfiguration().get().getBinFileReaderResult().getSize().get());
+        // rider они упадут только после записи и на текущий момент размер = 0
+        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().getUnique().size());
         // Записали на фс данные
-        test.getBinConfiguration().get().flush(run);
+        test.getXWriterConfiguration().get().flush(run);
         assertArrayEquals(
                 ((Supplier<byte[]>) () -> {
                     ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -113,25 +89,25 @@ class BrokerPersistTest {
                     }
                     return output.toByteArray();
                 }).get(),
-                Files.readAllBytes(Paths.get(test.getBinConfiguration().get().getFilePath()))
+                Files.readAllBytes(Paths.get(test.getXWriterConfiguration().get().getFilePath()))
         );
 
         // В последнем коммит контроллере она должны появиться
-        Assertions.assertEquals(1, test.getLastCommitConfiguration().get().getBinFileReaderResult().size());
+        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().getUnique().size());
         // Забираем элемент на обработку
-        BrokerPersistElement<X> poll = test.poll();
-        Assertions.assertEquals("Hello", new String(poll.getBytes()));
+        ru.jamsys.core.extension.broker.persist.X<X> poll = test.poll();
+        Assertions.assertEquals("Hello", new String(poll.toBytes()));
         // Теперь надо закоммитить
         test.commit(poll);
         // Должны получить, что элементов пока ещё 1, так как не произошла запись на диск
-        Assertions.assertEquals(1, test.getLastCommitConfiguration().get().getBinFileReaderResult().size());
+        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().getUnique().size());
         // Запускаем запись wal
         test
-                .getLastCommitConfiguration().get()
-                .getCommitControllerConfiguration().get()
+                .getLastRiderConfiguration().get()
+                .getYWriterConfiguration().get()
                 .flush(run);
         // Теперь после записи не должно остаться не обработанных элементов
-        Assertions.assertEquals(0, test.getLastCommitConfiguration().get().getBinFileReaderResult().size());
+        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().getUnique().size());
 
         assertArrayEquals(
                 ((Supplier<byte[]>) () -> {
@@ -144,13 +120,13 @@ class BrokerPersistTest {
                     }
                     return output.toByteArray();
                 }).get(),
-                Files.readAllBytes(Paths.get(test.getLastCommitConfiguration().get().getFilePathCommit()))
+                Files.readAllBytes(Paths.get(test.getLastRiderConfiguration().get().getFilePathY()))
         );
-        Assertions.assertFalse(test.getLastCommitConfiguration().get().isComplete());
+        Assertions.assertFalse(test.getLastRiderConfiguration().get().isComplete());
         // Осталось обработать позиций 0
-        Assertions.assertEquals(0, test.getLastCommitConfiguration().get().getBinFileReaderResult().size());
+        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().getUnique().size());
         // Статус оригинального файла - не завершён
-        Assertions.assertFalse(test.getLastCommitConfiguration().get().getBinFileReaderResult().isFinishState());
+        Assertions.assertFalse(test.getLastRiderConfiguration().get().getQueueRetry().isFinishState());
 
         test.shutdown();
 
@@ -167,12 +143,12 @@ class BrokerPersistTest {
                     }
                     return output.toByteArray();
                 }).get(),
-                Files.readAllBytes(Paths.get(test.getBinConfiguration().get().getFilePath()))
+                Files.readAllBytes(Paths.get(test.getXWriterConfiguration().get().getFilePath()))
         );
         // Проверим, что оригинальный файл достиг конца
-        Assertions.assertTrue(test.getLastCommitConfiguration().get().getBinFileReaderResult().isFinishState());
+        Assertions.assertTrue(test.getLastRiderConfiguration().get().getQueueRetry().isFinishState());
         // Проверим что файл удалился так как завершился CommitController и он был isComplete
-        Assertions.assertFalse(Files.exists(Paths.get(test.getLastCommitConfiguration().get().getFilePathCommit())));
+        Assertions.assertFalse(Files.exists(Paths.get(test.getLastRiderConfiguration().get().getFilePathY())));
 
     }
 }

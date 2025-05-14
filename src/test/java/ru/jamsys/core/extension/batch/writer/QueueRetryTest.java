@@ -8,7 +8,7 @@ import ru.jamsys.core.App;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class DataQueueExpirationTest {
+class QueueRetryTest {
 
     AtomicBoolean threadRun = new AtomicBoolean(true);
 
@@ -26,7 +26,7 @@ class DataQueueExpirationTest {
     void test() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
 
-        DataQueueExpiration test = new DataQueueExpiration("test");
+        QueueRetry test = new QueueRetry("test");
 
         test.add(0, null, "Hello");
         Assertions.assertEquals(1, test.getQueue().size());
@@ -54,7 +54,7 @@ class DataQueueExpirationTest {
         Assertions.assertFalse(test.isEmpty());
 
         // Теперь делаю человеческое удаление
-        test.remove(dataPayload2);
+        test.commit(dataPayload2);
         test.getExpirationListConfiguration().get().helper(threadRun, curTimeMs + 2000);
 
         // Теперь ничего не должно нигде остаться

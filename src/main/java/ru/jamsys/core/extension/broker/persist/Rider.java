@@ -6,11 +6,8 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.AbstractManagerElement;
-import ru.jamsys.core.extension.ByteSerialization;
-import ru.jamsys.core.extension.batch.writer.AbstractAsyncFileReader;
-import ru.jamsys.core.extension.batch.writer.AbstractAsyncFileWriter;
-import ru.jamsys.core.extension.batch.writer.AsyncFileWriterWal;
-import ru.jamsys.core.extension.batch.writer.FileReaderResult;
+import ru.jamsys.core.extension.ByteSerializable;
+import ru.jamsys.core.extension.batch.writer.*;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
 
@@ -19,63 +16,66 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 @Getter
-public class CommitController extends AbstractManagerElement {
+public class Rider extends AbstractManagerElement {
 
-    private final Manager.Configuration<AsyncFileWriterWal<CommitElement>> commitControllerConfiguration;
+    private final Manager.Configuration<AsyncFileWriterWal<Y>> yWriterConfiguration;
 
-    private final String filePathCommit;
+    private final String filePathY;
 
-    private final FileReaderResult binFileReaderResult;
+    private final QueueRetry queueRetry;
 
     // Экземпляр создаётся в onSwap и в commit
-    public CommitController(
+    public Rider(
             ApplicationContext applicationContext,
             String ns,
-            String filePathCommit,
-            Consumer<CommitController> onWrite
+            String filePathY,
+            Consumer<Rider> onWrite
     ) {
-        this.filePathCommit = filePathCommit;
-        binFileReaderResult = new FileReaderResult();
+        this.filePathY = filePathY;
+        queueRetry = new QueueRetry(BrokerPersist.filePathYToX(filePathY));
         // То, что будут коммитить - это значит, что обработано и нам надо это удалять из списка на обработку
         // В asyncWrite залетает CommitElement содержащий bin (CommitElement.getBytes() возвращает позицию bin.position)
         // В onWrite залетает список CommitElement и мы должны bin.position удалить из binReader
-        commitControllerConfiguration = App.get(Manager.class).configureGeneric(
+        yWriterConfiguration = App.get(Manager.class).configureGeneric(
                 AbstractAsyncFileWriter.class,
                 ns,
                 ns1 -> new AsyncFileWriterWal<>(
                         applicationContext,
                         ns1,
-                        filePathCommit,
-                        listCommitElement -> {
+                        filePathY,
+                        (_, listY) -> {
                             markActive();
-                            listCommitElement.forEach(commitElement -> binFileReaderResult
-                                    .remove(commitElement.getBin().getPosition())
-                            );
+                            for (Y y : listY) {
+                                queueRetry.remove(y.getX().getPosition());
+                            }
                             onWrite.accept(this);
                         }
                 )
         );
     }
-
-    public <T extends ByteSerialization> void asyncWrite(BrokerPersistElement<T> element) {
+    // Когда коммитят X, мы запускаем запись каммита, а после записи - по x.position удаляем из queueRetry
+    // что бы этот X больше никому не выпал на обработку
+    public void onCommitX(Position x) {
         markActive();
-        commitControllerConfiguration.get().writeAsync(new CommitElement(element));
+        yWriterConfiguration.get().writeAsync(new Y(x));
     }
 
-    public <T extends ByteSerialization> void add(List<BrokerPersistElement<T>> brokerPersistElements) {
+    // Вызывается, когда записалась пачка X на файловую систему, нам надо разместить её в queueRetry, что бы потом
+    // кому-нибудь выдать этот X на обработку
+    public <T extends Position & ByteSerializable> void onWriteX(List<T> listX) {
         markActive();
-        brokerPersistElements.forEach(brokerPersistElement -> {
+        for (T x : listX) {
             try {
-                binFileReaderResult.add(brokerPersistElement.getPosition(), null, brokerPersistElement);
+                queueRetry.add(x.getPosition(), null, x);
             } catch (Exception e) {
                 App.error(e);
             }
-        });
+        }
     }
 
     // Если мы наткнулись на -1 в основном файле и все position закоммичены
     public boolean isComplete() {
-        return binFileReaderResult.isFinishState() && binFileReaderResult.getSize().get() == 0;
+        return queueRetry.isFinishState() && queueRetry.isEmpty();
     }
 
     @Override
@@ -83,12 +83,12 @@ public class CommitController extends AbstractManagerElement {
         // Просто всегда считываем данные из файла. Может быть прийдётся подтюнячить, что бы восстановление не падало
         // при одновременной записи
         try {
-            AbstractAsyncFileReader.read(BrokerPersist.commitToBin(filePathCommit), binFileReaderResult);
-            FileReaderResult commitFileReaderResult = new FileReaderResult();
-            AbstractAsyncFileReader.read(filePathCommit, commitFileReaderResult);
-            commitFileReaderResult.getMapData().forEach((_, dataPayload) -> {
-                long binPosition = UtilByte.bytesToLong(dataPayload.getBytes());
-                binFileReaderResult.remove(binPosition);
+            AbstractAsyncFileReader.read(BrokerPersist.filePathYToX(filePathY), queueRetry);
+            FileReaderResult yFileReaderResult = new FileReaderResult();
+            AbstractAsyncFileReader.read(filePathY, yFileReaderResult);
+            yFileReaderResult.getQueue().forEach((dataPayload) -> {
+                long xPosition = UtilByte.bytesToLong(dataPayload.getBytes());
+                queueRetry.remove(xPosition);
             });
         } catch (Throwable th) {
             throw new RuntimeException(th);
@@ -99,7 +99,7 @@ public class CommitController extends AbstractManagerElement {
     public void shutdownOperation() {
         if (isComplete()) {
             try {
-                UtilFile.remove(filePathCommit);
+                UtilFile.remove(filePathY);
             } catch (Exception e) {
                 App.error(e);
             }

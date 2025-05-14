@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -30,12 +31,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 // Многопоточная запись в файл пачками
 
 @Getter
-public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
+public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         ManagerElement,
@@ -70,7 +71,7 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
 
     // Надо понимать, что onWrite будет запускаться планировщиком 1 раз в секунду и нельзя туда вешать долгие
     // IO операции. Перекладывайте ответы в свою локальную очередь и разбирайте их в других потоках
-    private final Consumer<List<T>> onWrite;
+    private final BiConsumer<String, List<T>> onWrite; // T - filePath; U - list written object
 
     private final AsyncFileWriterRepositoryProperty repositoryProperty = new AsyncFileWriterRepositoryProperty();
 
@@ -89,7 +90,7 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
             ApplicationContext applicationContext,
             String ns,
             String filePath,
-            Consumer<List<T>> onWrite,
+            BiConsumer<String, List<T>> onWrite, // T - filePath; U - list written object
             StandardOpenOption standardOpenOption
     ) {
         this.filePath = filePath;
@@ -147,17 +148,16 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                     if (whiteStartTime > finishTime) {
                         break;
                     }
-                    T polled = inputQueue.pollFirst();
-                    if (polled == null) {
+                    T poll = inputQueue.pollFirst();
+                    if (poll == null) {
                         continue;
                     }
-                    int dataLength = polled.getBytes().length;
+                    int dataLength = poll.toBytes().length;
                     statisticSize.add((long) dataLength);
-                    polled.setPosition(position.getAndAdd(polled.getBytes().length + 4)); // 4 это int length
-                    polled.setFilePath(filePath);
-                    listPolled.add(polled);
+                    poll.setPosition(position.getAndAdd(poll.toBytes().length + 4)); // 4 это int length
+                    listPolled.add(poll);
                     byteArrayOutputStream.write(UtilByte.intToBytes(dataLength));
-                    byteArrayOutputStream.write(polled.getBytes());
+                    byteArrayOutputStream.write(poll.toBytes());
                     if (
                             byteArrayOutputStream.size() >= minBatchSize // Наполнили минимальную пачку
                                     || (whiteStartTime - lastTimeWrite) > eachTime // Если с прошлой записи пачки прошло 50мс
@@ -169,7 +169,7 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                         fileOutputStream.write(byteArrayOutputStream.toByteArray());
                         byteArrayOutputStream.reset();
                         if (onWrite != null) {
-                            onWrite.accept(listPolled);
+                            onWrite.accept(getFilePath(), listPolled);
                         }
                         listPolled.clear();
                         statisticTime.add(System.currentTimeMillis() - lastTimeWrite);
@@ -183,7 +183,7 @@ public class AbstractAsyncFileWriter<T extends AbstractAsyncFileWriterElement>
                     markActive();
                     fileOutputStream.write(byteArrayOutputStream.toByteArray());
                     if (onWrite != null) {
-                        onWrite.accept(listPolled);
+                        onWrite.accept(getFilePath(), listPolled);
                     }
                     statisticTime.add(System.currentTimeMillis() - s);
                 }

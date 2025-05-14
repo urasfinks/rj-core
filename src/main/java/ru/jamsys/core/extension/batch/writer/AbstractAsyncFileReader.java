@@ -9,7 +9,7 @@ import java.io.RandomAccessFile;
 public abstract class AbstractAsyncFileReader {
 
     // Может одновременно вестись запись в этот файл
-    public static void read(String filePath, DataReadable fileReaderResult) throws IOException {
+    public static void read(String filePath, DataFromFile dataFromFile) throws IOException {
         try (RandomAccessFile file = new RandomAccessFile(filePath, "r")) {
             long currentPosition = 0;
             while (true) {
@@ -23,12 +23,12 @@ public abstract class AbstractAsyncFileReader {
 
                 if (length == -1) {
                     // Маркер конца файла
-                    fileReaderResult.setFinishState(true);
+                    dataFromFile.setFinishState(true);
                     break;
                 }
 
                 if (length < 0) {
-                    fileReaderResult.setError(true);
+                    dataFromFile.setError(true);
                     App.error(new IOException("Invalid block in file '" + filePath + "' length encountered: " + length));
                     break;
                 }
@@ -38,13 +38,13 @@ public abstract class AbstractAsyncFileReader {
                 byte[] lengthBytesData = new byte[length];
 
                 if (file.read(lengthBytesData) != length) {
-                    fileReaderResult.setError(true);
+                    dataFromFile.setError(true);
                     App.error(new IOException("Unexpected end of file '" + filePath + "' while skipping content"));
                     break;
                 }
 
                 // Только если блок считан корректно — добавляем позицию
-                fileReaderResult.add(currentPosition, lengthBytesData, null);
+                dataFromFile.add(currentPosition, lengthBytesData, null);
                 currentPosition = nextPosition;
             }
         }

@@ -3,16 +3,13 @@ package ru.jamsys.core.extension.batch.writer;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 // Сегментированные по позиции чтения данные из файла
 @Getter
-public class FileReaderResult implements DataReadable {
+public class FileReaderResult implements DataFromFile {
 
-    private final ConcurrentHashMap<Long, DataPayload> mapData = new ConcurrentHashMap<>(); // key: position;
-
-    private final AtomicInteger size = new AtomicInteger(0); // Счётчик оставшихся позиций
+    private final ConcurrentLinkedDeque<DataPayload> queue = new ConcurrentLinkedDeque<>(); // key: position;
 
     @Setter
     private volatile boolean error = false; // Ошибка чтения данных
@@ -22,20 +19,11 @@ public class FileReaderResult implements DataReadable {
 
     @Override
     public void add(DataPayload dataPayload) {
-        mapData.computeIfAbsent(dataPayload.getPosition(), _ -> {
-            size.incrementAndGet();
-            return dataPayload;
-        });
+        queue.add(dataPayload);
     }
 
     public void remove(long position) {
-        if (mapData.remove(position) != null) {
-            size.decrementAndGet();
-        }
-    }
-
-    public int size() {
-        return size.get();
+        queue.removeIf(dataPayload -> dataPayload.getPosition() == position);
     }
 
 }
