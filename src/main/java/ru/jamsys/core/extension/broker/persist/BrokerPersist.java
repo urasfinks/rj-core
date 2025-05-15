@@ -151,7 +151,12 @@ public class BrokerPersist<T extends Position & ByteSerializable>
         }
         // Бывает такое, что конфигурации останавливаются, из-за того, что не используются. Используются, это когда
         // в них коммитят позиции, извлекают из них не закоммиченные позиции
-        riderConfiguration.executeIfAlive(rider -> rider.onWriteX(listX));
+        riderConfiguration.executeIfAlive(rider -> {
+            for (X<T> x : listX) {
+                x.setRiderConfiguration(riderConfiguration);
+                rider.onWriteX(x);
+            }
+        });
     }
 
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
@@ -274,12 +279,12 @@ public class BrokerPersist<T extends Position & ByteSerializable>
     }
 
     public void commit(X<T> element) {
-//        // К моменту commit уже должна быть конфигурация Rider
-//        Manager.Configuration<Rider> riderConfiguration = getRiderConfiguration(element.getFilePath());
-//        if (riderConfiguration == null) {
-//            throw new RuntimeException("Rider(" + element.getFilePath() + ") not found");
-//        }
-//        riderConfiguration.get().onCommitX(element);
+        // К моменту commit уже должна быть конфигурация Rider
+        Manager.Configuration<Rider> riderConfiguration = element.getRiderConfiguration();
+        if (riderConfiguration == null) {
+            throw new RuntimeException("Rider is null");
+        }
+        riderConfiguration.get().onCommitX(element);
     }
 
     public X<T> poll() {

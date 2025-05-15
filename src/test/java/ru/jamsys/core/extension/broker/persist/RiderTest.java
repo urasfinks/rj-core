@@ -66,11 +66,11 @@ class RiderTest {
                         App.context,
                         key1,
                         "LogManager/test.bin.commit",
-                        rider1 -> {
+                        _ -> {
                         }
                 )
         ).get();
         Assertions.assertEquals(1, rider.getQueueRetry().size());
-        Assertions.assertEquals("world", new String(rider.getQueueRetry().getUnique().get(9L).getBytes()));
+        Assertions.assertEquals("world", new String(rider.getQueueRetry().get(9L).getBytes()));
     }
 }

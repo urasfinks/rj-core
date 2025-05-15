@@ -21,15 +21,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 // Очередь данных, которые можно взять на обработку на какое-то время. Если за это время не выполнить commit, данные
 // снова вернуться в очередь и будут повторно выданы
 
-@Getter
 public class QueueRetry implements DataFromFile, StatisticsFlush {
 
+    @Getter
     @Setter
     private volatile boolean error = false; // Ошибка чтения данных
 
+    @Getter
     @Setter
     private volatile boolean finishState = false; // Встретили -1 длину данных в bin
 
+    @Getter
     private final ConcurrentLinkedDeque<DataPayload> queue = new ConcurrentLinkedDeque<>();
 
     private final ConcurrentHashMap<Long, DataPayload> unique = new ConcurrentHashMap<>(); // key: position;
@@ -38,6 +40,7 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
 
     private final AtomicInteger polled = new AtomicInteger();
 
+    @Getter
     private final Manager.Configuration<ExpirationList<DataPayload>> expirationListConfiguration;
 
     private final Map<DataPayload, DisposableExpirationMsImmutableEnvelope<DataPayload>> mapExpiration = new ConcurrentHashMap<>();
@@ -138,6 +141,10 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
             // При остановке ExpirationList происходит clear(), поэтому нет необходимости проверять его пустоту
             return queue.isEmpty();
         }
+    }
+
+    public DataPayload get(long l) {
+        return unique.get(l);
     }
 
 }

@@ -62,14 +62,12 @@ public class Rider extends AbstractManagerElement {
 
     // Вызывается, когда записалась пачка X на файловую систему, нам надо разместить её в queueRetry, что бы потом
     // кому-нибудь выдать этот X на обработку
-    public <T extends Position & ByteSerializable> void onWriteX(List<T> listX) {
+    public <T extends Position & ByteSerializable> void onWriteX(T x) {
         markActive();
-        for (T x : listX) {
-            try {
-                queueRetry.add(x.getPosition(), null, x);
-            } catch (Exception e) {
-                App.error(e);
-            }
+        try {
+            queueRetry.add(x.getPosition(), null, x);
+        } catch (Exception e) {
+            App.error(e);
         }
     }
 

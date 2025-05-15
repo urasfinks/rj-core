@@ -70,12 +70,12 @@ class BrokerPersistTest {
         BrokerPersist<X> test = App.get(Manager.class).configure(
                 BrokerPersist.class,
                 "test",
-                s -> new BrokerPersist<>(s, App.context, (s1, dataPayload) -> null)
+                s -> new BrokerPersist<>(s, App.context, (_, _) -> null)
         ).getGeneric();
         test.add(new X("Hello"));
         // Данные добавлены в очередь на запись, но реально ещё не сохранились на файловую систему. То есть в последний
         // rider они упадут только после записи и на текущий момент размер = 0
-        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().getUnique().size());
+        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().size());
         // Записали на фс данные
         test.getXWriterConfiguration().get().flush(run);
         assertArrayEquals(
@@ -93,21 +93,21 @@ class BrokerPersistTest {
         );
 
         // В последнем коммит контроллере она должны появиться
-        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().getUnique().size());
+        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().size());
         // Забираем элемент на обработку
         ru.jamsys.core.extension.broker.persist.X<X> poll = test.poll();
         Assertions.assertEquals("Hello", new String(poll.toBytes()));
         // Теперь надо закоммитить
         test.commit(poll);
         // Должны получить, что элементов пока ещё 1, так как не произошла запись на диск
-        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().getUnique().size());
+        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().size());
         // Запускаем запись wal
         test
                 .getLastRiderConfiguration().get()
                 .getYWriterConfiguration().get()
                 .flush(run);
         // Теперь после записи не должно остаться не обработанных элементов
-        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().getUnique().size());
+        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().size());
 
         assertArrayEquals(
                 ((Supplier<byte[]>) () -> {
@@ -124,7 +124,7 @@ class BrokerPersistTest {
         );
         Assertions.assertFalse(test.getLastRiderConfiguration().get().isComplete());
         // Осталось обработать позиций 0
-        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().getUnique().size());
+        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().size());
         // Статус оригинального файла - не завершён
         Assertions.assertFalse(test.getLastRiderConfiguration().get().getQueueRetry().isFinishState());
 
