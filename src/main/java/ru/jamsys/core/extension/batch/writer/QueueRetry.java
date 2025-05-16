@@ -139,6 +139,7 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
             return queue.isEmpty() && expirationListConfiguration.get().isEmpty();
         } else {
             // При остановке ExpirationList происходит clear(), поэтому нет необходимости проверять его пустоту
+            // Надо проверить только queue на пустоту
             return queue.isEmpty();
         }
     }

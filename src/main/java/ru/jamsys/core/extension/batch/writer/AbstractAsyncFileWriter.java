@@ -54,6 +54,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
     @Setter
     private volatile static int minBatchSize = defSize;
 
+    @JsonIgnore
     private OutputStream fileOutputStream;
 
     // Конкурентная не блокирующая очередь, порядок добавления нам не критичен, главное, что бы не было блокировок

@@ -53,6 +53,7 @@ public class Rider extends AbstractManagerElement {
                 )
         );
     }
+
     // Когда коммитят X, мы запускаем запись каммита, а после записи - по x.position удаляем из queueRetry
     // что бы этот X больше никому не выпал на обработку
     public void onCommitX(Position x) {

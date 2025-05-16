@@ -7,6 +7,8 @@ package ru.jamsys.core.statistic.expiration.immutable;
 // Таким образом мы решаем синхронизацию двух процессов, если мы объект посчитали протухшим и выполнили onExpired
 // что бы второй процесс уже не смог получить данные обёртки
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DisposableExpirationMsImmutableEnvelope<T> extends ExpirationMsImmutableEnvelope<T> {
@@ -25,6 +27,8 @@ public class DisposableExpirationMsImmutableEnvelope<T> extends ExpirationMsImmu
         return usage.get();
     }
 
+    // Нельзя, что бы JSON сериализатор портил логику одноразовой обёртки
+    @JsonIgnore
     @Override
     public T getValue() {
         if (usage.compareAndSet(false, true)) {

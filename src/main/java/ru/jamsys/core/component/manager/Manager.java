@@ -55,7 +55,7 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
                     .append("hashCode", Integer.toHexString(hashCode()))
                     .append("cls", cls)
                     .append("key", key)
-                    .append("reference", manager.get(cls, key));
+                    .append("reference", isAlive() ? manager.get(cls, key) : null);
         }
 
         public boolean isAlive() {
