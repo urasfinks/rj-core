@@ -214,21 +214,6 @@ public class BrokerMemory<T>
         return (int) (((float) mainQueueSize.get()) * 100 / getPropertyBroker().getSize());
     }
 
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<DataHeader> result = new ArrayList<>();
-        int tpsDequeueFlush = tpsDequeue.getAndSet(0);
-        int tpsDropFlush = tpsDrop.getAndSet(0);
-        int sizeFlush = mainQueueSize.get();
-        result.add(new DataHeader()
-                .setBody(getCascadeKey(ns))
-                .addHeader("tpsDeq", tpsDequeueFlush)
-                .addHeader("tpsDrop", tpsDropFlush)
-                .addHeader("size", sizeFlush)
-                .addHeader("avg", timeInQueue.flushStatistic())
-        );
-        return result;
-    }
-
     // Рекомендуется использовать только для тестов
     public void reset() {
         mainQueue.clear();
@@ -274,6 +259,21 @@ public class BrokerMemory<T>
             }
         }
         propertyDispatcher.shutdown();
+    }
+
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<DataHeader> result = new ArrayList<>();
+        int tpsDequeueFlush = tpsDequeue.getAndSet(0);
+        int tpsDropFlush = tpsDrop.getAndSet(0);
+        int sizeFlush = mainQueueSize.get();
+        result.add(new DataHeader()
+                .setBody(getCascadeKey(ns))
+                .addHeader("tpsDeq", tpsDequeueFlush)
+                .addHeader("tpsDrop", tpsDropFlush)
+                .addHeader("size", sizeFlush)
+                .addHeader("avg", timeInQueue.flushStatistic())
+        );
+        return result;
     }
 
 }
