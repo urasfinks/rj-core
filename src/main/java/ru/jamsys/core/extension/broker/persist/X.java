@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension.broker.persist;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.component.manager.Manager;
@@ -19,6 +20,7 @@ public class X<T extends Position & ByteSerializable>
         this.element = element;
     }
 
+    @JsonIgnore
     @Setter
     private Manager.Configuration<Rider> riderConfiguration;
 

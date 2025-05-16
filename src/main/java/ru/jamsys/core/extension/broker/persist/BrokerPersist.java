@@ -99,7 +99,7 @@ public class BrokerPersist<T extends Position & ByteSerializable>
                     continue;
                 }
                 // Rider не завершён, но и на обработку нет ничего, так как выданы на обработку элементы и не закоммичены
-                if (rider.getQueueRetry().getQueue().isEmpty()) {
+                if (rider.getQueueRetry().queueIsEmpty()) {
                     break;
                 }
                 DataPayload dataPayload = rider.getQueueRetry().pollLast(propertyBroker.getRetryTimeoutMs());
@@ -146,8 +146,15 @@ public class BrokerPersist<T extends Position & ByteSerializable>
                 .getFilesRecursive(propertyBroker.getDirectory())
                 .stream()
                 .filter(s -> s.endsWith(".commit"))
+                .sorted()
                 .toList()
-                .forEach(filePathY -> lastRiderConfiguration = getRiderConfiguration(filePathYToX(filePathY)));
+                .forEach(filePathY -> {
+                    String relativePath = UtilFile.getRelativePath(
+                            propertyBroker.getDirectory(),
+                            filePathYToX(filePathY)
+                    );
+                    lastRiderConfiguration = getRiderConfiguration(relativePath);
+                });
     }
 
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)

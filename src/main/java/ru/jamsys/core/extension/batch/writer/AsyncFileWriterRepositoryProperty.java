@@ -24,7 +24,7 @@ public class AsyncFileWriterRepositoryProperty extends RepositoryPropertyAnnotat
     private volatile Integer flushMaxTimeMs = 950;
 
     @SuppressWarnings("all")
-    @PropertyKey("flush.max.time.ms")
+    @PropertyKey("flush.each.time.ms")
     @PropertyDescription("Время между сбросами на файловую систему, если очень большая очередь")
     private volatile Integer flushEachTimeMs = 50;
 

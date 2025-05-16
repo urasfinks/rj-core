@@ -31,7 +31,6 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
     @Setter
     private volatile boolean finishState = false; // Встретили -1 длину данных в bin
 
-    @Getter
     private final ConcurrentLinkedDeque<DataPayload> queue = new ConcurrentLinkedDeque<>();
 
     private final ConcurrentHashMap<Long, DataPayload> unique = new ConcurrentHashMap<>(); // key: position;
@@ -74,8 +73,10 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
 
     public void remove(long position) {
         DataPayload dataPayload = unique.remove(position);
-        if (dataPayload != null && queue.remove(dataPayload)) {
-            queueSize.decrementAndGet();
+        if (dataPayload != null) {
+            if (queue.remove(dataPayload)) {
+                queueSize.decrementAndGet();
+            }
             commit(dataPayload);
         }
     }
@@ -98,18 +99,7 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
         return null;
     }
 
-    public DataPayload pollFirst(long timeoutMs) {
-        DataPayload dataPayload = queue.pollFirst();
-        if (dataPayload != null) {
-            queueSize.decrementAndGet();
-            polled.incrementAndGet();
-            mapExpiration.put(dataPayload, expirationListConfiguration.get().add(dataPayload, timeoutMs));
-            return dataPayload;
-        }
-        return null;
-    }
-
-    public DataPayload poll(long timeoutMs, long nowTimestamp) {
+    public DataPayload pollLast(long timeoutMs, long nowTimestamp) {
         DataPayload dataPayload = queue.pollLast();
         if (dataPayload != null) {
             queueSize.decrementAndGet();
@@ -131,6 +121,10 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
                 .addHeader("queueSize", queueSize.get())
                 .addHeader("polled", polled.getAndSet(0))
         );
+    }
+
+    public boolean queueIsEmpty() {
+        return queue.isEmpty();
     }
 
     public boolean isEmpty() {

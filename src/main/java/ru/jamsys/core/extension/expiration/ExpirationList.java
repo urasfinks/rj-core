@@ -75,8 +75,11 @@ public class ExpirationList<T>
     // Уменьшить размер корзины, в том случае если она вообще существует
     private void deqQueueSize(Long key) {
         AtomicInteger atomicInteger = bucketQueueSize.get(key);
-        if (atomicInteger != null) {
-            atomicInteger.decrementAndGet();
+        if (atomicInteger != null && atomicInteger.decrementAndGet() == 0) {
+            // Нам надо удалять пустые ключи, что бы правильно работало ExpirationList.isEmpty() в отличае от
+            // bucket там элементы нейтрализуются, а не удаляются, так что это на данный момент единственный способ
+            // проверить, что ExpirationList.isEmpty() = true, проверкой bucketQueueSize.isEmpty()
+            bucketQueueSize.remove(key);
         }
     }
 
@@ -183,13 +186,22 @@ public class ExpirationList<T>
         return neutralize;
     }
 
+    public int size() {
+        return bucketQueueSize.values()
+                .stream()
+                .mapToInt(AtomicInteger::get)
+                .sum();
+    }
+
     @Override
     public void runOperation() {
         set.add(this);
     }
 
     public boolean isEmpty() {
-        return bucket.isEmpty() && bucketQueueSize.isEmpty();
+        // bucket может быть не пустой так как remove только нейтрализует объекта, без реального удаления,
+        // а вот bucketQueueSize в deqQueueSize удаляет ключи, если размер становится равен 0
+        return bucketQueueSize.isEmpty();
     }
 
     @Override

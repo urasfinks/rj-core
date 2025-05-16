@@ -154,10 +154,11 @@ class BrokerPersistTest {
     }
 
     @Test
-    void test3() throws IOException {
+    void test3() throws Throwable {
         UtilFile.removeAllFilesInFolder("LogManager");
         App.get(ServiceProperty.class).set("App.BrokerPersist.test.fill.threshold.min", "1");
         App.get(ServiceProperty.class).set("App.BrokerPersist.test.fill.threshold.max", "1");
+        App.get(ServiceProperty.class).set("App.AsyncFileWriterWal[App.BrokerPersist.test::LogManager/test2.afwr].flush.max.time.ms", "99999999");
 
 
         UtilFile.writeBytes("LogManager/test1.afwr", ((Supplier<byte[]>) () -> {
@@ -182,6 +183,7 @@ class BrokerPersistTest {
                 output.write("opa__".getBytes());
                 output.write(UtilByte.intToBytes(5));
                 output.write("cha__".getBytes());
+                output.write(UtilByte.intToBytes(-1));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -213,7 +215,7 @@ class BrokerPersistTest {
         // а cha__ должен вернуться
         test.helper();
         // Очередь последнего rider полностью вычитана
-        Assertions.assertTrue(test.getLastRiderConfiguration().get().getQueueRetry().getQueue().isEmpty());
+        Assertions.assertTrue(test.getLastRiderConfiguration().get().getQueueRetry().queueIsEmpty());
         Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().size());
         Assertions.assertEquals(1, test.size());
         // В данный момент последний райдер не завершён, так как ждёт коммита выданного элемента
@@ -226,9 +228,47 @@ class BrokerPersistTest {
         Assertions.assertEquals(0, test.size());
         Assertions.assertFalse(test.isEmpty());
 
+        // Изъятый элемент должен светиться в последнем rider в expirationList
+        Assertions.assertEquals(1, test
+                .getLastRiderConfiguration()
+                .get()
+                .getQueueRetry()
+                .getExpirationListConfiguration()
+                .get()
+                .size()
+        );
+
         // Теперь закоммитим изъятый элемент и должен будет завершиться 1 райдер, должны будем взять второй и наполнить
         // + 2 элемента
-        //test.commit(poll);
+        test.commit(poll);
+        Assertions.assertEquals(1, test
+                .getLastRiderConfiguration()
+                .get()
+                .getYWriterConfiguration()
+                .get()
+                .getInputQueue()
+                .size()
+        );
+        test
+                .getLastRiderConfiguration()
+                .get()
+                .getYWriterConfiguration()
+                .get()
+                .flush(run);
+
+        Assertions.assertEquals(0, test
+                .getLastRiderConfiguration()
+                .get()
+                .getYWriterConfiguration()
+                .get()
+                .getInputQueue()
+                .size()
+        );
+
+        Assertions.assertTrue(test.getLastRiderConfiguration().get().isComplete());
+
+        test.getLastRiderConfiguration().get().shutdown();
+
 
     }
 

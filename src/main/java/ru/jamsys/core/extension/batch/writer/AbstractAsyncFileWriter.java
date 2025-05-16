@@ -145,8 +145,8 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
             try {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 while (threadRun.get() && !inputQueue.isEmpty()) {
-                    long whiteStartTime = System.currentTimeMillis();
-                    if (whiteStartTime > finishTime) {
+                    long whileStartTime = System.currentTimeMillis();
+                    if (whileStartTime > finishTime) {
                         break;
                     }
                     T poll = inputQueue.pollFirst();
@@ -161,7 +161,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                     byteArrayOutputStream.write(poll.toBytes());
                     if (
                             byteArrayOutputStream.size() >= minBatchSize // Наполнили минимальную пачку
-                                    || (whiteStartTime - lastTimeWrite) > eachTime // Если с прошлой записи пачки прошло 50мс
+                                    || (whileStartTime - lastTimeWrite) > eachTime // Если с прошлой записи пачки прошло 50мс
                     ) {
                         lastTimeWrite = System.currentTimeMillis();
                         // Должны пометить, что мы активны, так как может быть записи уже и нет, но мы ещё не успели

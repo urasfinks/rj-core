@@ -54,6 +54,10 @@ public class UtilFile {
         java.nio.file.Files.copy(data, path, StandardCopyOption.REPLACE_EXISTING);
     }
 
+    public static String getRelativePath(String relativePath, String absolutePath) {
+        String abs = Paths.get(relativePath).toAbsolutePath().toString();
+        return absolutePath.substring(abs.length() - relativePath.length());
+    }
 
     public static boolean ifExist(String path) {
         return Files.exists(Paths.get(path));
