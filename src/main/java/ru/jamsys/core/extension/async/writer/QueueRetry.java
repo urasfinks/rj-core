@@ -88,10 +88,10 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
     }
 
     public void remove(long position) {
-        Envelope remove1 = this.position.remove(position);
-        if (remove1 != null) {
-            park.remove(remove1.getDataPayload());
-            DisposableExpirationMsImmutableEnvelope<DataPayload> expiration = remove1.getExpiration();
+        Envelope envelope = this.position.remove(position);
+        if (envelope != null) {
+            park.remove(envelope.getDataPayload());
+            DisposableExpirationMsImmutableEnvelope<DataPayload> expiration = envelope.getExpiration();
             if (expiration != null) {
                 // Нейтрализуем что бы expirationList не взял его в обработку при timeout
                 if (!expiration.doNeutralized()) {
