@@ -6,6 +6,7 @@ import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.batch.writer.Position;
 import ru.jamsys.core.flat.util.UtilByte;
 
+// После того, как всё будет отлажено переименовать в более подходящее имя.
 @Getter
 @Setter
 public class Y implements ByteSerializable, Position {

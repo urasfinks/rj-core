@@ -16,9 +16,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
-// Очередь данных, которые можно взять на обработку на какое-то время. Если за это время не выполнить commit, данные
+// Очередь данных, которые можно взять на обработку на какое-то время. Если за это время не выполнить remove, данные
 // снова вернуться в очередь и будут повторно выданы
 
 public class QueueRetry implements DataFromFile, StatisticsFlush {
@@ -29,117 +28,98 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
 
     @Getter
     @Setter
-    private volatile boolean finishState = false; // Встретили -1 длину данных в bin
+    private volatile boolean finishState; // Встретили -1 длину данных в bin
 
-    private final ConcurrentLinkedDeque<DataPayload> queue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<DataPayload> park = new ConcurrentLinkedDeque<>();
 
-    private final ConcurrentHashMap<Long, DataPayload> unique = new ConcurrentHashMap<>(); // key: position;
-
-    private final AtomicInteger queueSize = new AtomicInteger();
-
-    private final AtomicInteger polled = new AtomicInteger();
+    private final ConcurrentHashMap<Long, DataPayload> position = new ConcurrentHashMap<>(); // key: position;
 
     @Getter
     private final Manager.Configuration<ExpirationList<DataPayload>> expirationListConfiguration;
 
     private final Map<DataPayload, DisposableExpirationMsImmutableEnvelope<DataPayload>> mapExpiration = new ConcurrentHashMap<>();
 
-    public QueueRetry(String key) {
+    public QueueRetry(String key, boolean finishState) {
+        this.finishState = finishState;
         expirationListConfiguration = App.get(Manager.class).configureGeneric(
                 ExpirationList.class,
                 key,
                 key1 -> new ExpirationList<>(
                         key1,
                         exp -> {
-                            queue.add(exp.getValue());
-                            queueSize.incrementAndGet();
+                            // Position не трогаем, там эти данные есть. Из position удаляется только тогда, когда
+                            // происходит коммит X->Y->remove()
+                            park.add(exp.getValue());
                         }
                 )
         );
     }
 
+    // Размер не обработанных элементов
     public int size() {
-        return queueSize.get();
+        return position.size();
+    }
+
+    public boolean parkIsEmpty() {
+        return park.isEmpty();
     }
 
     @Override
     public void add(@NonNull DataPayload dataPayload) {
-        unique.computeIfAbsent(dataPayload.getPosition(), _ -> {
-            queue.add(dataPayload);
-            queueSize.incrementAndGet();
+        position.computeIfAbsent(dataPayload.getPosition(), _ -> {
+            park.add(dataPayload);
             return dataPayload;
         });
     }
 
     public void remove(long position) {
-        DataPayload dataPayload = unique.remove(position);
+        DataPayload dataPayload = this.position.remove(position);
         if (dataPayload != null) {
-            if (queue.remove(dataPayload)) {
-                queueSize.decrementAndGet();
+            park.remove(dataPayload);
+            DisposableExpirationMsImmutableEnvelope<DataPayload> remove = mapExpiration.remove(dataPayload);
+            if (remove != null && expirationListConfiguration.isAlive()) {
+                expirationListConfiguration.get().remove(remove);
             }
-            commit(dataPayload);
-        }
-    }
-
-    public void commit(DataPayload item) {
-        DisposableExpirationMsImmutableEnvelope<DataPayload> remove = mapExpiration.remove(item);
-        if (remove != null && expirationListConfiguration.isAlive()) {
-            expirationListConfiguration.get().remove(remove);
         }
     }
 
     public DataPayload pollLast(long timeoutMs) {
-        DataPayload dataPayload = queue.pollLast();
+        DataPayload dataPayload = park.pollLast();
         if (dataPayload != null) {
-            queueSize.decrementAndGet();
-            polled.incrementAndGet();
             mapExpiration.put(dataPayload, expirationListConfiguration.get().add(dataPayload, timeoutMs));
             return dataPayload;
         }
         return null;
     }
 
-    public DataPayload pollLast(long timeoutMs, long nowTimestamp) {
-        DataPayload dataPayload = queue.pollLast();
+    public DataPayload pollLast(long timeoutMs, long currentTimestamp) {
+        DataPayload dataPayload = park.pollLast();
         if (dataPayload != null) {
-            queueSize.decrementAndGet();
-            polled.incrementAndGet();
             mapExpiration.put(
                     dataPayload,
                     expirationListConfiguration
                             .get()
-                            .add(new ExpirationMsImmutableEnvelope<>(dataPayload, timeoutMs, nowTimestamp))
+                            .add(new ExpirationMsImmutableEnvelope<>(dataPayload, timeoutMs, currentTimestamp))
             );
             return dataPayload;
         }
         return null;
     }
 
+    // Очередь полностью обработана. Нет
+    public boolean isProcessed() {
+        return finishState && position.isEmpty();
+    }
+
+    public DataPayload get(long position) {
+        return this.position.get(position);
+    }
+
     @Override
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         return List.of(new DataHeader()
-                .addHeader("queueSize", queueSize.get())
-                .addHeader("polled", polled.getAndSet(0))
+                .addHeader("size", position.size())
         );
-    }
-
-    public boolean queueIsEmpty() {
-        return queue.isEmpty();
-    }
-
-    public boolean isEmpty() {
-        // Если ExpirationList жив, надо проверить, что он пуст
-        if (expirationListConfiguration.isAlive()) {
-            return queue.isEmpty() && expirationListConfiguration.get().isEmpty();
-        } else {
-            // При остановке ExpirationList происходит clear(), поэтому нет необходимости проверять его пустоту
-            // Надо проверить только queue на пустоту
-            return queue.isEmpty();
-        }
-    }
-
-    public DataPayload get(long l) {
-        return unique.get(l);
     }
 
 }

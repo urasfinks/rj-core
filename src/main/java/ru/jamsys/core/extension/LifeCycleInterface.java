@@ -2,11 +2,16 @@ package ru.jamsys.core.extension;
 
 import lombok.Getter;
 import lombok.ToString;
+import ru.jamsys.core.App;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.functional.ProcedureThrowing;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface LifeCycleInterface {
+
+    List<ProcedureThrowing> getListOnPostShutdown();
 
     void runOperation(); // Обычный метод запуска, который требует реализацию, однако вызывать стоит runSequential
 
@@ -84,6 +89,13 @@ public interface LifeCycleInterface {
                 }
                 shutdownOperation();
                 getRun().set(false);
+                getListOnPostShutdown().forEach(procedureThrowing -> {
+                    try {
+                        procedureThrowing.run();
+                    } catch (Throwable th) {
+                        App.error(th);
+                    }
+                });
                 return new ResultOperation(Process.SHUTDOWN, true, Cause.SUCCESS);
             } finally {
                 getOperation().set(false);

@@ -65,7 +65,8 @@ class RiderTest {
                 key1 -> new Rider(
                         App.context,
                         key1,
-                        "LogManager/test.bin.commit",
+                        "LogManager/test.bin",
+                        true,
                         _ -> {
                         }
                 )

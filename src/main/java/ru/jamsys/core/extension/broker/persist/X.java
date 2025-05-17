@@ -7,6 +7,7 @@ import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.batch.writer.Position;
 
+// После того, как всё будет отлажено переименовать в более подходящее имя.
 @Getter
 public class X<T extends Position & ByteSerializable>
         implements Position, ByteSerializable, RiderConfiguration {

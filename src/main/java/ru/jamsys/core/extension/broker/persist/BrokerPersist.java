@@ -61,8 +61,8 @@ public class BrokerPersist<T extends Position & ByteSerializable>
     // Для того, что бы наполнять queue надо брать существующие CommitController по порядку и доить их
     private final ConcurrentLinkedDeque<Manager.Configuration<Rider>> queueRiderConfiguration = new ConcurrentLinkedDeque<>();
 
-    // Последний зарегистрированный конфиг Rider, что бы можно было оповещать о новых поступлениях данных position
-    private Manager.Configuration<Rider> lastRiderConfiguration;
+    // Я подумал, при деградации хорошо увидеть, что очередь вообще читается
+    private final AtomicInteger tpsDequeue = new AtomicInteger(0);
 
     private final Function<byte[], T> byteDeserialize;
 
@@ -93,13 +93,16 @@ public class BrokerPersist<T extends Position & ByteSerializable>
             while (queueSize.get() < propertyBroker.getFillThresholdMax()) {
                 // Подбираем последний и высасываем его до конца, если он вообще существует
                 Manager.Configuration<Rider> riderConfiguration = queueRiderConfiguration.peekLast();
+                if (riderConfiguration == null) {
+                    break;
+                }
                 Rider rider = riderConfiguration.get();
-                if (rider.isComplete()) {
-                    queueRiderConfiguration.remove(riderConfiguration);
+                if (rider.getQueueRetry().isProcessed()) {
+                    removeRiderIfComplete(rider);
                     continue;
                 }
                 // Rider не завершён, но и на обработку нет ничего, так как выданы на обработку элементы и не закоммичены
-                if (rider.getQueueRetry().queueIsEmpty()) {
+                if (rider.getQueueRetry().parkIsEmpty()) {
                     break;
                 }
                 DataPayload dataPayload = rider.getQueueRetry().pollLast(propertyBroker.getRetryTimeoutMs());
@@ -132,13 +135,26 @@ public class BrokerPersist<T extends Position & ByteSerializable>
                 // ns уникально в пределах BrokerPersist, но нам надо больше уникальности, так как у нас несколько
                 // AbstractAsyncFileWriter.class (Rolling/Wal)
                 key,
-                ns1 -> new AsyncFileWriterRolling<>(
-                        applicationContext,
-                        ns1,
-                        propertyBroker.getDirectory(),
-                        this::onXWrite,
-                        this::onXFileSwap
-                )
+                ns1 -> {
+                    AsyncFileWriterRolling<X<T>> xAsyncFileWriterRolling = new AsyncFileWriterRolling<>(
+                            applicationContext,
+                            ns1,
+                            propertyBroker.getDirectory(),
+                            this::onXWrite,
+                            this::onXFileSwap
+                    );
+                    // Если по каким-то причинам закрывается файл данных, надо оповестить rider
+                    // При обычной работе происходит просто onSwap и едем дальше, а при завершении работы приложения
+                    // или просто BrokerPersist отъехал от дел, буду закрываться ресурсы, вот тут тоже вызовется
+                    xAsyncFileWriterRolling.getListOnPostShutdown().add(() -> {
+                        Manager.Configuration<Rider> riderConfiguration = mapRiderConfiguration
+                                .get(xAsyncFileWriterRolling.getFilePath());
+                        if (riderConfiguration != null && riderConfiguration.isAlive()) {
+                            riderConfiguration.get().getQueueRetry().setFinishState(true);
+                        }
+                    });
+                    return xAsyncFileWriterRolling;
+                }
         );
         // При старте мы должны поднять все CommitController в карту commitControllers это надо, что бы наполнять
         // очередь, так как она цикличная
@@ -153,7 +169,7 @@ public class BrokerPersist<T extends Position & ByteSerializable>
                             propertyBroker.getDirectory(),
                             filePathYToX(filePathY)
                     );
-                    lastRiderConfiguration = getRiderConfiguration(relativePath);
+                    getRiderConfiguration(relativePath, true);
                 });
     }
 
@@ -198,9 +214,9 @@ public class BrokerPersist<T extends Position & ByteSerializable>
     }
 
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
-    // Каждая запись Y может быть последней, так как будут обработаны все X
-    public void onYWrite(Rider rider) {
-        if (rider.isComplete()) {
+
+    private void removeRiderIfComplete(Rider rider) {
+        if (rider.getQueueRetry().isProcessed()) {
             // rider.shutdown(); // Когда менеджер будет его выбрасывать, сам выключит
             Manager.Configuration<Rider> removedRiderConfiguration
                     = mapRiderConfiguration.remove(filePathYToX(rider.getFilePathY()));
@@ -214,6 +230,7 @@ public class BrokerPersist<T extends Position & ByteSerializable>
     // Вызывается когда меняется bin файл, так как он достиг максимального размера
     public void onXFileSwap(String fileName) {
         // Если последний зарегистрированный Rider существует и ещё жив - оповестим, что запись закончена
+        Manager.Configuration<Rider> lastRiderConfiguration = queueRiderConfiguration.peekLast();
         if (lastRiderConfiguration != null && lastRiderConfiguration.isAlive()) {
             lastRiderConfiguration.get().getQueueRetry().setFinishState(true);
         }
@@ -225,14 +242,14 @@ public class BrokerPersist<T extends Position & ByteSerializable>
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        lastRiderConfiguration = getRiderConfiguration(filePath);
+        Manager.Configuration<Rider> newRiderConfiguration = getRiderConfiguration(filePath, false);
         // Запускаем сразу контроллер коммитов, что бы onBinWrite мог в него уже передавать записанные position
-        if (lastRiderConfiguration != null) {
-            lastRiderConfiguration.get();
+        if (newRiderConfiguration != null) {
+            newRiderConfiguration.get();
         }
     }
 
-    private Manager.Configuration<Rider> getRiderConfiguration(String filePathX) {
+    private Manager.Configuration<Rider> getRiderConfiguration(String filePathX, boolean fileXFinishState) {
         // Обязательно должен существовать commit файл, если пакет данных не обработан, после обработки commit
         // файл удаляется, если нет commit - то смысла в этом больше нет
         if (!Files.exists(Paths.get(filePathXToY(filePathX)))) {
@@ -247,8 +264,10 @@ public class BrokerPersist<T extends Position & ByteSerializable>
                             key1 -> new Rider(
                                     applicationContext,
                                     key1,
-                                    filePathXToY(filePathX),
-                                    this::onYWrite
+                                    filePathX,
+                                    fileXFinishState,
+                                    // Каждый блок записи list<Y> может быть последним, так как будут обработаны все X
+                                    this::removeRiderIfComplete
                             )
                     );
                     queueRiderConfiguration.add(configure);
@@ -288,7 +307,11 @@ public class BrokerPersist<T extends Position & ByteSerializable>
 
     @Override
     public void reset() {
-
+        queue.clear();
+        queueSize.set(0);
+        mapRiderConfiguration.clear();
+        queueRiderConfiguration.clear();
+        tpsDequeue.set(0);
     }
 
     @Override
@@ -299,19 +322,7 @@ public class BrokerPersist<T extends Position & ByteSerializable>
     @Override
     public void shutdownOperation() {
         propertyDispatcher.shutdown();
-        if (xWriterConfiguration.isAlive()) {
-            xWriterConfiguration.get().shutdown();
-        }
-        if (lastRiderConfiguration.isAlive()) {
-            Rider rider = lastRiderConfiguration.get();
-            rider.getQueueRetry().setFinishState(true);
-            rider.shutdown();
-        }
-    }
-
-    @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of();
+        // Все смежные ресурсы будут выключены в Manager
     }
 
     public void add(@NotNull T element) {
@@ -331,6 +342,7 @@ public class BrokerPersist<T extends Position & ByteSerializable>
         // Очередь цикличная,
         X<T> poll = queue.poll();
         if (poll != null) {
+            tpsDequeue.incrementAndGet();
             queueSize.decrementAndGet();
         }
         return poll;
@@ -341,6 +353,20 @@ public class BrokerPersist<T extends Position & ByteSerializable>
         if (key.equals("directory")) {
             xWriterInit();
         }
+    }
+
+    public Manager.Configuration<Rider> getLastRiderConfiguration() {
+        return queueRiderConfiguration.peekLast();
+    }
+
+    @Override
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        int tpsDequeueFlush = tpsDequeue.getAndSet(0);
+        return List.of(new DataHeader()
+                .setBody(getCascadeKey(ns))
+                .addHeader("tpsDeq", tpsDequeueFlush)
+                .addHeader("size", queueSize.get())
+        );
     }
 
 }

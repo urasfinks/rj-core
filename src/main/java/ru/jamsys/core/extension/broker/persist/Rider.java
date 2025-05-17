@@ -28,11 +28,12 @@ public class Rider extends AbstractManagerElement {
     public Rider(
             ApplicationContext applicationContext,
             String ns,
-            String filePathY,
+            String filePathX,
+            boolean fileXFinishState,
             Consumer<Rider> onWrite
     ) {
-        this.filePathY = filePathY;
-        queueRetry = new QueueRetry(BrokerPersist.filePathYToX(filePathY));
+        this.filePathY = BrokerPersist.filePathXToY(filePathX);
+        queueRetry = new QueueRetry(filePathX, fileXFinishState);
         // То, что будут коммитить - это значит, что обработано и нам надо это удалять из списка на обработку
         // В asyncWrite залетает CommitElement содержащий bin (CommitElement.getBytes() возвращает позицию bin.position)
         // В onWrite залетает список CommitElement и мы должны bin.position удалить из binReader
@@ -57,6 +58,9 @@ public class Rider extends AbstractManagerElement {
     // Когда коммитят X, мы запускаем запись каммита, а после записи - по x.position удаляем из queueRetry
     // что бы этот X больше никому не выпал на обработку
     public void onCommitX(Position x) {
+        if (queueRetry.isProcessed()) {
+            throw new RuntimeException(filePathY + " queue is empty");
+        }
         markActive();
         yWriterConfiguration.get().writeAsync(new Y(x));
     }
@@ -70,11 +74,6 @@ public class Rider extends AbstractManagerElement {
         } catch (Exception e) {
             App.error(e);
         }
-    }
-
-    // Если мы наткнулись на -1 в основном файле и все position закоммичены
-    public boolean isComplete() {
-        return queueRetry.isFinishState() && queueRetry.isEmpty();
     }
 
     @Override
@@ -96,7 +95,7 @@ public class Rider extends AbstractManagerElement {
 
     @Override
     public void shutdownOperation() {
-        if (isComplete()) {
+        if (queueRetry.isProcessed()) {
             try {
                 UtilFile.remove(filePathY);
             } catch (Exception e) {

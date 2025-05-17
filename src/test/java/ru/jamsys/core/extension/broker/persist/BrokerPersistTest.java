@@ -52,8 +52,6 @@ class BrokerPersistTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runSpring();
-
-        App.get(ServiceProperty.class).set("App.BrokerPersist.test.directory", "LogManager");
     }
 
     @BeforeEach
@@ -67,10 +65,11 @@ class BrokerPersistTest {
     }
 
     @Test
-    public void test2() throws Throwable {
+    public void test1() throws Throwable {
+        App.get(ServiceProperty.class).set("App.BrokerPersist.test1.directory", "LogManager");
         BrokerPersist<TestElement> test = App.get(Manager.class).configure(
                 BrokerPersist.class,
-                "test",
+                "test1",
                 s -> new BrokerPersist<>(s, App.context, (_) -> null)
         ).getGeneric();
         test.add(new TestElement("Hello"));
@@ -123,13 +122,13 @@ class BrokerPersistTest {
                 }).get(),
                 Files.readAllBytes(Paths.get(test.getLastRiderConfiguration().get().getFilePathY()))
         );
-        Assertions.assertFalse(test.getLastRiderConfiguration().get().isComplete());
+        Assertions.assertFalse(test.getLastRiderConfiguration().get().getQueueRetry().isProcessed());
         // Осталось обработать позиций 0
         Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().size());
         // Статус оригинального файла - не завершён
         Assertions.assertFalse(test.getLastRiderConfiguration().get().getQueueRetry().isFinishState());
 
-        test.shutdown();
+        test.getXWriterConfiguration().get().shutdown();
 
         // Проверим что записался в конце -1
         assertArrayEquals(
@@ -146,19 +145,19 @@ class BrokerPersistTest {
                 }).get(),
                 Files.readAllBytes(Paths.get(test.getXWriterConfiguration().get().getFilePath()))
         );
-        // Проверим, что оригинальный файл достиг конца
-        Assertions.assertTrue(test.getLastRiderConfiguration().get().getQueueRetry().isFinishState());
+        test.getLastRiderConfiguration().get().shutdown();
         // Проверим что файл удалился так как завершился CommitController и он был isComplete
         Assertions.assertFalse(Files.exists(Paths.get(test.getLastRiderConfiguration().get().getFilePathY())));
 
     }
 
     @Test
-    void test3() throws Throwable {
+    void test2() throws Throwable {
         UtilFile.removeAllFilesInFolder("LogManager");
-        App.get(ServiceProperty.class).set("App.BrokerPersist.test.fill.threshold.min", "1");
-        App.get(ServiceProperty.class).set("App.BrokerPersist.test.fill.threshold.max", "1");
-        App.get(ServiceProperty.class).set("App.AsyncFileWriterWal[App.BrokerPersist.test::LogManager/test2.afwr].flush.max.time.ms", "99999999");
+        App.get(ServiceProperty.class).set("App.BrokerPersist.test2.directory", "LogManager");
+        App.get(ServiceProperty.class).set("App.BrokerPersist.test2.fill.threshold.min", "1");
+        App.get(ServiceProperty.class).set("App.BrokerPersist.test2.fill.threshold.max", "1");
+        App.get(ServiceProperty.class).set("App.AsyncFileWriterWal[App.BrokerPersist.test2::LogManager/test2.afwr].flush.max.time.ms", "99999999");
 
 
         UtilFile.writeBytes("LogManager/test1.afwr", ((Supplier<byte[]>) () -> {
@@ -168,6 +167,7 @@ class BrokerPersistTest {
                 output.write("Hello".getBytes());
                 output.write(UtilByte.intToBytes(5));
                 output.write("world".getBytes());
+                output.write(UtilByte.intToBytes(-1));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -203,7 +203,7 @@ class BrokerPersistTest {
 
         BrokerPersist<TestElement> test = App.get(Manager.class).configure(
                 BrokerPersist.class,
-                "test",
+                "test2",
                 s -> new BrokerPersist<>(s, App.context, (bytes) -> new TestElement(new String(bytes)))
         ).getGeneric();
 
@@ -215,8 +215,8 @@ class BrokerPersistTest {
         // а cha__ должен вернуться
         test.helper();
         // Очередь последнего rider полностью вычитана
-        Assertions.assertTrue(test.getLastRiderConfiguration().get().getQueueRetry().queueIsEmpty());
-        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().size());
+        Assertions.assertTrue(test.getLastRiderConfiguration().get().getQueueRetry().parkIsEmpty());
+        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().size());
         Assertions.assertEquals(1, test.size());
         // В данный момент последний райдер не завершён, так как ждёт коммита выданного элемента
         // Повторный helper не должен накидать более ничего в очередь
@@ -237,6 +237,8 @@ class BrokerPersistTest {
                 .get()
                 .size()
         );
+
+        Rider lastRider = test.getLastRiderConfiguration().get();
 
         // Теперь закоммитим изъятый элемент и должен будет завершиться 1 райдер, должны будем взять второй и наполнить
         // + 2 элемента
@@ -265,9 +267,58 @@ class BrokerPersistTest {
                 .size()
         );
 
-        Assertions.assertTrue(test.getLastRiderConfiguration().get().isComplete());
+        // Проверяем что rider преисполнился, то есть у него в очередях ничего нет и нет в expirationList ожиданий
+        // и файл по которому мы читали записан до конца (finishState)
+        Assertions.assertEquals("LogManager/test2.afwr.commit", lastRider.getFilePathY());
+        Assertions.assertTrue(lastRider.getQueueRetry().isProcessed());
 
-        test.getLastRiderConfiguration().get().shutdown();
+        // Эмулируем работу менеджера, завершаем rider
+        lastRider.shutdown();
+
+        // Проверяем что файла больше нет
+        Assertions.assertFalse(UtilFile.ifExist("LogManager/test2.afwr.commit"));
+        // После удаления ещё должен поменяться и
+        Assertions.assertEquals("LogManager/test1.afwr.commit", test.getLastRiderConfiguration().get().getFilePathY());
+
+        // После удаления rider в мапе должен остаться только 1
+        Assertions.assertEquals(1, test.getMapRiderConfiguration().size());
+
+        // Повторно пытаемся наполнить очередь на обработку
+        test.helper();
+        Assertions.assertEquals(1, test.size());
+
+        // Повторный helper не должен накидать более ничего в очередь, хотя там есть данные
+        test.helper();
+        Assertions.assertEquals(1, test.size());
+        // проверим, что rider остался ещё 1 элемент
+        Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().size());
+
+        X<TestElement> poll1 = test.poll();
+        Assertions.assertEquals(0, test.size());
+        test.helper();
+        Assertions.assertEquals(1, test.size());
+        Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().size());
+        X<TestElement> poll2 = test.poll();
+
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            test.commit(poll);
+        });
+
+        test.commit(poll1);
+        test.commit(poll2);
+
+        Assertions.assertEquals(0, test.size());
+        // Но при этом размер rider ещё 2, так как он ещё на файловую систему не сброшено состояние
+        Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().size());
+
+        test
+                .getLastRiderConfiguration()
+                .get()
+                .getYWriterConfiguration()
+                .get()
+                .flush(run);
+
+        Assertions.assertNull(test.getLastRiderConfiguration());
 
 
     }

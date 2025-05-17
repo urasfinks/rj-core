@@ -26,15 +26,15 @@ class QueueRetryTest {
     void test() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
 
-        QueueRetry test = new QueueRetry("test");
+        QueueRetry test = new QueueRetry("test", true);
 
         test.add(0, null, "Hello");
         Assertions.assertEquals(1, test.size());
         Assertions.assertTrue(test.getExpirationListConfiguration().get().isEmpty());
 
         DataPayload dataPayload = test.pollLast(1_000, curTimeMs);
-        Assertions.assertTrue(test.queueIsEmpty());
-        Assertions.assertEquals(0, test.size());
+        Assertions.assertTrue(test.parkIsEmpty());
+        Assertions.assertEquals(1, test.size());
         Assertions.assertFalse(test.getExpirationListConfiguration().get().isEmpty());
 
         test.getExpirationListConfiguration().get().helper(threadRun, curTimeMs + 2000);
@@ -46,20 +46,20 @@ class QueueRetryTest {
         DataPayload dataPayload2 = test.pollLast(1_500, curTimeMs);
         // Это 2 одинаковых объекта
         Assertions.assertEquals(dataPayload, dataPayload2);
-        Assertions.assertTrue(test.queueIsEmpty());
-        Assertions.assertEquals(0, test.size());
+        Assertions.assertTrue(test.parkIsEmpty());
+        Assertions.assertEquals(1, test.size());
         Assertions.assertFalse(test.getExpirationListConfiguration().get().isEmpty());
-        Assertions.assertFalse(test.isEmpty());
+        Assertions.assertFalse(test.isProcessed());
 
         // Теперь делаю человеческое удаление
-        test.commit(dataPayload2);
+        test.remove(dataPayload2.getPosition());
         test.getExpirationListConfiguration().get().helper(threadRun, curTimeMs + 2000);
 
         // Теперь ничего не должно нигде остаться
-        Assertions.assertTrue(test.queueIsEmpty());
+        Assertions.assertTrue(test.parkIsEmpty());
         Assertions.assertEquals(0, test.size());
         Assertions.assertTrue(test.getExpirationListConfiguration().get().isEmpty());
-        Assertions.assertTrue(test.isEmpty());
+        Assertions.assertTrue(test.isProcessed());
 
     }
 
