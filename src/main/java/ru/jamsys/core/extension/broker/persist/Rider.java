@@ -8,7 +8,6 @@ import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.*;
-import ru.jamsys.core.extension.batch.writer.*;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
 
