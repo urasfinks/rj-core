@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension.batch.writer;
+package ru.jamsys.core.extension.async.writer;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.flat.util.UtilByte;

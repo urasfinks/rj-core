@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension.batch.writer;
+package ru.jamsys.core.extension.async.writer;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;

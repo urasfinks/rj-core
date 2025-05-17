@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension.batch.writer;
+package ru.jamsys.core.extension.async.writer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;

@@ -7,7 +7,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.extension.ByteCodec;
-import ru.jamsys.core.extension.batch.writer.Position;
+import ru.jamsys.core.extension.async.writer.Position;
 import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;

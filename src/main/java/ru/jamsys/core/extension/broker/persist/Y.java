@@ -3,7 +3,7 @@ package ru.jamsys.core.extension.broker.persist;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.ByteSerializable;
-import ru.jamsys.core.extension.batch.writer.Position;
+import ru.jamsys.core.extension.async.writer.Position;
 import ru.jamsys.core.flat.util.UtilByte;
 
 // После того, как всё будет отлажено переименовать в более подходящее имя.
