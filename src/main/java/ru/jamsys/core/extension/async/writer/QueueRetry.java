@@ -12,7 +12,7 @@ import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmut
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,14 +30,26 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
     @Setter
     private volatile boolean finishState; // Встретили -1 длину данных в bin
 
+    @Setter
+    @Getter
+    public static class Envelope {
+
+        private final DataPayload dataPayload;
+
+        private DisposableExpirationMsImmutableEnvelope<DataPayload> expiration;
+
+        public Envelope(DataPayload dataPayload) {
+            this.dataPayload = dataPayload;
+        }
+
+    }
+
     private final ConcurrentLinkedDeque<DataPayload> park = new ConcurrentLinkedDeque<>();
 
-    private final ConcurrentHashMap<Long, DataPayload> position = new ConcurrentHashMap<>(); // key: position;
+    private final ConcurrentHashMap<Long, Envelope> position = new ConcurrentHashMap<>(); // key: position;
 
     @Getter
     private final Manager.Configuration<ExpirationList<DataPayload>> expirationListConfiguration;
-
-    private final Map<DataPayload, DisposableExpirationMsImmutableEnvelope<DataPayload>> mapExpiration = new ConcurrentHashMap<>();
 
     public QueueRetry(String key, boolean finishState) {
         this.finishState = finishState;
@@ -66,40 +78,44 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
 
     @Override
     public void add(@NonNull DataPayload dataPayload) {
-        position.computeIfAbsent(dataPayload.getPosition(), _ -> {
+        // Хотел через computeIfAbsent, основа которого не вызывать исполнение лямды в случае отсутствия позиции,
+        // но тогда надо делать атомики для контроля добавления и это больше исключение чем постоянная история
+        if (position.putIfAbsent(dataPayload.getPosition(), new Envelope(dataPayload)) == null) {
             park.add(dataPayload);
-            return dataPayload;
-        });
+        } else {
+            App.error(new RuntimeException("Duplicate DataPayload detected at position: " + dataPayload.getPosition()));
+        }
     }
 
     public void remove(long position) {
-        DataPayload dataPayload = this.position.remove(position);
-        if (dataPayload != null) {
-            park.remove(dataPayload);
-            DisposableExpirationMsImmutableEnvelope<DataPayload> remove = mapExpiration.remove(dataPayload);
-            if (remove != null && expirationListConfiguration.isAlive()) {
-                expirationListConfiguration.get().remove(remove);
+        Envelope remove1 = this.position.remove(position);
+        if (remove1 != null) {
+            park.remove(remove1.getDataPayload());
+            DisposableExpirationMsImmutableEnvelope<DataPayload> expiration = remove1.getExpiration();
+            if (expiration != null) {
+                // Нейтрализуем что бы expirationList не взял его в обработку при timeout
+                if (!expiration.doNeutralized()) {
+                    App.error(new RuntimeException("Unfortunately, the block has already entered retry"));
+                }
             }
         }
     }
 
     public DataPayload pollLast(long timeoutMs) {
-        DataPayload dataPayload = park.pollLast();
-        if (dataPayload != null) {
-            mapExpiration.put(dataPayload, expirationListConfiguration.get().add(dataPayload, timeoutMs));
-            return dataPayload;
-        }
-        return null;
+        return pollLast(timeoutMs, System.currentTimeMillis());
     }
 
     public DataPayload pollLast(long timeoutMs, long currentTimestamp) {
         DataPayload dataPayload = park.pollLast();
         if (dataPayload != null) {
-            mapExpiration.put(
-                    dataPayload,
-                    expirationListConfiguration
-                            .get()
-                            .add(new ExpirationMsImmutableEnvelope<>(dataPayload, timeoutMs, currentTimestamp))
+            Envelope envelope = position.get(dataPayload.getPosition());
+            if (envelope == null) {
+                App.error(new RuntimeException("This block should not be executed! The logic needs to be checked!"));
+                return null;
+            }
+            envelope.setExpiration(expirationListConfiguration
+                    .get()
+                    .add(new ExpirationMsImmutableEnvelope<>(dataPayload, timeoutMs, currentTimestamp))
             );
             return dataPayload;
         }
@@ -111,8 +127,11 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
         return finishState && position.isEmpty();
     }
 
-    public DataPayload get(long position) {
-        return this.position.get(position);
+    // Только для unit тестов
+    public DataPayload getForUnitTest(long position) {
+        return Optional.ofNullable(this.position.get(position))
+                .map(Envelope::getDataPayload)
+                .orElse(null);
     }
 
     @Override
