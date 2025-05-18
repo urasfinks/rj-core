@@ -9,7 +9,7 @@ import ru.jamsys.core.extension.async.writer.Position;
 
 // После того, как всё будет отлажено переименовать в более подходящее имя.
 @Getter
-public class X<T extends Position & ByteSerializable>
+public class X<T extends ByteSerializable>
         implements Position, ByteSerializable, RiderConfiguration {
 
     private final T element;
