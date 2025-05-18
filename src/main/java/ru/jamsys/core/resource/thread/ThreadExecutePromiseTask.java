@@ -107,11 +107,14 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
         spin.set(false); //Говорим закончить
         LockSupport.unpark(thread);
         Util.await(threadWork, 1500, 100, () -> {
-            UtilLog.printError("Поток не закончил работу после spin.set(false) -> interrupt()");
+            UtilLog.printError("Поток не закончил работу после spin.set(false) -> interrupt() " + thread.getName());
+            for (StackTraceElement element : thread.getStackTrace()) {
+                System.err.println("\tat " + element);
+            }
             thread.interrupt();
         });
         Util.await(threadWork, 1500, 100, () -> UtilLog.printError(
-                "Поток не закончил работу после interrupt()"
+                "Поток не закончил работу после interrupt() " + thread.getName()
         ));
         // Так как мы не можем больше повлиять на остановку
         // В java 22 больше нет функционала принудительной остановки thread.stop()
