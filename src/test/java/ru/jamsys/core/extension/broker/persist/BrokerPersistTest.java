@@ -279,9 +279,7 @@ class BrokerPersistTest {
         Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().size());
         X<TestElement> poll2 = test.poll();
 
-        Assertions.assertThrows(RuntimeException.class, () -> {
-            test.commit(poll);
-        });
+        Assertions.assertThrows(RuntimeException.class, () -> test.commit(poll));
 
         test.commit(poll1);
         test.commit(poll2);
