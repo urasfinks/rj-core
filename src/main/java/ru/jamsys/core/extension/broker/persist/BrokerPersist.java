@@ -22,6 +22,7 @@ import ru.jamsys.core.flat.util.UtilFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +34,10 @@ import java.util.function.Function;
 // SSD 80K IOPS при 4KB на блок = 320 MB/s на диске в режиме RandomAccess и до 550 MB/s в линейной записи (секвентальная)
 // Для гарантии записи надо использовать StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.DSYNC
 // (в таком режиме atime, mtime, размер файла может быть не синхранизован, но данные при восстановлении будут вычитаны
-// корреткно)
+// корректно)
+// SIZE - прикольно бы было знать общий объём, но что бы его вычислить надо прочитать все файлы, а если не перечитывать
+// то commit X будет делать decrementAndGet и возможна ситуация выйти в минус, остановился на том, что метрики size
+// лучше не делать
 
 @Getter
 @SuppressWarnings("unused")
@@ -49,9 +53,10 @@ public class BrokerPersist<T extends Position & ByteSerializable>
 
     private final PropertyDispatcher<Object> propertyDispatcher;
 
-    private final ConcurrentLinkedDeque<X<T>> queue = new ConcurrentLinkedDeque<>();
+    // Я подумал, при деградации хорошо увидеть, что очередь вообще читается
+    private final AtomicInteger tpsDequeue = new AtomicInteger(0);
 
-    private final AtomicInteger queueSize = new AtomicInteger(0);
+    private final AtomicInteger tpsEnqueue = new AtomicInteger(0);
 
     private Manager.Configuration<AbstractAsyncFileWriter<X<T>>> xWriterConfiguration;
 
@@ -61,19 +66,16 @@ public class BrokerPersist<T extends Position & ByteSerializable>
     // Для того, что бы наполнять queue надо брать существующие CommitController по порядку и доить их
     private final ConcurrentLinkedDeque<Manager.Configuration<Rider>> queueRiderConfiguration = new ConcurrentLinkedDeque<>();
 
-    // Я подумал, при деградации хорошо увидеть, что очередь вообще читается
-    private final AtomicInteger tpsDequeue = new AtomicInteger(0);
-
-    private final Function<byte[], T> byteDeserialize;
+    private final Function<byte[], T> restoreElementFromByte;
 
     public BrokerPersist(
             String ns,
             ApplicationContext applicationContext,
-            Function<byte[], T> byteDeserialize
+            Function<byte[], T> restoreElementFromByte
     ) {
         this.ns = ns;
         this.applicationContext = applicationContext;
-        this.byteDeserialize = byteDeserialize;
+        this.restoreElementFromByte = restoreElementFromByte;
 
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class, applicationContext),
@@ -83,46 +85,6 @@ public class BrokerPersist<T extends Position & ByteSerializable>
         );
 
         xWriterInit();
-    }
-
-    @Override
-    public void helper() {
-        // Если очередь стала меньше минимальной планки по заполнению
-        if (queueSize.get() < propertyBroker.getFillThresholdMin()) {
-            // Крутим пока размер не достигнет верхнего порога
-            while (queueSize.get() < propertyBroker.getFillThresholdMax()) {
-                // Подбираем последний и высасываем его до конца, если он вообще существует
-                Manager.Configuration<Rider> riderConfiguration = queueRiderConfiguration.peekLast();
-                if (riderConfiguration == null) {
-                    break;
-                }
-                Rider rider = riderConfiguration.get();
-                if (rider.getQueueRetry().isProcessed()) {
-                    removeRiderIfComplete(rider);
-                    continue;
-                }
-                // Rider не завершён, но и на обработку нет ничего, так как выданы на обработку элементы и не закоммичены
-                if (rider.getQueueRetry().parkIsEmpty()) {
-                    break;
-                }
-                DataPayload dataPayload = rider.getQueueRetry().pollLast(propertyBroker.getRetryTimeoutMs());
-                if (dataPayload == null) {
-                    continue;
-                }
-                Object object = dataPayload.getObject();
-                if (object != null) {
-                    @SuppressWarnings("unchecked")
-                    X<T> cast = (X<T>) object;
-                    queue.add(cast);
-                    continue;
-                }
-                X<T> tx = new X<>(byteDeserialize.apply(dataPayload.getBytes()));
-                tx.setPosition(dataPayload.getPosition());
-                tx.setRiderConfiguration(riderConfiguration);
-                queue.add(tx);
-                queueSize.incrementAndGet();
-            }
-        }
     }
 
     public void xWriterInit() {
@@ -175,30 +137,6 @@ public class BrokerPersist<T extends Position & ByteSerializable>
 
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
     public void onXWrite(String filePath, List<X<T>> listX) {
-        int maxSize = propertyBroker.getSize();
-
-        if (listX.size() > maxSize) {
-            // Берём только последние maxSize элементов
-            int fromIndex = listX.size() - maxSize;
-            List<X<T>> tail = listX.subList(fromIndex, listX.size());
-
-            queue.clear();
-            queue.addAll(tail);
-            queueSize.set(tail.size()); // Обновляем после добавления
-        } else {
-            queue.addAll(listX);
-            queueSize.addAndGet(listX.size());
-
-            // Удаление из начала очереди при переполнении
-            while (queueSize.get() > maxSize) {
-                if (queue.pollFirst() != null) {
-                    queueSize.decrementAndGet();
-                } else {
-                    break;
-                }
-            }
-        }
-
         Manager.Configuration<Rider> riderConfiguration = mapRiderConfiguration.get(filePath);
         if (riderConfiguration == null) {
             throw new RuntimeException("Rider(" + filePath + ") not found");
@@ -214,7 +152,6 @@ public class BrokerPersist<T extends Position & ByteSerializable>
     }
 
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
-
     private void removeRiderIfComplete(Rider rider) {
         if (rider.getQueueRetry().isProcessed()) {
             // rider.shutdown(); // Когда менеджер будет его выбрасывать, сам выключит
@@ -261,9 +198,9 @@ public class BrokerPersist<T extends Position & ByteSerializable>
                     Manager.Configuration<Rider> configure = App.get(Manager.class, applicationContext).configure(
                             Rider.class,
                             getCascadeKey(ns, filePathX), // Тут главно, что бы просто было уникальным
-                            key1 -> new Rider(
+                            ns1 -> new Rider(
                                     applicationContext,
-                                    key1,
+                                    ns1,
                                     filePathX,
                                     fileXFinishState,
                                     // Каждый блок записи list<Y> может быть последним, так как будут обработаны все X
@@ -285,14 +222,12 @@ public class BrokerPersist<T extends Position & ByteSerializable>
 
     @Override
     public long size() {
-        return queueSize.get();
+        return -1;
     }
 
     @Override
     public boolean isEmpty() {
-        // нет данных в очереди на обработку
-        // все rider завершены
-        return queue.isEmpty() && mapRiderConfiguration.isEmpty();
+        return mapRiderConfiguration.isEmpty();
     }
 
     @Override
@@ -307,10 +242,9 @@ public class BrokerPersist<T extends Position & ByteSerializable>
 
     @Override
     public void reset() {
-        queue.clear();
-        queueSize.set(0);
         mapRiderConfiguration.clear();
         queueRiderConfiguration.clear();
+        tpsEnqueue.set(0);
         tpsDequeue.set(0);
     }
 
@@ -326,6 +260,7 @@ public class BrokerPersist<T extends Position & ByteSerializable>
     }
 
     public void add(@NotNull T element) {
+        tpsEnqueue.incrementAndGet();
         xWriterConfiguration.get().writeAsync(new X<>(element));
     }
 
@@ -338,14 +273,44 @@ public class BrokerPersist<T extends Position & ByteSerializable>
         riderConfiguration.get().onCommitX(element);
     }
 
-    public X<T> poll() {
-        // Очередь цикличная,
-        X<T> poll = queue.poll();
-        if (poll != null) {
-            tpsDequeue.incrementAndGet();
-            queueSize.decrementAndGet();
+    @Getter
+        public record Last(DataPayload dataPayload, Manager.Configuration<Rider> riderConfiguration) {
+    }
+
+    private Last getLastDataPayLoad() {
+        // Так как последний Rider, при нагрузке, всегда будет находиться в finishStatus = false,
+        // мы должны перебирать всех Rider с конца очереди queueRiderConfiguration в поиске DataPayload
+        for (Iterator<Manager.Configuration<Rider>> it = queueRiderConfiguration.descendingIterator(); it.hasNext(); ) {
+            Manager.Configuration<Rider> config = it.next();
+            DataPayload dataPayload = config
+                    .get()
+                    .getQueueRetry()
+                    .pollLast(propertyBroker.getRetryTimeoutMs());
+            if (dataPayload != null) {
+                return new Last(dataPayload, config);
+            }
         }
-        return poll;
+        return null;
+    }
+
+    public X<T> poll() {
+        Last lastDataPayLoad = getLastDataPayLoad();
+        if (lastDataPayLoad == null) {
+            return null;
+        }
+
+        tpsDequeue.incrementAndGet();
+        DataPayload dataPayload = lastDataPayLoad.dataPayload();
+        Object object = dataPayload.getObject();
+        if (object != null) {
+            @SuppressWarnings("unchecked")
+            X<T> cast = (X<T>) object;
+            return cast;
+        }
+        X<T> tx = new X<>(restoreElementFromByte.apply(dataPayload.getBytes()));
+        tx.setPosition(dataPayload.getPosition());
+        tx.setRiderConfiguration(lastDataPayLoad.riderConfiguration());
+        return tx;
     }
 
     @Override
@@ -361,11 +326,11 @@ public class BrokerPersist<T extends Position & ByteSerializable>
 
     @Override
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        int tpsDequeueFlush = tpsDequeue.getAndSet(0);
         return List.of(new DataHeader()
                 .setBody(getCascadeKey(ns))
-                .addHeader("tpsDeq", tpsDequeueFlush)
-                .addHeader("size", queueSize.get())
+                .addHeader("tpsEnqueue", tpsEnqueue.getAndSet(0))
+                .addHeader("tpsDequeue", tpsDequeue.getAndSet(0))
+                .addHeader("sizeRider", mapRiderConfiguration.size())
         );
     }
 

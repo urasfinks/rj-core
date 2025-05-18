@@ -30,11 +30,17 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
 
     private final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, Function<String, ? extends ManagerElement>>> configureMap = new ConcurrentHashMap<>();
 
-    // TODO: кеш бы добавить, что бы постоянно не перезапрашивать get
     public static class Configuration<T extends ManagerElement> {
+
         private final Class<T> cls;
+
         private final String key;
+
         private final Manager manager;
+
+        private long nextUpdate;
+
+        private T cache;
 
         public Configuration(Class<T> cls, String key, Manager manager) {
             this.cls = cls;
@@ -63,7 +69,12 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         }
 
         public T get() {
-            return manager.get(cls, key);
+            long l = System.currentTimeMillis();
+            if (l > nextUpdate) {
+                cache = manager.get(cls, key);
+                nextUpdate = cache.getExpiryRemainingMs() + l;
+            }
+            return cache;
         }
 
         public void execute(Consumer<T> managerElement) {

@@ -208,24 +208,13 @@ class BrokerPersistTest {
         ).getGeneric();
 
         Assertions.assertEquals(2, test.getMapRiderConfiguration().size());
-        // Размер очереди с данными 0 так как ещё не вызывался помошник, который загрузит с файловой системы данные
-        Assertions.assertEquals(0, test.size());
-        //UtilLog.printInfo(test.getPropertyBroker());
-        // запускаем помошника, он должен взять последнего rider и восстановить данные с диска + opa__  закоммичен,
-        // а cha__ должен вернуться
-        test.helper();
+        X<TestElement> poll = test.poll();
         // Очередь последнего rider полностью вычитана
         Assertions.assertTrue(test.getLastRiderConfiguration().get().getQueueRetry().parkIsEmpty());
         Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().size());
-        Assertions.assertEquals(1, test.size());
+
         // В данный момент последний райдер не завершён, так как ждёт коммита выданного элемента
-        // Повторный helper не должен накидать более ничего в очередь
-        test.helper();
-        Assertions.assertEquals(1, test.size());
-        X<TestElement> poll = test.poll();
         Assertions.assertEquals("cha__", poll.getElement().getValue());
-        // так как изъяли, размер очереди должен стать 0
-        Assertions.assertEquals(0, test.size());
         Assertions.assertFalse(test.isEmpty());
 
         // Изъятый элемент должен светиться в последнем rider в expirationList
@@ -283,20 +272,10 @@ class BrokerPersistTest {
         // После удаления rider в мапе должен остаться только 1
         Assertions.assertEquals(1, test.getMapRiderConfiguration().size());
 
-        // Повторно пытаемся наполнить очередь на обработку
-        test.helper();
-        Assertions.assertEquals(1, test.size());
-
-        // Повторный helper не должен накидать более ничего в очередь, хотя там есть данные
-        test.helper();
-        Assertions.assertEquals(1, test.size());
         // проверим, что rider остался ещё 1 элемент
         Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().size());
 
         X<TestElement> poll1 = test.poll();
-        Assertions.assertEquals(0, test.size());
-        test.helper();
-        Assertions.assertEquals(1, test.size());
         Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().size());
         X<TestElement> poll2 = test.poll();
 
@@ -307,7 +286,6 @@ class BrokerPersistTest {
         test.commit(poll1);
         test.commit(poll2);
 
-        Assertions.assertEquals(0, test.size());
         // Но при этом размер rider ещё 2, так как он ещё на файловую систему не сброшено состояние
         Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().size());
 

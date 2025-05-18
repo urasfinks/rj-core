@@ -17,31 +17,9 @@ public class BrokerPersistRepositoryProperty extends RepositoryPropertyAnnotatio
     @PropertyDescription("Директория для хранения .bin и .commit")
     private volatile String directory;
 
-    @SuppressWarnings("all")
-    @PropertyNotNull
-    @PropertyKey("size")
-    @PropertyDescription("Размер рабочей очереди")
-    private volatile Integer size = 3000;
-
-    @SuppressWarnings("all")
-    @PropertyNotNull
-    @PropertyKey("tail.size")
-    @PropertyDescription("Размер пробы очереди")
-    private volatile Integer tailSize = 5;
-
     @PropertyNotNull
     @PropertyKey("retry.timeout.ms")
     @PropertyDescription("Повторный вброс, если не пришёл commit")
     private volatile Integer retryTimeoutMs = 10 * 60 * 1000; // 10 минут
-
-    @PropertyNotNull
-    @PropertyKey("fill.threshold.min")
-    @PropertyDescription("Минимальный порог, когда следует наполнять очередь")
-    private volatile Integer fillThresholdMin = 500;
-
-    @PropertyNotNull
-    @PropertyKey("fill.threshold.max")
-    @PropertyDescription("Максимальный порог наполнения очереди helper'ом")
-    private volatile Integer fillThresholdMax = 1500;
 
 }

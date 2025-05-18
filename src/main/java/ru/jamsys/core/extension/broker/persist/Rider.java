@@ -106,7 +106,7 @@ public class Rider extends AbstractManagerElement {
 
     @Override
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of();
+        return queueRetry.flushAndGetStatistic(threadRun);
     }
 
 }
