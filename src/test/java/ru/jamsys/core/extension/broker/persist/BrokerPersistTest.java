@@ -155,8 +155,6 @@ class BrokerPersistTest {
     void test2() throws Throwable {
         UtilFile.removeAllFilesInFolder("LogManager");
         App.get(ServiceProperty.class).set("App.BrokerPersist.test2.directory", "LogManager");
-        App.get(ServiceProperty.class).set("App.BrokerPersist.test2.fill.threshold.min", "1");
-        App.get(ServiceProperty.class).set("App.BrokerPersist.test2.fill.threshold.max", "1");
         App.get(ServiceProperty.class).set("App.AsyncFileWriterWal[App.BrokerPersist.test2::LogManager/test2.afwr].flush.max.time.ms", "99999999");
 
 
