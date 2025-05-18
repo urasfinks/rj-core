@@ -12,7 +12,6 @@ import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmut
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,23 +29,9 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
     @Setter
     private volatile boolean finishState; // Встретили -1 длину данных в bin
 
-    @Setter
-    @Getter
-    public static class Envelope {
-
-        private final DataPayload dataPayload;
-
-        private DisposableExpirationMsImmutableEnvelope<DataPayload> expiration;
-
-        public Envelope(DataPayload dataPayload) {
-            this.dataPayload = dataPayload;
-        }
-
-    }
-
     private final ConcurrentLinkedDeque<DataPayload> park = new ConcurrentLinkedDeque<>();
 
-    private final ConcurrentHashMap<Long, Envelope> position = new ConcurrentHashMap<>(); // key: position;
+    private final ConcurrentHashMap<Long, DataPayload> position = new ConcurrentHashMap<>(); // key: position;
 
     @Getter
     private final Manager.Configuration<ExpirationList<DataPayload>> expirationListConfiguration;
@@ -80,7 +65,7 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
     public void add(@NonNull DataPayload dataPayload) {
         // Хотел через computeIfAbsent, основа которого не вызывать исполнение лямды в случае отсутствия позиции,
         // но тогда надо делать атомики для контроля добавления и это больше исключение чем постоянная история
-        if (position.putIfAbsent(dataPayload.getPosition(), new Envelope(dataPayload)) == null) {
+        if (position.putIfAbsent(dataPayload.getPosition(), dataPayload) == null) {
             park.add(dataPayload);
         } else {
             App.error(new RuntimeException("Duplicate DataPayload detected at position: " + dataPayload.getPosition()));
@@ -88,10 +73,10 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
     }
 
     public void remove(long position) {
-        Envelope envelope = this.position.remove(position);
-        if (envelope != null) {
-            park.remove(envelope.getDataPayload());
-            DisposableExpirationMsImmutableEnvelope<DataPayload> expiration = envelope.getExpiration();
+        DataPayload dataPayload = this.position.remove(position);
+        if (dataPayload != null) {
+            dataPayload.setRemove(true);
+            DisposableExpirationMsImmutableEnvelope<DataPayload> expiration = dataPayload.getExpiration();
             if (expiration != null) {
                 // Нейтрализуем что бы expirationList не взял его в обработку при timeout
                 if (!expiration.doNeutralized()) {
@@ -106,18 +91,19 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
     }
 
     public DataPayload pollLast(long timeoutMs, long currentTimestamp) {
-        DataPayload dataPayload = park.pollLast();
-        if (dataPayload != null) {
-            Envelope envelope = position.get(dataPayload.getPosition());
-            if (envelope == null) {
-                App.error(new RuntimeException("This block should not be executed! The logic needs to be checked!"));
-                return null;
+        DataPayload dataPayload;
+        while (true) {
+            dataPayload = park.pollLast();
+            if (dataPayload == null) {
+                break;
             }
-            envelope.setExpiration(expirationListConfiguration
-                    .get()
-                    .add(new ExpirationMsImmutableEnvelope<>(dataPayload, timeoutMs, currentTimestamp))
-            );
-            return dataPayload;
+            if (!dataPayload.isRemove()) {
+                dataPayload.setExpiration(expirationListConfiguration
+                        .get()
+                        .add(new ExpirationMsImmutableEnvelope<>(dataPayload, timeoutMs, currentTimestamp))
+                );
+                return dataPayload;
+            }
         }
         return null;
     }
@@ -129,9 +115,7 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
 
     // Только для unit тестов
     public DataPayload getForUnitTest(long position) {
-        return Optional.ofNullable(this.position.get(position))
-                .map(Envelope::getDataPayload)
-                .orElse(null);
+        return this.position.get(position);
     }
 
     @Override
