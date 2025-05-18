@@ -30,6 +30,11 @@ public class Log extends PersistentDataHeader {
 
     @Override
     public void print() {
+        PrintStream ps = getLogType().equals(LogType.ERROR) ? System.err : System.out;
+        ps.println(toStringBuilder());
+    }
+
+    public StringBuilder toStringBuilder() {
         StringBuilder sb = new StringBuilder();
         sb
                 .append(UtilDate.msFormat(getTimeAdd()))
@@ -45,8 +50,7 @@ public class Log extends PersistentDataHeader {
                 sb.append(UtilJson.toStringPretty(body1, "--"));
             }
         }
-        PrintStream ps = getLogType().equals(LogType.ERROR) ? System.err : System.out;
-        ps.println(sb);
+        return sb;
     }
 
 }
