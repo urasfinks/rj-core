@@ -151,7 +151,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                     }
                     T poll = inputQueue.pollFirst();
                     if (poll == null) {
-                        continue;
+                        break;
                     }
                     int dataLength = poll.toBytes().length;
                     statisticSize.add((long) dataLength);
@@ -160,7 +160,8 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                     byteArrayOutputStream.write(UtilByte.intToBytes(dataLength));
                     byteArrayOutputStream.write(poll.toBytes());
                     if (
-                            byteArrayOutputStream.size() >= minBatchSize // Наполнили минимальную пачку
+                            position.get() > repositoryProperty.getMaxSize()
+                                    || byteArrayOutputStream.size() >= minBatchSize // Наполнили минимальную пачку
                                     || (whileStartTime - lastTimeWrite) > eachTime // Если с прошлой записи пачки прошло 50мс
                     ) {
                         lastTimeWrite = System.currentTimeMillis();
@@ -174,6 +175,11 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                         }
                         listPolled.clear();
                         statisticTime.add(System.currentTimeMillis() - lastTimeWrite);
+
+                        if (position.get() > repositoryProperty.getMaxSize()) {
+                            onOutOfPosition.run();
+                        }
+
                     }
                 }
                 // Если в буфере остались данные
