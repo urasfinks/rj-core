@@ -4,8 +4,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -17,6 +15,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -227,6 +227,43 @@ public class Util {
             return false;
         } else {
             return true;
+        }
+    }
+
+    public static void await(
+            long timeoutMs,
+            int sleepIterationMs,
+            BooleanSupplier predicate,
+            Consumer<Long> onSuccess,
+            ProcedureThrowing onError
+    ) {
+        long start = System.currentTimeMillis();
+        long expiredTime = start + timeoutMs;
+        if (sleepIterationMs > 0) {
+            while (expiredTime >= System.currentTimeMillis()) {
+                if (predicate.getAsBoolean()) {
+                    onSuccess.accept(System.currentTimeMillis() - start);
+                    return;
+                }
+                try {
+                    Thread.sleep(sleepIterationMs);
+                } catch (InterruptedException ie) {
+                    break;
+                }
+            }
+        } else {
+            while (expiredTime >= System.currentTimeMillis()) {
+                if (predicate.getAsBoolean()) {
+                    onSuccess.accept(System.currentTimeMillis() - start);
+                    return;
+                }
+                Thread.onSpinWait();
+            }
+        }
+        try {
+            onError.run();
+        } catch (Throwable th) {
+            App.error(th);
         }
     }
 
