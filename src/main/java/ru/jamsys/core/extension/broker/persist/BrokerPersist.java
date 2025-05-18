@@ -12,7 +12,6 @@ import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.AbstractAsyncFileWriter;
 import ru.jamsys.core.extension.async.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.async.writer.DataPayload;
-import ru.jamsys.core.extension.async.writer.Position;
 import ru.jamsys.core.extension.broker.Broker;
 import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
@@ -41,7 +40,7 @@ import java.util.function.Function;
 
 @Getter
 @SuppressWarnings("unused")
-public class BrokerPersist<T extends Position & ByteSerializable>
+public class BrokerPersist<T extends ByteSerializable>
         extends AbstractManagerElement
         implements PropertyListener, Broker {
 
@@ -256,6 +255,9 @@ public class BrokerPersist<T extends Position & ByteSerializable>
     @Override
     public void shutdownOperation() {
         propertyDispatcher.shutdown();
+        // Если не закрыть xWriterConfiguration - то Rider не получит уведомление, что файл закрылся на запись, а это
+        // значит, что мы не сможем получить isProcessed = true. А может нам и не надо его получит? При следующем старте
+        // всё удалится.
         // Все смежные ресурсы будут выключены в Manager
     }
 
@@ -273,9 +275,7 @@ public class BrokerPersist<T extends Position & ByteSerializable>
         riderConfiguration.get().onCommitX(element);
     }
 
-    @Getter
-        public record Last(DataPayload dataPayload, Manager.Configuration<Rider> riderConfiguration) {
-    }
+    public record Last(DataPayload dataPayload, Manager.Configuration<Rider> riderConfiguration) {}
 
     private Last getLastDataPayLoad() {
         // Так как последний Rider, при нагрузке, всегда будет находиться в finishStatus = false,
