@@ -1,19 +1,19 @@
 package ru.jamsys.core.extension.async.writer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.ManagerElement;
+import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
-import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.statistic.AvgMetric;
@@ -74,9 +74,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
     // IO операции. Перекладывайте ответы в свою локальную очередь и разбирайте их в других потоках
     private final BiConsumer<String, List<T>> onWrite; // T - filePath; U - list written object
 
-    private final AsyncFileWriterRepositoryProperty repositoryProperty = new AsyncFileWriterRepositoryProperty();
-
-    private final PropertyDispatcher<Object> propertyDispatcher;
+    private final BrokerPersistRepositoryProperty repositoryProperty;
 
     private final StandardOpenOption standardOpenOption;
 
@@ -88,21 +86,24 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
 
     @SuppressWarnings("unused")
     public AbstractAsyncFileWriter(
-            ApplicationContext applicationContext,
-            String ns,
+            BrokerPersistRepositoryProperty repositoryProperty,
             String filePath,
             BiConsumer<String, List<T>> onWrite, // T - filePath; U - list written object
             StandardOpenOption standardOpenOption
     ) {
+        this.repositoryProperty = repositoryProperty;
         this.filePath = filePath;
         this.onWrite = onWrite;
         this.standardOpenOption = standardOpenOption;
-        propertyDispatcher = new PropertyDispatcher<>(
-                applicationContext.getBean(ServiceProperty.class),
-                null,
-                repositoryProperty,
-                getCascadeKey(ns)
-        );
+    }
+
+    @JsonValue
+    public Object getValue() {
+        return new HashMapBuilder<String, Object>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                .append("filePath", filePath)
+                ;
     }
 
     public void writeAsync(T data) {
@@ -205,7 +206,6 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
 
     @Override
     public void runOperation() {
-        propertyDispatcher.run();
         openOutputStream();
         set.add(this);
     }
@@ -271,7 +271,6 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
         } finally {
             closeOutputStream();
         }
-        propertyDispatcher.shutdown();
     }
 
     @Override

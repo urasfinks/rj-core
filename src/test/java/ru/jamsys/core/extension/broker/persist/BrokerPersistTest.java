@@ -157,7 +157,7 @@ class BrokerPersistTest {
         App.get(ServiceProperty.class).set("App.BrokerPersist.test2.directory", "LogManager");
         App.get(ServiceProperty.class).set("App.AsyncFileWriterWal[App.BrokerPersist.test2::LogManager/test2.afwr].flush.max.time.ms", "99999999");
 
-
+        // 2 записи; 0 коммитов
         UtilFile.writeBytes("LogManager/test1.afwr", ((Supplier<byte[]>) () -> {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             try {
@@ -174,6 +174,7 @@ class BrokerPersistTest {
 
         UtilFile.createNewFile("LogManager/test1.afwr.commit");
 
+        // 2 записи; 1 коммит
         UtilFile.writeBytes("LogManager/test2.afwr", ((Supplier<byte[]>) () -> {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             try {
@@ -208,7 +209,7 @@ class BrokerPersistTest {
         Assertions.assertEquals(2, test.getMapRiderConfiguration().size());
         X<TestElement> poll = test.poll();
         // Очередь последнего rider полностью вычитана
-        Assertions.assertTrue(test.getLastRiderConfiguration().get().getQueueRetry().parkIsEmpty());
+        Assertions.assertEquals("LogManager/test2.afwr.commit", test.getLastRiderConfiguration().get().getFilePathY());
         Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().size());
 
         // В данный момент последний райдер не завершён, так как ждёт коммита выданного элемента

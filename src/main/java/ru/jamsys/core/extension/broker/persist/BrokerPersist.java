@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension.broker.persist;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
@@ -14,6 +15,7 @@ import ru.jamsys.core.extension.async.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.async.writer.DataPayload;
 import ru.jamsys.core.extension.broker.Broker;
 import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -48,7 +50,7 @@ public class BrokerPersist<T extends ByteSerializable>
 
     private final ApplicationContext applicationContext;
 
-    private final BrokerPersistRepositoryProperty propertyBroker = new BrokerPersistRepositoryProperty();
+    private final BrokerPersistRepositoryProperty property = new BrokerPersistRepositoryProperty();
 
     private final PropertyDispatcher<Object> propertyDispatcher;
 
@@ -79,11 +81,21 @@ public class BrokerPersist<T extends ByteSerializable>
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class, applicationContext),
                 this,
-                propertyBroker,
+                property,
                 getCascadeKey(ns)
         );
 
         xWriterInit();
+    }
+
+    @JsonValue
+    public Object getValue() {
+        return new HashMapBuilder<String, Object>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                .append("ns", ns)
+                //.append("brokerPersistRepositoryProperty", property)
+                ;
     }
 
     public void xWriterInit() {
@@ -98,9 +110,7 @@ public class BrokerPersist<T extends ByteSerializable>
                 key,
                 ns1 -> {
                     AsyncFileWriterRolling<X<T>> xAsyncFileWriterRolling = new AsyncFileWriterRolling<>(
-                            applicationContext,
-                            ns1,
-                            propertyBroker.getDirectory(),
+                            property,
                             this::onXWrite,
                             this::onXFileSwap
                     );
@@ -120,14 +130,14 @@ public class BrokerPersist<T extends ByteSerializable>
         // При старте мы должны поднять все CommitController в карту commitControllers это надо, что бы наполнять
         // очередь, так как она цикличная
         UtilFile
-                .getFilesRecursive(propertyBroker.getDirectory())
+                .getFilesRecursive(property.getDirectory())
                 .stream()
                 .filter(s -> s.endsWith(".commit"))
                 .sorted()
                 .toList()
                 .forEach(filePathY -> {
                     String relativePath = UtilFile.getRelativePath(
-                            propertyBroker.getDirectory(),
+                            property.getDirectory(),
                             filePathYToX(filePathY)
                     );
                     getRiderConfiguration(relativePath, true);
@@ -164,7 +174,7 @@ public class BrokerPersist<T extends ByteSerializable>
     }
 
     // Вызывается когда меняется bin файл, так как он достиг максимального размера
-    public void onXFileSwap(String fileName) {
+    public void onXFileSwap(String fileName, AsyncFileWriterRolling<X<T>> xAsyncFileWriterRolling) {
         // Если последний зарегистрированный Rider существует и ещё жив - оповестим, что запись закончена
         Manager.Configuration<Rider> lastRiderConfiguration = queueRiderConfiguration.peekLast();
         if (lastRiderConfiguration != null && lastRiderConfiguration.isAlive()) {
@@ -172,7 +182,7 @@ public class BrokerPersist<T extends ByteSerializable>
         }
         // Первым делом надо создать .commit файл, что бы если произойдёт рестарт, мы могли понять, что файл ещё не
         // обработан, так как после обработки файл удаляется
-        String filePath = propertyBroker.getDirectory() + "/" + fileName;
+        String filePath = property.getDirectory() + "/" + fileName;
         try {
             UtilFile.createNewFile(filePathXToY(filePath));
         } catch (IOException e) {
@@ -181,7 +191,9 @@ public class BrokerPersist<T extends ByteSerializable>
         Manager.Configuration<Rider> newRiderConfiguration = getRiderConfiguration(filePath, false);
         // Запускаем сразу контроллер коммитов, что бы onBinWrite мог в него уже передавать записанные position
         if (newRiderConfiguration != null) {
-            newRiderConfiguration.get();
+            newRiderConfiguration.get(); // Это обязательно! Поэтому буду дублировать, что бы по случайности не удалить
+            // Добавляю зависимость опускания, что бы Y закрывался позже чем X
+            newRiderConfiguration.get().getListShutdownAfter().add(xAsyncFileWriterRolling);
         }
     }
 
@@ -198,7 +210,7 @@ public class BrokerPersist<T extends ByteSerializable>
                             Rider.class,
                             getCascadeKey(ns, filePathX), // Тут главно, что бы просто было уникальным
                             ns1 -> new Rider(
-                                    applicationContext,
+                                    property,
                                     ns1,
                                     filePathX,
                                     fileXFinishState,
@@ -281,13 +293,13 @@ public class BrokerPersist<T extends ByteSerializable>
         // Так как последний Rider, при нагрузке, всегда будет находиться в finishStatus = false,
         // мы должны перебирать всех Rider с конца очереди queueRiderConfiguration в поиске DataPayload
         for (Iterator<Manager.Configuration<Rider>> it = queueRiderConfiguration.descendingIterator(); it.hasNext(); ) {
-            Manager.Configuration<Rider> config = it.next();
-            DataPayload dataPayload = config
+            Manager.Configuration<Rider> riderConfig = it.next();
+            DataPayload dataPayload = riderConfig
                     .get()
                     .getQueueRetry()
-                    .pollLast(propertyBroker.getRetryTimeoutMs());
+                    .pollLast(property.getRetryTimeoutMs());
             if (dataPayload != null) {
-                return new Last(dataPayload, config);
+                return new Last(dataPayload, riderConfig);
             }
         }
         return null;

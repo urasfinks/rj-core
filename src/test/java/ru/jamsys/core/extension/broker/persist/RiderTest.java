@@ -4,6 +4,8 @@ import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -17,7 +19,6 @@ class RiderTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runSpring();
-
         App.get(ServiceProperty.class).set("App.BrokerPersist.test.directory", "LogManager");
     }
 
@@ -34,6 +35,14 @@ class RiderTest {
 
     @Test
     public void test() throws IOException {
+        BrokerPersistRepositoryProperty brokerPersistRepositoryProperty = new BrokerPersistRepositoryProperty();
+        PropertyDispatcher<Object> test = new PropertyDispatcher<>(
+                App.get(ServiceProperty.class, App.context),
+                null,
+                brokerPersistRepositoryProperty,
+                "App.BrokerPersist.test"
+        );
+        test.run();
 
         UtilFile.writeBytes("LogManager/test.bin", ((Supplier<byte[]>) () -> {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -63,7 +72,7 @@ class RiderTest {
                 Rider.class,
                 "test",
                 key1 -> new Rider(
-                        App.context,
+                        brokerPersistRepositoryProperty,
                         key1,
                         "LogManager/test.bin",
                         true,

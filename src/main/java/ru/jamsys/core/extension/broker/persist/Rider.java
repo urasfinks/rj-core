@@ -1,13 +1,15 @@
 package ru.jamsys.core.extension.broker.persist;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
-import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.*;
+import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
 
@@ -26,7 +28,7 @@ public class Rider extends AbstractManagerElement {
 
     // Экземпляр создаётся в onSwap и в commit
     public Rider(
-            ApplicationContext applicationContext,
+            BrokerPersistRepositoryProperty repositoryProperty,
             String ns,
             String filePathX,
             boolean fileXFinishState,
@@ -40,19 +42,32 @@ public class Rider extends AbstractManagerElement {
         yWriterConfiguration = App.get(Manager.class).configureGeneric(
                 AbstractAsyncFileWriter.class,
                 ns,
-                ns1 -> new AsyncFileWriterWal<>(
-                        applicationContext,
-                        ns1,
-                        filePathY,
-                        (_, listY) -> {
-                            markActive();
-                            for (Y y : listY) {
-                                queueRetry.remove(y.getX().getPosition());
+                _ -> {
+                    AsyncFileWriterWal<Y> asyncFileWriterWal = new AsyncFileWriterWal<>(
+                            repositoryProperty,
+                            filePathY,
+                            (_, listY) -> {
+                                markActive();
+                                for (Y y : listY) {
+                                    queueRetry.remove(y.getX().getPosition());
+                                }
+                                onWrite.accept(this);
                             }
-                            onWrite.accept(this);
-                        }
-                )
+                    );
+                    asyncFileWriterWal.getListShutdownBefore().add(this);
+                    return asyncFileWriterWal;
+                }
         );
+    }
+
+    @JsonValue
+    public Object getValue() {
+        return new HashMapBuilder<String, Object>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                .append("filePath", filePathY)
+                .append("queueRetry", queueRetry)
+                ;
     }
 
     // Когда коммитят X, мы запускаем запись каммита, а после записи - по x.position удаляем из queueRetry

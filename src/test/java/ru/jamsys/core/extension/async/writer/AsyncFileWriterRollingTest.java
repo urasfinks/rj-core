@@ -4,8 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.ByteSerializable;
+import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -42,12 +45,19 @@ class AsyncFileWriterRollingTest {
     @BeforeEach
     void setUp() {
         run.set(true);
+        App.get(ServiceProperty.class).set("App.BrokerPersist.test.directory", "LogManager");
+        BrokerPersistRepositoryProperty brokerPersistRepositoryProperty = new BrokerPersistRepositoryProperty();
+        PropertyDispatcher<Object> test = new PropertyDispatcher<>(
+                App.get(ServiceProperty.class, App.context),
+                null,
+                brokerPersistRepositoryProperty,
+                "App.BrokerPersist.test"
+        );
+        test.run();
         writer = new AsyncFileWriterRolling<>(
-                App.context,
-                "test",
-                "LogManager",
+                brokerPersistRepositoryProperty,
                 (_, testElements) -> outputQueue.addAll(testElements),
-                fileName -> System.out.println("SWAP: " + fileName)
+                (fileName, _) -> System.out.println("SWAP: " + fileName)
         );
         writer.run();
     }

@@ -1,8 +1,8 @@
 package ru.jamsys.core.extension.async.writer;
 
 import lombok.Getter;
-import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.extension.ByteSerializable;
+import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 
 import java.nio.file.StandardOpenOption;
 import java.util.List;
@@ -15,12 +15,11 @@ public class AsyncFileWriterWal<T extends Position & ByteSerializable>
         extends AbstractAsyncFileWriter<T> {
 
     public AsyncFileWriterWal(
-            ApplicationContext applicationContext,
-            String ns,
+            BrokerPersistRepositoryProperty repositoryProperty,
             String filePath,
             BiConsumer<String, List<T>> onWrite
     ) {
-        super(applicationContext, ns, filePath, onWrite, StandardOpenOption.APPEND);
+        super(repositoryProperty, filePath, onWrite, StandardOpenOption.APPEND);
     }
 
     @Override
