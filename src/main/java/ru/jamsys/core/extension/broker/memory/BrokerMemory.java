@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension.broker.memory;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
@@ -8,6 +9,7 @@ import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -57,7 +59,7 @@ public class BrokerMemory<T>
     private final Consumer<T> onDrop;
 
     @Getter
-    private final BrokerRepositoryProperty propertyBroker = new BrokerRepositoryProperty();
+    private final BrokerRepositoryProperty property = new BrokerRepositoryProperty();
 
     @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;
@@ -76,7 +78,7 @@ public class BrokerMemory<T>
         propertyDispatcher = new PropertyDispatcher<>(
                 applicationContext.getBean(ServiceProperty.class),
                 null,
-                getPropertyBroker(),
+                getProperty(),
                 getCascadeKey(ns)
         );
 
@@ -87,6 +89,16 @@ public class BrokerMemory<T>
                 getCascadeKey(ns),
                 (ns1) -> new ExpirationList<>(ns1, this::onExpired)
         );
+    }
+
+    @JsonValue
+    public Object getValue() {
+        return new HashMapBuilder<String, Object>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                .append("ns", ns)
+                //.append("brokerRepositoryProperty", property)
+                ;
     }
 
     public long size() {
@@ -110,7 +122,7 @@ public class BrokerMemory<T>
         // Проблема с производительностью
         // Мы не можем использовать queue.size() для расчёта переполнения
         // пример: вставка 100к записей занимаем 35сек
-        if (mainQueueSize.get() >= getPropertyBroker().getSize()) {
+        if (mainQueueSize.get() >= getProperty().getSize()) {
             // Он конечно протух не по своей воле, но что делать...
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
             onExpired(mainQueue.removeFirst());
@@ -121,7 +133,7 @@ public class BrokerMemory<T>
         mainQueue.add(convert);
         mainQueueSize.incrementAndGet();
 
-        if (tailQueueSize.get() >= getPropertyBroker().getTailSize()) {
+        if (tailQueueSize.get() >= getProperty().getTailSize()) {
             tailQueue.removeFirst();
         } else {
             tailQueueSize.incrementAndGet();
@@ -211,7 +223,7 @@ public class BrokerMemory<T>
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x
-        return (int) (((float) mainQueueSize.get()) * 100 / getPropertyBroker().getSize());
+        return (int) (((float) mainQueueSize.get()) * 100 / getProperty().getSize());
     }
 
     // Рекомендуется использовать только для тестов

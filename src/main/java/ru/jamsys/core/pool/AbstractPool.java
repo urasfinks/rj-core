@@ -1,5 +1,6 @@
 package ru.jamsys.core.pool;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -91,6 +93,15 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
                 poolRepositoryProperty,
                 getCascadeKey(ns)
         );
+    }
+
+    @JsonValue
+    public Object getValue() {
+        return new HashMapBuilder<String, Object>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                .append("ns", ns)
+                ;
     }
 
     public boolean isParkQueueEmpty() {
