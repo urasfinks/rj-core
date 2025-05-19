@@ -34,7 +34,7 @@ public class Helper3s implements Cron3s, PromiseGenerator {
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
                 .append("manager", (run, _, _) -> manager.helper(run))
-                .append("pool", (run, _, _) -> UtilRisc.forEach(run, AbstractPool.registerPool, abstractPool -> {
+                .append("balancePool", (run, _, _) -> UtilRisc.forEach(run, AbstractPool.registerPool, abstractPool -> {
                     abstractPool.balance();
                 }))
                 .append("timer", (threadRun, _, _) -> serviceTimer.helper(threadRun));

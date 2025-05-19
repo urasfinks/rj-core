@@ -41,7 +41,6 @@ public class ThreadPoolExecutePromiseTask
                         ns1,
                         App.context,
                         promiseTask -> {
-                            System.out.println("::DROP::" + promiseTask.getNs());
                             promiseTask.getPromise().setError(
                                     "::drop",
                                     new RuntimeException(App.getUniqueClassName(ThreadPoolExecutePromiseTask.class))
