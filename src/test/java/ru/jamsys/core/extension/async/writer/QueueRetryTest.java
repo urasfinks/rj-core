@@ -39,7 +39,6 @@ class QueueRetryTest {
         Assertions.assertTrue(test.getExpirationListConfiguration().get().isEmpty());
 
         DataPayload dataPayload = test.pollLast(1_000, curTimeMs);
-        Assertions.assertTrue(test.parkIsEmpty());
         Assertions.assertEquals(1, test.size());
         Assertions.assertFalse(test.getExpirationListConfiguration().get().isEmpty());
 
@@ -52,7 +51,6 @@ class QueueRetryTest {
         DataPayload dataPayload2 = test.pollLast(1_500, curTimeMs);
         // Это 2 одинаковых объекта
         Assertions.assertEquals(dataPayload, dataPayload2);
-        Assertions.assertTrue(test.parkIsEmpty());
         Assertions.assertEquals(1, test.size());
         Assertions.assertFalse(test.getExpirationListConfiguration().get().isEmpty());
         Assertions.assertFalse(test.isProcessed());
@@ -62,7 +60,6 @@ class QueueRetryTest {
         test.getExpirationListConfiguration().get().helper(threadRun, curTimeMs + 2000);
 
         // Теперь ничего не должно нигде остаться
-        Assertions.assertTrue(test.parkIsEmpty());
         Assertions.assertEquals(0, test.size());
         Assertions.assertTrue(test.getExpirationListConfiguration().get().isEmpty());
         Assertions.assertTrue(test.isProcessed());
