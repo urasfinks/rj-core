@@ -3,10 +3,7 @@ package ru.jamsys.core.component.manager;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
-import ru.jamsys.core.extension.AbstractLifeCycle;
-import ru.jamsys.core.extension.LifeCycleComponent;
-import ru.jamsys.core.extension.ManagerElement;
-import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -163,16 +160,18 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     }
 
     public void helper(AtomicBoolean threadRun) {
+        List<LifeCycleInterface> all = new ArrayList<>();
         UtilRisc.forEach(threadRun, mainMap, (_, mapManager) -> {
             UtilRisc.forEach(threadRun, mapManager, (key, managerElement) -> {
                 if (managerElement.isExpiredWithoutStop()) {
-                    managerElement.shutdown();
+                    all.add(managerElement);
                     mapManager.remove(key);
                 } else {
                     managerElement.helper();
                 }
             });
         });
+        getSortShutdown(all).forEach(LifeCycleInterface::shutdown);
     }
 
     @Override
@@ -186,11 +185,39 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
 
     @Override
     public void shutdownOperation() {
+        List<LifeCycleInterface> all = new ArrayList<>();
         UtilRisc.forEach(null, mainMap, (_, mapManager) -> {
             UtilRisc.forEach(null, mapManager, (_, managerElement) -> {
-                managerElement.shutdown();
+                all.add(managerElement);
             });
         });
+        getSortShutdown(all).forEach(LifeCycleInterface::shutdown);
+    }
+
+    public List<LifeCycleInterface> getSortShutdown(List<LifeCycleInterface> list) {
+        GraphTopology<LifeCycleInterface> lifeCycleInterfaceGraphTopology = new GraphTopology<>();
+        for (LifeCycleInterface managerElement : list) {
+            if (managerElement.getListShutdownAfter().isEmpty() && managerElement.getListShutdownBefore().isEmpty()) {
+                lifeCycleInterfaceGraphTopology.add(managerElement);
+            } else {
+                if (!managerElement.getListShutdownAfter().isEmpty()) {
+                    managerElement
+                            .getListShutdownAfter()
+                            .forEach(lifeCycleInterface -> lifeCycleInterfaceGraphTopology
+                                    .addDependency(managerElement, lifeCycleInterface)
+                            );
+                }
+                if (!managerElement.getListShutdownBefore().isEmpty()) {
+                    managerElement
+                            .getListShutdownBefore()
+                            .forEach(lifeCycleInterface -> lifeCycleInterfaceGraphTopology
+                                    .addDependency(lifeCycleInterface, managerElement)
+                            );
+                }
+            }
+        }
+        //UtilLog.printInfo(lifeCycleInterfaceGraphTopology.getReverseSorted());
+        return lifeCycleInterfaceGraphTopology.getReverseSorted();
     }
 
     @Override

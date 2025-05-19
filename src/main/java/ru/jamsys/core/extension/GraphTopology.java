@@ -27,6 +27,10 @@ public class GraphTopology<T> {
     }
 
     public List<T> getSorted() {
+        return topologicalSort();
+    }
+
+    public List<T> getReverseSorted() {
         List<T> result = topologicalSort();
         // Останавливаем в обратном порядке (сначала листья)
         Collections.reverse(result);

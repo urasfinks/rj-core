@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.ToString;
 import ru.jamsys.core.App;
@@ -12,6 +13,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public interface LifeCycleInterface {
 
     List<ProcedureThrowing> getListOnPostShutdown();
+
+    @JsonIgnore
+    List<LifeCycleInterface> getListShutdownAfter();
+
+    @JsonIgnore
+    List<LifeCycleInterface> getListShutdownBefore();
 
     void runOperation(); // Обычный метод запуска, который требует реализацию, однако вызывать стоит runSequential
 

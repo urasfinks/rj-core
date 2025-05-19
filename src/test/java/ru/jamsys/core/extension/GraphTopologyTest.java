@@ -13,16 +13,17 @@ class GraphTopologyTest {
         stringGraphTopology.addDependency("Мать кошка", "котёнок");
         stringGraphTopology.addDependency("котёнок", "игрушка");
 
-        Assertions.assertEquals("[игрушка, котёнок, Мать кошка]", stringGraphTopology.getSorted().toString());
+        Assertions.assertEquals("[игрушка, котёнок, Мать кошка]", stringGraphTopology.getReverseSorted().toString());
+        Assertions.assertEquals("[Мать кошка, котёнок, игрушка]", stringGraphTopology.getSorted().toString());
 
         stringGraphTopology.add("перстень");
         stringGraphTopology.add("простыня");
 
-        Assertions.assertEquals("[игрушка, котёнок, перстень, Мать кошка, простыня]", stringGraphTopology.getSorted().toString());
+        Assertions.assertEquals("[игрушка, котёнок, перстень, Мать кошка, простыня]", stringGraphTopology.getReverseSorted().toString());
 
         stringGraphTopology.addDependency("простыня", "покрывало");
 
-        Assertions.assertEquals("[игрушка, котёнок, покрывало, перстень, Мать кошка, простыня]", stringGraphTopology.getSorted().toString());
+        Assertions.assertEquals("[игрушка, котёнок, покрывало, перстень, Мать кошка, простыня]", stringGraphTopology.getReverseSorted().toString());
 
     }
 
@@ -60,7 +61,7 @@ class GraphTopologyTest {
         graph.addDependency(a, b);
         graph.addDependency(b, c); // A -> B -> C
 
-        List<Service> shutdownOrder = graph.getSorted();
+        List<Service> shutdownOrder = graph.getReverseSorted();
 
         Assertions.assertEquals(List.of(c, b, a), shutdownOrder);
     }
@@ -74,7 +75,7 @@ class GraphTopologyTest {
         graph.add(a);
         graph.add(b);
 
-        List<Service> shutdownOrder = graph.getSorted();
+        List<Service> shutdownOrder = graph.getReverseSorted();
 
         Assertions.assertTrue(shutdownOrder.contains(a));
         Assertions.assertTrue(shutdownOrder.contains(b));
@@ -90,7 +91,7 @@ class GraphTopologyTest {
         graph.addDependency(a, b);
         graph.removeDependency(a, b);
 
-        List<Service> shutdownOrder = graph.getSorted();
+        List<Service> shutdownOrder = graph.getReverseSorted();
 
         // Порядок может быть любым, т.к. зависимости нет
         Assertions.assertTrue(shutdownOrder.contains(a));
@@ -109,7 +110,7 @@ class GraphTopologyTest {
 
         graph.remove(b);
 
-        List<Service> shutdownOrder = graph.getSorted();
+        List<Service> shutdownOrder = graph.getReverseSorted();
 
         Assertions.assertEquals(2, shutdownOrder.size());
         Assertions.assertTrue(shutdownOrder.contains(a));
@@ -125,7 +126,7 @@ class GraphTopologyTest {
         graph.addDependency(a, b);
         graph.addDependency(b, a); // цикл: A <-> B
 
-        RuntimeException exception = Assertions.assertThrows(RuntimeException.class, graph::getSorted);
+        RuntimeException exception = Assertions.assertThrows(RuntimeException.class, graph::getReverseSorted);
         Assertions.assertTrue(exception.getMessage().contains("Cycle detected"));
     }
 

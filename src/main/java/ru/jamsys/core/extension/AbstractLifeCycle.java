@@ -20,6 +20,10 @@ public abstract class AbstractLifeCycle implements LifeCycleInterface {
 
     private final List<ProcedureThrowing> listOnPostShutdown = new ArrayList<>();
 
+    private final List<LifeCycleInterface> listShutdownAfter = new ArrayList<>();
+
+    private final List<LifeCycleInterface> listShutdownBefore = new ArrayList<>();
+
     @JsonIgnore
     private Thread threadOperation;
 

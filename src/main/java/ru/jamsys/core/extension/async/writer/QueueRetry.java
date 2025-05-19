@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension.async.writer;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -7,6 +8,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.StatisticsFlush;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -52,13 +54,20 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
         );
     }
 
+    @JsonValue
+    public Object getValue() {
+        return new HashMapBuilder<String, Object>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                .append("finishState", finishState)
+                .append("parkSize", park.size())
+                .append("positionSize", position.size())
+                ;
+    }
+
     // Размер не обработанных элементов
     public int size() {
         return position.size();
-    }
-
-    public boolean parkIsEmpty() {
-        return park.isEmpty();
     }
 
     @Override
