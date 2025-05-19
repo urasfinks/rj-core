@@ -3,9 +3,9 @@ package ru.jamsys.core.resource.thread;
 import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
-import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.AbstractPromiseTask;
 import ru.jamsys.core.rate.limit.RateLimitFactory;
@@ -24,7 +24,7 @@ public class ThreadPoolExecutePromiseTask
     private final Manager.Configuration<RateLimitItem> rateLimitConfiguration;
 
     @SuppressWarnings("all")
-    private final Manager.Configuration<BrokerMemory> brokerPromiseTaskConfiguration;
+    private final Manager.Configuration<BrokerMemory> brokerMemoryConfiguration;
 
     public ThreadPoolExecutePromiseTask(String ns) {
         super(ns);
@@ -33,8 +33,9 @@ public class ThreadPoolExecutePromiseTask
                 getCascadeKey(ns),
                 RateLimitFactory.TPS::create
         );
-
-        brokerPromiseTaskConfiguration = App.get(Manager.class).configure(
+        // TODO: есть предположение, что у всех ThreadPoolExecutePromiseTask должен быть общий ExpirationList,
+        // а то очень много поднимается экземпляров и процессов
+        brokerMemoryConfiguration = App.get(Manager.class).configure(
                 BrokerMemory.class,
                 getCascadeKey(ns),
                 ns1 -> new BrokerMemory<AbstractPromiseTask>(
@@ -50,21 +51,21 @@ public class ThreadPoolExecutePromiseTask
 
     @SuppressWarnings("unchecked")
     public void addPromiseTask(AbstractPromiseTask promiseTask) {
-        // Контроль TPS управляется в реализации самого потока, тут ограничивать ничего не надо
+        // Контроль TPS управляется в реализации самого потока, тут ограничивать ничего не надо.
         // Есть задача onError, которая может вызываться после вызова timeOut. У обещания больше нет остаточного времени
         // Однако onError надо выполнить
         long timeout = promiseTask.equals(promiseTask.getPromise().getOnError())
                 ? 6_000L
                 : promiseTask.getPromise().getExpiryRemainingMs();
 
-        brokerPromiseTaskConfiguration.get().add(new ExpirationMsImmutableEnvelope<>(promiseTask, timeout));
+        brokerMemoryConfiguration.get().add(new ExpirationMsImmutableEnvelope<>(promiseTask, timeout));
         isAvailablePoolItem();
         serviceBell();
     }
 
     @SuppressWarnings("unchecked")
     public ExpirationMsImmutableEnvelope<AbstractPromiseTask> getPromiseTask() {
-        return brokerPromiseTaskConfiguration.get().pollLast();
+        return brokerMemoryConfiguration.get().pollLast();
     }
 
     @Override

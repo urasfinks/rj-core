@@ -65,7 +65,7 @@ public class BrokerMemory<T>
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
     @SuppressWarnings("all")
-    private final Manager.Configuration<ExpirationList> expirationListConfiguration;
+    private Manager.Configuration<ExpirationList> expirationListConfiguration;
 
     public BrokerMemory(
             String ns,
@@ -82,13 +82,13 @@ public class BrokerMemory<T>
                 getCascadeKey(ns)
         );
 
-        // Создание Expiration порождает утилизацию на удаление
-        // TODO: обойти создание, если оно реально не нужно
-        expirationListConfiguration = applicationContext.getBean(Manager.class).configure(
-                ExpirationList.class,
-                getCascadeKey(ns),
-                (ns1) -> new ExpirationList<>(ns1, this::onExpired)
-        );
+        if (onDrop != null) {
+            expirationListConfiguration = applicationContext.getBean(Manager.class).configure(
+                    ExpirationList.class,
+                    getCascadeKey(ns),
+                    (ns1) -> new ExpirationList<>(ns1, this::onExpired)
+            );
+        }
     }
 
     @JsonValue
@@ -127,8 +127,9 @@ public class BrokerMemory<T>
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
             onExpired(mainQueue.removeFirst());
         }
-
-        expirationListConfiguration.get().add(convert);
+        if (onDrop != null) {
+            expirationListConfiguration.get().add(convert);
+        }
 
         mainQueue.add(convert);
         mainQueueSize.incrementAndGet();
@@ -185,8 +186,10 @@ public class BrokerMemory<T>
                 onQueueLoss(envelope);
                 // Когда явно получили эксклюзивный доступ к объекту - можно и статистику посчитать
                 mainQueueSize.decrementAndGet();
-                // Объект уже нейтрализован, поэтому просто его удаляем из expiration
-                expirationListConfiguration.get().remove(envelope, false);
+                if (onDrop != null) {
+                    // Объект уже нейтрализован, поэтому просто его удаляем из expiration
+                    expirationListConfiguration.get().remove(envelope, false);
+                }
             }
         }
     }
