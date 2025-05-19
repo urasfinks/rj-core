@@ -248,9 +248,6 @@ class AsyncFileWriterRollingTest {
         @Getter
         private long position = -1;
 
-        @Setter
-        private String filePath;
-
         public TestElement(byte[] data) {
             this.data = data;
         }

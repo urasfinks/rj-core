@@ -40,12 +40,10 @@ public class ThreadPoolExecutePromiseTask
                 ns1 -> new BrokerMemory<AbstractPromiseTask>(
                         ns1,
                         App.context,
-                        promiseTask -> {
-                            promiseTask.getPromise().setError(
-                                    "::drop",
-                                    new RuntimeException(App.getUniqueClassName(ThreadPoolExecutePromiseTask.class))
-                            );
-                        }
+                        promiseTask -> promiseTask.getPromise().setError(
+                                "::drop",
+                                new RuntimeException(App.getUniqueClassName(ThreadPoolExecutePromiseTask.class))
+                        )
                 )
         );
     }
