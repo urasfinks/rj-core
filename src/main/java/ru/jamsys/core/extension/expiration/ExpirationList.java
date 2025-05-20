@@ -17,7 +17,6 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstra
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,9 +46,6 @@ public class ExpirationList<T>
     private final String ns;
 
     @JsonIgnore
-    public static Set<ExpirationList<?>> set = Util.getConcurrentHashSet();
-
-    @JsonIgnore
     private final ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<T>>> bucket = new ConcurrentSkipListMap<>();
 
     private final ConcurrentSkipListMap<Long, AtomicInteger> bucketQueueSize = new ConcurrentSkipListMap<>();
@@ -59,7 +55,7 @@ public class ExpirationList<T>
     // Сколько было просто удалено, так как объект был нейтрализован
     private final AtomicLong helperRemove = new AtomicLong(0);
 
-    // Сколько было передано в обработчик OnExpired
+    // Сколько было передано в OnExpired
     private final AtomicLong helperOnExpired = new AtomicLong(0);
 
     public ExpirationList(
@@ -87,7 +83,7 @@ public class ExpirationList<T>
     private void deqQueueSize(Long key) {
         AtomicInteger atomicInteger = bucketQueueSize.get(key);
         if (atomicInteger != null && atomicInteger.decrementAndGet() == 0) {
-            // Нам надо удалять пустые ключи, что бы правильно работало ExpirationList.isEmpty() в отличае от
+            // Нам надо удалять пустые ключи, что бы правильно работало ExpirationList.isEmpty() в отличие от
             // bucket там элементы нейтрализуются, а не удаляются, так что это на данный момент единственный способ
             // проверить, что ExpirationList.isEmpty() = true, проверкой bucketQueueSize.isEmpty()
             bucketQueueSize.remove(key);
@@ -173,9 +169,6 @@ public class ExpirationList<T>
     public DisposableExpirationMsImmutableEnvelope<T> add(DisposableExpirationMsImmutableEnvelope<T> obj) {
         markActive();
         // В следующую секунду будем удалять, что бы очереди на удаление удалять полностью
-        //System.out.println("0>>" + obj.getExpiredMs());
-        //System.out.println("1>>" + Util.resetLastNDigits(obj.getExpiredMs(), 3));
-        //System.out.println("2>>" + (Util.resetLastNDigits(obj.getExpiredMs(), 3) + 1000));
         long timeMsExpired = Util.resetLastNDigits(obj.getExpiredMs(), 3) + 1_000L;
         bucket.computeIfAbsent(timeMsExpired, _ -> new ConcurrentLinkedQueue<>())
                 .add(obj);
@@ -205,9 +198,7 @@ public class ExpirationList<T>
     }
 
     @Override
-    public void runOperation() {
-        set.add(this);
-    }
+    public void runOperation() { }
 
     public boolean isEmpty() {
         // bucket может быть не пустой так как remove только нейтрализует объекта, без реального удаления,
@@ -222,7 +213,6 @@ public class ExpirationList<T>
         // Спустя много времени .... а на сколько гуманно делать остановку, того, что должно работать?
         bucket.clear();
         bucketQueueSize.clear();
-        set.remove(this);
     }
 
 }

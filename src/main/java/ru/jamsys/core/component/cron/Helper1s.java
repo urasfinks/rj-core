@@ -4,11 +4,12 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
+import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.extension.async.writer.AbstractAsyncFileWriter;
 import ru.jamsys.core.extension.async.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
-import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 
@@ -20,24 +21,29 @@ import ru.jamsys.core.promise.PromiseGenerator;
 public class Helper1s implements Cron1s, PromiseGenerator {
 
     private final ServicePromise servicePromise;
+    private final Manager manager;
 
-    public Helper1s(ServicePromise servicePromise) {
+    public Helper1s(ServicePromise servicePromise, Manager manager) {
         this.servicePromise = servicePromise;
+        this.manager = manager;
     }
 
     @Override
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
-                .append(ExpirationList.class.getSimpleName(),
-                        (run, _, _) -> UtilRisc.forEach(run, ExpirationList.set, expirationList -> {
-                            expirationList.helper(run, System.currentTimeMillis());
-                        }))
+                .append(
+                        ExpirationList.class.getSimpleName(),
+                        (run, _, _) -> manager.groupAccept(
+                                ExpirationList.class,
+                                expirationList -> expirationList.helper(run, System.currentTimeMillis())
+                        )
+                )
                 .append(AsyncFileWriterRolling.class.getSimpleName(),
-                        (run, _, _) -> UtilRisc.forEach(run, AsyncFileWriterRolling.set, expirationList -> {
+                        (run, _, _) -> manager.groupAccept(AbstractAsyncFileWriter.class, abstractAsyncFileWriter -> {
                             try {
-                                expirationList.flush(run);
+                                abstractAsyncFileWriter.flush(run);
                             } catch (Throwable e) {
-                                throw new ForwardException(expirationList, e);
+                                throw new ForwardException(abstractAsyncFileWriter, e);
                             }
                         }))
                 ;

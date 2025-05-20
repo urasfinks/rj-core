@@ -14,7 +14,6 @@ import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
-import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
@@ -27,7 +26,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -41,9 +39,6 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
         implements
         ManagerElement,
         CascadeKey {
-
-    @JsonIgnore
-    public static Set<AbstractAsyncFileWriter<?>> set = Util.getConcurrentHashSet();
 
     @Setter
     public String filePath;
@@ -207,7 +202,6 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
     @Override
     public void runOperation() {
         openOutputStream();
-        set.add(this);
     }
 
     private void openOutputStream() {
@@ -259,7 +253,6 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
 
     @Override
     public void shutdownOperation() {
-        set.remove(this);
         try {
             // getRun тут будет true, только после shutdownOperation станет false
             // Вроде как не очень логично, крутить сброс на ФС ожидая статус false, когда сами на него влияем

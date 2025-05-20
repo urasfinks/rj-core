@@ -119,6 +119,16 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         return new Configuration<>(cls, key, this);
     }
 
+    public <R extends ManagerElement> void groupAccept(Class<R> cls, Consumer<R> consumer) {
+        @SuppressWarnings("unchecked")
+        Map<String, R> innerMap = (Map<String, R>) mainMap.get(cls);
+        if (innerMap != null) {
+            for (R element : innerMap.values()) {
+                consumer.accept(element);
+            }
+        }
+    }
+
     // Вы должны помнить, элемент выданный этой функцией может быть остановлен если своевременно его не использовать.
     // Если у элемента не будет вызываться active() - он удалится из менеджера. Удаление - означает остановку сбора
     // статистики по нему и в целом shutdown() элемента. Работать с остановленным элементом - так себе затея.
