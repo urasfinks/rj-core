@@ -1,11 +1,11 @@
 package ru.jamsys.core.extension.expiration;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
-import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.Manager;
-import ru.jamsys.core.extension.ManagerElement;
+import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
@@ -28,29 +28,35 @@ public class ExpirationMap<K, V>
 
     private final String key;
 
-    private final Map<K, V> mainMap = new ConcurrentHashMap<>(); // Основная карта, в которой хранятся сессионные данные
-
     @Getter
-    private final Map<K, DisposableExpirationMsImmutableEnvelope<K>> expirationMap = new ConcurrentHashMap<>();
+    @Setter
+    public static class Envelope implements MapRemover {
 
-    @SuppressWarnings("all")
-    private final Manager.Configuration<ExpirationList> expirationListConfiguration;
+        private final Object key;
+
+        private Object value;
+
+        private final Map<?, ?> map;
+
+        private DisposableExpirationMsImmutableEnvelope<MapRemover> expiration;
+
+        public Envelope(Object key, Map<?, ?> map) {
+            this.key = key;
+            this.map = map;
+        }
+
+        @Override
+        public void remove() {
+            map.remove(key);
+        }
+
+    }
+
+    private final Map<K, Envelope> mainMap = new ConcurrentHashMap<>(); // Основная карта, в которой хранятся сессионные данные
 
     public ExpirationMap(String key, int keepAliveOnInactivityMs) {
         this.key = key;
         setKeepAliveOnInactivityMs(keepAliveOnInactivityMs);
-        expirationListConfiguration = App.get(Manager.class).configure(
-                ExpirationList.class,
-                key,
-                (key1) -> new ExpirationList<>(key1, env -> {
-                    @SuppressWarnings("unchecked")
-                    K key2 = (K) env.getValue();
-                    if (key2 != null) {
-                        mainMap.remove(key2);
-                        expirationMap.remove(key2);
-                    }
-                })
-        );
     }
 
     public int size() {
@@ -59,39 +65,43 @@ public class ExpirationMap<K, V>
 
     @Override
     public V put(K key, V value) {
-        resetTimer(key);
-        return mainMap.put(key, value);
+        Envelope envelope = mainMap.computeIfAbsent(key, k -> new Envelope(k, mainMap));
+        if (envelope.getExpiration() != null) {
+            envelope.getExpiration().doNeutralized();
+        }
+        envelope.setValue(value);
+        envelope.setExpiration(Core.expirationMapConfiguration.get().add(envelope, getKeepAliveOnInactivityMs()));
+        return value;
     }
 
     @Override
     public V get(Object key) {
-        @SuppressWarnings("unchecked")
-        K k = (K) key;
-        resetTimer(k);
-        return mainMap.get(key);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void resetTimer(K key) {
-        // Нам тут вообще не интересна многопоточность, одновременно обновят таймер ну и прекрасно
-        DisposableExpirationMsImmutableEnvelope<K> env = expirationMap.remove(key);
-        if (env != null) {
-            env.doNeutralized();
-            // Это значит, что когда сработает onDrop у Expiration - функция отработает в холостую
+        Envelope envelope = mainMap.get(key);
+        if (envelope == null) {
+            return null;
         }
-        // Добавляем новый таймер
-        @SuppressWarnings("all")
-        DisposableExpirationMsImmutableEnvelope newEnv = expirationMap
-                .computeIfAbsent(key, key1 -> new DisposableExpirationMsImmutableEnvelope<>(
-                        key1,
-                        getKeepAliveOnInactivityMs()
-                ));
-        expirationListConfiguration.get().add(newEnv);
+        if (envelope.getExpiration() != null) {
+            envelope.getExpiration().doNeutralized();
+        }
+        envelope.setExpiration(Core.expirationMapConfiguration.get().add(envelope, getKeepAliveOnInactivityMs()));
+        @SuppressWarnings("unchecked")
+        V value = (V) envelope.getValue();
+        return value;
     }
 
     public V computeIfAbsent(K key, @NotNull Function<? super K, ? extends V> mappingFunction) {
-        resetTimer(key);
-        return mainMap.computeIfAbsent(key, mappingFunction);
+        Envelope envelope = mainMap.computeIfAbsent(key, k -> {
+            Envelope envelope1 = new Envelope(k, mainMap);
+            envelope1.setValue(mappingFunction.apply(k));
+            return envelope1;
+        });
+        if (envelope.getExpiration() != null) {
+            envelope.getExpiration().doNeutralized();
+        }
+        envelope.setExpiration(Core.expirationMapConfiguration.get().add(envelope, getKeepAliveOnInactivityMs()));
+        @SuppressWarnings("unchecked")
+        V value = (V) envelope.getValue();
+        return value;
     }
 
     // Смысл remove ExpirationMap и ExpirationList совершенно разный, если ExpirationList.remove() создан для того,
@@ -100,11 +110,16 @@ public class ExpirationMap<K, V>
     // памяти, не связанная с бизнес-логикой.
     @Override
     public V remove(Object key) {
+        Envelope envelope = mainMap.remove(key);
+        if (envelope == null) {
+            return null;
+        }
+        if (envelope.getExpiration() != null) {
+            envelope.getExpiration().doNeutralized();
+        }
         @SuppressWarnings("unchecked")
-        K k = (K) key;
-        return mainMap.remove(k);
-        // Если в карте ничего нет, ну вызовется onDrop - ну и ладно, а если добавят поверх существующего
-        // перезатрётся таймер
+        V value = (V) envelope.getValue();
+        return value;
     }
 
     @Override
@@ -114,26 +129,249 @@ public class ExpirationMap<K, V>
 
     @Override
     public void clear() {
+        Collection<Envelope> values = mainMap.values();
+        for (Envelope envelope : values) {
+            DisposableExpirationMsImmutableEnvelope<MapRemover> expiration = envelope.getExpiration();
+            if (expiration != null) {
+                expiration.doNeutralized();
+            }
+        }
         mainMap.clear();
-        expirationMap.clear();
     }
 
     @NotNull
     @Override
     public Set<K> keySet() {
-        return mainMap.keySet();
+        return new AbstractSet<>() {
+            @NotNull
+            @Override
+            public Iterator<K> iterator() {
+                Iterator<Entry<K, Envelope>> internalIterator = mainMap.entrySet().iterator();
+
+                return new Iterator<>() {
+                    private Entry<K, Envelope> current;
+
+                    @Override
+                    public boolean hasNext() {
+                        return internalIterator.hasNext();
+                    }
+
+                    @Override
+                    public K next() {
+                        current = internalIterator.next();
+                        return current.getKey();
+                    }
+
+                    @Override
+                    public void remove() {
+                        if (current == null) {
+                            throw new IllegalStateException("next() must be called before remove()");
+                        }
+                        internalIterator.remove();
+                        current = null;
+                    }
+                };
+            }
+
+            @Override
+            public int size() {
+                return mainMap.size();
+            }
+
+            @SuppressWarnings("all")
+            @Override
+            public boolean contains(Object o) {
+                return mainMap.containsKey(o);
+            }
+
+            @Override
+            public boolean remove(Object o) {
+                return ExpirationMap.this.remove(o) != null;
+            }
+
+            @Override
+            public void clear() {
+                ExpirationMap.this.clear();
+            }
+        };
     }
+
 
     @NotNull
     @Override
     public Collection<V> values() {
-        return mainMap.values();
+        return new AbstractCollection<>() {
+            @NotNull
+            @Override
+            public Iterator<V> iterator() {
+                Iterator<Entry<K, Envelope>> internalIterator = mainMap.entrySet().iterator();
+
+                return new Iterator<>() {
+                    private Entry<K, Envelope> current;
+
+                    @Override
+                    public boolean hasNext() {
+                        return internalIterator.hasNext();
+                    }
+
+                    @SuppressWarnings("unchecked")
+                    @Override
+                    public V next() {
+                        current = internalIterator.next();
+                        return (V) current.getValue().getValue();
+                    }
+
+                    @Override
+                    public void remove() {
+                        if (current == null) {
+                            throw new IllegalStateException("next() must be called before remove()");
+                        }
+                        internalIterator.remove();
+                        current = null;
+                    }
+                };
+            }
+
+            @Override
+            public int size() {
+                return mainMap.size();
+            }
+
+            @Override
+            public boolean contains(Object o) {
+                for (Envelope envelope : mainMap.values()) {
+                    if (Objects.equals(envelope.getValue(), o)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public void clear() {
+                ExpirationMap.this.clear();
+            }
+
+            @Override
+            public boolean remove(Object o) {
+                for (Iterator<Entry<K, Envelope>> it = mainMap.entrySet().iterator(); it.hasNext(); ) {
+                    Entry<K, Envelope> entry = it.next();
+                    if (Objects.equals(entry.getValue().getValue(), o)) {
+                        it.remove();
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
     }
+
 
     @NotNull
     @Override
     public Set<Entry<K, V>> entrySet() {
-        return mainMap.entrySet();
+        return new AbstractSet<>() {
+
+            @NotNull
+            @Override
+            public Iterator<Entry<K, V>> iterator() {
+                Iterator<Entry<K, Envelope>> internalIterator = mainMap.entrySet().iterator();
+
+                return new Iterator<>() {
+                    private Entry<K, Envelope> current;
+
+                    @Override
+                    public boolean hasNext() {
+                        return internalIterator.hasNext();
+                    }
+
+                    @Override
+                    public Entry<K, V> next() {
+                        current = internalIterator.next();
+                        return new Map.Entry<>() {
+
+                            @Override
+                            public K getKey() {
+                                return current.getKey();
+                            }
+
+                            @SuppressWarnings("unchecked")
+                            @Override
+                            public V getValue() {
+                                return (V) current.getValue().getValue();
+                            }
+
+                            @SuppressWarnings("unchecked")
+                            @Override
+                            public V setValue(V value) {
+                                Envelope envelope = current.getValue();
+                                V old = (V) envelope.getValue();
+                                envelope.setValue(value);
+                                return old;
+                            }
+
+                            @Override
+                            public boolean equals(Object o) {
+                                if (!(o instanceof Entry<?, ?> other)) return false;
+                                return Objects.equals(getKey(), other.getKey()) &&
+                                        Objects.equals(getValue(), other.getValue());
+                            }
+
+                            @Override
+                            public int hashCode() {
+                                return Objects.hashCode(getKey()) ^ Objects.hashCode(getValue());
+                            }
+                        };
+                    }
+
+                    @Override
+                    public void remove() {
+                        if (current == null) {
+                            throw new IllegalStateException("next() must be called before remove()");
+                        }
+                        internalIterator.remove();
+                        current = null;
+                    }
+                };
+            }
+
+            @Override
+            public int size() {
+                return mainMap.size();
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return mainMap.isEmpty();
+            }
+
+            @Override
+            public void clear() {
+                ExpirationMap.this.clear();
+            }
+
+            @SuppressWarnings("all")
+            @Override
+            public boolean contains(Object o) {
+                if (!(o instanceof Entry<?, ?> entry)) return false;
+                Envelope envelope = mainMap.get(entry.getKey());
+                if (envelope == null) return false;
+                return Objects.equals(envelope.getValue(), entry.getValue());
+            }
+
+            @SuppressWarnings("all")
+            @Override
+            public boolean remove(Object o) {
+                if (!(o instanceof Entry<?, ?> entry)) return false;
+                Envelope envelope = mainMap.get(entry.getKey());
+                if (envelope == null) return false;
+                if (Objects.equals(envelope.getValue(), entry.getValue())) {
+                    mainMap.remove(entry.getKey());
+                    return true;
+                }
+                return false;
+            }
+        };
     }
 
     @Override
@@ -148,27 +386,12 @@ public class ExpirationMap<K, V>
 
     @Override
     public boolean containsValue(Object value) {
-        return mainMap.containsValue(value);
-    }
-
-    @Override
-    public long getLastActivityMs() {
-        return 0;
-    }
-
-    @Override
-    public long getKeepAliveOnInactivityMs() {
-        return 0;
-    }
-
-    @Override
-    public void setStopTimeMs(Long timeMs) {
-
-    }
-
-    @Override
-    public Long getStopTimeMs() {
-        return 0L;
+        for (Envelope envelope : mainMap.values()) {
+            if (Objects.equals(envelope.getValue(), value)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -178,17 +401,26 @@ public class ExpirationMap<K, V>
 
     @Override
     public void shutdownOperation() {
-
+        clear();
     }
 
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         List<DataHeader> result = new ArrayList<>();
         result.add(new DataHeader()
                 .setBody(key)
-                .addHeader("mainSize", size())
-                .addHeader("expirationSize", expirationMap.size())
+                .addHeader("size", size())
         );
         return result;
+    }
+
+    @SuppressWarnings("all")
+    public V peek(Object key) {
+        Envelope envelope = mainMap.get(key);
+        return envelope != null ? (V) envelope.getValue() : null;
+    }
+
+    public boolean expireNow(K key) {
+        return mainMap.remove(key) != null;
     }
 
 }

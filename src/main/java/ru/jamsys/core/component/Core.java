@@ -2,9 +2,13 @@ package ru.jamsys.core.component;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.expiration.ExpirationList;
+import ru.jamsys.core.extension.expiration.ExpirationMap;
+import ru.jamsys.core.extension.expiration.MapRemover;
 import ru.jamsys.core.flat.util.UtilLog;
 
 import java.util.ArrayList;
@@ -22,9 +26,14 @@ public class Core extends AbstractLifeCycle implements LifeCycleInterface {
 
     private final ConcurrentLinkedDeque<LifeCycleComponent> runComponent = new ConcurrentLinkedDeque<>();
 
-    public Core(ServiceClassFinder serviceClassFinder) {
+    private final Manager manager;
+
+    public Core(ServiceClassFinder serviceClassFinder, Manager manager) {
         this.serviceClassFinder = serviceClassFinder;
+        this.manager = manager;
     }
+
+    public static Manager.Configuration<ExpirationList<MapRemover>> expirationMapConfiguration;
 
     @Override
     public void runOperation() {
@@ -47,6 +56,17 @@ public class Core extends AbstractLifeCycle implements LifeCycleInterface {
                     .addHeader("resultOperation", resultOperation)
                     .print();
         });
+        // Обслуживание всех ExpirationMap
+        expirationMapConfiguration = manager.configureGeneric(
+                ExpirationList.class,
+                ExpirationMap.class.getName(),
+                s -> new ExpirationList<>(s, disposableExpirationMsImmutableEnvelope -> {
+                    MapRemover value = disposableExpirationMsImmutableEnvelope.getValue();
+                    if (value != null) {
+                        value.remove();
+                    }
+                })
+        );
     }
 
     @Override
