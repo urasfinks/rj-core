@@ -33,8 +33,6 @@ public class ThreadPoolExecutePromiseTask
                 getCascadeKey(ns),
                 RateLimitFactory.TPS::create
         );
-        // TODO: есть предположение, что у всех ThreadPoolExecutePromiseTask должен быть общий ExpirationList,
-        // а то очень много поднимается экземпляров и процессов
         brokerMemoryConfiguration = App.get(Manager.class).configure(
                 BrokerMemory.class,
                 getCascadeKey(ns),
