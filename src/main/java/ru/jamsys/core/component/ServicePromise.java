@@ -21,7 +21,7 @@ public class ServicePromise implements CascadeKey {
     private final Manager.Configuration<ExpirationList> timeOutExpirationList;
 
     @SuppressWarnings("all")
-    private final Manager.Configuration<ExpirationList> retryExporationList;
+    private final Manager.Configuration<ExpirationList> retryExporationList; // Задачи на повтор
 
     public ServicePromise(Manager manager) {
         timeOutExpirationList = manager.configure(

@@ -5,12 +5,10 @@ import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -56,7 +54,7 @@ public class BrokerMemory<T>
     @Getter
     final String ns;
 
-    private final Consumer<T> onDrop;
+    private final Consumer<T> onPostDrop; // Если установлено, вызывается после вы
 
     @Getter
     private final BrokerRepositoryProperty property = new BrokerRepositoryProperty();
@@ -64,16 +62,13 @@ public class BrokerMemory<T>
     @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
-    @SuppressWarnings("all")
-    private Manager.Configuration<ExpirationList> expirationListConfiguration;
-
     public BrokerMemory(
             String ns,
             ApplicationContext applicationContext,
-            Consumer<T> onDrop
+            Consumer<T> onPostDrop
     ) {
         this.ns = ns;
-        this.onDrop = onDrop;
+        this.onPostDrop = onPostDrop;
 
         propertyDispatcher = new PropertyDispatcher<>(
                 applicationContext.getBean(ServiceProperty.class),
@@ -81,14 +76,6 @@ public class BrokerMemory<T>
                 getProperty(),
                 getCascadeKey(ns)
         );
-
-        if (onDrop != null) {
-            expirationListConfiguration = applicationContext.getBean(Manager.class).configure(
-                    ExpirationList.class,
-                    getCascadeKey(ns),
-                    (ns1) -> new ExpirationList<>(ns1, this::onExpired)
-            );
-        }
     }
 
     @JsonValue
@@ -109,7 +96,6 @@ public class BrokerMemory<T>
         return mainQueue.isEmpty();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public DisposableExpirationMsImmutableEnvelope<T> add(ExpirationMsImmutableEnvelope<T> envelope) {
         if (envelope == null || envelope.isExpired()) {
@@ -125,10 +111,7 @@ public class BrokerMemory<T>
         if (mainQueueSize.get() >= getProperty().getSize()) {
             // Он конечно протух не по своей воле, но что делать...
             // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
-            onExpired(mainQueue.removeFirst());
-        }
-        if (onDrop != null) {
-            expirationListConfiguration.get().add(convert);
+            onDrop(mainQueue.removeFirst());
         }
 
         mainQueue.add(convert);
@@ -158,7 +141,7 @@ public class BrokerMemory<T>
                 return null;
             }
             if (result.isExpired()) {
-                onExpired(result);
+                onDrop(result);
                 continue;
             }
             T value = result.getValue();
@@ -174,7 +157,6 @@ public class BrokerMemory<T>
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     public void remove(DisposableExpirationMsImmutableEnvelope<T> envelope) {
         if (envelope != null) {
             // Это конечно так себе удалять пришедший в remove объект не проверяя что он вообще есть в очереди
@@ -186,10 +168,6 @@ public class BrokerMemory<T>
                 onQueueLoss(envelope);
                 // Когда явно получили эксклюзивный доступ к объекту - можно и статистику посчитать
                 mainQueueSize.decrementAndGet();
-                if (onDrop != null) {
-                    // Объект уже нейтрализован, поэтому просто его удаляем из expiration
-                    expirationListConfiguration.get().remove(envelope, false);
-                }
             }
         }
     }
@@ -203,7 +181,7 @@ public class BrokerMemory<T>
 
     //Обработка выпадающих сообщений
     @SuppressWarnings("all")
-    private void onExpired(DisposableExpirationMsImmutableEnvelope envelope) {
+    public void onDrop(DisposableExpirationMsImmutableEnvelope envelope) {
         if (envelope == null) {
             return;
         }
@@ -216,8 +194,8 @@ public class BrokerMemory<T>
             // то что в очереди может находится реально больше элементов, чем положено.
             onQueueLoss(envelope);
             tpsDrop.incrementAndGet();
-            if (onDrop != null) {
-                onDrop.accept(value);
+            if (onPostDrop != null) {
+                onPostDrop.accept(value);
             }
         }
     }
@@ -262,13 +240,13 @@ public class BrokerMemory<T>
     public void shutdownOperation() {
         // Ничего светлого больше не будет, если объект останавливают. Что бы хоть как-то отразить свою недосказанность
         // запихаем все не считанные сообщения в onDrop
-        if (onDrop != null) {
+        if (onPostDrop != null) {
             while (!mainQueue.isEmpty()) {
                 DisposableExpirationMsImmutableEnvelope<T> poll = mainQueue.pollFirst();
                 if (poll != null) {
                     T value = poll.getValue();
                     if (value != null) {
-                        onDrop.accept(value);
+                        onPostDrop.accept(value);
                     }
                 }
             }

@@ -6,9 +6,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
-import ru.jamsys.core.extension.broker.memory.BrokerMemory;
 import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
-import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.extension.broker.memory.BrokerMemory;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
@@ -16,7 +15,6 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 // IO time: 2.481
 // COMPUTE time: 2.457
@@ -205,25 +203,6 @@ class BrokerMemoryTest {
         broker.remove(o2);
         Assertions.assertEquals(0, broker.size(), "#4");
         broker.reset();
-    }
-
-    @Test
-    void testExpired() {
-        AtomicInteger counter = new AtomicInteger(0);
-
-        BrokerMemory<XTest> broker = App.get(Manager.class).configure(
-                        BrokerMemory.class,
-                        XTest.class.getSimpleName() + "_2",
-                        (k) -> new BrokerMemory<XTest>(k, App.context, _ -> counter.incrementAndGet())
-                )
-                .getGeneric();
-
-        XTest obj = new XTest(1);
-        broker.add(obj, 1_000L);
-
-        Assertions.assertEquals(0, counter.get());
-        Util.testSleepMs(2001);
-        Assertions.assertEquals(1, counter.get());
     }
 
     static class XTest {
