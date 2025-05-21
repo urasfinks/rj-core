@@ -50,8 +50,7 @@ public class ExpirationList<T>
 
     private final ConcurrentSkipListMap<Long, AtomicInteger> bucketQueueSize = new ConcurrentSkipListMap<>();
 
-    // TODO: Как будто надо Consumer<T> без DisposableExpirationMsImmutableEnvelope
-    private final Consumer<DisposableExpirationMsImmutableEnvelope<T>> onExpired;
+    private final Consumer<T> onExpired;
 
     // Сколько было просто удалено, так как объект был нейтрализован
     private final AtomicLong helperRemove = new AtomicLong(0);
@@ -61,7 +60,7 @@ public class ExpirationList<T>
 
     public ExpirationList(
             String ns,
-            Consumer<DisposableExpirationMsImmutableEnvelope<T>> onExpired
+            Consumer<T> onExpired
     ) {
         this.ns = ns;
         this.onExpired = onExpired;
@@ -119,8 +118,11 @@ public class ExpirationList<T>
                     if (envelope.isNeutralized() || envelope.isStop()) {
                         helperRemove.incrementAndGet();
                     } else if (envelope.isExpired()) {
-                        onExpired.accept(envelope);
-                        helperOnExpired.incrementAndGet();
+                        T value = envelope.getValue();
+                        if (value != null) {
+                            onExpired.accept(value);
+                            helperOnExpired.incrementAndGet();
+                        }
                     }
                 }
             }

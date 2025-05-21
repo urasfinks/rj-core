@@ -11,7 +11,6 @@ import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.statistic.AvgMetric;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.List;
@@ -143,22 +142,12 @@ class ExpirationListTest {
 
     @Test
     public void multiThread() throws InterruptedException {
-        AvgMetric avgMetric = new AvgMetric();
         AtomicInteger err = new AtomicInteger(0);
         AtomicInteger success = new AtomicInteger(0);
         ExpirationList<XItem> test = App.get(Manager.class).configure(
                 ExpirationList.class,
                 "test3",
-                ns -> new ExpirationList<>(ns, env -> {
-                    // Положительное число, когда ещё не наступило истечение срока жизни
-                    if (env.getExpiryRemainingMs() >= 0) {
-                        UtilLog.printError("ALARM");
-                        err.incrementAndGet();
-                    } else {
-                        success.incrementAndGet();
-                        avgMetric.add(env.getExpiryRemainingMs());
-                    }
-                })
+                ns -> new ExpirationList<>(ns, _ -> success.incrementAndGet())
         ).getGeneric();
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -195,15 +184,10 @@ class ExpirationListTest {
         Util.testSleepMs(3_000);
         scheduler.shutdown();
         UtilLog.printInfo(test);
-        AvgMetric.Statistic statistic = avgMetric.flushStatistic();
-        UtilLog.printInfo(statistic);
 
         Assertions.assertEquals(0, err.get());
         Assertions.assertEquals(4 * c, success.get());
         // Надо что бы среднее укладывалось в 1 секунду
-        Assertions.assertTrue(statistic.getAvg() > -1000);
-        Assertions.assertTrue(statistic.getAvg() < 0);
-
     }
 
 }

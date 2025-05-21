@@ -48,12 +48,7 @@ public class QueueRetry implements DataReader, StatisticsFlush {
         expirationListConfiguration = App.get(Manager.class).configureGeneric(
                 ExpirationList.class,
                 ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров QueueRetry
-                s -> new ExpirationList<>(s, disposableExpirationMsImmutableEnvelope -> {
-                    QueueRetryExpirationObject value = disposableExpirationMsImmutableEnvelope.getValue();
-                    if (value != null) {
-                        value.insert();
-                    }
-                })
+                s -> new ExpirationList<>(s, QueueRetryExpirationObject::insert)
         );
     }
 

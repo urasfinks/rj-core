@@ -40,12 +40,7 @@ public class ExpirationMap<K, V>
         expirationMapConfiguration = App.get(Manager.class).configureGeneric(
                 ExpirationList.class,
                 ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров ExpirationMap
-                s -> new ExpirationList<>(s, disposableExpirationMsImmutableEnvelope -> {
-                    ExpirationMapExpirationObject value = disposableExpirationMsImmutableEnvelope.getValue();
-                    if (value != null) {
-                        value.remove();
-                    }
-                })
+                s -> new ExpirationList<>(s, ExpirationMapExpirationObject::remove)
         );
     }
 
