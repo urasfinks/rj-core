@@ -21,6 +21,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.CRC32;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
@@ -162,22 +163,16 @@ public class Util {
         return result;
     }
 
+    // Рассматривалось 3 варианта:
+    // 1) String.hashCode() - может быть разные результат на разных java
+    // 2) MD5 или SHA-256 + модуль - медленно
+    // 3) CRC32 - быстрее чем hash и надёжнее чем hashCode
     public static int stringToInt(String data, int min, int max) {
-        if (data == null) {
-            return min;
-        }
-        int sum = 0;
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            for (byte digestByte : md.digest(data.getBytes(StandardCharsets.UTF_8))) {
-                sum += digestByte & 0xFF;
-            }
-        } catch (Exception e) {
-            App.error(e);
-        }
-        int sumReverse = Integer.parseInt(new StringBuilder(sum + "").reverse().toString());
-        double result = min + Math.floor(Double.parseDouble("0." + sumReverse) * (max - min + 1));
-        return (int) result;
+        if (data == null || min > max) return min;
+        CRC32 crc = new CRC32();
+        crc.update(data.getBytes(StandardCharsets.UTF_8));
+        long hash = crc.getValue();
+        return min + (int)(hash % (max - min + 1));
     }
 
     public static <T> Set<T> getConcurrentHashSet() {
