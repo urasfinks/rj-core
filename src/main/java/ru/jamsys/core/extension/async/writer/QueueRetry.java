@@ -44,7 +44,7 @@ public class QueueRetry implements DataReader, StatisticsFlush {
     public QueueRetry(String key, boolean finishState) {
         this.key = key;
         this.finishState = finishState;
-
+        // TODO: раскопать, почему ExpirationMap.class.getName(), если поменять на QueueRetry.class.getName() не работать
         expirationListConfiguration = App.get(Manager.class).configureGeneric(
                 ExpirationList.class,
                 ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров QueueRetry

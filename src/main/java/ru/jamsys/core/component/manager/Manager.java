@@ -71,6 +71,8 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
                 cache = manager.get(cls, key);
                 nextUpdate = cache.getExpiryRemainingMs() + l;
             }
+            // TODO: почистить markActive внутри реализаций, потому что всё должно работать через Manager
+            cache.markActive();
             return cache;
         }
 
