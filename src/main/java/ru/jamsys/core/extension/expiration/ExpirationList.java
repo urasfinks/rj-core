@@ -50,6 +50,7 @@ public class ExpirationList<T>
 
     private final ConcurrentSkipListMap<Long, AtomicInteger> bucketQueueSize = new ConcurrentSkipListMap<>();
 
+    // TODO: Как будто надо Consumer<T> без DisposableExpirationMsImmutableEnvelope
     private final Consumer<DisposableExpirationMsImmutableEnvelope<T>> onExpired;
 
     // Сколько было просто удалено, так как объект был нейтрализован
