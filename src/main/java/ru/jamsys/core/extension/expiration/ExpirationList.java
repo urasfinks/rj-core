@@ -216,4 +216,11 @@ public class ExpirationList<T>
         bucketQueueSize.clear();
     }
 
+    public void unitTestReset(){
+        bucket.clear();
+        bucketQueueSize.clear();
+        helperRemove.set(0);
+        helperOnExpired.set(0);
+    }
+
 }

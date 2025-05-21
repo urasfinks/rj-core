@@ -8,6 +8,8 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.extension.ByteCodec;
 import ru.jamsys.core.extension.async.writer.Position;
+import ru.jamsys.core.extension.expiration.ExpirationList;
+import ru.jamsys.core.extension.expiration.ExpirationMap;
 import ru.jamsys.core.flat.util.FileWriteOptions;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -57,6 +59,9 @@ class BrokerPersistTest {
     @BeforeEach
     void beforeEach() {
         UtilFile.removeAllFilesInFolder("LogManager");
+        if (App.get(Manager.class).contains(ExpirationList.class, ExpirationMap.class.getName())) {
+            App.get(Manager.class).get(ExpirationList.class, ExpirationMap.class.getName()).unitTestReset();
+        }
     }
 
     @AfterAll

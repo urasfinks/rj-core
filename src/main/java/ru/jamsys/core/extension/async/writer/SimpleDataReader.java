@@ -7,9 +7,9 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 // Сегментированные по позиции чтения данные из файла
 @Getter
-public class FileReaderResult implements DataFromFile {
+public class SimpleDataReader implements DataReader {
 
-    private final ConcurrentLinkedDeque<DataPayload> queue = new ConcurrentLinkedDeque<>(); // key: position;
+    private final ConcurrentLinkedDeque<DataReadWrite> queue = new ConcurrentLinkedDeque<>(); // key: position;
 
     @Setter
     private volatile boolean error = false; // Ошибка чтения данных
@@ -18,8 +18,8 @@ public class FileReaderResult implements DataFromFile {
     private volatile boolean finishState = false; // Встретили -1 длину данных в bin
 
     @Override
-    public void add(DataPayload dataPayload) {
-        queue.add(dataPayload);
+    public void add(DataReadWrite dataReadWrite) {
+        queue.add(dataReadWrite);
     }
 
     public void remove(long position) {

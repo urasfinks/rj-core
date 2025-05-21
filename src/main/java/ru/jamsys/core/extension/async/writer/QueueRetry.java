@@ -10,6 +10,7 @@ import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.ExpirationList;
+import ru.jamsys.core.extension.expiration.ExpirationMap;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // Очередь данных, которые можно взять на обработку на какое-то время. Если за это время не выполнить remove, данные
 // снова вернуться в очередь и будут повторно выданы
 
-public class QueueRetry implements DataFromFile, StatisticsFlush {
+public class QueueRetry implements DataReader, StatisticsFlush {
 
     @Getter
     @Setter
@@ -29,28 +30,30 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
 
     @Getter
     @Setter
-    private volatile boolean finishState; // Встретили -1 длину данных в bin
+    private volatile boolean finishState; // Встретили -1 длину данных. -1 это EOF
 
-    private final ConcurrentLinkedDeque<DataPayload> park = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<DataReadWrite> park = new ConcurrentLinkedDeque<>();
 
-    private final ConcurrentHashMap<Long, DataPayload> position = new ConcurrentHashMap<>(); // key: position;
+    private final ConcurrentHashMap<Long, DataReadWrite> position = new ConcurrentHashMap<>(); // key: position;
+
+    private final String key;
 
     @Getter
-    private final Manager.Configuration<ExpirationList<DataPayload>> expirationListConfiguration;
+    private final Manager.Configuration<ExpirationList<QueueRetryExpirationObject>> expirationListConfiguration;
 
     public QueueRetry(String key, boolean finishState) {
+        this.key = key;
         this.finishState = finishState;
+
         expirationListConfiguration = App.get(Manager.class).configureGeneric(
                 ExpirationList.class,
-                key,
-                key1 -> new ExpirationList<>(
-                        key1,
-                        exp -> {
-                            // Position не трогаем, там эти данные есть. Из position удаляется только тогда, когда
-                            // происходит коммит X->Y->remove()
-                            park.add(exp.getValue());
-                        }
-                )
+                ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров QueueRetry
+                s -> new ExpirationList<>(s, disposableExpirationMsImmutableEnvelope -> {
+                    QueueRetryExpirationObject value = disposableExpirationMsImmutableEnvelope.getValue();
+                    if (value != null) {
+                        value.insert();
+                    }
+                })
         );
     }
 
@@ -59,6 +62,7 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
+                .append("key", key)
                 .append("finishState", finishState)
                 .append("parkSize", park.size())
                 .append("positionSize", position.size())
@@ -71,21 +75,21 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
     }
 
     @Override
-    public void add(@NonNull DataPayload dataPayload) {
+    public void add(@NonNull DataReadWrite dataReadWrite) {
         // Хотел через computeIfAbsent, основа которого не вызывать исполнение лямды в случае отсутствия позиции,
         // но тогда надо делать атомики для контроля добавления и это больше исключение чем постоянная история
-        if (position.putIfAbsent(dataPayload.getPosition(), dataPayload) == null) {
-            park.add(dataPayload);
+        if (position.putIfAbsent(dataReadWrite.getPosition(), dataReadWrite) == null) {
+            park.add(dataReadWrite);
         } else {
-            App.error(new RuntimeException("Duplicate DataPayload detected at position: " + dataPayload.getPosition()));
+            App.error(new RuntimeException("Duplicate DataPayload detected at position: " + dataReadWrite.getPosition()));
         }
     }
 
     public void remove(long position) {
-        DataPayload dataPayload = this.position.remove(position);
-        if (dataPayload != null) {
-            dataPayload.setRemove(true);
-            DisposableExpirationMsImmutableEnvelope<DataPayload> expiration = dataPayload.getExpiration();
+        DataReadWrite dataReadWrite = this.position.remove(position);
+        if (dataReadWrite != null) {
+            dataReadWrite.setRemove(true);
+            DisposableExpirationMsImmutableEnvelope<?> expiration = dataReadWrite.getExpiration();
             if (expiration != null) {
                 // Нейтрализуем что бы expirationList не взял его в обработку при timeout
                 if (!expiration.doNeutralized()) {
@@ -95,41 +99,47 @@ public class QueueRetry implements DataFromFile, StatisticsFlush {
         }
     }
 
-    public DataPayload pollLast(long timeoutMs) {
+    public DataReadWrite pollLast(long timeoutMs) {
         return pollLast(timeoutMs, System.currentTimeMillis());
     }
 
-    public DataPayload pollLast(long timeoutMs, long currentTimestamp) {
-        DataPayload dataPayload;
+    public DataReadWrite pollLast(long timeoutMs, long currentTimestamp) {
+        DataReadWrite dataReadWrite;
         while (true) {
-            dataPayload = park.pollLast();
-            if (dataPayload == null) {
+            dataReadWrite = park.pollLast();
+            if (dataReadWrite == null) {
                 break;
             }
-            if (!dataPayload.isRemove()) {
-                dataPayload.setExpiration(expirationListConfiguration
-                        .get()
-                        .add(new ExpirationMsImmutableEnvelope<>(dataPayload, timeoutMs, currentTimestamp))
+            if (!dataReadWrite.isRemove()) {
+                QueueRetryExpirationObject foreignExpirationObject = new QueueRetryExpirationObject(
+                        park,
+                        dataReadWrite
                 );
-                return dataPayload;
+                dataReadWrite.setExpiration(expirationListConfiguration
+                        .get()
+                        .add(new ExpirationMsImmutableEnvelope<>(foreignExpirationObject, timeoutMs, currentTimestamp))
+                );
+                return dataReadWrite;
             }
         }
         return null;
     }
 
-    // Очередь полностью обработана. Нет
+    // Очередь полностью обработана
     public boolean isProcessed() {
         return finishState && position.isEmpty();
     }
 
     // Только для unit тестов
-    public DataPayload getForUnitTest(long position) {
+    public DataReadWrite getForUnitTest(long position) {
         return this.position.get(position);
     }
 
     @Override
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         return List.of(new DataHeader()
+                .setBody(key)
+                .addHeader("size", position.size())
                 .addHeader("size", position.size())
         );
     }

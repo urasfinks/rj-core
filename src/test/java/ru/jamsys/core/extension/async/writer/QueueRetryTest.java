@@ -38,7 +38,7 @@ class QueueRetryTest {
         Assertions.assertEquals(1, test.size());
         Assertions.assertTrue(test.getExpirationListConfiguration().get().isEmpty());
 
-        DataPayload dataPayload = test.pollLast(1_000, curTimeMs);
+        DataReadWrite dataReadWrite = test.pollLast(1_000, curTimeMs);
         Assertions.assertEquals(1, test.size());
         Assertions.assertFalse(test.getExpirationListConfiguration().get().isEmpty());
 
@@ -48,15 +48,15 @@ class QueueRetryTest {
         Assertions.assertEquals(1, test.size());
         Assertions.assertTrue(test.getExpirationListConfiguration().get().isEmpty());
 
-        DataPayload dataPayload2 = test.pollLast(1_500, curTimeMs);
+        DataReadWrite dataReadWrite2 = test.pollLast(1_500, curTimeMs);
         // Это 2 одинаковых объекта
-        Assertions.assertEquals(dataPayload, dataPayload2);
+        Assertions.assertEquals(dataReadWrite, dataReadWrite2);
         Assertions.assertEquals(1, test.size());
         Assertions.assertFalse(test.getExpirationListConfiguration().get().isEmpty());
         Assertions.assertFalse(test.isProcessed());
 
         // Теперь делаю человеческое удаление
-        test.remove(dataPayload2.getPosition());
+        test.remove(dataReadWrite2.getPosition());
         test.getExpirationListConfiguration().get().helper(threadRun, curTimeMs + 2000);
 
         // Теперь ничего не должно нигде остаться
@@ -68,17 +68,17 @@ class QueueRetryTest {
 
     @Test
     public void testAddAndPoll() {
-        DataPayload payload = new DataPayload(1L, new byte[]{1, 2, 3}, null);
+        DataReadWrite payload = new DataReadWrite(1L, new byte[]{1, 2, 3}, null);
         queueRetry.add(payload);
 
-        DataPayload polled = queueRetry.pollLast(1000);
+        DataReadWrite polled = queueRetry.pollLast(1000);
         Assertions.assertNotNull(polled);
         Assertions.assertEquals(1L, polled.getPosition());
     }
 
     @Test
     public void testDuplicateAdd() {
-        DataPayload payload = new DataPayload(2L, new byte[]{9, 8}, null);
+        DataReadWrite payload = new DataReadWrite(2L, new byte[]{9, 8}, null);
         queueRetry.add(payload);
         queueRetry.add(payload); // should log error, not throw
         Assertions.assertEquals(1, queueRetry.size());
@@ -86,11 +86,11 @@ class QueueRetryTest {
 
     @Test
     public void testRemoveBeforePoll() {
-        DataPayload payload = new DataPayload(3L, new byte[]{7}, null);
+        DataReadWrite payload = new DataReadWrite(3L, new byte[]{7}, null);
         queueRetry.add(payload);
         queueRetry.remove(payload.getPosition());
 
-        DataPayload polled = queueRetry.pollLast(1000);
+        DataReadWrite polled = queueRetry.pollLast(1000);
         Assertions.assertNull(polled);
     }
 
@@ -103,16 +103,16 @@ class QueueRetryTest {
 
     @Test
     public void testGetForUnitTest() {
-        DataPayload payload = new DataPayload(4L, new byte[]{5}, null);
+        DataReadWrite payload = new DataReadWrite(4L, new byte[]{5}, null);
         queueRetry.add(payload);
-        DataPayload fetched = queueRetry.getForUnitTest(4L);
+        DataReadWrite fetched = queueRetry.getForUnitTest(4L);
         Assertions.assertNotNull(fetched);
         Assertions.assertEquals(payload, fetched);
     }
 
     @Test
     public void testFlushStatistics() {
-        DataPayload payload = new DataPayload(5L, new byte[]{1}, null);
+        DataReadWrite payload = new DataReadWrite(5L, new byte[]{1}, null);
         queueRetry.add(payload);
         List<DataHeader> stats = queueRetry.flushAndGetStatistic(new AtomicBoolean(true));
         Assertions.assertFalse(stats.isEmpty());

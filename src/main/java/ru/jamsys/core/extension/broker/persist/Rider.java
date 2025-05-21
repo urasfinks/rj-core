@@ -97,7 +97,7 @@ public class Rider extends AbstractManagerElement {
         // при одновременной записи
         try {
             AbstractAsyncFileReader.read(BrokerPersist.filePathYToX(filePathY), queueRetry);
-            FileReaderResult yFileReaderResult = new FileReaderResult();
+            SimpleDataReader yFileReaderResult = new SimpleDataReader();
             AbstractAsyncFileReader.read(filePathY, yFileReaderResult);
             yFileReaderResult.getQueue().forEach((dataPayload) -> {
                 long xPosition = UtilByte.bytesToLong(dataPayload.getBytes());

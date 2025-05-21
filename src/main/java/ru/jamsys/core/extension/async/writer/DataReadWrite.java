@@ -7,9 +7,9 @@ import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmut
 // Класс данных полезной нагрузки, что бы не пересериализовывать данные туда и обратно
 @Getter
 @Setter
-public class DataPayload {
+public class DataReadWrite {
 
-    private long position;
+    private long position; // Позиция появляется в момент записи или чтения из файла
 
     private byte[] bytes;
 
@@ -18,9 +18,9 @@ public class DataPayload {
     // CAS избыточен, так как всё последовательно идёт, сначала poll потом remove
     private volatile boolean remove = false;
 
-    private DisposableExpirationMsImmutableEnvelope<DataPayload> expiration;
+    private DisposableExpirationMsImmutableEnvelope<?> expiration;
 
-    public DataPayload(long position, byte[] bytes, Object object) {
+    public DataReadWrite(long position, byte[] bytes, Object object) {
         this.position = position;
         this.bytes = bytes;
         this.object = object;

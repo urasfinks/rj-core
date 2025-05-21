@@ -12,7 +12,7 @@ import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.AbstractAsyncFileWriter;
 import ru.jamsys.core.extension.async.writer.AsyncFileWriterRolling;
-import ru.jamsys.core.extension.async.writer.DataPayload;
+import ru.jamsys.core.extension.async.writer.DataReadWrite;
 import ru.jamsys.core.extension.broker.Broker;
 import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -287,19 +287,19 @@ public class BrokerPersist<T extends ByteSerializable>
         riderConfiguration.get().onCommitX(element);
     }
 
-    public record Last(DataPayload dataPayload, Manager.Configuration<Rider> riderConfiguration) {}
+    public record Last(DataReadWrite dataReadWrite, Manager.Configuration<Rider> riderConfiguration) {}
 
     private Last getLastDataPayLoad() {
         // Так как последний Rider, при нагрузке, всегда будет находиться в finishStatus = false,
         // мы должны перебирать всех Rider с конца очереди queueRiderConfiguration в поиске DataPayload
         for (Iterator<Manager.Configuration<Rider>> it = queueRiderConfiguration.descendingIterator(); it.hasNext(); ) {
             Manager.Configuration<Rider> riderConfig = it.next();
-            DataPayload dataPayload = riderConfig
+            DataReadWrite dataReadWrite = riderConfig
                     .get()
                     .getQueueRetry()
                     .pollLast(property.getRetryTimeoutMs());
-            if (dataPayload != null) {
-                return new Last(dataPayload, riderConfig);
+            if (dataReadWrite != null) {
+                return new Last(dataReadWrite, riderConfig);
             }
         }
         return null;
@@ -312,15 +312,15 @@ public class BrokerPersist<T extends ByteSerializable>
         }
 
         tpsDequeue.incrementAndGet();
-        DataPayload dataPayload = lastDataPayLoad.dataPayload();
-        Object object = dataPayload.getObject();
+        DataReadWrite dataReadWrite = lastDataPayLoad.dataReadWrite();
+        Object object = dataReadWrite.getObject();
         if (object != null) {
             @SuppressWarnings("unchecked")
             X<T> cast = (X<T>) object;
             return cast;
         }
-        X<T> tx = new X<>(restoreElementFromByte.apply(dataPayload.getBytes()));
-        tx.setPosition(dataPayload.getPosition());
+        X<T> tx = new X<>(restoreElementFromByte.apply(dataReadWrite.getBytes()));
+        tx.setPosition(dataReadWrite.getPosition());
         tx.setRiderConfiguration(lastDataPayLoad.riderConfiguration());
         return tx;
     }
