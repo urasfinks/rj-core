@@ -29,7 +29,7 @@ public class RateLimitTps
     @Getter
     private final String ns;
 
-    private final RateLimitItemRepositoryProperty property = new RateLimitItemRepositoryProperty();
+    private final RateLimitRepositoryProperty property = new RateLimitRepositoryProperty();
 
     private final PropertyDispatcher<Integer> propertyDispatcher;
 

@@ -9,7 +9,7 @@ import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotation
 @SuppressWarnings({"UnusedDeclaration"})
 @FieldNameConstants
 @Getter
-public class RateLimitItemRepositoryProperty extends RepositoryPropertyAnnotationField<Integer> {
+public class RateLimitRepositoryProperty extends RepositoryPropertyAnnotationField<Integer> {
 
     @SuppressWarnings("all")
     @PropertyKey("max")
