@@ -12,8 +12,8 @@ import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.*;
-import ru.jamsys.core.rate.limit.RateLimitFactory;
-import ru.jamsys.core.rate.limit.item.RateLimitItem;
+import ru.jamsys.core.rate.limit.RateLimit;
+import ru.jamsys.core.rate.limit.RateLimitTps;
 import ru.jamsys.core.resource.http.HttpResource;
 
 import java.util.ArrayList;
@@ -128,11 +128,8 @@ class PromiseImplTest {
 
     @Test
     void test3() {
-        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = App.get(Manager.class).configure(
-                RateLimitItem.class,
-                Promise.getComplexIndex("test", "test"),
-                RateLimitFactory.TPS::create
-        );
+        Manager.Configuration<RateLimit> rateLimitItemConfiguration =
+                RateLimitTps.getInstanceConfigure(Promise.getComplexIndex("test", "test"));
         rateLimitItemConfiguration.get().setMax(10000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
@@ -153,7 +150,7 @@ class PromiseImplTest {
         AtomicInteger c = new AtomicInteger(0);
         promise.then("then1", (_, _, _) -> c.incrementAndGet());
 
-        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = promise
+        Manager.Configuration<RateLimit> rateLimitItemConfiguration = promise
                 .getQueueTask()
                 .get("seq.then1")
                 .getComputeThreadConfiguration().get()
@@ -205,11 +202,8 @@ class PromiseImplTest {
 
     @Test
     void test5() {
-        Manager.Configuration<RateLimitItem> rateLimitItemConfiguration = App.get(Manager.class).configure(
-                RateLimitItem.class,
-                Promise.getComplexIndex("test", "test"),
-                RateLimitFactory.TPS::create
-        );
+        Manager.Configuration<RateLimit> rateLimitItemConfiguration =
+                RateLimitTps.getInstanceConfigure(Promise.getComplexIndex("test", "test"));
         rateLimitItemConfiguration.get().setMax(100000000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();

@@ -1,4 +1,4 @@
-package ru.jamsys.core.rate.limit.item;
+package ru.jamsys.core.rate.limit;
 
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;

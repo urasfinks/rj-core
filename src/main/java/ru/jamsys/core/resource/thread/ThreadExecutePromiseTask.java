@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.AbstractPromiseTask;
-import ru.jamsys.core.rate.limit.item.RateLimitItem;
+import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
@@ -26,7 +26,7 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
 
     private final ThreadPoolExecutePromiseTask pool;
 
-    private final Manager.Configuration<RateLimitItem> rateLimitConfiguration;
+    private final Manager.Configuration<RateLimit> rateLimitConfiguration;
 
     private final int indexThread;
 
@@ -37,7 +37,7 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
             String ns,
             int indexThread,
             ThreadPoolExecutePromiseTask pool,
-            Manager.Configuration<RateLimitItem> rateLimitConfiguration
+            Manager.Configuration<RateLimit> rateLimitConfiguration
     ) {
         this.ns = ns;
         this.pool = pool;

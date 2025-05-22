@@ -8,8 +8,8 @@ import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.AbstractPromiseTask;
-import ru.jamsys.core.rate.limit.RateLimitFactory;
-import ru.jamsys.core.rate.limit.item.RateLimitItem;
+import ru.jamsys.core.rate.limit.RateLimit;
+import ru.jamsys.core.rate.limit.RateLimitTps;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,18 +21,14 @@ public class ThreadPoolExecutePromiseTask
 
     AtomicInteger counter = new AtomicInteger(1);
 
-    private final Manager.Configuration<RateLimitItem> rateLimitConfiguration;
+    private final Manager.Configuration<RateLimit> rateLimitConfiguration;
 
     @SuppressWarnings("all")
     private final Manager.Configuration<BrokerMemory> brokerMemoryConfiguration;
 
     public ThreadPoolExecutePromiseTask(String ns) {
         super(ns);
-        rateLimitConfiguration = App.get(Manager.class).configure(
-                RateLimitItem.class,
-                getCascadeKey(ns),
-                RateLimitFactory.TPS::create
-        );
+        rateLimitConfiguration = RateLimitTps.getInstanceConfigure(getCascadeKey(ns));
         brokerMemoryConfiguration = App.get(Manager.class).configure(
                 BrokerMemory.class,
                 getCascadeKey(ns),

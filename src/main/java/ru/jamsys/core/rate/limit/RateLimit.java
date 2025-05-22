@@ -1,10 +1,10 @@
-package ru.jamsys.core.rate.limit.item;
+package ru.jamsys.core.rate.limit;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.ManagerElement;
 
-public interface RateLimitItem extends ManagerElement {
+public interface RateLimit extends ManagerElement {
 
     String getNs();
 
