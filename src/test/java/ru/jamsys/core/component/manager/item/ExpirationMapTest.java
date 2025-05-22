@@ -28,13 +28,8 @@ class ExpirationMapTest {
 
     @Test
     void computeIfAbsent() {
-        @SuppressWarnings("all")
-        Manager.Configuration<ExpirationMap> expirationMapConfiguration = App.get(Manager.class).configure(
-                ExpirationMap.class,
-                "test",
-                s -> new ExpirationMap<Integer, XTest>(s, 1000)
-        );
-        //ExpirationMap<Integer, XTest> test = App.get(ManagerExpirationMap.class).get("test", 1000);
+        Manager.Configuration<ExpirationMap<Integer, XTest>> expirationMapConfiguration =
+                ExpirationMap.getInstanceConfigure("test", 1000);
         ExpirationMap<Integer, XTest> test = expirationMapConfiguration.get();
         XTest s = test.computeIfAbsent(10, _ -> new XTest());
 
@@ -51,7 +46,8 @@ class ExpirationMapTest {
 
     @BeforeEach
     void setUp() {
-        map = new ExpirationMap<>("testMap", 10000);
+        map = ExpirationMap.getInstanceConfigure("testMap", 10_000).getGeneric();
+        map.clear();
     }
 
     @Test

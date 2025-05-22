@@ -68,8 +68,8 @@ class QueueRetryTest {
 
     @Test
     public void testAddAndPoll() {
-        DataReadWrite payload = new DataReadWrite(1L, new byte[]{1, 2, 3}, null);
-        queueRetry.add(payload);
+        DataReadWrite dataReadWrite = new DataReadWrite(1L, new byte[]{1, 2, 3}, null);
+        queueRetry.add(dataReadWrite);
 
         DataReadWrite polled = queueRetry.pollLast(1000);
         Assertions.assertNotNull(polled);
@@ -78,17 +78,17 @@ class QueueRetryTest {
 
     @Test
     public void testDuplicateAdd() {
-        DataReadWrite payload = new DataReadWrite(2L, new byte[]{9, 8}, null);
-        queueRetry.add(payload);
-        queueRetry.add(payload); // should log error, not throw
+        DataReadWrite dataReadWrite = new DataReadWrite(2L, new byte[]{9, 8}, null);
+        queueRetry.add(dataReadWrite);
+        queueRetry.add(dataReadWrite); // should log error, not throw
         Assertions.assertEquals(1, queueRetry.size());
     }
 
     @Test
     public void testRemoveBeforePoll() {
-        DataReadWrite payload = new DataReadWrite(3L, new byte[]{7}, null);
-        queueRetry.add(payload);
-        queueRetry.remove(payload.getPosition());
+        DataReadWrite dataReadWrite = new DataReadWrite(3L, new byte[]{7}, null);
+        queueRetry.add(dataReadWrite);
+        queueRetry.remove(dataReadWrite.getPosition());
 
         DataReadWrite polled = queueRetry.pollLast(1000);
         Assertions.assertNull(polled);
@@ -103,17 +103,17 @@ class QueueRetryTest {
 
     @Test
     public void testGetForUnitTest() {
-        DataReadWrite payload = new DataReadWrite(4L, new byte[]{5}, null);
-        queueRetry.add(payload);
+        DataReadWrite dataReadWrite = new DataReadWrite(4L, new byte[]{5}, null);
+        queueRetry.add(dataReadWrite);
         DataReadWrite fetched = queueRetry.getForUnitTest(4L);
         Assertions.assertNotNull(fetched);
-        Assertions.assertEquals(payload, fetched);
+        Assertions.assertEquals(dataReadWrite, fetched);
     }
 
     @Test
     public void testFlushStatistics() {
-        DataReadWrite payload = new DataReadWrite(5L, new byte[]{1}, null);
-        queueRetry.add(payload);
+        DataReadWrite dataReadWrite = new DataReadWrite(5L, new byte[]{1}, null);
+        queueRetry.add(dataReadWrite);
         List<DataHeader> stats = queueRetry.flushAndGetStatistic(new AtomicBoolean(true));
         Assertions.assertFalse(stats.isEmpty());
     }

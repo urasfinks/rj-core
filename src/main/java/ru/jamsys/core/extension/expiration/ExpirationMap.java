@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.expiration;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
@@ -34,13 +35,12 @@ public class ExpirationMap<K, V>
 
     private final Map<K, ExpirationMapExpirationObject> mainMap = new ConcurrentHashMap<>(); // Основная карта, в которой хранятся сессионные данные
 
-    public ExpirationMap(String key, int keepAliveOnInactivityMs) {
+    private ExpirationMap(String key, int keepAliveOnInactivityMs) {
         this.key = key;
         setKeepAliveOnInactivityMs(keepAliveOnInactivityMs);
-        expirationMapConfiguration = App.get(Manager.class).configureGeneric(
-                ExpirationList.class,
+        expirationMapConfiguration = ExpirationList.getInstanceConfigure(
                 ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров ExpirationMap
-                s -> new ExpirationList<>(s, ExpirationMapExpirationObject::remove)
+                ExpirationMapExpirationObject::remove
         );
     }
 
@@ -416,6 +416,25 @@ public class ExpirationMap<K, V>
 
     public boolean expireNow(K key) {
         return mainMap.remove(key) != null;
+    }
+
+    public static <K, V> Manager.Configuration<ExpirationMap<K, V>> getInstanceConfigure(
+            String key,
+            int keepAliveOnInactivityMs
+    ) {
+        return getInstanceConfigure(App.context, key, keepAliveOnInactivityMs);
+    }
+
+    public static <K, V> Manager.Configuration<ExpirationMap<K, V>> getInstanceConfigure(
+            ApplicationContext applicationContext,
+            String key,
+            int keepAliveOnInactivityMs
+    ) {
+        return App.get(Manager.class, applicationContext).configureGeneric(
+                ExpirationMap.class,
+                key,
+                key1 -> new ExpirationMap<>(key1, keepAliveOnInactivityMs)
+        );
     }
 
 }

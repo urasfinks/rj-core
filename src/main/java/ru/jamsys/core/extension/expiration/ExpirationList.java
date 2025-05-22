@@ -3,6 +3,9 @@ package ru.jamsys.core.extension.expiration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
+import org.springframework.context.ApplicationContext;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.ManagerElement;
@@ -58,7 +61,7 @@ public class ExpirationList<T>
     // Сколько было передано в OnExpired
     private final AtomicLong helperOnExpired = new AtomicLong(0);
 
-    public ExpirationList(
+    private ExpirationList(
             String ns,
             Consumer<T> onExpired
     ) {
@@ -223,6 +226,22 @@ public class ExpirationList<T>
         bucketQueueSize.clear();
         helperRemove.set(0);
         helperOnExpired.set(0);
+    }
+
+    public static <T> Manager.Configuration<ExpirationList<T>> getInstanceConfigure(String key, Consumer<T> onExpired) {
+        return getInstanceConfigure(App.context, key, onExpired);
+    }
+
+    public static <T> Manager.Configuration<ExpirationList<T>> getInstanceConfigure(
+            ApplicationContext applicationContext,
+            String key,
+            Consumer<T> onExpired
+    ) {
+        return App.get(Manager.class, applicationContext).configureGeneric(
+                ExpirationList.class,
+                key,
+                key1 -> new ExpirationList<>(key1, onExpired)
+        );
     }
 
 }

@@ -23,7 +23,7 @@ public class SimpleDataReader implements DataReader {
     }
 
     public void remove(long position) {
-        queue.removeIf(dataPayload -> dataPayload.getPosition() == position);
+        queue.removeIf(dataReadWrite -> dataReadWrite.getPosition() == position);
     }
 
 }

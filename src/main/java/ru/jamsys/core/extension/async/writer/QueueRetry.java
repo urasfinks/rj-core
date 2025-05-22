@@ -10,7 +10,6 @@ import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.ExpirationList;
-import ru.jamsys.core.extension.expiration.ExpirationMap;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
@@ -44,11 +43,9 @@ public class QueueRetry implements DataReader, StatisticsFlush {
     public QueueRetry(String key, boolean finishState) {
         this.key = key;
         this.finishState = finishState;
-        // TODO: раскопать, почему ExpirationMap.class.getName(), если поменять на QueueRetry.class.getName() не работать
-        expirationListConfiguration = App.get(Manager.class).configureGeneric(
-                ExpirationList.class,
-                ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров QueueRetry
-                s -> new ExpirationList<>(s, QueueRetryExpirationObject::insert)
+        expirationListConfiguration = ExpirationList.getInstanceConfigure(
+                QueueRetry.class.getName(), // Это общий ExpirationList для всех экземпляров QueueRetry
+                QueueRetryExpirationObject::insert
         );
     }
 
@@ -76,7 +73,7 @@ public class QueueRetry implements DataReader, StatisticsFlush {
         if (position.putIfAbsent(dataReadWrite.getPosition(), dataReadWrite) == null) {
             park.add(dataReadWrite);
         } else {
-            App.error(new RuntimeException("Duplicate DataPayload detected at position: " + dataReadWrite.getPosition()));
+            App.error(new RuntimeException("Duplicate DataReadWrite detected at position: " + dataReadWrite.getPosition()));
         }
     }
 

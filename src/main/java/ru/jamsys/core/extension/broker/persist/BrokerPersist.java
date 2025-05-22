@@ -287,11 +287,11 @@ public class BrokerPersist<T extends ByteSerializable>
         riderConfiguration.get().onCommitX(element);
     }
 
-    public record Last(DataReadWrite dataReadWrite, Manager.Configuration<Rider> riderConfiguration) {}
+    public record LastDataWrite(DataReadWrite dataReadWrite, Manager.Configuration<Rider> riderConfiguration) {}
 
-    private Last getLastDataPayLoad() {
+    private LastDataWrite getLastDataWrite() {
         // Так как последний Rider, при нагрузке, всегда будет находиться в finishStatus = false,
-        // мы должны перебирать всех Rider с конца очереди queueRiderConfiguration в поиске DataPayload
+        // мы должны перебирать всех Rider с конца очереди queueRiderConfiguration в поиске LastDataWrite
         for (Iterator<Manager.Configuration<Rider>> it = queueRiderConfiguration.descendingIterator(); it.hasNext(); ) {
             Manager.Configuration<Rider> riderConfig = it.next();
             DataReadWrite dataReadWrite = riderConfig
@@ -299,20 +299,20 @@ public class BrokerPersist<T extends ByteSerializable>
                     .getQueueRetry()
                     .pollLast(property.getRetryTimeoutMs());
             if (dataReadWrite != null) {
-                return new Last(dataReadWrite, riderConfig);
+                return new LastDataWrite(dataReadWrite, riderConfig);
             }
         }
         return null;
     }
 
     public X<T> poll() {
-        Last lastDataPayLoad = getLastDataPayLoad();
-        if (lastDataPayLoad == null) {
+        LastDataWrite lastDataWrite = getLastDataWrite();
+        if (lastDataWrite == null) {
             return null;
         }
 
         tpsDequeue.incrementAndGet();
-        DataReadWrite dataReadWrite = lastDataPayLoad.dataReadWrite();
+        DataReadWrite dataReadWrite = lastDataWrite.dataReadWrite();
         Object object = dataReadWrite.getObject();
         if (object != null) {
             @SuppressWarnings("unchecked")
@@ -321,7 +321,7 @@ public class BrokerPersist<T extends ByteSerializable>
         }
         X<T> tx = new X<>(restoreElementFromByte.apply(dataReadWrite.getBytes()));
         tx.setPosition(dataReadWrite.getPosition());
-        tx.setRiderConfiguration(lastDataPayLoad.riderConfiguration());
+        tx.setRiderConfiguration(lastDataWrite.riderConfiguration());
         return tx;
     }
 

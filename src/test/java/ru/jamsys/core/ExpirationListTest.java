@@ -46,12 +46,9 @@ class ExpirationListTest {
     void testStop() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         AtomicInteger counterExpired = new AtomicInteger(0);
-        ExpirationList<XItem> test = App.get(Manager.class).configure(
-                ExpirationList.class,
-                "test1",
-                s -> new ExpirationList<>(s, _ -> counterExpired.incrementAndGet())
-        ).getGeneric();
-
+        ExpirationList<XItem> test = ExpirationList
+                .getInstanceConfigure("test1", _ -> counterExpired.incrementAndGet())
+                .getGeneric();
 
         ExpirationMsImmutableEnvelope<XItem> add = test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
         // 2024-03-06T17:11:04.056 + 1000 = 2024-03-06T17:11:05.056
@@ -82,14 +79,10 @@ class ExpirationListTest {
     @Test
     void checkSize() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        ExpirationList<XItem> test = App.get(Manager.class).configure(
-                ExpirationList.class,
-                "test2",
-                s -> new ExpirationList<>(
-                        s,
-                        _ -> {}
-                )
-        ).getGeneric();
+        ExpirationList<XItem> test = ExpirationList
+                .getInstanceConfigure("test2", _ -> {})
+                .getGeneric();
+
         test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
 
 
@@ -144,11 +137,9 @@ class ExpirationListTest {
     public void multiThread() throws InterruptedException {
         AtomicInteger err = new AtomicInteger(0);
         AtomicInteger success = new AtomicInteger(0);
-        ExpirationList<XItem> test = App.get(Manager.class).configure(
-                ExpirationList.class,
-                "test3",
-                ns -> new ExpirationList<>(ns, _ -> success.incrementAndGet())
-        ).getGeneric();
+        ExpirationList<XItem> test = ExpirationList
+                .getInstanceConfigure("test3", _ -> success.incrementAndGet())
+                .getGeneric();
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         AtomicBoolean run = new AtomicBoolean(true);
