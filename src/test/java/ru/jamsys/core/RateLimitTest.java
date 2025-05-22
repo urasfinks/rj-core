@@ -53,7 +53,7 @@ class RateLimitTest {
         Assertions.assertEquals("{period=Minute, max=999999, tpu=0, flushed=false}", rateLimitItemPeriodic.flushAndGetStatistic(curTime + 60_000).getHeader().toString());
         Assertions.assertEquals("2024-03-06T17:13:04.056", rateLimitItemPeriodic.getNextTime());
 
-        rateLimitItemPeriodic = (RateLimitPeriodic) RateLimitPeriodic.getInstanceConfigure("hour", TimeUnit.HOUR_OF_DAY).get();;
+        rateLimitItemPeriodic = (RateLimitPeriodic) RateLimitPeriodic.getInstanceConfigure("hour", TimeUnit.HOUR_OF_DAY).get();
         rateLimitItemPeriodic.setMax(999999);
         Assertions.assertEquals("{period=HourOfDay, max=999999, tpu=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());
         Assertions.assertEquals("2024-03-06T18:11:04.056", rateLimitItemPeriodic.getNextTime());
