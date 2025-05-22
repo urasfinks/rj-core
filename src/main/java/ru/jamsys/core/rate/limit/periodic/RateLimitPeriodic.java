@@ -1,19 +1,19 @@
-package ru.jamsys.core.rate.limit;
+package ru.jamsys.core.rate.limit.periodic;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
-import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.Manager;
-import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
+import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;
@@ -27,14 +27,12 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RateLimitPeriodic
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements RateLimit,
+        PropertyListener,
         ManagerElement, CascadeKey {
 
-    private final AtomicInteger tpu = new AtomicInteger(0);
+    private final AtomicInteger tpp = new AtomicInteger(0); // Transaction Per Period
 
-    private final TimeUnit period;
-
-    @Getter
-    private final String periodName;
+    private TimeUnit period;
 
     private final AtomicLong nextTimeFlush = new AtomicLong(0);
 
@@ -43,20 +41,19 @@ public class RateLimitPeriodic
     @Getter
     private final String ns;
 
-    private final RateLimitRepositoryProperty property = new RateLimitRepositoryProperty();
+    private final RateLimitPeriodicRepositoryProperty property = new RateLimitPeriodicRepositoryProperty();
 
-    private final PropertyDispatcher<Integer> propertyDispatcher;
+    private final PropertyDispatcher<Object> propertyDispatcher;
 
-    private RateLimitPeriodic(String ns, TimeUnit period) {
+    public RateLimitPeriodic(String ns) {
         this.ns = ns;
-        this.period = period;
-        this.periodName = period.getNameCamel();
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),
-                null,
+                this,
                 property,
                 getCascadeKey(ns)
         );
+        this.period = TimeUnit.valueOf(property.getPeriod());
     }
 
     @JsonValue
@@ -70,12 +67,12 @@ public class RateLimitPeriodic
 
     @Override
     public boolean check() {
-        return tpu.incrementAndGet() <= property.getMax(); // -1 = infinity; 0 = reject
+        return tpp.incrementAndGet() <= property.getMax(); // -1 = infinity; 0 = reject
     }
 
     @Override
     public int getCount() {
-        return tpu.get();
+        return tpp.get();
     }
 
     @Override
@@ -101,8 +98,8 @@ public class RateLimitPeriodic
     }
 
     public DataHeader flushAndGetStatistic(long curTime) {
-        DataHeader statistic = new DataHeader().setBody(ns);
-        statistic.addHeader("period", periodName);
+        DataHeader statistic = new DataHeader().setBody(getCascadeKey(ns));
+        statistic.addHeader("period", period.getNameCamel());
         statistic.addHeader("max", property.getMax());
         if (nextTimeFlush.get() <= curTime) {
             Calendar now = Calendar.getInstance();
@@ -111,10 +108,10 @@ public class RateLimitPeriodic
             long timeInMs = now.getTimeInMillis();
             nextTimeFlush.set(timeInMs);
             nextTimeFlushFormat = UtilDate.msFormat(timeInMs);
-            statistic.addHeader("tpu", tpu.getAndSet(0));
+            statistic.addHeader("tpp", tpp.getAndSet(0));
             statistic.addHeader("flushed", true);
         } else {
-            statistic.addHeader("tpu", tpu.get());
+            statistic.addHeader("tpp", tpp.get());
             statistic.addHeader("flushed", false);
         }
         return statistic;
@@ -130,20 +127,12 @@ public class RateLimitPeriodic
         propertyDispatcher.shutdown();
     }
 
-    public static Manager.Configuration<RateLimit> getInstanceConfigure(String ns, TimeUnit timeUnit) {
-        return getInstanceConfigure(App.context, ns, timeUnit);
-    }
-
-    public static Manager.Configuration<RateLimit> getInstanceConfigure(
-            ApplicationContext applicationContext,
-            String ns,
-            TimeUnit timeUnit
-    ) {
-        return App.get(Manager.class, applicationContext).configureGeneric(
-                RateLimit.class,
-                ns,
-                ns1 -> new RateLimitPeriodic(ns1, timeUnit)
-        );
+    @Override
+    public void onPropertyUpdate(String key, String oldValue, String newValue) {
+        if (key.equals(RateLimitPeriodicRepositoryProperty.Fields.period)) {
+            tpp.set(0);
+            period = TimeUnit.valueOf(newValue);
+        }
     }
 
 }

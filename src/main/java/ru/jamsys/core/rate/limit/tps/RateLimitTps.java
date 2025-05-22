@@ -1,4 +1,4 @@
-package ru.jamsys.core.rate.limit;
+package ru.jamsys.core.rate.limit.tps;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
@@ -11,6 +11,7 @@ import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
+import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;
@@ -29,11 +30,11 @@ public class RateLimitTps
     @Getter
     private final String ns;
 
-    private final RateLimitRepositoryProperty property = new RateLimitRepositoryProperty();
+    private final RateLimitTpsRepositoryProperty property = new RateLimitTpsRepositoryProperty();
 
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
-    private RateLimitTps(String ns) {
+    public RateLimitTps(String ns) {
         this.ns = ns;
         propertyDispatcher = new PropertyDispatcher<>(
                 App.get(ServiceProperty.class),

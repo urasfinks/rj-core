@@ -13,7 +13,7 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.*;
 import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.rate.limit.RateLimitTps;
+import ru.jamsys.core.rate.limit.tps.RateLimitTps;
 import ru.jamsys.core.resource.http.HttpResource;
 
 import java.util.ArrayList;
