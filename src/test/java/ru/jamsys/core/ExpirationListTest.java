@@ -5,7 +5,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
@@ -45,9 +47,12 @@ class ExpirationListTest {
     void testStop() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         AtomicInteger counterExpired = new AtomicInteger(0);
-        ExpirationList<XItem> test = ExpirationList
-                .getInstanceConfigure("test1", _ -> counterExpired.incrementAndGet())
-                .getGeneric();
+        Manager.Configuration<ExpirationList<XItem>> configureTest = ManagerElement.getConfigure(
+                ExpirationList.class,
+                "test1",
+                xItemExpirationList -> xItemExpirationList.setOnExpired(_ -> counterExpired.incrementAndGet())
+        );
+        ExpirationList<XItem> test = configureTest.get();
 
         ExpirationMsImmutableEnvelope<XItem> add = test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
         // 2024-03-06T17:11:04.056 + 1000 = 2024-03-06T17:11:05.056
@@ -78,9 +83,12 @@ class ExpirationListTest {
     @Test
     void checkSize() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        ExpirationList<XItem> test = ExpirationList
-                .getInstanceConfigure("test2", _ -> {})
-                .getGeneric();
+        Manager.Configuration<ExpirationList<XItem>> testConfigure = ManagerElement.getConfigure(
+                ExpirationList.class,
+                "test2",
+                null
+        );
+        ExpirationList<XItem> test = testConfigure.get();
 
         test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
 
@@ -136,9 +144,13 @@ class ExpirationListTest {
     public void multiThread() throws InterruptedException {
         AtomicInteger err = new AtomicInteger(0);
         AtomicInteger success = new AtomicInteger(0);
-        ExpirationList<XItem> test = ExpirationList
-                .getInstanceConfigure("test3", _ -> success.incrementAndGet())
-                .getGeneric();
+
+        Manager.Configuration<ExpirationList<XItem>> configureTest = ManagerElement.getConfigure(
+                ExpirationList.class,
+                "test3",
+                xItemExpirationList -> xItemExpirationList.setOnExpired(_ -> success.incrementAndGet())
+        );
+        ExpirationList<XItem> test = configureTest.get();
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         AtomicBoolean run = new AtomicBoolean(true);

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.rate.limit.RateLimit;
@@ -46,7 +47,8 @@ class RateLimitTest {
         App.get(ServiceProperty.class).set("App.RateLimitPeriodic.month.period", "MONTH");
         App.get(ServiceProperty.class).set("App.RateLimitPeriodic.month.period", "MONTH");
 
-        RateLimitPeriodic rateLimitItemPeriodic = ManagerElement.getConfigure(RateLimitPeriodic.class, "min").get();
+        Manager.Configuration<RateLimitPeriodic> minConfigure = ManagerElement.getConfigure(RateLimitPeriodic.class, "min");
+        RateLimitPeriodic rateLimitItemPeriodic = minConfigure.get();
 
         rateLimitItemPeriodic.setMax(999999);
         Assertions.assertEquals("{period=Minute, max=999999, tpp=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());
@@ -61,17 +63,24 @@ class RateLimitTest {
         Assertions.assertEquals("{period=Minute, max=999999, tpp=0, flushed=false}", rateLimitItemPeriodic.flushAndGetStatistic(curTime + 60_000).getHeader().toString());
         Assertions.assertEquals("2024-03-06T17:13:04.056", rateLimitItemPeriodic.getNextTime());
 
-        rateLimitItemPeriodic = ManagerElement.getConfigure(RateLimitPeriodic.class, "hour").get();
+
+        Manager.Configuration<RateLimitPeriodic> hourConfigure = ManagerElement.getConfigure(RateLimitPeriodic.class, "hour");
+        rateLimitItemPeriodic = hourConfigure.get();
+
         rateLimitItemPeriodic.setMax(999999);
         Assertions.assertEquals("{period=HourOfDay, max=999999, tpp=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());
         Assertions.assertEquals("2024-03-06T18:11:04.056", rateLimitItemPeriodic.getNextTime());
 
-        rateLimitItemPeriodic = ManagerElement.getConfigure(RateLimitPeriodic.class, "day").get();
+        Manager.Configuration<RateLimitPeriodic> dayConfigure = ManagerElement.getConfigure(RateLimitPeriodic.class, "day");
+        rateLimitItemPeriodic = dayConfigure.get();
+
         rateLimitItemPeriodic.setMax(999999);
         Assertions.assertEquals("{period=DayOfWeek, max=999999, tpp=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());
         Assertions.assertEquals("2024-03-07T17:11:04.056", rateLimitItemPeriodic.getNextTime());
 
-        rateLimitItemPeriodic = ManagerElement.getConfigure(RateLimitPeriodic.class, "month").get();
+        Manager.Configuration<RateLimitPeriodic> monthConfigure = ManagerElement.getConfigure(RateLimitPeriodic.class, "month");
+        rateLimitItemPeriodic = monthConfigure.get();
+
         rateLimitItemPeriodic.setMax(999999);
         Assertions.assertEquals("{period=Month, max=999999, tpp=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());
         Assertions.assertEquals("2024-04-06T17:11:04.056", rateLimitItemPeriodic.getNextTime());
@@ -106,7 +115,8 @@ class RateLimitTest {
 
     @Test
     void testTps() {
-        RateLimit rateLimitTps = ManagerElement.getConfigure(RateLimitTps.class, "tps").get();
+        Manager.Configuration<RateLimitPeriodic> tpsConfigure = ManagerElement.getConfigure(RateLimitTps.class, "tps");
+        RateLimit rateLimitTps = tpsConfigure.get();
         rateLimitTps.run();
         rateLimitTps.setMax(2);
         Assertions.assertTrue(rateLimitTps.check());

@@ -3,9 +3,7 @@ package ru.jamsys.core.extension.expiration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
-import org.springframework.context.ApplicationContext;
-import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.Manager;
+import lombok.Setter;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.ManagerElement;
@@ -45,7 +43,6 @@ public class ExpirationList<T>
                 >,
         ManagerElement, CascadeKey {
 
-
     private final String ns;
 
     @JsonIgnore
@@ -53,7 +50,8 @@ public class ExpirationList<T>
 
     private final ConcurrentSkipListMap<Long, AtomicInteger> bucketQueueSize = new ConcurrentSkipListMap<>();
 
-    private final Consumer<T> onExpired;
+    @Setter
+    private Consumer<T> onExpired;
 
     // Сколько было просто удалено, так как объект был нейтрализован
     private final AtomicLong helperRemove = new AtomicLong(0);
@@ -61,12 +59,8 @@ public class ExpirationList<T>
     // Сколько было передано в OnExpired
     private final AtomicLong helperOnExpired = new AtomicLong(0);
 
-    private ExpirationList(
-            String ns,
-            Consumer<T> onExpired
-    ) {
+    public ExpirationList(String ns) {
         this.ns = ns;
-        this.onExpired = onExpired;
     }
 
     @JsonValue
@@ -123,7 +117,9 @@ public class ExpirationList<T>
                     } else if (envelope.isExpired()) {
                         T value = envelope.getValue();
                         if (value != null) {
-                            onExpired.accept(value);
+                            if (onExpired != null) {
+                                onExpired.accept(value);
+                            }
                             helperOnExpired.incrementAndGet();
                         }
                     }
@@ -226,22 +222,6 @@ public class ExpirationList<T>
         bucketQueueSize.clear();
         helperRemove.set(0);
         helperOnExpired.set(0);
-    }
-
-    public static <T> Manager.Configuration<ExpirationList<T>> getInstanceConfigure(String key, Consumer<T> onExpired) {
-        return getInstanceConfigure(App.context, key, onExpired);
-    }
-
-    public static <T> Manager.Configuration<ExpirationList<T>> getInstanceConfigure(
-            ApplicationContext applicationContext,
-            String key,
-            Consumer<T> onExpired
-    ) {
-        return App.get(Manager.class, applicationContext).configureGeneric(
-                ExpirationList.class,
-                key,
-                key1 -> new ExpirationList<>(key1, onExpired)
-        );
     }
 
 }

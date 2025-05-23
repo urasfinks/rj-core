@@ -38,9 +38,12 @@ public class ExpirationMap<K, V>
     private ExpirationMap(String key, int keepAliveOnInactivityMs) {
         this.key = key;
         setKeepAliveOnInactivityMs(keepAliveOnInactivityMs);
-        expirationMapConfiguration = ExpirationList.getInstanceConfigure(
+        expirationMapConfiguration = ManagerElement.getConfigure(
+                ExpirationList.class,
                 ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров ExpirationMap
-                ExpirationMapExpirationObject::remove
+                expirationMapExpirationObjectExpirationList -> {
+                    expirationMapExpirationObjectExpirationList.setOnExpired(ExpirationMapExpirationObject::remove);
+                }
         );
     }
 

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.promise.AbstractPromiseTask;
 import ru.jamsys.core.promise.Promise;
@@ -25,15 +26,18 @@ public class ServicePromise implements CascadeKey {
     private final Manager.Configuration<ExpirationList<AbstractPromiseTask>> retryExporationList; // Задачи на повтор
 
     public ServicePromise(ApplicationContext applicationContext) {
-        timeOutExpirationList = ExpirationList.getInstanceConfigure(
+        timeOutExpirationList = ManagerElement.getConfigure(
                 applicationContext,
+                ExpirationList.class,
                 getCascadeKey("timeOut"),
-                Promise::timeOut
+                promiseExpirationList -> promiseExpirationList.setOnExpired(Promise::timeOut)
         );
-        retryExporationList = ExpirationList.getInstanceConfigure(
+        retryExporationList = ManagerElement.getConfigure(
                 applicationContext,
+                ExpirationList.class,
                 getCascadeKey("retry"),
-                promiseTask -> promiseTask.prepareLaunch(null)
+                abstractPromiseTaskExpirationList -> abstractPromiseTaskExpirationList
+                        .setOnExpired(promiseTask -> promiseTask.prepareLaunch(null))
         );
     }
 

@@ -6,31 +6,51 @@ import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
 import java.lang.reflect.Constructor;
+import java.util.function.Consumer;
 
 public interface ManagerElement extends ExpirationMsMutable, StatisticsFlush, LifeCycleInterface {
+
     default void helper() {
     }
 
-    static <T extends ManagerElement> Manager.Configuration<T> getConfigure(Class<T> cls, String ns) {
-        return getConfigure(App.context, cls, ns);
+    static <R extends ManagerElement, S extends ManagerElement> Manager.Configuration<R> getConfigure(
+            Class<S> cls,
+            String ns
+    ) {
+        return getConfigure(App.context, cls, ns, null);
     }
 
-    static <T extends ManagerElement> Manager.Configuration<T> getConfigure(
+    static <R extends ManagerElement, S extends ManagerElement> Manager.Configuration<R> getConfigure(
+            Class<S> cls,
+            String ns,
+            Consumer<R> onCreate
+    ) {
+        return getConfigure(App.context, cls, ns, onCreate);
+    }
+
+    static <R extends ManagerElement, S extends ManagerElement> Manager.Configuration<R> getConfigure(
             ApplicationContext applicationContext,
-            Class<T> cls,
-            String ns
+            Class<S> cls,
+            String ns,
+            Consumer<R> onCreate
     ) {
         return App.get(Manager.class, applicationContext).configureGeneric(
                 cls,
                 ns,
-                s -> {
+                ns1 -> {
                     try {
-                        Constructor<T> constructor = cls.getConstructor(String.class);
-                        return constructor.newInstance(s);
+                        Constructor<?> c = cls.getConstructor(String.class);
+                        @SuppressWarnings("unchecked")
+                        R instance = (R) c.newInstance(ns1);
+                        if (onCreate != null) {
+                            onCreate.accept(instance);
+                        }
+                        return instance;
                     } catch (Exception e) {
-                        throw new RuntimeException("Failed to instantiate " + cls.getName() + "(String)", e);
+                        throw new RuntimeException("Failed to instantiate " + cls + "(String)", e);
                     }
                 }
         );
     }
+
 }
