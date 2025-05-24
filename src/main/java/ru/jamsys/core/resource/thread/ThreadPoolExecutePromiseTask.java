@@ -33,7 +33,7 @@ public class ThreadPoolExecutePromiseTask
                 BrokerMemory.class,
                 getCascadeKey(ns),
                 managerElement -> managerElement
-                        .setOnPostDrop(promiseTask -> promiseTask
+                        .setupOnDrop(promiseTask -> promiseTask
                                 .getPromise().setError("::drop", new RuntimeException())
                         )
         );

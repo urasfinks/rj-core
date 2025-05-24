@@ -38,7 +38,7 @@ class BrokerMemoryTest {
         ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
                 BrokerMemory.class,
                 XTest.class.getSimpleName() + "_1",
-                managerElement -> managerElement.setOnPostDrop(dropped::add)
+                managerElement -> managerElement.setupOnDrop(dropped::add)
         );
 
         BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();

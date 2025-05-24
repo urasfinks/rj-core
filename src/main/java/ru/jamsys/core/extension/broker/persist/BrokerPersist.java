@@ -65,7 +65,6 @@ public class BrokerPersist<T extends ByteSerializable>
     // Для того, что бы наполнять queue надо брать существующие CommitController по порядку и доить их
     private final ConcurrentLinkedDeque<ManagerConfiguration<Rider>> queueRiderConfiguration = new ConcurrentLinkedDeque<>();
 
-    @Setter
     private Function<byte[], T> restoreElementFromByte;
 
     public BrokerPersist(String ns) {
@@ -77,6 +76,10 @@ public class BrokerPersist<T extends ByteSerializable>
         );
 
         xWriterInit();
+    }
+
+    public void setupRestoreElementFromByte(Function<byte[], T> restoreElementFromByte){
+        this.restoreElementFromByte = restoreElementFromByte;
     }
 
     @JsonValue

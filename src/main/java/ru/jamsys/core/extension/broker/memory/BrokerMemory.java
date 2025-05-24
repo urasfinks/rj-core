@@ -53,7 +53,6 @@ public class BrokerMemory<T>
     @Getter
     final String ns;
 
-    @Setter
     private Consumer<T> onPostDrop; // Если установлено, вызывается после вы
 
     @Getter
@@ -71,6 +70,10 @@ public class BrokerMemory<T>
                 getProperty(),
                 getCascadeKey(ns)
         );
+    }
+
+    public void setupOnDrop(Consumer<T> onDrop){
+        this.onPostDrop = onDrop;
     }
 
     @JsonValue

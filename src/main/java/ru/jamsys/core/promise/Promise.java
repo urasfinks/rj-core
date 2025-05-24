@@ -386,7 +386,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
                 PoolResourceForPromiseTaskWaitResource.class,
                 nsResource,
                 poolResourceForPromiseTaskWaitResource -> poolResourceForPromiseTaskWaitResource
-                        .setSupplierPoolItem(ns1 -> {
+                        .setupSupplierPoolItem(ns1 -> {
                             T resource = App.get(classResource);
                             try {
                                 resource.init(ns1);

@@ -212,7 +212,7 @@ class BrokerPersistTest {
         ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfigurationFactory.get(
                 BrokerPersist.class,
                 "test2",
-                managerElement -> managerElement.setRestoreElementFromByte((bytes) -> new TestElement(new String(bytes)))
+                managerElement -> managerElement.setupRestoreElementFromByte((bytes) -> new TestElement(new String(bytes)))
         );
 
         BrokerPersist<TestElement> test = brokerPersistManagerConfiguration.get();

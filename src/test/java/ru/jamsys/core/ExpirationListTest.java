@@ -85,8 +85,7 @@ class ExpirationListTest {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         ManagerConfiguration<ExpirationList<XItem>> testConfigure = ManagerConfigurationFactory.get(
                 ExpirationList.class,
-                "test2",
-                null
+                "test2"
         );
         ExpirationList<XItem> test = testConfigure.get();
 

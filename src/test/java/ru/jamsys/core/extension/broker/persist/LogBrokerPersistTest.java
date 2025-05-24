@@ -36,7 +36,7 @@ class LogBrokerPersistTest {
         ManagerConfiguration<BrokerPersist<Log>> brokerPersistManagerConfiguration = ManagerConfigurationFactory.get(
                 BrokerPersist.class,
                 "test",
-                managerElement -> managerElement.setRestoreElementFromByte((bytes) -> {
+                managerElement -> managerElement.setupRestoreElementFromByte((bytes) -> {
                     try {
                         return (Log) Log.instanceFromBytes(bytes);
                     } catch (Exception e) {

@@ -34,13 +34,16 @@ public class PoolResourceForPromiseTaskWaitResource<
     @SuppressWarnings("all")
     private final ManagerConfiguration<BrokerMemory<PromiseTaskWaitResource>> brokerMemoryConfiguration;
 
-    @Setter
     private Function<String, T> supplierPoolItem;
 
     public PoolResourceForPromiseTaskWaitResource(String ns) {
         super(ns);
         // TODO: как будто тут не хватает promiseTask -> promiseTask.getPromise().setError("::drop", new RuntimeException())
         brokerMemoryConfiguration = ManagerConfigurationFactory.get(BrokerMemory.class, ns);
+    }
+
+    public void setupSupplierPoolItem(Function<String, T> supplierPoolItem) {
+        this.supplierPoolItem = supplierPoolItem;
     }
 
     @Override
