@@ -33,6 +33,7 @@ class RiderTest {
         App.shutdown();
     }
 
+    @SuppressWarnings("all")
     @Test
     public void test() throws IOException {
         BrokerPersistRepositoryProperty brokerPersistRepositoryProperty = new BrokerPersistRepositoryProperty();
