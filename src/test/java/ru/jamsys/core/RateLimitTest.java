@@ -20,7 +20,8 @@ class RateLimitTest {
 
     @BeforeAll
     static void beforeAll() {
-        App.getRunBuilder().addTestArguments().runCore();
+        // runSpring что бы Manager не делал flushAndGetStatistic
+        App.getRunBuilder().addTestArguments().runSpring();
     }
 
     @AfterAll
@@ -44,7 +45,6 @@ class RateLimitTest {
         App.get(ServiceProperty.class).set("App.RateLimitPeriodic.hour.period", "HOUR_OF_DAY");
         App.get(ServiceProperty.class).set("App.RateLimitPeriodic.hour.period", "HOUR_OF_DAY");
         App.get(ServiceProperty.class).set("App.RateLimitPeriodic.day.period", "DAY_OF_WEEK");
-        App.get(ServiceProperty.class).set("App.RateLimitPeriodic.month.period", "MONTH");
         App.get(ServiceProperty.class).set("App.RateLimitPeriodic.month.period", "MONTH");
 
         ManagerConfiguration<RateLimitPeriodic> minConfigure = ManagerConfigurationFactory.get(RateLimitPeriodic.class, "min");
@@ -97,6 +97,8 @@ class RateLimitTest {
         Assertions.assertEquals("2024-03-07T17:11:04.056", UtilDate.msFormat(curTime + (aLong * 60 * 24)));
         Assertions.assertEquals("2024-04-07T17:11:04.056", UtilDate.msFormat(curTime + (aLong * 60 * 24 * 32)));
 
+        //RateLimitTest.testPeriodic:100 expected: <{period=Month, max=999999, tpp=3, flushed=false}> but was: <{period=Month, max=999999, tpp=0, flushed=false}>
+        //[ERROR]
         Assertions.assertEquals("{period=Month, max=999999, tpp=3, flushed=false}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());
         Assertions.assertEquals("2024-04-06T17:11:04.056", rateLimitItemPeriodic.getNextTime());
         Assertions.assertEquals("{period=Month, max=999999, tpp=3, flushed=false}", rateLimitItemPeriodic.flushAndGetStatistic(curTime + aLong).getHeader().toString());

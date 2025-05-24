@@ -236,6 +236,7 @@ class AsyncFileWriterRollingTest {
                 .append("sizeMb", ((float) writer.getPosition().get()) / 1024 / 1024)
                 .append("time", fin)
         );
+        System.out.println("fin: " + fin);
         Assertions.assertTrue(fin < 50);
     }
 
