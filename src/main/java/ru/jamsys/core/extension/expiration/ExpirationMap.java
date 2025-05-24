@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -31,14 +33,14 @@ public class ExpirationMap<K, V>
 
     private final String key;
 
-    public Manager.Configuration<ExpirationList<ExpirationMapExpirationObject>> expirationMapConfiguration;
+    public ManagerConfiguration<ExpirationList<ExpirationMapExpirationObject>> expirationMapConfiguration;
 
     private final Map<K, ExpirationMapExpirationObject> mainMap = new ConcurrentHashMap<>(); // Основная карта, в которой хранятся сессионные данные
 
     private ExpirationMap(String key, int keepAliveOnInactivityMs) {
         this.key = key;
         setKeepAliveOnInactivityMs(keepAliveOnInactivityMs);
-        expirationMapConfiguration = ManagerElement.getConfigure(
+        expirationMapConfiguration = ManagerConfigurationFactory.get(
                 ExpirationList.class,
                 ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров ExpirationMap
                 expirationMapExpirationObjectExpirationList -> {
@@ -421,19 +423,19 @@ public class ExpirationMap<K, V>
         return mainMap.remove(key) != null;
     }
 
-    public static <K, V> Manager.Configuration<ExpirationMap<K, V>> getInstanceConfigure(
+    public static <K, V> ManagerConfiguration<ExpirationMap<K, V>> getInstanceConfigure(
             String key,
             int keepAliveOnInactivityMs
     ) {
         return getInstanceConfigure(App.context, key, keepAliveOnInactivityMs);
     }
 
-    public static <K, V> Manager.Configuration<ExpirationMap<K, V>> getInstanceConfigure(
+    public static <K, V> ManagerConfiguration<ExpirationMap<K, V>> getInstanceConfigure(
             ApplicationContext applicationContext,
             String key,
             int keepAliveOnInactivityMs
     ) {
-        return App.get(Manager.class, applicationContext).configureGeneric(
+        return App.get(Manager.class, applicationContext).getManagerConfigurationGeneric(
                 ExpirationMap.class,
                 key,
                 key1 -> new ExpirationMap<>(key1, keepAliveOnInactivityMs)

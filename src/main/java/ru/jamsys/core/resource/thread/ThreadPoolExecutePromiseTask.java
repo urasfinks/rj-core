@@ -3,6 +3,7 @@ package ru.jamsys.core.resource.thread;
 import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
@@ -21,15 +22,15 @@ public class ThreadPoolExecutePromiseTask
 
     AtomicInteger counter = new AtomicInteger(1);
 
-    private final Manager.Configuration<RateLimit> rateLimitConfiguration;
+    private final ManagerConfiguration<RateLimit> rateLimitConfiguration;
 
     @SuppressWarnings("all")
-    private final Manager.Configuration<BrokerMemory> brokerMemoryConfiguration;
+    private final ManagerConfiguration<BrokerMemory> brokerMemoryConfiguration;
 
     public ThreadPoolExecutePromiseTask(String ns) {
         super(ns);
         rateLimitConfiguration = RateLimitTps.getInstanceConfigure(getCascadeKey(ns));
-        brokerMemoryConfiguration = App.get(Manager.class).configure(
+        brokerMemoryConfiguration = App.get(Manager.class).getManagerConfiguration(
                 BrokerMemory.class,
                 getCascadeKey(ns),
                 ns1 -> new BrokerMemory<AbstractPromiseTask>(

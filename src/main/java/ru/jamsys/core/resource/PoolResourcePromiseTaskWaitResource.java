@@ -2,6 +2,7 @@ package ru.jamsys.core.resource;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
 import ru.jamsys.core.extension.LifeCycleInterface;
@@ -31,7 +32,7 @@ public class PoolResourcePromiseTaskWaitResource<
         implements ManagerElement {
 
     @SuppressWarnings("all")
-    final private Manager.Configuration<BrokerMemory> brokerMemoryConfiguration;
+    final private ManagerConfiguration<BrokerMemory> brokerMemoryConfiguration;
 
     final private Function<String, T> supplierPoolItem;
 
@@ -41,7 +42,7 @@ public class PoolResourcePromiseTaskWaitResource<
     ) {
         super(ns);
         this.supplierPoolItem = supplierPoolItem;
-        brokerMemoryConfiguration = App.get(Manager.class).configure(
+        brokerMemoryConfiguration = App.get(Manager.class).getManagerConfiguration(
                 BrokerMemory.class,
                 ns,
                 (ns1) -> new BrokerMemory<PromiseTaskWaitResource<?>>(ns1, App.context, null)

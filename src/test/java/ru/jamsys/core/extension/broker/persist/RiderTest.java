@@ -68,7 +68,7 @@ class RiderTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        Rider rider = App.get(Manager.class).configure(
+        Rider rider = App.get(Manager.class).getManagerConfiguration(
                 Rider.class,
                 "test",
                 key1 -> new Rider(

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -128,7 +129,7 @@ class PromiseImplTest {
 
     @Test
     void test3() {
-        Manager.Configuration<RateLimit> rateLimitItemConfiguration =
+        ManagerConfiguration<RateLimit> rateLimitItemConfiguration =
                 RateLimitTps.getInstanceConfigure(Promise.getComplexIndex("test", "test"));
         rateLimitItemConfiguration.get().setMax(10000);
         Promise promise = servicePromise.get("test", 6_000L);
@@ -150,7 +151,7 @@ class PromiseImplTest {
         AtomicInteger c = new AtomicInteger(0);
         promise.then("then1", (_, _, _) -> c.incrementAndGet());
 
-        Manager.Configuration<RateLimit> rateLimitItemConfiguration = promise
+        ManagerConfiguration<RateLimit> rateLimitItemConfiguration = promise
                 .getQueueTask()
                 .get("seq.then1")
                 .getComputeThreadConfiguration().get()
@@ -202,7 +203,7 @@ class PromiseImplTest {
 
     @Test
     void test5() {
-        Manager.Configuration<RateLimit> rateLimitItemConfiguration =
+        ManagerConfiguration<RateLimit> rateLimitItemConfiguration =
                 RateLimitTps.getInstanceConfigure(Promise.getComplexIndex("test", "test"));
         rateLimitItemConfiguration.get().setMax(100000000);
         Promise promise = servicePromise.get("test", 6_000L);

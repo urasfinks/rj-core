@@ -3,7 +3,7 @@ package ru.jamsys.core.extension.broker.persist;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.Position;
 
@@ -23,7 +23,7 @@ public class X<T extends ByteSerializable>
 
     @JsonIgnore
     @Setter
-    private Manager.Configuration<Rider> riderConfiguration;
+    private ManagerConfiguration<Rider> riderConfiguration;
 
     @Override
     public byte[] toBytes() throws Exception {

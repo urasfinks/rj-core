@@ -1,7 +1,7 @@
 package ru.jamsys.core.balancer2;
 
 import lombok.Getter;
-import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.expiration.ExpirationMap;
 import ru.jamsys.core.flat.util.Util;
 
@@ -15,7 +15,7 @@ public class BalancerStickySessions<T> {
 
     private final List<T> list = new CopyOnWriteArrayList<>();
 
-    private final Manager.Configuration<ExpirationMap<String, Resolved<T>>> expirationStickyMapConfiguration;
+    private final ManagerConfiguration<ExpirationMap<String, Resolved<T>>> expirationStickyMapConfiguration;
 
     // Вложенный результат: значение и статус "новый или нет"
     public record Resolved<T>(T value, boolean isNew) {

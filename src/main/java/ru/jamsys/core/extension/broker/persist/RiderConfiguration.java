@@ -1,11 +1,11 @@
 package ru.jamsys.core.extension.broker.persist;
 
-import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 
 public interface RiderConfiguration {
 
-    Manager.Configuration<Rider> getRiderConfiguration();
+    ManagerConfiguration<Rider> getRiderConfiguration();
 
-    void setRiderConfiguration(Manager.Configuration<Rider> riderConfiguration);
+    void setRiderConfiguration(ManagerConfiguration<Rider> riderConfiguration);
 
 }

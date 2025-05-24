@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.ByteSerializable;
@@ -20,7 +21,7 @@ import java.util.function.Consumer;
 @Getter
 public class Rider extends AbstractManagerElement {
 
-    private final Manager.Configuration<AsyncFileWriterWal<Y>> yWriterConfiguration;
+    private final ManagerConfiguration<AsyncFileWriterWal<Y>> yWriterConfiguration;
 
     private final String filePathY;
 
@@ -39,7 +40,7 @@ public class Rider extends AbstractManagerElement {
         // То, что будут коммитить - это значит, что обработано и нам надо это удалять из списка на обработку
         // В asyncWrite залетает CommitElement содержащий bin (CommitElement.getBytes() возвращает позицию bin.position)
         // В onWrite залетает список CommitElement и мы должны bin.position удалить из binReader
-        yWriterConfiguration = App.get(Manager.class).configureGeneric(
+        yWriterConfiguration = App.get(Manager.class).getManagerConfigurationGeneric(
                 AbstractAsyncFileWriter.class,
                 ns,
                 _ -> {

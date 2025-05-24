@@ -1,6 +1,6 @@
 package ru.jamsys.core.promise;
 
-import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskWithResourceConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
@@ -18,14 +18,14 @@ public class PromiseTaskWaitResource<T extends ExpirationMsMutable & Resource<?,
     private final PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> executeBlock;
 
     @SuppressWarnings("all")
-    private final Manager.Configuration<PoolResourcePromiseTaskWaitResource> poolResourcePromiseTaskWaitConfiguration;
+    private final ManagerConfiguration<PoolResourcePromiseTaskWaitResource> poolResourcePromiseTaskWaitConfiguration;
 
     @SuppressWarnings("all")
     public PromiseTaskWaitResource(
             String indexTask,
             Promise promise,
             PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> executeBlock,
-            Manager.Configuration<PoolResourcePromiseTaskWaitResource> poolResourcePromiseTaskWaitConfiguration
+            ManagerConfiguration<PoolResourcePromiseTaskWaitResource> poolResourcePromiseTaskWaitConfiguration
     ) {
         super(indexTask, promise, PromiseTaskExecuteType.IO, null);
         this.executeBlock = executeBlock;

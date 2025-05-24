@@ -1,10 +1,8 @@
 package ru.jamsys.core.component.manager;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.*;
-import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
@@ -27,74 +25,10 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
 
     private final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, Function<String, ? extends ManagerElement>>> configureMap = new ConcurrentHashMap<>();
 
-    public static class Configuration<T extends ManagerElement> {
-
-        private final Class<T> cls;
-
-        private final String key;
-
-        private final Manager manager;
-
-        private long nextUpdate;
-
-        private T cache;
-
-        public Configuration(Class<T> cls, String key, Manager manager) {
-            this.cls = cls;
-            this.key = key;
-            this.manager = manager;
-        }
-
-        // Получить элемент преобразованные по типу дженерика
-        public <X> X getGeneric() {
-            @SuppressWarnings("unchecked")
-            X t = (X) manager.get(cls, key);
-            return t;
-        }
-
-        @JsonValue
-        public Object getValue() {
-            return new HashMapBuilder<String, Object>()
-                    .append("hashCode", Integer.toHexString(hashCode()))
-                    .append("cls", cls)
-                    .append("key", key)
-                    .append("reference", isAlive() ? manager.get(cls, key) : null);
-        }
-
-        public boolean isAlive() {
-            return manager.contains(cls, key);
-        }
-
-        public T get() {
-            long l = System.currentTimeMillis();
-            if (l > nextUpdate) {
-                cache = manager.get(cls, key);
-                nextUpdate = cache.getExpiryRemainingMs() + l;
-            }
-            // TODO: почистить markActive внутри реализаций, потому что всё должно работать через Manager
-            cache.markActive();
-            return cache;
-        }
-
-        public void execute(Consumer<T> managerElement) {
-            T t = get();
-            if (t != null) {
-                managerElement.accept(t);
-            }
-        }
-
-        public void executeIfAlive(Consumer<T> managerElement) {
-            if(!isAlive()){
-                return;
-            }
-            execute(managerElement);
-        }
-
-    }
-
     // Помните, конфигурация не создаёт сразу же экземпляр через builder. Экземпляр создаётся только в момент получения
     // get() и живёт до тех пор пока его не удалит Manager
-    public <R extends ManagerElement> Configuration<R> configureGeneric(
+    @Deprecated
+    public <R extends ManagerElement> ManagerConfiguration<R> getManagerConfigurationGeneric(
             Class<? extends ManagerElement> cls,
             String key,
             Function<String, R> builder
@@ -105,12 +39,13 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
 
         @SuppressWarnings("unchecked")
         Class<R> newCls = (Class<R>) cls;
-        return new Configuration<>(newCls, key, this);
+        return new ManagerConfiguration<>(newCls, key, this);
     }
 
     // Помните, конфигурация не создаёт сразу же экземпляр через builder. Экземпляр создаётся только в момент получения
     // get() и живёт до тех пор пока его не удалит Manager
-    public <R extends ManagerElement> Configuration<R> configure(
+    @Deprecated
+    public <R extends ManagerElement> ManagerConfiguration<R> getManagerConfiguration(
             Class<R> cls,
             String key,
             Function<String, R> builder
@@ -118,7 +53,7 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         configureMap
                 .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
                 .computeIfAbsent(key, _ -> builder);
-        return new Configuration<>(cls, key, this);
+        return new ManagerConfiguration<>(cls, key, this);
     }
 
     public <R extends ManagerElement> void groupAccept(Class<R> cls, Consumer<R> consumer) {
@@ -228,7 +163,6 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
                 }
             }
         }
-        //UtilLog.printInfo(lifeCycleInterfaceGraphTopology.getReverseSorted());
         return lifeCycleInterfaceGraphTopology.getReverseSorted();
     }
 

@@ -24,7 +24,7 @@ class BrokerMemoryTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runCore();
-        App.get(Manager.class).configure(
+        App.get(Manager.class).getManagerConfiguration(
                 BrokerMemory.class,
                 XTest.class.getSimpleName(),
                 (k) -> new BrokerMemory<>(k, App.context, _ -> UtilLog.printAction("DROP"))
@@ -39,7 +39,7 @@ class BrokerMemoryTest {
     @Test
     void testLiner() {
         List<XTest> dropped = new ArrayList<>();
-        BrokerMemory<XTest> broker = App.get(Manager.class).configure(
+        BrokerMemory<XTest> broker = App.get(Manager.class).getManagerConfiguration(
                         BrokerMemory.class,
                         XTest.class.getSimpleName() + "_1",
                         (k) -> new BrokerMemory<XTest>(k, App.context, dropped::add)

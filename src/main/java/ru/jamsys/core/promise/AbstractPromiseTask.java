@@ -9,6 +9,7 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadVirtual;
 import ru.jamsys.core.component.ServiceTimer;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
@@ -51,7 +52,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     protected AtomicBoolean threadRun;
 
     @JsonIgnore
-    private final Manager.Configuration<ThreadPoolExecutePromiseTask> computeThreadConfiguration;
+    private final ManagerConfiguration<ThreadPoolExecutePromiseTask> computeThreadConfiguration;
 
     public AbstractPromiseTask(
             String ns,
@@ -63,7 +64,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
         this.promise = promise;
         this.type = type;
         this.procedure = procedure;
-        computeThreadConfiguration = App.get(Manager.class).configure(
+        computeThreadConfiguration = App.get(Manager.class).getManagerConfiguration(
                 ThreadPoolExecutePromiseTask.class,
                 ns,
                 (ns1) -> {

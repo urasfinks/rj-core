@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilUri;
 import ru.jamsys.core.resource.virtual.file.system.File;
@@ -83,7 +84,7 @@ class FileTest {
 
     @Test
     void testComponent() {
-        Manager.Configuration<File> fileConfiguration = App.get(Manager.class).configure(
+        ManagerConfiguration<File> fileConfiguration = App.get(Manager.class).getManagerConfiguration(
                 File.class,
                 "hello/world/1.txt",
                 path -> new File(path, FileLoaderFactory.fromString("Hello world", "UTF-8"))

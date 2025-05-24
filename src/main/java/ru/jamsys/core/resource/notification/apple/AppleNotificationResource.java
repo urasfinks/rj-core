@@ -97,7 +97,7 @@ public class AppleNotificationResource
         if (appleNotificationRepositoryProperty.getVirtualPath() == null || appleNotificationRepositoryProperty.getStorage() == null) {
             return;
         }
-        App.get(Manager.class).configure(
+        App.get(Manager.class).getManagerConfiguration(
                 File.class,
                 appleNotificationRepositoryProperty.getVirtualPath(),
                 path -> new File(path, FileLoaderFactory.fromFileSystem(appleNotificationRepositoryProperty.getStorage()))

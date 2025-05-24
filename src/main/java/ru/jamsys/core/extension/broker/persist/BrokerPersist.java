@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.ByteSerializable;
@@ -59,13 +60,13 @@ public class BrokerPersist<T extends ByteSerializable>
 
     private final AtomicInteger tpsEnqueue = new AtomicInteger(0);
 
-    private Manager.Configuration<AbstractAsyncFileWriter<X<T>>> xWriterConfiguration;
+    private ManagerConfiguration<AbstractAsyncFileWriter<X<T>>> xWriterConfiguration;
 
     // Конфиг может быть удалён, только если файл полностью обработан, до этого момента он должен быть тут 100%
-    private final Map<String, Manager.Configuration<Rider>> mapRiderConfiguration = new ConcurrentHashMap<>();
+    private final Map<String, ManagerConfiguration<Rider>> mapRiderConfiguration = new ConcurrentHashMap<>();
 
     // Для того, что бы наполнять queue надо брать существующие CommitController по порядку и доить их
-    private final ConcurrentLinkedDeque<Manager.Configuration<Rider>> queueRiderConfiguration = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<ManagerConfiguration<Rider>> queueRiderConfiguration = new ConcurrentLinkedDeque<>();
 
     private final Function<byte[], T> restoreElementFromByte;
 
@@ -103,7 +104,7 @@ public class BrokerPersist<T extends ByteSerializable>
         if (xWriterConfiguration != null) {
             App.get(Manager.class, applicationContext).remove(AbstractAsyncFileWriter.class, key);
         }
-        xWriterConfiguration = App.get(Manager.class, applicationContext).configureGeneric(
+        xWriterConfiguration = App.get(Manager.class, applicationContext).getManagerConfigurationGeneric(
                 AbstractAsyncFileWriter.class,
                 // ns уникально в пределах BrokerPersist, но нам надо больше уникальности, так как у нас несколько
                 // AbstractAsyncFileWriter.class (Rolling/Wal)
@@ -118,7 +119,7 @@ public class BrokerPersist<T extends ByteSerializable>
                     // При обычной работе происходит просто onSwap и едем дальше, а при завершении работы приложения
                     // или просто BrokerPersist отъехал от дел, буду закрываться ресурсы, вот тут тоже вызовется
                     xAsyncFileWriterRolling.getListOnPostShutdown().add(() -> {
-                        Manager.Configuration<Rider> riderConfiguration = mapRiderConfiguration
+                        ManagerConfiguration<Rider> riderConfiguration = mapRiderConfiguration
                                 .get(xAsyncFileWriterRolling.getFilePath());
                         if (riderConfiguration != null && riderConfiguration.isAlive()) {
                             riderConfiguration.get().getQueueRetry().setFinishState(true);
@@ -146,7 +147,7 @@ public class BrokerPersist<T extends ByteSerializable>
 
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
     public void onXWrite(String filePath, List<X<T>> listX) {
-        Manager.Configuration<Rider> riderConfiguration = mapRiderConfiguration.get(filePath);
+        ManagerConfiguration<Rider> riderConfiguration = mapRiderConfiguration.get(filePath);
         if (riderConfiguration == null) {
             throw new RuntimeException("Rider(" + filePath + ") not found");
         }
@@ -164,7 +165,7 @@ public class BrokerPersist<T extends ByteSerializable>
     private void removeRiderIfComplete(Rider rider) {
         if (rider.getQueueRetry().isProcessed()) {
             // rider.shutdown(); // Когда менеджер будет его выбрасывать, сам выключит
-            Manager.Configuration<Rider> removedRiderConfiguration
+            ManagerConfiguration<Rider> removedRiderConfiguration
                     = mapRiderConfiguration.remove(filePathYToX(rider.getFilePathY()));
             // Если контроллер найден по имени файла, удалим и из очереди
             if (removedRiderConfiguration != null) {
@@ -176,7 +177,7 @@ public class BrokerPersist<T extends ByteSerializable>
     // Вызывается когда меняется bin файл, так как он достиг максимального размера
     public void onXFileSwap(String fileName, AsyncFileWriterRolling<X<T>> xAsyncFileWriterRolling) {
         // Если последний зарегистрированный Rider существует и ещё жив - оповестим, что запись закончена
-        Manager.Configuration<Rider> lastRiderConfiguration = queueRiderConfiguration.peekLast();
+        ManagerConfiguration<Rider> lastRiderConfiguration = queueRiderConfiguration.peekLast();
         if (lastRiderConfiguration != null && lastRiderConfiguration.isAlive()) {
             lastRiderConfiguration.get().getQueueRetry().setFinishState(true);
         }
@@ -188,7 +189,7 @@ public class BrokerPersist<T extends ByteSerializable>
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        Manager.Configuration<Rider> newRiderConfiguration = getRiderConfiguration(filePath, false);
+        ManagerConfiguration<Rider> newRiderConfiguration = getRiderConfiguration(filePath, false);
         // Запускаем сразу контроллер коммитов, что бы onBinWrite мог в него уже передавать записанные position
         if (newRiderConfiguration != null) {
             newRiderConfiguration.get(); // Это обязательно! Поэтому буду дублировать, что бы по случайности не удалить
@@ -197,7 +198,7 @@ public class BrokerPersist<T extends ByteSerializable>
         }
     }
 
-    private Manager.Configuration<Rider> getRiderConfiguration(String filePathX, boolean fileXFinishState) {
+    private ManagerConfiguration<Rider> getRiderConfiguration(String filePathX, boolean fileXFinishState) {
         // Обязательно должен существовать commit файл, если пакет данных не обработан, после обработки commit
         // файл удаляется, если нет commit - то смысла в этом больше нет
         if (!Files.exists(Paths.get(filePathXToY(filePathX)))) {
@@ -206,7 +207,7 @@ public class BrokerPersist<T extends ByteSerializable>
         return mapRiderConfiguration.computeIfAbsent(
                 filePathX, // Нам тут нужна ссылка на bin так как BrokerPersistElement.getFilePath возвращает именно его
                 _ -> {
-                    Manager.Configuration<Rider> configure = App.get(Manager.class, applicationContext).configure(
+                    ManagerConfiguration<Rider> configure = App.get(Manager.class, applicationContext).getManagerConfiguration(
                             Rider.class,
                             getCascadeKey(ns, filePathX), // Тут главно, что бы просто было уникальным
                             ns1 -> new Rider(
@@ -280,20 +281,20 @@ public class BrokerPersist<T extends ByteSerializable>
 
     public void commit(X<T> element) {
         // К моменту commit уже должна быть конфигурация Rider
-        Manager.Configuration<Rider> riderConfiguration = element.getRiderConfiguration();
+        ManagerConfiguration<Rider> riderConfiguration = element.getRiderConfiguration();
         if (riderConfiguration == null) {
             throw new RuntimeException("Rider is null");
         }
         riderConfiguration.get().onCommitX(element);
     }
 
-    public record LastDataWrite(DataReadWrite dataReadWrite, Manager.Configuration<Rider> riderConfiguration) {}
+    public record LastDataWrite(DataReadWrite dataReadWrite, ManagerConfiguration<Rider> riderConfiguration) {}
 
     private LastDataWrite getLastDataWrite() {
         // Так как последний Rider, при нагрузке, всегда будет находиться в finishStatus = false,
         // мы должны перебирать всех Rider с конца очереди queueRiderConfiguration в поиске LastDataWrite
-        for (Iterator<Manager.Configuration<Rider>> it = queueRiderConfiguration.descendingIterator(); it.hasNext(); ) {
-            Manager.Configuration<Rider> riderConfig = it.next();
+        for (Iterator<ManagerConfiguration<Rider>> it = queueRiderConfiguration.descendingIterator(); it.hasNext(); ) {
+            ManagerConfiguration<Rider> riderConfig = it.next();
             DataReadWrite dataReadWrite = riderConfig
                     .get()
                     .getQueueRetry()
@@ -332,7 +333,7 @@ public class BrokerPersist<T extends ByteSerializable>
         }
     }
 
-    public Manager.Configuration<Rider> getLastRiderConfiguration() {
+    public ManagerConfiguration<Rider> getLastRiderConfiguration() {
         return queueRiderConfiguration.peekLast();
     }
 

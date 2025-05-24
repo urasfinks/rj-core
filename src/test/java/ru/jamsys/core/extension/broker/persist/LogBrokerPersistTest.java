@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.item.log.Log;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -32,7 +33,7 @@ class LogBrokerPersistTest {
     @Test
     void linearTest() throws InterruptedException {
         App.get(ServiceProperty.class).set("App.BrokerPersist.test.directory", "LogManager");
-        BrokerPersist<Log> test = App.get(Manager.class).configure(
+        BrokerPersist<Log> test = App.get(Manager.class).getManagerConfiguration(
                 BrokerPersist.class,
                 "test",
                 s -> new BrokerPersist<>(s, App.context, (bytes) -> {
@@ -81,8 +82,8 @@ class LogBrokerPersistTest {
                 5_000,
                 100,
                 () -> {
-                    for (Iterator<Manager.Configuration<Rider>> it = test.getQueueRiderConfiguration().descendingIterator(); it.hasNext(); ) {
-                        Manager.Configuration<Rider> config = it.next();
+                    for (Iterator<ManagerConfiguration<Rider>> it = test.getQueueRiderConfiguration().descendingIterator(); it.hasNext(); ) {
+                        ManagerConfiguration<Rider> config = it.next();
                         if (config.get().getQueueRetry().size() > 0) {
                             return false;
                         }

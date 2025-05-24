@@ -5,9 +5,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
-import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
@@ -47,7 +47,7 @@ class ExpirationListTest {
     void testStop() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         AtomicInteger counterExpired = new AtomicInteger(0);
-        Manager.Configuration<ExpirationList<XItem>> configureTest = ManagerElement.getConfigure(
+        ManagerConfiguration<ExpirationList<XItem>> configureTest = ManagerConfigurationFactory.get(
                 ExpirationList.class,
                 "test1",
                 xItemExpirationList -> xItemExpirationList.setOnExpired(_ -> counterExpired.incrementAndGet())
@@ -83,7 +83,7 @@ class ExpirationListTest {
     @Test
     void checkSize() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        Manager.Configuration<ExpirationList<XItem>> testConfigure = ManagerElement.getConfigure(
+        ManagerConfiguration<ExpirationList<XItem>> testConfigure = ManagerConfigurationFactory.get(
                 ExpirationList.class,
                 "test2",
                 null
@@ -145,7 +145,7 @@ class ExpirationListTest {
         AtomicInteger err = new AtomicInteger(0);
         AtomicInteger success = new AtomicInteger(0);
 
-        Manager.Configuration<ExpirationList<XItem>> configureTest = ManagerElement.getConfigure(
+        ManagerConfiguration<ExpirationList<XItem>> configureTest = ManagerConfigurationFactory.get(
                 ExpirationList.class,
                 "test3",
                 xItemExpirationList -> xItemExpirationList.setOnExpired(_ -> success.incrementAndGet())

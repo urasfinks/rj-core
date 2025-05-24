@@ -5,9 +5,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
-import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.ExpirationList;
@@ -39,12 +39,12 @@ public class QueueRetry implements DataReader, StatisticsFlush {
     private final String key;
 
     @Getter
-    private final Manager.Configuration<ExpirationList<QueueRetryExpirationObject>> expirationListConfiguration;
+    private final ManagerConfiguration<ExpirationList<QueueRetryExpirationObject>> expirationListConfiguration;
 
     public QueueRetry(String key, boolean finishState) {
         this.key = key;
         this.finishState = finishState;
-        expirationListConfiguration = ManagerElement.getConfigure(
+        expirationListConfiguration = ManagerConfigurationFactory.get(
                 ExpirationList.class,
                 QueueRetry.class.getName(), // Это общий ExpirationList для всех экземпляров QueueRetry
                 queueRetryExpirationObjectExpirationList -> queueRetryExpirationObjectExpirationList

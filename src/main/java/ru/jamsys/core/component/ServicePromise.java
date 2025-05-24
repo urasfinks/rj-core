@@ -4,9 +4,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.promise.AbstractPromiseTask;
 import ru.jamsys.core.promise.Promise;
@@ -20,19 +20,19 @@ import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelo
 public class ServicePromise implements CascadeKey {
 
     @SuppressWarnings("all")
-    private final Manager.Configuration<ExpirationList<Promise>> timeOutExpirationList;
+    private final ManagerConfiguration<ExpirationList<Promise>> timeOutExpirationList;
 
     @SuppressWarnings("all")
-    private final Manager.Configuration<ExpirationList<AbstractPromiseTask>> retryExporationList; // Задачи на повтор
+    private final ManagerConfiguration<ExpirationList<AbstractPromiseTask>> retryExporationList; // Задачи на повтор
 
     public ServicePromise(ApplicationContext applicationContext) {
-        timeOutExpirationList = ManagerElement.getConfigure(
+        timeOutExpirationList = ManagerConfigurationFactory.get(
                 applicationContext,
                 ExpirationList.class,
                 getCascadeKey("timeOut"),
                 promiseExpirationList -> promiseExpirationList.setOnExpired(Promise::timeOut)
         );
-        retryExporationList = ManagerElement.getConfigure(
+        retryExporationList = ManagerConfigurationFactory.get(
                 applicationContext,
                 ExpirationList.class,
                 getCascadeKey("retry"),

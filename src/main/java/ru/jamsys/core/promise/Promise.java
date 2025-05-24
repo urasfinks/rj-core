@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -381,7 +382,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
             PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> procedure
     ) {
         @SuppressWarnings("all")
-        Manager.Configuration<PoolResourcePromiseTaskWaitResource> poolResourcePromiseTaskWaitResourceConfiguration = App.get(Manager.class).configure(
+        ManagerConfiguration<PoolResourcePromiseTaskWaitResource> poolResourcePromiseTaskWaitResourceConfiguration = App.get(Manager.class).getManagerConfiguration(
                 PoolResourcePromiseTaskWaitResource.class,
                 ns,
                 ns1 -> new PoolResourcePromiseTaskWaitResource<>(

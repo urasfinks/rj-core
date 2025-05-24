@@ -2,7 +2,7 @@ package ru.jamsys.core.resource.thread;
 
 import lombok.Getter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -26,7 +26,7 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
 
     private final ThreadPoolExecutePromiseTask pool;
 
-    private final Manager.Configuration<RateLimit> rateLimitConfiguration;
+    private final ManagerConfiguration<RateLimit> rateLimitConfiguration;
 
     private final int indexThread;
 
@@ -37,7 +37,7 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
             String ns,
             int indexThread,
             ThreadPoolExecutePromiseTask pool,
-            Manager.Configuration<RateLimit> rateLimitConfiguration
+            ManagerConfiguration<RateLimit> rateLimitConfiguration
     ) {
         this.ns = ns;
         this.pool = pool;

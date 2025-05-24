@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -94,15 +95,15 @@ public class RateLimitTps
         propertyDispatcher.shutdown();
     }
 
-    public static Manager.Configuration<RateLimit> getInstanceConfigure(String key) {
+    public static ManagerConfiguration<RateLimit> getInstanceConfigure(String key) {
         return getInstanceConfigure(App.context, key);
     }
 
-    public static Manager.Configuration<RateLimit> getInstanceConfigure(
+    public static ManagerConfiguration<RateLimit> getInstanceConfigure(
             ApplicationContext applicationContext,
             String key
     ) {
-        return App.get(Manager.class, applicationContext).configureGeneric(
+        return App.get(Manager.class, applicationContext).getManagerConfigurationGeneric(
                 RateLimit.class,
                 key,
                 RateLimitTps::new

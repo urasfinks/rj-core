@@ -72,7 +72,7 @@ class BrokerPersistTest {
     @Test
     public void test1() throws Throwable {
         App.get(ServiceProperty.class).set("App.BrokerPersist.test1.directory", "LogManager");
-        BrokerPersist<TestElement> test = App.get(Manager.class).configure(
+        BrokerPersist<TestElement> test = App.get(Manager.class).getManagerConfiguration(
                 BrokerPersist.class,
                 "test1",
                 s -> new BrokerPersist<>(s, App.context, (_) -> null)
@@ -205,7 +205,7 @@ class BrokerPersistTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        BrokerPersist<TestElement> test = App.get(Manager.class).configure(
+        BrokerPersist<TestElement> test = App.get(Manager.class).getManagerConfiguration(
                 BrokerPersist.class,
                 "test2",
                 s -> new BrokerPersist<>(s, App.context, (bytes) -> new TestElement(new String(bytes)))
