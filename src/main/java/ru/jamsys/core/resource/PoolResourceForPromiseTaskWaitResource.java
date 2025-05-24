@@ -1,6 +1,5 @@
 package ru.jamsys.core.resource;
 
-import lombok.Setter;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.LifeCycleInterface;

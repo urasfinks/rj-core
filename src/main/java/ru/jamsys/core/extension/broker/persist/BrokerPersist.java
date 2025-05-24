@@ -2,7 +2,6 @@ package ru.jamsys.core.extension.broker.persist;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
