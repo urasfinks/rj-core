@@ -71,6 +71,7 @@ class BrokerPersistTest {
         App.shutdown();
     }
 
+    @SuppressWarnings("all")
     @Test
     public void test1() throws Throwable {
         App.get(ServiceProperty.class).set("App.BrokerPersist.test1.directory", "LogManager");
@@ -158,6 +159,7 @@ class BrokerPersistTest {
 
     }
 
+    @SuppressWarnings("all")
     @Test
     void test2() throws Throwable {
         UtilFile.removeAllFilesInFolder("LogManager");
