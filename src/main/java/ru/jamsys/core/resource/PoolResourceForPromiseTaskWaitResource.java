@@ -1,11 +1,11 @@
 package ru.jamsys.core.resource;
 
-import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.Manager;
+import lombok.Setter;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
+import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
-import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemCompletable;
 import ru.jamsys.core.pool.Valid;
@@ -15,38 +15,32 @@ import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
 import java.util.function.Function;
 
-// Пул ресурсов хранит очередь задач, которые ждут освободившиеся ресурсы
-// При освобождении ресурса происходит передача управления ресурса в задачу
-// Пул, который предоставляет освободившиеся ресурсы для задач PromiseTask
-// В потоке исполнения задачи - совершается действие с освободившимся ресурсом
+// Пул ресурсов хранит очередь задач, которые ждут освободившиеся ресурсы.
+// При освобождении ресурса происходит передача управления ресурса в задачу.
+// Пул, который предоставляет освободившиеся ресурсы для задач PromiseTask.
+// В потоке исполнения задачи - совершается действие с освободившимся ресурсом.
 
 // Существует индекс ресурса, например JdbcResource.default
-// Далее существует ManagerPoolTaskWait, где в карте хранится по индексу ресурса экземпляр PoolPromiseTaskWaitResource
-// PoolPromiseTaskWaitResource - это пул ресурсов с очередью задач, которым для выполнения нужен ресурс
+// Далее существует ManagerPoolTaskWait, где в карте хранится по индексу ресурса экземпляр PoolPromiseTaskWaitResource.
+// PoolPromiseTaskWaitResource - это пул ресурсов с очередью задач, которым для выполнения нужен ресурс.
 
 
-public class PoolResourcePromiseTaskWaitResource<
+public class PoolResourceForPromiseTaskWaitResource<
         T extends ExpirationMsMutable & Valid & LifeCycleInterface & ResourceCheckException
         >
         extends AbstractPool<T>
         implements ManagerElement {
 
     @SuppressWarnings("all")
-    final private ManagerConfiguration<BrokerMemory> brokerMemoryConfiguration;
+    private final ManagerConfiguration<BrokerMemory<PromiseTaskWaitResource>> brokerMemoryConfiguration;
 
-    final private Function<String, T> supplierPoolItem;
+    @Setter
+    private Function<String, T> supplierPoolItem;
 
-    public PoolResourcePromiseTaskWaitResource(
-            String ns,
-            Function<String, T> supplierPoolItem
-    ) {
+    public PoolResourceForPromiseTaskWaitResource(String ns) {
         super(ns);
-        this.supplierPoolItem = supplierPoolItem;
-        brokerMemoryConfiguration = App.get(Manager.class).getManagerConfiguration(
-                BrokerMemory.class,
-                ns,
-                (ns1) -> new BrokerMemory<PromiseTaskWaitResource<?>>(ns1, App.context, null)
-        );
+        // TODO: как будто тут не хватает promiseTask -> promiseTask.getPromise().setError("::drop", new RuntimeException())
+        brokerMemoryConfiguration = ManagerConfigurationFactory.get(BrokerMemory.class, ns);
     }
 
     @Override
@@ -59,7 +53,6 @@ public class PoolResourcePromiseTaskWaitResource<
         poolItem.shutdown();
     }
 
-    @SuppressWarnings("unchecked")
     public void addPromiseTask(PromiseTaskWaitResource<?> promiseTaskWaitResource) {
         markActive();
         brokerMemoryConfiguration

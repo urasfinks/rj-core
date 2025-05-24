@@ -1,6 +1,5 @@
 package ru.jamsys.core.component;
 
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
@@ -25,15 +24,13 @@ public class ServicePromise implements CascadeKey {
     @SuppressWarnings("all")
     private final ManagerConfiguration<ExpirationList<AbstractPromiseTask>> retryExporationList; // Задачи на повтор
 
-    public ServicePromise(ApplicationContext applicationContext) {
+    public ServicePromise() {
         timeOutExpirationList = ManagerConfigurationFactory.get(
-                applicationContext,
                 ExpirationList.class,
                 getCascadeKey("timeOut"),
                 promiseExpirationList -> promiseExpirationList.setOnExpired(Promise::timeOut)
         );
         retryExporationList = ManagerConfigurationFactory.get(
-                applicationContext,
                 ExpirationList.class,
                 getCascadeKey("retry"),
                 abstractPromiseTaskExpirationList -> abstractPromiseTaskExpirationList

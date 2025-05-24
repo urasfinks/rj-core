@@ -6,6 +6,8 @@ import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.ByteCodec;
 import ru.jamsys.core.extension.async.writer.Position;
 import ru.jamsys.core.extension.async.writer.QueueRetry;
@@ -75,7 +77,7 @@ class BrokerPersistTest {
         BrokerPersist<TestElement> test = App.get(Manager.class).getManagerConfiguration(
                 BrokerPersist.class,
                 "test1",
-                s -> new BrokerPersist<>(s, App.context, (_) -> null)
+                BrokerPersist::new
         ).getGeneric();
         test.add(new TestElement("Hello"));
         // Данные добавлены в очередь на запись, но реально ещё не сохранились на файловую систему. То есть в последний
@@ -205,11 +207,13 @@ class BrokerPersistTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        BrokerPersist<TestElement> test = App.get(Manager.class).getManagerConfiguration(
+        ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfigurationFactory.get(
                 BrokerPersist.class,
                 "test2",
-                s -> new BrokerPersist<>(s, App.context, (bytes) -> new TestElement(new String(bytes)))
-        ).getGeneric();
+                managerElement -> managerElement.setRestoreElementFromByte((bytes) -> new TestElement(new String(bytes)))
+        );
+
+        BrokerPersist<TestElement> test = brokerPersistManagerConfiguration.get();
 
         Assertions.assertEquals(2, test.getMapRiderConfiguration().size());
         X<TestElement> poll = test.poll();

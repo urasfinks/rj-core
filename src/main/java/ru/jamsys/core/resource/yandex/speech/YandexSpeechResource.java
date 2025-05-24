@@ -33,7 +33,6 @@ public class YandexSpeechResource
     @Override
     public void init(String ns) throws Throwable {
         propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 this,
                 yandexSpeechRepositoryProperty,
                 getCascadeKey(ns)

@@ -36,7 +36,6 @@ public class AndroidNotificationResource
     @Override
     public void init(String ns) throws Throwable {
         propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 this,
                 androidNotificationRepositoryProperty,
                 getCascadeKey(ns)

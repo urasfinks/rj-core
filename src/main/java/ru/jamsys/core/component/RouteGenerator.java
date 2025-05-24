@@ -1,6 +1,5 @@
 package ru.jamsys.core.component;
 
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
@@ -22,10 +21,8 @@ public class RouteGenerator {
 
     private static final AntPathMatcher antPathMatcher = new AntPathMatcher();
     private final ServiceClassFinder serviceClassFinder;
-    private final ApplicationContext applicationContext;
 
-    public RouteGenerator(ApplicationContext applicationContext, ServiceClassFinder serviceClassFinder) {
-        this.applicationContext = applicationContext;
+    public RouteGenerator(ServiceClassFinder serviceClassFinder) {
         this.serviceClassFinder = serviceClassFinder;
     }
 
@@ -53,7 +50,7 @@ public class RouteGenerator {
             }
             for (Annotation annotation : promiseGeneratorClass.getAnnotations()) {
                 if (ServiceClassFinder.instanceOf(annotation.annotationType(), clsAnnotation)) {
-                    PromiseGenerator promiseGenerator = applicationContext.getBean(promiseGeneratorClass);
+                    PromiseGenerator promiseGenerator = App.get(promiseGeneratorClass);
                     String[] values = promiseGeneratorClass.getAnnotation(clsAnnotation).value();
                     if (values.length > 0) {
                         for (String value : values) {

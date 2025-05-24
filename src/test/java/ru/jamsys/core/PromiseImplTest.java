@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -128,8 +129,10 @@ class PromiseImplTest {
 
     @Test
     void test3() {
-        ManagerConfiguration<RateLimit> rateLimitItemConfiguration =
-                RateLimitTps.getInstanceConfigure(Promise.getComplexIndex("test", "test"));
+        ManagerConfiguration<RateLimit> rateLimitItemConfiguration = ManagerConfigurationFactory.get(
+                RateLimitTps.class,
+                Promise.getComplexIndex("test", "test")
+        );
         rateLimitItemConfiguration.get().setMax(10000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();
@@ -172,7 +175,6 @@ class PromiseImplTest {
         Promise promise = servicePromise.get("seq2", 1_500L)
                 .then("then1", (_, _, _) -> c.incrementAndGet())
                 .modifyLastPromiseTask(abstractPromiseTask -> {
-                    //System.out.println(1);
                     abstractPromiseTask
                             .getComputeThreadConfiguration().get()
                             .getRateLimitConfiguration().get()
@@ -202,8 +204,10 @@ class PromiseImplTest {
 
     @Test
     void test5() {
-        ManagerConfiguration<RateLimit> rateLimitItemConfiguration =
-                RateLimitTps.getInstanceConfigure(Promise.getComplexIndex("test", "test"));
+        ManagerConfiguration<RateLimit> rateLimitItemConfiguration = ManagerConfigurationFactory.get(
+                RateLimitTps.class,
+                Promise.getComplexIndex("test", "test")
+        );
         rateLimitItemConfiguration.get().setMax(100000000);
         Promise promise = servicePromise.get("test", 6_000L);
         ConcurrentLinkedDeque<Integer> deque = new ConcurrentLinkedDeque<>();

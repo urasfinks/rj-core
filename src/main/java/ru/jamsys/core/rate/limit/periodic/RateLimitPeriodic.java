@@ -48,7 +48,6 @@ public class RateLimitPeriodic
     public RateLimitPeriodic(String ns) {
         this.ns = ns;
         propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 this,
                 property,
                 getCascadeKey(ns)

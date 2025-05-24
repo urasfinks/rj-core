@@ -1,6 +1,5 @@
 package ru.jamsys.core.component.cron;
 
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
@@ -24,10 +23,10 @@ public class Helper3s implements Cron3s, PromiseGenerator {
 
     private final Manager manager;
 
-    public Helper3s(ApplicationContext applicationContext) {
-        this.servicePromise = applicationContext.getBean(ServicePromise.class);
-        this.serviceTimer = applicationContext.getBean(ServiceTimer.class);
-        this.manager = applicationContext.getBean(Manager.class);
+    public Helper3s() {
+        this.servicePromise = App.get(ServicePromise.class);
+        this.serviceTimer = App.get(ServiceTimer.class);
+        this.manager = App.get(Manager.class);
     }
 
     @Override

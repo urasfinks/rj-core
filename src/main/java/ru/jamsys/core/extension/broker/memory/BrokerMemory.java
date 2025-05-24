@@ -2,9 +2,8 @@ package ru.jamsys.core.extension.broker.memory;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
-import org.springframework.context.ApplicationContext;
+import lombok.Setter;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
@@ -54,7 +53,8 @@ public class BrokerMemory<T>
     @Getter
     final String ns;
 
-    private final Consumer<T> onPostDrop; // Если установлено, вызывается после вы
+    @Setter
+    private Consumer<T> onPostDrop; // Если установлено, вызывается после вы
 
     @Getter
     private final BrokerRepositoryProperty property = new BrokerRepositoryProperty();
@@ -63,15 +63,10 @@ public class BrokerMemory<T>
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
     public BrokerMemory(
-            String ns,
-            ApplicationContext applicationContext,
-            Consumer<T> onPostDrop
+            String ns
     ) {
         this.ns = ns;
-        this.onPostDrop = onPostDrop;
-
         propertyDispatcher = new PropertyDispatcher<>(
-                applicationContext.getBean(ServiceProperty.class),
                 null,
                 getProperty(),
                 getCascadeKey(ns)

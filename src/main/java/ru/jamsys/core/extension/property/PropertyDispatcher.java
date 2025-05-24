@@ -2,6 +2,7 @@ package ru.jamsys.core.extension.property;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleInterface;
@@ -35,13 +36,12 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
     private final Set<PropertySubscription<T>> regexp = Util.getConcurrentHashSet();
 
     public PropertyDispatcher(
-            ServiceProperty serviceProperty,
             PropertyListener propertyListener,
             AbstractRepositoryProperty<T> repositoryProperty,
             String ns
     ) {
         this.propertyListener = propertyListener;
-        this.serviceProperty = serviceProperty;
+        this.serviceProperty = App.get(ServiceProperty.class);
         this.repositoryProperty = repositoryProperty;
         this.ns = ns;
 

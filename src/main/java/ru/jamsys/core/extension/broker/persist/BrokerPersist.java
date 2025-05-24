@@ -2,10 +2,9 @@ package ru.jamsys.core.extension.broker.persist;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
@@ -49,8 +48,6 @@ public class BrokerPersist<T extends ByteSerializable>
 
     private final String ns;
 
-    private final ApplicationContext applicationContext;
-
     private final BrokerPersistRepositoryProperty property = new BrokerPersistRepositoryProperty();
 
     private final PropertyDispatcher<Object> propertyDispatcher;
@@ -68,19 +65,12 @@ public class BrokerPersist<T extends ByteSerializable>
     // Для того, что бы наполнять queue надо брать существующие CommitController по порядку и доить их
     private final ConcurrentLinkedDeque<ManagerConfiguration<Rider>> queueRiderConfiguration = new ConcurrentLinkedDeque<>();
 
-    private final Function<byte[], T> restoreElementFromByte;
+    @Setter
+    private Function<byte[], T> restoreElementFromByte;
 
-    public BrokerPersist(
-            String ns,
-            ApplicationContext applicationContext,
-            Function<byte[], T> restoreElementFromByte
-    ) {
+    public BrokerPersist(String ns) {
         this.ns = ns;
-        this.applicationContext = applicationContext;
-        this.restoreElementFromByte = restoreElementFromByte;
-
         propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class, applicationContext),
                 this,
                 property,
                 getCascadeKey(ns)
@@ -102,9 +92,9 @@ public class BrokerPersist<T extends ByteSerializable>
     public void xWriterInit() {
         String key = getCascadeKey(ns, "bin");
         if (xWriterConfiguration != null) {
-            App.get(Manager.class, applicationContext).remove(AbstractAsyncFileWriter.class, key);
+            App.get(Manager.class).remove(AbstractAsyncFileWriter.class, key);
         }
-        xWriterConfiguration = App.get(Manager.class, applicationContext).getManagerConfigurationGeneric(
+        xWriterConfiguration = App.get(Manager.class).getManagerConfigurationGeneric(
                 AbstractAsyncFileWriter.class,
                 // ns уникально в пределах BrokerPersist, но нам надо больше уникальности, так как у нас несколько
                 // AbstractAsyncFileWriter.class (Rolling/Wal)
@@ -207,7 +197,7 @@ public class BrokerPersist<T extends ByteSerializable>
         return mapRiderConfiguration.computeIfAbsent(
                 filePathX, // Нам тут нужна ссылка на bin так как BrokerPersistElement.getFilePath возвращает именно его
                 _ -> {
-                    ManagerConfiguration<Rider> configure = App.get(Manager.class, applicationContext).getManagerConfiguration(
+                    ManagerConfiguration<Rider> configure = App.get(Manager.class).getManagerConfiguration(
                             Rider.class,
                             getCascadeKey(ns, filePathX), // Тут главно, что бы просто было уникальным
                             ns1 -> new Rider(

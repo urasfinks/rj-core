@@ -7,8 +7,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
-import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -18,7 +18,7 @@ import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskWithResourceConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.resource.PoolResourcePromiseTaskWaitResource;
+import ru.jamsys.core.resource.PoolResourceForPromiseTaskWaitResource;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
@@ -375,34 +375,32 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return new PromiseTaskWait(index, this);
     }
 
+
     public <T extends Resource<?, ?>> AbstractPromiseTask createTaskResource(
-            String index,
+            String indexTask,
             Class<T> classResource,
-            String ns,
+            String nsResource, // ns тут нужен, что бы создать ресурс
             PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> procedure
     ) {
-        @SuppressWarnings("all")
-        ManagerConfiguration<PoolResourcePromiseTaskWaitResource> poolResourcePromiseTaskWaitResourceConfiguration = App.get(Manager.class).getManagerConfiguration(
-                PoolResourcePromiseTaskWaitResource.class,
-                ns,
-                ns1 -> new PoolResourcePromiseTaskWaitResource<>(
-                        ns1,
-                        ns2 -> {
-                            T bean = App.context.getBean(classResource);
+        ManagerConfiguration<PoolResourceForPromiseTaskWaitResource<T>> poolResourceForPromiseTaskWaitResourceConfiguration = ManagerConfigurationFactory.get(
+                PoolResourceForPromiseTaskWaitResource.class,
+                nsResource,
+                poolResourceForPromiseTaskWaitResource -> poolResourceForPromiseTaskWaitResource
+                        .setSupplierPoolItem(ns1 -> {
+                            T resource = App.get(classResource);
                             try {
-                                bean.init(ns2);
+                                resource.init(ns1);
+                                return resource;
                             } catch (Throwable th) {
                                 throw new ForwardException(th);
                             }
-                            return bean;
-                        }
-                )
+                        })
         );
         return new PromiseTaskWaitResource<>(
-                getComplexIndex(index),
+                getComplexIndex(indexTask),
                 this,
                 procedure,
-                poolResourcePromiseTaskWaitResourceConfiguration
+                poolResourceForPromiseTaskWaitResourceConfiguration
         );
     }
 

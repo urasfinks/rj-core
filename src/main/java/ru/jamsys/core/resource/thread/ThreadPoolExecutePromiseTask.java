@@ -1,9 +1,8 @@
 package ru.jamsys.core.resource.thread;
 
 import lombok.Getter;
-import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
@@ -25,26 +24,21 @@ public class ThreadPoolExecutePromiseTask
     private final ManagerConfiguration<RateLimit> rateLimitConfiguration;
 
     @SuppressWarnings("all")
-    private final ManagerConfiguration<BrokerMemory> brokerMemoryConfiguration;
+    private final ManagerConfiguration<BrokerMemory<AbstractPromiseTask>> brokerMemoryConfiguration;
 
     public ThreadPoolExecutePromiseTask(String ns) {
         super(ns);
-        rateLimitConfiguration = RateLimitTps.getInstanceConfigure(getCascadeKey(ns));
-        brokerMemoryConfiguration = App.get(Manager.class).getManagerConfiguration(
+        rateLimitConfiguration = ManagerConfigurationFactory.get(RateLimitTps.class, getCascadeKey(ns));
+        brokerMemoryConfiguration = ManagerConfigurationFactory.get(
                 BrokerMemory.class,
                 getCascadeKey(ns),
-                ns1 -> new BrokerMemory<AbstractPromiseTask>(
-                        ns1,
-                        App.context,
-                        promiseTask -> promiseTask.getPromise().setError(
-                                "::drop",
-                                new RuntimeException(App.getUniqueClassName(ThreadPoolExecutePromiseTask.class))
+                managerElement -> managerElement
+                        .setOnPostDrop(promiseTask -> promiseTask
+                                .getPromise().setError("::drop", new RuntimeException())
                         )
-                )
         );
     }
 
-    @SuppressWarnings("unchecked")
     public void addPromiseTask(AbstractPromiseTask promiseTask) {
         // Контроль TPS управляется в реализации самого потока, тут ограничивать ничего не надо.
         // Есть задача onError, которая может вызываться после вызова timeOut. У обещания больше нет остаточного времени
@@ -58,7 +52,6 @@ public class ThreadPoolExecutePromiseTask
         serviceBell();
     }
 
-    @SuppressWarnings("unchecked")
     public ExpirationMsImmutableEnvelope<AbstractPromiseTask> getPromiseTask() {
         return brokerMemoryConfiguration.get().pollLast();
     }

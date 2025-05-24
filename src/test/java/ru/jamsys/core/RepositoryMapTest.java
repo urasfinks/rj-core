@@ -54,7 +54,6 @@ class RepositoryMapTest {
         ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         XX xx = new XX();
         PropertyDispatcher<String> propertyDispatcher = new PropertyDispatcher<>(
-                serviceProperty,
                 xx,
                 xx,
                 null
@@ -140,7 +139,7 @@ class RepositoryMapTest {
         x2 x2 = new x2();
 
 
-        PropertyDispatcher<String> subscribe = new PropertyDispatcher<>(serviceProperty, x2, x2, "run.args");
+        PropertyDispatcher<String> subscribe = new PropertyDispatcher<>(x2, x2, "run.args");
         subscribe.run();
 
         Assertions.assertEquals(2, subscribe.getSubscriptions().size());

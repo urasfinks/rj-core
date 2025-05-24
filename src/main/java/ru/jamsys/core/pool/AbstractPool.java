@@ -39,6 +39,7 @@ import java.util.function.Function;
 
 // TODO: а что если ресурс не вернуть в пул? Надо сделать какое-то время адекватное - например 1 час
 // и перезагружать, но надо точно знать - что именно ресурс был взять и не возвращён ни разу за последнее время
+// TODO: надо переписать пул, упростить и сделать контроль над жизненным циклом элементов
 
 
 @ToString(onlyExplicitlyIncluded = true)
@@ -88,7 +89,6 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
     public AbstractPool(String ns) {
         this.ns = ns;
         propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 null,
                 poolRepositoryProperty,
                 getCascadeKey(ns)

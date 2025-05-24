@@ -1,6 +1,5 @@
 package ru.jamsys.core.component.cron;
 
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
@@ -33,13 +32,12 @@ public class StatisticFlush implements Cron1s, PromiseGenerator, CascadeKey {
 
     public StatisticFlush(
             ServiceClassFinder serviceClassFinder,
-            ApplicationContext applicationContext,
             ServicePromise servicePromise,
             ServiceProperty serviceProperty
     ) {
         this.servicePromise = servicePromise;
         serviceClassFinder.findByInstance(StatisticsFlushComponent.class).forEach(statisticsCollectorClass
-                -> list.add(applicationContext.getBean(statisticsCollectorClass)));
+                -> list.add(App.get(statisticsCollectorClass)));
     }
 
     @Override

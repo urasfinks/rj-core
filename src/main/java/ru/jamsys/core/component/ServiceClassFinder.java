@@ -1,14 +1,17 @@
 package ru.jamsys.core.component;
 
 import com.google.common.reflect.ClassPath;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyEnvelope;
 import ru.jamsys.core.extension.property.repository.RepositoryProperty;
+import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilLog;
 
 import java.lang.annotation.Annotation;
@@ -28,31 +31,18 @@ import java.util.List;
 // полное_имя_класса = true, то есть игнорирование включено, если поставить false => игнорирование выключено
 
 @Component
+@Lazy
 public class ServiceClassFinder implements CascadeKey {
 
+    // Список доступных классов для создания через ядро
     private final List<Class<?>> availableClass = new ArrayList<>();
-
-    private final ExceptionHandler exceptionHandler;
 
     private final RepositoryProperty<Boolean> ignoredClassMap = new RepositoryProperty<>(Boolean.class);
 
-    private final ApplicationContext applicationContext;
-
     public static String pkg = "ru.jamsys";
 
-    public ServiceClassFinder(
-            ApplicationContext applicationContext,
-            ExceptionHandler exceptionHandler,
-            ServiceProperty serviceProperty
-    ) {
-        this.applicationContext = applicationContext;
-        this.exceptionHandler = exceptionHandler;
-
-        @SuppressWarnings("SameParameterValue")
-
-
+    public ServiceClassFinder() {
         PropertyDispatcher<Boolean> propertyDispatcher = new PropertyDispatcher<>(
-                serviceProperty,
                 (_, _, newValue) -> {
                     UtilLog.printInfo("onUpdate ServiceClassFinderIgnore: " + newValue);
                     availableClass.clear();
@@ -83,7 +73,7 @@ public class ServiceClassFinder implements CascadeKey {
                                 result.add(tmp);
                             }
                         } catch (Exception e) {
-                            exceptionHandler.handler(e);
+                            App.error(e);
                         }
                     }
                 }
@@ -94,7 +84,7 @@ public class ServiceClassFinder implements CascadeKey {
 
     public <T> T instanceOf(Class<T> cls) {
         if (availableClass.contains(cls)) {
-            return applicationContext.getBean(cls);
+            return App.get(cls);
         }
         return null;
     }

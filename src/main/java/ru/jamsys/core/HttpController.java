@@ -67,7 +67,6 @@ public class HttpController {
 
     private void subscribeIgnoreFile() {
         new PropertyDispatcher<>(
-                serviceProperty,
                 (key, _, newValue) -> {
                     UtilLog.info(newValue)
                             .addHeader("description", "IgnoreWebStatic.File")
@@ -83,7 +82,6 @@ public class HttpController {
 
     private void subscribeIgnoreDir() {
         new PropertyDispatcher<>(
-                serviceProperty,
                 (key, _, newValue) -> {
                     UtilLog.info(newValue)
                             .addHeader("description", "IgnoreWebStatic.Dir")

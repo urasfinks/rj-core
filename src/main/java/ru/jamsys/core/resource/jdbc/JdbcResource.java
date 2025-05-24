@@ -43,7 +43,6 @@ public class JdbcResource
     @Override
     public void init(String ns) throws Exception {
         propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 this,
                 jdbcRepositoryProperty,
                 getCascadeKey(ns)

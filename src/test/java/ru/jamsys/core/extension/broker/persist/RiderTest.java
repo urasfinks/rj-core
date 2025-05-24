@@ -37,7 +37,6 @@ class RiderTest {
     public void test() throws IOException {
         BrokerPersistRepositoryProperty brokerPersistRepositoryProperty = new BrokerPersistRepositoryProperty();
         PropertyDispatcher<Object> test = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class, App.context),
                 null,
                 brokerPersistRepositoryProperty,
                 "App.BrokerPersist.test"

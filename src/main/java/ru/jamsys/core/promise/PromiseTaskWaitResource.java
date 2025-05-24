@@ -5,7 +5,7 @@ import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskWithResourceConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.pool.PoolItemCompletable;
-import ru.jamsys.core.resource.PoolResourcePromiseTaskWaitResource;
+import ru.jamsys.core.resource.PoolResourceForPromiseTaskWaitResource;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
 
@@ -18,14 +18,13 @@ public class PromiseTaskWaitResource<T extends ExpirationMsMutable & Resource<?,
     private final PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> executeBlock;
 
     @SuppressWarnings("all")
-    private final ManagerConfiguration<PoolResourcePromiseTaskWaitResource> poolResourcePromiseTaskWaitConfiguration;
+    private final ManagerConfiguration<PoolResourceForPromiseTaskWaitResource<T>> poolResourcePromiseTaskWaitConfiguration;
 
-    @SuppressWarnings("all")
     public PromiseTaskWaitResource(
             String indexTask,
             Promise promise,
             PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> executeBlock,
-            ManagerConfiguration<PoolResourcePromiseTaskWaitResource> poolResourcePromiseTaskWaitConfiguration
+            ManagerConfiguration<PoolResourceForPromiseTaskWaitResource<T>> poolResourcePromiseTaskWaitConfiguration
     ) {
         super(indexTask, promise, PromiseTaskExecuteType.IO, null);
         this.executeBlock = executeBlock;
@@ -34,17 +33,16 @@ public class PromiseTaskWaitResource<T extends ExpirationMsMutable & Resource<?,
 
     // Этот блок вызывается из Promise.loop() и подразумевает запуск ::run из внешнего потока
     // Мы его переопределили, добавляя задачу в Pool, а вот уже когда освободится ресурс в пуле
-    // Пул сам вызовет start с передачей туда ресурса, там то мы и вызовем ::run из внешнего потока
-    @SuppressWarnings("all")
+    // Пул сам вызовет start с передачей туда ресурса, там то мы и вызовем::run из внешнего потока
     @Override
     public void prepareLaunch(ProcedureThrowing terminalExecute) {
         this.terminalExecute = terminalExecute;
-        PoolResourcePromiseTaskWaitResource poolResourcePromiseTaskWaitResource = poolResourcePromiseTaskWaitConfiguration.get();
+        PoolResourceForPromiseTaskWaitResource<T> poolResourceForPromiseTaskWaitResource = poolResourcePromiseTaskWaitConfiguration.get();
         getPromise().getTrace().add(new Trace<>(
-                getNs() + "::poolSubscribe(" + poolResourcePromiseTaskWaitResource.getKey() + ")",
+                getNs() + "::poolSubscribe(" + poolResourceForPromiseTaskWaitResource.getKey() + ")",
                 null
         ));
-        poolResourcePromiseTaskWaitResource.addPromiseTask(this);
+        poolResourceForPromiseTaskWaitResource.addPromiseTask(this);
     }
 
     @Override

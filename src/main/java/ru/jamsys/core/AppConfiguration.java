@@ -6,7 +6,6 @@ import org.apache.catalina.connector.Connector;
 import org.apache.tomcat.util.descriptor.web.SecurityCollection;
 import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.Ssl;
@@ -34,30 +33,21 @@ import ru.jamsys.core.flat.util.UtilLog;
 @PropertySource("global.properties")
 public class AppConfiguration implements WebSocketConfigurer {
 
-    private ApplicationContext applicationContext;
-
-    @Autowired
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
-    }
-
-    private ServiceProperty serviceProperty;
-
-    @Autowired
-    public void setServiceProperty(ServiceProperty serviceProperty) {
-        this.serviceProperty = serviceProperty;
+    public AppConfiguration(ApplicationContext applicationContext) {
+        App.applicationContext = applicationContext;
     }
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         if (serviceProperty.computeIfAbsent("run.args.web.socket", false).get(Boolean.class)) {
             String path = serviceProperty
                     .computeIfAbsent("run.args.web.socket.uri", "/socket/*")
                     .get(String.class);
-            registry.addHandler(applicationContext.getBean(WebSocket.class), path);
+            registry.addHandler(App.get(WebSocket.class), path);
             ((ServletWebSocketHandlerRegistry) registry).setOrder(-1);
         } else {
-            applicationContext.getBean(ServiceClassFinder.class).removeAvailableClass(
+            App.get(ServiceClassFinder.class).removeAvailableClass(
                     WebSocket.class,
                     "run.args.web.socket = false"
             );
@@ -70,6 +60,7 @@ public class AppConfiguration implements WebSocketConfigurer {
         // По этому логика реализована линейной
         // Не могу предположить, что есть необходимость на ходу менять правила игры работать по ssl и редиректам
         // Как минимум это странно, как максимум - я без понятия как это сделать)))
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         if (serviceProperty.computeIfAbsent("run.args.web", false).get(Boolean.class)) {
             int httpPort = serviceProperty
                     .computeIfAbsent("run.args.web.http.port", 80)
@@ -113,6 +104,7 @@ public class AppConfiguration implements WebSocketConfigurer {
 
     @Bean
     MultipartConfigElement multipartConfigElement() {
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         MultipartConfigFactory factory = new MultipartConfigFactory();
         Integer multipartMax = serviceProperty
                 .computeIfAbsent("run.args.web.multipart.mb.max", 12)
@@ -130,7 +122,7 @@ public class AppConfiguration implements WebSocketConfigurer {
     @Bean
     @Primary
     public ServerProperties serverProperties() {
-        //ServiceProperty bean = applicationContext.getBean(ServiceProperty.class);
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
         final ServerProperties serverProperties = new ServerProperties();
         if (serviceProperty.computeIfAbsent("run.args.web.ssl", false).get(Boolean.class)) {
             String securityAlias = serviceProperty
@@ -140,8 +132,8 @@ public class AppConfiguration implements WebSocketConfigurer {
                 UtilLog.printInfo("Init web ssl context");
                 // Так как мы тут лезем в перёд батьки) Извольте - надо подгрузить компонент, который должен был
                 // в своём порядке загрузиться самостоятельно в Core.run()
-                applicationContext.getBean(SecurityKey.class);
-                SecurityComponent securityComponent = applicationContext.getBean(SecurityComponent.class);
+                App.get(SecurityKey.class);
+                SecurityComponent securityComponent = App.get(SecurityComponent.class);
                 securityComponent.run();
                 // Считаю это зашкварно, а что делать если оно так работает в Spring
                 // Тем не менее я считаю, что Spring - это хорошо! Я столько раз радовался созданием этого монстра - человеком

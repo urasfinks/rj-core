@@ -3,7 +3,6 @@ package ru.jamsys.core.extension.expiration;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
@@ -426,15 +425,7 @@ public class ExpirationMap<K, V>
             String key,
             int keepAliveOnInactivityMs
     ) {
-        return getInstanceConfigure(App.context, key, keepAliveOnInactivityMs);
-    }
-
-    public static <K, V> ManagerConfiguration<ExpirationMap<K, V>> getInstanceConfigure(
-            ApplicationContext applicationContext,
-            String key,
-            int keepAliveOnInactivityMs
-    ) {
-        return App.get(Manager.class, applicationContext).getManagerConfigurationGeneric(
+        return App.get(Manager.class).getManagerConfigurationGeneric(
                 ExpirationMap.class,
                 key,
                 key1 -> new ExpirationMap<>(key1, keepAliveOnInactivityMs)

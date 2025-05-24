@@ -37,7 +37,6 @@ public class AppleNotificationResource
     public void init(String ns) throws Throwable {
 
         propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 this,
                 appleNotificationRepositoryProperty,
                 getCascadeKey(ns)

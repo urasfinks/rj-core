@@ -1,6 +1,5 @@
 package ru.jamsys.core.component.manager;
 
-import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.ManagerElement;
 
@@ -13,7 +12,7 @@ public interface ManagerConfigurationFactory {
             Class<S> cls,
             String ns
     ) {
-        return get(App.context, cls, ns, null);
+        return get(cls, ns, null);
     }
 
     static <R extends ManagerElement, S extends ManagerElement> ManagerConfiguration<R> get(
@@ -21,16 +20,7 @@ public interface ManagerConfigurationFactory {
             String ns,
             Consumer<R> onCreate
     ) {
-        return get(App.context, cls, ns, onCreate);
-    }
-
-    static <R extends ManagerElement, S extends ManagerElement> ManagerConfiguration<R> get(
-            ApplicationContext applicationContext,
-            Class<S> cls,
-            String ns,
-            Consumer<R> onCreate
-    ) {
-        return App.get(Manager.class, applicationContext).getManagerConfigurationGeneric(
+        return App.get(Manager.class).getManagerConfigurationGeneric(
                 cls,
                 ns,
                 ns1 -> {

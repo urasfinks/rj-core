@@ -6,6 +6,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
+import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -24,11 +27,6 @@ class BrokerMemoryTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runCore();
-        App.get(Manager.class).getManagerConfiguration(
-                BrokerMemory.class,
-                XTest.class.getSimpleName(),
-                (k) -> new BrokerMemory<>(k, App.context, _ -> UtilLog.printAction("DROP"))
-        );
     }
 
     @AfterAll
@@ -39,12 +37,15 @@ class BrokerMemoryTest {
     @Test
     void testLiner() {
         List<XTest> dropped = new ArrayList<>();
-        BrokerMemory<XTest> broker = App.get(Manager.class).getManagerConfiguration(
-                        BrokerMemory.class,
-                        XTest.class.getSimpleName() + "_1",
-                        (k) -> new BrokerMemory<XTest>(k, App.context, dropped::add)
-                )
-                .getGeneric();
+        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
+                BrokerMemory.class,
+                XTest.class.getSimpleName() + "_1",
+                managerElement -> {
+                    managerElement.setOnPostDrop(dropped::add);
+                }
+        );
+
+        BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();
 
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker
@@ -103,8 +104,11 @@ class BrokerMemoryTest {
 
     @Test
     void testCyclic() {
-        BrokerMemory<XTest> broker = App.get(Manager.class)
-                .getGeneric(BrokerMemory.class, XTest.class.getSimpleName());
+        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
+                BrokerMemory.class,
+                XTest.class.getSimpleName()
+        );
+        BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();
 
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker
@@ -164,8 +168,11 @@ class BrokerMemoryTest {
 
     @Test
     void testReference() {
-        BrokerMemory<XTest> broker = App.get(Manager.class)
-                .getGeneric(BrokerMemory.class, XTest.class.getSimpleName());
+        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
+                BrokerMemory.class,
+                XTest.class.getSimpleName()
+        );
+        BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();
         XTest obj = new XTest(1);
         DisposableExpirationMsImmutableEnvelope<XTest> o1 = broker.add(obj, 6_000L);
 
@@ -183,8 +190,11 @@ class BrokerMemoryTest {
     void testReference2() {
         AtomicBoolean run = new AtomicBoolean(true);
 
-        BrokerMemory<XTest> broker = App.get(Manager.class)
-                .getGeneric(BrokerMemory.class, XTest.class.getSimpleName());
+        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
+                BrokerMemory.class,
+                XTest.class.getSimpleName()
+        );
+        BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();
         XTest obj = new XTest(1);
         XTest obj2 = new XTest(2);
         DisposableExpirationMsImmutableEnvelope<XTest> o1 = null;
@@ -227,8 +237,11 @@ class BrokerMemoryTest {
 
     @Test
     void testProperty() {
-        BrokerMemory<XTest> broker = App.get(Manager.class)
-                .getGeneric(BrokerMemory.class, XTest.class.getSimpleName());
+        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
+                BrokerMemory.class,
+                XTest.class.getSimpleName()
+        );
+        BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker
                         .getPropertyDispatcher()
@@ -263,8 +276,11 @@ class BrokerMemoryTest {
     void testSpeedRemove() {
         int selection = 1_000_000;
 
-        BrokerMemory<XTest> broker = App.get(Manager.class)
-                .getGeneric(BrokerMemory.class, XTest.class.getSimpleName());
+        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
+                BrokerMemory.class,
+                XTest.class.getSimpleName()
+        );
+        BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker
                         .getPropertyDispatcher()

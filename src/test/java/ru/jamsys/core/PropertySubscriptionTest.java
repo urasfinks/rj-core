@@ -33,7 +33,6 @@ class PropertySubscriptionTest {
     public void collection() {
         RepositoryProperty<String> propertyRepositoryList = new RepositoryProperty<>(String.class);
         PropertyDispatcher<String> propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 null,
                 propertyRepositoryList,
                 "run.args.ServiceClassFinderIgnore"
@@ -134,7 +133,6 @@ class PropertySubscriptionTest {
         RepositoryProperty<String> propertiesRepositoryMap = new RepositoryProperty<>(String.class);
         AtomicInteger x = new AtomicInteger(0);
         PropertyDispatcher<String> propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 (_, _, _) -> x.incrementAndGet(),
                 propertiesRepositoryMap,
                 "run.args.ServiceClassFinderIgnore"
@@ -283,7 +281,6 @@ class PropertySubscriptionTest {
         // ВНИМАТЕЛЬНО тесты выполняются по очереди, по отдельности выполнять нельзя
         TypedProperty typedProperty = new TypedProperty();
         PropertyDispatcher<String> propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 null,
                 typedProperty,
                 null

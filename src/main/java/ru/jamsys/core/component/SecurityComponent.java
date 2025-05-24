@@ -34,8 +34,6 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
     @Getter
     private final SecurityComponentProperty property = new SecurityComponentProperty();
 
-    final private ExceptionHandler exceptionHandler;
-
     private volatile KeyStore keyStore = null;
 
     private char[] privateKey = {};
@@ -50,14 +48,12 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
 
     private final PropertyDispatcher<String> propertyDispatcher;
 
-    public SecurityComponent(ServiceProperty serviceProperty, ExceptionHandler exceptionHandler) {
+    public SecurityComponent() {
         propertyDispatcher = new PropertyDispatcher<>(
-                serviceProperty,
                 null,
                 property,
                 null
         );
-        this.exceptionHandler = exceptionHandler;
     }
 
     @SuppressWarnings("unused")
@@ -93,7 +89,7 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
         try {
             return new HashSet<>(Collections.list(keyStore.aliases()));
         } catch (Exception e) {
-            exceptionHandler.handler(e);
+            App.error(e);
         }
         return new HashSet<>();
     }
@@ -196,7 +192,7 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
                             StandardCharsets.UTF_8
                     ));
         } catch (Exception e) {
-            exceptionHandler.handler(e);
+            App.error(e);
         }
         return false;
     }

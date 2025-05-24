@@ -46,7 +46,6 @@ public class InfluxResource
     @Override
     public void init(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 this,
                 influxRepositoryProperty,
                 getCascadeKey(ns)

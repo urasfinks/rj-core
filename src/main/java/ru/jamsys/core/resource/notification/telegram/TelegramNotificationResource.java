@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.resource.Resource;
@@ -32,7 +31,6 @@ public class TelegramNotificationResource
     public void init(String ns) throws Throwable {
         securityComponent = App.get(SecurityComponent.class);
         propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 null,
                 telegramNotificationRepositoryProperty,
                 getCascadeKey(ns)

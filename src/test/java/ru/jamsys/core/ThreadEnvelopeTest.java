@@ -23,7 +23,7 @@ class ThreadEnvelopeTest {
 
     @AfterAll
     static void shutdown() {
-        App.context = null;
+        App.shutdown();
     }
 
     @Test

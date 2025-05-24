@@ -5,7 +5,10 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.Log;
+import ru.jamsys.core.component.manager.item.log.PersistentDataHeader;
+import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -33,17 +36,19 @@ class LogBrokerPersistTest {
     @Test
     void linearTest() throws InterruptedException {
         App.get(ServiceProperty.class).set("App.BrokerPersist.test.directory", "LogManager");
-        BrokerPersist<Log> test = App.get(Manager.class).getManagerConfiguration(
+        ManagerConfiguration<BrokerPersist<Log>> brokerPersistManagerConfiguration = ManagerConfigurationFactory.get(
                 BrokerPersist.class,
                 "test",
-                s -> new BrokerPersist<>(s, App.context, (bytes) -> {
+                managerElement -> managerElement.setRestoreElementFromByte((bytes) -> {
                     try {
-                        return Log.instanceFromBytes(bytes);
+                        return (Log) Log.instanceFromBytes(bytes);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 })
-        ).getGeneric();
+        );
+        BrokerPersist<Log> test = brokerPersistManagerConfiguration.get();
+
 
         int c = 1_000_000;
         long s1 = System.currentTimeMillis();
@@ -93,9 +98,6 @@ class LogBrokerPersistTest {
                 (timing) -> UtilLog.printInfo("Success: " + timing),
                 () -> UtilLog.printError("Error: " + test.getLastRiderConfiguration().get().getQueueRetry().size())
         );
-//        if (test.getMapRiderConfiguration().size() == 2) {
-//            System.out.println(1);
-//        }
         Assertions.assertEquals(1, test.getMapRiderConfiguration().size());
     }
 

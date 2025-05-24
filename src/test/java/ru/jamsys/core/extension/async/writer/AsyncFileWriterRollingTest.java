@@ -48,7 +48,6 @@ class AsyncFileWriterRollingTest {
         App.get(ServiceProperty.class).set("App.BrokerPersist.test.directory", "LogManager");
         BrokerPersistRepositoryProperty brokerPersistRepositoryProperty = new BrokerPersistRepositoryProperty();
         PropertyDispatcher<Object> test = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class, App.context),
                 null,
                 brokerPersistRepositoryProperty,
                 "App.BrokerPersist.test"

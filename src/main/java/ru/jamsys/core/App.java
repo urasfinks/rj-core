@@ -8,7 +8,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ExceptionHandler;
+import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 
@@ -29,7 +31,9 @@ public class App implements CascadeKey {
 
     private static final Map<Class<?>, Object> mapBean = new ConcurrentHashMap<>();
 
-    public static ConfigurableApplicationContext context = null;
+    public static ConfigurableApplicationContext context = null; // Для выключения
+
+    public static ApplicationContext applicationContext = null; // Для создания бинов
 
     public static SpringApplication application;
 
@@ -69,29 +73,22 @@ public class App implements CascadeKey {
     @SuppressWarnings("all")
     public static <T> T get(Class<T> cls) {
         return (T) mapBean.computeIfAbsent(cls, aClass -> {
-            T t = App.context.getBean(cls);
-            if (t == null) {
-                throw new RuntimeException("App.get(" + cls.getName() + ") return null");
+            try {
+                T t = App.applicationContext.getBean(cls);
+                if (t == null) {
+                    throw new RuntimeException("App.get(" + cls.getName() + ") return null");
+                }
+                return t;
+            } catch (Throwable th) {
+                App.error(new ForwardException(cls.getName().toString(), th));
+                throw th;
             }
-            return t;
-        });
-    }
-
-    // Для случаев, когда контекст ещё не определён
-    @SuppressWarnings("all")
-    public static <T> T get(Class<T> cls, ApplicationContext applicationContext) {
-        return (T) mapBean.computeIfAbsent(cls, aClass -> {
-            T t = applicationContext.getBean(cls);
-            if (t == null) {
-                throw new RuntimeException("App.get(" + cls.getName() + ") return null");
-            }
-            return t;
         });
     }
 
     @SuppressWarnings("all")
     public static void error(Throwable th) {
-        if (context != null) {
+        if (applicationContext != null) {
             ExceptionHandler exceptionHandler = get(ExceptionHandler.class);
             if (exceptionHandler != null) {
                 exceptionHandler.handler(th);
@@ -112,6 +109,8 @@ public class App implements CascadeKey {
                     .addHeader("description", "Run arguments")
                     .print();
             context = application.run(args);
+            // Очень много проблем при взаимных получениях ServiceClassFinder, поэтому сразу его тут получу и всё
+            get(ServiceClassFinder.class);
             get(Core.class).run();
         }
     }

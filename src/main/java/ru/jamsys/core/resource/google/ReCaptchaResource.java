@@ -34,7 +34,6 @@ public class ReCaptchaResource
     @Override
     public void init(String ns) throws Throwable {
         propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 null,
                 reCaptchaRepositoryProperty,
                 getCascadeKey(ns)

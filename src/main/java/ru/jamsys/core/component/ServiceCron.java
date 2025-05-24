@@ -1,6 +1,5 @@
 package ru.jamsys.core.component;
 
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
@@ -34,15 +33,6 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
 
     final private AtomicBoolean threadWork = new AtomicBoolean(false);
 
-    @SuppressWarnings("all")
-    public ServiceCron(
-            ExceptionHandler exceptionHandler,
-            ServiceClassFinder serviceClassFinder,
-            ApplicationContext applicationContext
-    ) {
-        initList(serviceClassFinder, exceptionHandler);
-    }
-
     private void runCronTask(long curTimeMs) {
         listItem.forEach((CronTask cronTask) -> {
             Cron.CompileResult compile = cronTask.getCron().compile(curTimeMs);
@@ -61,10 +51,9 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
         });
     }
 
-    private void initList(
-            ServiceClassFinder serviceClassFinder,
-            ExceptionHandler exceptionHandler
-    ) {
+    private void initList() {
+        listItem.clear();
+        ServiceClassFinder serviceClassFinder = App.get(ServiceClassFinder.class);
         serviceClassFinder.findByInstance(CronConfigurator.class).forEach((Class<CronConfigurator> cronTemplateClass) -> {
             CronConfigurator cronConfigurator = serviceClassFinder.instanceOf(cronTemplateClass);
             if (cronConfigurator instanceof PromiseGenerator promiseGenerator) {
@@ -74,19 +63,20 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
                         cronConfigurator
                 ));
             } else {
-                exceptionHandler.handler(new RuntimeException(
+                App.error(new RuntimeException(
                         "CronTemplate class: "
                                 + cronConfigurator.getClass().getName()
                                 + " not realise "
                                 + PromiseGenerator.class.getName()
-                                + " interface"
-                ));
+                                + " interface"));
+
             }
         });
     }
 
     @Override
     public void runOperation() {
+        initList();
         spin.set(true);
         thread = new Thread(() -> {
             threadWork.set(true);

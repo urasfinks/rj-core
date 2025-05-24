@@ -35,7 +35,6 @@ public class EmailNotificationResource
     public void init(String ns) throws Throwable {
         securityComponent = App.get(SecurityComponent.class);
         propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 null,
                 property,
                 getCascadeKey(ns)

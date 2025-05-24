@@ -3,11 +3,8 @@ package ru.jamsys.core.rate.limit.tps;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
-import org.springframework.context.ApplicationContext;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.Manager;
-import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -38,7 +35,6 @@ public class RateLimitTps
     public RateLimitTps(String ns) {
         this.ns = ns;
         propertyDispatcher = new PropertyDispatcher<>(
-                App.get(ServiceProperty.class),
                 null,
                 property,
                 getCascadeKey(ns)
@@ -93,21 +89,6 @@ public class RateLimitTps
     @Override
     public void shutdownOperation() {
         propertyDispatcher.shutdown();
-    }
-
-    public static ManagerConfiguration<RateLimit> getInstanceConfigure(String key) {
-        return getInstanceConfigure(App.context, key);
-    }
-
-    public static ManagerConfiguration<RateLimit> getInstanceConfigure(
-            ApplicationContext applicationContext,
-            String key
-    ) {
-        return App.get(Manager.class, applicationContext).getManagerConfigurationGeneric(
-                RateLimit.class,
-                key,
-                RateLimitTps::new
-        );
     }
 
 }
