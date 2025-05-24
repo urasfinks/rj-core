@@ -43,9 +43,8 @@ public class ExpirationMap<K, V>
         expirationMapConfiguration = ManagerConfigurationFactory.get(
                 ExpirationList.class,
                 ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров ExpirationMap
-                expirationMapExpirationObjectExpirationList -> {
-                    expirationMapExpirationObjectExpirationList.setOnExpired(ExpirationMapExpirationObject::remove);
-                }
+                expirationMapExpirationObjectExpirationList -> expirationMapExpirationObjectExpirationList
+                        .setOnExpired(ExpirationMapExpirationObject::remove)
         );
     }
 

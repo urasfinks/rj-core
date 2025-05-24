@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
-import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.flat.util.Util;
