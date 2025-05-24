@@ -33,7 +33,7 @@ class ExpirationMapTest {
                 ManagerConfigurationFactory.get(
                         ExpirationMap.class,
                         "test",
-                        integerXTestExpirationMap -> integerXTestExpirationMap.setTimeoutMs(1000)
+                        integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutMs(1000)
                 );
 
 
@@ -57,7 +57,7 @@ class ExpirationMapTest {
         ManagerConfigurationFactory.get(
                 ExpirationMap.class,
                 "testMap",
-                integerXTestExpirationMap -> integerXTestExpirationMap.setTimeoutMs(10_000)
+                integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutMs(10_000)
         );
         map = expirationMapConfiguration.get();
         map.clear();

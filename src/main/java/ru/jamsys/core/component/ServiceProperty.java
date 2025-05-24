@@ -1,7 +1,7 @@
 package ru.jamsys.core.component;
 
 import lombok.Getter;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.Environment;
@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 // Отвечает за регистрацию подписок, для того, что бы распространить подписки на все Property
 
 @Component
-@Lazy
+//@Lazy - надо что бы он загружался сразу же, так как используется в ServiceClassFinder -> PropertyDispatcher
 public class ServiceProperty {
 
     final private Map<String, Property> properties = new ConcurrentHashMap<>();
@@ -34,8 +34,8 @@ public class ServiceProperty {
     //Нужен для момента, когда будет добавляться новое Property, что бы можно было к нему навешать старых слушателей
     final private Set<PropertySubscription<?>> subscriptions = Util.getConcurrentHashSet();
 
-    public ServiceProperty() {
-        Environment env = App.applicationContext.getEnvironment();
+    public ServiceProperty(ApplicationContext applicationContext) {
+        Environment env = applicationContext.getEnvironment();
         MutablePropertySources propertySources = ((AbstractEnvironment) env).getPropertySources();
         for (org.springframework.core.env.PropertySource<?> next : propertySources) {
             String name = next.getName();
@@ -158,6 +158,7 @@ public class ServiceProperty {
 
     // Подписка это просто размещение подписки к подходящим Property
     // никаких уведомлений и что-то подобное не будет
+    @SuppressWarnings("all")
     public PropertySubscription<?> addSubscription(PropertySubscription<?> propertySubscription) {
         if (!subscriptions.contains(propertySubscription)) {
             subscriptions.add(propertySubscription);

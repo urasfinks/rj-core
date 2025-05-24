@@ -28,13 +28,13 @@ public class ServicePromise implements CascadeKey {
         timeOutExpirationList = ManagerConfigurationFactory.get(
                 ExpirationList.class,
                 getCascadeKey("timeOut"),
-                promiseExpirationList -> promiseExpirationList.setOnExpired(Promise::timeOut)
+                promiseExpirationList -> promiseExpirationList.setupOnExpired(Promise::timeOut)
         );
         retryExporationList = ManagerConfigurationFactory.get(
                 ExpirationList.class,
                 getCascadeKey("retry"),
                 abstractPromiseTaskExpirationList -> abstractPromiseTaskExpirationList
-                        .setOnExpired(promiseTask -> promiseTask.prepareLaunch(null))
+                        .setupOnExpired(promiseTask -> promiseTask.prepareLaunch(null))
         );
     }
 

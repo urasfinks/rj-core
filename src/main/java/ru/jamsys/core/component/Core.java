@@ -30,6 +30,7 @@ public class Core extends AbstractLifeCycle implements LifeCycleInterface {
     public void runOperation() {
         UtilLog.printAction("run()");
         List<LifeCycleComponent> sortedList = new ArrayList<>();
+        // Первым делом получаем экземпляры, а только потом их запускаем
         serviceClassFinder.findByInstance(LifeCycleComponent.class).forEach((Class<LifeCycleComponent> runnableComponentClass) -> {
             if (!ServiceClassFinder.instanceOf(this.getClass(), runnableComponentClass)) {
                 sortedList.add(serviceClassFinder.instanceOf(runnableComponentClass));

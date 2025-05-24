@@ -30,6 +30,9 @@ public interface ManagerConfigurationFactory {
                         @SuppressWarnings("unchecked")
                         R instance = (R) c.newInstance(ns1);
                         if (onCreate != null) {
+                            // Настройки которые можно сделать с экземпляром в момент создания принято в методах
+                            // называть с ключевого слова setup (setupOnExpired(...)) так же должны следовать сразу за
+                            // конструктором
                             onCreate.accept(instance);
                         }
                         return instance;

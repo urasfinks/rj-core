@@ -48,7 +48,7 @@ public class QueueRetry implements DataReader, StatisticsFlush {
                 ExpirationList.class,
                 QueueRetry.class.getName(), // Это общий ExpirationList для всех экземпляров QueueRetry
                 queueRetryExpirationObjectExpirationList -> queueRetryExpirationObjectExpirationList
-                        .setOnExpired(QueueRetryExpirationObject::insert)
+                        .setupOnExpired(QueueRetryExpirationObject::insert)
         );
     }
 

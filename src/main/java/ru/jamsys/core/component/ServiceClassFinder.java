@@ -1,7 +1,6 @@
 package ru.jamsys.core.component;
 
 import com.google.common.reflect.ClassPath;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.CascadeKey;
@@ -29,7 +28,8 @@ import java.util.List;
 // полное_имя_класса = true, то есть игнорирование включено, если поставить false => игнорирование выключено
 
 @Component
-@Lazy
+// @Lazy не должен быть ленивым, должен сразу инициализироваться так как является корневым для множества начальных
+// компонентов
 public class ServiceClassFinder implements CascadeKey {
 
     // Список доступных классов для создания через ядро
@@ -87,6 +87,10 @@ public class ServiceClassFinder implements CascadeKey {
         return null;
     }
 
+    public static boolean instanceOf(Class<?> cls, Class<?> interfaceRef) {
+        return interfaceRef.isAssignableFrom(cls); //!cls.equals(interfaceRef) &&
+    }
+
     public <T> List<Class<T>> findByInstance(Class<T> cls) {
         List<Class<T>> result = new ArrayList<>();
         for (Class<?> availableClass : availableClass) {
@@ -97,10 +101,6 @@ public class ServiceClassFinder implements CascadeKey {
             }
         }
         return result;
-    }
-
-    public static boolean instanceOf(Class<?> cls, Class<?> interfaceRef) {
-        return interfaceRef.isAssignableFrom(cls); //!cls.equals(interfaceRef) &&
     }
 
     public void removeAvailableClass(Class<?> cls, String cause) {

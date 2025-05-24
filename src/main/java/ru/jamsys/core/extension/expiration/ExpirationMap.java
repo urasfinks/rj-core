@@ -34,18 +34,18 @@ public class ExpirationMap<K, V>
 
     private final Map<K, ExpirationMapExpirationObject> mainMap = new ConcurrentHashMap<>(); // Основная карта, в которой хранятся сессионные данные
 
-    public void setTimeoutMs(int keepAliveOnInactivityMs) {
-        setKeepAliveOnInactivityMs(keepAliveOnInactivityMs);
-    }
-
     public ExpirationMap(String key) {
         this.key = key;
         expirationMapConfiguration = ManagerConfigurationFactory.get(
                 ExpirationList.class,
                 ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров ExpirationMap
                 expirationMapExpirationObjectExpirationList -> expirationMapExpirationObjectExpirationList
-                        .setOnExpired(ExpirationMapExpirationObject::remove)
+                        .setupOnExpired(ExpirationMapExpirationObject::remove)
         );
+    }
+
+    public void setupTimeoutMs(int keepAliveOnInactivityMs) {
+        setKeepAliveOnInactivityMs(keepAliveOnInactivityMs);
     }
 
     @JsonValue

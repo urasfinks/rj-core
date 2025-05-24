@@ -110,7 +110,7 @@ public class App implements CascadeKey {
                     .print();
             context = application.run(args);
             // Очень много проблем при взаимных получениях ServiceClassFinder, поэтому сразу его тут получу и всё
-            get(ServiceClassFinder.class);
+            // get(ServiceClassFinder.class); - надо из конструкторов убирать логику, а не тут хардкодить
             get(Core.class).run();
         }
     }

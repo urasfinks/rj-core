@@ -50,7 +50,6 @@ public class ExpirationList<T>
 
     private final ConcurrentSkipListMap<Long, AtomicInteger> bucketQueueSize = new ConcurrentSkipListMap<>();
 
-    @Setter
     private Consumer<T> onExpired;
 
     // Сколько было просто удалено, так как объект был нейтрализован
@@ -61,6 +60,10 @@ public class ExpirationList<T>
 
     public ExpirationList(String ns) {
         this.ns = ns;
+    }
+
+    public void setupOnExpired(Consumer<T> onExpired){
+        this.onExpired = onExpired;
     }
 
     @JsonValue

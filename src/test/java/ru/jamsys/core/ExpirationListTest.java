@@ -50,7 +50,7 @@ class ExpirationListTest {
         ManagerConfiguration<ExpirationList<XItem>> configureTest = ManagerConfigurationFactory.get(
                 ExpirationList.class,
                 "test1",
-                xItemExpirationList -> xItemExpirationList.setOnExpired(_ -> counterExpired.incrementAndGet())
+                xItemExpirationList -> xItemExpirationList.setupOnExpired(_ -> counterExpired.incrementAndGet())
         );
         ExpirationList<XItem> test = configureTest.get();
 
@@ -148,7 +148,7 @@ class ExpirationListTest {
         ManagerConfiguration<ExpirationList<XItem>> configureTest = ManagerConfigurationFactory.get(
                 ExpirationList.class,
                 "test3",
-                xItemExpirationList -> xItemExpirationList.setOnExpired(_ -> success.incrementAndGet())
+                xItemExpirationList -> xItemExpirationList.setupOnExpired(_ -> success.incrementAndGet())
         );
         ExpirationList<XItem> test = configureTest.get();
 

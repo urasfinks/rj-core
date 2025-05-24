@@ -31,7 +31,7 @@ public class BalancerStickySessions<T> {
                 ExpirationMap.class,
                 key,
                 stringResolvedExpirationMap -> stringResolvedExpirationMap
-                        .setTimeoutMs(keepAliveOnInactivityMs)
+                        .setupTimeoutMs(keepAliveOnInactivityMs)
         );
     }
 
