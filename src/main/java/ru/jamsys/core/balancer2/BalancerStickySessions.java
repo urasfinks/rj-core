@@ -2,6 +2,7 @@ package ru.jamsys.core.balancer2;
 
 import lombok.Getter;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.expiration.ExpirationMap;
 import ru.jamsys.core.flat.util.Util;
 
@@ -26,7 +27,12 @@ public class BalancerStickySessions<T> {
     }
 
     public BalancerStickySessions(String key, int keepAliveOnInactivityMs) {
-        expirationStickyMapConfiguration = ExpirationMap.getInstanceConfigure(key, keepAliveOnInactivityMs);
+        expirationStickyMapConfiguration = ManagerConfigurationFactory.get(
+                ExpirationMap.class,
+                key,
+                stringResolvedExpirationMap -> stringResolvedExpirationMap
+                        .setTimeoutMs(keepAliveOnInactivityMs)
+        );
     }
 
     public void add(T element) {

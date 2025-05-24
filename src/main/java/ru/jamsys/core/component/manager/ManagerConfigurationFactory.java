@@ -2,6 +2,7 @@ package ru.jamsys.core.component.manager;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.ManagerElement;
+import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.lang.reflect.Constructor;
 import java.util.function.Consumer;
@@ -32,8 +33,8 @@ public interface ManagerConfigurationFactory {
                             onCreate.accept(instance);
                         }
                         return instance;
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to instantiate " + cls + "(String)", e);
+                    } catch (Throwable th) {
+                        throw new ForwardException("Failed to instantiate " + cls + "(String)", th);
                     }
                 }
         );

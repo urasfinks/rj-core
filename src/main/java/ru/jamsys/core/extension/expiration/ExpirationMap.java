@@ -3,8 +3,6 @@ package ru.jamsys.core.extension.expiration;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
@@ -36,9 +34,12 @@ public class ExpirationMap<K, V>
 
     private final Map<K, ExpirationMapExpirationObject> mainMap = new ConcurrentHashMap<>(); // Основная карта, в которой хранятся сессионные данные
 
-    private ExpirationMap(String key, int keepAliveOnInactivityMs) {
-        this.key = key;
+    public void setTimeoutMs(int keepAliveOnInactivityMs) {
         setKeepAliveOnInactivityMs(keepAliveOnInactivityMs);
+    }
+
+    public ExpirationMap(String key) {
+        this.key = key;
         expirationMapConfiguration = ManagerConfigurationFactory.get(
                 ExpirationList.class,
                 ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров ExpirationMap
@@ -419,17 +420,6 @@ public class ExpirationMap<K, V>
 
     public boolean expireNow(K key) {
         return mainMap.remove(key) != null;
-    }
-
-    public static <K, V> ManagerConfiguration<ExpirationMap<K, V>> getInstanceConfigure(
-            String key,
-            int keepAliveOnInactivityMs
-    ) {
-        return App.get(Manager.class).getManagerConfigurationGeneric(
-                ExpirationMap.class,
-                key,
-                key1 -> new ExpirationMap<>(key1, keepAliveOnInactivityMs)
-        );
     }
 
 }
