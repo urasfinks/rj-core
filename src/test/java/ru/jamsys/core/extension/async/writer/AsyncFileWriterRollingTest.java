@@ -1,7 +1,6 @@
 package ru.jamsys.core.extension.async.writer;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;

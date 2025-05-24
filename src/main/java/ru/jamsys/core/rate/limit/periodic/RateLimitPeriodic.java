@@ -3,8 +3,6 @@ package ru.jamsys.core.rate.limit.periodic;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
-import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.ManagerElement;

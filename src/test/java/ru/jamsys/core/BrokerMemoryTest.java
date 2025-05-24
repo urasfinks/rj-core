@@ -5,10 +5,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
-import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -40,9 +38,7 @@ class BrokerMemoryTest {
         ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
                 BrokerMemory.class,
                 XTest.class.getSimpleName() + "_1",
-                managerElement -> {
-                    managerElement.setOnPostDrop(dropped::add);
-                }
+                managerElement -> managerElement.setOnPostDrop(dropped::add)
         );
 
         BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();

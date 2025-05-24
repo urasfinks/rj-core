@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;

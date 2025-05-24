@@ -2,7 +2,6 @@ package ru.jamsys.core.resource.notification.apple;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;

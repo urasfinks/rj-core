@@ -175,6 +175,7 @@ class PromiseImplTest {
         Promise promise = servicePromise.get("seq2", 1_500L)
                 .then("then1", (_, _, _) -> c.incrementAndGet())
                 .modifyLastPromiseTask(abstractPromiseTask -> {
+                    // --
                     abstractPromiseTask
                             .getComputeThreadConfiguration().get()
                             .getRateLimitConfiguration().get()
