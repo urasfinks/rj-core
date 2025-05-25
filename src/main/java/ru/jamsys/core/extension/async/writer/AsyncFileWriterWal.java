@@ -2,11 +2,8 @@ package ru.jamsys.core.extension.async.writer;
 
 import lombok.Getter;
 import ru.jamsys.core.extension.ByteSerializable;
-import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 
 import java.nio.file.StandardOpenOption;
-import java.util.List;
-import java.util.function.BiConsumer;
 
 // Многопоточная запись в файл пачками (для Write-Ahead Logging)
 
@@ -14,12 +11,14 @@ import java.util.function.BiConsumer;
 public class AsyncFileWriterWal<T extends Position & ByteSerializable>
         extends AbstractAsyncFileWriter<T> {
 
-    public AsyncFileWriterWal(
-            BrokerPersistRepositoryProperty repositoryProperty,
-            String filePath,
-            BiConsumer<String, List<T>> onWrite
-    ) {
-        super(repositoryProperty, filePath, onWrite, StandardOpenOption.APPEND);
+    public AsyncFileWriterWal(String filePath) {
+        super(filePath);
+        super.setupStandardOpenOption(StandardOpenOption.APPEND);
+    }
+
+    @Override
+    public void setupStandardOpenOption(StandardOpenOption standardOpenOption) {
+        throw new RuntimeException("Only StandardOpenOption.APPEND");
     }
 
     @Override

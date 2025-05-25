@@ -6,7 +6,6 @@ import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
@@ -18,7 +17,7 @@ public class AsyncFileWriterRolling<T extends Position & ByteSerializable>
 
     private String fileName;
 
-    private final BiConsumer<String, AsyncFileWriterRolling<T>> onFileSwap;
+    private BiConsumer<String, AsyncFileWriterRolling<T>> onFileSwap;
 
     @Setter
     private Supplier<String> generateNewFileName = () -> System.currentTimeMillis()
@@ -26,13 +25,14 @@ public class AsyncFileWriterRolling<T extends Position & ByteSerializable>
             + java.util.UUID.randomUUID()
             + ".afwr";
 
-    public AsyncFileWriterRolling(
-            BrokerPersistRepositoryProperty repositoryProperty,
-            BiConsumer<String, List<T>> onWrite, // T - filePath; U - list written object
-            BiConsumer<String, AsyncFileWriterRolling<T>> onFileSwap // T - fileName
-    ) {
-        super(repositoryProperty, null, onWrite, StandardOpenOption.TRUNCATE_EXISTING);
-        this.onFileSwap = onFileSwap;
+    public AsyncFileWriterRolling(String fileName) { // Тут fileName нужен только для поддержания контракта ManagerElement
+        super(null);
+        super.setupStandardOpenOption(StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    @Override
+    public void setupRepositoryProperty(BrokerPersistRepositoryProperty repositoryProperty) {
+        super.setupRepositoryProperty(repositoryProperty);
 
         // До run надо установить имя файла, так как при старте будет создаваться файл и если этого не сделать будет NPE
         setNewFilePath();
@@ -43,6 +43,15 @@ public class AsyncFileWriterRolling<T extends Position & ByteSerializable>
             restartOutputStream();
             onFileSwap.accept(fileName, this);
         });
+    }
+
+    public void setupOnFileSwap(BiConsumer<String, AsyncFileWriterRolling<T>> onFileSwap) {
+        this.onFileSwap = onFileSwap;
+    }
+
+    @Override
+    public void setupStandardOpenOption(StandardOpenOption standardOpenOption) {
+        throw new RuntimeException("Only StandardOpenOption.TRUNCATE_EXISTING");
     }
 
     private void setNewFilePath() {

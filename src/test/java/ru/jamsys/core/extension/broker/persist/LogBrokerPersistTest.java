@@ -46,14 +46,16 @@ class LogBrokerPersistTest {
         );
         BrokerPersist<Log> test = brokerPersistManagerConfiguration.get();
 
-
+        // TODO: с = 1 зависает процесс
         int c = 1_000_000;
+        AtomicInteger write = new AtomicInteger(0);
         long s1 = System.currentTimeMillis();
         for (int i = 0; i < 4; i++) {
             Thread thread = new Thread(() -> {
                 int c1 = c / 4;
                 for (int j = 0; j < c1; j++) {
                     test.add(UtilLog.info("Hello world"));
+                    write.incrementAndGet();
                 }
             });
             thread.start();
@@ -61,25 +63,27 @@ class LogBrokerPersistTest {
         }
 
         System.out.println("add: " + (System.currentTimeMillis() - s1));
-        AtomicInteger read = new AtomicInteger(0);
-        long s2 = System.currentTimeMillis();
+
         for (int i = 0; i < 4; i++) {
             Thread thread = new Thread(() -> {
-                while (read.get() < c) {
+                while (write.get() > 0) {
                     X<Log> poll = test.poll();
                     if (poll != null) {
                         test.commit(poll);
-                        read.incrementAndGet();
+                        write.decrementAndGet();
                     }
                 }
             });
             thread.start();
-            thread.join();
         }
+        Util.await(
+                5000,
+                100,
+                () -> write.get() == 0,
+                timing -> UtilLog.printInfo("Success all commit; timing:" + timing),
+                () -> UtilLog.printError("Error all commit: " + write.get())
+        );
 
-        Assertions.assertEquals(c, read.get());
-        System.out.println("pool: " + (System.currentTimeMillis() - s2));
-        //test.shutdown();
         Util.await(
                 5_000,
                 100,

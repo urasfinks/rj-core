@@ -6,7 +6,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.extension.async.writer.AbstractAsyncFileWriter;
-import ru.jamsys.core.extension.async.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
@@ -38,8 +37,8 @@ public class Helper1s implements Cron1s, PromiseGenerator {
                                 expirationList -> expirationList.helper(run, System.currentTimeMillis())
                         )
                 )
-                .append(AsyncFileWriterRolling.class.getSimpleName(),
-                        (run, _, _) -> manager.groupAccept(AbstractAsyncFileWriter.class, abstractAsyncFileWriter -> {
+                .append(AbstractAsyncFileWriter.class.getSimpleName(),
+                        (run, _, _) -> manager.groupAcceptByInterface(AbstractAsyncFileWriter.class, abstractAsyncFileWriter -> {
                             try {
                                 abstractAsyncFileWriter.flush(run);
                             } catch (Throwable e) {

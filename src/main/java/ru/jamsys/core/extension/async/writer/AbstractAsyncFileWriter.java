@@ -67,11 +67,11 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
 
     // Надо понимать, что onWrite будет запускаться планировщиком 1 раз в секунду и нельзя туда вешать долгие
     // IO операции. Перекладывайте ответы в свою локальную очередь и разбирайте их в других потоках
-    private final BiConsumer<String, List<T>> onWrite; // T - filePath; U - list written object
+    private BiConsumer<String, List<T>> onWrite; // T - filePath; U - list written object
 
-    private final BrokerPersistRepositoryProperty repositoryProperty;
+    private BrokerPersistRepositoryProperty repositoryProperty;
 
-    private final StandardOpenOption standardOpenOption;
+    private StandardOpenOption standardOpenOption;
 
     @Setter
     @NonNull
@@ -80,16 +80,20 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
     };
 
     @SuppressWarnings("unused")
-    public AbstractAsyncFileWriter(
-            BrokerPersistRepositoryProperty repositoryProperty,
-            String filePath,
-            BiConsumer<String, List<T>> onWrite, // T - filePath; U - list written object
-            StandardOpenOption standardOpenOption
-    ) {
-        this.repositoryProperty = repositoryProperty;
+    public AbstractAsyncFileWriter(String filePath) {
         this.filePath = filePath;
-        this.onWrite = onWrite;
+    }
+
+    public void setupRepositoryProperty(BrokerPersistRepositoryProperty repositoryProperty) {
+        this.repositoryProperty = repositoryProperty;
+    }
+
+    public void setupStandardOpenOption(StandardOpenOption standardOpenOption) {
         this.standardOpenOption = standardOpenOption;
+    }
+
+    public void setupOnWrite(BiConsumer<String, List<T>> onWrite) {
+        this.onWrite = onWrite;
     }
 
     @JsonValue
@@ -201,6 +205,12 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
 
     @Override
     public void runOperation() {
+        if (standardOpenOption == null) {
+            throw new RuntimeException("standardOpenOption is null filePath: " + filePath);
+        }
+        if (repositoryProperty == null) {
+            throw new RuntimeException("repositoryProperty is null filePath: " + filePath);
+        }
         openOutputStream();
     }
 

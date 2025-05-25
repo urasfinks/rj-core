@@ -56,6 +56,16 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         return new ManagerConfiguration<>(cls, key, this);
     }
 
+    public <R extends ManagerElement> void groupAcceptByInterface(Class<R> cls, Consumer<R> consumer) {
+        for (Class<? extends ManagerElement> key : new ArrayList<>(mainMap.keySet())) {
+            if (key.equals(cls) || cls.isAssignableFrom(key)) {
+                @SuppressWarnings("unchecked")
+                Class<R> t = (Class<R>) key;
+                groupAccept(t, consumer);
+            }
+        }
+    }
+
     public <R extends ManagerElement> void groupAccept(Class<R> cls, Consumer<R> consumer) {
         @SuppressWarnings("unchecked")
         Map<String, R> innerMap = (Map<String, R>) mainMap.get(cls);

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.ByteSerializable;
@@ -56,7 +57,7 @@ public class BrokerPersist<T extends ByteSerializable>
 
     private final AtomicInteger tpsEnqueue = new AtomicInteger(0);
 
-    private ManagerConfiguration<AbstractAsyncFileWriter<X<T>>> xWriterConfiguration;
+    private ManagerConfiguration<AsyncFileWriterRolling<X<T>>> xWriterConfiguration;
 
     // Конфиг может быть удалён, только если файл полностью обработан, до этого момента он должен быть тут 100%
     private final Map<String, ManagerConfiguration<Rider>> mapRiderConfiguration = new ConcurrentHashMap<>();
@@ -94,32 +95,28 @@ public class BrokerPersist<T extends ByteSerializable>
     public void xWriterInit() {
         String key = getCascadeKey(ns, "bin");
         if (xWriterConfiguration != null) {
-            App.get(Manager.class).remove(AbstractAsyncFileWriter.class, key);
+            App.get(Manager.class).remove(AsyncFileWriterRolling.class, key);
         }
-        xWriterConfiguration = App.get(Manager.class).getManagerConfigurationGeneric(
-                AbstractAsyncFileWriter.class,
-                // ns уникально в пределах BrokerPersist, но нам надо больше уникальности, так как у нас несколько
-                // AbstractAsyncFileWriter.class (Rolling/Wal)
+        xWriterConfiguration = ManagerConfigurationFactory.get(
+                AsyncFileWriterRolling.class,
                 key,
-                ns1 -> {
-                    AsyncFileWriterRolling<X<T>> xAsyncFileWriterRolling = new AsyncFileWriterRolling<>(
-                            property,
-                            this::onXWrite,
-                            this::onXFileSwap
-                    );
+                managerElement -> {
+                    managerElement.setupRepositoryProperty(property);
+                    managerElement.setupOnFileSwap(this::onXFileSwap);
+                    managerElement.setupOnWrite(this::onXWrite);
                     // Если по каким-то причинам закрывается файл данных, надо оповестить rider
                     // При обычной работе происходит просто onSwap и едем дальше, а при завершении работы приложения
                     // или просто BrokerPersist отъехал от дел, буду закрываться ресурсы, вот тут тоже вызовется
-                    xAsyncFileWriterRolling.getListOnPostShutdown().add(() -> {
+                    managerElement.getListOnPostShutdown().add(() -> {
                         ManagerConfiguration<Rider> riderConfiguration = mapRiderConfiguration
-                                .get(xAsyncFileWriterRolling.getFilePath());
+                                .get(managerElement.getFilePath());
                         if (riderConfiguration != null && riderConfiguration.isAlive()) {
                             riderConfiguration.get().getQueueRetry().setFinishState(true);
                         }
                     });
-                    return xAsyncFileWriterRolling;
                 }
         );
+
         // При старте мы должны поднять все CommitController в карту commitControllers это надо, что бы наполнять
         // очередь, так как она цикличная
         UtilFile
@@ -202,14 +199,17 @@ public class BrokerPersist<T extends ByteSerializable>
                     ManagerConfiguration<Rider> configure = App.get(Manager.class).getManagerConfiguration(
                             Rider.class,
                             getCascadeKey(ns, filePathX), // Тут главно, что бы просто было уникальным
-                            ns1 -> new Rider(
-                                    property,
-                                    ns1,
-                                    filePathX,
-                                    fileXFinishState,
-                                    // Каждый блок записи list<Y> может быть последним, так как будут обработаны все X
-                                    this::removeRiderIfComplete
-                            )
+                            ns1 -> {
+                                //System.out.println(">> "+filePathX);
+                                return new Rider(
+                                        property,
+                                        ns1,
+                                        filePathX,
+                                        fileXFinishState,
+                                        // Каждый блок записи list<Y> может быть последним, так как будут обработаны все X
+                                        this::removeRiderIfComplete
+                                );
+                            }
                     );
                     queueRiderConfiguration.add(configure);
                     return configure;
