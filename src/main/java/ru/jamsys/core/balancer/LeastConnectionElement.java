@@ -1,4 +1,4 @@
-package ru.jamsys.core.balancer2;
+package ru.jamsys.core.balancer;
 
 public interface LeastConnectionElement {
     int getCountConnection();

@@ -1,9 +1,7 @@
-package ru.jamsys.core.balancer2;
+package ru.jamsys.core.balancer;
 
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 @Getter
