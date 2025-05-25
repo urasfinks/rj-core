@@ -3,7 +3,6 @@ package ru.jamsys.core.resource.http.client;
 
 import org.springframework.http.HttpStatus;
 import ru.jamsys.core.flat.util.UtilBase64;
-import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.FileKeyStoreSSLContext;
 
 import java.io.UnsupportedEncodingException;
