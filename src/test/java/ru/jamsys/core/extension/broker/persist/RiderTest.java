@@ -3,7 +3,8 @@ package ru.jamsys.core.extension.broker.persist;
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.FileWriteOptions;
@@ -68,18 +69,16 @@ class RiderTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        Rider rider = App.get(Manager.class).getManagerConfiguration(
+        ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfigurationFactory.get(
                 Rider.class,
-                "test",
-                key1 -> new Rider(
-                        brokerPersistRepositoryProperty,
-                        key1,
-                        "LogManager/test.bin",
-                        true,
-                        _ -> {
-                        }
-                )
-        ).get();
+                "LogManager/test.bin",
+                managerElement -> {
+                    managerElement.setupRepositoryProperty(brokerPersistRepositoryProperty);
+                    managerElement.setupFileXFinishState(true);
+                }
+        );
+
+        Rider rider = riderManagerConfiguration.get();
         Assertions.assertEquals(1, rider.getQueueRetry().size());
         Assertions.assertEquals("world", new String(rider.getQueueRetry().getForUnitTest(9L).getBytes()));
     }

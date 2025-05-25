@@ -195,23 +195,18 @@ public class BrokerPersist<T extends ByteSerializable>
         return mapRiderConfiguration.computeIfAbsent(
                 filePathX, // Нам тут нужна ссылка на bin так как BrokerPersistElement.getFilePath возвращает именно его
                 _ -> {
-                    ManagerConfiguration<Rider> configure = App.get(Manager.class).getManagerConfiguration(
+                    ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfigurationFactory.get(
                             Rider.class,
-                            getCascadeKey(ns, filePathX), // Тут главно, что бы просто было уникальным
-                            ns1 -> {
-                                //System.out.println(">> "+filePathX);
-                                return new Rider(
-                                        property,
-                                        ns1,
-                                        filePathX,
-                                        fileXFinishState,
-                                        // Каждый блок записи list<Y> может быть последним, так как будут обработаны все X
-                                        this::removeRiderIfComplete
-                                );
+                            filePathX,
+                            rider -> {
+                                rider.setupRepositoryProperty(property);
+                                rider.setupFileXFinishState(fileXFinishState);
+                                // Каждый блок записи list<Y> может быть последним, так как будут обработаны все X
+                                rider.setupOnWrite(this::removeRiderIfComplete);
                             }
                     );
-                    queueRiderConfiguration.add(configure);
-                    return configure;
+                    queueRiderConfiguration.add(riderManagerConfiguration);
+                    return riderManagerConfiguration;
                 });
     }
 

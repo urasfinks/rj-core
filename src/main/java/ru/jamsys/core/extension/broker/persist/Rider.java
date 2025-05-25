@@ -21,40 +21,36 @@ import java.util.function.Consumer;
 @Getter
 public class Rider extends AbstractManagerElement {
 
-    private final ManagerConfiguration<AsyncFileWriterWal<Y>> yWriterConfiguration;
+    private ManagerConfiguration<AsyncFileWriterWal<Y>> yWriterConfiguration;
+
+    private final String filePathX;
 
     private final String filePathY;
 
-    private final QueueRetry queueRetry;
+    private QueueRetry queueRetry;
+
+    private BrokerPersistRepositoryProperty repositoryProperty;
+
+    private Boolean fileXFinishState;
+
+    private Consumer<Rider> onWrite;
 
     // Экземпляр создаётся в onSwap и в commit
-    public Rider(
-            BrokerPersistRepositoryProperty repositoryProperty,
-            String ns,
-            String filePathX,
-            boolean fileXFinishState,
-            Consumer<Rider> onWrite
-    ) {
+    public Rider(String filePathX) {
+        this.filePathX = filePathX;
         this.filePathY = BrokerPersist.filePathXToY(filePathX);
-        queueRetry = new QueueRetry(filePathX, fileXFinishState);
-        // То, что будут коммитить - это значит, что обработано и нам надо это удалять из списка на обработку
-        // В asyncWrite залетает CommitElement содержащий bin (CommitElement.getBytes() возвращает позицию bin.position)
-        // В onWrite залетает список CommitElement и мы должны bin.position удалить из binReader
-        yWriterConfiguration = ManagerConfigurationFactory.get(
-                AsyncFileWriterWal.class,
-                filePathY,
-                managerElement -> {
-                    managerElement.setupRepositoryProperty(repositoryProperty);
-                    managerElement.setupOnWrite((_, listY) -> {
-                        markActive();
-                        for (Y y : listY) {
-                            queueRetry.remove(y.getX().getPosition());
-                        }
-                        onWrite.accept(this);
-                    });
-                    managerElement.getListShutdownBefore().add(this);
-                }
-        );
+    }
+
+    public void setupRepositoryProperty(BrokerPersistRepositoryProperty repositoryProperty) {
+        this.repositoryProperty = repositoryProperty;
+    }
+
+    public void setupFileXFinishState(boolean fileXFinishState) {
+        this.fileXFinishState = fileXFinishState;
+    }
+
+    public void setupOnWrite(Consumer<Rider> onWrite) {
+        this.onWrite = onWrite;
     }
 
     @JsonValue
@@ -90,6 +86,33 @@ public class Rider extends AbstractManagerElement {
 
     @Override
     public void runOperation() {
+        if (repositoryProperty == null) {
+            throw new RuntimeException("repositoryProperty is null; filePath: " + filePathY);
+        }
+        if (fileXFinishState == null) {
+            throw new RuntimeException("fileXFinishState is null; filePath: " + filePathY);
+        }
+        queueRetry = new QueueRetry(filePathX, fileXFinishState);
+        // То, что будут коммитить - это значит, что обработано и нам надо это удалять из списка на обработку
+        // В asyncWrite залетает CommitElement содержащий bin (CommitElement.getBytes() возвращает позицию bin.position)
+        // В onWrite залетает список CommitElement и мы должны bin.position удалить из binReader
+        yWriterConfiguration = ManagerConfigurationFactory.get(
+                AsyncFileWriterWal.class,
+                filePathY,
+                managerElement -> {
+                    managerElement.setupRepositoryProperty(repositoryProperty);
+                    managerElement.setupOnWrite((_, listY) -> {
+                        markActive();
+                        for (Y y : listY) {
+                            queueRetry.remove(y.getX().getPosition());
+                        }
+                        if (onWrite != null) {
+                            onWrite.accept(this);
+                        }
+                    });
+                    managerElement.getListShutdownBefore().add(this);
+                }
+        );
         // Просто всегда считываем данные из файла. Может быть прийдётся подтюнячить, что бы восстановление не падало
         // при одновременной записи
         try {
