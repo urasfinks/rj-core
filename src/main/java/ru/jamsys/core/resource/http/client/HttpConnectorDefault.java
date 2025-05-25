@@ -7,8 +7,7 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.App;
 import ru.jamsys.core.flat.util.UtilBase64;
-import ru.jamsys.core.resource.virtual.file.system.File;
-import ru.jamsys.core.resource.virtual.file.system.view.FileViewKeyStoreSslContext;
+import ru.jamsys.core.resource.virtual.file.system.FileKeyStoreSSLContext;
 
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
@@ -52,7 +51,7 @@ public class HttpConnectorDefault implements HttpConnector {
 
     @Getter
     @Setter
-    private String sslContextType = "TLS";
+    private String sslProtocol = "TLS";
 
     @Getter
     @Setter
@@ -75,7 +74,7 @@ public class HttpConnectorDefault implements HttpConnector {
     @Getter
     private Map<String, List<String>> headerResponse = null;
 
-    private FileViewKeyStoreSslContext sslContext = null;
+    private FileKeyStoreSSLContext fileKeyStoreSSLContext = null;
 
     @Getter
     @Setter
@@ -112,12 +111,12 @@ public class HttpConnectorDefault implements HttpConnector {
         try {
             HttpClient.Builder clientBuilder = HttpClient.newBuilder();
 
-            if (sslContext != null) {
+            if (fileKeyStoreSSLContext != null) {
                 if (disableHostnameVerification) {
                     Properties props = System.getProperties();
                     props.setProperty("jdk.internal.httpclient.disableHostnameVerification", Boolean.TRUE.toString());
                 }
-                clientBuilder.sslContext(sslContext.getSslContext(sslContextType));
+                clientBuilder.sslContext(fileKeyStoreSSLContext.get(sslProtocol));
             }
 
             if (proxyHost != null) {
@@ -187,8 +186,8 @@ public class HttpConnectorDefault implements HttpConnector {
     }
 
     @Override
-    public HttpConnectorDefault setKeyStore(File keyStore, Object... props) {
-        sslContext = keyStore.getView(FileViewKeyStoreSslContext.class, props);
+    public HttpConnectorDefault setKeyStore(FileKeyStoreSSLContext fileKeyStoreSSLContext) {
+        this.fileKeyStoreSSLContext = fileKeyStoreSSLContext;
         return this;
     }
 

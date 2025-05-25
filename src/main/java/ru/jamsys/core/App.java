@@ -69,20 +69,27 @@ public class App implements CascadeKey {
         run(args);
     }
 
+    //public static List<String> dep = new ArrayList<>();
+
     @SuppressWarnings("all")
     public static <T> T get(Class<T> cls) {
-        return (T) mapBean.computeIfAbsent(cls, aClass -> {
-            try {
-                T t = App.applicationContext.getBean(cls);
-                if (t == null) {
-                    throw new RuntimeException("App.get(" + cls.getName() + ") return null");
-                }
-                return t;
-            } catch (Throwable th) {
-                App.error(new ForwardException(cls.getName().toString(), th));
-                throw th;
+        // dep.add(UtilDate.msFormat(System.currentTimeMillis()) + " " + cls.getName());
+        // computeIfAbsent может выкидывать java.lang.IllegalStateException: Recursive update.
+        // Нам тут не нужна мнгопоточная синхорнизация, мы можем даже дважды вызвать App.applicationContext.getBean(cls)
+        if (mapBean.containsKey(cls)) {
+            return (T) mapBean.get(cls);
+        }
+        try {
+            T t = App.applicationContext.getBean(cls);
+            if (t == null) {
+                throw new RuntimeException("App.get(" + cls.getName() + ") return null");
             }
-        });
+            mapBean.put(cls, t);
+            return t;
+        } catch (Throwable th) {
+            App.error(new ForwardException(cls.getName().toString(), th));
+            throw th;
+        }
     }
 
     @SuppressWarnings("all")

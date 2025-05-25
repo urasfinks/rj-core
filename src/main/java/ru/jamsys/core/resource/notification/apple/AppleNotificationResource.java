@@ -1,19 +1,17 @@
 package ru.jamsys.core.resource.notification.apple;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
-import ru.jamsys.core.resource.virtual.file.system.File;
-import ru.jamsys.core.resource.virtual.file.system.FileLoaderFactory;
-import ru.jamsys.core.resource.virtual.file.system.view.FileViewKeyStore;
+import ru.jamsys.core.resource.virtual.file.system.FileKeyStoreSSLContext;
+import ru.jamsys.core.resource.virtual.file.system.ReadFromSourceFactory;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.nio.charset.StandardCharsets;
@@ -25,8 +23,7 @@ public class AppleNotificationResource
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements
         Resource<AppleNotificationRequest, HttpResponse>,
-        CascadeKey,
-        PropertyListener {
+        CascadeKey {
 
     private PropertyDispatcher<Object> propertyDispatcher;
 
@@ -36,7 +33,7 @@ public class AppleNotificationResource
     public void init(String ns) throws Throwable {
 
         propertyDispatcher = new PropertyDispatcher<>(
-                this,
+                null,
                 appleNotificationRepositoryProperty,
                 getCascadeKey(ns)
         );
@@ -66,11 +63,16 @@ public class AppleNotificationResource
         httpConnector.setRequestHeader("apns-priority", appleNotificationRepositoryProperty.getPriority());
         httpConnector.setRequestHeader("apns-topic", appleNotificationRepositoryProperty.getTopic());
 
-        httpConnector.setKeyStore(
-                App.get(Manager.class).get(File.class, appleNotificationRepositoryProperty.getVirtualPath()),
-                FileViewKeyStore.prop.SECURITY_KEY.name(), appleNotificationRepositoryProperty.getSecurityAlias(),
-                FileViewKeyStore.prop.TYPE.name(), "PKCS12"
+        ManagerConfiguration<FileKeyStoreSSLContext> fileKeyStoreSSLContextManagerConfiguration = ManagerConfigurationFactory.get(
+                FileKeyStoreSSLContext.class,
+                appleNotificationRepositoryProperty.getVirtualPath(),
+                fileKeyStore -> {
+                    fileKeyStore.setupSecurityAlias(appleNotificationRepositoryProperty.getSecurityAlias());
+                    fileKeyStore.setupTypeKeyStorage("PKCS12");
+                    fileKeyStore.setupReadFromSource(ReadFromSourceFactory.fromFileSystem(appleNotificationRepositoryProperty.getStorage()));
+                }
         );
+        httpConnector.setKeyStore(fileKeyStoreSSLContextManagerConfiguration.get());
         httpConnector.exec();
         return httpConnector.getResponseObject();
     }
@@ -88,18 +90,6 @@ public class AppleNotificationResource
     @Override
     public void shutdownOperation() {
         propertyDispatcher.shutdown();
-    }
-
-    @Override
-    public void onPropertyUpdate(String key, String oldValue, String newValue) {
-        if (appleNotificationRepositoryProperty.getVirtualPath() == null || appleNotificationRepositoryProperty.getStorage() == null) {
-            return;
-        }
-        App.get(Manager.class).getManagerConfiguration(
-                File.class,
-                appleNotificationRepositoryProperty.getVirtualPath(),
-                path -> new File(path, FileLoaderFactory.fromFileSystem(appleNotificationRepositoryProperty.getStorage()))
-        );
     }
 
     @Override

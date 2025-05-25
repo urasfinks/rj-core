@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.virtual.file.system.view.KeyStore;
+package ru.jamsys.core.extension;
 
 import lombok.Data;
 

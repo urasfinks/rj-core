@@ -4,6 +4,7 @@ package ru.jamsys.core.resource.http.client;
 import org.springframework.http.HttpStatus;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.resource.virtual.file.system.File;
+import ru.jamsys.core.resource.virtual.file.system.FileKeyStoreSSLContext;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -13,7 +14,7 @@ import java.util.Map;
 
 public interface HttpConnector {
 
-    HttpConnector setSslContextType(String sslContextType);
+    HttpConnector setSslProtocol(String sslProtocol);
 
     HttpConnector setProxy(String host, int port);
 
@@ -25,7 +26,7 @@ public interface HttpConnector {
 
     HttpConnector setMethod(HttpMethodEnum method);
 
-    HttpConnector setKeyStore(File keyStore, Object... props);
+    HttpConnector setKeyStore(FileKeyStoreSSLContext fileKeyStoreSSLContext);
 
     HttpConnector setRequestHeader(String name, String value);
 
@@ -37,7 +38,7 @@ public interface HttpConnector {
         return setRequestHeader("Authorization", "Basic " + UtilBase64.encode(user + ":" + pass, charset, false));
     }
 
-    String getSslContextType();
+    String getSslProtocol();
 
     int getConnectTimeoutMs();
 

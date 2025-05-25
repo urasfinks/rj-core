@@ -5,14 +5,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
+import ru.jamsys.core.flat.util.UtilBase64;
+import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilUri;
 import ru.jamsys.core.resource.virtual.file.system.File;
-import ru.jamsys.core.resource.virtual.file.system.FileLoaderFactory;
-import ru.jamsys.core.resource.virtual.file.system.FileSaverFactory;
-import ru.jamsys.core.flat.util.UtilFile;
+import ru.jamsys.core.resource.virtual.file.system.FileKeyStore;
+import ru.jamsys.core.resource.virtual.file.system.ReadFromSourceFactory;
+import ru.jamsys.core.resource.virtual.file.system.WriteToDestinationFactory;
+
+import java.nio.charset.StandardCharsets;
 
 // IO time: 88ms
 // COMPUTE time: 89ms
@@ -30,41 +34,93 @@ class FileTest {
 
     @Test
     public void testMain() {
-        File file = new File("/hello/world/1.txt", () -> null);
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+                File.class,
+                "/hello/world/1.txt",
+                file -> file.setupReadFromSource(() -> null)
+        );
+        File file = fileManagerConfiguration.get();
         Assertions.assertEquals("/hello/world", file.getFilePath().getFolder(), "Директория");
         Assertions.assertEquals("1.txt", file.getFilePath().getFileName(), "Имя файла");
         Assertions.assertEquals("txt", file.getFilePath().getExtension(), "Расширение");
         Assertions.assertEquals("/hello/world/1.txt", file.getFilePath().getPath(), "Полный путь");
+    }
 
-        file = new File("/1.txt", () -> null);
+    @Test
+    public void testMain2() {
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+                File.class,
+                "/1.txt",
+                file -> file.setupReadFromSource(() -> null)
+        );
+        File file = fileManagerConfiguration.get();
         Assertions.assertEquals("/1.txt", file.getFilePath().getPath(), "Полный путь");
+    }
 
-        file = new File("1.txt", () -> null);
+    @Test
+    public void testMain3() {
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+                File.class,
+                "1.txt",
+                file -> file.setupReadFromSource(() -> null)
+        );
+        File file = fileManagerConfiguration.get();
         Assertions.assertEquals("1.txt", file.getFilePath().getPath(), "Полный путь");
+    }
 
-        file = new File("test/1.txt", () -> null);
+    @Test
+    public void testMain4() {
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+                File.class,
+                "test/1.txt",
+                file -> file.setupReadFromSource(() -> null)
+        );
+        File file = fileManagerConfiguration.get();
         Assertions.assertEquals("test/1.txt", file.getFilePath().getPath(), "Полный путь");
     }
 
     @Test
-    public void testGetString() throws Exception {
-        File file = new File("/hello/world/1.txt", FileLoaderFactory.fromString("Hello world", "UTF-8"));
-        Assertions.assertEquals("Hello world", file.getString("UTF-8"), "#1");
+    public void testGetString() {
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+                File.class,
+                "/hello/world/1_1.txt",
+                file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromString("Hello world", "UTF-8"))
+        );
+        File file = fileManagerConfiguration.get();
+        Assertions.assertEquals("Hello world", new String(file.getBytes(), StandardCharsets.UTF_8), "#1");
+    }
 
-        file = new File("/hello/world/1.txt", FileLoaderFactory.fromBase64("SGVsbG8gd29ybGQ=", "UTF-8"));
-        Assertions.assertEquals("Hello world", file.getString("UTF-8"), "#2");
+    @Test
+    public void testGetString2() {
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+                File.class,
+                "/hello/world/2.txt",
+                file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromBase64("SGVsbG8gd29ybGQ=", "UTF-8"))
+        );
+        File file = fileManagerConfiguration.get();
+        Assertions.assertEquals("Hello world", new String(file.getBytes(), StandardCharsets.UTF_8), "#1");
     }
 
     @Test
     public void testGetBase64() throws Exception {
-        File file = new File("/hello/world/1.txt", FileLoaderFactory.fromString("Hello world", "UTF-8"));
-        Assertions.assertEquals("SGVsbG8gd29ybGQ=", file.getBase64(), "#1");
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+                File.class,
+                "/hello/world/3.txt",
+                file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromString("Hello world", "UTF-8"))
+        );
+        File file = fileManagerConfiguration.get();
+        Assertions.assertEquals("SGVsbG8gd29ybGQ=", UtilBase64.encode(file.getBytes(), false), "#1");
     }
 
     @Test
     public void testFromFileSystem() throws Exception {
-        File file = new File("/hello/world/1.txt", FileLoaderFactory.fromFileSystem("pom.xml"));
-        Assertions.assertFalse(file.getString("UTF-8").isEmpty(), "#1");
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+                File.class,
+                "/hello/world/4.txt",
+                file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromFileSystem("pom.xml"))
+        );
+        File file = fileManagerConfiguration.get();
+        Assertions.assertFalse(new String(file.getBytes(), StandardCharsets.UTF_8).isEmpty(), "#1");
     }
 
     @Test
@@ -75,24 +131,29 @@ class FileTest {
         securityComponent.loadKeyStorage(password);
         securityComponent.add("test", "12345".toCharArray(), password);
 
-        File file = new File("/test.p12", FileLoaderFactory.createKeyStore("one.jks", "test"));
-        file.setSaver(FileSaverFactory.writeFile("one.jks"));
-        file.setRepositoryMap("securityKey", "test");
+        ManagerConfiguration<FileKeyStore> fileManagerConfiguration = ManagerConfigurationFactory.get(
+                FileKeyStore.class,
+                "/hello/world/5.txt",
+                file1 -> {
+                    file1.setupReadFromSource(ReadFromSourceFactory.createKeyStoreAndRead("one.jks", "test"));
+                    file1.setupWriteToDestination(WriteToDestinationFactory.writeFile("one.jks"));
+                    file1.setupSecurityAlias("test");
+                }
+        );
+        File file = fileManagerConfiguration.get();
         UtilFile.remove("one.jks");
         UtilFile.removeIfExist("unit-test.jks");
     }
 
     @Test
     void testComponent() {
-        ManagerConfiguration<File> fileConfiguration = App.get(Manager.class).getManagerConfiguration(
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
                 File.class,
-                "hello/world/1.txt",
-                path -> new File(path, FileLoaderFactory.fromString("Hello world", "UTF-8"))
+                "/hello/world/6.txt",
+                file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromString("Hello world", "UTF-8"))
         );
-
-        File file1 = fileConfiguration.get();
-
-        Assertions.assertEquals("1.txt", file1.getFilePath().getFileName());
+        File file1 = fileManagerConfiguration.get();
+        Assertions.assertEquals("6.txt", file1.getFilePath().getFileName());
     }
 
     @Test

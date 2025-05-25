@@ -20,8 +20,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import ru.jamsys.core.App;
-import ru.jamsys.core.resource.virtual.file.system.File;
-import ru.jamsys.core.resource.virtual.file.system.view.FileViewKeyStoreSslContext;
+import ru.jamsys.core.resource.virtual.file.system.FileKeyStoreSSLContext;
 
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
@@ -62,7 +61,7 @@ public class HttpConnectorApache implements HttpConnector {
 
     @Getter
     @Setter
-    private String sslContextType = "TLS";
+    private String sslProtocol = "TLS";
 
     @Getter
     @Setter
@@ -89,7 +88,7 @@ public class HttpConnectorApache implements HttpConnector {
     @Getter
     private Map<String, List<String>> headerResponse = null;
 
-    private FileViewKeyStoreSslContext sslContext = null;
+    private FileKeyStoreSSLContext fileKeyStoreSSLContext = null;
 
     @Getter
     @Setter
@@ -132,14 +131,15 @@ public class HttpConnectorApache implements HttpConnector {
                             .setConnectionRequestTimeout(poolWaitMs) // Таймаут ожидания из пула соединений (5 секунд)
                             .build()
                     );
-            if (sslContext != null) {
+            if (fileKeyStoreSSLContext != null) {
+
                 SSLConnectionSocketFactory socketFactory = disableHostnameVerification
                         ? new SSLConnectionSocketFactory(
-                        sslContext.getSslContext(sslContextType),
+                        fileKeyStoreSSLContext.get(sslProtocol),
                         NoopHostnameVerifier.INSTANCE
                 )
                         : new SSLConnectionSocketFactory(
-                        sslContext.getSslContext(sslContextType)
+                        fileKeyStoreSSLContext.get(sslProtocol)
                 );
                 httpClientBuilder.setSSLSocketFactory(socketFactory);
             }
@@ -223,8 +223,8 @@ public class HttpConnectorApache implements HttpConnector {
     }
 
     @Override
-    public HttpConnectorApache setKeyStore(File keyStore, Object... props) {
-        sslContext = keyStore.getView(FileViewKeyStoreSslContext.class, props);
+    public HttpConnectorApache setKeyStore(FileKeyStoreSSLContext fileKeyStoreSSLContext) {
+        this.fileKeyStoreSSLContext = fileKeyStoreSSLContext;
         return this;
     }
 

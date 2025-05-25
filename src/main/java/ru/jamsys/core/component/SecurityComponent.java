@@ -239,10 +239,10 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
         return keyStore != null;
     }
 
-    public char[] get(String key) {
+    public char[] get(String alias) {
         try {
             if (keyStore != null) {
-                KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) keyStore.getEntry(key, keyStorePP);
+                KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, keyStorePP);
                 if (ske != null) {
                     SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
                     PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(ske.getSecretKey(), PBEKeySpec.class);

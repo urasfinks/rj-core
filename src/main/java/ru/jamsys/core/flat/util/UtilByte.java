@@ -1,5 +1,7 @@
 package ru.jamsys.core.flat.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
@@ -132,6 +134,10 @@ public class UtilByte {
     public static short clearBit(short number, int bitIndex) {
         short mask = (short) ~(1 << bitIndex); // Инвертированная маска
         return (short) (number & mask);
+    }
+
+    public static InputStream getInputStream(byte[] bytes) {
+        return new ByteArrayInputStream(bytes);
     }
 
 }
