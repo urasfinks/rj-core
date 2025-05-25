@@ -102,7 +102,7 @@ class FileTest {
     }
 
     @Test
-    public void testGetBase64() throws Exception {
+    public void testGetBase64() {
         ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
                 File.class,
                 "/hello/world/3.txt",
@@ -113,7 +113,7 @@ class FileTest {
     }
 
     @Test
-    public void testFromFileSystem() throws Exception {
+    public void testFromFileSystem() {
         ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
                 File.class,
                 "/hello/world/4.txt",
@@ -140,7 +140,7 @@ class FileTest {
                     file1.setupSecurityAlias("test");
                 }
         );
-        File file = fileManagerConfiguration.get();
+        File _ = fileManagerConfiguration.get();
         UtilFile.remove("one.jks");
         UtilFile.removeIfExist("unit-test.jks");
     }
