@@ -24,12 +24,13 @@ public class ManagerConfiguration<T extends ManagerElement> {
         this.manager = manager;
     }
 
+    @SuppressWarnings("all")
     // Получить элемент преобразованные по типу дженерика
-    public <X> X getGeneric() {
-        @SuppressWarnings("unchecked")
-        X t = (X) manager.get(cls, key);
-        return t;
-    }
+//    public <X> X getGeneric() {
+//        @SuppressWarnings("unchecked")
+//        X t = (X) manager.get(cls, key);
+//        return t;
+//    }
 
     @JsonValue
     public Object getValue() {

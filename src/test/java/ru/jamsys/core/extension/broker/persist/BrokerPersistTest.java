@@ -75,11 +75,14 @@ class BrokerPersistTest {
     @Test
     public void test1() throws Throwable {
         App.get(ServiceProperty.class).set("App.BrokerPersist.test1.directory", "LogManager");
-        BrokerPersist<TestElement> test = App.get(Manager.class).getManagerConfiguration(
+        ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfigurationFactory.get(
                 BrokerPersist.class,
                 "test1",
-                BrokerPersist::new
-        ).getGeneric();
+                managerElement -> {
+                }
+        );
+        BrokerPersist<TestElement> test = brokerPersistManagerConfiguration.get();
+
         test.add(new TestElement("Hello"));
         // Данные добавлены в очередь на запись, но реально ещё не сохранились на файловую систему. То есть в последний
         // rider они упадут только после записи и на текущий момент размер = 0

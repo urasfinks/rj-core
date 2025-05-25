@@ -25,10 +25,7 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
 
     private final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, Function<String, ? extends ManagerElement>>> configureMap = new ConcurrentHashMap<>();
 
-    // Помните, конфигурация не создаёт сразу же экземпляр через builder. Экземпляр создаётся только в момент получения
-    // get() и живёт до тех пор пока его не удалит Manager
-    @Deprecated
-    public <R extends ManagerElement> ManagerConfiguration<R> getManagerConfigurationGeneric(
+    public <R extends ManagerElement> void registerBuilder(
             Class<? extends ManagerElement> cls,
             String key,
             Function<String, R> builder
@@ -36,24 +33,6 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         configureMap
                 .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
                 .computeIfAbsent(key, _ -> builder);
-
-        @SuppressWarnings("unchecked")
-        Class<R> newCls = (Class<R>) cls;
-        return new ManagerConfiguration<>(newCls, key, this);
-    }
-
-    // Помните, конфигурация не создаёт сразу же экземпляр через builder. Экземпляр создаётся только в момент получения
-    // get() и живёт до тех пор пока его не удалит Manager
-    @Deprecated
-    public <R extends ManagerElement> ManagerConfiguration<R> getManagerConfiguration(
-            Class<R> cls,
-            String key,
-            Function<String, R> builder
-    ) {
-        configureMap
-                .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
-                .computeIfAbsent(key, _ -> builder);
-        return new ManagerConfiguration<>(cls, key, this);
     }
 
     public <R extends ManagerElement> void groupAcceptByInterface(Class<R> cls, Consumer<R> consumer) {
@@ -87,14 +66,6 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         return get(cls, key, builder);
     }
 
-    public <X, R extends ManagerElement> X getGeneric(Class<R> cls, String key) {
-        @SuppressWarnings("unchecked")
-        Function<String, R> builder = (Function<String, R>) configureMap.get(cls).get(key);
-        @SuppressWarnings("unchecked")
-        X x = (X) get(cls, key, builder);
-        return x;
-    }
-
     public <R extends ManagerElement> R get(Class<R> cls, String key, Function<String, R> builder) {
         @SuppressWarnings("unchecked")
         Map<String, R> map = (Map<String, R>) mainMap.computeIfAbsent(cls, _ -> new ConcurrentHashMap<>());
@@ -104,6 +75,15 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
             return apply;
         });
     }
+
+    @SuppressWarnings("all")
+//    public <X, R extends ManagerElement> X getGeneric(Class<R> cls, String key) {
+//        @SuppressWarnings("unchecked")
+//        Function<String, R> builder = (Function<String, R>) configureMap.get(cls).get(key);
+//        @SuppressWarnings("unchecked")
+//        X x = (X) get(cls, key, builder);
+//        return x;
+//    }
 
     public <R extends ManagerElement> boolean contains(Class<R> cls, String key) {
         @SuppressWarnings("unchecked")

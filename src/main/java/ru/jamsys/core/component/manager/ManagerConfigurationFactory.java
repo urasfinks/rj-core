@@ -21,7 +21,8 @@ public interface ManagerConfigurationFactory {
             String ns,
             Consumer<R> onCreate
     ) {
-        return App.get(Manager.class).getManagerConfigurationGeneric(
+        Manager manager = App.get(Manager.class);
+        manager.registerBuilder(
                 cls,
                 ns,
                 ns1 -> {
@@ -39,8 +40,10 @@ public interface ManagerConfigurationFactory {
                     } catch (Throwable th) {
                         throw new ForwardException("Failed to instantiate " + cls + "(String)", th);
                     }
-                }
-        );
+                });
+        @SuppressWarnings("unchecked")
+        Class<R> newCls = (Class<R>) cls;
+        return new ManagerConfiguration<>(newCls, ns, manager);
     }
 
 }

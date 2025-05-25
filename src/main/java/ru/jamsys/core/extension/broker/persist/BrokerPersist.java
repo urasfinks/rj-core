@@ -73,7 +73,6 @@ public class BrokerPersist<T extends ByteSerializable>
                 property,
                 getCascadeKey(ns)
         );
-
         xWriterInit();
     }
 
