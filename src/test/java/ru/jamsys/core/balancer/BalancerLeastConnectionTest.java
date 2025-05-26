@@ -33,7 +33,35 @@ class BalancerLeastConnectionTest {
         }
     }
 
-    private BalancerLeastConnection<TestElement> balancer_1;
+    public static class DynamicTestElement implements LeastConnectionElement {
+        private final String name;
+        private final AtomicInteger connectionCount = new AtomicInteger();
+
+        public DynamicTestElement(String name, int initialCount) {
+            this.name = name;
+            this.connectionCount.set(initialCount);
+        }
+
+        public void setCount(int count) {
+            this.connectionCount.set(count);
+        }
+
+        @Override
+        public int getCountConnection() {
+            return connectionCount.get();
+        }
+
+        @Override
+        public String toString() {
+            return name + "(" + connectionCount.get() + ")";
+        }
+
+    }
+
+    public BalancerLeastConnection<TestElement> balancer_1;
+
+    public BalancerLeastConnection<DynamicTestElement> balancer_2;
+    public DynamicTestElement a, b, c;
 
     @BeforeEach
     public void setup() {
@@ -94,34 +122,6 @@ class BalancerLeastConnectionTest {
     public void testRemoveNullIsIgnored() {
         balancer_1.remove(null); // Should not throw
     }
-
-    public static class DynamicTestElement implements LeastConnectionElement {
-        private final String name;
-        private final AtomicInteger connectionCount = new AtomicInteger();
-
-        public DynamicTestElement(String name, int initialCount) {
-            this.name = name;
-            this.connectionCount.set(initialCount);
-        }
-
-        public void setCount(int count) {
-            this.connectionCount.set(count);
-        }
-
-        @Override
-        public int getCountConnection() {
-            return connectionCount.get();
-        }
-
-        @Override
-        public String toString() {
-            return name + "(" + connectionCount.get() + ")";
-        }
-
-    }
-
-    private BalancerLeastConnection<DynamicTestElement> balancer_2;
-    private DynamicTestElement a, b, c;
 
     @Test
     public void testInitialLeastConnection() {
