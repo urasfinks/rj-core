@@ -48,9 +48,7 @@ class BalancerLeastConnectionTest {
 
     @Test
     public void testEmptyBalancerReturnsException() {
-        assertThrows(NoSuchElementException.class, () -> {
-            balancer_1.get();
-        });
+        assertThrows(NoSuchElementException.class, () -> balancer_1.get());
     }
 
     @Test
@@ -163,7 +161,5 @@ class BalancerLeastConnectionTest {
         DynamicTestElement result = balancer_2.get();
         assertTrue(List.of(a, b, c).contains(result), "Should return any element when all counts are equal");
     }
-
-
 
 }
