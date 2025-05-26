@@ -137,6 +137,7 @@ class FileTest {
                     file1.setupReadFromSource(ReadFromSourceFactory.createKeyStoreAndRead("one.jks", "test"));
                     file1.setupWriteToDestination(WriteToDestinationFactory.writeFile("one.jks"));
                     file1.setupSecurityAlias("test");
+                    file1.setupTimeoutMs(6_000);
                 }
         );
         File _ = fileManagerConfiguration.get();

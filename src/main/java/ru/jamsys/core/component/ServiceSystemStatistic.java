@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@SuppressWarnings("unused")
 @Component
 public class ServiceSystemStatistic implements StatisticsFlushComponent {
 
