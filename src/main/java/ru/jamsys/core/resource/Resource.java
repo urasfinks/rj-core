@@ -2,7 +2,7 @@ package ru.jamsys.core.resource;
 
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.pool.Valid;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
 
 // T - Argument
 // R - Result

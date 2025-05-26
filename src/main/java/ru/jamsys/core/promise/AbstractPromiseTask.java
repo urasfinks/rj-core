@@ -16,7 +16,7 @@ import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.resource.thread.ThreadPoolExecutePromiseTask;
-import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
+import ru.jamsys.core.extension.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.Collection;
 import java.util.Map;

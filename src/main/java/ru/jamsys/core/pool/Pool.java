@@ -2,7 +2,7 @@ package ru.jamsys.core.pool;
 
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.resource.ResourceCheckException;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
 
 // RT - ResourceArgument
 // RR - ResourceResult

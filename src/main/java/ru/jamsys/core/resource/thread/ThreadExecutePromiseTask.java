@@ -9,8 +9,8 @@ import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.AbstractPromiseTask;
 import ru.jamsys.core.extension.rate.limit.RateLimit;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
+import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;

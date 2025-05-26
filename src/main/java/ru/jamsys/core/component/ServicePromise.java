@@ -8,8 +8,8 @@ import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.promise.AbstractPromiseTask;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 // Сервис управления перезапуска задач
 

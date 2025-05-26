@@ -2,7 +2,7 @@ package ru.jamsys.core.pool;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
 
 // Приватный пул - объекты пула живут собственной жизнью и их нельзя изъять от туда.
 // Пул конечно создан, что бы решать внешние задачи.

@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.SupplierThrowing;
 import ru.jamsys.core.flat.util.UtilUri;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;

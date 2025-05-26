@@ -3,7 +3,7 @@ package ru.jamsys.core.pool;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.resource.ResourceCheckException;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
 
 // Этот объект передаётся во внешнее управление.
 // Что бы вернуть элемент в pool надо знать к какому pool этот элемент принадлежит. Поэтому собираем такую обёртку,

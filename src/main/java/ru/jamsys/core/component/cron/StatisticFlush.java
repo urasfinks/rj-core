@@ -14,7 +14,6 @@ import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
-import ru.jamsys.core.statistic.StatisticSec;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +43,6 @@ public class StatisticFlush implements Cron1s, PromiseGenerator, CascadeKey {
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
                 .append("main", (threadRun, _, _) -> {
-                    StatisticSec statisticSec = new StatisticSec();
                     UtilRisc.forEach(threadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
                         List<DataHeader> listStatistic = statisticsFlushComponent.flushAndGetStatistic(threadRun);
 //                        Map<String, String> parentTags = new LinkedHashMap<>();

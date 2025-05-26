@@ -11,7 +11,7 @@ import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.resource.virtual.file.system.FileKeyStoreSSLContext;
 import ru.jamsys.core.resource.virtual.file.system.ReadFromSourceFactory;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;

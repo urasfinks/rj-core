@@ -8,8 +8,8 @@ import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemCompletable;
 import ru.jamsys.core.pool.Valid;
 import ru.jamsys.core.promise.PromiseTaskWaitResource;
-import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
 
 import java.util.function.Function;
 

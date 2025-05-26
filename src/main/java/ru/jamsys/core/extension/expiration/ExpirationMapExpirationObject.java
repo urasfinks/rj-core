@@ -2,7 +2,7 @@ package ru.jamsys.core.extension.expiration;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 
 import java.util.Map;
 

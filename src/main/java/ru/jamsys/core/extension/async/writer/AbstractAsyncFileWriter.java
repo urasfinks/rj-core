@@ -15,8 +15,8 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.flat.util.UtilByte;
-import ru.jamsys.core.statistic.AvgMetric;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
+import ru.jamsys.core.extension.statistic.AvgMetric;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

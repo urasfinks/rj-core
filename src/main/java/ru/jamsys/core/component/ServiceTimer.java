@@ -4,8 +4,8 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.flat.util.UtilRisc;
-import ru.jamsys.core.statistic.AvgMetric;
-import ru.jamsys.core.statistic.timer.nano.TimerNanoEnvelope;
+import ru.jamsys.core.extension.statistic.AvgMetric;
+import ru.jamsys.core.extension.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;

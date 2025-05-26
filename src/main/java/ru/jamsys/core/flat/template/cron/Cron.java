@@ -5,7 +5,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.statistic.AvgMetric;
+import ru.jamsys.core.extension.statistic.AvgMetric;
 
 import java.util.*;
 

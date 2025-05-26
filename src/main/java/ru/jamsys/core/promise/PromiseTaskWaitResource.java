@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.pool.PoolItemCompletable;
 import ru.jamsys.core.resource.PoolResourceForPromiseTaskWaitResource;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

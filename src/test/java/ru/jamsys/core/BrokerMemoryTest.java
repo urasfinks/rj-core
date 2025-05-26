@@ -9,8 +9,8 @@ import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.broker.memory.BrokerMemoryRepositoryProperty;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
 import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.ArrayList;
 import java.util.List;

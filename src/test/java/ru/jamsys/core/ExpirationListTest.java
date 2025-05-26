@@ -11,7 +11,7 @@ import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.List;
 import java.util.concurrent.Executors;

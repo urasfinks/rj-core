@@ -7,8 +7,8 @@ import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
+import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

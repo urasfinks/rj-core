@@ -2,11 +2,11 @@ package ru.jamsys.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutable;
-import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutable;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableEnvelope;
-import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImpl;
+import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutable;
+import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableImpl;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableEnvelope;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImpl;
 
 // IO time: 9ms
 // COMPUTE time: 8ms

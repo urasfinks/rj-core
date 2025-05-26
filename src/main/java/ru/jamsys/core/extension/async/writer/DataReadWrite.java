@@ -2,7 +2,7 @@ package ru.jamsys.core.extension.async.writer;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 
 // Класс данных полезной нагрузки, что бы не пересериализовывать данные туда и обратно
 @Getter

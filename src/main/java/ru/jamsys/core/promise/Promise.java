@@ -19,8 +19,8 @@ import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.PoolResourceForPromiseTaskWaitResource;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
-import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableImpl;
+import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableImpl;
 
 import java.util.Collection;
 import java.util.List;
