@@ -1,13 +1,13 @@
-package ru.jamsys.core.rate.limit.tps;
+package ru.jamsys.core.extension.rate.limit.tps;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
+import ru.jamsys.core.extension.rate.limit.RateLimit;
 import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;

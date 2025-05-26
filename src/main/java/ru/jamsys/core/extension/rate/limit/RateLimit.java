@@ -1,4 +1,4 @@
-package ru.jamsys.core.rate.limit;
+package ru.jamsys.core.extension.rate.limit;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;

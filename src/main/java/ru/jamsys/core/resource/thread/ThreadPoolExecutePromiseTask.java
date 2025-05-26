@@ -7,8 +7,8 @@ import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.AbstractPromiseTask;
-import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.rate.limit.tps.RateLimitTps;
+import ru.jamsys.core.extension.rate.limit.RateLimit;
+import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.concurrent.atomic.AtomicInteger;

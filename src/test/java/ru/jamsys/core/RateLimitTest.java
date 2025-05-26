@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.flat.util.UtilDate;
-import ru.jamsys.core.rate.limit.RateLimit;
-import ru.jamsys.core.rate.limit.periodic.RateLimitPeriodic;
-import ru.jamsys.core.rate.limit.tps.RateLimitTps;
+import ru.jamsys.core.extension.rate.limit.RateLimit;
+import ru.jamsys.core.extension.rate.limit.periodic.RateLimitPeriodic;
+import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
 
 
 // IO time: 6ms

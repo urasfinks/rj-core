@@ -1,8 +1,9 @@
-package ru.jamsys.core.rate.limit.periodic;
+package ru.jamsys.core.extension.rate.limit.periodic;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
+import ru.jamsys.core.extension.rate.limit.RateLimit;
 import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.ManagerElement;
@@ -11,7 +12,6 @@ import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.UtilDate;
-import ru.jamsys.core.rate.limit.RateLimit;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;

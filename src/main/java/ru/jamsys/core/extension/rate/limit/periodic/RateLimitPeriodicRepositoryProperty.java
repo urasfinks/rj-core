@@ -1,4 +1,4 @@
-package ru.jamsys.core.rate.limit.periodic;
+package ru.jamsys.core.extension.rate.limit.periodic;
 
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
