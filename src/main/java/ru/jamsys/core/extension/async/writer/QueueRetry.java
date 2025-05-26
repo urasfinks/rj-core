@@ -134,7 +134,6 @@ public class QueueRetry implements DataReader, StatisticsFlush {
         return List.of(new DataHeader()
                 .setBody(key)
                 .addHeader("size", position.size())
-                .addHeader("size", position.size())
         );
     }
 

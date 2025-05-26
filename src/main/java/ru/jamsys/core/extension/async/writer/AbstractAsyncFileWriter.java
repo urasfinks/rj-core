@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.ManagerElement;
-import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
+import ru.jamsys.core.extension.broker.persist.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
+import ru.jamsys.core.extension.broker.memory.BrokerMemoryRepositoryProperty;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
@@ -46,7 +46,7 @@ class BrokerMemoryTest {
                 .computeIfAbsent(broker
                                 .getPropertyDispatcher()
                                 .getRepositoryProperty()
-                                .getByFieldNameConstants(BrokerRepositoryProperty.Fields.size)
+                                .getByFieldNameConstants(BrokerMemoryRepositoryProperty.Fields.size)
                                 .getPropertyKey()
                         , null)
                 .set(10);
@@ -54,7 +54,7 @@ class BrokerMemoryTest {
                 .computeIfAbsent(broker
                                 .getPropertyDispatcher()
                                 .getRepositoryProperty()
-                                .getByFieldNameConstants(BrokerRepositoryProperty.Fields.tailSize)
+                                .getByFieldNameConstants(BrokerMemoryRepositoryProperty.Fields.tailSize)
                                 .getPropertyKey(),
                         null)
                 .set(3);
@@ -109,14 +109,14 @@ class BrokerMemoryTest {
                 .computeIfAbsent(broker
                         .getPropertyDispatcher()
                         .getRepositoryProperty()
-                        .getByFieldNameConstants(BrokerRepositoryProperty.Fields.size)
+                        .getByFieldNameConstants(BrokerMemoryRepositoryProperty.Fields.size)
                         .getPropertyKey(), null)
                 .set(10);
         App.get(ServiceProperty.class)
                 .computeIfAbsent(broker
                         .getPropertyDispatcher()
                         .getRepositoryProperty()
-                        .getByFieldNameConstants(BrokerRepositoryProperty.Fields.tailSize)
+                        .getByFieldNameConstants(BrokerMemoryRepositoryProperty.Fields.tailSize)
                         .getPropertyKey(), null)
                 .set(3);
 
@@ -241,14 +241,14 @@ class BrokerMemoryTest {
                 .computeIfAbsent(broker
                         .getPropertyDispatcher()
                         .getRepositoryProperty()
-                        .getByFieldNameConstants(BrokerRepositoryProperty.Fields.size)
+                        .getByFieldNameConstants(BrokerMemoryRepositoryProperty.Fields.size)
                         .getPropertyKey(), null)
                 .set(3000);
 
         Assertions.assertEquals(3000, broker
                 .getPropertyDispatcher()
                 .getRepositoryProperty()
-                .getByFieldNameConstants(BrokerRepositoryProperty.Fields.size)
+                .getByFieldNameConstants(BrokerMemoryRepositoryProperty.Fields.size)
                 .getValue()
         );
 
@@ -256,14 +256,14 @@ class BrokerMemoryTest {
                 .computeIfAbsent(broker
                         .getPropertyDispatcher()
                         .getRepositoryProperty()
-                        .getByFieldNameConstants(BrokerRepositoryProperty.Fields.size)
+                        .getByFieldNameConstants(BrokerMemoryRepositoryProperty.Fields.size)
                         .getPropertyKey(), null)
                 .set(3001);
 
         Assertions.assertEquals(3001, broker
                 .getPropertyDispatcher()
                 .getRepositoryProperty()
-                .getByFieldNameConstants(BrokerRepositoryProperty.Fields.size)
+                .getByFieldNameConstants(BrokerMemoryRepositoryProperty.Fields.size)
                 .getValue());
     }
 
@@ -280,7 +280,7 @@ class BrokerMemoryTest {
                 .computeIfAbsent(broker
                         .getPropertyDispatcher()
                         .getRepositoryProperty()
-                        .getByFieldNameConstants(BrokerRepositoryProperty.Fields.size)
+                        .getByFieldNameConstants(BrokerMemoryRepositoryProperty.Fields.size)
                         .getPropertyKey(), null)
                 .set(3_000_000);
 

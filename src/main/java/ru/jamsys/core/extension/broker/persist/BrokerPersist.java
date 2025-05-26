@@ -6,13 +6,12 @@ import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.async.writer.DataReadWrite;
-import ru.jamsys.core.extension.broker.Broker;
-import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
@@ -42,7 +41,9 @@ import java.util.function.Function;
 @SuppressWarnings("unused")
 public class BrokerPersist<T extends ByteSerializable>
         extends AbstractManagerElement
-        implements PropertyListener, Broker {
+        implements
+        CascadeKey,
+        PropertyListener {
 
     private final String ns;
 
@@ -216,32 +217,12 @@ public class BrokerPersist<T extends ByteSerializable>
         return filePathY.substring(0, filePathY.length() - 7);
     }
 
-    @Override
-    public long size() {
-        return -1;
-    }
-
-    @Override
     public boolean isEmpty() {
         return mapRiderConfiguration.isEmpty();
     }
 
-    @Override
-    public int getOccupancyPercentage() {
-        return 0;
-    }
-
-    @Override
     public PropertyDispatcher<Integer> getPropertyDispatcher() {
         return null;
-    }
-
-    @Override
-    public void reset() {
-        mapRiderConfiguration.clear();
-        queueRiderConfiguration.clear();
-        tpsEnqueue.set(0);
-        tpsDequeue.set(0);
     }
 
     @Override

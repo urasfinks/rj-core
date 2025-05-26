@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension.broker;
+package ru.jamsys.core.extension.broker.persist;
 
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;

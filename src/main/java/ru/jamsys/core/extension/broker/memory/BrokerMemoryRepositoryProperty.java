@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension.broker;
+package ru.jamsys.core.extension.broker.memory;
 
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
@@ -9,7 +9,7 @@ import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotation
 
 @Getter
 @FieldNameConstants
-public class BrokerRepositoryProperty extends RepositoryPropertyAnnotationField<Integer> {
+public class BrokerMemoryRepositoryProperty extends RepositoryPropertyAnnotationField<Integer> {
 
     @SuppressWarnings("all")
     @PropertyNotNull

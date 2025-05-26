@@ -3,9 +3,9 @@ package ru.jamsys.core.extension.broker.memory;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.springframework.lang.Nullable;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.addable.AddToList;
-import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 public class BrokerMemory<T>
         extends AbstractBrokerMemory<T>
         implements
+        CascadeKey,
         AddToList<
                 ExpirationMsImmutableEnvelope<T>,
                 DisposableExpirationMsImmutableEnvelope<T> // Должны вернуть, что бы из вне можно было сделать remove
@@ -55,7 +56,7 @@ public class BrokerMemory<T>
     private Consumer<T> onPostDrop; // Если установлено, вызывается после вы
 
     @Getter
-    private final BrokerRepositoryProperty property = new BrokerRepositoryProperty();
+    private final BrokerMemoryRepositoryProperty property = new BrokerMemoryRepositoryProperty();
 
     @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;

@@ -1,4 +1,4 @@
-package ru.jamsys.core.extension.async.writer;
+package ru.jamsys.core.extension;
 
 import ru.jamsys.core.pool.Valid;
 

@@ -3,7 +3,7 @@ package ru.jamsys.core.extension.async.writer;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.ByteSerializable;
-import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
+import ru.jamsys.core.extension.broker.persist.BrokerPersistRepositoryProperty;
 
 import java.nio.file.StandardOpenOption;
 import java.util.function.BiConsumer;

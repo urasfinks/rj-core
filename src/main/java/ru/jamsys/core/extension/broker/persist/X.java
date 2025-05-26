@@ -7,10 +7,10 @@ import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.Position;
 
-// После того, как всё будет отлажено переименовать в более подходящее имя.
+// TODO: После того, как всё будет отлажено, переименовать в более подходящее имя.
 @Getter
 public class X<T extends ByteSerializable>
-        implements Position, ByteSerializable, RiderConfiguration {
+        implements Position, ByteSerializable {
 
     private final T element;
 

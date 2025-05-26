@@ -3,7 +3,6 @@ package ru.jamsys.core.extension.broker.memory;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.addable.AddToList;
-import ru.jamsys.core.extension.broker.Broker;
 import ru.jamsys.core.statistic.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.statistic.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
@@ -14,7 +13,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractBrokerMemory<T>
         extends ExpirationMsMutableImplAbstractLifeCycle
         implements
-        Broker,
         ManagerElement,
         AddToList<
                 ExpirationMsImmutableEnvelope<T>,
