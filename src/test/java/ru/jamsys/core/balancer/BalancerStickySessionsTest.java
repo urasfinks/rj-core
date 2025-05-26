@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class BalancerStickySessionsTest {
@@ -31,12 +33,14 @@ class BalancerStickySessionsTest {
         balancer.add("C");
     }
 
+    @SuppressWarnings("all")
     @Test
     void returnsStickyElementForSameKey() {
         var result1 = balancer.get("client-1");
         var result2 = balancer.get("client-1");
 
         assertNotNull(result1);
+
         assertFalse(result1.value() == null);
         assertTrue(result1.isNew());
 
@@ -63,15 +67,19 @@ class BalancerStickySessionsTest {
     @Test
     void stickyEntryExpiresAfterInactivity() throws InterruptedException {
         // TODO: тест доделать сейчас не работает
-//        var result1 = balancer.get("client-3");
-//        assertTrue(result1.isNew());
-//
-//        // Ждём, пока entry истечёт
-//        TimeUnit.MILLISECONDS.sleep(2000);
-//
-//        var result2 = balancer.get("client-3");
-//        assertTrue(result2.isNew()); // Должно быть новым
-//        assertNotEquals(result1.value(), result2.value()); // Может быть другим
+        var result1 = balancer.get("client-3");
+        assertTrue(result1.isNew());
+
+        var result1_0 = balancer.get("client-3");
+        assertFalse(result1_0.isNew());
+
+        // Ждём, пока entry истечёт
+        TimeUnit.MILLISECONDS.sleep(2000);
+
+        var result2 = balancer.get("client-3");
+        assertTrue(result2.isNew()); // Должно быть новым
+        // Так как кол-во ресурсов в балансировщике не поменялось, а функция Util.stringToInt даёт всегда одно значение
+        assertEquals(result1.value(), result2.value()); // Может быть другим
     }
 
     @Test
