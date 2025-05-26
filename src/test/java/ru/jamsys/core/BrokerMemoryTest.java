@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -35,7 +34,7 @@ class BrokerMemoryTest {
     @Test
     void testLiner() {
         List<XTest> dropped = new ArrayList<>();
-        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerMemory.class,
                 XTest.class.getSimpleName() + "_1",
                 managerElement -> managerElement.setupOnDrop(dropped::add)
@@ -100,7 +99,7 @@ class BrokerMemoryTest {
 
     @Test
     void testCyclic() {
-        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerMemory.class,
                 XTest.class.getSimpleName()
         );
@@ -164,7 +163,7 @@ class BrokerMemoryTest {
 
     @Test
     void testReference() {
-        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerMemory.class,
                 XTest.class.getSimpleName()
         );
@@ -186,7 +185,7 @@ class BrokerMemoryTest {
     void testReference2() {
         AtomicBoolean run = new AtomicBoolean(true);
 
-        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerMemory.class,
                 XTest.class.getSimpleName()
         );
@@ -233,7 +232,7 @@ class BrokerMemoryTest {
 
     @Test
     void testProperty() {
-        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerMemory.class,
                 XTest.class.getSimpleName()
         );
@@ -272,7 +271,7 @@ class BrokerMemoryTest {
     void testSpeedRemove() {
         int selection = 1_000_000;
 
-        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerMemory.class,
                 XTest.class.getSimpleName()
         );

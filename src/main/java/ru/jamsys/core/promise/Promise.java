@@ -8,7 +8,6 @@ import lombok.experimental.Accessors;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -382,7 +381,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
             String nsResource, // ns тут нужен, что бы создать ресурс
             PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> procedure
     ) {
-        ManagerConfiguration<PoolResourceForPromiseTaskWaitResource<T>> poolResourceForPromiseTaskWaitResourceConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<PoolResourceForPromiseTaskWaitResource<T>> poolResourceForPromiseTaskWaitResourceConfiguration = ManagerConfiguration.getInstance(
                 PoolResourceForPromiseTaskWaitResource.class,
                 nsResource,
                 poolResourceForPromiseTaskWaitResource -> poolResourceForPromiseTaskWaitResource

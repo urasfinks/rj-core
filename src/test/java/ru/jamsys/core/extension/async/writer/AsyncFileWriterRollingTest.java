@@ -5,7 +5,6 @@ import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -54,7 +53,7 @@ class AsyncFileWriterRollingTest {
                 "App.BrokerPersist.test"
         );
         test.run();
-        ManagerConfiguration<AsyncFileWriterRolling<TestElement>> asyncFileWriterRollingManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<AsyncFileWriterRolling<TestElement>> asyncFileWriterRollingManagerConfiguration = ManagerConfiguration.getInstance(
                 AsyncFileWriterRolling.class,
                 java.util.UUID.randomUUID().toString(),
                 managerElement -> {

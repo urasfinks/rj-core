@@ -9,7 +9,6 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadVirtual;
 import ru.jamsys.core.component.ServiceTimer;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.LogType;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -66,7 +65,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
         this.type = type;
         this.procedure = procedure;
 
-        computeThreadConfiguration = ManagerConfigurationFactory.get(
+        computeThreadConfiguration = ManagerConfiguration.getInstance(
                 ThreadPoolExecutePromiseTask.class,
                 ns,
                 LifeCycleInterface::run

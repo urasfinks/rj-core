@@ -1,9 +1,12 @@
 package ru.jamsys.core.component.manager;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import ru.jamsys.core.App;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.exception.ForwardException;
 
+import java.lang.reflect.Constructor;
 import java.util.function.Consumer;
 
 public class ManagerConfiguration<T extends ManagerElement> {
@@ -18,19 +21,11 @@ public class ManagerConfiguration<T extends ManagerElement> {
 
     private T cache;
 
-    public ManagerConfiguration(Class<T> cls, String key, Manager manager) {
+    private ManagerConfiguration(Class<T> cls, String key, Manager manager) {
         this.cls = cls;
         this.key = key;
         this.manager = manager;
     }
-
-    @SuppressWarnings("all")
-    // Получить элемент преобразованные по типу дженерика
-//    public <X> X getGeneric() {
-//        @SuppressWarnings("unchecked")
-//        X t = (X) manager.get(cls, key);
-//        return t;
-//    }
 
     @JsonValue
     public Object getValue() {
@@ -68,6 +63,43 @@ public class ManagerConfiguration<T extends ManagerElement> {
             return;
         }
         execute(managerElement);
+    }
+
+    public static <R extends ManagerElement, S extends ManagerElement> ManagerConfiguration<R> getInstance(
+            Class<S> cls,
+            String ns
+    ) {
+        return getInstance(cls, ns, null);
+    }
+
+    public static <R extends ManagerElement, S extends ManagerElement> ManagerConfiguration<R> getInstance(
+            Class<S> cls,
+            String ns,
+            Consumer<R> onCreate
+    ) {
+        Manager manager = App.get(Manager.class);
+        manager.registerBuilder(
+                cls,
+                ns,
+                ns1 -> {
+                    try {
+                        Constructor<?> c = cls.getConstructor(String.class);
+                        @SuppressWarnings("unchecked")
+                        R instance = (R) c.newInstance(ns1);
+                        if (onCreate != null) {
+                            // Настройки которые можно сделать с экземпляром в момент создания принято в методах
+                            // называть с ключевого слова setup (setupOnExpired(...)) так же должны следовать сразу за
+                            // конструктором
+                            onCreate.accept(instance);
+                        }
+                        return instance;
+                    } catch (Throwable th) {
+                        throw new ForwardException("Failed to instantiate " + cls + "(String)", th);
+                    }
+                });
+        @SuppressWarnings("unchecked")
+        Class<R> newCls = (Class<R>) cls;
+        return new ManagerConfiguration<>(newCls, ns, manager);
     }
 
 }

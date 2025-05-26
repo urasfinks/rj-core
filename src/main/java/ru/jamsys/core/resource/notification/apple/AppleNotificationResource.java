@@ -2,7 +2,6 @@ package ru.jamsys.core.resource.notification.apple;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -63,7 +62,7 @@ public class AppleNotificationResource
         httpConnector.setRequestHeader("apns-priority", appleNotificationRepositoryProperty.getPriority());
         httpConnector.setRequestHeader("apns-topic", appleNotificationRepositoryProperty.getTopic());
 
-        ManagerConfiguration<FileKeyStoreSSLContext> fileKeyStoreSSLContextManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<FileKeyStoreSSLContext> fileKeyStoreSSLContextManagerConfiguration = ManagerConfiguration.getInstance(
                 FileKeyStoreSSLContext.class,
                 appleNotificationRepositoryProperty.getVirtualPath(),
                 fileKeyStore -> {

@@ -4,7 +4,6 @@ import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.Log;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -33,7 +32,7 @@ class LogBrokerPersistTest {
     @Test
     void linearTest() throws InterruptedException {
         App.get(ServiceProperty.class).set("App.BrokerPersist.test.directory", "LogManager");
-        ManagerConfiguration<BrokerPersist<Log>> brokerPersistManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<BrokerPersist<Log>> brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerPersist.class,
                 "test",
                 managerElement -> managerElement.setupRestoreElementFromByte((bytes) -> {

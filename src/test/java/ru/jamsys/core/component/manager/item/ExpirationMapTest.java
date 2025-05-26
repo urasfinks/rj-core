@@ -3,7 +3,6 @@ package ru.jamsys.core.component.manager.item;
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.expiration.ExpirationMap;
 import ru.jamsys.core.flat.util.Util;
 
@@ -30,7 +29,7 @@ class ExpirationMapTest {
     @Test
     void computeIfAbsent() {
         ManagerConfiguration<ExpirationMap<Integer, XTest>> expirationMapConfiguration =
-                ManagerConfigurationFactory.get(
+                ManagerConfiguration.getInstance(
                         ExpirationMap.class,
                         "test",
                         integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutMs(1000)
@@ -54,7 +53,7 @@ class ExpirationMapTest {
     @BeforeEach
     void setUp() {
         ManagerConfiguration<ExpirationMap<String, String>> expirationMapConfiguration =
-        ManagerConfigurationFactory.get(
+        ManagerConfiguration.getInstance(
                 ExpirationMap.class,
                 "testMap",
                 integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutMs(10_000)

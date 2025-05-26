@@ -4,7 +4,6 @@ import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.broker.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.FileWriteOptions;
@@ -69,7 +68,7 @@ class RiderTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfiguration.getInstance(
                 Rider.class,
                 "LogManager/test.bin",
                 managerElement -> {

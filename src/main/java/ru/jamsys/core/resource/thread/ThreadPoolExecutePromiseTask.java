@@ -2,7 +2,6 @@ package ru.jamsys.core.resource.thread;
 
 import lombok.Getter;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
@@ -28,8 +27,8 @@ public class ThreadPoolExecutePromiseTask
 
     public ThreadPoolExecutePromiseTask(String ns) {
         super(ns);
-        rateLimitConfiguration = ManagerConfigurationFactory.get(RateLimitTps.class, getCascadeKey(ns));
-        brokerMemoryConfiguration = ManagerConfigurationFactory.get(
+        rateLimitConfiguration = ManagerConfiguration.getInstance(RateLimitTps.class, getCascadeKey(ns));
+        brokerMemoryConfiguration = ManagerConfiguration.getInstance(
                 BrokerMemory.class,
                 getCascadeKey(ns),
                 managerElement -> managerElement

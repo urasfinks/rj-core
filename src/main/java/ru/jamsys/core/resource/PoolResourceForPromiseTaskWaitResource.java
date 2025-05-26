@@ -1,7 +1,6 @@
 package ru.jamsys.core.resource;
 
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
@@ -38,7 +37,7 @@ public class PoolResourceForPromiseTaskWaitResource<
     public PoolResourceForPromiseTaskWaitResource(String ns) {
         super(ns);
         // TODO: как будто тут не хватает promiseTask -> promiseTask.getPromise().setError("::drop", new RuntimeException())
-        brokerMemoryConfiguration = ManagerConfigurationFactory.get(BrokerMemory.class, ns);
+        brokerMemoryConfiguration = ManagerConfiguration.getInstance(BrokerMemory.class, ns);
     }
 
     public void setupSupplierPoolItem(Function<String, T> supplierPoolItem) {

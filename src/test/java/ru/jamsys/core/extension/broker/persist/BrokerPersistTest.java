@@ -7,7 +7,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.extension.ByteCodec;
 import ru.jamsys.core.extension.async.writer.Position;
 import ru.jamsys.core.extension.async.writer.QueueRetry;
@@ -75,7 +74,7 @@ class BrokerPersistTest {
     @Test
     public void test1() throws Throwable {
         App.get(ServiceProperty.class).set("App.BrokerPersist.test1.directory", "LogManager");
-        ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerPersist.class,
                 "test1",
                 managerElement -> {
@@ -212,7 +211,7 @@ class BrokerPersistTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerPersist.class,
                 "test2",
                 managerElement -> managerElement.setupRestoreElementFromByte((bytes) -> new TestElement(new String(bytes)))

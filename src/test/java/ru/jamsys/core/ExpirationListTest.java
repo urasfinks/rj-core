@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.flat.util.Util;
@@ -47,7 +46,7 @@ class ExpirationListTest {
     void testStop() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         AtomicInteger counterExpired = new AtomicInteger(0);
-        ManagerConfiguration<ExpirationList<XItem>> configureTest = ManagerConfigurationFactory.get(
+        ManagerConfiguration<ExpirationList<XItem>> configureTest = ManagerConfiguration.getInstance(
                 ExpirationList.class,
                 "test1",
                 xItemExpirationList -> xItemExpirationList.setupOnExpired(_ -> counterExpired.incrementAndGet())
@@ -83,7 +82,7 @@ class ExpirationListTest {
     @Test
     void checkSize() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
-        ManagerConfiguration<ExpirationList<XItem>> testConfigure = ManagerConfigurationFactory.get(
+        ManagerConfiguration<ExpirationList<XItem>> testConfigure = ManagerConfiguration.getInstance(
                 ExpirationList.class,
                 "test2"
         );
@@ -144,7 +143,7 @@ class ExpirationListTest {
         AtomicInteger err = new AtomicInteger(0);
         AtomicInteger success = new AtomicInteger(0);
 
-        ManagerConfiguration<ExpirationList<XItem>> configureTest = ManagerConfigurationFactory.get(
+        ManagerConfiguration<ExpirationList<XItem>> configureTest = ManagerConfiguration.getInstance(
                 ExpirationList.class,
                 "test3",
                 xItemExpirationList -> xItemExpirationList.setupOnExpired(_ -> success.incrementAndGet())

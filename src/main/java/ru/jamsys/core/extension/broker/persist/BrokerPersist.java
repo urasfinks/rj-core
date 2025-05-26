@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.component.manager.item.log.DataHeader;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.ByteSerializable;
@@ -95,7 +94,7 @@ public class BrokerPersist<T extends ByteSerializable>
         if (xWriterConfiguration != null) {
             App.get(Manager.class).remove(AsyncFileWriterRolling.class, key);
         }
-        xWriterConfiguration = ManagerConfigurationFactory.get(
+        xWriterConfiguration = ManagerConfiguration.getInstance(
                 AsyncFileWriterRolling.class,
                 key,
                 managerElement -> {
@@ -194,7 +193,7 @@ public class BrokerPersist<T extends ByteSerializable>
         return mapRiderConfiguration.computeIfAbsent(
                 filePathX, // Нам тут нужна ссылка на bin так как BrokerPersistElement.getFilePath возвращает именно его
                 _ -> {
-                    ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfigurationFactory.get(
+                    ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfiguration.getInstance(
                             Rider.class,
                             filePathX,
                             rider -> {

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.ManagerConfigurationFactory;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -34,7 +33,7 @@ class FileTest {
 
     @Test
     public void testMain() {
-        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
                 "/hello/world/1.txt",
                 file -> file.setupReadFromSource(() -> null)
@@ -48,7 +47,7 @@ class FileTest {
 
     @Test
     public void testMain2() {
-        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
                 "/1.txt",
                 file -> file.setupReadFromSource(() -> null)
@@ -59,7 +58,7 @@ class FileTest {
 
     @Test
     public void testMain3() {
-        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
                 "1.txt",
                 file -> file.setupReadFromSource(() -> null)
@@ -70,7 +69,7 @@ class FileTest {
 
     @Test
     public void testMain4() {
-        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
                 "test/1.txt",
                 file -> file.setupReadFromSource(() -> null)
@@ -81,7 +80,7 @@ class FileTest {
 
     @Test
     public void testGetString() {
-        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
                 "/hello/world/1_1.txt",
                 file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromString("Hello world", "UTF-8"))
@@ -92,7 +91,7 @@ class FileTest {
 
     @Test
     public void testGetString2() {
-        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
                 "/hello/world/2.txt",
                 file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromBase64("SGVsbG8gd29ybGQ=", "UTF-8"))
@@ -103,7 +102,7 @@ class FileTest {
 
     @Test
     public void testGetBase64() {
-        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
                 "/hello/world/3.txt",
                 file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromString("Hello world", "UTF-8"))
@@ -114,7 +113,7 @@ class FileTest {
 
     @Test
     public void testFromFileSystem() {
-        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
                 "/hello/world/4.txt",
                 file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromFileSystem("pom.xml"))
@@ -131,7 +130,7 @@ class FileTest {
         securityComponent.loadKeyStorage(password);
         securityComponent.add("test", "12345".toCharArray(), password);
 
-        ManagerConfiguration<FileKeyStore> fileManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<FileKeyStore> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 FileKeyStore.class,
                 "/hello/world/5.txt",
                 file1 -> {
@@ -147,7 +146,7 @@ class FileTest {
 
     @Test
     void testComponent() {
-        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfigurationFactory.get(
+        ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
                 "/hello/world/6.txt",
                 file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromString("Hello world", "UTF-8"))
