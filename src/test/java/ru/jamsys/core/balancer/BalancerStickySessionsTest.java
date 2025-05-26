@@ -66,7 +66,6 @@ class BalancerStickySessionsTest {
 
     @Test
     void stickyEntryExpiresAfterInactivity() throws InterruptedException {
-        // TODO: тест доделать сейчас не работает
         var result1 = balancer.get("client-3");
         assertTrue(result1.isNew());
 
