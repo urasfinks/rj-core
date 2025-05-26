@@ -1,7 +1,7 @@
 package ru.jamsys.core.extension;
 
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;

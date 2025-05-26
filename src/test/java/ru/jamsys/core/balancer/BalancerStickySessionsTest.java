@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.balancer.BalancerStickySessions;
 
 import java.util.concurrent.TimeUnit;
 

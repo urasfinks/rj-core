@@ -3,7 +3,7 @@ package ru.jamsys.core.extension.expiration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
-import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.addable.AddToList;

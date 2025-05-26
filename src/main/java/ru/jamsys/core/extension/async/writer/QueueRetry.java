@@ -6,7 +6,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.ExpirationList;

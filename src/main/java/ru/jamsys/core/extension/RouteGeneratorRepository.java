@@ -1,4 +1,4 @@
-package ru.jamsys.core.component.manager.item;
+package ru.jamsys.core.extension;
 
 import lombok.Getter;
 import lombok.Setter;

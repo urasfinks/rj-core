@@ -2,6 +2,8 @@ package ru.jamsys.core.balancer;
 
 import lombok.Getter;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.extension.balancer.BalancerWeightedRoundRobin;
+import ru.jamsys.core.extension.balancer.WeightElement;
 
 import java.util.HashMap;
 import java.util.Map;

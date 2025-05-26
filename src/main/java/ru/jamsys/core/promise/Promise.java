@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.item.log.LogType;
+import ru.jamsys.core.extension.log.LogType;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;

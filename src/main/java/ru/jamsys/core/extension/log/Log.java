@@ -1,4 +1,4 @@
-package ru.jamsys.core.component.manager.item.log;
+package ru.jamsys.core.extension.log;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
@@ -15,7 +15,7 @@ import java.io.PrintStream;
 @Setter
 @Accessors(chain = true)
 @JsonPropertyOrder({"logType", "timeAdd", "header", "data"})
-public class Log extends PersistentDataHeader {
+public class Log extends DataHeaderPersistent {
 
     private final LogType logType;
 

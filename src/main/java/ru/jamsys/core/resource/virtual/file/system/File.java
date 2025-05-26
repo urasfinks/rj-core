@@ -1,7 +1,7 @@
 package ru.jamsys.core.resource.virtual.file.system;
 
 import lombok.Getter;
-import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;

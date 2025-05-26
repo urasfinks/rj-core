@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.jamsys.core.component.RouteGenerator;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
+import ru.jamsys.core.extension.RouteGeneratorRepository;
 import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.RepositoryProperty;

@@ -1,8 +1,8 @@
 package ru.jamsys.core.flat.util;
 
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.manager.item.log.Log;
-import ru.jamsys.core.component.manager.item.log.LogType;
+import ru.jamsys.core.extension.log.Log;
+import ru.jamsys.core.extension.log.LogType;
 
 public class UtilLog {
 

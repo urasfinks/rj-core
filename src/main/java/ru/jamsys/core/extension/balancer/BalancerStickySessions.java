@@ -1,4 +1,4 @@
-package ru.jamsys.core.balancer;
+package ru.jamsys.core.extension.balancer;
 
 import lombok.Getter;
 import ru.jamsys.core.component.manager.ManagerConfiguration;

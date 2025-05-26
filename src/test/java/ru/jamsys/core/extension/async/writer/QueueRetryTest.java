@@ -2,7 +2,7 @@ package ru.jamsys.core.extension.async.writer;
 
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.log.DataHeader;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;

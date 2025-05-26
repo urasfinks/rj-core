@@ -2,6 +2,8 @@ package ru.jamsys.core.balancer;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.extension.balancer.BalancerLeastConnection;
+import ru.jamsys.core.extension.balancer.LeastConnectionElement;
 
 import java.util.List;
 import java.util.NoSuchElementException;

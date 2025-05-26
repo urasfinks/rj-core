@@ -1,6 +1,6 @@
 package ru.jamsys.core.extension;
 
-import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.log.DataHeader;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;

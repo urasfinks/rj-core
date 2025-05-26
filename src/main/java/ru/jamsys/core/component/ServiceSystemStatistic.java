@@ -2,7 +2,7 @@ package ru.jamsys.core.component;
 
 import com.sun.management.OperatingSystemMXBean;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 
 import java.lang.management.ManagementFactory;

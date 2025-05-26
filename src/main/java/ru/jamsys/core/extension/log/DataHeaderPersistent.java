@@ -1,4 +1,4 @@
-package ru.jamsys.core.component.manager.item.log;
+package ru.jamsys.core.extension.log;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
@@ -6,10 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.flat.util.UtilByte;
-import ru.jamsys.core.flat.util.UtilDate;
-import ru.jamsys.core.flat.util.UtilFileByteReader;
-import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,12 +17,12 @@ import java.io.InputStream;
 @Setter
 @Accessors(chain = true)
 @JsonPropertyOrder({"header", "data"})
-public class PersistentDataHeader extends DataHeader implements PersistentData {
+public class DataHeaderPersistent extends DataHeader implements DataPersistent {
 
-    public PersistentDataHeader() {
+    public DataHeaderPersistent() {
     }
 
-    public PersistentDataHeader(Object body) {
+    public DataHeaderPersistent(Object body) {
         this.body = body;
     }
 
@@ -39,24 +36,22 @@ public class PersistentDataHeader extends DataHeader implements PersistentData {
 
     @Override
     public void print() {
-        System.out.println(UtilJson.toStringPretty(
-                new HashMapBuilder<String, Object>()
-                        .append(
-                                "header",
-                                new HashMapBuilder<>(header)
-                                        .append("time", UtilDate.msFormat(timeAdd))
-                        )
-                        .append("body", body),
-                "--"
-        ));
+        UtilLog.printInfo(new HashMapBuilder<String, Object>()
+                .append(
+                        "header",
+                        new HashMapBuilder<>(header)
+                                .append("time", UtilDate.msFormat(timeAdd))
+                )
+                .append("body", body)
+        );
     }
 
-    public PersistentDataHeader addHeader(String key, Object value) {
+    public DataHeaderPersistent addHeader(String key, Object value) {
         addHeader(key, String.valueOf(value));
         return this;
     }
 
-    public PersistentDataHeader addHeader(String key, String value) {
+    public DataHeaderPersistent addHeader(String key, String value) {
         this.header.put(key, value);
         return this;
     }
@@ -76,10 +71,10 @@ public class PersistentDataHeader extends DataHeader implements PersistentData {
     }
 
     @SuppressWarnings("unused")
-    public static PersistentDataHeader instanceFromBytes(byte[] bytes) throws Exception {
-        PersistentDataHeader persistentDataHeader = new PersistentDataHeader();
-        persistentDataHeader.fromBytes(bytes);
-        return persistentDataHeader;
+    public static DataHeaderPersistent instanceFromBytes(byte[] bytes) throws Exception {
+        DataHeaderPersistent dataHeaderPersistent = new DataHeaderPersistent();
+        dataHeaderPersistent.fromBytes(bytes);
+        return dataHeaderPersistent;
     }
 
     @Override

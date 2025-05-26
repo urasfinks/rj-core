@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.manager.item.RouteGeneratorRepository;
+import ru.jamsys.core.extension.RouteGeneratorRepository;
 import ru.jamsys.core.flat.util.UtilListSort;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.PromiseGenerator;

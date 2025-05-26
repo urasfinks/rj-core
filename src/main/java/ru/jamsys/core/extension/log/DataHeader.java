@@ -1,4 +1,4 @@
-package ru.jamsys.core.component.manager.item.log;
+package ru.jamsys.core.extension.log;
 
 import lombok.Getter;
 import lombok.Setter;

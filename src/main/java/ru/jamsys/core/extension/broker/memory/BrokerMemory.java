@@ -3,7 +3,7 @@ package ru.jamsys.core.extension.broker.memory;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.component.manager.item.log.DataHeader;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.broker.BrokerRepositoryProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;

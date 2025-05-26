@@ -4,7 +4,7 @@ import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.component.manager.item.log.Log;
+import ru.jamsys.core.extension.log.Log;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilLog;
