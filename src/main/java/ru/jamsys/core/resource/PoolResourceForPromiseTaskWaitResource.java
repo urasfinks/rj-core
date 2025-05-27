@@ -2,14 +2,13 @@ package ru.jamsys.core.resource;
 
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.LifeCycleInterface;
-import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
+import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemCompletable;
 import ru.jamsys.core.pool.Valid;
 import ru.jamsys.core.promise.PromiseTaskWaitResource;
-import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
 
 import java.util.function.Function;
 
@@ -26,8 +25,7 @@ import java.util.function.Function;
 public class PoolResourceForPromiseTaskWaitResource<
         T extends ExpirationMsMutable & Valid & LifeCycleInterface & ResourceCheckException
         >
-        extends AbstractPool<T>
-        implements ManagerElement {
+        extends AbstractPool<T> {
 
     @SuppressWarnings("all")
     private final ManagerConfiguration<BrokerMemory<PromiseTaskWaitResource>> brokerMemoryConfiguration;

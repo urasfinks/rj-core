@@ -18,15 +18,17 @@ import java.util.function.Function;
 // Не надо сохранять результаты менеджера, так как они могут быть остановлены
 // Менеджер работает с ключами (key), а не с пространствами имён (ns)
 
+// TODO: надо хранить конфигурации а не объекты, так как можем течь по карте build, а если будем хранить конфига
+// то останавливаем кеш конфига и удаляем конфиг, который внутри себя должен хранить builder.
 @Component
 public class Manager extends AbstractLifeCycle implements LifeCycleComponent, StatisticsFlushComponent {
 
-    private final ConcurrentHashMap<Class<? extends ManagerElement>, ConcurrentHashMap<String, ? extends ManagerElement>> mainMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<? extends AbstractManagerElement>, ConcurrentHashMap<String, ? extends AbstractManagerElement>> mainMap = new ConcurrentHashMap<>();
 
-    private final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, Function<String, ? extends ManagerElement>>> configureMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, Function<String, ? extends AbstractManagerElement>>> configureMap = new ConcurrentHashMap<>();
 
-    public <R extends ManagerElement> void registerBuilder(
-            Class<? extends ManagerElement> cls,
+    public <R extends AbstractManagerElement> void registerBuilder(
+            Class<? extends AbstractManagerElement> cls,
             String key,
             Function<String, R> builder
     ) {
@@ -35,8 +37,8 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
                 .computeIfAbsent(key, _ -> builder);
     }
 
-    public <R extends ManagerElement> void groupAcceptByInterface(Class<R> cls, Consumer<R> consumer) {
-        for (Class<? extends ManagerElement> key : new ArrayList<>(mainMap.keySet())) {
+    public <R extends AbstractManagerElement> void groupAcceptByInterface(Class<R> cls, Consumer<R> consumer) {
+        for (Class<? extends AbstractManagerElement> key : new ArrayList<>(mainMap.keySet())) {
             if (key.equals(cls) || cls.isAssignableFrom(key)) {
                 @SuppressWarnings("unchecked")
                 Class<R> t = (Class<R>) key;
@@ -45,7 +47,7 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         }
     }
 
-    public <R extends ManagerElement> void groupAccept(Class<R> cls, Consumer<R> consumer) {
+    public <R extends AbstractManagerElement> void groupAccept(Class<R> cls, Consumer<R> consumer) {
         @SuppressWarnings("unchecked")
         Map<String, R> innerMap = (Map<String, R>) mainMap.get(cls);
         if (innerMap != null) {
@@ -60,13 +62,13 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     // статистики по нему и в целом shutdown() элемента. Работать с остановленным элементом - так себе затея.
     // Как действовать? Получили результат get(), поработали с ним и выбросили. При новой необходимости снова get()
     // не храните ссылки на результат get()
-    public <R extends ManagerElement> R get(Class<R> cls, String key) {
+    public <R extends AbstractManagerElement> R get(Class<R> cls, String key) {
         @SuppressWarnings("unchecked")
         Function<String, R> builder = (Function<String, R>) configureMap.get(cls).get(key);
         return get(cls, key, builder);
     }
 
-    public <R extends ManagerElement> R get(Class<R> cls, String key, Function<String, R> builder) {
+    public <R extends AbstractManagerElement> R get(Class<R> cls, String key, Function<String, R> builder) {
         @SuppressWarnings("unchecked")
         Map<String, R> map = (Map<String, R>) mainMap.computeIfAbsent(cls, _ -> new ConcurrentHashMap<>());
         return map.computeIfAbsent(key, s -> {
@@ -85,13 +87,13 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
 //        return x;
 //    }
 
-    public <R extends ManagerElement> boolean contains(Class<R> cls, String key) {
+    public <R extends AbstractManagerElement> boolean contains(Class<R> cls, String key) {
         @SuppressWarnings("unchecked")
         Map<String, R> map = (Map<String, R>) mainMap.computeIfAbsent(cls, _ -> new ConcurrentHashMap<>());
         return map.containsKey(key);
     }
 
-    public <R extends ManagerElement> void remove(Class<R> cls, String key) {
+    public <R extends AbstractManagerElement> void remove(Class<R> cls, String key) {
         configureMap.get(cls).remove(key);
         mainMap.get(cls).remove(key);
     }

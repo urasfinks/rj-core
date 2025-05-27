@@ -2,24 +2,20 @@ package ru.jamsys.core.extension.rate.limit.tps;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
-import lombok.experimental.FieldNameConstants;
-import ru.jamsys.core.extension.rate.limit.RateLimit;
-import ru.jamsys.core.extension.log.DataHeader;
-import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@FieldNameConstants
-public class RateLimitTps
-        extends ExpirationMsMutableImplAbstractLifeCycle
-        implements
-        RateLimit, CascadeKey {
+//@FieldNameConstants
+public class RateLimitTps extends AbstractManagerElement {
 
     private final AtomicInteger tps = new AtomicInteger(0);
 
@@ -48,22 +44,18 @@ public class RateLimitTps
                 ;
     }
 
-    @Override
     public boolean check() {
         return tps.incrementAndGet() <= property.getMax();
     }
 
-    @Override
     public int getCount() {
         return tps.get();
     }
 
-    @Override
     public int getMax() {
         return property.getMax();
     }
 
-    @Override
     public String getPropertyKey() {
         return getCascadeKey(ns);
     }
@@ -87,6 +79,13 @@ public class RateLimitTps
     @Override
     public void shutdownOperation() {
         propertyDispatcher.shutdown();
+    }
+
+    public void setMax(int value) {
+        //+.max потому что поле в репозитории называется max
+        App.get(ServiceProperty.class)
+                .computeIfAbsent(getPropertyKey() + ".max", null)
+                .set(value);
     }
 
 }

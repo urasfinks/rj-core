@@ -2,25 +2,20 @@ package ru.jamsys.core.resource.thread;
 
 import lombok.Getter;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.ManagerElement;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
+import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
 import ru.jamsys.core.pool.AbstractPoolPrivate;
 import ru.jamsys.core.promise.AbstractPromiseTask;
-import ru.jamsys.core.extension.rate.limit.RateLimit;
-import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
-import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
-public class ThreadPoolExecutePromiseTask
-        extends AbstractPoolPrivate<Void, Void, ThreadExecutePromiseTask>
-        implements ManagerElement, CascadeKey {
+public class ThreadPoolExecutePromiseTask extends AbstractPoolPrivate<Void, Void, ThreadExecutePromiseTask> {
 
     AtomicInteger counter = new AtomicInteger(1);
 
-    private final ManagerConfiguration<RateLimit> rateLimitConfiguration;
+    private final ManagerConfiguration<RateLimitTps> rateLimitConfiguration;
 
     @SuppressWarnings("all")
     private final ManagerConfiguration<BrokerMemory<AbstractPromiseTask>> brokerMemoryConfiguration;

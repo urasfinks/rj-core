@@ -6,10 +6,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.flat.util.UtilDate;
-import ru.jamsys.core.extension.rate.limit.RateLimit;
 import ru.jamsys.core.extension.rate.limit.periodic.RateLimitPeriodic;
 import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
+import ru.jamsys.core.flat.util.UtilDate;
 
 
 // IO time: 6ms
@@ -116,8 +115,8 @@ class RateLimitTest {
 
     @Test
     void testTps() {
-        ManagerConfiguration<RateLimitPeriodic> tpsConfigure = ManagerConfiguration.getInstance(RateLimitTps.class, "tps");
-        RateLimit rateLimitTps = tpsConfigure.get();
+        ManagerConfiguration<RateLimitTps> tpsConfigure = ManagerConfiguration.getInstance(RateLimitTps.class, "tps");
+        RateLimitTps rateLimitTps = tpsConfigure.get();
         rateLimitTps.run();
         rateLimitTps.setMax(2);
         Assertions.assertTrue(rateLimitTps.check());

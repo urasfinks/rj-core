@@ -12,7 +12,6 @@ import ru.jamsys.core.extension.log.LogType;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.*;
-import ru.jamsys.core.extension.rate.limit.RateLimit;
 import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
 import ru.jamsys.core.resource.http.HttpResource;
 
@@ -128,7 +127,7 @@ class PromiseImplTest {
 
     @Test
     void test3() {
-        ManagerConfiguration<RateLimit> rateLimitItemConfiguration = ManagerConfiguration.getInstance(
+        ManagerConfiguration<RateLimitTps> rateLimitItemConfiguration = ManagerConfiguration.getInstance(
                 RateLimitTps.class,
                 Promise.getComplexIndex("test", "test")
         );
@@ -152,7 +151,7 @@ class PromiseImplTest {
         AtomicInteger c = new AtomicInteger(0);
         promise.then("then1", (_, _, _) -> c.incrementAndGet());
 
-        ManagerConfiguration<RateLimit> rateLimitItemConfiguration = promise
+        ManagerConfiguration<RateLimitTps> rateLimitItemConfiguration = promise
                 .getQueueTask()
                 .get("seq.then1")
                 .getComputeThreadConfiguration().get()
@@ -204,7 +203,7 @@ class PromiseImplTest {
 
     @Test
     void test5() {
-        ManagerConfiguration<RateLimit> rateLimitItemConfiguration = ManagerConfiguration.getInstance(
+        ManagerConfiguration<RateLimitTps> rateLimitItemConfiguration = ManagerConfiguration.getInstance(
                 RateLimitTps.class,
                 Promise.getComplexIndex("test", "test")
         );

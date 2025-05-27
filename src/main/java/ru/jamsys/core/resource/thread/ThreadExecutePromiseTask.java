@@ -4,13 +4,13 @@ import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
+import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.AbstractPromiseTask;
-import ru.jamsys.core.extension.rate.limit.RateLimit;
 import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
@@ -26,7 +26,8 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
 
     private final ThreadPoolExecutePromiseTask pool;
 
-    private final ManagerConfiguration<RateLimit> rateLimitConfiguration;
+
+    private final ManagerConfiguration<RateLimitTps> rateLimitConfiguration;
 
     private final int indexThread;
 
@@ -37,7 +38,7 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
             String ns,
             int indexThread,
             ThreadPoolExecutePromiseTask pool,
-            ManagerConfiguration<RateLimit> rateLimitConfiguration
+            ManagerConfiguration<RateLimitTps> rateLimitConfiguration
     ) {
         this.ns = ns;
         this.pool = pool;

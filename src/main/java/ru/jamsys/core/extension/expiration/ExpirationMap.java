@@ -4,11 +4,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.extension.log.DataHeader;
-import ru.jamsys.core.extension.ManagerElement;
+import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
+import ru.jamsys.core.extension.log.DataHeader;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,11 +20,7 @@ import java.util.function.Function;
 // Нельзя устанавливать произвольное время для разных элементов, у всех время жизни одно
 
 @Getter
-public class ExpirationMap<K, V>
-        extends ExpirationMsMutableImplAbstractLifeCycle
-        implements
-        Map<K, V>,
-        ManagerElement {
+public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K, V> {
 
     private final String key;
 

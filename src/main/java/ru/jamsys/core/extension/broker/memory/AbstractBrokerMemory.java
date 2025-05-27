@@ -1,19 +1,17 @@
 package ru.jamsys.core.extension.broker.memory;
 
 import org.springframework.lang.Nullable;
-import ru.jamsys.core.extension.ManagerElement;
+import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractBrokerMemory<T>
-        extends ExpirationMsMutableImplAbstractLifeCycle
+        extends AbstractManagerElement
         implements
-        ManagerElement,
         AddToList<
                 ExpirationMsImmutableEnvelope<T>,
                 DisposableExpirationMsImmutableEnvelope<T> // Должны вернуть, что бы из вне можно было сделать remove

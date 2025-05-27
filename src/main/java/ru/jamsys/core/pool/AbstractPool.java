@@ -7,16 +7,14 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.extension.log.DataHeader;
-import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.resource.ResourceCheckException;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +42,8 @@ import java.util.function.Function;
 
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & ResourceCheckException>
-        extends ExpirationMsMutableImplAbstractLifeCycle
-        implements Pool<T>, LifeCycleInterface, CascadeKey {
+        extends AbstractManagerElement
+        implements Pool<T> {
 
     public static Set<AbstractPool<?>> registerPool = Util.getConcurrentHashSet();
 

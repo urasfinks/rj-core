@@ -1,22 +1,18 @@
 package ru.jamsys.core.resource.virtual.file.system;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.log.DataHeader;
-import ru.jamsys.core.extension.ManagerElement;
+import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.SupplierThrowing;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.flat.util.UtilUri;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Getter
-public class File extends ExpirationMsMutableImplAbstractLifeCycle
-        implements
-        ManagerElement
-{
+public class File extends AbstractManagerElement {
 
     final private UtilUri.FilePath filePath;
 

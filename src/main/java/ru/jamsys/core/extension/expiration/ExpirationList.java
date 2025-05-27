@@ -3,16 +3,14 @@ package ru.jamsys.core.extension.expiration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
-import ru.jamsys.core.extension.log.DataHeader;
-import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.ManagerElement;
+import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
+import ru.jamsys.core.extension.log.DataHeader;
+import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +32,12 @@ import java.util.function.Consumer;
 
 @Getter
 public class ExpirationList<T>
-        extends ExpirationMsMutableImplAbstractLifeCycle
+        extends AbstractManagerElement
         implements
         AddToList<
                 ExpirationMsImmutableEnvelope<T>,
                 DisposableExpirationMsImmutableEnvelope<T>
-                >,
-        ManagerElement, CascadeKey {
+                > {
 
     private final String ns;
 

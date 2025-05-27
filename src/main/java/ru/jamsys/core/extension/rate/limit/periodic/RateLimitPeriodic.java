@@ -3,16 +3,15 @@ package ru.jamsys.core.extension.rate.limit.periodic;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
-import ru.jamsys.core.extension.rate.limit.RateLimit;
-import ru.jamsys.core.extension.log.DataHeader;
-import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.ManagerElement;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
 import ru.jamsys.core.flat.util.UtilDate;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,11 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 @FieldNameConstants
-public class RateLimitPeriodic
-        extends ExpirationMsMutableImplAbstractLifeCycle
-        implements RateLimit,
-        PropertyListener,
-        ManagerElement, CascadeKey {
+public class RateLimitPeriodic extends AbstractManagerElement implements PropertyListener {
 
     private final AtomicInteger tpp = new AtomicInteger(0); // Transaction Per Period
 
@@ -62,22 +57,18 @@ public class RateLimitPeriodic
                 ;
     }
 
-    @Override
     public boolean check() {
         return tpp.incrementAndGet() <= property.getMax(); // -1 = infinity; 0 = reject
     }
 
-    @Override
     public int getCount() {
         return tpp.get();
     }
 
-    @Override
     public int getMax() {
         return property.getMax();
     }
 
-    @Override
     public String getPropertyKey() {
         return getCascadeKey(ns);
     }
@@ -130,6 +121,13 @@ public class RateLimitPeriodic
             tpp.set(0);
             period = TimeUnit.valueOf(newValue);
         }
+    }
+
+    public void setMax(int value) {
+        //+.max потому что поле в репозитории называется max
+        App.get(ServiceProperty.class)
+                .computeIfAbsent(getPropertyKey() + ".max", null)
+                .set(value);
     }
 
 }

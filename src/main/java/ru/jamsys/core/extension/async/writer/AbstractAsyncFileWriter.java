@@ -6,17 +6,16 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.ManagerElement;
+import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.broker.persist.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
-import ru.jamsys.core.flat.util.UtilByte;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.statistic.AvgMetric;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
+import ru.jamsys.core.flat.util.UtilByte;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,9 +34,8 @@ import java.util.function.BiConsumer;
 
 @Getter
 public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
-        extends ExpirationMsMutableImplAbstractLifeCycle
+        extends AbstractManagerElement
         implements
-        ManagerElement,
         CascadeKey {
 
     @Setter

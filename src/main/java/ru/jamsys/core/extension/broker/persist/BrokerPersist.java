@@ -6,13 +6,12 @@ import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.log.DataHeader;
-import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.ByteSerializable;
+import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.async.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.async.writer.DataReadWrite;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -39,11 +38,7 @@ import java.util.function.Function;
 
 @Getter
 @SuppressWarnings("unused")
-public class BrokerPersist<T extends ByteSerializable>
-        extends AbstractManagerElement
-        implements
-        CascadeKey,
-        PropertyListener {
+public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerElement implements PropertyListener {
 
     private final String ns;
 

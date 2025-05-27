@@ -2,14 +2,14 @@ package ru.jamsys.core.component.manager;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.ManagerElement;
+import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.lang.reflect.Constructor;
 import java.util.function.Consumer;
 
-public class ManagerConfiguration<T extends ManagerElement> {
+public class ManagerConfiguration<T extends AbstractManagerElement> {
 
     private final Class<T> cls;
 
@@ -65,14 +65,14 @@ public class ManagerConfiguration<T extends ManagerElement> {
         execute(managerElement);
     }
 
-    public static <R extends ManagerElement, S extends ManagerElement> ManagerConfiguration<R> getInstance(
+    public static <R extends AbstractManagerElement, S extends AbstractManagerElement> ManagerConfiguration<R> getInstance(
             Class<S> cls,
             String ns
     ) {
         return getInstance(cls, ns, null);
     }
 
-    public static <R extends ManagerElement, S extends ManagerElement> ManagerConfiguration<R> getInstance(
+    public static <R extends AbstractManagerElement, S extends AbstractManagerElement> ManagerConfiguration<R> getInstance(
             Class<S> cls,
             String ns,
             Consumer<R> onCreate
