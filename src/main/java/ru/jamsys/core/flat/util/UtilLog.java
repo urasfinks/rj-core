@@ -20,7 +20,6 @@ public class UtilLog {
 
     public static void printError(Object data) {
         new Log(LogType.ERROR, getCaller(), data).print();
-
     }
 
     public static void printInfo(Object data) {

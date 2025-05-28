@@ -3,6 +3,7 @@ package ru.jamsys.core.component;
 import lombok.Setter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
@@ -17,14 +18,19 @@ public class ExceptionHandler {
     @SuppressWarnings("all")
     private static int maxLine = 50;
 
-    public void handler(Throwable th) {
+    public void handler(Throwable th, Object context) {
         LineWriterList lineWriterList = new LineWriterList();
         lineWriterList.addLine(
                 UtilDate.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
         );
         getTextException(th, lineWriterList);
         UtilLog
-                .error(lineWriterList.getResult())
+                .error(context == null
+                        ? lineWriterList.getResult()
+                        : new HashMapBuilder<String, Object>()
+                        .append("context", context)
+                        .append("exception", lineWriterList.getResult())
+                )
                 .print();
     }
 

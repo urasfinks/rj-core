@@ -61,7 +61,7 @@ class BrokerPersistTest {
     void beforeEach() {
         UtilFile.removeAllFilesInFolder("LogManager");
         if (App.get(Manager.class).contains(ExpirationList.class, QueueRetry.class.getName())) {
-            App.get(Manager.class).get(ExpirationList.class, QueueRetry.class.getName()).unitTestReset();
+            App.get(Manager.class).get(ExpirationList.class, QueueRetry.class.getName()).getElement().unitTestReset();
         }
     }
 

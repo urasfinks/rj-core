@@ -7,6 +7,7 @@ import ru.jamsys.core.component.cron.CronTask;
 import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.LifeCycleComponent;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.CronConfigurator;
@@ -37,15 +38,16 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
         listItem.forEach((CronTask cronTask) -> {
             Cron.CompileResult compile = cronTask.getCron().compile(curTimeMs);
             if (compile.isTimeHasCome() && cronTask.getCronConfigurator().isTimeHasCome(compile)) {
-                String indexPromise = null;
+                Promise promise = null;
                 try {
-                    Promise promise = cronTask.getPromiseGenerator().generate();
+                    promise = cronTask.getPromiseGenerator().generate();
                     if (promise != null) {
-                        indexPromise = promise.getNs();
                         promise.run();
                     }
                 } catch (Exception e) {
-                    App.error(new ForwardException("Cron task (" + indexPromise + ")::" + cronTask.getClass(), e));
+                    App.error(new ForwardException(e), new HashMapBuilder<String, Object>()
+                            .append("cronTask", cronTask)
+                            .append("promise", promise));
                 }
             }
         });

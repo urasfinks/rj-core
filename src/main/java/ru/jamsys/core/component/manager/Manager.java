@@ -1,44 +1,40 @@
 package ru.jamsys.core.component.manager;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.flat.util.UtilRisc;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 // Менеджер объектов, которые могут прекращать свою работу по ExpirationMsMutable.
 // Если объектом не пользуются - он будет остановлен и удалён
 // Не надо сохранять результаты менеджера, так как они могут быть остановлены
 // Менеджер работает с ключами (key), а не с пространствами имён (ns)
 
-// TODO: надо хранить конфигурации а не объекты, так как можем течь по карте build, а если будем хранить конфига
-// то останавливаем кеш конфига и удаляем конфиг, который внутри себя должен хранить builder.
 @Component
 public class Manager extends AbstractLifeCycle implements LifeCycleComponent, StatisticsFlushComponent {
 
-    private final ConcurrentHashMap<Class<? extends AbstractManagerElement>, ConcurrentHashMap<String, ? extends AbstractManagerElement>> mainMap = new ConcurrentHashMap<>();
-
-    private final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, Function<String, ? extends AbstractManagerElement>>> configureMap = new ConcurrentHashMap<>();
-
-    public <R extends AbstractManagerElement> void registerBuilder(
-            Class<? extends AbstractManagerElement> cls,
-            String key,
-            Function<String, R> builder
-    ) {
-        configureMap
-                .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
-                .computeIfAbsent(key, _ -> builder);
-    }
+    private final ConcurrentHashMap<
+            Class<? extends AbstractManagerElement>,
+            ConcurrentHashMap<
+                    String,
+                    AbstractManagerElement
+                    >
+            > map = new ConcurrentHashMap<>();
 
     public <R extends AbstractManagerElement> void groupAcceptByInterface(Class<R> cls, Consumer<R> consumer) {
-        for (Class<? extends AbstractManagerElement> key : new ArrayList<>(mainMap.keySet())) {
+        for (Class<? extends AbstractManagerElement> key : new ArrayList<>(map.keySet())) {
             if (key.equals(cls) || cls.isAssignableFrom(key)) {
                 @SuppressWarnings("unchecked")
                 Class<R> t = (Class<R>) key;
@@ -48,11 +44,13 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     }
 
     public <R extends AbstractManagerElement> void groupAccept(Class<R> cls, Consumer<R> consumer) {
-        @SuppressWarnings("unchecked")
-        Map<String, R> innerMap = (Map<String, R>) mainMap.get(cls);
+        Map<String, ? extends AbstractManagerElement> innerMap = map.get(cls);
         if (innerMap != null) {
-            for (R element : innerMap.values()) {
-                consumer.accept(element);
+            Collection<? extends AbstractManagerElement> values = innerMap.values();
+            for (AbstractManagerElement element : values) {
+                @SuppressWarnings("unchecked")
+                R obj = (R) element;
+                consumer.accept(obj);
             }
         }
     }
@@ -62,45 +60,48 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     // статистики по нему и в целом shutdown() элемента. Работать с остановленным элементом - так себе затея.
     // Как действовать? Получили результат get(), поработали с ним и выбросили. При новой необходимости снова get()
     // не храните ссылки на результат get()
-    public <R extends AbstractManagerElement> R get(Class<R> cls, String key) {
-        @SuppressWarnings("unchecked")
-        Function<String, R> builder = (Function<String, R>) configureMap.get(cls).get(key);
-        return get(cls, key, builder);
+
+    @Getter
+    @Setter
+    public static class GetResult<T> {
+        boolean run = true; // Элемент запущен
+        T element;
     }
 
-    public <R extends AbstractManagerElement> R get(Class<R> cls, String key, Function<String, R> builder) {
+    public <R extends AbstractManagerElement> GetResult<R> get(Class<R> cls, String key) {
+        GetResult<R> result = new GetResult<>();
         @SuppressWarnings("unchecked")
-        Map<String, R> map = (Map<String, R>) mainMap.computeIfAbsent(cls, _ -> new ConcurrentHashMap<>());
-        return map.computeIfAbsent(key, s -> {
-            R apply = builder.apply(s);
-            apply.run();
-            return apply;
-        });
+        R mapElement = (R) map.computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
+                .computeIfAbsent(key, _ -> {
+                    try {
+                        Constructor<?> c = cls.getConstructor(String.class);
+                        result.setRun(false);
+                        return (AbstractManagerElement) c.newInstance(key);
+                    } catch (Throwable th) {
+                        throw new ForwardException("Failed to instantiate " + cls + "(String)", th);
+                    }
+                });
+        result.setElement(mapElement);
+        return result;
     }
-
-    @SuppressWarnings("all")
-//    public <X, R extends ManagerElement> X getGeneric(Class<R> cls, String key) {
-//        @SuppressWarnings("unchecked")
-//        Function<String, R> builder = (Function<String, R>) configureMap.get(cls).get(key);
-//        @SuppressWarnings("unchecked")
-//        X x = (X) get(cls, key, builder);
-//        return x;
-//    }
 
     public <R extends AbstractManagerElement> boolean contains(Class<R> cls, String key) {
-        @SuppressWarnings("unchecked")
-        Map<String, R> map = (Map<String, R>) mainMap.computeIfAbsent(cls, _ -> new ConcurrentHashMap<>());
-        return map.containsKey(key);
+        Map<String, AbstractManagerElement> subMap =
+                map.computeIfAbsent(cls, _ -> new ConcurrentHashMap<>());
+        return subMap.containsKey(key);
     }
 
     public <R extends AbstractManagerElement> void remove(Class<R> cls, String key) {
-        configureMap.get(cls).remove(key);
-        mainMap.get(cls).remove(key);
+        ConcurrentHashMap<String, AbstractManagerElement> x = map.get(cls);
+        if (x == null) {
+            return;
+        }
+        x.remove(key);
     }
 
     public void helper(AtomicBoolean threadRun) {
         List<LifeCycleInterface> all = new ArrayList<>();
-        UtilRisc.forEach(threadRun, mainMap, (_, mapManager) -> {
+        UtilRisc.forEach(threadRun, map, (_, mapManager) -> {
             UtilRisc.forEach(threadRun, mapManager, (key, managerElement) -> {
                 if (managerElement.isExpiredWithoutStop()) {
                     all.add(managerElement);
@@ -115,22 +116,19 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
 
     @Override
     public void runOperation() {
-        UtilRisc.forEach(null, mainMap, (_, mapManager) -> {
-            UtilRisc.forEach(null, mapManager, (_, managerElement) -> {
-                managerElement.run();
-            });
-        });
+        // Всё что надо запустится само
     }
 
     @Override
     public void shutdownOperation() {
         List<LifeCycleInterface> all = new ArrayList<>();
-        UtilRisc.forEach(null, mainMap, (_, mapManager) -> {
+        UtilRisc.forEach(null, map, (_, mapManager) -> {
             UtilRisc.forEach(null, mapManager, (_, managerElement) -> {
                 all.add(managerElement);
             });
         });
         getSortShutdown(all).forEach(LifeCycleInterface::shutdown);
+        map.clear();
     }
 
     public List<LifeCycleInterface> getSortShutdown(List<LifeCycleInterface> list) {
@@ -159,19 +157,19 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     }
 
     @Override
-    public int getInitializationIndex() {
-        return 5;
-    }
-
-    @Override
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         List<DataHeader> result = new ArrayList<>();
-        UtilRisc.forEach(threadRun, mainMap, (_, mapManager) -> {
+        UtilRisc.forEach(threadRun, map, (_, mapManager) -> {
             UtilRisc.forEach(threadRun, mapManager, (_, managerElement) -> {
                 result.addAll(managerElement.flushAndGetStatistic(threadRun));
             });
         });
         return result;
+    }
+
+    @Override
+    public int getInitializationIndex() {
+        return 5;
     }
 
 }

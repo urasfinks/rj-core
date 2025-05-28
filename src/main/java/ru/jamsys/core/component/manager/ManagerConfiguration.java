@@ -4,10 +4,15 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.exception.ForwardException;
 
-import java.lang.reflect.Constructor;
 import java.util.function.Consumer;
+
+// Создан для хранения onCreate функционала, что бы в Manager не было утечек builder.
+// То есть сам объект ExpiredElement находится в Manager и для двух ManagerConfiguration ссылка будет на один
+// элемент. А onCreate же будет два, каждый для своего ManagerConfiguration. GC удаляет ManagerConfiguration и onCreate
+// улетает в след за ним. Выросло это всё из того, что хотелось в одном месте сконфигурировать объект, а в другом
+// просто получить, ничего не зная о onCreate. Ранее onCreate жил в Manager.mapBuilder, но не удалялись и текли
+// соответственно. Поэтому разместили onCreate в ManagerConfiguration
 
 public class ManagerConfiguration<T extends AbstractManagerElement> {
 
@@ -21,10 +26,13 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
 
     private T cache;
 
-    private ManagerConfiguration(Class<T> cls, String key, Manager manager) {
+    Consumer<T> onCreate;
+
+    private ManagerConfiguration(Class<T> cls, String key, Manager manager, Consumer<T> onCreate) {
         this.cls = cls;
         this.key = key;
         this.manager = manager;
+        this.onCreate = onCreate;
     }
 
     @JsonValue
@@ -43,7 +51,14 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
     public T get() {
         long l = System.currentTimeMillis();
         if (l > nextUpdate) {
-            cache = manager.get(cls, key);
+            Manager.GetResult<T> tGetResult = manager.get(cls, key);
+            cache = tGetResult.getElement();
+            if (!tGetResult.isRun()) {
+                if (onCreate != null) {
+                    onCreate.accept(cache);
+                }
+                cache.run();
+            }
             nextUpdate = cache.getExpiryRemainingMs() + l;
         }
         // TODO: почистить markActive внутри реализаций, потому что всё должно работать через Manager
@@ -77,29 +92,9 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
             String ns,
             Consumer<R> onCreate
     ) {
-        Manager manager = App.get(Manager.class);
-        manager.registerBuilder(
-                cls,
-                ns,
-                ns1 -> {
-                    try {
-                        Constructor<?> c = cls.getConstructor(String.class);
-                        @SuppressWarnings("unchecked")
-                        R instance = (R) c.newInstance(ns1);
-                        if (onCreate != null) {
-                            // Настройки которые можно сделать с экземпляром в момент создания принято в методах
-                            // называть с ключевого слова setup (setupOnExpired(...)) так же должны следовать сразу за
-                            // конструктором
-                            onCreate.accept(instance);
-                        }
-                        return instance;
-                    } catch (Throwable th) {
-                        throw new ForwardException("Failed to instantiate " + cls + "(String)", th);
-                    }
-                });
         @SuppressWarnings("unchecked")
         Class<R> newCls = (Class<R>) cls;
-        return new ManagerConfiguration<>(newCls, ns, manager);
+        return new ManagerConfiguration<>(newCls, ns, App.get(Manager.class), onCreate);
     }
 
 }
