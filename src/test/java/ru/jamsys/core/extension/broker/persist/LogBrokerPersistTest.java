@@ -80,7 +80,7 @@ class LogBrokerPersistTest {
                 100,
                 () -> write.get() == 0,
                 timing -> UtilLog.printInfo("Success all commit; timing:" + timing),
-                () -> UtilLog.printError("Error all commit: " + write.get())
+                () -> Assertions.fail("Error all commit: " + write.get())
         );
 
         Util.await(
@@ -96,7 +96,7 @@ class LogBrokerPersistTest {
                     return true;
                 },
                 (timing) -> UtilLog.printInfo("Success: " + timing),
-                () -> UtilLog.printError("Error: " + test.getLastRiderConfiguration().get().getQueueRetry().size())
+                () -> Assertions.fail("Error: " + test.getLastRiderConfiguration().get().getQueueRetry().size())
         );
         Assertions.assertEquals(1, test.getMapRiderConfiguration().size());
     }

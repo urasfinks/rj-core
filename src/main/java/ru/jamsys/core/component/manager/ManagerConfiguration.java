@@ -54,7 +54,6 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
             cache = manager.get(cls, key, onCreate);
             nextUpdate = cache.getExpiryRemainingMs() + l;
         }
-        // TODO: почистить markActive внутри реализаций, потому что всё должно работать через Manager
         cache.markActive();
         return cache;
     }

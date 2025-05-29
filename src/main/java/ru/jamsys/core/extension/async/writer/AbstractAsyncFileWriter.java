@@ -104,7 +104,6 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
     }
 
     public void writeAsync(T data) {
-        markActive();
         if (!isRun()) {
             throw new RuntimeException("Writer is closed");
         }
@@ -165,7 +164,6 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                         lastTimeWrite = System.currentTimeMillis();
                         // Должны пометить, что мы активны, так как может быть записи уже и нет, но мы ещё не успели
                         // записать всё на файловую систему
-                        markActive();
                         fileOutputStream.write(byteArrayOutputStream.toByteArray());
                         byteArrayOutputStream.reset();
                         if (onWrite != null) {
@@ -185,7 +183,6 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                     long s = System.currentTimeMillis();
                     // Должны пометить, что мы активны, так как может быть записи уже и нет, но мы ещё не успели
                     // записать всё на файловую систему
-                    markActive();
                     fileOutputStream.write(byteArrayOutputStream.toByteArray());
                     if (onWrite != null) {
                         onWrite.accept(getFilePath(), listPolled);

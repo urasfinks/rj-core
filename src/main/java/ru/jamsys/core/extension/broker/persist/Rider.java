@@ -68,14 +68,12 @@ public class Rider extends AbstractManagerElement {
         if (queueRetry.isProcessed()) {
             throw new RuntimeException(filePathY + " queue is empty");
         }
-        markActive();
         yWriterConfiguration.get().writeAsync(new Y(x));
     }
 
     // Вызывается, когда записалась пачка X на файловую систему, нам надо разместить её в queueRetry, что бы потом
     // кому-нибудь выдать этот X на обработку
     public <T extends Position & ByteSerializable> void onWriteX(T x) {
-        markActive();
         try {
             queueRetry.add(x.getPosition(), null, x);
         } catch (Exception e) {
@@ -101,7 +99,6 @@ public class Rider extends AbstractManagerElement {
                 managerElement -> {
                     managerElement.setupRepositoryProperty(repositoryProperty);
                     managerElement.setupOnWrite((_, listY) -> {
-                        markActive();
                         for (Y y : listY) {
                             queueRetry.remove(y.getX().getPosition());
                         }

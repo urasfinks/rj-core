@@ -101,7 +101,6 @@ public class BrokerMemory<T>
             return null;
         }
         isNotRunThrow();
-        markActive();
         DisposableExpirationMsImmutableEnvelope<T> convert = DisposableExpirationMsImmutableEnvelope.convert(envelope);
         // Проблема с производительностью
         // Мы не можем использовать queue.size() для расчёта переполнения
@@ -172,7 +171,6 @@ public class BrokerMemory<T>
 
     // Когда произошло изъятие элемента из очереди любым способом
     private void onQueueLoss(ExpirationMsImmutableEnvelope<T> envelope) {
-        markActive();
         tpsDequeue.incrementAndGet();
         timeInQueue.add(envelope.getInactivityTimeMs());
     }
@@ -264,6 +262,9 @@ public class BrokerMemory<T>
                 .addHeader("size", sizeFlush)
                 .addHeader("avg", timeInQueue.flushStatistic())
         );
+        if(!mainQueue.isEmpty()){
+            markActive();
+        }
         return result;
     }
 

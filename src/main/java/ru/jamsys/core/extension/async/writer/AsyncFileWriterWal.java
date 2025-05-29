@@ -23,7 +23,6 @@ public class AsyncFileWriterWal<T extends Position & ByteSerializable>
 
     @Override
     public void writeAsync(T data) {
-        markActive();
         if (!isRun()) {
             throw new RuntimeException("Writer is closed");
         }

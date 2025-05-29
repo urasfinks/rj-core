@@ -168,7 +168,6 @@ public class ExpirationList<T>
     }
 
     public DisposableExpirationMsImmutableEnvelope<T> add(DisposableExpirationMsImmutableEnvelope<T> obj) {
-        markActive();
         // В следующую секунду будем удалять, что бы очереди на удаление удалять полностью
         long timeMsExpired = Util.resetLastNDigits(obj.getExpiredMs(), 3) + 1_000L;
         bucket.computeIfAbsent(timeMsExpired, _ -> new ConcurrentLinkedQueue<>())
