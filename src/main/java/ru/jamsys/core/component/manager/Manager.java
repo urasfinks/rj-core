@@ -1,7 +1,5 @@
 package ru.jamsys.core.component.manager;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -61,28 +59,32 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     // Как действовать? Получили результат get(), поработали с ним и выбросили. При новой необходимости снова get()
     // не храните ссылки на результат get()
 
-    @Getter
-    @Setter
-    public static class GetResult<T> {
-        boolean run = true; // Элемент запущен
-        T element;
-    }
-
-    public <R extends AbstractManagerElement> GetResult<R> get(Class<R> cls, String key) {
-        GetResult<R> result = new GetResult<>();
+    public <R extends AbstractManagerElement> R get(Class<R> cls, String key, Consumer<R> onCreate) {
         @SuppressWarnings("unchecked")
-        R mapElement = (R) map.computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
-                .computeIfAbsent(key, _ -> {
+        R mapElement = (R) map
+                .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
+                .computeIfAbsent(key, key1 -> {
                     try {
                         Constructor<?> c = cls.getConstructor(String.class);
-                        result.setRun(false);
-                        return (AbstractManagerElement) c.newInstance(key);
+                        @SuppressWarnings("unchecked")
+                        R newInstance = (R) c.newInstance(key1);
+                        if (onCreate != null) {
+                            onCreate.accept(newInstance);
+                        }
+                        newInstance.run();
+                        return newInstance;
                     } catch (Throwable th) {
                         throw new ForwardException("Failed to instantiate " + cls + "(String)", th);
                     }
                 });
-        result.setElement(mapElement);
-        return result;
+        return mapElement;
+//        UtilLog.printInfo(new HashMapBuilder<>()
+//                .append("resultRun", result.isRun())
+//                .append("elementRun", result.getElement().isRun())
+//                .append("remaining", result.getElement().getExpiryRemainingMs())
+//                .append("element", Integer.toHexString(result.getElement().hashCode()))
+//        );
+
     }
 
     public <R extends AbstractManagerElement> boolean contains(Class<R> cls, String key) {
@@ -132,6 +134,9 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     }
 
     public List<LifeCycleInterface> getSortShutdown(List<LifeCycleInterface> list) {
+        if (list == null || list.isEmpty()) {
+            return List.of();
+        }
         GraphTopology<LifeCycleInterface> lifeCycleInterfaceGraphTopology = new GraphTopology<>();
         for (LifeCycleInterface managerElement : list) {
             if (managerElement.getListShutdownAfter().isEmpty() && managerElement.getListShutdownBefore().isEmpty()) {

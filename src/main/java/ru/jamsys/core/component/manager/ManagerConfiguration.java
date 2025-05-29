@@ -41,7 +41,7 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", cls)
                 .append("key", key)
-                .append("reference", isAlive() ? manager.get(cls, key) : null);
+                .append("reference", isAlive() ? manager.get(cls, key, onCreate) : null);
     }
 
     public boolean isAlive() {
@@ -51,14 +51,7 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
     public T get() {
         long l = System.currentTimeMillis();
         if (l > nextUpdate) {
-            Manager.GetResult<T> tGetResult = manager.get(cls, key);
-            cache = tGetResult.getElement();
-            if (!tGetResult.isRun()) {
-                if (onCreate != null) {
-                    onCreate.accept(cache);
-                }
-                cache.run();
-            }
+            cache = manager.get(cls, key, onCreate);
             nextUpdate = cache.getExpiryRemainingMs() + l;
         }
         // TODO: почистить markActive внутри реализаций, потому что всё должно работать через Manager

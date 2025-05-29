@@ -58,6 +58,7 @@ public class Rider extends AbstractManagerElement {
                 .append("cls", getClass())
                 .append("filePath", filePathY)
                 .append("queueRetry", queueRetry)
+                .append("yWriterConfiguration", yWriterConfiguration)
                 ;
     }
 
