@@ -2,35 +2,30 @@ package ru.jamsys.core.resource.notification.apple;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
+import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.FileKeyStoreSSLContext;
 import ru.jamsys.core.resource.virtual.file.system.ReadFromSourceFactory;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@Component
-public class AppleNotificationResource
-        extends ExpirationMsMutableImplAbstractLifeCycle
-        implements
-        Resource<AppleNotificationRequest, HttpResponse>,
-        CascadeKey {
+public class AppleNotificationResource extends AbstractExpirationResource {
 
-    private PropertyDispatcher<Object> propertyDispatcher;
+    private final PropertyDispatcher<Object> propertyDispatcher;
 
     private final AppleNotificationRepositoryProperty appleNotificationRepositoryProperty = new AppleNotificationRepositoryProperty();
 
-    @Override
-    public void init(String ns) throws Throwable {
-
+    public AppleNotificationResource(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
                 null,
                 appleNotificationRepositoryProperty,
@@ -38,7 +33,6 @@ public class AppleNotificationResource
         );
     }
 
-    @Override
     public HttpResponse execute(AppleNotificationRequest arguments) {
 
         HttpConnector httpConnector = new HttpConnectorDefault();
@@ -62,8 +56,10 @@ public class AppleNotificationResource
         httpConnector.setRequestHeader("apns-priority", appleNotificationRepositoryProperty.getPriority());
         httpConnector.setRequestHeader("apns-topic", appleNotificationRepositoryProperty.getTopic());
 
+        // getVirtualPath является уникальным ключом, key должен быть константой в разрезе всего
         ManagerConfiguration<FileKeyStoreSSLContext> fileKeyStoreSSLContextManagerConfiguration = ManagerConfiguration.getInstance(
                 FileKeyStoreSSLContext.class,
+                File.class.getName(),
                 appleNotificationRepositoryProperty.getVirtualPath(),
                 fileKeyStore -> {
                     fileKeyStore.setupSecurityAlias(appleNotificationRepositoryProperty.getSecurityAlias());
@@ -94,6 +90,11 @@ public class AppleNotificationResource
     @Override
     public boolean checkFatalException(Throwable th) {
         return false;
+    }
+
+    @Override
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        return List.of();
     }
 
 }

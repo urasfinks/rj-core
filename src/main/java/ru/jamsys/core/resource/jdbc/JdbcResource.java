@@ -1,46 +1,39 @@
 package ru.jamsys.core.resource.jdbc;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.template.jdbc.DataMapper;
 import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
 import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
 import ru.jamsys.core.flat.template.jdbc.StatementControl;
-import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@Component
-@Scope("prototype")
 public class JdbcResource
-        extends ExpirationMsMutableImplAbstractLifeCycle
+        extends AbstractExpirationResource
         implements
-        Resource<JdbcRequest, List<Map<String, Object>>>,
         JdbcExecute,
-        CascadeKey,
         PropertyListener {
 
-    private StatementControl statementControl;
+    private final StatementControl statementControl;
 
     private Connection connection;
 
-    private PropertyDispatcher<String> propertyDispatcher;
+    private final PropertyDispatcher<String> propertyDispatcher;
 
     private final JdbcRepositoryProperty jdbcRepositoryProperty = new JdbcRepositoryProperty();
 
-    @Override
-    public void init(String ns) throws Exception {
+    public JdbcResource(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
                 jdbcRepositoryProperty,
@@ -75,7 +68,6 @@ public class JdbcResource
         }
     }
 
-    @Override
     public List<Map<String, Object>> execute(JdbcRequest arguments) throws Throwable {
         if (connection == null) {
             throw new RuntimeException("Connection is null");
@@ -169,6 +161,11 @@ public class JdbcResource
             return;
         }
         up();
+    }
+
+    @Override
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        return List.of();
     }
 
 }

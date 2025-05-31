@@ -11,7 +11,7 @@ import ru.jamsys.core.promise.AbstractPromiseTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
-public class ThreadPoolExecutePromiseTask extends AbstractPoolPrivate<Void, Void, ThreadExecutePromiseTask> {
+public class ThreadPoolExecutePromiseTask extends AbstractPoolPrivate {
 
     AtomicInteger counter = new AtomicInteger(1);
 
@@ -22,14 +22,29 @@ public class ThreadPoolExecutePromiseTask extends AbstractPoolPrivate<Void, Void
 
     public ThreadPoolExecutePromiseTask(String ns) {
         super(ns);
-        rateLimitConfiguration = ManagerConfiguration.getInstance(RateLimitTps.class, getCascadeKey(ns));
+        // Для каждого ThreadPoolExecutePromiseTask должен быть свой RateLimitTps, поэтому uuid
+        rateLimitConfiguration = ManagerConfiguration.getInstance(
+                RateLimitTps.class,
+                java.util.UUID.randomUUID().toString(),
+                getCascadeKey(ns),
+                null
+        );
         brokerMemoryConfiguration = ManagerConfiguration.getInstance(
                 BrokerMemory.class,
+                java.util.UUID.randomUUID().toString(),
                 getCascadeKey(ns),
                 managerElement -> managerElement
                         .setupOnDrop(promiseTask -> promiseTask
                                 .getPromise().setError("::drop", new RuntimeException())
                         )
+        );
+        setup(
+                ThreadExecutePromiseTask.class,
+                threadExecutePromiseTask -> threadExecutePromiseTask.setup(
+                        this,
+                        rateLimitConfiguration,
+                        counter.getAndIncrement()
+                )
         );
     }
 
@@ -42,29 +57,12 @@ public class ThreadPoolExecutePromiseTask extends AbstractPoolPrivate<Void, Void
                 : promiseTask.getPromise().getExpiryRemainingMs();
 
         brokerMemoryConfiguration.get().add(new ExpirationMsImmutableEnvelope<>(promiseTask, timeout));
-        isAvailablePoolItem();
+        idleIfEmpty();
         serviceBell();
     }
 
     public ExpirationMsImmutableEnvelope<AbstractPromiseTask> getPromiseTask() {
         return brokerMemoryConfiguration.get().pollLast();
-    }
-
-    @Override
-    public ThreadExecutePromiseTask createPoolItem() {
-        ThreadExecutePromiseTask threadExecutePromiseTask = new ThreadExecutePromiseTask(
-                getCascadeKey(ns),
-                counter.getAndIncrement(),
-                this,
-                rateLimitConfiguration
-        );
-        threadExecutePromiseTask.run();
-        return threadExecutePromiseTask;
-    }
-
-    @Override
-    public void closePoolItem(ThreadExecutePromiseTask poolItem) {
-        poolItem.shutdown();
     }
 
     @Override

@@ -1,36 +1,28 @@
 package ru.jamsys.core.resource.google;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("unused")
-@Component
-@Scope("prototype")
-public class ReCaptchaResource
-        extends ExpirationMsMutableImplAbstractLifeCycle
-        implements Resource<String, HttpResponse>, CascadeKey {
+public class ReCaptchaResource extends AbstractExpirationResource {
 
     private final SecurityComponent securityComponent;
 
     private final ReCaptchaRepositoryProperty reCaptchaRepositoryProperty = new ReCaptchaRepositoryProperty();
 
-    private PropertyDispatcher<String> propertyDispatcher;
+    private final PropertyDispatcher<String> propertyDispatcher;
 
-    public ReCaptchaResource(SecurityComponent securityComponent) {
-        this.securityComponent = securityComponent;
-    }
-
-    @Override
-    public void init(String ns) throws Throwable {
+    public ReCaptchaResource(String ns) {
+        this.securityComponent = App.get(SecurityComponent.class);
         propertyDispatcher = new PropertyDispatcher<>(
                 null,
                 reCaptchaRepositoryProperty,
@@ -38,7 +30,6 @@ public class ReCaptchaResource
         );
     }
 
-    @Override
     public HttpResponse execute(String captchaValue) {
         HttpConnectorDefault httpClient = new HttpConnectorDefault();
         httpClient.setUrl("https://www.google.com/recaptcha/api/siteverify");
@@ -71,6 +62,11 @@ public class ReCaptchaResource
     @Override
     public boolean checkFatalException(Throwable th) {
         return false;
+    }
+
+    @Override
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        return List.of();
     }
 
 }

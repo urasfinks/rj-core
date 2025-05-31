@@ -1,22 +1,21 @@
 package ru.jamsys.core.resource.http;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import ru.jamsys.core.resource.Resource;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpResponse;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
-@Component
-@Scope("prototype")
-public class HttpResource extends ExpirationMsMutableImplAbstractLifeCycle implements Resource<HttpConnector, HttpResponse> {
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-    @Override
-    public void init(String ns) {
+public class HttpResource extends AbstractExpirationResource {
 
+    private final String ns;
+
+    public HttpResource(String ns) {
+        this.ns = ns;
     }
 
-    @Override
     public HttpResponse execute(HttpConnector arguments) {
         arguments.exec();
         return arguments.getResponseObject();
@@ -40,6 +39,11 @@ public class HttpResource extends ExpirationMsMutableImplAbstractLifeCycle imple
     @Override
     public boolean checkFatalException(Throwable th) {
         return false;
+    }
+
+    @Override
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        return List.of();
     }
 
 }

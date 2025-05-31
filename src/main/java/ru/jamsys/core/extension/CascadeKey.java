@@ -21,7 +21,8 @@ public interface CascadeKey {
     }
 
     default String getCascadeKey(String ns) {
-        return getCascadeKey() + append(ns);
+        //return getCascadeKey() + append(ns);
+        return complex(getCascadeKey(), ns);
     }
 
     default String getCascadeKey(String ns, String subClass) {
@@ -35,14 +36,18 @@ public interface CascadeKey {
     default String getCascadeKey() {
         String key = getKey();
         if (key == null) {
-            return getParentCascadeKey().getCascadeKey() + append(App.getUniqueClassName(getClass()));
+            return complex(getParentCascadeKey().getCascadeKey(), App.getUniqueClassName(getClass()));
         } else {
-            return getParentCascadeKey().getCascadeKey() + append(App.getUniqueClassName(getClass())) + append(key);
+            return complex(complex(getParentCascadeKey().getCascadeKey(), App.getUniqueClassName(getClass())), key);
         }
     }
 
     static String append(String ns) {
         return (ns.contains(".") ? ("[" + ns + "]") : ("." + ns));
+    }
+
+    static String complex(String key, String ns) {
+        return key + append(ns);
     }
 
 }

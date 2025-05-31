@@ -31,6 +31,7 @@ class ExpirationMapTest {
         ManagerConfiguration<ExpirationMap<Integer, XTest>> expirationMapConfiguration =
                 ManagerConfiguration.getInstance(
                         ExpirationMap.class,
+                        java.util.UUID.randomUUID().toString(),
                         "test",
                         integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutMs(1000)
                 );
@@ -55,6 +56,7 @@ class ExpirationMapTest {
         ManagerConfiguration<ExpirationMap<String, String>> expirationMapConfiguration =
         ManagerConfiguration.getInstance(
                 ExpirationMap.class,
+                java.util.UUID.randomUUID().toString(),
                 "testMap",
                 integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutMs(10_000)
         );

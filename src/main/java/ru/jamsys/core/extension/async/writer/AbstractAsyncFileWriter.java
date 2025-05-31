@@ -78,8 +78,8 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
     };
 
     @SuppressWarnings("unused")
-    public AbstractAsyncFileWriter(String filePath) {
-        this.filePath = filePath;
+    public AbstractAsyncFileWriter(String ns) {
+        this.filePath = ns;
     }
 
     public void setupRepositoryProperty(BrokerPersistRepositoryProperty repositoryProperty) {

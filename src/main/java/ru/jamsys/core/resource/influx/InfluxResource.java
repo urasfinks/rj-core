@@ -6,31 +6,20 @@ import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.write.Point;
 import com.influxdb.internal.AbstractRestClient;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
-import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceCheckException;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @SuppressWarnings("unused")
-@Component
-@Scope("prototype")
-public class InfluxResource
-        extends ExpirationMsMutableImplAbstractLifeCycle
-        implements
-        Resource<List<Point>, Void>,
-        PropertyListener,
-        CascadeKey,
-        ResourceCheckException {
+public class InfluxResource extends AbstractExpirationResource implements PropertyListener {
 
     //influx delete --bucket "5gm" -o "ru" --start '1970-01-01T00:00:00Z' --stop '2025-12-31T23:59:00Z' -token ''
 
@@ -42,8 +31,7 @@ public class InfluxResource
 
     private final InfluxRepositoryProperty influxRepositoryProperty = new InfluxRepositoryProperty();
 
-    @Override
-    public void init(String ns) {
+    public InfluxResource(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
                 influxRepositoryProperty,
@@ -76,7 +64,6 @@ public class InfluxResource
         }
     }
 
-    @Override
     public Void execute(List<Point> arguments) {
         if (writer != null && !arguments.isEmpty()) {
             writer.writePoints(influxRepositoryProperty.getBucket(), influxRepositoryProperty.getOrg(), arguments);
@@ -125,6 +112,11 @@ public class InfluxResource
             return msg.contains("Failed to connect");
         }
         return false;
+    }
+
+    @Override
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        return List.of();
     }
 
 }

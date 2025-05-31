@@ -5,6 +5,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 // Создан для хранения onCreate функционала, что бы в Manager не было утечек builder.
@@ -20,6 +21,8 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
 
     private final String key;
 
+    private final String ns;
+
     private final Manager manager;
 
     private long nextUpdate;
@@ -28,9 +31,10 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
 
     Consumer<T> onCreate;
 
-    private ManagerConfiguration(Class<T> cls, String key, Manager manager, Consumer<T> onCreate) {
+    private ManagerConfiguration(Class<T> cls, String key, String ns, Manager manager, Consumer<T> onCreate) {
         this.cls = cls;
         this.key = key;
+        this.ns = ns;
         this.manager = manager;
         this.onCreate = onCreate;
     }
@@ -40,22 +44,26 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", cls)
-                .append("key", key)
-                .append("reference", isAlive() ? manager.get(cls, key, onCreate) : null);
+                .append("managerKey", ns)
+                .append("reference", isAlive() ? manager.get(cls, key, ns, onCreate) : null);
     }
 
     public boolean isAlive() {
-        return manager.contains(cls, key);
+        return manager.contains(cls, key, ns);
     }
 
     public T get() {
         long l = System.currentTimeMillis();
         if (l > nextUpdate) {
-            cache = manager.get(cls, key, onCreate);
+            cache = manager.get(cls, key, ns, onCreate);
             nextUpdate = cache.getExpiryRemainingMs() + l;
         }
         cache.markActive();
         return cache;
+    }
+
+    public boolean equalsElement(Object o){
+        return Objects.equals(cache, o);
     }
 
     public void execute(Consumer<T> managerElement) {
@@ -74,19 +82,13 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
 
     public static <R extends AbstractManagerElement, S extends AbstractManagerElement> ManagerConfiguration<R> getInstance(
             Class<S> cls,
-            String ns
-    ) {
-        return getInstance(cls, ns, null);
-    }
-
-    public static <R extends AbstractManagerElement, S extends AbstractManagerElement> ManagerConfiguration<R> getInstance(
-            Class<S> cls,
+            String key,
             String ns,
             Consumer<R> onCreate
     ) {
         @SuppressWarnings("unchecked")
         Class<R> newCls = (Class<R>) cls;
-        return new ManagerConfiguration<>(newCls, ns, App.get(Manager.class), onCreate);
+        return new ManagerConfiguration<>(newCls, key, ns, App.get(Manager.class), onCreate);
     }
 
 }

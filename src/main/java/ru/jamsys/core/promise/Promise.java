@@ -8,19 +8,19 @@ import lombok.experimental.Accessors;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.extension.log.LogType;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
+import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableImpl;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskWithResourceConsumerThrowing;
+import ru.jamsys.core.extension.log.LogType;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.resource.PoolResourceForPromiseTaskWaitResource;
-import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableImpl;
 
 import java.util.Collection;
 import java.util.List;
@@ -241,7 +241,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return this;
     }
 
-    public <T extends Resource<?, ?>> Promise appendWithResource(
+    public <T extends AbstractExpirationResource> Promise appendWithResource(
             String index,
             Class<T> classResource,
             PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> procedure
@@ -249,7 +249,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return appendWithResource(index, classResource, "default", procedure);
     }
 
-    public <T extends Resource<?, ?>> Promise appendWithResource(
+    public <T extends AbstractExpirationResource> Promise appendWithResource(
             String index,
             Class<T> classResource,
             String ns,
@@ -258,7 +258,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return append(createTaskResource(index, classResource, ns, procedure));
     }
 
-    public <T extends Resource<?, ?>> Promise thenWithResource(
+    public <T extends AbstractExpirationResource> Promise thenWithResource(
             String index,
             Class<T> classResource,
             PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> procedure
@@ -266,7 +266,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return thenWithResource(index, classResource, "default", procedure);
     }
 
-    public <T extends Resource<?, ?>> Promise thenWithResource(
+    public <T extends AbstractExpirationResource> Promise thenWithResource(
             String index,
             Class<T> classResource,
             String ns,
@@ -356,16 +356,25 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return promiseIndex + CascadeKey.append(promiseTaskIndex);
     }
 
-    public AbstractPromiseTask createTaskCompute(String index, PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
+    public AbstractPromiseTask createTaskCompute(
+            String index,
+            PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn
+    ) {
         return new PromiseTask(getComplexIndex(index), this, PromiseTaskExecuteType.COMPUTE, fn);
     }
 
     @SuppressWarnings("unused")
-    public AbstractPromiseTask createTaskIo(String index, PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
+    public AbstractPromiseTask createTaskIo(
+            String index,
+            PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn
+    ) {
         return new PromiseTask(getComplexIndex(index), this, PromiseTaskExecuteType.IO, fn);
     }
 
-    public AbstractPromiseTask createTaskExternal(String index, PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
+    public AbstractPromiseTask createTaskExternal(
+            String index,
+            PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn
+    ) {
         return new PromiseTask(getComplexIndex(index), this, PromiseTaskExecuteType.ASYNC_COMPUTE, fn);
     }
 
@@ -374,37 +383,29 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return new PromiseTaskWait(index, this);
     }
 
-
-    public <T extends Resource<?, ?>> AbstractPromiseTask createTaskResource(
+    public <T extends AbstractExpirationResource> AbstractPromiseTask createTaskResource(
             String indexTask,
             Class<T> classResource,
-            String nsResource, // ns тут нужен, что бы создать ресурс
+            String nsResource,
             PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> procedure
     ) {
-        ManagerConfiguration<PoolResourceForPromiseTaskWaitResource<T>> poolResourceForPromiseTaskWaitResourceConfiguration = ManagerConfiguration.getInstance(
-                PoolResourceForPromiseTaskWaitResource.class,
-                nsResource,
-                poolResourceForPromiseTaskWaitResource -> poolResourceForPromiseTaskWaitResource
-                        .setupSupplierPoolItem(ns1 -> {
-                            T resource = App.get(classResource);
-                            try {
-                                resource.init(ns1);
-                                return resource;
-                            } catch (Throwable th) {
-                                throw new ForwardException(th);
-                            }
-                        })
-        );
         return new PromiseTaskWaitResource<>(
                 getComplexIndex(indexTask),
                 this,
                 procedure,
-                poolResourceForPromiseTaskWaitResourceConfiguration
+                // Создаём пул ресурсов, ключ которого будет имя класса ресурса, а внутри уже по ns элементы
+                ManagerConfiguration.getInstance(
+                        PoolResourceForPromiseTaskWaitResource.class,
+                        classResource.getName(),
+                        nsResource,
+                        tPoolResourceForPromiseTaskWaitResource -> tPoolResourceForPromiseTaskWaitResource
+                                .setup(classResource, null)
+                )
         );
     }
 
     @SuppressWarnings("unused")
-    public <T extends Resource<?, ?>> AbstractPromiseTask createTaskResource(
+    public <T extends AbstractExpirationResource> AbstractPromiseTask createTaskResource(
             String index,
             Class<T> classResource,
             PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> procedure
@@ -421,7 +422,12 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     @SuppressWarnings("unused")
     // Синхронное ожидание выполнения Promise
     public Promise await(long timeoutMs, int sleepIterationMs) {
-        Util.await(getRun(), timeoutMs, sleepIterationMs, "await(" + timeoutMs + ", " + sleepIterationMs + ") -> Promise not terminated");
+        Util.await(
+                getRun(),
+                timeoutMs,
+                sleepIterationMs,
+                "await(" + timeoutMs + ", " + sleepIterationMs + ") -> Promise not terminated"
+        );
         return this;
     }
 

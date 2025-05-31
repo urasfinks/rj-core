@@ -1,16 +1,13 @@
 package ru.jamsys.core.pool;
 
-import ru.jamsys.core.App;
-import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.resource.thread.ThreadExecutePromiseTask;
 
 // Приватный пул - объекты пула живут собственной жизнью и их нельзя изъять от туда.
 // Пул конечно создан, что бы решать внешние задачи.
 // Так как все объекты пула живут своей жизнью, они могут пойти поспать или вообще перестать работать
 // Для синхронизации с внешним миром - есть звоночек (это как вызов официанта ServiceBell) - что бы взбодрить пул
 
-public abstract class AbstractPoolPrivate<RA, RR, T extends ExpirationMsMutable & Resource<RA, RR>>
-        extends AbstractPool<T> {
+public abstract class AbstractPoolPrivate extends AbstractPool<ThreadExecutePromiseTask> {
 
     public AbstractPoolPrivate(String key) {
         super(key);
@@ -18,13 +15,9 @@ public abstract class AbstractPoolPrivate<RA, RR, T extends ExpirationMsMutable 
 
     // Звоночек, что бы взбодрить приватные ресурсы
     public void serviceBell() {
-        T resource = get();
+        ThreadExecutePromiseTask resource = acquire();
         if (resource != null) {
-            try {
-                resource.execute(null);
-            } catch (Throwable th) {
-                App.error(th);
-            }
+            resource.execute(null);
         }
     }
 
@@ -34,7 +27,7 @@ public abstract class AbstractPoolPrivate<RA, RR, T extends ExpirationMsMutable 
     }
 
     @Override
-    public boolean forwardResourceWithoutParking(T poolItem) {
+    public boolean forwardResourceWithoutParking(ThreadExecutePromiseTask poolItem) {
         return false;
     }
 

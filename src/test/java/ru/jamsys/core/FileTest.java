@@ -35,6 +35,7 @@ class FileTest {
     public void testMain() {
         ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
+                File.class.getName(),
                 "/hello/world/1.txt",
                 file -> file.setupReadFromSource(() -> null)
         );
@@ -49,6 +50,7 @@ class FileTest {
     public void testMain2() {
         ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
+                File.class.getName(),
                 "/1.txt",
                 file -> file.setupReadFromSource(() -> null)
         );
@@ -60,6 +62,7 @@ class FileTest {
     public void testMain3() {
         ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
+                File.class.getName(),
                 "1.txt",
                 file -> file.setupReadFromSource(() -> null)
         );
@@ -71,6 +74,7 @@ class FileTest {
     public void testMain4() {
         ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
+                File.class.getName(),
                 "test/1.txt",
                 file -> file.setupReadFromSource(() -> null)
         );
@@ -82,6 +86,7 @@ class FileTest {
     public void testGetString() {
         ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
+                File.class.getName(),
                 "/hello/world/1_1.txt",
                 file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromString("Hello world", "UTF-8"))
         );
@@ -93,6 +98,7 @@ class FileTest {
     public void testGetString2() {
         ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
+                File.class.getName(),
                 "/hello/world/2.txt",
                 file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromBase64("SGVsbG8gd29ybGQ=", "UTF-8"))
         );
@@ -104,6 +110,7 @@ class FileTest {
     public void testGetBase64() {
         ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
+                File.class.getName(),
                 "/hello/world/3.txt",
                 file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromString("Hello world", "UTF-8"))
         );
@@ -115,6 +122,7 @@ class FileTest {
     public void testFromFileSystem() {
         ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
+                File.class.getName(),
                 "/hello/world/4.txt",
                 file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromFileSystem("pom.xml"))
         );
@@ -132,6 +140,7 @@ class FileTest {
 
         ManagerConfiguration<FileKeyStore> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 FileKeyStore.class,
+                File.class.getName(),
                 "/hello/world/5.txt",
                 file1 -> {
                     file1.setupReadFromSource(ReadFromSourceFactory.createKeyStoreAndRead("one.jks", "test"));
@@ -149,6 +158,7 @@ class FileTest {
     void testComponent() {
         ManagerConfiguration<File> fileManagerConfiguration = ManagerConfiguration.getInstance(
                 File.class,
+                File.class.getName(),
                 "/hello/world/6.txt",
                 file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromString("Hello world", "UTF-8"))
         );

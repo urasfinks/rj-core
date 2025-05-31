@@ -3,35 +3,26 @@ package ru.jamsys.core.resource.notification.email;
 import lombok.Getter;
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.HtmlEmail;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.resource.ResourceCheckException;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
-@Component
-@Scope("prototype")
-public class EmailNotificationResource
-        extends ExpirationMsMutableImplAbstractLifeCycle
-        implements
-        Resource<EmailNotificationRequest, Void>,
-        CascadeKey,
-        ResourceCheckException {
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-    private SecurityComponent securityComponent;
+public class EmailNotificationResource extends AbstractExpirationResource {
 
-    private PropertyDispatcher<Object> propertyDispatcher;
+    private final SecurityComponent securityComponent;
+
+    private final PropertyDispatcher<Object> propertyDispatcher;
 
     @Getter
     private final EmailNotificationRepositoryProperty property = new EmailNotificationRepositoryProperty();
 
-    @Override
-    public void init(String ns) throws Throwable {
+    public EmailNotificationResource(String ns) {
         securityComponent = App.get(SecurityComponent.class);
         propertyDispatcher = new PropertyDispatcher<>(
                 null,
@@ -40,7 +31,6 @@ public class EmailNotificationResource
         );
     }
 
-    @Override
     public Void execute(EmailNotificationRequest arguments) {
         HtmlEmail email = new HtmlEmail();
         try {
@@ -88,6 +78,11 @@ public class EmailNotificationResource
     @Override
     public boolean checkFatalException(Throwable th) {
         return false;
+    }
+
+    @Override
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        return List.of();
     }
 
 }

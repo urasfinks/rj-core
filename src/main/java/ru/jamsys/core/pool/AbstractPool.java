@@ -4,85 +4,66 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.ToString;
 import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
-import ru.jamsys.core.resource.ResourceCheckException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-// RA - ResourceArguments
-// R - ResourceResult
-// PI - PoolItem
+// Пул, в нём крутятся обёртки ManagerConfiguration<T>. Жизненным циклом T заведует Manager. Если наступает простой,
+// когда в парке есть элементы и ManagerConfiguration<T> уже не имеет ссылки на T в Manager (это означает что Manager
+// уже и ManagerConfiguration<T> выбросил) - выбрасываем из пула элемент
 
-// Отработанные пловцы добавляются в парк в конец очереди
-// На работу пловцы отправляются из парка с конца очереди
-// Таким образом в парке в начале очереди будут тушиться пловцы без работы до их кончины
-
-// TODO: а что если ресурс не вернуть в пул? Надо сделать какое-то время адекватное - например 1 час
-// и перезагружать, но надо точно знать - что именно ресурс был взять и не возвращён ни разу за последнее время
-// TODO: надо переписать пул, упростить и сделать контроль над жизненным циклом элементов
-
-
-@ToString(onlyExplicitlyIncluded = true)
-public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & ResourceCheckException>
+public abstract class AbstractPool<T extends AbstractExpirationResource>
         extends AbstractManagerElement
         implements Pool<T> {
 
-    public static Set<AbstractPool<?>> registerPool = Util.getConcurrentHashSet();
-
     @Getter
-    @ToString.Include
     protected final String ns;
 
-    private final ConcurrentLinkedDeque<T> parkQueue = new ConcurrentLinkedDeque<>();
-
-    protected final ConcurrentLinkedQueue<T> removeQueue = new ConcurrentLinkedQueue<>();
-
-    protected final ConcurrentLinkedQueue<T> exceptionQueue = new ConcurrentLinkedQueue<>();
-
     // Общая очередь, где находятся все объекты
-    protected final Set<T> itemQueue = Util.getConcurrentHashSet();
+    protected final Set<ManagerConfiguration<T>> items = Util.getConcurrentHashSet();
+
+    private final ConcurrentLinkedDeque<ManagerConfiguration<T>> parkQueue = new ConcurrentLinkedDeque<>();
 
     @Setter
-    private Function<Integer, Integer> formulaAddCount = (need) -> need;
+    private Function<Integer, Integer> formulaAddCount = (need) -> need; // Формула добавления кол-ва новых элементов
 
     @Setter
-    private Function<Integer, Integer> formulaRemoveCount = (need) -> need;
+    private Function<Integer, Integer> formulaRemoveCount = (need) -> need; // Формула удаления
 
-    private volatile Long timeWhenParkIsEmpty = null;
+    private volatile Long timestampWhenParkIsEmpty = null; // Время фиксации, что парк был пустой
 
-    // Используется в виртуальных пулах потоков в RealThreadComponent, что бы не держать пулы для задач, которые уже не
-    // исполняются по каким либо причинам
-    private final AtomicInteger tpsComplete = new AtomicInteger(0);
+    private final AtomicInteger tpsRelease = new AtomicInteger(0);
 
-    private final AtomicBoolean dynamicPollSize = new AtomicBoolean(false);
+    private final AtomicInteger tpsAcquire = new AtomicInteger(0);
 
     private final Lock lockAddToPark = new ReentrantLock();
-
-    private final Lock lockAddToRemove = new ReentrantLock();
 
     @Getter
     private final PoolRepositoryProperty poolRepositoryProperty = new PoolRepositoryProperty();
 
     @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;
+
+    private Consumer<T> onCreatePoolItem;
+
+    private Class<T> cls;
 
     public AbstractPool(String ns) {
         this.ns = ns;
@@ -93,12 +74,19 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
         );
     }
 
+    public void setup(Class<T> cls, Consumer<T> onCreate) {
+        this.cls = cls;
+        this.onCreatePoolItem = onCreate;
+    }
+
     @JsonValue
     public Object getValue() {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
-                .append("cls", getClass())
+                .append("class", getClass())
                 .append("ns", ns)
+                .append("classElement", cls)
+                .append("items", items)
                 ;
     }
 
@@ -106,305 +94,177 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
         return parkQueue.isEmpty();
     }
 
-    @SuppressWarnings("unused")
-    public void setDynamicPollSize(boolean dynamic) {
-        dynamicPollSize.set(dynamic);
-    }
-
     // Сколько времени паркинг был пуст
     public long getTimeParkIsEmpty() {
-        if (timeWhenParkIsEmpty == null) {
+        if (timestampWhenParkIsEmpty == null) {
             return 0;
         } else {
-            return System.currentTimeMillis() - timeWhenParkIsEmpty;
+            return System.currentTimeMillis() - timestampWhenParkIsEmpty;
         }
     }
 
-    protected void updateParkStatistic() {
+    protected void updateStatistic() {
         if (parkQueue.isEmpty()) {
-            if (timeWhenParkIsEmpty == null) {
-                timeWhenParkIsEmpty = System.currentTimeMillis();
+            if (timestampWhenParkIsEmpty == null) {
+                timestampWhenParkIsEmpty = System.currentTimeMillis();
             }
         } else {
-            timeWhenParkIsEmpty = null;
-        }
-    }
-
-    public boolean isEmpty() {
-        return itemQueue.isEmpty();
-    }
-
-    @SuppressWarnings("unused")
-    public void setPoolSizeMax(int want) {
-        if (!dynamicPollSize.get()) {
-            return;
-        }
-        // Если хотят меньше минимума - очень резко опускаем максимум до минимума
-        if (want < poolRepositoryProperty.getMin()) {
-            App.get(ServiceProperty.class).set(
-                    propertyDispatcher
-                            .getRepositoryProperty()
-                            .getByFieldNameConstants(PoolRepositoryProperty.Fields.max)
-                            .getPropertyKey(),
-                    poolRepositoryProperty.getMin()
-            );
-            return;
-        }
-        // Если желаемое значение элементов в пуле больше минимума, так как return не сработал
-        if (want > poolRepositoryProperty.getMax()) { //Медленно поднимаем
-            App.get(ServiceProperty.class).set(
-                    propertyDispatcher
-                            .getRepositoryProperty()
-                            .getByFieldNameConstants(PoolRepositoryProperty.Fields.max)
-                            .getPropertyKey(),
-                    poolRepositoryProperty.getMax() + 1
-            );
-        } else { //Но очень быстро опускаем
-            App.get(ServiceProperty.class).set(
-                    propertyDispatcher
-                            .getRepositoryProperty()
-                            .getByFieldNameConstants(PoolRepositoryProperty.Fields.max)
-                            .getPropertyKey(),
-                    want
-            );
+            timestampWhenParkIsEmpty = null;
         }
     }
 
     // Проверка, что пул может поместить новые объекты
-    private boolean isSizePoolAllowsExtend() {
+    private boolean isSizeExtend() {
         if (!isRun()) {
             App.error(new RuntimeException("Пул " + ns + " не может поместить в себя ничего, так как он выключен"));
         }
-        return isRun() && getRealActiveItem() < poolRepositoryProperty.getMax();
+        return isRun() && items.size() < poolRepositoryProperty.getMax();
     }
 
-    private int getRealActiveItem() {
-        // Активные пловцы это те, которые не под ножом и не ошибочные
-        return itemQueue.size() - (removeQueue.size() + exceptionQueue.size());
-    }
-
-    // Увеличиваем кол-во объектов для плаванья
-    private void overclocking(long count) {
-        for (int i = 0; i < count; i++) {
-            if (!add()) {
-                break;
-            }
-        }
-    }
-
-    public boolean isAvailablePoolItem() {
+    // Добавить минимально кол-во элементов, если в пуле все поумирали
+    public boolean idleIfEmpty() {
         if (!parkQueue.isEmpty()) { // Если в парке есть ресурсы, сразу говорим что всё ок
             return true;
         }
-        // Если всё-таки в парке нет никого проверяем возможность создать новый элемент
-        // но только в том случае, если настройки парка могут быть равны 0 и кол-во активных элементов равны 0
-        // Парк типо просто из-за неактивности ушёл в ноль, что бы не тратить ресурсы
+        // Если всё-таки в парке нет никого проверяем возможность создать новый элемент, но только в том случае,
+        // если настройки парка могут быть равны 0 и кол-во активных элементов равны 0.
+        // Парк типа просто из-за неактивности ушёл в ноль, что бы не тратить ресурсы
         // иначе вернём false и просто задачи будут ждать, когда парк расширится автоматически от нагрузки
-        if (poolRepositoryProperty.getMin() == 0 && getRealActiveItem() == 0) {
-            return add();
+        if (poolRepositoryProperty.getMin() == 0 && items.isEmpty()) {
+            return addToParkNewItem();
         }
         // Если нет возможности говорим - что не создали
         return false;
     }
 
-    @Override
-    public void releasePoolItem(T poolItem, Throwable e) {
-        if (poolItem == null) {
-            return;
-        }
-        // Если ошибка является критичной для пловца - выбрасываем его из пула
-        if (e != null && poolItem.checkFatalException(e)) {
-            exceptionQueue.add(poolItem);
-            return;
-        }
-        // Если произошло ручное удаление, и объект не является уже участником пула - завершаем
-        if (!itemQueue.contains(poolItem)) {
-            return;
-        }
-        //Объект, который возвращают в пул не может попасть на удаление, его как бы только что использовали! Алё?
-        poolItem.markActive();
-        addToPark(poolItem);
-        tpsComplete.incrementAndGet();
-    }
-
-    public T get() {
-        // Забираем с конца, что бы под нож улетели первые добавленные
-        while (!parkQueue.isEmpty()) {
-            T poolItem = parkQueue.pollLast();
-            updateParkStatistic();
-            if (poolItem == null) {
-                continue;
-            }
-            if (poolItem.isValid()) {
-                return poolItem;
-            } else {
-                exceptionQueue.add(poolItem);
+    private ManagerConfiguration<T> find(T threadExecutePromiseTask) {
+        for (ManagerConfiguration<T> x : items) {
+            if (x.equalsElement(threadExecutePromiseTask)) {
+                return x;
             }
         }
         return null;
     }
 
-    private boolean add() {
-        if (isSizePoolAllowsExtend()) {
-            T poolItem = removeQueue.poll();
-            if (poolItem != null) {
-                addToPark(poolItem);
-                return true;
-            }
-            poolItem = createPoolItem();
-            if (poolItem != null) {
-                //#1
-                itemQueue.add(poolItem);
-                //#2 блокировка не нужна, так как элемент только что был создан
-                addToPark(poolItem);
-                return true;
-            }
+    // Вернуть в пул элемент
+    @Override
+    public void release(T poolItem, Throwable e) {
+        tpsRelease.incrementAndGet();
+        if (poolItem == null) {
+            return;
         }
-        return false;
-    }
-
-    private void addToPark(@NonNull T poolItem) {
+        // Если ошибка является критичной для пловца - выбрасываем его из пула
+        if (e != null && poolItem.checkFatalException(e)) {
+            return;
+        }
+        if (poolItem.isExpiredWithoutStop()) {
+            return;
+        }
         // Если есть потребители, которые ждут ресурс - отдаём ресурс без перевставок в park
         if (forwardResourceWithoutParking(poolItem)) {
-            // updateParkStatistic вызывается планомерно в keepAlive
             // Для быстродействия вычисления нехватки ресурсов в пуле дополнительно вызовем тут
-            updateParkStatistic();
+            updateStatistic();
+            return;
+        }
+        ManagerConfiguration<T> tManagerConfiguration = find(poolItem);
+        if (tManagerConfiguration == null) {
             return;
         }
         // Вставка poolItem в parkQueue должна быть только в этом месте
         // Я написал блокировку на вставку в паркинг, что бы сделать атомарной операцию contains и addLast
-        // Только что бы избежать дублей в паркинге
-        // В обычной жизни конечно такое не должно произойти, но защищаемся всё равно
+        // Только что бы избежать дублей в паркинге, в обычной жизни конечно такое не должно произойти
         boolean addable = false;
-        lockAddToPark.lock();
-        if (!parkQueue.contains(poolItem)) {
-            parkQueue.addLast(poolItem);
-            updateParkStatistic();
-            addable = true;
-        } else {
-            App.error(new RuntimeException("Этот код не должен был случиться! Проверить логику! " + poolItem.hashCode()));
+        try {
+            lockAddToPark.lock();
+            if (!parkQueue.contains(tManagerConfiguration)) {
+                parkQueue.addLast(tManagerConfiguration);
+                updateStatistic();
+                addable = true;
+            } else {
+                App.error(new RuntimeException("Этот код не должен был случиться! Проверить логику! " + tManagerConfiguration.hashCode()));
+            }
+        } finally {
+            lockAddToPark.unlock();
         }
-        lockAddToPark.unlock();
         // После разблокировки только начинаем заниматься работой
         if (addable) {
             onParkUpdate();
         }
     }
 
-    // Проверка, что в парке есть элемент, это необходимо для обработки ложных срабатываний (spurious wakeups)
-    // при использовании LockSupport.park(), хотя они происходят реже, чем при использовании Object.wait()
-    public boolean inPark(@NonNull T poolItem){
-        return parkQueue.contains(poolItem);
+    // Приобрести элемент пула
+    public T acquire() {
+        tpsAcquire.incrementAndGet();
+        // Забираем с конца, что бы под нож улетели первые добавленные
+        while (!parkQueue.isEmpty()) {
+            ManagerConfiguration<T> poolItem = parkQueue.pollLast();
+            updateStatistic();
+            if (poolItem == null) {
+                continue;
+            }
+            T poolItemElement = poolItem.get();
+            if (!poolItemElement.isValid()) {
+                continue;
+            }
+            return poolItemElement;
+        }
+        return null;
     }
 
-    // Это не явное удаление, а всего лишь маркировка, что в принципе объект может быть удалён
-    private boolean addToRemove(@NonNull T poolItem) {
-        // Добавлена блокировка, что бы избежать дублей в очереди на удаление
-        boolean result = false;
-        lockAddToRemove.lock();
-        if (getRealActiveItem() > poolRepositoryProperty.getMin()) {
-            result = true;
-            // Что если объект уже был добавлен в очередь на удаление?
-            // Мы должны вернуть result = true по факту удаление состоялось
-            if (!removeQueue.contains(poolItem)) {
-                removeQueue.add(poolItem);
+    // Увеличиваем кол-во объектов для плаванья
+    private void overclocking(long count) {
+        for (int i = 0; i < count; i++) {
+            if (!addToParkNewItem()) {
+                break;
             }
         }
-        lockAddToRemove.unlock();
-        return result;
     }
 
-    // Бывают случаи когда что-то прекращает работать само собой и надо просто вырезать из пула ссылки
-    // Но ссылки могут быть
-    public void remove(@NonNull T poolItem) {
-        itemQueue.remove(poolItem);
-        parkQueue.remove(poolItem);
-        updateParkStatistic();
-        removeQueue.remove(poolItem);
+    private boolean addToParkNewItem() {
+        if (isSizeExtend()) {
+            ManagerConfiguration<T> poolItem = ManagerConfiguration.getInstance(
+                    cls,
+                    java.util.UUID.randomUUID().toString(),
+                    ns,
+                    onCreatePoolItem
+            );
+            items.add(poolItem);
+            parkQueue.addLast(poolItem);
+            updateStatistic();
+            return true;
+        }
+        return false;
     }
 
-    // А бывает когда надо удалить ссылки и закрыть ресурс по причине самого пула, что ресурс не нужен
-    public void removeAndClose(@NonNull T poolItem) {
-        remove(poolItem);
-        closePoolItem(poolItem);
+    // Проверка, что в парке есть элемент, это необходимо для обработки ложных срабатываний (spurious wakeups)
+    // при использовании LockSupport.park(), хотя они происходят реже, чем при использовании Object.wait()
+    public boolean inPark(@NonNull T poolItem) {
+        ManagerConfiguration<T> tManagerConfiguration = find(poolItem);
+        return parkQueue.contains(tManagerConfiguration);
     }
 
     private void removeInactive() {
-        final long curTimeMs = System.currentTimeMillis();
         final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
-        // Что бы избежать расползание ссылок будем изымать и если всё "ок" добавлять обратно
-        int size = parkQueue.size();
-        List<T> returns = new ArrayList<>();
-        while (!parkQueue.isEmpty() && size > 0) {
+        UtilRisc.forEach(null, items, item -> {
             if (maxCounterRemove.get() == 0) {
-                break; // return нельзя, так как надо вернуть активных
+                return false;  // return нельзя, так как надо вернуть активных
             }
-            // В начале должен быть отстойник, так как активные возвращаются в конец
-            // Новые задачи подбирают ресурсы с конца
-            T poolItem = parkQueue.pollFirst();
-            if (poolItem != null) {
-                if (poolItem.isExpired(curTimeMs)) {
-                    updateParkStatistic();
-                    if (addToRemove(poolItem)) {
-                        maxCounterRemove.decrementAndGet();
-                    }
-                } else {
-                    // Мы не можем воспользоваться стандартной функцией возвращения пловца
-                    // Так как он поместиться в конец очереди, а мы его как бы из отстойника только что взяли
-                    //addToPark(poolItem);
-                    returns.add(poolItem);
-                    // Так как мы изымаем пловцов с начала паркинга и мы уже встретили не протухшего
-                    // Дальнейшее перебирание считаю не уместным
-                    break;
-                }
+            if (!item.isAlive() && parkQueue.remove(item)) {
+                maxCounterRemove.decrementAndGet();
+                items.remove(item);
             }
-            size--;
-        }
-        if (!returns.isEmpty()) {
-            // вставка будет в начало паркинга по элементано
-            // Поэтому, что бы вставить как есть мы реверснём список
-            // park = [1,2,3,4,5,6] poolFirst + add -> [1,2,3] -> park = [4,5,6]
-            // [1,2,3].reversed() -> [3,2,1]; park.addFirst(E) ->
-            //      1. [3,4,5,6]
-            //      2. [2,3,4,5,6]
-            //      3. [1,2,3,4,5,6]
-            returns.forEach(this::addToPark);
-        }
-
-    }
-
-    @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<DataHeader> result = new ArrayList<>();
-        int tpsCompleteFlush = tpsComplete.getAndSet(0);
-        // Если за последнюю секунду были возвращения элемнтов значит пул активен
-        // Если в пуле есть элементы и они не в паркинге - пул тоже активный
-        if (tpsCompleteFlush > 0 || (!itemQueue.isEmpty() && parkQueue.isEmpty())) {
-            markActive();
-        }
-        result.add(new DataHeader()
-                .setBody(getCascadeKey(ns))
-                .addHeader("tpsComplete", tpsCompleteFlush)
-                .addHeader("item", itemQueue.size())
-                .addHeader("park", parkQueue.size())
-                .addHeader("remove", removeQueue.size())
-        );
-        return result;
+            return true;
+        });
     }
 
     // Этот метод нельзя вызывать под бизнес задачи, система сама должна это контролировать
     public void balance() {
-        updateParkStatistic();
+        updateStatistic();
         try {
             // Если паркинг был пуст уже больше секунды начнём увеличивать
             if (getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
                 overclocking(formulaAddCount.apply(1));
-            } else if (getRealActiveItem() > poolRepositoryProperty.getMin()) { //Кол-во больше минимума
-                // закрываем с прошлого раза всех из отставки
-                // так сделано специально, если на следующей итерации будет overclocking
-                // что бы можно было достать кого-то из отставки
-                closeRetired();
-                // Готовим новых кандидатов на отставку
+            } else if (items.size() > poolRepositoryProperty.getMin()) { //Кол-во больше минимума
                 removeInactive();
             }
         } catch (Exception e) {
@@ -412,35 +272,39 @@ public abstract class AbstractPool<T extends ExpirationMsMutable & Valid & Resou
         }
     }
 
-    // Закрываем кандидатов в отставке
-    private void closeRetired() {
-        while (!removeQueue.isEmpty()) {
-            T poolItem = removeQueue.poll();
-            if (poolItem != null) {
-                removeAndClose(poolItem);
-            }
+    @Override
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<DataHeader> result = new ArrayList<>();
+        int tpsReleaseFlush = tpsRelease.getAndSet(0);
+        int tpsAcquireFlush = tpsAcquire.getAndSet(0);
+        // Если за последнюю секунду были возвращения элементов значит пул активен
+        // Если в пуле есть элементы и они не в паркинге - пул тоже активный
+        if (tpsReleaseFlush > 0 || tpsAcquireFlush > 0) {
+            markActive();
         }
-        //Удаление ошибочных
-        while (!exceptionQueue.isEmpty()) {
-            T poolItem = exceptionQueue.poll();
-            if (poolItem != null) {
-                removeAndClose(poolItem);
-            }
-        }
+        result.add(new DataHeader()
+                .setBody(getCascadeKey(ns))
+                .addHeader("tpsAcquire", tpsAcquireFlush)
+                .addHeader("tpsRelease", tpsReleaseFlush)
+                .addHeader("size", items.size())
+                .addHeader("park", parkQueue.size())
+        );
+        return result;
     }
 
     @Override
     public void runOperation() {
+        if (cls == null) {
+            throw new RuntimeException("cls is null");
+        }
         overclocking(poolRepositoryProperty.getMin());
         propertyDispatcher.run();
-        registerPool.add(this);
     }
 
     @Override
     public void shutdownOperation() {
-        UtilRisc.forEach(null, itemQueue, this::removeAndClose);
+        // Все items будут закрыты Manager без нашего участия
         propertyDispatcher.shutdown();
-        registerPool.remove(this);
     }
 
 }

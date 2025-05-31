@@ -22,16 +22,17 @@ import java.util.function.Function;
 @Getter
 public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K, V> {
 
-    private final String key;
+    private final String ns;
 
     public ManagerConfiguration<ExpirationList<ExpirationMapExpirationObject>> expirationMapConfiguration;
 
     private final Map<K, ExpirationMapExpirationObject> mainMap = new ConcurrentHashMap<>(); // Основная карта, в которой хранятся сессионные данные
 
-    public ExpirationMap(String key) {
-        this.key = key;
+    public ExpirationMap(String ns) {
+        this.ns = ns;
         expirationMapConfiguration = ManagerConfiguration.getInstance(
                 ExpirationList.class,
+                ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров ExpirationMap
                 ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров ExpirationMap
                 expirationMapExpirationObjectExpirationList -> expirationMapExpirationObjectExpirationList
                         .setupOnExpired(ExpirationMapExpirationObject::remove)
@@ -47,7 +48,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
-                .append("key", key)
+                .append("ns", ns)
                 .append("size", size())
                 ;
     }
@@ -400,7 +401,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         List<DataHeader> result = new ArrayList<>();
         result.add(new DataHeader()
-                .setBody(key)
+                .setBody(ns)
                 .addHeader("size", size())
         );
         return result;

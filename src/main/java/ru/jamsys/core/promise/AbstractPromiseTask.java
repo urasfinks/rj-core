@@ -1,32 +1,31 @@
 package ru.jamsys.core.promise;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadVirtual;
 import ru.jamsys.core.component.ServiceTimer;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.extension.log.LogType;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
+import ru.jamsys.core.extension.log.LogType;
+import ru.jamsys.core.extension.statistic.timer.nano.TimerNanoEnvelope;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.resource.thread.ThreadPoolExecutePromiseTask;
-import ru.jamsys.core.extension.statistic.timer.nano.TimerNanoEnvelope;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@ToString(onlyExplicitlyIncluded = true)
 @Getter
 public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement {
 
-    @ToString.Include
     final PromiseTaskExecuteType type;
 
     private final PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> procedure;
@@ -39,7 +38,6 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     @Setter
     private int retryDelayMs = 1000;
 
-    @ToString.Include
     private final String ns;
 
     // Используется, когда вызывается терминальный блок, который фиксирует, что Promise закончен.
@@ -64,12 +62,24 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
         this.promise = promise;
         this.type = type;
         this.procedure = procedure;
-
+        // Тут ns это promise.key+task.index
+        // В разрезе одинаковых ключей у всех будет общий ThreadPoolExecutePromiseTask
         computeThreadConfiguration = ManagerConfiguration.getInstance(
                 ThreadPoolExecutePromiseTask.class,
+                AbstractPromiseTask.class.getName(),
                 ns,
                 LifeCycleInterface::run
         );
+    }
+
+    @JsonValue
+    public Object getValue() {
+        return new HashMapBuilder<String, Object>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                .append("ns", ns)
+                .append("type", type)
+                ;
     }
 
     // execute on another thread

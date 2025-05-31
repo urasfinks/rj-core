@@ -2,8 +2,7 @@ package ru.jamsys.core.pool;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.resource.ResourceCheckException;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 
 // Этот объект передаётся во внешнее управление.
 // Что бы вернуть элемент в pool надо знать к какому pool этот элемент принадлежит. Поэтому собираем такую обёртку,
@@ -11,7 +10,7 @@ import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
 
 @Getter
 @Setter
-public class PoolItemCompletable<T extends ExpirationMsMutable & Valid & ResourceCheckException> implements AutoCloseable {
+public class PoolItemCompletable<T extends AbstractExpirationResource> implements AutoCloseable {
 
     private final Pool<T> pool;
 
@@ -26,7 +25,7 @@ public class PoolItemCompletable<T extends ExpirationMsMutable & Valid & Resourc
 
     @Override
     public void close() {
-        this.pool.releasePoolItem(this.item, throwable);
+        this.pool.release(this.item, throwable);
     }
 
 }

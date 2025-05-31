@@ -197,7 +197,7 @@ class UtilTest {
 
     @Test
     void readUntil() {
-        Assertions.assertEquals("00", Util.readUntil("00p", Util::isNumeric));
+        Assertions.assertEquals("00", UtilText.readUntil("00p", Util::isNumeric));
     }
 
     @Test

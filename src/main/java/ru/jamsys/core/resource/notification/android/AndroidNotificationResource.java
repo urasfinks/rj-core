@@ -4,36 +4,32 @@ import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.resource.Resource;
 import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@Component
-public class AndroidNotificationResource
-        extends ExpirationMsMutableImplAbstractLifeCycle
-        implements
-        Resource<AndroidNotificationRequest, HttpResponse>,
-        PropertyListener, CascadeKey {
+public class AndroidNotificationResource extends AbstractExpirationResource implements PropertyListener {
 
     private String accessToken;
 
-    private PropertyDispatcher<Object> propertyDispatcher;
+    private final PropertyDispatcher<Object> propertyDispatcher;
 
     private final AndroidNotificationRepositoryProperty androidNotificationRepositoryProperty = new AndroidNotificationRepositoryProperty();
 
-    @Override
-    public void init(String ns) throws Throwable {
+    public AndroidNotificationResource(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
                 androidNotificationRepositoryProperty,
@@ -41,7 +37,6 @@ public class AndroidNotificationResource
         );
     }
 
-    @Override
     public HttpResponse execute(AndroidNotificationRequest arguments) {
         String postData = createPostData(arguments.getTitle(), arguments.getData(), arguments.getToken());
         HttpConnector httpConnector = new HttpConnectorDefault()
@@ -52,9 +47,7 @@ public class AndroidNotificationResource
                 .setRequestHeader("Authorization", "Bearer " + accessToken)
                 .setPostData(postData.getBytes(StandardCharsets.UTF_8));
         httpConnector.exec();
-
         return httpConnector.getResponseObject();
-
     }
 
     @Override
@@ -115,8 +108,7 @@ public class AndroidNotificationResource
         }
     }
 
-    @Override
-    public String getKey() {
+    public String getNs() {
         return App.getUniqueClassName(getClass());
     }
 
@@ -128,6 +120,11 @@ public class AndroidNotificationResource
     @Override
     public boolean checkFatalException(Throwable th) {
         return false;
+    }
+
+    @Override
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        return List.of();
     }
 
 }

@@ -24,13 +24,16 @@ public class ServicePromise implements CascadeKey {
     private final ManagerConfiguration<ExpirationList<AbstractPromiseTask>> retryExporationList; // Задачи на повтор
 
     public ServicePromise() {
+        // Так как это компонент, у нас не может быть множества экземпляров key будет константой
         timeOutExpirationList = ManagerConfiguration.getInstance(
                 ExpirationList.class,
+                ServicePromise.class.getName(),
                 getCascadeKey("timeOut"),
                 promiseExpirationList -> promiseExpirationList.setupOnExpired(Promise::timeOut)
         );
         retryExporationList = ManagerConfiguration.getInstance(
                 ExpirationList.class,
+                ServicePromise.class.getName(),
                 getCascadeKey("retry"),
                 abstractPromiseTaskExpirationList -> abstractPromiseTaskExpirationList
                         .setupOnExpired(promiseTask -> promiseTask.prepareLaunch(null))

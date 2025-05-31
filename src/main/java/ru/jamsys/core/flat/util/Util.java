@@ -44,10 +44,8 @@ public class Util {
     }
 
     public static String genPassword() {
-
-        /*
-         * net user  168e4&Zx /add  Если пароль содержит амперсанд - то при добавлении через консоль считается что это команда и всё падает
-         * */
+        // net user 168e4&Zx /add Если пароль содержит амперсанд - то при добавлении через консоль считается что это
+        // команда и всё падает
         int length = 8;
 
         final char[] lowercase = "abcdefghijklmnopqrstuvwxyz".toCharArray();
@@ -179,6 +177,7 @@ public class Util {
         return ConcurrentHashMap.newKeySet();
     }
 
+    // TODO: отказаться от обилия await, оставить только 1
     public static boolean await(AtomicBoolean run, long timeoutMs, String exceptionMessage) {
         return await(run, timeoutMs, 0, () -> {
             if (exceptionMessage != null) {
@@ -285,18 +284,6 @@ public class Util {
                         .collect(Collectors.toCollection(nCol)))
                 // иначе пустая коллекция
                 .orElse((Collection<Collection<?>>) nCol.get());
-    }
-
-    public static String readUntil(String data, Function<String, Boolean> fn) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < data.length(); i++) {
-            if (fn.apply(data.charAt(i) + "")) {
-                sb.append(data.charAt(i));
-                continue;
-            }
-            break;
-        }
-        return sb.toString();
     }
 
 }

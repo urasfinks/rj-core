@@ -59,46 +59,39 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     // Как действовать? Получили результат get(), поработали с ним и выбросили. При новой необходимости снова get()
     // не храните ссылки на результат get()
 
-    public <R extends AbstractManagerElement> R get(Class<R> cls, String key, Consumer<R> onCreate) {
+    public <R extends AbstractManagerElement> R get(Class<R> cls, String key, String ns, Consumer<R> onCreate) {
         @SuppressWarnings("unchecked")
         R mapElement = (R) map
                 .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
-                .computeIfAbsent(key, key1 -> {
+                .computeIfAbsent(CascadeKey.complex(key, ns), _ -> {
                     try {
                         Constructor<?> c = cls.getConstructor(String.class);
                         @SuppressWarnings("unchecked")
-                        R newInstance = (R) c.newInstance(key1);
+                        R newInstance = (R) c.newInstance(ns);
                         if (onCreate != null) {
                             onCreate.accept(newInstance);
                         }
                         newInstance.run();
                         return newInstance;
                     } catch (Throwable th) {
-                        throw new ForwardException("Failed to instantiate " + cls + "(String)", th);
+                        throw new ForwardException("Failed to instantiate " + CascadeKey.complex(key, ns) + "<" + cls + ">(String)", th);
                     }
                 });
         return mapElement;
-//        UtilLog.printInfo(new HashMapBuilder<>()
-//                .append("resultRun", result.isRun())
-//                .append("elementRun", result.getElement().isRun())
-//                .append("remaining", result.getElement().getExpiryRemainingMs())
-//                .append("element", Integer.toHexString(result.getElement().hashCode()))
-//        );
-
     }
 
-    public <R extends AbstractManagerElement> boolean contains(Class<R> cls, String key) {
-        Map<String, AbstractManagerElement> subMap =
-                map.computeIfAbsent(cls, _ -> new ConcurrentHashMap<>());
-        return subMap.containsKey(key);
+    public <R extends AbstractManagerElement> boolean contains(Class<R> cls, String key, String ns) {
+        return map
+                .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
+                .containsKey(CascadeKey.complex(key, ns));
     }
 
-    public <R extends AbstractManagerElement> void remove(Class<R> cls, String key) {
-        ConcurrentHashMap<String, AbstractManagerElement> x = map.get(cls);
-        if (x == null) {
-            return;
-        }
-        x.remove(key);
+    public <R extends AbstractManagerElement> R remove(Class<R> cls, String key, String ns) {
+        @SuppressWarnings("unchecked")
+        R remove = (R) map
+                .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
+                .remove(CascadeKey.complex(key, ns));
+        return remove;
     }
 
     public void helper(AtomicBoolean threadRun) {

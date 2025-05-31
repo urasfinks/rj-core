@@ -1,16 +1,12 @@
 package ru.jamsys.core.resource;
 
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.pool.AbstractPool;
 import ru.jamsys.core.pool.PoolItemCompletable;
-import ru.jamsys.core.pool.Valid;
 import ru.jamsys.core.promise.PromiseTaskWaitResource;
-
-import java.util.function.Function;
 
 // Пул ресурсов хранит очередь задач, которые ждут освободившиеся ресурсы.
 // При освобождении ресурса происходит передача управления ресурса в задачу.
@@ -22,34 +18,23 @@ import java.util.function.Function;
 // PoolPromiseTaskWaitResource - это пул ресурсов с очередью задач, которым для выполнения нужен ресурс.
 
 
-public class PoolResourceForPromiseTaskWaitResource<
-        T extends ExpirationMsMutable & Valid & LifeCycleInterface & ResourceCheckException
-        >
+public class PoolResourceForPromiseTaskWaitResource<T extends AbstractExpirationResource>
         extends AbstractPool<T> {
 
     @SuppressWarnings("all")
     private final ManagerConfiguration<BrokerMemory<PromiseTaskWaitResource>> brokerMemoryConfiguration;
 
-    private Function<String, T> supplierPoolItem;
-
     public PoolResourceForPromiseTaskWaitResource(String ns) {
         super(ns);
-        // TODO: как будто тут не хватает promiseTask -> promiseTask.getPromise().setError("::drop", new RuntimeException())
-        brokerMemoryConfiguration = ManagerConfiguration.getInstance(BrokerMemory.class, ns);
-    }
-
-    public void setupSupplierPoolItem(Function<String, T> supplierPoolItem) {
-        this.supplierPoolItem = supplierPoolItem;
-    }
-
-    @Override
-    public T createPoolItem() {
-        return supplierPoolItem.apply(ns);
-    }
-
-    @Override
-    public void closePoolItem(T poolItem) {
-        poolItem.shutdown();
+        brokerMemoryConfiguration = ManagerConfiguration.getInstance(
+                BrokerMemory.class,
+                java.util.UUID.randomUUID().toString(),
+                ns,
+                promiseTaskWaitResourceBrokerMemory -> promiseTaskWaitResourceBrokerMemory
+                        .setupOnDrop(promiseTaskWaitResource -> promiseTaskWaitResource
+                                .getPromise().setError("::drop", new RuntimeException())
+                        )
+        );
     }
 
     public void addPromiseTask(PromiseTaskWaitResource<?> promiseTaskWaitResource) {
@@ -63,7 +48,7 @@ public class PoolResourceForPromiseTaskWaitResource<
         // Если пул был пустой, создаётся ресурс и вызывается onParkUpdate()
         // Если же в пуле были ресурсы, то вернётся false и мы самостоятельно запустим onParkUpdate()
         // Что бы попытаться найти свободный ресурс и запустить только что добавленную задачу
-        if (isAvailablePoolItem()) {
+        if (idleIfEmpty()) {
             onParkUpdate();
         }
     }
@@ -74,7 +59,7 @@ public class PoolResourceForPromiseTaskWaitResource<
         // Только в том случае если есть задачи в очереди есть ресурсы в парке
         BrokerMemory broker = brokerMemoryConfiguration.get();
         if (!broker.isEmpty() && !isParkQueueEmpty()) {
-            T poolItem = get();
+            T poolItem = this.acquire();
             if (poolItem != null) {
                 //Забираем с конца, что бы никаких штормов
                 ExpirationMsImmutableEnvelope<PromiseTaskWaitResource> envelope = broker.pollLast();
@@ -82,7 +67,7 @@ public class PoolResourceForPromiseTaskWaitResource<
                     envelope.getValue().onReceiveResource(new PoolItemCompletable<>(this, poolItem));
                 } else {
                     // Если задач более нет, возвращаем плавца в пул
-                    releasePoolItem(poolItem, null);
+                    release(poolItem, null);
                 }
             }
         }

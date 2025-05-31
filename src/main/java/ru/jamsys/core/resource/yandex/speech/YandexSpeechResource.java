@@ -1,36 +1,30 @@
 package ru.jamsys.core.resource.yandex.speech;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
-import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.promise.AbstractPromiseTask;
-import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
 
 import java.io.File;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@Component
-@Scope("prototype")
 public class YandexSpeechResource
-        extends ExpirationMsMutableImplAbstractLifeCycle
+        extends AbstractExpirationResource
         implements
-        Resource<YandexSpeechRequest, Void>,
-        CascadeKey,
         PropertyListener {
 
     YandexSpeechClient client = null;
 
-    private PropertyDispatcher<Object> propertyDispatcher;
+    private final PropertyDispatcher<Object> propertyDispatcher;
 
     private final YandexSpeechRepositoryProperty yandexSpeechRepositoryProperty = new YandexSpeechRepositoryProperty();
 
-    @Override
-    public void init(String ns) throws Throwable {
+    public YandexSpeechResource(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
                 yandexSpeechRepositoryProperty,
@@ -38,7 +32,6 @@ public class YandexSpeechResource
         );
     }
 
-    @Override
     public Void execute(YandexSpeechRequest arguments) {
         client.synthesize(
                 arguments.getText(),
@@ -95,6 +88,11 @@ public class YandexSpeechResource
     @Override
     public boolean checkFatalException(Throwable th) {
         return false;
+    }
+
+    @Override
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        return List.of();
     }
 
 }

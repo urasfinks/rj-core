@@ -2,9 +2,11 @@ package ru.jamsys.core.flat.util;
 
 import org.springframework.util.StringUtils;
 
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// TODO: юниты дописать
 public class UtilText {
 
     public static String padRight(String data, int n) {
@@ -123,6 +125,18 @@ public class UtilText {
         } else {
             return five;
         }
+    }
+
+    public static String readUntil(String data, Function<String, Boolean> fn) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < data.length(); i++) {
+            if (fn.apply(data.charAt(i) + "")) {
+                sb.append(data.charAt(i));
+                continue;
+            }
+            break;
+        }
+        return sb.toString();
     }
 
 }

@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.log.LogType;
+import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.*;
-import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
 import ru.jamsys.core.resource.http.HttpResource;
 
 import java.util.ArrayList;
@@ -129,7 +129,9 @@ class PromiseImplTest {
     void test3() {
         ManagerConfiguration<RateLimitTps> rateLimitItemConfiguration = ManagerConfiguration.getInstance(
                 RateLimitTps.class,
-                Promise.getComplexIndex("test", "test")
+                java.util.UUID.randomUUID().toString(),
+                Promise.getComplexIndex("test", "test"),
+                null
         );
         rateLimitItemConfiguration.get().setMax(10000);
         Promise promise = servicePromise.get("test", 6_000L);
@@ -205,7 +207,9 @@ class PromiseImplTest {
     void test5() {
         ManagerConfiguration<RateLimitTps> rateLimitItemConfiguration = ManagerConfiguration.getInstance(
                 RateLimitTps.class,
-                Promise.getComplexIndex("test", "test")
+                java.util.UUID.randomUUID().toString(),
+                Promise.getComplexIndex("test", "test"),
+                null
         );
         rateLimitItemConfiguration.get().setMax(100000000);
         Promise promise = servicePromise.get("test", 6_000L);
@@ -457,11 +461,22 @@ class PromiseImplTest {
         Assertions.assertEquals("[]", promise.getQueueTask().getMainQueue().toString());
         promise.then("index", (_, _, _) -> {
         });
-        Assertions.assertEquals("[AbstractPromiseTask(type=COMPUTE, ns=log.index)]", promise.getQueueTask().getMainQueue().toString());
+
+        List<AbstractPromiseTask> list = promise.getQueueTask().getMainQueue().stream().toList();
+        Assertions.assertEquals(1, list.size());
+        Assertions.assertEquals("log.index", list.getFirst().getNs());
+        Assertions.assertEquals(PromiseTaskExecuteType.COMPUTE, list.getFirst().getType());
+
         promise.appendWait();
-        Assertions.assertEquals("[AbstractPromiseTask(type=COMPUTE, ns=log.index), PromiseTaskWait()]", promise.getQueueTask().getMainQueue().toString());
+        list = promise.getQueueTask().getMainQueue().stream().toList();
+        Assertions.assertEquals(2, list.size());
+        Assertions.assertEquals(PromiseTaskExecuteType.COMPUTE, list.getFirst().getType());
+        Assertions.assertEquals(PromiseTaskExecuteType.WAIT, list.getLast().getType());
+        Assertions.assertEquals("Wait", list.getLast().getNs());
+
         promise.appendWait();
-        Assertions.assertEquals("[AbstractPromiseTask(type=COMPUTE, ns=log.index), PromiseTaskWait()]", promise.getQueueTask().getMainQueue().toString());
+        list = promise.getQueueTask().getMainQueue().stream().toList();
+        Assertions.assertEquals(2, list.size());
     }
 
     @Test

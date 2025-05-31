@@ -3,20 +3,19 @@ package ru.jamsys.core.resource.thread;
 import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.extension.CascadeKey;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutableImplAbstractLifeCycle;
+import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.promise.AbstractPromiseTask;
-import ru.jamsys.core.resource.Resource;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
 
-public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLifeCycle
-        implements Resource<Void, Void>, CascadeKey {
+public class ThreadExecutePromiseTask extends AbstractExpirationResource {
 
     private Thread thread;
 
@@ -24,30 +23,40 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
 
     private final AtomicBoolean threadWork = new AtomicBoolean(true);
 
-    private final ThreadPoolExecutePromiseTask pool;
+    private ThreadPoolExecutePromiseTask pool;
 
+    private ManagerConfiguration<RateLimitTps> rateLimitConfiguration;
 
-    private final ManagerConfiguration<RateLimitTps> rateLimitConfiguration;
-
-    private final int indexThread;
+    private Integer indexThread;
 
     @Getter
     private final String ns;
 
-    public ThreadExecutePromiseTask(
-            String ns,
-            int indexThread,
-            ThreadPoolExecutePromiseTask pool,
-            ManagerConfiguration<RateLimitTps> rateLimitConfiguration
-    ) {
+    public ThreadExecutePromiseTask(String ns) {
         this.ns = ns;
+    }
+
+    public void setup(
+            ThreadPoolExecutePromiseTask pool,
+            ManagerConfiguration<RateLimitTps> rateLimitConfiguration,
+            Integer indexThread
+    ) {
         this.pool = pool;
-        this.indexThread = indexThread;
         this.rateLimitConfiguration = rateLimitConfiguration;
+        this.indexThread = indexThread;
     }
 
     @Override
     public void runOperation() {
+        if (pool == null) {
+            throw new RuntimeException("pool is null");
+        }
+        if (rateLimitConfiguration == null) {
+            throw new RuntimeException("rateLimitConfiguration is null");
+        }
+        if (indexThread == null) {
+            throw new RuntimeException("indexThread is null");
+        }
         thread = new Thread(() -> {
             threadWork.set(true);
             // При создании экземпляра в ThreadPoolPromiseTask.createPoolItem() происходит автоматически run()
@@ -66,7 +75,7 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
                     }
                     markActive();
                     if (!rateLimitConfiguration.get().check()) {
-                        pool.releasePoolItem(this, null);
+                        pool.release(this, null);
                         LockSupport.park(thread);
                         continue;
                     }
@@ -83,7 +92,7 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
                         continue; // Если таска была - перепрыгиваем toParking()
                     }
                     //Конец итерации цикла -> всегда pause()
-                    pool.releasePoolItem(this, null);
+                    pool.release(this, null);
                     LockSupport.park(thread);
                     // На всякий пожарный, если кто-то допишет логику и забудет после паркинга сделать continue;
                     //noinspection UnnecessaryContinue
@@ -94,7 +103,8 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
             } finally {
                 // Это если что-то пойдёт не так и поток перестанет работать не потому что вызвали shutdownOperation
                 // надо его удалить из пула, он всё равно уже не рабочий
-                pool.remove(this);
+                // pool.remove(this); - если не вернуть элемент в пул, он не будет никому возвращаться, он протухнет и
+                // автоматом будет выкинут из пула
                 threadWork.set(false);
             }
         });
@@ -120,15 +130,9 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
         // Так как мы не можем больше повлиять на остановку
         // В java 22 больше нет функционала принудительной остановки thread.stop()
         // Таску мы не будем удалять из тайминга - пусть растёт время, а то слишком круто будет новым житься
-        pool.remove(this);
+        // pool.remove(this); - автоматическое выбрасывание из пула протухших элементов
     }
 
-    @Override
-    public void init(String ns) {
-
-    }
-
-    @Override
     public Void execute(Void arguments) {
         // Мы не можем в этом блоке делать никакие проверки, так как execute был вызван, когда ресурс был изъят из пула
         // Нам тут надо либо извращаться с возращением в пул, либо пустить всё своим ходом. То есть никаких проверок
@@ -145,6 +149,11 @@ public class ThreadExecutePromiseTask extends ExpirationMsMutableImplAbstractLif
     @Override
     public boolean checkFatalException(Throwable th) {
         return false;
+    }
+
+    @Override
+    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        return List.of();
     }
 
 }

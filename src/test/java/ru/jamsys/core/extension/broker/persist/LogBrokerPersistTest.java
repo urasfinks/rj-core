@@ -34,6 +34,7 @@ class LogBrokerPersistTest {
         App.get(ServiceProperty.class).set("App.BrokerPersist.test.directory", "LogManager");
         ManagerConfiguration<BrokerPersist<Log>> brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerPersist.class,
+                java.util.UUID.randomUUID().toString(),
                 "test",
                 managerElement -> managerElement.setupRestoreElementFromByte((bytes) -> {
                     try {

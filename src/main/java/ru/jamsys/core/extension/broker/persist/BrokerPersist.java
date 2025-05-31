@@ -37,7 +37,6 @@ import java.util.function.Function;
 // лучше не делать
 
 @Getter
-@SuppressWarnings("unused")
 public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerElement implements PropertyListener {
 
     private final String ns;
@@ -86,13 +85,14 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
     }
 
     public void xWriterInit() {
-        String key = getCascadeKey(ns, "bin");
+        String key = "X";
         if (xWriterConfiguration != null) {
-            App.get(Manager.class).remove(AsyncFileWriterRolling.class, key);
+            App.get(Manager.class).remove(AsyncFileWriterRolling.class, key, getCascadeKey(ns));
         }
         xWriterConfiguration = ManagerConfiguration.getInstance(
                 AsyncFileWriterRolling.class,
                 key,
+                getCascadeKey(ns),
                 managerElement -> {
                     managerElement.setupRepositoryProperty(property);
                     managerElement.setupOnFileSwap(this::onXFileSwap);
@@ -156,7 +156,7 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
         }
     }
 
-    // Вызывается когда меняется bin файл, так как он достиг максимального размера
+    // Вызывается когда меняется X файл, так как он достиг максимального размера
     public void onXFileSwap(String fileName, AsyncFileWriterRolling<X<T>> xAsyncFileWriterRolling) {
         // Если последний зарегистрированный Rider существует и ещё жив - оповестим, что запись закончена
         ManagerConfiguration<Rider> lastRiderConfiguration = queueRiderConfiguration.peekLast();
@@ -187,10 +187,11 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
             return null;
         }
         return mapRiderConfiguration.computeIfAbsent(
-                filePathX, // Нам тут нужна ссылка на bin так как BrokerPersistElement.getFilePath возвращает именно его
+                filePathX, // Нам тут нужна ссылка на X так как BrokerPersistElement.getFilePath возвращает именно его
                 _ -> {
                     ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfiguration.getInstance(
                             Rider.class,
+                            java.util.UUID.randomUUID().toString(),
                             filePathX,
                             rider -> {
                                 rider.setupRepositoryProperty(property);

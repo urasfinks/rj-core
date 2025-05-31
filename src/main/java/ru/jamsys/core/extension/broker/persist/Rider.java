@@ -39,6 +39,7 @@ public class Rider extends AbstractManagerElement {
         this.filePathY = BrokerPersist.filePathXToY(filePathX);
     }
 
+    // TODO: прибрать в один setup
     public void setupRepositoryProperty(BrokerPersistRepositoryProperty repositoryProperty) {
         this.repositoryProperty = repositoryProperty;
     }
@@ -95,6 +96,7 @@ public class Rider extends AbstractManagerElement {
         // В onWrite залетает список CommitElement и мы должны bin.position удалить из binReader
         yWriterConfiguration = ManagerConfiguration.getInstance(
                 AsyncFileWriterWal.class,
+                java.util.UUID.randomUUID().toString(),
                 filePathY,
                 managerElement -> {
                     managerElement.setupRepositoryProperty(repositoryProperty);

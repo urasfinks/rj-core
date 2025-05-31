@@ -60,8 +60,8 @@ class BrokerPersistTest {
     @BeforeEach
     void beforeEach() {
         UtilFile.removeAllFilesInFolder("LogManager");
-        if (App.get(Manager.class).contains(ExpirationList.class, QueueRetry.class.getName())) {
-            App.get(Manager.class).get(ExpirationList.class, QueueRetry.class.getName(), null).unitTestReset();
+        if (App.get(Manager.class).contains(ExpirationList.class, QueueRetry.class.getName(), QueueRetry.class.getName())) {
+            App.get(Manager.class).get(ExpirationList.class, QueueRetry.class.getName(), QueueRetry.class.getName(), null).unitTestReset();
         }
     }
 
@@ -76,6 +76,7 @@ class BrokerPersistTest {
         App.get(ServiceProperty.class).set("App.BrokerPersist.test1.directory", "LogManager");
         ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerPersist.class,
+                java.util.UUID.randomUUID().toString(),
                 "test1",
                 managerElement -> {
                 }
@@ -102,7 +103,7 @@ class BrokerPersistTest {
                 Files.readAllBytes(Paths.get(test.getXWriterConfiguration().get().getFilePath()))
         );
 
-        // В последнем коммит контроллере она должны появиться
+        // Должна появится 1 не обработанная запись
         Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().size());
         // Забираем элемент на обработку
         X<TestElement> poll = test.poll();
@@ -213,6 +214,7 @@ class BrokerPersistTest {
 
         ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerPersist.class,
+                java.util.UUID.randomUUID().toString(),
                 "test2",
                 managerElement -> managerElement.setupRestoreElementFromByte((bytes) -> new TestElement(new String(bytes)))
         );

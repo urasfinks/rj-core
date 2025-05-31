@@ -1,17 +1,16 @@
 package ru.jamsys.core.promise;
 
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskWithResourceConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.pool.PoolItemCompletable;
 import ru.jamsys.core.resource.PoolResourceForPromiseTaskWaitResource;
-import ru.jamsys.core.resource.Resource;
-import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class PromiseTaskWaitResource<T extends ExpirationMsMutable & Resource<?, ?>> extends AbstractPromiseTask {
+public class PromiseTaskWaitResource<T extends AbstractExpirationResource> extends AbstractPromiseTask {
 
     private PoolItemCompletable<T> receiveResource;
 

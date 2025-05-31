@@ -25,10 +25,11 @@ public class BalancerStickySessions<T> {
     private record Snapshot<T>(List<T> list) {
     }
 
-    public BalancerStickySessions(String key, int keepAliveOnInactivityMs) {
+    public BalancerStickySessions(String ns, int keepAliveOnInactivityMs) {
         expirationStickyMapConfiguration = ManagerConfiguration.getInstance(
                 ExpirationMap.class,
-                key,
+                java.util.UUID.randomUUID().toString(),
+                ns,
                 stringResolvedExpirationMap -> stringResolvedExpirationMap
                         .setupTimeoutMs(keepAliveOnInactivityMs)
         );
