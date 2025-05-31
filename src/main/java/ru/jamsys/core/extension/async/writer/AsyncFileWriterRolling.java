@@ -30,7 +30,7 @@ public class AsyncFileWriterRolling<T extends Position & ByteSerializable>
         super(null);
         super.setupStandardOpenOption(StandardOpenOption.TRUNCATE_EXISTING);
     }
-    // TODO: прибрать в один setup
+
     @Override
     public void setupRepositoryProperty(BrokerPersistRepositoryProperty repositoryProperty) {
         super.setupRepositoryProperty(repositoryProperty);
