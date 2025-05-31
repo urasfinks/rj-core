@@ -6,8 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.AbstractManagerElement;
+import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.async.writer.DataReadWrite;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -194,10 +194,8 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
                             java.util.UUID.randomUUID().toString(),
                             filePathX,
                             rider -> {
-                                rider.setupRepositoryProperty(property);
-                                rider.setupFileXFinishState(fileXFinishState);
                                 // Каждый блок записи list<Y> может быть последним, так как будут обработаны все X
-                                rider.setupOnWrite(this::removeRiderIfComplete);
+                                rider.setup(property, this::removeRiderIfComplete, fileXFinishState);
                             }
                     );
                     queueRiderConfiguration.add(riderManagerConfiguration);

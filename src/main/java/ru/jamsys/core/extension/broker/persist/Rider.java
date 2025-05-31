@@ -39,16 +39,13 @@ public class Rider extends AbstractManagerElement {
         this.filePathY = BrokerPersist.filePathXToY(filePathX);
     }
 
-    // TODO: прибрать в один setup
-    public void setupRepositoryProperty(BrokerPersistRepositoryProperty repositoryProperty) {
+    public void setup(
+            BrokerPersistRepositoryProperty repositoryProperty,
+            Consumer<Rider> onWrite,
+            boolean fileXFinishState
+    ){
         this.repositoryProperty = repositoryProperty;
-    }
-
-    public void setupFileXFinishState(boolean fileXFinishState) {
         this.fileXFinishState = fileXFinishState;
-    }
-
-    public void setupOnWrite(Consumer<Rider> onWrite) {
         this.onWrite = onWrite;
     }
 
