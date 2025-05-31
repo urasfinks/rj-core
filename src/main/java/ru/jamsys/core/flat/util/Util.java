@@ -192,6 +192,7 @@ public class Util {
         });
     }
 
+    @SuppressWarnings("all")
     public static boolean await(AtomicBoolean run, long timeoutMs, int sleepIterationMs, ProcedureThrowing procedure) {
         long start = System.currentTimeMillis();
         long expiredTime = start + timeoutMs;
@@ -222,6 +223,7 @@ public class Util {
         }
     }
 
+    @SuppressWarnings("all")
     public static void await(
             long timeoutMs,
             int sleepIterationMs,
@@ -259,7 +261,7 @@ public class Util {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("all")
     public static <R extends Collection<?>> R cartesian(Supplier nCol, Collection<?>... cols) {
         // проверка supplier не есть null
         if (nCol == null) return null;

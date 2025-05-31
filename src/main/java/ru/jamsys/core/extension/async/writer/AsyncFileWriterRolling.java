@@ -25,6 +25,7 @@ public class AsyncFileWriterRolling<T extends Position & ByteSerializable>
             + java.util.UUID.randomUUID()
             + ".afwr";
 
+    @SuppressWarnings("all")
     public AsyncFileWriterRolling(String ns) { // Тут fileName нужен только для поддержания контракта ManagerElement
         super(null);
         super.setupStandardOpenOption(StandardOpenOption.TRUNCATE_EXISTING);

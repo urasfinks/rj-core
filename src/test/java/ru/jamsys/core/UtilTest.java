@@ -407,4 +407,48 @@ class UtilTest {
         Assertions.assertNull(result);
     }
 
+    @Test
+    void testMd5HashUtf8() throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        String input = "test";
+        String expectedHash = "098f6bcd4621d373cade4e832627b4f6"; // MD5("test")
+        String actualHash = Util.getHash(input, "MD5", "UTF-8");
+        Assertions.assertEquals(expectedHash, actualHash);
+    }
+
+    @Test
+    void testSha1HashUtf8() throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        String input = "test";
+        String expectedHash = "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"; // SHA-1("test")
+        String actualHash = Util.getHash(input, "SHA-1", "UTF-8");
+        Assertions.assertEquals(expectedHash, actualHash);
+    }
+
+    @Test
+    void testSha256HashUtf8() throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        String input = "test";
+        String expectedHash = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"; // SHA-256("test")
+        String actualHash = Util.getHash(input, "SHA-256", "UTF-8");
+        Assertions.assertEquals(expectedHash, actualHash);
+    }
+
+    @Test
+    void testEmptyStringHash() throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        String input = "";
+        String expectedHash = "d41d8cd98f00b204e9800998ecf8427e"; // MD5("")
+        String actualHash = Util.getHash(input, "MD5", "UTF-8");
+        Assertions.assertEquals(expectedHash, actualHash);
+    }
+
+    @Test
+    void testInvalidAlgorithm() {
+        Assertions.assertThrows(NoSuchAlgorithmException.class, () ->
+                Util.getHash("test", "INVALID_HASH", "UTF-8"));
+    }
+
+    @Test
+    void testUnsupportedEncoding() {
+        Assertions.assertThrows(UnsupportedEncodingException.class, () ->
+                Util.getHash("test", "MD5", "INVALID_ENCODING"));
+    }
+
 }

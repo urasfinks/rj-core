@@ -34,6 +34,7 @@ public class RateLimitTps extends AbstractManagerElement {
         );
     }
 
+    @SuppressWarnings("unused")
     public int getCurrentValue() {
         return tps.get();
     }
