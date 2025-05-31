@@ -20,6 +20,7 @@ import ru.jamsys.core.extension.functional.PromiseTaskWithResourceConsumerThrowi
 import ru.jamsys.core.extension.log.LogType;
 import ru.jamsys.core.extension.trace.Trace;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.resource.PoolResourceForPromiseTaskWaitResource;
 
 import java.util.Collection;
@@ -415,18 +416,17 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
 
     // Синхронное ожидание выполнения Promise
     public Promise await(long timeoutMs) {
-        Util.await(getRun(), timeoutMs, "await(" + timeoutMs + ") -> Promise not terminated");
+        await(timeoutMs, 0);
         return this;
     }
 
-    @SuppressWarnings("unused")
-    // Синхронное ожидание выполнения Promise
     public Promise await(long timeoutMs, int sleepIterationMs) {
         Util.await(
-                getRun(),
                 timeoutMs,
                 sleepIterationMs,
-                "await(" + timeoutMs + ", " + sleepIterationMs + ") -> Promise not terminated"
+                () -> !getRun().get(),
+                null,
+                () -> UtilLog.printError("await(" + timeoutMs + ") -> Promise " + ns + " not terminated")
         );
         return this;
     }

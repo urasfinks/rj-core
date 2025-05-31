@@ -60,11 +60,15 @@ public class App implements CascadeKey {
             shutdownThread.setDaemon(true);
             shutdownThread.start();
 
-            if (Util.await(run, 5000, 0, () -> UtilLog.printError(
-                    "App stop with error timeout shutdown; last running: " + Core.lastOperation
-            ))) {
-                UtilLog.printInfo("App stop. I wish you good luck, see you soon!");
-            }
+            Util.await(
+                    5000,
+                    0,
+                    () -> !run.get(),
+                    aLong -> UtilLog.printInfo("App stop. I wish you good luck, see you soon! Time stop: " + aLong),
+                    () -> UtilLog.printError(
+                            "App stop with error timeout shutdown; last running: " + Core.lastOperation
+                    )
+            );
         });
         run(args);
     }

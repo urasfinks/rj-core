@@ -128,16 +128,28 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
     public void shutdownOperation() {
         spin.set(false); //Говорим закончить
         LockSupport.unpark(thread);
-        Util.await(threadWork, 1500, 100, () -> {
-            UtilLog.printError("Поток не закончил работу после spin.set(false) -> interrupt() " + thread.getName());
-            for (StackTraceElement element : thread.getStackTrace()) {
-                System.err.println("\tat " + element);
-            }
-            thread.interrupt();
-        });
-        Util.await(threadWork, 1500, 100, () -> UtilLog.printError(
-                "Поток не закончил работу после interrupt() " + thread.getName()
-        ));
+        Util.await(
+                1500,
+                100,
+                () -> !threadWork.get(),
+                null,
+                () -> {
+                    UtilLog.printError("Поток не закончил работу после spin.set(false) -> interrupt() " + thread.getName());
+                    for (StackTraceElement element : thread.getStackTrace()) {
+                        System.err.println("\tat " + element);
+                    }
+                    thread.interrupt();
+                }
+        );
+
+        Util.await(
+                1500,
+                100,
+                () -> !threadWork.get(),
+                null,
+                () -> UtilLog.printError("Поток не закончил работу после interrupt() " + thread.getName())
+        );
+
         // Так как мы не можем больше повлиять на остановку
         // В java 22 больше нет функционала принудительной остановки thread.stop()
         // Таску мы не будем удалять из тайминга - пусть растёт время, а то слишком круто будет новым житься

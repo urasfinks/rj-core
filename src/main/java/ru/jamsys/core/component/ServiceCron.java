@@ -116,10 +116,16 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
     @Override
     public void shutdownOperation() {
         spin.set(false);
-        Util.await(threadWork, 1500, 100, () -> {
-            thread.interrupt();
-            UtilLog.printError("interrupt");
-        });
+        Util.await(
+                1500,
+                100,
+                () -> !threadWork.get(),
+                null,
+                () -> {
+                    thread.interrupt();
+                    UtilLog.printError("interrupt");
+                }
+        );
     }
 
     @Override

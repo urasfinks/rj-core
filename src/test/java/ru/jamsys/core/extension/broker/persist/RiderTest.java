@@ -72,8 +72,11 @@ class RiderTest {
                 java.util.UUID.randomUUID().toString(),
                 "LogManager/test.bin",
                 managerElement -> {
-                    managerElement.setupRepositoryProperty(brokerPersistRepositoryProperty);
-                    managerElement.setupFileXFinishState(true);
+                    managerElement.setup(
+                            brokerPersistRepositoryProperty,
+                            null,
+                            true
+                    );
                 }
         );
 

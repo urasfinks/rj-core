@@ -13,7 +13,6 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -175,59 +174,11 @@ public class Util {
         return ConcurrentHashMap.newKeySet();
     }
 
-    // TODO: отказаться от обилия await, оставить только 1
-    public static boolean await(AtomicBoolean run, long timeoutMs, String exceptionMessage) {
-        return await(run, timeoutMs, 0, () -> {
-            if (exceptionMessage != null) {
-                UtilLog.printError(exceptionMessage);
-            }
-        });
-    }
-
-    public static boolean await(AtomicBoolean run, long timeoutMs, int sleepIterationMs, String exceptionMessage) {
-        return await(run, timeoutMs, sleepIterationMs, () -> {
-            if (exceptionMessage != null) {
-                UtilLog.printError(exceptionMessage);
-            }
-        });
-    }
-
-    @SuppressWarnings("all")
-    public static boolean await(AtomicBoolean run, long timeoutMs, int sleepIterationMs, ProcedureThrowing procedure) {
-        long start = System.currentTimeMillis();
-        long expiredTime = start + timeoutMs;
-        if (sleepIterationMs > 0) {
-            while (run.get() && expiredTime >= System.currentTimeMillis()) {
-                try {
-                    Thread.sleep(sleepIterationMs);
-                } catch (InterruptedException ie) {
-                    break;
-                }
-            }
-        } else {
-            while (run.get() && expiredTime >= System.currentTimeMillis()) {
-                Thread.onSpinWait();
-            }
-        }
-        if (run.get()) {
-            if (procedure != null) {
-                try {
-                    procedure.run();
-                } catch (Throwable e) {
-                    App.error(e);
-                }
-            }
-            return false;
-        } else {
-            return true;
-        }
-    }
-
     @SuppressWarnings("all")
     public static void await(
             long timeoutMs,
             int sleepIterationMs,
-            BooleanSupplier predicate,
+            BooleanSupplier isFinishPredicate,
             Consumer<Long> onSuccess,
             ProcedureThrowing onError
     ) {
@@ -235,8 +186,10 @@ public class Util {
         long expiredTime = start + timeoutMs;
         if (sleepIterationMs > 0) {
             while (expiredTime >= System.currentTimeMillis()) {
-                if (predicate.getAsBoolean()) {
-                    onSuccess.accept(System.currentTimeMillis() - start);
+                if (isFinishPredicate.getAsBoolean()) {
+                    if (onSuccess != null) {
+                        onSuccess.accept(System.currentTimeMillis() - start);
+                    }
                     return;
                 }
                 try {
@@ -247,15 +200,19 @@ public class Util {
             }
         } else {
             while (expiredTime >= System.currentTimeMillis()) {
-                if (predicate.getAsBoolean()) {
-                    onSuccess.accept(System.currentTimeMillis() - start);
+                if (isFinishPredicate.getAsBoolean()) {
+                    if (onSuccess != null) {
+                        onSuccess.accept(System.currentTimeMillis() - start);
+                    }
                     return;
                 }
                 Thread.onSpinWait();
             }
         }
         try {
-            onError.run();
+            if (onError != null) {
+                onError.run();
+            }
         } catch (Throwable th) {
             App.error(th);
         }

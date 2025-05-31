@@ -278,13 +278,6 @@ class UtilTest {
     }
 
     @Test
-    public void testAwaitFlagTimeoutFalse() {
-        AtomicBoolean flag = new AtomicBoolean(true);
-        boolean result = Util.await(flag, 50, "Timeout occurred");
-        Assertions.assertFalse(result);
-    }
-
-    @Test
     public void testAwaitFlagSetToFalse() {
         AtomicBoolean flag = new AtomicBoolean(true);
         new Thread(() -> {
@@ -294,8 +287,13 @@ class UtilTest {
             }
             flag.set(false);
         }).start();
-        boolean result = Util.await(flag, 100, "Should succeed");
-        Assertions.assertTrue(result);
+        Util.await(
+                100,
+                0,
+                () -> !flag.get(),
+                null,
+                Assertions::fail
+        );
     }
 
     @Test
