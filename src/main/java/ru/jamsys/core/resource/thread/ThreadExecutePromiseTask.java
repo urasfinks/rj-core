@@ -1,8 +1,10 @@
 package ru.jamsys.core.resource.thread;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.log.DataHeader;
@@ -44,6 +46,15 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
         this.pool = pool;
         this.rateLimitConfiguration = rateLimitConfiguration;
         this.indexThread = indexThread;
+    }
+
+    @JsonValue
+    public Object getValue() {
+        return new HashMapBuilder<String, Object>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                .append("ns", ns)
+                ;
     }
 
     @Override

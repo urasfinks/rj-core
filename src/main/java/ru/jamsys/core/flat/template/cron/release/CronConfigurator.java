@@ -9,6 +9,8 @@ public interface CronConfigurator {
     String getCronTemplate();
 
     default boolean isTimeHasCome(Cron.CompileResult compileResult) {
+        // Пример, если надо пропустить первый запуск при старте
+        // return compileResult.getBeforeTimestamp() != 0;
         return true;
     }
 

@@ -6,7 +6,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// TODO: юниты дописать
 public class UtilText {
 
     public static String padRight(String data, int n) {

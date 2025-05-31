@@ -152,17 +152,20 @@ class PromiseImplTest {
         Promise promise = servicePromise.get("seq", 6_000L);
         AtomicInteger c = new AtomicInteger(0);
         promise.then("then1", (_, _, _) -> c.incrementAndGet());
+        Assertions.assertEquals(1, promise.getQueueTask().getMainQueue().size());
 
         ManagerConfiguration<RateLimitTps> rateLimitItemConfiguration = promise
                 .getQueueTask()
                 .get("seq.then1")
                 .getComputeThreadConfiguration().get()
                 .getRateLimitConfiguration();
+
         Assertions.assertEquals(999999, rateLimitItemConfiguration.get().getMax());
         rateLimitItemConfiguration.get().setMax(1);
         Assertions.assertEquals(1, rateLimitItemConfiguration.get().getMax());
 
         promise.then("then1", (_, _, _) -> c.incrementAndGet());
+        Assertions.assertEquals(3, promise.getQueueTask().getMainQueue().size());
 
         promise.run().await(1000);
         // Для IO потоков нет ограничений по tps, поэтому там будет expected = 2 это нормально!

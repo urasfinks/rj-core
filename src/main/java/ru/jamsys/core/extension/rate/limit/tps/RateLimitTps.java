@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-//@FieldNameConstants
 public class RateLimitTps extends AbstractManagerElement {
 
     private final AtomicInteger tps = new AtomicInteger(0);
@@ -33,6 +32,10 @@ public class RateLimitTps extends AbstractManagerElement {
                 property,
                 getCascadeKey(ns)
         );
+    }
+
+    public int getCurrentValue() {
+        return tps.get();
     }
 
     @JsonValue

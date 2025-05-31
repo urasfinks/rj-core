@@ -9,67 +9,18 @@ import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotationField;
-import ru.jamsys.core.flat.UtilCodeStyle;
 import ru.jamsys.core.flat.util.*;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // IO time: 13ms
 // COMPUTE time: 10ms
 
 class UtilTest {
-
-    @Test
-    void snakeToCamel() {
-        Assertions.assertEquals("HelloWorld", UtilCodeStyle.snakeToCamel("HELLO_WORLD"));
-        Assertions.assertEquals("HelloWorld1", UtilCodeStyle.snakeToCamel("HELLO_WORLD1"));
-        Assertions.assertEquals("HelloWorld1", UtilCodeStyle.snakeToCamel("HELLO_WORLD_1"));
-        Assertions.assertEquals("HelloWorld1_", UtilCodeStyle.snakeToCamel("HELLO_WORLD_1_"));
-        Assertions.assertEquals("_HelloWorld1_", UtilCodeStyle.snakeToCamel("_HELLO_WORLD_1_"));
-        Assertions.assertEquals("Helloworld", UtilCodeStyle.snakeToCamel("HELLOWORLD"));
-        Assertions.assertEquals("DataType", UtilCodeStyle.snakeToCamel("dataType"));
-        Assertions.assertEquals("DataType", UtilCodeStyle.snakeToCamel("DataType"));
-        Assertions.assertEquals("DataType", UtilCodeStyle.snakeToCamel("data_Type"));
-        Assertions.assertEquals("DataType", UtilCodeStyle.snakeToCamel("data_type"));
-    }
-
-    @Test
-    void camelToSnake() {
-        Assertions.assertEquals("HELLO_WORLD", UtilCodeStyle.camelToSnake("HelloWorld"));
-        Assertions.assertEquals("_HELLOWORLD", UtilCodeStyle.camelToSnake("_HelloWorld"));
-        Assertions.assertEquals("HELLO_WORLD1", UtilCodeStyle.camelToSnake("HelloWorld1"));
-        Assertions.assertEquals("HELLOWORLD", UtilCodeStyle.camelToSnake("Helloworld"));
-        Assertions.assertEquals("HELLO_WORLD", UtilCodeStyle.camelToSnake("Hello_world"));
-    }
-
-    @Test
-    void firstCharToUpperCase() {
-        Assertions.assertEquals("HelloWorld", UtilText.firstCharToUpperCase("HelloWorld"));
-        Assertions.assertEquals("HelloWorld", UtilText.firstCharToUpperCase("helloWorld"));
-        Assertions.assertEquals("", UtilText.firstCharToUpperCase(""));
-        Assertions.assertEquals("U", UtilText.firstCharToUpperCase("u"));
-        Assertions.assertEquals("Ur", UtilText.firstCharToUpperCase("ur"));
-        Assertions.assertEquals("U", UtilText.firstCharToUpperCase("U"));
-        Assertions.assertEquals("UR", UtilText.firstCharToUpperCase("UR"));
-        Assertions.assertEquals("URa", UtilText.firstCharToUpperCase("URa"));
-        Assertions.assertNull(UtilText.firstCharToUpperCase(null));
-    }
-
-    @Test
-    void firstCharToLowerCase() {
-        Assertions.assertEquals("helloWorld", UtilText.firstCharToLowerCase("HelloWorld"));
-        Assertions.assertEquals("helloWorld", UtilText.firstCharToLowerCase("helloWorld"));
-        Assertions.assertEquals("", UtilText.firstCharToLowerCase(""));
-        Assertions.assertEquals("u", UtilText.firstCharToLowerCase("U"));
-        Assertions.assertEquals("ur", UtilText.firstCharToLowerCase("Ur"));
-        Assertions.assertEquals("u", UtilText.firstCharToLowerCase("u"));
-        Assertions.assertEquals("ur", UtilText.firstCharToLowerCase("ur"));
-        Assertions.assertEquals("urA", UtilText.firstCharToLowerCase("urA"));
-        Assertions.assertNull(UtilText.firstCharToLowerCase(null));
-    }
 
     @Test
     void testRiscCollection() {
@@ -196,42 +147,9 @@ class UtilTest {
     }
 
     @Test
-    void readUntil() {
-        Assertions.assertEquals("00", UtilText.readUntil("00p", Util::isNumeric));
-    }
-
-    @Test
     void hashMd5() throws UnsupportedEncodingException, NoSuchAlgorithmException {
         Assertions.assertEquals("3e25960a79dbc69b674cd4ec67a72c62", Util.getHash("Hello world", "md5"));
         Assertions.assertEquals("2bf4d19c4f4cda4262b00c773779fced", Util.getHash("Привет страна", "md5"));
-    }
-
-    @Test
-    void digitTranslate() {
-        Assertions.assertEquals("коров", UtilText.digitTranslate(5, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(25, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(35, "корова", "коровы", "коров"));
-
-        Assertions.assertEquals("корова", UtilText.digitTranslate(1, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коровы", UtilText.digitTranslate(2, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коровы", UtilText.digitTranslate(3, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коровы", UtilText.digitTranslate(4, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(6, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(7, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(8, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(9, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(10, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(11, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(12, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(13, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(14, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(15, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(16, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(17, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(18, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(19, "корова", "коровы", "коров"));
-        Assertions.assertEquals("коров", UtilText.digitTranslate(20, "корова", "коровы", "коров"));
-        Assertions.assertEquals("корова", UtilText.digitTranslate(21, "корова", "коровы", "коров"));
     }
 
     @Getter
@@ -279,10 +197,212 @@ class UtilTest {
     }
 
     @Test
-    void testResetLastNDigits(){
+    void testResetLastNDigits2() {
         long l = System.currentTimeMillis();       // 1746263615151
         long sec = Util.resetLastNDigits(l, 3);  // 1746263615000
         Assertions.assertTrue(l - sec < 1000);
+    }
+
+    @Test
+    public void testGenUserFormat() {
+        String user = Util.genUser();
+        Assertions.assertTrue(user.matches("u\\d{5}"));
+    }
+
+    @Test
+    public void testGenPasswordFormat() {
+        String pass = Util.genPassword();
+        Assertions.assertTrue(pass.startsWith("p"));
+        Assertions.assertTrue(pass.length() >= 9);
+    }
+
+    @Test
+    public void testHashConsistency() throws Exception {
+        String data = "test123";
+        String hash1 = Util.getHash(data, "MD5");
+        String hash2 = Util.getHash(data, "MD5");
+        Assertions.assertEquals(hash1, hash2);
+    }
+
+    @Test
+    public void testIsNumeric() {
+        Assertions.assertTrue(Util.isNumeric("123.45"));
+        Assertions.assertFalse(Util.isNumeric("abc"));
+    }
+
+    @Test
+    public void testIsInt() {
+        Assertions.assertTrue(Util.isInt("42"));
+        Assertions.assertFalse(Util.isInt("42.1"));
+        Assertions.assertFalse(Util.isInt("abc"));
+    }
+
+    @Test
+    public void testRandomWithinRange() {
+        for (int i = 0; i < 100; i++) {
+            int val = Util.random(10, 20);
+            Assertions.assertTrue(val >= 10 && val <= 20);
+        }
+    }
+
+    @Test
+    public void testResetLastNDigits() {
+        Assertions.assertEquals(12000, Util.resetLastNDigits(12345, 3));
+        Assertions.assertEquals(0, Util.resetLastNDigits(999, 3));
+    }
+
+    @Test
+    public void testStringToIntConsistency() {
+        int val1 = Util.stringToInt("test", 0, 100);
+        int val2 = Util.stringToInt("test", 0, 100);
+        Assertions.assertEquals(val1, val2);
+    }
+
+    @Test
+    public void testOverflow() {
+        Map<String, Object> base = new HashMap<>();
+        base.put("a", 1);
+        Map<String, Object> update = new HashMap<>();
+        update.put("a", 2);
+        update.put("b", 3);
+        Util.overflow(base, update);
+        Assertions.assertEquals(2, base.get("a"));
+        Assertions.assertEquals(3, base.get("b"));
+    }
+
+    @Test
+    public void testGetConcurrentHashSet() {
+        Set<String> set = Util.getConcurrentHashSet();
+        Assertions.assertNotNull(set);
+        Assertions.assertTrue(set.add("value"));
+    }
+
+    @Test
+    public void testAwaitFlagTimeoutFalse() {
+        AtomicBoolean flag = new AtomicBoolean(true);
+        boolean result = Util.await(flag, 50, "Timeout occurred");
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    public void testAwaitFlagSetToFalse() throws InterruptedException {
+        AtomicBoolean flag = new AtomicBoolean(true);
+        new Thread(() -> {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ignored) {
+            }
+            flag.set(false);
+        }).start();
+        boolean result = Util.await(flag, 100, "Should succeed");
+        Assertions.assertTrue(result);
+    }
+
+    @Test
+    void testNullInputReturnsMin() {
+        int result = Util.stringToInt(null, 10, 20);
+        Assertions.assertEquals(10, result);
+    }
+
+    @Test
+    void testEmptyStringIsInRange() {
+        int result = Util.stringToInt("", 0, 5);
+        Assertions.assertTrue(result >= 0 && result <= 5);
+    }
+
+    @Test
+    void testConsistentHashing() {
+        int a = Util.stringToInt("hello", 100, 200);
+        int b = Util.stringToInt("hello", 100, 200);
+        Assertions.assertEquals(a, b);
+    }
+
+    @Test
+    void testDifferentInputsProduceDifferentResults() {
+        int a = Util.stringToInt("foo", 0, 1000);
+        int b = Util.stringToInt("bar", 0, 1000);
+        Assertions.assertNotEquals(a, b); // допускается коллизия, но маловероятна
+    }
+
+    @Test
+    void testOutputAlwaysInRange() {
+        for (int i = 0; i < 100; i++) {
+            String input = "test" + i;
+            int result = Util.stringToInt(input, 10, 50);
+            Assertions.assertTrue(result >= 10 && result <= 50, "Result out of range: " + result);
+        }
+    }
+
+    @Test
+    void testMinEqualsMaxAlwaysReturnsMin() {
+        int result = Util.stringToInt("any", 7, 7);
+        Assertions.assertEquals(7, result);
+    }
+
+    @Test
+    void testMinGreaterThanMaxReturnsMin() {
+        int result = Util.stringToInt("value", 20, 10);
+        Assertions.assertEquals(20, result);
+    }
+
+    @Test
+    void testSpreadDistribution() {
+        int min = 0, max = 10;
+        Set<Integer> seen = new HashSet<>();
+        for (int i = 0; i < 100; i++) {
+            int value = Util.stringToInt("key" + i, min, max);
+            seen.add(value);
+        }
+        // хотя бы 8 разных значений из 11 возможных — приемлемо
+        Assertions.assertTrue(seen.size() >= 8, "Distribution not varied enough: " + seen);
+    }
+
+    @Test
+    public void testCartesianTwoLists() {
+        List<Integer> list1 = Arrays.asList(1, 2);
+        List<String> list2 = Arrays.asList("a", "b");
+
+        Collection<List<?>> result = Util.cartesian(ArrayList::new, list1, list2);
+
+        Set<String> expected = Set.of(
+                "[1, a]",
+                "[1, b]",
+                "[2, a]",
+                "[2, b]"
+        );
+
+        Set<String> actual = new HashSet<>();
+        for (List<?> combo : result) {
+            actual.add(combo.toString());
+        }
+
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testCartesianSingleList() {
+        List<Integer> list = Arrays.asList(10, 20, 30);
+        Collection<List<?>> result = Util.cartesian(ArrayList::new, list);
+
+        Assertions.assertEquals(3, result.size());
+        for (List<?> combo : result) {
+            Assertions.assertEquals(1, combo.size());
+            Assertions.assertTrue(list.contains(combo.get(0)));
+        }
+    }
+
+    @Test
+    public void testCartesianEmptyInput() {
+        Collection<List<?>> result = Util.cartesian(ArrayList::new);
+        Assertions.assertNotNull(result);
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void testCartesianNullSupplier() {
+        List<Integer> list1 = Arrays.asList(1, 2);
+        Collection<List<?>> result = Util.cartesian(null, list1);
+        Assertions.assertNull(result);
     }
 
 }

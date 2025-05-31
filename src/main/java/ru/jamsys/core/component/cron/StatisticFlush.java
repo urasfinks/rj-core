@@ -9,6 +9,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -37,6 +38,13 @@ public class StatisticFlush implements Cron1s, PromiseGenerator, CascadeKey {
         this.servicePromise = servicePromise;
         serviceClassFinder.findByInstance(StatisticsFlushComponent.class).forEach(statisticsCollectorClass
                 -> list.add(App.get(statisticsCollectorClass)));
+    }
+
+    @Override
+    public boolean isTimeHasCome(Cron.CompileResult compileResult) {
+        // Запускать будем спустя секунду, а не прямо в момент старта
+        // Это влияет на тесты
+        return compileResult.getBeforeTimestamp() != 0;
     }
 
     @Override
