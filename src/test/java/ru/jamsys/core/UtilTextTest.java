@@ -115,6 +115,7 @@ class UtilTextTest {
         Assertions.assertEquals("", UtilText.trimRight("****", "*"));
     }
 
+    @SuppressWarnings("all")
     @Test
     void testCapitalize() {
         Assertions.assertEquals("Abc", UtilText.capitalize("abc"));
