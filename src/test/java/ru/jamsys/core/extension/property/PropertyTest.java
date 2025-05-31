@@ -11,4 +11,10 @@ class PropertyTest {
         UtilLog.printInfo(keyStructure);
     }
 
+    @Test
+    void getKeyStructure2() {
+        KeyStructure keyStructure = PropertyUtil.getKeyStructure("App.BrokerMemory[App.ThreadPoolExecutePromiseTask[PropertyWeb.input]].size");
+        UtilLog.printInfo(keyStructure);
+    }
+
 }

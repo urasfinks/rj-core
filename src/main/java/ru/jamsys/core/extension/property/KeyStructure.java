@@ -22,6 +22,9 @@ public class KeyStructure {
     }
 
     public static List<String> explodeType(String value) {
+        if (value.startsWith(".")) {
+            value = value.substring(1);
+        }
         List<String> result = new ArrayList<>();
         if (value.contains("<") && value.contains(">")) {
             String[] split = value.split("<");
