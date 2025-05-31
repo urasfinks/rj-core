@@ -197,6 +197,7 @@ public class BrokerMemory<T>
     }
 
     // Получить процент заполненности очереди
+    @SuppressWarnings("unused")
     public int getOccupancyPercentage() {
         //  MAX - 100
         //  500 - x

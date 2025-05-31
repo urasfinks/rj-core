@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class HttpResource extends AbstractExpirationResource {
 
+    @SuppressWarnings("all")
     private final String ns;
 
     public HttpResource(String ns) {

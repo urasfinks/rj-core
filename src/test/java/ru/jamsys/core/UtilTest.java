@@ -285,7 +285,7 @@ class UtilTest {
     }
 
     @Test
-    public void testAwaitFlagSetToFalse() throws InterruptedException {
+    public void testAwaitFlagSetToFalse() {
         AtomicBoolean flag = new AtomicBoolean(true);
         new Thread(() -> {
             try {
@@ -379,6 +379,7 @@ class UtilTest {
         Assertions.assertEquals(expected, actual);
     }
 
+    @SuppressWarnings("all")
     @Test
     public void testCartesianSingleList() {
         List<Integer> list = Arrays.asList(10, 20, 30);
@@ -387,7 +388,7 @@ class UtilTest {
         Assertions.assertEquals(3, result.size());
         for (List<?> combo : result) {
             Assertions.assertEquals(1, combo.size());
-            Assertions.assertTrue(list.contains(combo.get(0)));
+            Assertions.assertTrue(list.contains(combo.getFirst()));
         }
     }
 
@@ -398,6 +399,7 @@ class UtilTest {
         Assertions.assertTrue(result.isEmpty());
     }
 
+    @SuppressWarnings("all")
     @Test
     public void testCartesianNullSupplier() {
         List<Integer> list1 = Arrays.asList(1, 2);
