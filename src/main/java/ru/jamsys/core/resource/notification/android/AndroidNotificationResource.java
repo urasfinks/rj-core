@@ -1,7 +1,6 @@
 package ru.jamsys.core.resource.notification.android;
 
 import com.google.auth.oauth2.GoogleCredentials;
-import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;

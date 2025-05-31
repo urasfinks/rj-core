@@ -27,7 +27,7 @@ public class InfluxResource extends AbstractExpirationResource implements Proper
 
     private WriteApiBlocking writer;
 
-    private PropertyDispatcher<String> propertyDispatcher;
+    private final PropertyDispatcher<String> propertyDispatcher;
 
     private final InfluxRepositoryProperty influxRepositoryProperty = new InfluxRepositoryProperty();
 

@@ -17,7 +17,7 @@ public abstract class AbstractPoolPrivate extends AbstractPool<ThreadExecuteProm
     public void serviceBell() {
         ThreadExecutePromiseTask resource = acquire();
         if (resource != null) {
-            resource.execute(null);
+            resource.execute();
         }
     }
 

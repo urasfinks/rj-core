@@ -133,7 +133,7 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
         // pool.remove(this); - автоматическое выбрасывание из пула протухших элементов
     }
 
-    public Void execute(Void arguments) {
+    public Void execute() {
         // Мы не можем в этом блоке делать никакие проверки, так как execute был вызван, когда ресурс был изъят из пула
         // Нам тут надо либо извращаться с возращением в пул, либо пустить всё своим ходом. То есть никаких проверок
         // тут делать нельзя на подобии: pool.isEmpty() или !threadWork.get()

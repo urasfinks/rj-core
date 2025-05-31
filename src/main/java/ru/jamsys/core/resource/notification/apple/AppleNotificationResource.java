@@ -1,6 +1,5 @@
 package ru.jamsys.core.resource.notification.apple;
 
-import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.log.DataHeader;
