@@ -46,7 +46,6 @@ class LogBrokerPersistTest {
         );
         BrokerPersist<Log> test = brokerPersistManagerConfiguration.get();
 
-        // TODO: с = 1 зависает процесс
         int c = 1_000_000;
         AtomicInteger write = new AtomicInteger(0);
         long s1 = System.currentTimeMillis();
