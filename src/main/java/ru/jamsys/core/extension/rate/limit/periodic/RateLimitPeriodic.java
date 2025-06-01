@@ -3,8 +3,6 @@ package ru.jamsys.core.extension.rate.limit.periodic;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
-import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.log.DataHeader;
@@ -36,6 +34,7 @@ public class RateLimitPeriodic extends AbstractManagerElement implements Propert
 
     private final RateLimitPeriodicRepositoryProperty property = new RateLimitPeriodicRepositoryProperty();
 
+    @Getter
     private final PropertyDispatcher<Object> propertyDispatcher;
 
     public RateLimitPeriodic(String ns) {
@@ -124,10 +123,7 @@ public class RateLimitPeriodic extends AbstractManagerElement implements Propert
     }
 
     public void setMax(int value) {
-        //+.max потому что поле в репозитории называется max
-        App.get(ServiceProperty.class)
-                .computeIfAbsent(getPropertyKey() + ".max", null)
-                .set(value);
+        propertyDispatcher.set(RateLimitPeriodicRepositoryProperty.Fields.max, value);
     }
 
 }

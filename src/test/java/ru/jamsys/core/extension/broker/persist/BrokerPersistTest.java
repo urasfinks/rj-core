@@ -73,7 +73,7 @@ class BrokerPersistTest {
     @SuppressWarnings("all")
     @Test
     public void test1() throws Throwable {
-        App.get(ServiceProperty.class).set("App.BrokerPersist.test1.directory", "LogManager");
+        App.get(ServiceProperty.class).set("$.BrokerPersist.test1.directory", "LogManager");
         ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerPersist.class,
                 java.util.UUID.randomUUID().toString(),
@@ -166,8 +166,8 @@ class BrokerPersistTest {
     @Test
     void test2() throws Throwable {
         UtilFile.removeAllFilesInFolder("LogManager");
-        App.get(ServiceProperty.class).set("App.BrokerPersist.test2.directory", "LogManager");
-        App.get(ServiceProperty.class).set("App.AsyncFileWriterWal[App.BrokerPersist.test2::LogManager/test2.afwr].flush.max.time.ms", "99999999");
+        App.get(ServiceProperty.class).set("$.BrokerPersist.test2.directory", "LogManager");
+        App.get(ServiceProperty.class).set("$.AsyncFileWriterWal[$.BrokerPersist.test2::LogManager/test2.afwr].flush.max.time.ms", "99999999");
 
         // 2 записи; 0 коммитов
         UtilFile.writeBytes("LogManager/test1.afwr", ((Supplier<byte[]>) () -> {

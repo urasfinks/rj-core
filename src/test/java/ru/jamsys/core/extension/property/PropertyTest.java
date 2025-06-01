@@ -7,13 +7,13 @@ class PropertyTest {
 
     @Test
     void getKeyStructure() {
-        KeyStructure keyStructure = PropertyUtil.getKeyStructure("App.ManagerFileByteWriter.StatisticSec<StatisticSec><X>.file.name<Log>");
+        KeyStructure keyStructure = PropertyUtil.getKeyStructure("$.ManagerFileByteWriter.StatisticSec<StatisticSec><X>.file.name<Log>");
         UtilLog.printInfo(keyStructure);
     }
 
     @Test
     void getKeyStructure2() {
-        KeyStructure keyStructure = PropertyUtil.getKeyStructure("App.BrokerMemory[App.ThreadPoolExecutePromiseTask[PropertyWeb.input]].size");
+        KeyStructure keyStructure = PropertyUtil.getKeyStructure("$.BrokerMemory[$.ThreadPoolExecutePromiseTask[PropertyWeb.input]].size");
         UtilLog.printInfo(keyStructure);
     }
 

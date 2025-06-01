@@ -21,6 +21,7 @@ public class RateLimitTps extends AbstractManagerElement {
 
     private final RateLimitTpsRepositoryProperty property = new RateLimitTpsRepositoryProperty();
 
+    @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
     public RateLimitTps(String ns) {

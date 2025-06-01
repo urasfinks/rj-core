@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.rate.limit.periodic.RateLimitPeriodic;
+import ru.jamsys.core.extension.rate.limit.periodic.RateLimitPeriodicRepositoryProperty;
 import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
 import ru.jamsys.core.flat.util.UtilDate;
 
@@ -39,14 +40,15 @@ class RateLimitTest {
         long curTime = 1709734264056L; //2024-03-06T17:11:04.056
         long aLong = 60_000L;
 
-        App.get(ServiceProperty.class).set("App.RateLimitPeriodic.min.period", "MINUTE");
-        App.get(ServiceProperty.class).set("App.RateLimitPeriodic.hour.period", "HOUR_OF_DAY");
-        App.get(ServiceProperty.class).set("App.RateLimitPeriodic.hour.period", "HOUR_OF_DAY");
-        App.get(ServiceProperty.class).set("App.RateLimitPeriodic.day.period", "DAY_OF_WEEK");
-        App.get(ServiceProperty.class).set("App.RateLimitPeriodic.month.period", "MONTH");
+        App.get(ServiceProperty.class).set("$.RateLimitPeriodic.min.period", "MINUTE");
+        App.get(ServiceProperty.class).set("$.RateLimitPeriodic.hour.period", "HOUR_OF_DAY");
+        App.get(ServiceProperty.class).set("$.RateLimitPeriodic.hour.period", "HOUR_OF_DAY");
+        App.get(ServiceProperty.class).set("$.RateLimitPeriodic.day.period", "DAY_OF_WEEK");
+        App.get(ServiceProperty.class).set("$.RateLimitPeriodic.month.period", "MONTH");
 
         ManagerConfiguration<RateLimitPeriodic> minConfigure = ManagerConfiguration.getInstance(RateLimitPeriodic.class, java.util.UUID.randomUUID().toString(), "min", null);
         RateLimitPeriodic rateLimitItemPeriodic = minConfigure.get();
+
 
         rateLimitItemPeriodic.setMax(999999);
         Assertions.assertEquals("{period=Minute, max=999999, tpp=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());

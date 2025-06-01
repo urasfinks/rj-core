@@ -31,7 +31,7 @@ class LogBrokerPersistTest {
 
     @Test
     void linearTest() throws InterruptedException {
-        App.get(ServiceProperty.class).set("App.BrokerPersist.test.directory", "LogManager");
+        App.get(ServiceProperty.class).set("$.BrokerPersist.test.directory", "LogManager");
         ManagerConfiguration<BrokerPersist<Log>> brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerPersist.class,
                 java.util.UUID.randomUUID().toString(),

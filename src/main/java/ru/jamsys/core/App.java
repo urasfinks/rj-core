@@ -156,7 +156,7 @@ public class App implements CascadeKey {
 
     @Override
     public String getCascadeKey() {
-        return App.class.getSimpleName();
+        return "$";
     }
 
 }

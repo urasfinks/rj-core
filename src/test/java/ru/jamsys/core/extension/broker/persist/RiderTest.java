@@ -18,7 +18,7 @@ class RiderTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runSpring();
-        App.get(ServiceProperty.class).set("App.BrokerPersist.test.directory", "LogManager");
+        App.get(ServiceProperty.class).set("$.BrokerPersist.test.directory", "LogManager");
     }
 
     @BeforeEach
@@ -39,7 +39,7 @@ class RiderTest {
         PropertyDispatcher<Object> test = new PropertyDispatcher<>(
                 null,
                 brokerPersistRepositoryProperty,
-                "App.BrokerPersist.test"
+                "$.BrokerPersist.test"
         );
         test.run();
 
