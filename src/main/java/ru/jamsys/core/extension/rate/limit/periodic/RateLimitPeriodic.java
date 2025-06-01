@@ -68,10 +68,6 @@ public class RateLimitPeriodic extends AbstractManagerElement implements Propert
         return property.getMax();
     }
 
-    public String getPropertyKey() {
-        return getCascadeKey(ns);
-    }
-
     @Override
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         long curTime = System.currentTimeMillis();
