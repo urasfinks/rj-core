@@ -6,7 +6,6 @@ import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
 import ru.jamsys.core.flat.util.UtilText;
-import ru.jamsys.core.handler.web.http.plugin.PropertyWeb;
 
 import java.util.ArrayList;
 import java.util.List;
