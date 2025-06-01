@@ -239,22 +239,17 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
         return keyStore != null;
     }
 
-    public char[] get(String alias) {
-        try {
-            if (keyStore != null) {
-                KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, keyStorePP);
-                if (ske != null) {
-                    SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
-                    PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(ske.getSecretKey(), PBEKeySpec.class);
-                    return keySpec.getPassword();
-                }
-                return null;
-            } else {
-                throw new RuntimeException("Security компонент не инициализирован");
-            }
-        } catch (Exception e) {
-            throw new ForwardException(e);
+    public char[] get(String alias) throws Exception {
+        if (keyStore == null) {
+            throw new RuntimeException("Security component not initialize");
         }
+        KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, keyStorePP);
+        if (ske == null) {
+            throw new RuntimeException("Alias: " + alias + " does not exist");
+        }
+        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
+        PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(ske.getSecretKey(), PBEKeySpec.class);
+        return keySpec.getPassword();
     }
 
     public void remove(String key, char[] password) throws Exception {

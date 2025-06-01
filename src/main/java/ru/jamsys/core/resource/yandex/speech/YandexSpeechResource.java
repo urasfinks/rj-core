@@ -78,11 +78,16 @@ public class YandexSpeechResource
         if (client != null) {
             client.shutdown();
         }
-        client = new YandexSpeechClient(
-                yandexSpeechRepositoryProperty.getHost(),
-                yandexSpeechRepositoryProperty.getPort(),
-                new String(App.get(SecurityComponent.class).get(yandexSpeechRepositoryProperty.getAlias()))
-        );
+        try {
+            client = new YandexSpeechClient(
+                    yandexSpeechRepositoryProperty.getHost(),
+                    yandexSpeechRepositoryProperty.getPort(),
+                    new String(App.get(SecurityComponent.class).get(yandexSpeechRepositoryProperty.getAlias()))
+            );
+        } catch (Exception e) {
+            App.error(e);
+            throw new ForwardException(e);
+        }
     }
 
     @Override

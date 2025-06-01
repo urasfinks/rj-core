@@ -14,7 +14,7 @@ import ru.jamsys.core.promise.PromiseGenerator;
 
 @SuppressWarnings("unused")
 @Component
-public class Helper3s implements Cron3s, PromiseGenerator {
+public class Helper3s extends PromiseGenerator implements Cron3s {
 
     private final ServicePromise servicePromise;
 

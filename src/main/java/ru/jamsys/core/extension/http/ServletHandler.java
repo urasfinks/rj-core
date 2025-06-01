@@ -14,6 +14,8 @@ import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.UtilJson;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -103,15 +105,10 @@ public class ServletHandler {
         return servletOutputStream;
     }
 
-    @JsonIgnore
-    public Writer getResponseWriter() throws IOException {
-        return response.getWriter();
-    }
-
     public void responseComplete() {
         response.setContentType(responseContentType);
-        try {
-            getResponseOutputStream().write(responseBody.getBytes());
+        try (ServletOutputStream so = getResponseOutputStream()) {
+            so.write(responseBody.getBytes());
         } catch (Throwable th) {
             App.error(new ForwardException(th));
         }
@@ -119,8 +116,7 @@ public class ServletHandler {
     }
 
     public void responseComplete(InputStream inputStream) {
-        try {
-            OutputStream out = getResponseOutputStream();
+        try (OutputStream out = getResponseOutputStream()) {
             byte[] buffer = new byte[4096];
             int length;
             while ((length = inputStream.read(buffer)) > 0) {
@@ -134,21 +130,34 @@ public class ServletHandler {
         completableFuture.complete(null);
     }
 
+    public void responseUnauthorized() {
+        ServletResponseWriter.setResponseUnauthorized(response);
+        completableFuture.complete(null);
+    }
+
     @JsonIgnore
     public CompletableFuture<Void> getServletResponse() {
         return completableFuture;
     }
 
-    public void setResponseError(String cause) {
+    public void responseError(String cause) {
         setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
+        responseComplete();
     }
 
-    public void setResponseError(Object cause) {
-        setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
+    public void response(int httpCode, String body, Charset charset) {
+        setResponseStatus(httpCode);
+        try (OutputStream out = getResponseOutputStream()) {
+            out.write(body.getBytes(charset));
+            out.flush();
+        } catch (Throwable th) {
+            App.error(new ForwardException(th));
+        }
+        completableFuture.complete(null);
     }
 
-    public void setResponseUnauthorized() {
-        ServletResponseWriter.setResponseUnauthorized(response);
+    public void responseError(Object cause) {
+        setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
     }
 
 }

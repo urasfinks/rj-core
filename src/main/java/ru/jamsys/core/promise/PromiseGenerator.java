@@ -1,7 +1,11 @@
 package ru.jamsys.core.promise;
 
-public interface PromiseGenerator {
+import lombok.Getter;
+import ru.jamsys.core.extension.CascadeKey;
 
-    Promise generate();
+@Getter
+public abstract class PromiseGenerator implements CascadeKey {
+
+    public abstract Promise generate();
 
 }

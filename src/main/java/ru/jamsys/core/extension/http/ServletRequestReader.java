@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.ToString;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.jamsys.core.extension.exception.AuthException;
-import ru.jamsys.core.extension.functional.BiConsumerThrowing;
 import ru.jamsys.core.flat.util.Util;
 
 import javax.annotation.Nonnull;
@@ -20,6 +19,7 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -170,13 +170,13 @@ public class ServletRequestReader {
     }
 
     @JsonIgnore
-    public void basicAuthHandler(BiConsumerThrowing<String, String> handler) throws Throwable {
+    public void basicAuthHandler(BiConsumer<String, String> handler) throws AuthException {
         String authorization = request.getHeader("Authorization");
         basicAuthHandler(authorization, handler);
     }
 
     @JsonIgnore
-    public static void basicAuthHandler(String authorization, BiConsumerThrowing<String, String> handler) throws Throwable {
+    public static void basicAuthHandler(String authorization, BiConsumer<String, String> handler) throws AuthException {
         if (authorization == null) {
             throw new AuthException("Authorization header is null");
         }

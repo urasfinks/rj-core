@@ -2,6 +2,9 @@ package ru.jamsys.core.flat.util;
 
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -136,6 +139,35 @@ public class UtilText {
             break;
         }
         return sb.toString();
+    }
+
+    public static List<String> stringToList(String string, String patternDelimiter) {
+        if (string == null || string.isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (patternDelimiter == null || patternDelimiter.isEmpty()) {
+            return List.of(string);
+        }
+
+        List<String> result = new ArrayList<>();
+        int start = 0;
+        int end;
+
+        while ((end = string.indexOf(patternDelimiter, start)) != -1) {
+            String token = string.substring(start, end).trim();
+            if (!token.isEmpty()) {
+                result.add(token);
+            }
+            start = end + patternDelimiter.length();
+        }
+
+        // добавляем остаток строки
+        String lastToken = string.substring(start).trim();
+        if (!lastToken.isEmpty()) {
+            result.add(lastToken);
+        }
+
+        return result;
     }
 
 }

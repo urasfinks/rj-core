@@ -8,6 +8,7 @@ import com.influxdb.client.write.Point;
 import com.influxdb.internal.AbstractRestClient;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
@@ -52,15 +53,20 @@ public class InfluxResource extends AbstractExpirationResource implements Proper
 
     private void up() {
         if (client == null) {
-            SecurityComponent securityComponent = App.get(SecurityComponent.class);
-            client = InfluxDBClientFactory.create(influxRepositoryProperty.getHost(), securityComponent.get(influxRepositoryProperty.getAlias()));
-            client.setLogLevel(LogLevel.NONE);
-            // Как вы поняли - верхняя строчка не работает
-            Logger.getLogger(AbstractRestClient.class.getName()).setLevel(Level.OFF);
-            if (!client.ping()) {
-                throw new RuntimeException("Ping request wasn't successful");
+            try {
+                SecurityComponent securityComponent = App.get(SecurityComponent.class);
+                client = InfluxDBClientFactory.create(influxRepositoryProperty.getHost(), securityComponent.get(influxRepositoryProperty.getAlias()));
+                client.setLogLevel(LogLevel.NONE);
+                // Как вы поняли - верхняя строчка не работает
+                Logger.getLogger(AbstractRestClient.class.getName()).setLevel(Level.OFF);
+                if (!client.ping()) {
+                    throw new RuntimeException("Ping request wasn't successful");
+                }
+                writer = client.getWriteApiBlocking();
+            } catch (Exception e) {
+                App.error(e);
+                throw new ForwardException(e);
             }
-            writer = client.getWriteApiBlocking();
         }
     }
 

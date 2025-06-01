@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilText;
 
+import java.util.List;
 import java.util.function.Function;
 
 // IO time: 13ms
@@ -175,6 +176,78 @@ class UtilTextTest {
         Assertions.assertEquals("123", UtilText.readUntil("123abc", isDigit));
         Assertions.assertEquals("", UtilText.readUntil("abc", isDigit));
         Assertions.assertEquals("1", UtilText.readUntil("1abc2", isDigit));
+    }
+
+    @Test
+    void testNullInput() {
+        List<String> result = UtilText.stringToList(null, ",");
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testEmptyInput() {
+        List<String> result = UtilText.stringToList("", ",");
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testNullDelimiter() {
+        List<String> result = UtilText.stringToList("a,b,c", null);
+        Assertions.assertEquals(List.of("a,b,c"), result);
+    }
+
+    @Test
+    void testEmptyDelimiter() {
+        List<String> result = UtilText.stringToList("a,b,c", "");
+        Assertions.assertEquals(List.of("a,b,c"), result);
+    }
+
+    @Test
+    void testBasicSplit() {
+        List<String> result = UtilText.stringToList("a,b,c", ",");
+        Assertions.assertEquals(List.of("a", "b", "c"), result);
+    }
+
+    @Test
+    void testMultipleCharacterDelimiter() {
+        List<String> result = UtilText.stringToList("a--b--c", "--");
+        Assertions.assertEquals(List.of("a", "b", "c"), result);
+    }
+
+    @Test
+    void testTrailingDelimiter() {
+        List<String> result = UtilText.stringToList("a,b,c,", ",");
+        Assertions.assertEquals(List.of("a", "b", "c"), result);
+    }
+
+    @Test
+    void testLeadingDelimiter() {
+        List<String> result = UtilText.stringToList(",a,b,c", ",");
+        Assertions.assertEquals(List.of("a", "b", "c"), result);
+    }
+
+    @Test
+    void testDelimiterWithSpaces() {
+        List<String> result = UtilText.stringToList(" a , b , c ", ",");
+        Assertions.assertEquals(List.of("a", "b", "c"), result);
+    }
+
+    @Test
+    void testOnlyDelimiters() {
+        List<String> result = UtilText.stringToList(",,,", ",");
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testSingleValueNoDelimiter() {
+        List<String> result = UtilText.stringToList("abc", ",");
+        Assertions.assertEquals(List.of("abc"), result);
+    }
+
+    @Test
+    void testConsecutiveDelimiters() {
+        List<String> result = UtilText.stringToList("a,,b", ",");
+        Assertions.assertEquals(List.of("a", "b"), result);
     }
 
 }

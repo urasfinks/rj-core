@@ -20,9 +20,9 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-// Хранилище Property
-// Отвечает за создание всех Property, создавать экземпляры Property в других местах запрещено
-// Отвечает за регистрацию подписок, для того, что бы распространить подписки на все Property
+// Хранилище Property.
+// Отвечает за создание всех Property, создавать экземпляры Property в других местах запрещено.
+// Отвечает за регистрацию подписок, для того, что бы распространить подписки на все Property.
 
 @Component
 //@Lazy - надо что бы он загружался сразу же, так как используется в ServiceClassFinder -> PropertyDispatcher

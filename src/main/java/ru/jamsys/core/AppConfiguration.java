@@ -25,6 +25,7 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.web.socket.WebSocket;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.UtilLog;
 
 @SuppressWarnings("unused")
@@ -139,9 +140,14 @@ public class AppConfiguration implements WebSocketConfigurer {
                 // Тем не менее я считаю, что Spring - это хорошо! Я столько раз радовался созданием этого монстра - человеком
                 // Не хочу лишний раз создавать строки хранящие ключи
                 final Ssl ssl = new Ssl();
-                ssl.setKeyPassword(new String(securityComponent.get(securityAlias)));
-                System.setProperty("server.ssl.key-store-password", new String(securityComponent.get(securityAlias)));
-                serverProperties.setSsl(ssl);
+                try {
+                    ssl.setKeyPassword(new String(securityComponent.get(securityAlias)));
+                    System.setProperty("server.ssl.key-store-password", new String(securityComponent.get(securityAlias)));
+                    serverProperties.setSsl(ssl);
+                } catch (Exception e) {
+                    App.error(e);
+                    throw new ForwardException(e);
+                }
             } else {
                 App.error(new RuntimeException("run.args.web.ssl.security.alias is empty"));
             }

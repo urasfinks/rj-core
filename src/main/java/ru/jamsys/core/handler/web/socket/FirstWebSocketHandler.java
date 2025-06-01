@@ -11,7 +11,7 @@ import ru.jamsys.core.promise.PromiseGenerator;
 @Component
 @SuppressWarnings("unused")
 @RequestMapping("/**")
-public class FirstWebSocketHandler implements PromiseGenerator, WebSocketHandler {
+public class FirstWebSocketHandler extends PromiseGenerator implements WebSocketHandler {
 
     private final ServicePromise servicePromise;
 

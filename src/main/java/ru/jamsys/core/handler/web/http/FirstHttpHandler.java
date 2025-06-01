@@ -8,12 +8,13 @@ import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
+import ru.jamsys.core.promise.PromiseGeneratorAccess;
 
 @ServiceClassFinderIgnore
 @Component
 @SuppressWarnings("unused")
 @RequestMapping("/**")
-public class FirstHttpHandler implements PromiseGenerator, HttpHandler {
+public class FirstHttpHandler extends PromiseGeneratorAccess implements HttpHandler {
 
     private final ServicePromise servicePromise;
 

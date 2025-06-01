@@ -2,8 +2,6 @@ package ru.jamsys.core.extension.rate.limit.tps;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
-import ru.jamsys.core.App;
-import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.log.DataHeader;
@@ -60,10 +58,6 @@ public class RateLimitTps extends AbstractManagerElement {
         return property.getMax();
     }
 
-    public String getPropertyKey() {
-        return getCascadeKey(ns);
-    }
-
     @Override
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         List<DataHeader> result = new ArrayList<>();
@@ -86,10 +80,7 @@ public class RateLimitTps extends AbstractManagerElement {
     }
 
     public void setMax(int value) {
-        //+.max потому что поле в репозитории называется max
-        App.get(ServiceProperty.class)
-                .computeIfAbsent(getPropertyKey() + ".max", null)
-                .set(value);
+        propertyDispatcher.set(RateLimitTpsRepositoryProperty.Fields.max, value);
     }
 
 }

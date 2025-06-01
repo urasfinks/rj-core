@@ -14,7 +14,6 @@ import java.util.Set;
 
 // PropertySubscriber связывает ServiceProperty и PropertyRepository
 // Задача донести изменения Property до PropertyRepository
-// PropertySubscriber не обладает функционалом изменять свойства, для изменения используйте Property
 // Получая элемент PropertyDispatcher вы должны начать контролировать его жизненный цикл самостоятельно run()/shutdown()
 // Классная функция - это использовать namespace, не надо в репозитории использовать абсолютные ключи Property
 
@@ -163,6 +162,10 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
         UtilRisc.forEach(null, subscriptions, serviceProperty::removeSubscription);
         UtilRisc.forEach(null, regexp, serviceProperty::removeSubscription);
         subscriptions.clear();
+    }
+
+    public void set(String repositoryPropertyKey, Object value) {
+        serviceProperty.set(getPropertyKey(repositoryPropertyKey), value);
     }
 
 }

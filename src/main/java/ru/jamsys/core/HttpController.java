@@ -6,9 +6,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.jamsys.core.component.RouteGenerator;
+import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.RouteGeneratorRepository;
+import ru.jamsys.core.extension.exception.AuthException;
 import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.RepositoryProperty;
@@ -19,9 +21,10 @@ import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.handler.web.http.HttpInterceptor;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseGenerator;
+import ru.jamsys.core.promise.PromiseGeneratorAccess;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -43,13 +46,17 @@ public class HttpController {
 
     private final RouteGeneratorRepository routeGeneratorRepository;
 
+    private final SecurityComponent securityComponent;
+
     public HttpController(
             ServiceClassFinder serviceClassFinder,
             ServiceProperty serviceProperty,
-            RouteGenerator routeGenerator
+            RouteGenerator routeGenerator,
+            SecurityComponent securityComponent
     ) {
         this.serviceProperty = serviceProperty;
-        routeGeneratorRepository = routeGenerator.getRouterRepository(HttpHandler.class);
+        this.routeGeneratorRepository = routeGenerator.getRouterRepository(HttpHandler.class);
+        this.securityComponent = securityComponent;
 
         if (serviceProperty.computeIfAbsent("run.args.web", false).get(Boolean.class)) {
             updateStaticFile();
@@ -137,7 +144,8 @@ public class HttpController {
     ) {
         ServletHandler servletHandler = new ServletHandler(new CompletableFuture<>(), request, response);
         try {
-            if (httpInterceptor != null && !httpInterceptor.handle(request, response)) {
+            servletHandler.init();
+            if (httpInterceptor != null && !httpInterceptor.handle(servletHandler)) {
                 return null;
             }
             String uri = request.getRequestURI();
@@ -145,17 +153,38 @@ public class HttpController {
                 servletHandler.writeFileToOutput(new File(staticFile.get(uri)));
                 return null;
             }
-            servletHandler.init();
-            PromiseGenerator promiseGenerator = routeGeneratorRepository.match(uri);
+
+            PromiseGeneratorAccess promiseGenerator = routeGeneratorRepository.match(uri);
             if (promiseGenerator == null) {
-                servletHandler.setResponseError("Generator not found");
-                servletHandler.responseComplete();
-                return servletHandler.getServletResponse();
+                servletHandler.responseError("Generator not found");
+                return null;
+            }
+            if (!promiseGenerator.getRateLimitConfiguration().get().check()) {
+                servletHandler.response(429, "Too Many Requests", StandardCharsets.UTF_8);
+                return null;
+            }
+            if (promiseGenerator.getPromiseGeneratorAccessRepositoryProperty().getAuth()) {
+                servletHandler
+                        .getRequestReader()
+                        .basicAuthHandler((user, password) -> {
+                            if (!promiseGenerator.getUser().contains(user)) {
+                                // 0x2A - просто что бы различать
+                                throw new AuthException("Authorization failed 0x2A for user: " + user);
+                            }
+                            try {
+                                if (password == null || !password.equals(new String(securityComponent.get("web.auth.password." + user)))) {
+                                    // 0xFA - просто что бы различать
+                                    throw new AuthException("Authorization failed 0xFA for user: " + user);
+                                }
+                            } catch (Exception e) {
+                                throw new AuthException("Authorization failed 0xAA for user: " + user, e);
+                            }
+                        });
             }
             Promise promise = promiseGenerator.generate();
 
             if (promise == null) {
-                servletHandler.setResponseError("Promise is null");
+                servletHandler.responseError("Promise is null");
                 servletHandler.responseComplete();
                 return servletHandler.getServletResponse();
             }
@@ -178,10 +207,13 @@ public class HttpController {
             }
             promise.setRepositoryMapClass(ServletHandler.class, servletHandler);
             promise.run();
+        } catch (AuthException th) {
+            App.error(th);
+            servletHandler.responseUnauthorized();
+            return null;
         } catch (Throwable th) {
             App.error(th);
-            servletHandler.setResponseError(th.getMessage());
-            servletHandler.responseComplete();
+            servletHandler.responseError(th.getMessage());
             return null;
         }
         return servletHandler.getServletResponse();

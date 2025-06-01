@@ -8,12 +8,15 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.RouteGeneratorRepository;
 import ru.jamsys.core.flat.util.UtilListSort;
 import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.promise.PromiseGenerator;
+import ru.jamsys.core.promise.PromiseGeneratorAccess;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+// Находит классы по интерфейсу, ищет аннотацию RequestMapping (или другую указанную) и создаёт RouteGeneratorRepository
+// в котором сопоставлены antTemplate c PromiseGenerator
 
 @Lazy
 @Component
@@ -41,16 +44,16 @@ public class RouteGenerator {
         отсортируем
         */
         RouteGeneratorRepository routeGeneratorRepository = new RouteGeneratorRepository(antPathMatcher);
-        Map<String, PromiseGenerator> repository = routeGeneratorRepository.getRepository();
+        Map<String, PromiseGeneratorAccess> repository = routeGeneratorRepository.getRepository();
         Map<String, String> info = routeGeneratorRepository.getInfo();
-        Map<String, PromiseGenerator> tmp = new HashMap<>();
-        serviceClassFinder.findByInstance(PromiseGenerator.class).forEach(promiseGeneratorClass -> {
+        Map<String, PromiseGeneratorAccess> tmp = new HashMap<>();
+        serviceClassFinder.findByInstance(PromiseGeneratorAccess.class).forEach(promiseGeneratorClass -> {
             if (!ServiceClassFinder.instanceOf(promiseGeneratorClass, interfaceMatcher)) {
                 return;
             }
             for (Annotation annotation : promiseGeneratorClass.getAnnotations()) {
                 if (ServiceClassFinder.instanceOf(annotation.annotationType(), clsAnnotation)) {
-                    PromiseGenerator promiseGenerator = App.get(promiseGeneratorClass);
+                    PromiseGeneratorAccess promiseGenerator = App.get(promiseGeneratorClass);
                     String[] values = promiseGeneratorClass.getAnnotation(clsAnnotation).value();
                     if (values.length > 0) {
                         for (String value : values) {

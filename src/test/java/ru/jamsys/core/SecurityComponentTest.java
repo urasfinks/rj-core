@@ -35,7 +35,7 @@ class SecurityComponentTest {
         securityComponent.add("test", "123456".toCharArray(), password);
         Assertions.assertEquals("123456", new String(securityComponent.get("test")), "#2");
         securityComponent.remove("test", password);
-        assertNull(securityComponent.get("test"), "#3");
+        Assertions.assertThrows(RuntimeException.class, () -> securityComponent.get("test"), "#3");
         securityComponent.add("test2", "123456".toCharArray(), password);
         Assertions.assertEquals("[test2]", securityComponent.getAvailableAliases().toString(), "#4");
         UtilFile.removeIfExist("unit-test.jks");

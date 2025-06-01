@@ -10,6 +10,7 @@ import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
+import ru.jamsys.core.promise.PromiseGeneratorAccess;
 
 /*
  * Эту драгу опрашивает Apple, что бы в телефоне зарегистрировать схему для открытия приложения
@@ -18,7 +19,7 @@ import ru.jamsys.core.promise.PromiseGenerator;
 @Component
 @SuppressWarnings("unused")
 @RequestMapping({"/apple-app-site-association.json", "/.well-known/apple-app-site-association"})
-public class DeeplinkSchemaApple implements PromiseGenerator, HttpHandler {
+public class DeeplinkSchemaApple extends PromiseGeneratorAccess implements HttpHandler {
 
     private final ServicePromise servicePromise;
 

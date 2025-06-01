@@ -9,6 +9,10 @@ import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -30,7 +34,7 @@ public class ReCaptchaResource extends AbstractExpirationResource {
         );
     }
 
-    public HttpResponse execute(String captchaValue) {
+    public HttpResponse execute(String captchaValue) throws Exception {
         HttpConnectorDefault httpClient = new HttpConnectorDefault();
         httpClient.setUrl("https://www.google.com/recaptcha/api/siteverify");
 

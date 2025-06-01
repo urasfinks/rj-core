@@ -30,7 +30,7 @@ public class TelegramNotificationResource extends AbstractExpirationResource {
         );
     }
 
-    public HttpResponse execute(TelegramNotificationRequest arguments) {
+    public HttpResponse execute(TelegramNotificationRequest arguments) throws Exception {
         String bodyRequest = arguments.getData();
         String title = arguments.getTitle();
         if (title != null && !title.trim().isEmpty()) {
