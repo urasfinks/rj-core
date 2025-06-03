@@ -4,15 +4,16 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.springframework.lang.Nullable;
 import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.flat.util.UtilRisc;
-import ru.jamsys.core.extension.statistic.AvgMetric;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.extension.log.DataHeader;
+import ru.jamsys.core.extension.log.StatDataHeader;
+import ru.jamsys.core.extension.property.PropertyDispatcher;
+import ru.jamsys.core.extension.statistic.AvgMetric;
+import ru.jamsys.core.flat.util.UtilLog;
+import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -256,12 +257,16 @@ public class BrokerMemory<T>
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
         int tpsDropFlush = tpsDrop.getAndSet(0);
         int sizeFlush = mainQueueSize.get();
-        result.add(new DataHeader()
-                .setBody(getCascadeKey(ns))
+        AvgMetric.Statistic statistic = timeInQueue.flushStatistic();
+        result.add(new StatDataHeader(getClass(), ns)
                 .addHeader("tpsDeq", tpsDequeueFlush)
                 .addHeader("tpsDrop", tpsDropFlush)
                 .addHeader("size", sizeFlush)
-                .addHeader("avg", timeInQueue.flushStatistic())
+                .addHeader("timeInQueue.min", statistic.getMin())
+                .addHeader("timeInQueue.max", statistic.getMax())
+                .addHeader("timeInQueue.count", statistic.getCount())
+                .addHeader("timeInQueue.sum", statistic.getSum())
+                .addHeader("timeInQueue", statistic.getAvg())
         );
         if(!mainQueue.isEmpty()){
             markActive();

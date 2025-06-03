@@ -9,6 +9,7 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.log.DataHeader;
+import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -145,12 +146,11 @@ public class ExpirationList<T>
                     }
                 }
         );
-        result.add(new DataHeader()
-                .setBody(getCascadeKey(ns))
-                .addHeader("ItemSize", summaryCountItem.get())
-                .addHeader("BucketSize", countBucket.get())
-                .addHeader("helperRemove", helperRemove.getAndSet(0))
-                .addHeader("helperOnExpired", helperOnExpired.getAndSet(0))
+        result.add(new StatDataHeader(getClass(), ns)
+                .addHeader("item", summaryCountItem.get())
+                .addHeader("bucket", countBucket.get())
+                .addHeader("remove", helperRemove.getAndSet(0))
+                .addHeader("expired", helperOnExpired.getAndSet(0))
         );
         if (!bucket.isEmpty()) {
             markActive();

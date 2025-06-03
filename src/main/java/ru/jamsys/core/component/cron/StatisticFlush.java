@@ -6,11 +6,13 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
@@ -52,6 +54,10 @@ public class StatisticFlush extends PromiseGenerator implements Cron1s {
                 .append("main", (threadRun, _, _) -> {
                     UtilRisc.forEach(threadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
                         List<DataHeader> listStatistic = statisticsFlushComponent.flushAndGetStatistic(threadRun);
+                        if(statisticsFlushComponent instanceof Manager){
+                            UtilLog.printInfo(listStatistic);
+                        }
+
 //                        Map<String, String> parentTags = new LinkedHashMap<>();
 //                        String measurement = App.getUniqueClassName(statisticsFlushComponent.getClass());
 //                        parentTags.put("measurement", measurement);

@@ -5,6 +5,7 @@ import lombok.Getter;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.log.DataHeader;
+import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 
 import java.util.ArrayList;
@@ -62,9 +63,8 @@ public class RateLimitTps extends AbstractManagerElement {
     @Override
     public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         List<DataHeader> result = new ArrayList<>();
-        result.add(new DataHeader()
-                .setBody(getCascadeKey(ns))
-                .addHeader("tps", tps.getAndSet(0))
+        result.add(new StatDataHeader(getClass(), ns)
+                .addHeader("value", tps.getAndSet(0))
                 .addHeader("max", property.getMax())
         );
         return result;
