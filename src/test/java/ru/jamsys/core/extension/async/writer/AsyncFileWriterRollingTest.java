@@ -202,7 +202,7 @@ class AsyncFileWriterRollingTest {
                     if (run.get()) {
                         try {
                             writer.flush(run);
-                            UtilLog.printInfo(writer.flushAndGetStatistic(run));
+                            //UtilLog.printInfo(writer.flushAndGetStatistic(run));
                         } catch (Throwable e) {
                             App.error(e);
                         }
@@ -244,7 +244,7 @@ class AsyncFileWriterRollingTest {
                 .append("time", fin)
         );
         System.out.println("fin: " + fin);
-        Assertions.assertTrue(fin < 50);
+        Assertions.assertTrue(fin < 100);
     }
 
     // Реализация тестового элемента

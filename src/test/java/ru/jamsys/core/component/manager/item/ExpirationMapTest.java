@@ -176,7 +176,7 @@ class ExpirationMapTest {
 
         var result = map.flushAndGetStatistic(new AtomicBoolean(true));
         Assertions.assertEquals(1, result.size());
-        Assertions.assertEquals("testMap", result.getFirst().getBody());
+        Assertions.assertEquals("testMap", result.getFirst().getNs());
         //Assertions.assertEquals(2, result.get(0).getHeaders().get("size"));
     }
 

@@ -62,22 +62,22 @@ class ExpirationListTest {
         //Останавливаем задачу, что бы не выполнился onExpired
         add.stop();
         List<StatDataHeader> s1 = test.flushAndGetStatistic(threadRun);
-        Assertions.assertEquals("{ItemSize=1, BucketSize=1, helperRemove=0, helperOnExpired=0}", s1.getFirst().getHeader().toString());
+        Assertions.assertEquals("{item=1, bucket=1, remove=0, expired=0}", s1.getFirst().getHeader().toString());
         Assertions.assertEquals("[1709734266000]", test.getBucketKey().toString());
         test.helper(threadRun, curTimeMs + 2000);
         List<StatDataHeader> s2 = test.flushAndGetStatistic(threadRun);
         // helperRemove=1 так как выше выполнили add.stop();
-        Assertions.assertEquals("{ItemSize=0, BucketSize=0, helperRemove=1, helperOnExpired=0}", s2.getFirst().getHeader().toString());
+        Assertions.assertEquals("{item=0, bucket=0, remove=1, expired=0}", s2.getFirst().getHeader().toString());
 
         Assertions.assertEquals(0, counterExpired.get());
 
         List<StatDataHeader> s3 = test.flushAndGetStatistic(null);
-        Assertions.assertEquals("{ItemSize=0, BucketSize=0, helperRemove=0, helperOnExpired=0}", s3.getFirst().getHeader().toString());
+        Assertions.assertEquals("{item=0, bucket=0, remove=0, expired=0}", s3.getFirst().getHeader().toString());
 
         test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
         test.helper(threadRun, curTimeMs + 2000);
         List<StatDataHeader> s4 = test.flushAndGetStatistic(null);
-        Assertions.assertEquals("{ItemSize=0, BucketSize=0, helperRemove=0, helperOnExpired=1}", s4.getFirst().getHeader().toString());
+        Assertions.assertEquals("{item=0, bucket=0, remove=0, expired=1}", s4.getFirst().getHeader().toString());
 
     }
 
@@ -113,27 +113,27 @@ class ExpirationListTest {
         Assertions.assertEquals("[1709734266000, 1709734267000, 1709734268000, 1709734269000, 1709734270000]", test.getBucketKey().toString());
 
         DataHeader statistics = test.flushAndGetStatistic(null).getFirst();
-        Assertions.assertEquals("{ItemSize=10, BucketSize=5, helperRemove=0, helperOnExpired=0}", statistics.getHeader().toString());
+        Assertions.assertEquals("{item=10, bucket=5, remove=0, expired=0}", statistics.getHeader().toString());
 
         for (int i = 10; i < 100; i++) {
             test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + (500 * i)));
         }
 
         List<StatDataHeader> before = test.flushAndGetStatistic(null);
-        Assertions.assertEquals("{ItemSize=100, BucketSize=50, helperRemove=0, helperOnExpired=0}", before.getFirst().getHeader().toString());
+        Assertions.assertEquals("{item=100, bucket=50, remove=0, expired=0}", before.getFirst().getHeader().toString());
 
         test.helper(threadRun, curTimeMs);
         List<StatDataHeader> after = test.flushAndGetStatistic(null);
         Assertions.assertEquals(before.getFirst().getHeader().toString(), after.getFirst().getHeader().toString());
 
         before = test.flushAndGetStatistic(null);
-        Assertions.assertEquals("{ItemSize=100, BucketSize=50, helperRemove=0, helperOnExpired=0}", before.getFirst().getHeader().toString());
+        Assertions.assertEquals("{item=100, bucket=50, remove=0, expired=0}", before.getFirst().getHeader().toString());
 
         test.helper(threadRun, curTimeMs + 100);
         after = test.flushAndGetStatistic(null);
         Assertions.assertEquals(before.getFirst().getHeader().toString(), after.getFirst().getHeader().toString());
         statistics = test.flushAndGetStatistic(null).getFirst();
-        Assertions.assertEquals("{ItemSize=100, BucketSize=50, helperRemove=0, helperOnExpired=0}", statistics.getHeader().toString());
+        Assertions.assertEquals("{item=100, bucket=50, remove=0, expired=0}", statistics.getHeader().toString());
 
         Assertions.assertEquals("2024-03-06T17:11:05.006", UtilDate.msFormat(curTimeMs + 950));
         Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msFormat(Util.resetLastNDigits(curTimeMs + 950, 3)));
