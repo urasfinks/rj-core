@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.expiration.ExpirationList;
+import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -60,22 +61,22 @@ class ExpirationListTest {
 
         //Останавливаем задачу, что бы не выполнился onExpired
         add.stop();
-        List<DataHeader> s1 = test.flushAndGetStatistic(threadRun);
+        List<StatDataHeader> s1 = test.flushAndGetStatistic(threadRun);
         Assertions.assertEquals("{ItemSize=1, BucketSize=1, helperRemove=0, helperOnExpired=0}", s1.getFirst().getHeader().toString());
         Assertions.assertEquals("[1709734266000]", test.getBucketKey().toString());
         test.helper(threadRun, curTimeMs + 2000);
-        List<DataHeader> s2 = test.flushAndGetStatistic(threadRun);
+        List<StatDataHeader> s2 = test.flushAndGetStatistic(threadRun);
         // helperRemove=1 так как выше выполнили add.stop();
         Assertions.assertEquals("{ItemSize=0, BucketSize=0, helperRemove=1, helperOnExpired=0}", s2.getFirst().getHeader().toString());
 
         Assertions.assertEquals(0, counterExpired.get());
 
-        List<DataHeader> s3 = test.flushAndGetStatistic(null);
+        List<StatDataHeader> s3 = test.flushAndGetStatistic(null);
         Assertions.assertEquals("{ItemSize=0, BucketSize=0, helperRemove=0, helperOnExpired=0}", s3.getFirst().getHeader().toString());
 
         test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs));
         test.helper(threadRun, curTimeMs + 2000);
-        List<DataHeader> s4 = test.flushAndGetStatistic(null);
+        List<StatDataHeader> s4 = test.flushAndGetStatistic(null);
         Assertions.assertEquals("{ItemSize=0, BucketSize=0, helperRemove=0, helperOnExpired=1}", s4.getFirst().getHeader().toString());
 
     }
@@ -118,11 +119,11 @@ class ExpirationListTest {
             test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + (500 * i)));
         }
 
-        List<DataHeader> before = test.flushAndGetStatistic(null);
+        List<StatDataHeader> before = test.flushAndGetStatistic(null);
         Assertions.assertEquals("{ItemSize=100, BucketSize=50, helperRemove=0, helperOnExpired=0}", before.getFirst().getHeader().toString());
 
         test.helper(threadRun, curTimeMs);
-        List<DataHeader> after = test.flushAndGetStatistic(null);
+        List<StatDataHeader> after = test.flushAndGetStatistic(null);
         Assertions.assertEquals(before.getFirst().getHeader().toString(), after.getFirst().getHeader().toString());
 
         before = test.flushAndGetStatistic(null);

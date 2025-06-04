@@ -2,7 +2,7 @@ package ru.jamsys.core.extension.async.writer;
 
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.log.DataHeader;
+import ru.jamsys.core.extension.log.StatDataHeader;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -114,7 +114,7 @@ class QueueRetryTest {
     public void testFlushStatistics() {
         DataReadWrite dataReadWrite = new DataReadWrite(5L, new byte[]{1}, null);
         queueRetry.add(dataReadWrite);
-        List<DataHeader> stats = queueRetry.flushAndGetStatistic(new AtomicBoolean(true));
+        List<StatDataHeader> stats = queueRetry.flushAndGetStatistic(new AtomicBoolean(true));
         Assertions.assertFalse(stats.isEmpty());
     }
 

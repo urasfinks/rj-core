@@ -5,13 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.victoria.metrics.VictoriaMetricsConvert;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -31,50 +27,9 @@ public class StatDataHeader extends DataHeader {
         return this;
     }
 
-    @Getter
-    @Setter
-    public static class Measurement {
-
-        private Map<String, Object> map = new LinkedHashMap<>();
-
-        private Map<String, Object> metric = new LinkedHashMap<>();
-
-        public Measurement(String name, Map<String, String> labels, Object value) {
-            metric.put("__name__", name);
-            if (labels != null) {
-                metric.putAll(labels);
-            }
-            map.put("metric", metric);
-            map.put("values", List.of(value));
-            map.put("timestamps", System.currentTimeMillis());
-        }
-
-        @JsonValue
-        public Object getValue() {
-            return map;
-        }
-
-        public static List<Measurement> from(StatDataHeader statDataHeader) {
-            List<Measurement> result = new ArrayList<>();
-            Map<String, Object> header = statDataHeader.getHeader();
-            for (String key : header.keySet()) {
-                result.add(new Measurement(
-                        CascadeKey.complex(statDataHeader.getCls(), key),
-                        statDataHeader.getNs() == null
-                                ? null
-                                : new HashMapBuilder<String, String>()
-                                .append("ns", statDataHeader.getNs()),
-                        header.get(key)
-                ));
-            }
-            return result;
-        }
-
-    }
-
     @JsonValue
-    public List<Measurement> getValue() {
-        return Measurement.from(this);
+    public List<String> getValue() {
+        return VictoriaMetricsConvert.getInfluxFormat(this);
     }
 
 }
