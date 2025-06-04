@@ -2,7 +2,6 @@ package ru.jamsys.core.resource.notification.apple;
 
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.resource.http.client.HttpConnector;
@@ -14,9 +13,7 @@ import ru.jamsys.core.resource.virtual.file.system.ReadFromSourceFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AppleNotificationResource extends AbstractExpirationResource {
 

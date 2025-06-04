@@ -4,7 +4,6 @@ import com.google.auth.oauth2.GoogleCredentials;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -16,9 +15,7 @@ import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AndroidNotificationResource extends AbstractExpirationResource implements PropertyListener {
 

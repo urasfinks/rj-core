@@ -5,7 +5,6 @@ import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.AbstractManagerElement;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.*;
 import ru.jamsys.core.extension.builder.HashMapBuilder;

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 

@@ -1,6 +1,5 @@
 package ru.jamsys.core.extension;
 
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.log.StatDataHeader;
 
 import java.util.List;

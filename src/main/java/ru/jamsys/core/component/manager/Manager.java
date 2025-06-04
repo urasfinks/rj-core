@@ -3,7 +3,6 @@ package ru.jamsys.core.component.manager;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.flat.util.UtilRisc;
 

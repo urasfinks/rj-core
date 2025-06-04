@@ -11,7 +11,6 @@ import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.async.writer.DataReadWrite;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
