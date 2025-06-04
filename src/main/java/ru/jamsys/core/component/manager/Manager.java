@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.log.DataHeader;
+import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.lang.reflect.Constructor;
@@ -155,8 +156,8 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     }
 
     @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<DataHeader> result = new ArrayList<>();
+    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<StatDataHeader> result = new ArrayList<>();
         UtilRisc.forEach(threadRun, map, (_, mapManager) -> {
             UtilRisc.forEach(threadRun, mapManager, (_, managerElement) -> {
                 result.addAll(managerElement.flushAndGetStatistic(threadRun));

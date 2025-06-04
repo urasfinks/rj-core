@@ -4,14 +4,11 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.promise.AbstractPromiseTask;
 
 import java.io.File;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class YandexSpeechResource
         extends AbstractExpirationResource
@@ -93,11 +90,6 @@ public class YandexSpeechResource
     @Override
     public boolean checkFatalException(Throwable th) {
         return false;
-    }
-
-    @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of();
     }
 
 }

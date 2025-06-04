@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface DataPersistent extends ByteCodec {
 
-    String getBody();
+    String getBodyString();
 
     Map<String, Object> getHeader();
 

@@ -2,8 +2,8 @@ package ru.jamsys.core.component;
 
 import com.sun.management.OperatingSystemMXBean;
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.extension.log.StatDataHeader;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("unused")
 @Component
-public class ServiceSystemStatistic implements StatisticsFlushComponent {
+public class SystemStatistic implements StatisticsFlushComponent {
 
     public volatile double cpuUsage;
 
@@ -43,19 +43,20 @@ public class ServiceSystemStatistic implements StatisticsFlushComponent {
     }
 
     @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<DataHeader> result = new ArrayList<>();
+    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<StatDataHeader> result = new ArrayList<>();
         if (first) {
             runFirst();
         } else {
             runSecond();
         }
         first = !first;
-        result.add(new DataHeader(getClass())
+        result.add(new StatDataHeader(getClass(), null)
                 .addHeader("cpu", cpuUsage)
                 .addHeader("heapSize", Runtime.getRuntime().totalMemory())
                 .addHeader("heapSizeMax", Runtime.getRuntime().maxMemory())
                 .addHeader("heapSizeFree", Runtime.getRuntime().freeMemory()));
         return result;
     }
+
 }

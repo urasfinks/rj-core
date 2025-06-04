@@ -22,11 +22,11 @@ public class DataHeader {
         setBody(App.getUniqueClassName(cls));
     }
 
-    public long timeAdd = System.currentTimeMillis();
+    private long timeAdd = System.currentTimeMillis();
 
-    public Map<String, Object> header = new LinkedHashMap<>();
+    protected Map<String, Object> header = new LinkedHashMap<>();
 
-    public Object body;
+    private Object body;
 
     public DataHeader addHeader(String key, Object value) {
         header.put(key, value);
@@ -40,4 +40,5 @@ public class DataHeader {
         }
         return this;
     }
+
 }

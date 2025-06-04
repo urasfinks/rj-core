@@ -121,9 +121,4 @@ public class AndroidNotificationResource extends AbstractExpirationResource impl
         return false;
     }
 
-    @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of();
-    }
-
 }

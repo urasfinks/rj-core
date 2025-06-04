@@ -4,7 +4,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.template.jdbc.DataMapper;
@@ -17,7 +16,6 @@ import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JdbcResource
         extends AbstractExpirationResource
@@ -161,11 +159,6 @@ public class JdbcResource
             return;
         }
         up();
-    }
-
-    @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of();
     }
 
 }

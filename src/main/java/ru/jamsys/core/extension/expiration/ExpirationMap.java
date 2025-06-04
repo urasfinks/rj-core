@@ -7,7 +7,7 @@ import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.log.DataHeader;
+import ru.jamsys.core.extension.log.StatDataHeader;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -398,10 +398,9 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
         clear();
     }
 
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<DataHeader> result = new ArrayList<>();
-        result.add(new DataHeader()
-                .setBody(ns)
+    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<StatDataHeader> result = new ArrayList<>();
+        result.add(new StatDataHeader(getClass(), ns)
                 .addHeader("size", size())
         );
         return result;

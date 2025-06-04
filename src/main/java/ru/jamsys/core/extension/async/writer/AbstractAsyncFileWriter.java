@@ -6,14 +6,15 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.broker.persist.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.log.DataHeader;
+import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.extension.statistic.AvgMetric;
 import ru.jamsys.core.flat.util.UtilByte;
 
@@ -59,9 +60,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
     // Точная позиция смещения данных относительно начала файла
     private final AtomicLong position = new AtomicLong(0);
 
-    private final AvgMetric statisticSize = new AvgMetric();
-
-    private final AvgMetric statisticTime = new AvgMetric();
+    private final AvgMetric writeTime = new AvgMetric();
 
     // Надо понимать, что onWrite будет запускаться планировщиком 1 раз в секунду и нельзя туда вешать долгие
     // IO операции. Перекладывайте ответы в свою локальную очередь и разбирайте их в других потоках
@@ -151,8 +150,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                         break;
                     }
                     int dataLength = poll.toBytes().length;
-                    statisticSize.add((long) dataLength);
-                    poll.setPosition(position.getAndAdd(poll.toBytes().length + 4)); // 4 это int length
+                    poll.setPosition(position.getAndAdd(dataLength + 4)); // 4 это int length
                     listPolled.add(poll);
                     byteArrayOutputStream.write(UtilByte.intToBytes(dataLength));
                     byteArrayOutputStream.write(poll.toBytes());
@@ -170,7 +168,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                             onWrite.accept(getFilePath(), listPolled);
                         }
                         listPolled.clear();
-                        statisticTime.add(System.currentTimeMillis() - lastTimeWrite);
+                        writeTime.add(System.currentTimeMillis() - lastTimeWrite);
 
                         if (position.get() > repositoryProperty.getMaxSize()) {
                             onOutOfPosition.run();
@@ -187,7 +185,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                     if (onWrite != null) {
                         onWrite.accept(getFilePath(), listPolled);
                     }
-                    statisticTime.add(System.currentTimeMillis() - s);
+                    writeTime.add(System.currentTimeMillis() - s);
                 }
             } catch (IOException ie) {
                 // Вернём, что изъяли, но не смогли записать
@@ -272,25 +270,16 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
     }
 
     @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        AvgMetric.Statistic sizeWrite = statisticSize.flushStatistic();
-        // Получаем статистику, сколько всего было записано байт на прошлой итерации, для того, что бы сократить IOPS
-        minBatchSize = (int) sizeWrite.getSum();
-        if (minBatchSize < defSize) {
-            minBatchSize = defSize;
-        }
-        float sByte = (float) minBatchSize;
-        float sKb = sByte / 1024;
-        float sMb = sKb / 1024;
-
-        return List.of(new DataHeader()
+    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        AvgMetric.Statistic statistic = writeTime.flushStatistic();
+        return List.of(new StatDataHeader(getClass(), filePath)
                 .addHeader("position", position.get())
-                .addHeader("maxPosition", repositoryProperty.getMaxSize())
-                .addHeader("minBatchSizeByte", sByte)
-                .addHeader("minBatchSizeKb", sKb)
-                .addHeader("minBatchSizeMb", sMb)
-                .addHeader("size", sizeWrite)
-                .addHeader("time", statisticTime.flushStatistic())
+                .addHeader("positionMax", repositoryProperty.getMaxSize())
+                .addHeader("writeTime", statistic.getAvg())
+                .addHeader("writeTime.min", statistic.getMin())
+                .addHeader("writeTime.max", statistic.getMax())
+                .addHeader("writeTime.count", statistic.getCount())
+                .addHeader("writeTime.sum", statistic.getSum())
         );
     }
 

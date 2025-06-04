@@ -274,8 +274,8 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
     }
 
     @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<DataHeader> result = new ArrayList<>();
+    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<StatDataHeader> result = new ArrayList<>();
         int tpsReleaseFlush = tpsRelease.getAndSet(0);
         int tpsAcquireFlush = tpsAcquire.getAndSet(0);
         // Если за последнюю секунду были возвращения элементов значит пул активен
@@ -284,8 +284,8 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
             markActive();
         }
         result.add(new StatDataHeader(getClass(), ns)
-                .addHeader("tpsAcquire", tpsAcquireFlush)
-                .addHeader("tpsRelease", tpsReleaseFlush)
+                .addHeader("acquire", tpsAcquireFlush)
+                .addHeader("release", tpsReleaseFlush)
                 .addHeader("size", items.size())
                 .addHeader("park", parkQueue.size())
         );

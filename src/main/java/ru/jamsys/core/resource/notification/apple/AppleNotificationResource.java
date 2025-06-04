@@ -91,9 +91,4 @@ public class AppleNotificationResource extends AbstractExpirationResource {
         return false;
     }
 
-    @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of();
-    }
-
 }

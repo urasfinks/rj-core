@@ -7,11 +7,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EmailNotificationResource extends AbstractExpirationResource {
 
@@ -78,11 +74,6 @@ public class EmailNotificationResource extends AbstractExpirationResource {
     @Override
     public boolean checkFatalException(Throwable th) {
         return false;
-    }
-
-    @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of();
     }
 
 }

@@ -174,9 +174,4 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
         return false;
     }
 
-    @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of();
-    }
-
 }

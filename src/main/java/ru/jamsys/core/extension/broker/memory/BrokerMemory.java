@@ -8,7 +8,6 @@ import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.statistic.AvgMetric;
@@ -252,8 +251,8 @@ public class BrokerMemory<T>
         propertyDispatcher.shutdown();
     }
 
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<DataHeader> result = new ArrayList<>();
+    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<StatDataHeader> result = new ArrayList<>();
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
         int tpsDropFlush = tpsDrop.getAndSet(0);
         int sizeFlush = mainQueueSize.get();
@@ -262,11 +261,11 @@ public class BrokerMemory<T>
                 .addHeader("tpsDeq", tpsDequeueFlush)
                 .addHeader("tpsDrop", tpsDropFlush)
                 .addHeader("size", sizeFlush)
+                .addHeader("timeInQueue", statistic.getAvg())
                 .addHeader("timeInQueue.min", statistic.getMin())
                 .addHeader("timeInQueue.max", statistic.getMax())
                 .addHeader("timeInQueue.count", statistic.getCount())
                 .addHeader("timeInQueue.sum", statistic.getSum())
-                .addHeader("timeInQueue", statistic.getAvg())
         );
         if(!mainQueue.isEmpty()){
             markActive();

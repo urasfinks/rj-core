@@ -23,15 +23,16 @@ public class DataHeaderPersistent extends DataHeader implements DataPersistent {
     }
 
     public DataHeaderPersistent(Object body) {
-        this.body = body;
+        setBody(body);
     }
 
     public Object getRawBody() {
-        return body;
+        return getBody();
     }
 
-    public String getBody() {
-        return String.valueOf(body);
+    @Override
+    public String getBodyString() {
+        return String.valueOf(getBody());
     }
 
     @Override
@@ -40,9 +41,9 @@ public class DataHeaderPersistent extends DataHeader implements DataPersistent {
                 .append(
                         "header",
                         new HashMapBuilder<>(header)
-                                .append("time", UtilDate.msFormat(timeAdd))
+                                .append("time", UtilDate.msFormat(getTimeAdd()))
                 )
-                .append("body", body)
+                .append("body", getBody())
         );
     }
 
@@ -66,7 +67,7 @@ public class DataHeaderPersistent extends DataHeader implements DataPersistent {
             UtilFileByteReader.writeShortString(os, String.valueOf(header.get(key)));
         }
         // Запись тела
-        UtilFileByteReader.writeString(os, getBody());
+        UtilFileByteReader.writeString(os, getBodyString());
         return os.toByteArray();
     }
 

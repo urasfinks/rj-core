@@ -8,7 +8,6 @@ import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -131,8 +130,8 @@ public class ExpirationList<T>
     }
 
     @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<DataHeader> result = new ArrayList<>();
+    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<StatDataHeader> result = new ArrayList<>();
         AtomicInteger summaryCountItem = new AtomicInteger(0);
         AtomicInteger countBucket = new AtomicInteger(0);
         UtilRisc.forEach(

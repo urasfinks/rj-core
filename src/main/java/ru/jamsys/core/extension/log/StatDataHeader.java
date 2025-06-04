@@ -26,6 +26,11 @@ public class StatDataHeader extends DataHeader {
         this.ns = ns;
     }
 
+    public StatDataHeader addHeader(String key, Object value) {
+        header.put(key, value);
+        return this;
+    }
+
     @Getter
     @Setter
     public static class Measurement {
@@ -36,7 +41,9 @@ public class StatDataHeader extends DataHeader {
 
         public Measurement(String name, Map<String, String> labels, Object value) {
             metric.put("__name__", name);
-            metric.putAll(labels);
+            if (labels != null) {
+                metric.putAll(labels);
+            }
             map.put("metric", metric);
             map.put("values", List.of(value));
             map.put("timestamps", System.currentTimeMillis());
@@ -49,13 +56,15 @@ public class StatDataHeader extends DataHeader {
 
         public static List<Measurement> from(StatDataHeader statDataHeader) {
             List<Measurement> result = new ArrayList<>();
-            Map<String, Object> header1 = statDataHeader.getHeader();
-            for (String key : header1.keySet()) {
+            Map<String, Object> header = statDataHeader.getHeader();
+            for (String key : header.keySet()) {
                 result.add(new Measurement(
                         CascadeKey.complex(statDataHeader.getCls(), key),
-                        new HashMapBuilder<String, String>()
+                        statDataHeader.getNs() == null
+                                ? null
+                                : new HashMapBuilder<String, String>()
                                 .append("ns", statDataHeader.getNs()),
-                        header1.get(key)
+                        header.get(key)
                 ));
             }
             return result;

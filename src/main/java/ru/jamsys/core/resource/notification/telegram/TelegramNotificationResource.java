@@ -3,15 +3,12 @@ package ru.jamsys.core.resource.notification.telegram;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TelegramNotificationResource extends AbstractExpirationResource {
 
@@ -67,11 +64,6 @@ public class TelegramNotificationResource extends AbstractExpirationResource {
     @Override
     public boolean checkFatalException(Throwable th) {
         return false;
-    }
-
-    @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of();
     }
 
 }

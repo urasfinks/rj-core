@@ -61,8 +61,8 @@ public class RateLimitTps extends AbstractManagerElement {
     }
 
     @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<DataHeader> result = new ArrayList<>();
+    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<StatDataHeader> result = new ArrayList<>();
         result.add(new StatDataHeader(getClass(), ns)
                 .addHeader("value", tps.getAndSet(0))
                 .addHeader("max", property.getMax())

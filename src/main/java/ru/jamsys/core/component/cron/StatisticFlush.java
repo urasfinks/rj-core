@@ -8,7 +8,7 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.log.DataHeader;
+import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.Util;
@@ -53,7 +53,7 @@ public class StatisticFlush extends PromiseGenerator implements Cron1s {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
                 .append("main", (threadRun, _, _) -> {
                     UtilRisc.forEach(threadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
-                        List<DataHeader> listStatistic = statisticsFlushComponent.flushAndGetStatistic(threadRun);
+                        List<StatDataHeader> listStatistic = statisticsFlushComponent.flushAndGetStatistic(threadRun);
                         if(statisticsFlushComponent instanceof Manager){
                             UtilLog.printInfo(listStatistic);
                         }

@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.log.DataHeader;
+import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
@@ -69,9 +69,9 @@ public class RateLimitPeriodic extends AbstractManagerElement implements Propert
     }
 
     @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         long curTime = System.currentTimeMillis();
-        List<DataHeader> result = new ArrayList<>();
+        List<StatDataHeader> result = new ArrayList<>();
         result.add(flushAndGetStatistic(curTime));
         return result;
     }
@@ -80,8 +80,8 @@ public class RateLimitPeriodic extends AbstractManagerElement implements Propert
         return nextTimeFlushFormat;
     }
 
-    public DataHeader flushAndGetStatistic(long curTime) {
-        DataHeader statistic = new DataHeader().setBody(getCascadeKey(ns));
+    public StatDataHeader flushAndGetStatistic(long curTime) {
+        StatDataHeader statistic = new StatDataHeader(getClass(), ns);
         statistic.addHeader("period", period.getNameCamel());
         statistic.addHeader("max", property.getMax());
         if (nextTimeFlush.get() <= curTime) {

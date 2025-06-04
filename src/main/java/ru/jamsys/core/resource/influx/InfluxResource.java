@@ -120,9 +120,4 @@ public class InfluxResource extends AbstractExpirationResource implements Proper
         return false;
     }
 
-    @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of();
-    }
-
 }

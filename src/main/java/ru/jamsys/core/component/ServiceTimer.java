@@ -1,11 +1,11 @@
 package ru.jamsys.core.component;
 
 import org.springframework.stereotype.Component;
-import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.flat.util.UtilRisc;
+import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.extension.statistic.AvgMetric;
 import ru.jamsys.core.extension.statistic.timer.nano.TimerNanoEnvelope;
+import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -22,7 +22,7 @@ public class ServiceTimer implements StatisticsFlushComponent {
 
     ConcurrentLinkedDeque<TimerNanoEnvelope<String>> timerQueue = new ConcurrentLinkedDeque<>();
 
-    private final ConcurrentLinkedDeque<DataHeader> timerStatisticQueue = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<StatDataHeader> timerStatisticQueue = new ConcurrentLinkedDeque<>();
 
     // Глобальная регистрация времени исполнения
     public TimerNanoEnvelope<String> get(String index) {
@@ -45,16 +45,15 @@ public class ServiceTimer implements StatisticsFlushComponent {
         mapMetricNano.forEach((index, metric) -> {
             LongSummaryStatistics flush = metric.flushLongSummaryStatistics();
             timeStatisticNano.put(index, flush);
-            timerStatisticQueue.add(new DataHeader()
-                    .setBody(index)
+            timerStatisticQueue.add(new StatDataHeader(getClass(), index)
                     .addHeader("sum", flush.getSum())
             );
         });
     }
 
     @Override
-    public List<DataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<DataHeader> result = new ArrayList<>();
+    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<StatDataHeader> result = new ArrayList<>();
         while (!timerStatisticQueue.isEmpty()) {
             result.add(timerStatisticQueue.pollFirst());
         }
