@@ -185,8 +185,7 @@ public class HttpController {
 
             if (promise == null) {
                 servletHandler.responseError("Promise is null");
-                servletHandler.responseComplete();
-                return servletHandler.getServletResponse();
+                return null;
             }
 
             if (!promise.hasErrorHandler()) {
@@ -216,7 +215,7 @@ public class HttpController {
             servletHandler.responseError(th.getMessage());
             return null;
         }
-        return servletHandler.getServletResponse();
+        return servletHandler.getCompletableFuture();
     }
 
 }

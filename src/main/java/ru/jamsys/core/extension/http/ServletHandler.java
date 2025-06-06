@@ -114,6 +114,7 @@ public class ServletHandler {
         completableFuture.complete(null);
     }
 
+    @SuppressWarnings("unused")
     public void responseComplete(InputStream inputStream) {
         try (OutputStream out = getResponseOutputStream()) {
             byte[] buffer = new byte[4096];
@@ -134,11 +135,6 @@ public class ServletHandler {
         completableFuture.complete(null);
     }
 
-    @JsonIgnore
-    public CompletableFuture<Void> getServletResponse() {
-        return completableFuture;
-    }
-
     public void responseError(String cause) {
         setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
         responseComplete();
@@ -153,10 +149,6 @@ public class ServletHandler {
             App.error(new ForwardException(this, th));
         }
         completableFuture.complete(null);
-    }
-
-    public void responseError(Object cause) {
-        setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
     }
 
 }
