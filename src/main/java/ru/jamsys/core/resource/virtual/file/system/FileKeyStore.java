@@ -50,17 +50,17 @@ public class FileKeyStore extends File {
                 keyStore.load(stream, pass);
             } catch (Throwable th) {
                 keyStore = null;
-                throw new ForwardException(th);
+                throw new ForwardException(this, th);
             }
             try {
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithmKeyManager);
                 kmf.init(keyStore, pass);
                 keyManagers = kmf.getKeyManagers();
             } catch (Throwable th) {
-                throw new ForwardException(th);
+                throw new ForwardException(this, th);
             }
         } catch (Throwable th) {
-            throw new ForwardException(getFilePath().getPath(), th);
+            throw new ForwardException(this, th);
         }
     }
 

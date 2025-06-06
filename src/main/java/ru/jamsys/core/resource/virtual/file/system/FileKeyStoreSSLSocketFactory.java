@@ -32,7 +32,7 @@ public class FileKeyStoreSSLSocketFactory extends FileKeyStore {
                 ssl.init(super.getKeyManagers(), trustManager.getListTrustManager(), new SecureRandom());
                 return ssl.getSocketFactory();
             } catch (Throwable th) {
-                throw new ForwardException(th);
+                throw new ForwardException(this, th);
             }
         });
     }

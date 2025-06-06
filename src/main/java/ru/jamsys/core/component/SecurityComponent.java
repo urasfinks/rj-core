@@ -135,7 +135,7 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
                 System.err.println("** Update file [" + property.getPathJsonCred() + "]; password field must not be empty");
             }
         } catch (Exception e) {
-            throw new ForwardException("Other problem", e);
+            throw new ForwardException(e);
         }
         System.err.println("== INIT SECURITY ===========================");
         throw new RuntimeException("Security.run() failed");

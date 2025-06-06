@@ -39,7 +39,7 @@ class ConnectionResourceTest {
                         List<Map<String, Object>> execute = jdbcResource.execute(jdbcRequest);
                         promise.setRepositoryMap("req1", execute);
                     } catch (Throwable e) {
-                        throw new ForwardException(e);
+                        throw new ForwardException(promise, e);
                     }
                 })
                 .run()

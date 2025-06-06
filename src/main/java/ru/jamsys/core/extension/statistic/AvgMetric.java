@@ -61,7 +61,7 @@ public class AvgMetric {
 
     @SuppressWarnings("unused")
     @JsonValue
-    Object getJsonValue() {
+    public Object getJsonValue() {
         return flushStatistic();
     }
 

@@ -4,6 +4,7 @@ package ru.jamsys.core.flat.util;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.io.File;
@@ -154,7 +155,10 @@ public class UtilFile {
             byte[] bytes = UtilFile.readBytes(location + relativeWebPath);
             return new String(bytes);
         } catch (Throwable th) {
-            throw new ForwardException(th);
+            throw new ForwardException(new HashMapBuilder<>()
+                    .append("location", location)
+                    .append("relativeWebPath", relativeWebPath),
+                    th);
         }
     }
 

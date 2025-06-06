@@ -1,5 +1,6 @@
 package ru.jamsys.core.resource.influx;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.influxdb.LogLevel;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
@@ -8,6 +9,7 @@ import com.influxdb.client.write.Point;
 import com.influxdb.internal.AbstractRestClient;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
@@ -30,12 +32,15 @@ public class InfluxResource extends AbstractExpirationResource implements Proper
 
     private final InfluxRepositoryProperty influxRepositoryProperty = new InfluxRepositoryProperty();
 
+    private final String ns;
+
     public InfluxResource(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
                 influxRepositoryProperty,
                 getCascadeKey(ns)
         );
+        this.ns = ns;
     }
 
     private void down() {
@@ -63,7 +68,7 @@ public class InfluxResource extends AbstractExpirationResource implements Proper
                 writer = client.getWriteApiBlocking();
             } catch (Exception e) {
                 App.error(e);
-                throw new ForwardException(e);
+                throw new ForwardException(this, e);
             }
         }
     }
@@ -116,6 +121,15 @@ public class InfluxResource extends AbstractExpirationResource implements Proper
             return msg.contains("Failed to connect");
         }
         return false;
+    }
+
+    @JsonValue
+    public Object getJsonValue() {
+        return new HashMapBuilder<>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                .append("ns", ns)
+                ;
     }
 
 }

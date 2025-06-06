@@ -31,7 +31,7 @@ public class FileKeyStoreSSLContext extends FileKeyStore {
                 ssl.init(super.getKeyManagers(), trustManager.getListTrustManager(), new SecureRandom());
                 return ssl;
             } catch (Throwable th) {
-                throw new ForwardException(th);
+                throw new ForwardException(this, th);
             }
         });
     }

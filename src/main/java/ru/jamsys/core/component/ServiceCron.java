@@ -45,7 +45,7 @@ public class ServiceCron extends AbstractLifeCycle implements LifeCycleComponent
                         promise.run();
                     }
                 } catch (Exception e) {
-                    App.error(new ForwardException(e), new HashMapBuilder<String, Object>()
+                    App.error(e, new HashMapBuilder<String, Object>()
                             .append("cronTask", cronTask)
                             .append("promise", promise));
                 }

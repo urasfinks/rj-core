@@ -1,11 +1,13 @@
 package ru.jamsys.core.extension.property;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.LifeCycleInterface;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.repository.AbstractRepositoryProperty;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -20,10 +22,8 @@ import java.util.Set;
 @Getter
 public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycleInterface {
 
-    @JsonIgnore
     private final PropertyListener propertyListener;
 
-    @JsonIgnore
     private final ServiceProperty serviceProperty;
 
     private final AbstractRepositoryProperty<T> repositoryProperty;
@@ -166,6 +166,18 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
 
     public void set(String repositoryPropertyKey, Object value) {
         serviceProperty.set(getPropertyKey(repositoryPropertyKey), value);
+    }
+
+    @JsonValue
+    public Object getJsonValue() {
+        return new HashMapBuilder<>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                .append("ns", ns)
+                .append("repositoryProperty", repositoryProperty)
+                .append("subscriptions", subscriptions)
+                .append("regexp", regexp)
+                ;
     }
 
 }

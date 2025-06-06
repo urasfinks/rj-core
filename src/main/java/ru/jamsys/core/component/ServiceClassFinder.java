@@ -144,12 +144,11 @@ public class ServiceClassFinder implements CascadeKey {
                     }
                     listClass.add(aClass);
                 } catch (Throwable th) {
-                    throw new ForwardException(th);
+                    throw new ForwardException(info, th);
                 }
             });
-
         } catch (Throwable th) {
-            throw new ForwardException(th);
+            throw new ForwardException(packageName, th);
         }
         return listClass;
     }

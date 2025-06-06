@@ -109,7 +109,7 @@ public class ServletHandler {
         try (ServletOutputStream so = getResponseOutputStream()) {
             so.write(responseBody.getBytes());
         } catch (Throwable th) {
-            App.error(new ForwardException(this, th));
+            App.error(th, this);
         }
         completableFuture.complete(null);
     }
@@ -125,7 +125,7 @@ public class ServletHandler {
             inputStream.close();
             out.flush();
         } catch (Throwable th) {
-            App.error(new ForwardException(this, th));
+            App.error(th, this);
         }
         completableFuture.complete(null);
     }
@@ -146,7 +146,7 @@ public class ServletHandler {
             out.write(body.getBytes(charset));
             out.flush();
         } catch (Throwable th) {
-            App.error(new ForwardException(this, th));
+            App.error(th, this);
         }
         completableFuture.complete(null);
     }

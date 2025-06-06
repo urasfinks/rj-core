@@ -1,11 +1,13 @@
 package ru.jamsys.core.resource.yandex.speech;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import speechkit.common.v3.Common;
@@ -85,7 +87,7 @@ public class YandexSpeechClient {
                     try {
                         result.write(utteranceSynthesisResponse.getAudioChunk().getData().toByteArray());
                     } catch (IOException e) {
-                        throw new ForwardException(e);
+                        throw new ForwardException(this, e);
                     }
                 }
             }
@@ -102,10 +104,18 @@ public class YandexSpeechClient {
                     AudioSystem.write(audioStream, AudioFileFormat.Type.WAVE, output);
                     onComplete.run();
                 } catch (Throwable e) {
-                    throw new ForwardException(e);
+                    throw new ForwardException(this, e);
                 }
             }
         });
+    }
+
+    @JsonValue
+    public Object getJsonValue() {
+        return new HashMapBuilder<>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                ;
     }
 
 }

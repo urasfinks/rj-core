@@ -1,5 +1,6 @@
 package ru.jamsys.core.resource.notification.email;
 
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.template.twix.TemplateTwix;
 import ru.jamsys.core.flat.util.UtilFileResource;
@@ -23,7 +24,11 @@ public class EmailTemplateNotificationRequest extends EmailNotificationRequest {
                     args
             ));
         } catch (Exception e) {
-            throw new ForwardException(e);
+            throw new ForwardException(new HashMapBuilder<>()
+                    .append("templateClassLoader", templateClassLoader)
+                    .append("templatePath", templatePath)
+                    .append("args", args),
+                    e);
         }
     }
 

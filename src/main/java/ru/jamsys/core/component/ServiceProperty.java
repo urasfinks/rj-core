@@ -1,5 +1,6 @@
 package ru.jamsys.core.component;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.AbstractEnvironment;
@@ -29,6 +30,7 @@ import java.util.function.Consumer;
 public class ServiceProperty {
 
     final private Map<String, Property> properties = new ConcurrentHashMap<>();
+
     final private ConcurrentLinkedDeque<String> sequenceKey = new ConcurrentLinkedDeque<>();
 
     //Нужен для момента, когда будет добавляться новое Property, что бы можно было к нему навешать старых слушателей
@@ -179,7 +181,8 @@ public class ServiceProperty {
         });
     }
 
-    public String getJson() {
+    @JsonValue
+    public String getJsonValue() {
         List<Property> result = new ArrayList<>();
         UtilRisc.forEach(null, sequenceKey, (propertyKey) -> {
             Property property = properties.get(propertyKey);

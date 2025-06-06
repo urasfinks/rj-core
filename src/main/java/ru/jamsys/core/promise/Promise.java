@@ -345,7 +345,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         try {
             cs.accept(this);
         } catch (Throwable th) {
-            throw new ForwardException(th);
+            throw new ForwardException(this, th);
         }
         return this;
     }

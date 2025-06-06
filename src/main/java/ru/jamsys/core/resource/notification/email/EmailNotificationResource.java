@@ -1,10 +1,12 @@
 package ru.jamsys.core.resource.notification.email;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.HtmlEmail;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
@@ -18,6 +20,8 @@ public class EmailNotificationResource extends AbstractExpirationResource {
     @Getter
     private final EmailNotificationRepositoryProperty property = new EmailNotificationRepositoryProperty();
 
+    private final String ns;
+
     public EmailNotificationResource(String ns) {
         securityComponent = App.get(SecurityComponent.class);
         propertyDispatcher = new PropertyDispatcher<>(
@@ -25,6 +29,7 @@ public class EmailNotificationResource extends AbstractExpirationResource {
                 property,
                 getCascadeKey(ns)
         );
+        this.ns = ns;
     }
 
     public Void execute(EmailNotificationRequest arguments) {
@@ -51,7 +56,7 @@ public class EmailNotificationResource extends AbstractExpirationResource {
             email.setHtmlMsg(arguments.getDataHtml());
             email.send();
         } catch (Exception e) {
-            throw new ForwardException(e);
+            throw new ForwardException(this, e);
         }
         return null;
     }
@@ -74,6 +79,15 @@ public class EmailNotificationResource extends AbstractExpirationResource {
     @Override
     public boolean checkFatalException(Throwable th) {
         return false;
+    }
+
+    @JsonValue
+    public Object getJsonValue() {
+        return new HashMapBuilder<>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                .append("ns", ns)
+                ;
     }
 
 }

@@ -25,6 +25,7 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.web.socket.WebSocket;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.UtilLog;
 
@@ -146,7 +147,7 @@ public class AppConfiguration implements WebSocketConfigurer {
                     serverProperties.setSsl(ssl);
                 } catch (Exception e) {
                     App.error(e);
-                    throw new ForwardException(e);
+                    throw new ForwardException(new HashMapBuilder<>().append("alias", securityAlias), e);
                 }
             } else {
                 App.error(new RuntimeException("run.args.web.ssl.security.alias is empty"));

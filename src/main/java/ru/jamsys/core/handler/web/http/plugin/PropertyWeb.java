@@ -34,7 +34,7 @@ public class PropertyWeb extends PromiseGeneratorAccess implements HttpHandler {
                 .append("input", (_, _, promise) -> {
                     ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
                     servletHandler.setResponseContentType("application/json");
-                    servletHandler.setResponseBody(App.get(ServiceProperty.class).getJson());
+                    servletHandler.setResponseBody(App.get(ServiceProperty.class).getJsonValue());
                 });
     }
 

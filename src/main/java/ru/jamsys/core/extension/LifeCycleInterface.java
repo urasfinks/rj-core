@@ -135,7 +135,7 @@ public interface LifeCycleInterface {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ie) {
-                throw new ForwardException(ie);
+                throw new ForwardException(this, ie);
             }
         }
         return reload();

@@ -89,7 +89,7 @@ public class App implements CascadeKey {
             mapBean.put(cls, t);
             return t;
         } catch (Throwable th) {
-            App.error(new ForwardException(cls.getName().toString(), th));
+            App.error(th, cls);
             throw th;
         }
     }

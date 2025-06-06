@@ -1,7 +1,9 @@
 package ru.jamsys.core.resource.jdbc;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
@@ -31,7 +33,10 @@ public class JdbcResource
 
     private final JdbcRepositoryProperty jdbcRepositoryProperty = new JdbcRepositoryProperty();
 
+    private final String ns;
+
     public JdbcResource(String ns) {
+        this.ns = ns;
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
                 jdbcRepositoryProperty,
@@ -50,7 +55,7 @@ public class JdbcResource
                         new String(securityComponent.get(jdbcRepositoryProperty.getSecurityAlias()))
                 );
             } catch (Throwable th) {
-                throw new ForwardException(th);
+                throw new ForwardException(this, th);
             }
         }
     }
@@ -60,7 +65,7 @@ public class JdbcResource
             try {
                 connection.close();
             } catch (Throwable th) {
-                App.error(new ForwardException(th));
+                App.error(th, this);
             }
             connection = null;
         }
@@ -68,11 +73,11 @@ public class JdbcResource
 
     public List<Map<String, Object>> execute(JdbcRequest arguments) throws Throwable {
         if (connection == null) {
-            throw new RuntimeException("Connection is null");
+            throw new ForwardException("Connection is null", this);
         }
         JdbcTemplate jdbcTemplate = arguments.getJdbcTemplate();
         if (jdbcTemplate == null) {
-            throw new RuntimeException("TemplateEnum: " + arguments.getName() + " return null template");
+            throw new ForwardException("TemplateEnum: " + arguments.getName() + " return null template", this);
         }
         return execute(connection, jdbcTemplate, arguments.getListArgs(), statementControl, arguments.isDebug());
     }
@@ -111,7 +116,7 @@ public class JdbcResource
                 T t = cls.getDeclaredConstructor().newInstance();
                 result.add(t.fromMap(map, DataMapper.TransformCodeStyle.SNAKE_TO_CAMEL));
             } catch (Throwable th) {
-                throw new RuntimeException(th);
+                throw new ForwardException(this, th);
             }
         });
         return result;
@@ -137,12 +142,21 @@ public class JdbcResource
             return false;
     }
 
+    @JsonValue
+    public Object getJsonValue() {
+        return new HashMapBuilder<>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
+                .append("ns", ns)
+                ;
+    }
+
     @Override
     public void runOperation() {
         propertyDispatcher.run();
         up();
         if (connection == null) {
-            throw new RuntimeException("Connection problem");
+            throw new ForwardException("Connection problem", this);
         }
     }
 

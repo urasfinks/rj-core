@@ -1,6 +1,5 @@
 package ru.jamsys.core.extension.property.repository;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -13,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@JsonPropertyOrder({"listPropertyEnvelopeRepository", "init", "cls"})
 @Getter
 public abstract class AbstractRepositoryProperty<T> {
 
@@ -70,6 +68,8 @@ public abstract class AbstractRepositoryProperty<T> {
     @JsonValue
     public Object getJsonValue() {
         return new HashMapBuilder<String, Object>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("cls", getClass())
                 .append("listPropertyEnvelopeRepository", listPropertyEnvelopeRepository)
                 .append("init", init.get());
     }

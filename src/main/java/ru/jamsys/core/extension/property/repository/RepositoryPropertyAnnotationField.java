@@ -52,7 +52,7 @@ public class RepositoryPropertyAnnotationField<T> extends AbstractRepositoryProp
                         fill(tPropertyEnvelope);
                         getListPropertyEnvelopeRepository().add(tPropertyEnvelope);
                     } catch (Throwable th) {
-                        throw new ForwardException(th);
+                        throw new ForwardException(propertyDispatcher, th);
                     }
                 }
             }

@@ -2,6 +2,7 @@ package ru.jamsys.core.resource.virtual.file.system;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.SupplierThrowing;
 import ru.jamsys.core.flat.util.FileWriteOptions;
@@ -30,10 +31,13 @@ public class ReadFromSourceFactory {
     @SuppressWarnings("unused")
     public static SupplierThrowing<byte[]> createFileAndRead(String path, String data, String charset) {
         try {
-        UtilFile.writeBytes(path, data.getBytes(charset), FileWriteOptions.CREATE_OR_REPLACE);
-        return fromFileSystem(path);
+            UtilFile.writeBytes(path, data.getBytes(charset), FileWriteOptions.CREATE_OR_REPLACE);
+            return fromFileSystem(path);
         } catch (Throwable th) {
-            throw new ForwardException(th);
+            throw new ForwardException(new HashMapBuilder<>()
+                    .append("path", path)
+                    .append("dataLength", data != null ? data.length() : null)
+                    .append("charset", charset), th);
         }
     }
 
@@ -48,7 +52,10 @@ public class ReadFromSourceFactory {
             UtilFile.writeBytes(path, byteArrayOutputStream.toByteArray(), FileWriteOptions.CREATE_OR_REPLACE);
             return fromFileSystem(path);
         } catch (Throwable th) {
-            throw new ForwardException(th);
+            throw new ForwardException(new HashMapBuilder<>()
+                    .append("path", path)
+                    .append("alias", securityAlias),
+                    th);
         }
     }
 
