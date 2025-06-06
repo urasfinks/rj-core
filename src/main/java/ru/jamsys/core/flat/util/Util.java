@@ -182,20 +182,6 @@ public class Util {
         if (hostname != null && !hostname.isEmpty()) {
             return hostname;
         }
-
-        // 3. Попробовать выполнить команду hostname (если ничего не сработало)
-        try {
-            Process process = Runtime.getRuntime().exec("hostname");
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                hostname = reader.readLine();
-                if (hostname != null && !hostname.isEmpty()) {
-                    return hostname;
-                }
-            }
-        } catch (IOException ignored) {
-            // Если и это не сработало, возвращаем "unknown"
-        }
         return "unknown"; // Если все способы не дали результата
     }
 

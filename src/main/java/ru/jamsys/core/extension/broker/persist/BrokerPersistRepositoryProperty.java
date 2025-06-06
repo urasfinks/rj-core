@@ -18,11 +18,13 @@ public class BrokerPersistRepositoryProperty extends RepositoryPropertyAnnotatio
     @PropertyDescription("Директория для хранения .bin и .commit")
     private volatile String directory;
 
+    @SuppressWarnings("all")
     @PropertyNotNull
     @PropertyKey("count")
     @PropertyDescription("Кол-во файлов которое храним")
     private volatile Integer count = 3;
 
+    @SuppressWarnings("all")
     @PropertyNotNull
     @PropertyKey("retry.timeout.ms")
     @PropertyDescription("Повторный вброс, если не пришёл commit")

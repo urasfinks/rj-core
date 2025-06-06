@@ -170,6 +170,7 @@ public class UtilFile {
         FileUtils.deleteDirectory(dir);
     }
 
+    @SuppressWarnings("all")
     public static boolean createNewFile(String filePath) throws IOException {
         File file = new File(filePath);
         return file.createNewFile();
@@ -183,7 +184,7 @@ public class UtilFile {
             throw new IllegalArgumentException("Исходная директория не существует или не является директорией: " + sourceDirPath);
         }
 
-        Files.walkFileTree(sourceDir, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(sourceDir, new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                 Path targetPath = targetDir.resolve(sourceDir.relativize(dir));
