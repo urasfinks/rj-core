@@ -44,10 +44,12 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
         routeGeneratorRepository = routeGenerator.getRouterRepository(WebSocketHandler.class);
     }
 
+    @SuppressWarnings("unused")
     public void subscribe(String key, WebSocketSession webSocketSession) {
         subscription.computeIfAbsent(key, _ -> new ArrayList<>()).add(webSocketSession);
     }
 
+    @SuppressWarnings("unused")
     public void unsubscribe(String key, WebSocketSession webSocketSession) {
         if (
                 subscription.getOrDefault(key, List.of()).remove(webSocketSession)
@@ -57,6 +59,7 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
         }
     }
 
+    @SuppressWarnings("unused")
     public void notify(String key, String data) {
         UtilRisc.forEach(null, subscription.getOrDefault(key, List.of()), webSocketSession -> {
             send(webSocketSession, data);
