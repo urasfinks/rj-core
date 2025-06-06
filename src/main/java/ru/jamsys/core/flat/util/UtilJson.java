@@ -7,9 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
-import org.springframework.lang.Nullable;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,29 +20,6 @@ public class UtilJson {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     public static final ObjectMapper objectMapperPretty = new ObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT);
-
-    public static Object selector(Map<String, Object> obj, String selector) {
-        String[] split = selector.split("\\.");
-        Map<String, Object> target = obj;
-        for (int i = 0; i < split.length; i++) {
-            // Должна быть не конкурентная проверка
-            if (!target.containsKey(split[i])) {
-                return null;
-            }
-            if (i == split.length - 1) {
-                return target.get(split[i]);
-            } else {
-                try {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> x = (Map<String, Object>) target.get(split[i]);
-                    target = x;
-                } catch (Throwable th) {
-                    throw new ForwardException("selector: " + selector + "; ex: " + split[i], th);
-                }
-            }
-        }
-        return null;
-    }
 
     public static ReadContext getContext(String json) {
         return JsonPath.parse(json);
@@ -72,8 +47,6 @@ public class UtilJson {
         });
     }
 
-    @SuppressWarnings("unused")
-    @Nullable
     public static String toString(Object object, String def) {
         try {
             return objectMapper.writeValueAsString(object);
@@ -87,7 +60,6 @@ public class UtilJson {
         return objectMapper.writeValueAsString(object);
     }
 
-    @SuppressWarnings("unused")
     public static String toStringPretty(Object object, String def) {
         DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
         prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
