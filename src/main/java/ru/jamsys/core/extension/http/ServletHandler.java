@@ -15,7 +15,6 @@ import ru.jamsys.core.flat.util.UtilJson;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -110,7 +109,7 @@ public class ServletHandler {
         try (ServletOutputStream so = getResponseOutputStream()) {
             so.write(responseBody.getBytes());
         } catch (Throwable th) {
-            App.error(new ForwardException(th));
+            App.error(new ForwardException(this, th));
         }
         completableFuture.complete(null);
     }
@@ -125,7 +124,7 @@ public class ServletHandler {
             inputStream.close();
             out.flush();
         } catch (Throwable th) {
-            App.error(new ForwardException(th));
+            App.error(new ForwardException(this, th));
         }
         completableFuture.complete(null);
     }
@@ -151,7 +150,7 @@ public class ServletHandler {
             out.write(body.getBytes(charset));
             out.flush();
         } catch (Throwable th) {
-            App.error(new ForwardException(th));
+            App.error(new ForwardException(this, th));
         }
         completableFuture.complete(null);
     }

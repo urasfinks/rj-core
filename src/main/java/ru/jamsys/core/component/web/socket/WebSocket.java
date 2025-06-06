@@ -103,7 +103,7 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
         try {
             req = UtilJson.getMapOrThrow(request);
         } catch (Throwable th) {
-            throw new ForwardException(th);
+            throw new ForwardException(message, th);
         }
         PromiseGenerator promiseGenerator = routeGeneratorRepository.match((String) req.get("uri"));
         if (promiseGenerator == null) {

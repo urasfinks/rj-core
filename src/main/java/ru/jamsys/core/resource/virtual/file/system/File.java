@@ -45,7 +45,7 @@ public class File extends AbstractManagerElement {
         try {
             bytes = readFromSource.get();
         } catch (Throwable th) {
-            throw new ForwardException(filePath.getPath(), th);
+            throw new ForwardException(filePath, th);
         }
     }
 

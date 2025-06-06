@@ -132,7 +132,6 @@ public class PropertyEnvelope<T> {
             T apply = (T) PropertyUtil.convertType.get(cls).apply(property.get());
             this.value = apply;
         } catch (Throwable th) {
-            //"PropertyUtil.convertType.get(" + cls + ").apply(" + property.get() + ");"
             throw new ForwardException(this, th);
         }
         this.description = property.getDescription();

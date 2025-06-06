@@ -2,6 +2,7 @@ package ru.jamsys.core.resource.yandex.speech;
 
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
@@ -19,12 +20,12 @@ public class YandexSpeechResource
 
     private final PropertyDispatcher<Object> propertyDispatcher;
 
-    private final YandexSpeechRepositoryProperty yandexSpeechRepositoryProperty = new YandexSpeechRepositoryProperty();
+    private final YandexSpeechRepositoryProperty property = new YandexSpeechRepositoryProperty();
 
     public YandexSpeechResource(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
-                yandexSpeechRepositoryProperty,
+                property,
                 getCascadeKey(ns)
         );
     }
@@ -69,7 +70,7 @@ public class YandexSpeechResource
 
     @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
-        if (yandexSpeechRepositoryProperty.getHost() == null || yandexSpeechRepositoryProperty.getPort() == null || yandexSpeechRepositoryProperty.getAlias() == null) {
+        if (property.getHost() == null || property.getPort() == null || property.getAlias() == null) {
             return;
         }
         if (client != null) {
@@ -77,13 +78,18 @@ public class YandexSpeechResource
         }
         try {
             client = new YandexSpeechClient(
-                    yandexSpeechRepositoryProperty.getHost(),
-                    yandexSpeechRepositoryProperty.getPort(),
-                    new String(App.get(SecurityComponent.class).get(yandexSpeechRepositoryProperty.getAlias()))
+                    property.getHost(),
+                    property.getPort(),
+                    new String(App.get(SecurityComponent.class).get(property.getAlias()))
             );
         } catch (Exception e) {
             App.error(e);
-            throw new ForwardException(e);
+            throw new ForwardException(new HashMapBuilder<>()
+                    .append("host", property.getHost())
+                    .append("port", property.getPort())
+                    .append("alias", property.getAlias())
+                    ,
+                    e);
         }
     }
 

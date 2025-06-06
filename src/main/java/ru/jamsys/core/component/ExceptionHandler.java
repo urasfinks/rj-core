@@ -36,7 +36,6 @@ public class ExceptionHandler {
     }
 
     public static void getTextException(Throwable th, LineWriter sw) {
-
         printStackTrace(th, sw);
         Throwable cause = th.getCause();
         if (cause != null) {

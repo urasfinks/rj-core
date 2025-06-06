@@ -41,8 +41,8 @@ public class Helper1s extends PromiseGenerator implements Cron1s  {
                         (run, _, _) -> manager.groupAcceptByInterface(AbstractAsyncFileWriter.class, abstractAsyncFileWriter -> {
                             try {
                                 abstractAsyncFileWriter.flush(run);
-                            } catch (Throwable e) {
-                                throw new ForwardException(abstractAsyncFileWriter, e);
+                            } catch (Throwable th) {
+                                throw new ForwardException(abstractAsyncFileWriter, th);
                             }
                         }))
                 ;

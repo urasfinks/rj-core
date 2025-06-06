@@ -219,7 +219,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
             );
             position.set(0); // Начинаем с 0 позиции в новом файле
         } catch (Throwable th) {
-            throw new ForwardException(th);
+            throw new ForwardException(this, th);
         }
     }
 
