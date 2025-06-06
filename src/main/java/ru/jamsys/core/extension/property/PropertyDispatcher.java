@@ -1,6 +1,5 @@
 package ru.jamsys.core.extension.property;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import ru.jamsys.core.App;

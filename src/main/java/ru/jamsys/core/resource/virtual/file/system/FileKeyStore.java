@@ -36,6 +36,7 @@ public class FileKeyStore extends File {
         this.securityAlias = securityAlias;
     }
 
+    @SuppressWarnings("unused")
     public void setupAlgorithmKeyManager(String algorithmKeyManager) {
         this.algorithmKeyManager = algorithmKeyManager;
     }

@@ -9,7 +9,6 @@ import org.springframework.context.event.ContextClosedEvent;
 import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
 

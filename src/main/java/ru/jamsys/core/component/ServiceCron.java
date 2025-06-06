@@ -8,7 +8,6 @@ import ru.jamsys.core.extension.AbstractLifeCycle;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.LifeCycleComponent;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.CronConfigurator;
 import ru.jamsys.core.flat.util.Util;
