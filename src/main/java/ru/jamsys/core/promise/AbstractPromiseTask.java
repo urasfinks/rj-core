@@ -73,7 +73,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     }
 
     @JsonValue
-    public Object getValue() {
+    public Object getJsonValue() {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
@@ -143,7 +143,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
                 App.get(ServicePromise.class).addRetryDelay(this);
                 getPromise().getTrace().add(new Trace<>(this.getNs() + "::addRetryDelay(" + retryCount + ")", th));
             } else {
-                getPromise().setError(this.getNs(), new ForwardException(th));
+                getPromise().setError(this.getNs(), new ForwardException(this, th));
             }
         } finally {
             // Используется только в терминальных задачах onComplete / onError для того, что бы перевести Promise
@@ -153,7 +153,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
                     terminalExecute.run();
                 }
             } catch (Throwable th) {
-                getPromise().setError(this.getNs(), new ForwardException(th));
+                getPromise().setError(this.getNs(), new ForwardException(this, th));
             }
             flushRepositoryChange();
             timerEnvelope.stop();

@@ -91,6 +91,7 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         R remove = (R) map
                 .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
                 .remove(CascadeKey.complex(key, ns));
+        remove.shutdown();
         return remove;
     }
 

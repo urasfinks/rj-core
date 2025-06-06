@@ -19,6 +19,11 @@ public class BrokerPersistRepositoryProperty extends RepositoryPropertyAnnotatio
     private volatile String directory;
 
     @PropertyNotNull
+    @PropertyKey("count")
+    @PropertyDescription("Кол-во файлов которое храним")
+    private volatile Integer count = 3;
+
+    @PropertyNotNull
     @PropertyKey("retry.timeout.ms")
     @PropertyDescription("Повторный вброс, если не пришёл commit")
     private volatile Integer retryTimeoutMs = 10 * 60 * 1000; // 10 минут

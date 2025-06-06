@@ -17,8 +17,7 @@ import java.util.Map;
 @Setter
 public class VictoriaMetricsConvert {
 
-    public static List<String> getInfluxFormat(StatDataHeader statDataHeader) {
-        List<String> result = new ArrayList<>();
+    public static Point getInfluxFormat(StatDataHeader statDataHeader) {
         Map<String, Object> header = statDataHeader.getHeader();
         Point point = Point
                 .measurement(statDataHeader.getCls())
@@ -27,8 +26,7 @@ public class VictoriaMetricsConvert {
         if (statDataHeader.getNs() != null) {
             point.addTag("ns", statDataHeader.getNs());
         }
-        result.add(point.toLineProtocol());
-        return result;
+        return point;
     }
 
     @SuppressWarnings("unused")

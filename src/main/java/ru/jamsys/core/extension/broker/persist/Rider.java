@@ -8,6 +8,7 @@ import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.*;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.flat.util.UtilByte;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -50,7 +51,7 @@ public class Rider extends AbstractManagerElement {
     }
 
     @JsonValue
-    public Object getValue() {
+    public Object getJsonValue() {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
@@ -119,7 +120,7 @@ public class Rider extends AbstractManagerElement {
                 queueRetry.remove(xPosition);
             });
         } catch (Throwable th) {
-            throw new RuntimeException(th);
+            throw new ForwardException(this, th);
         }
     }
 

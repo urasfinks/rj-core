@@ -59,7 +59,7 @@ class BrokerPersistTest {
 
     @BeforeEach
     void beforeEach() {
-        UtilFile.removeAllFilesInFolder("LogManager");
+        UtilFile.removeAllFilesInFolder("1LogPersist");
         if (App.get(Manager.class).contains(ExpirationList.class, QueueRetry.class.getName(), QueueRetry.class.getName())) {
             App.get(Manager.class).get(ExpirationList.class, QueueRetry.class.getName(), QueueRetry.class.getName(), null).unitTestReset();
         }
@@ -73,12 +73,13 @@ class BrokerPersistTest {
     @SuppressWarnings("all")
     @Test
     public void test1() throws Throwable {
-        App.get(ServiceProperty.class).set("$.BrokerPersist.test1.directory", "LogManager");
+        App.get(ServiceProperty.class).set("$.BrokerPersist.test1.directory", "1LogPersist");
         ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerPersist.class,
                 java.util.UUID.randomUUID().toString(),
                 "test1",
                 managerElement -> {
+                    managerElement.setup(bytes -> new TestElement(new String(bytes)));
                 }
         );
         BrokerPersist<TestElement> test = brokerPersistManagerConfiguration.get();
@@ -165,12 +166,12 @@ class BrokerPersistTest {
     @SuppressWarnings("all")
     @Test
     void test2() throws Throwable {
-        UtilFile.removeAllFilesInFolder("LogManager");
-        App.get(ServiceProperty.class).set("$.BrokerPersist.test2.directory", "LogManager");
-        App.get(ServiceProperty.class).set("$.AsyncFileWriterWal[$.BrokerPersist.test2::LogManager/test2.afwr].flush.max.time.ms", "99999999");
+        UtilFile.removeAllFilesInFolder("1LogPersist");
+        App.get(ServiceProperty.class).set("$.BrokerPersist.test2.directory", "1LogPersist");
+        App.get(ServiceProperty.class).set("$.AsyncFileWriterWal[$.BrokerPersist.test2::1LogPersist/test2.afwr].flush.max.time.ms", "99999999");
 
         // 2 записи; 0 коммитов
-        UtilFile.writeBytes("LogManager/test1.afwr", ((Supplier<byte[]>) () -> {
+        UtilFile.writeBytes("1LogPersist/test1.afwr", ((Supplier<byte[]>) () -> {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             try {
                 output.write(UtilByte.intToBytes(5));
@@ -184,10 +185,10 @@ class BrokerPersistTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        UtilFile.createNewFile("LogManager/test1.afwr.commit");
+        UtilFile.createNewFile("1LogPersist/test1.afwr.commit");
 
         // 2 записи; 1 коммит
-        UtilFile.writeBytes("LogManager/test2.afwr", ((Supplier<byte[]>) () -> {
+        UtilFile.writeBytes("1LogPersist/test2.afwr", ((Supplier<byte[]>) () -> {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             try {
                 output.write(UtilByte.intToBytes(5));
@@ -201,7 +202,7 @@ class BrokerPersistTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        UtilFile.writeBytes("LogManager/test2.afwr.commit", ((Supplier<byte[]>) () -> {
+        UtilFile.writeBytes("1LogPersist/test2.afwr.commit", ((Supplier<byte[]>) () -> {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             try {
                 output.write(UtilByte.intToBytes(8));
@@ -216,7 +217,7 @@ class BrokerPersistTest {
                 BrokerPersist.class,
                 java.util.UUID.randomUUID().toString(),
                 "test2",
-                managerElement -> managerElement.setupRestoreElementFromByte((bytes) -> new TestElement(new String(bytes)))
+                managerElement -> managerElement.setup((bytes) -> new TestElement(new String(bytes)))
         );
 
         BrokerPersist<TestElement> test = brokerPersistManagerConfiguration.get();
@@ -224,7 +225,7 @@ class BrokerPersistTest {
         Assertions.assertEquals(2, test.getMapRiderConfiguration().size());
         X<TestElement> poll = test.poll();
         // Очередь последнего rider полностью вычитана
-        Assertions.assertEquals("LogManager/test2.afwr.commit", test.getLastRiderConfiguration().get().getFilePathY());
+        Assertions.assertEquals("1LogPersist/test2.afwr.commit", test.getLastRiderConfiguration().get().getFilePathY());
         Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().size());
 
         // В данный момент последний райдер не завершён, так как ждёт коммита выданного элемента
@@ -272,16 +273,16 @@ class BrokerPersistTest {
 
         // Проверяем что rider преисполнился, то есть у него в очередях ничего нет и нет в expirationList ожиданий
         // и файл по которому мы читали записан до конца (finishState)
-        Assertions.assertEquals("LogManager/test2.afwr.commit", lastRider.getFilePathY());
+        Assertions.assertEquals("1LogPersist/test2.afwr.commit", lastRider.getFilePathY());
         Assertions.assertTrue(lastRider.getQueueRetry().isProcessed());
 
         // Эмулируем работу менеджера, завершаем rider
         lastRider.shutdown();
 
         // Проверяем что файла больше нет
-        Assertions.assertFalse(UtilFile.ifExist("LogManager/test2.afwr.commit"));
+        Assertions.assertFalse(UtilFile.ifExist("1LogPersist/test2.afwr.commit"));
         // После удаления ещё должен поменяться и
-        Assertions.assertEquals("LogManager/test1.afwr.commit", test.getLastRiderConfiguration().get().getFilePathY());
+        Assertions.assertEquals("1LogPersist/test1.afwr.commit", test.getLastRiderConfiguration().get().getFilePathY());
 
         // После удаления rider в мапе должен остаться только 1
         Assertions.assertEquals(1, test.getMapRiderConfiguration().size());

@@ -133,7 +133,7 @@ public class PropertyEnvelope<T> {
             this.value = apply;
         } catch (Throwable th) {
             //"PropertyUtil.convertType.get(" + cls + ").apply(" + property.get() + ");"
-            throw new ForwardException(UtilJson.toStringPretty(this, "{}"), th);
+            throw new ForwardException(this, th);
         }
         this.description = property.getDescription();
         return this;

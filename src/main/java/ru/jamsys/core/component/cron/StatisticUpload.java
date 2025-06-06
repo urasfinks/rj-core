@@ -1,0 +1,53 @@
+package ru.jamsys.core.component.cron;
+
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServicePromise;
+import ru.jamsys.core.extension.broker.persist.BrokerPersist;
+import ru.jamsys.core.extension.broker.persist.X;
+import ru.jamsys.core.extension.broker.persist.element.StatisticElement;
+import ru.jamsys.core.flat.template.cron.Cron;
+import ru.jamsys.core.flat.template.cron.release.Cron1s;
+import ru.jamsys.core.promise.Promise;
+import ru.jamsys.core.promise.PromiseGenerator;
+
+@SuppressWarnings("unused")
+@Component
+@Lazy
+public class StatisticUpload extends PromiseGenerator implements Cron1s {
+
+    private final ServicePromise servicePromise;
+
+    private final StatisticFlush serviceFlush;
+
+    public StatisticUpload(ServicePromise servicePromise, StatisticFlush serviceFlush) {
+        this.servicePromise = servicePromise;
+        this.serviceFlush = serviceFlush;
+    }
+
+    @Override
+    public boolean isTimeHasCome(Cron.CompileResult compileResult) {
+        // Запускать будем спустя секунду, а не прямо в момент старта
+        // Это влияет на тесты
+        return compileResult.getBeforeTimestamp() != 0;
+    }
+
+    @Override
+    public Promise generate() {
+        return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
+                .append("main", (threadRun, _, _) -> {
+                    BrokerPersist<StatisticElement> statisticElementBrokerPersist =
+                            serviceFlush.getBrokerPersistManagerConfiguration().get();
+                    while (true) {
+                        X<StatisticElement> poll = statisticElementBrokerPersist.poll();
+                        if (poll == null) {
+                            break;
+                        }
+                        StatisticElement element = poll.getElement();
+                        statisticElementBrokerPersist.commit(poll);
+                    }
+                });
+    }
+
+}

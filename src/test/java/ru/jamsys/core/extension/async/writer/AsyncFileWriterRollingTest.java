@@ -45,7 +45,7 @@ class AsyncFileWriterRollingTest {
     @BeforeEach
     void setUp() {
         run.set(true);
-        App.get(ServiceProperty.class).set("$.BrokerPersist.test.directory", "LogManager");
+        App.get(ServiceProperty.class).set("$.BrokerPersist.test.directory", "1LogPersist");
         BrokerPersistRepositoryProperty brokerPersistRepositoryProperty = new BrokerPersistRepositoryProperty();
         PropertyDispatcher<Object> test = new PropertyDispatcher<>(
                 null,
@@ -73,7 +73,7 @@ class AsyncFileWriterRollingTest {
         outputQueue.clear();
         if (writer != null) {
             writer.shutdown();
-            UtilFile.removeAllFilesInFolder("LogManager");
+            UtilFile.removeAllFilesInFolder("1LogPersist");
         }
     }
 

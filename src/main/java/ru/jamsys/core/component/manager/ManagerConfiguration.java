@@ -1,6 +1,7 @@
 package ru.jamsys.core.component.manager;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -17,10 +18,13 @@ import java.util.function.Consumer;
 
 public class ManagerConfiguration<T extends AbstractManagerElement> {
 
+    @Getter
     private final Class<T> cls;
 
+    @Getter
     private final String key;
 
+    @Getter
     private final String ns;
 
     private final Manager manager;
@@ -40,7 +44,7 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
     }
 
     @JsonValue
-    public Object getValue() {
+    public Object getJsonValue() {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", cls)

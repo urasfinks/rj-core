@@ -18,17 +18,17 @@ class RiderTest {
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runSpring();
-        App.get(ServiceProperty.class).set("$.BrokerPersist.test.directory", "LogManager");
+        App.get(ServiceProperty.class).set("$.BrokerPersist.test.directory", "1LogPersist");
     }
 
     @BeforeEach
     void beforeEach() {
-        UtilFile.removeAllFilesInFolder("LogManager");
+        UtilFile.removeAllFilesInFolder("1LogPersist");
     }
 
     @AfterAll
     static void shutdown() {
-        UtilFile.removeAllFilesInFolder("LogManager");
+        UtilFile.removeAllFilesInFolder("1LogPersist");
         App.shutdown();
     }
 
@@ -43,7 +43,7 @@ class RiderTest {
         );
         test.run();
 
-        UtilFile.writeBytes("LogManager/test.bin", ((Supplier<byte[]>) () -> {
+        UtilFile.writeBytes("1LogPersist/test.bin", ((Supplier<byte[]>) () -> {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             try {
                 output.write(UtilByte.intToBytes(5));
@@ -56,7 +56,7 @@ class RiderTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        UtilFile.writeBytes("LogManager/test.bin.commit", ((Supplier<byte[]>) () -> {
+        UtilFile.writeBytes("1LogPersist/test.bin.commit", ((Supplier<byte[]>) () -> {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             try {
                 output.write(UtilByte.intToBytes(8));
@@ -70,7 +70,7 @@ class RiderTest {
         ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfiguration.getInstance(
                 Rider.class,
                 java.util.UUID.randomUUID().toString(),
-                "LogManager/test.bin",
+                "1LogPersist/test.bin",
                 managerElement -> {
                     managerElement.setup(
                             brokerPersistRepositoryProperty,

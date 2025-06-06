@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -172,6 +173,32 @@ public class UtilFile {
     public static boolean createNewFile(String filePath) throws IOException {
         File file = new File(filePath);
         return file.createNewFile();
+    }
+
+    public static void copyAllFilesRecursive(String sourceDirPath, String targetDirPath) throws IOException {
+        Path sourceDir = Paths.get(sourceDirPath);
+        Path targetDir = Paths.get(targetDirPath);
+
+        if (!Files.exists(sourceDir) || !Files.isDirectory(sourceDir)) {
+            throw new IllegalArgumentException("Исходная директория не существует или не является директорией: " + sourceDirPath);
+        }
+
+        Files.walkFileTree(sourceDir, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                Path targetPath = targetDir.resolve(sourceDir.relativize(dir));
+                if (!Files.exists(targetPath)) {
+                    Files.createDirectory(targetPath);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.copy(file, targetDir.resolve(sourceDir.relativize(file)), StandardCopyOption.REPLACE_EXISTING);
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
 }

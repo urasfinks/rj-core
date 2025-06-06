@@ -8,6 +8,7 @@ import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
 import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilLog;
 
 @Setter
@@ -35,7 +36,8 @@ public class ExceptionHandler {
     }
 
     public static void getTextException(Throwable th, LineWriter sw) {
-        printStackTrace(th, sw, (th instanceof ForwardException) ? 1 : null);
+
+        printStackTrace(th, sw);
         Throwable cause = th.getCause();
         if (cause != null) {
             sw.addLine("Caused by: ");
@@ -49,10 +51,24 @@ public class ExceptionHandler {
                 + "(" + element.getFileName() + ":" + element.getLineNumber() + ")";
     }
 
-    private static void printStackTrace(Throwable th, LineWriter sw, Integer count) {
+    private static void printStackTrace(Throwable th, LineWriter sw) {
+        int m = maxLine;
         StackTraceElement[] elements = th.getStackTrace();
         sw.addLine(th.getClass().getName() + ": " + th.getMessage());
-        int m = count != null ? count : maxLine;
+        if (th instanceof ForwardException forwardException) {
+            m = 1;
+            if (forwardException.getContext() != null) {
+                try {
+                    String stringPretty = UtilJson.toStringPretty(forwardException.getContext(), "{}");
+                    sw.addLine("ForwardException.Context:");
+                    for (String str : stringPretty.split("\n")) {
+                        sw.addLine(str);
+                    }
+                } catch (Throwable thSerialize) {
+                    sw.addLine("ForwardException.Context: error serialize: " + thSerialize.getMessage());
+                }
+            }
+        }
         int s = elements.length;
         for (StackTraceElement element : elements) {
             sw.addLineIndent(getLineStack(element));

@@ -67,7 +67,7 @@ public class RepositoryProperty<T> extends AbstractRepositoryProperty<T> {
 
     @Override
     @JsonValue
-    public Object getValue() {
+    public Object getJsonValue() {
         return new HashMapBuilder<String, Object>()
                 .append("cls", cls)
                 .append("listPropertyEnvelopeRepository", getListPropertyEnvelopeRepository())

@@ -26,17 +26,17 @@ class LogBrokerPersistTest {
 
     @BeforeEach
     void beforeEach() {
-        UtilFile.removeAllFilesInFolder("LogManager");
+        UtilFile.removeAllFilesInFolder("1LogPersist");
     }
 
     @Test
     void linearTest() throws InterruptedException {
-        App.get(ServiceProperty.class).set("$.BrokerPersist.test.directory", "LogManager");
+        App.get(ServiceProperty.class).set("$.BrokerPersist.test.directory", "1LogPersist");
         ManagerConfiguration<BrokerPersist<Log>> brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerPersist.class,
                 java.util.UUID.randomUUID().toString(),
                 "test",
-                managerElement -> managerElement.setupRestoreElementFromByte((bytes) -> {
+                managerElement -> managerElement.setup((bytes) -> {
                     try {
                         return (Log) Log.instanceFromBytes(bytes);
                     } catch (Exception e) {

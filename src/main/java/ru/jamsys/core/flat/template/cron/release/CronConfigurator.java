@@ -15,7 +15,7 @@ public interface CronConfigurator {
     }
 
     @JsonValue
-    default Object getValue() {
+    default Object getJsonValue() {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())

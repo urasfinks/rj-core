@@ -39,7 +39,7 @@ public class Trace<K, V> {
     }
 
     @JsonValue
-    public Object getValue() {
+    public Object getJsonValue() {
         if (value == null) {
             return UtilDate.msFormat(timeAdd) + " " + index;
         } else {

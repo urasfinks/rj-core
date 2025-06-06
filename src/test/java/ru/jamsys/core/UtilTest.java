@@ -174,7 +174,7 @@ class UtilTest {
 
         @SuppressWarnings("all")
         @PropertyKey("folder")
-        private String folder = "LogManager";
+        private String folder = "1LogPersist";
 
         @SuppressWarnings("all")
         @PropertyKey("file.size.kb")

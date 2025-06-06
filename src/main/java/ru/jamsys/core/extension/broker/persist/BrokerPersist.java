@@ -60,6 +60,8 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
 
     private Function<byte[], T> restoreElementFromByte;
 
+    private final ConcurrentLinkedDeque<String> queueTransactionFile = new ConcurrentLinkedDeque<>();
+
     public BrokerPersist(String ns) {
         this.ns = ns;
         propertyDispatcher = new PropertyDispatcher<>(
@@ -70,12 +72,12 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
         xWriterInit();
     }
 
-    public void setupRestoreElementFromByte(Function<byte[], T> restoreElementFromByte){
+    public void setup(Function<byte[], T> restoreElementFromByte) {
         this.restoreElementFromByte = restoreElementFromByte;
     }
 
     @JsonValue
-    public Object getValue() {
+    public Object getJsonValue() {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
@@ -146,12 +148,33 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
     private void removeRiderIfComplete(Rider rider) {
         if (rider.getQueueRetry().isProcessed()) {
-            // rider.shutdown(); // Когда менеджер будет его выбрасывать, сам выключит
-            ManagerConfiguration<Rider> removedRiderConfiguration
-                    = mapRiderConfiguration.remove(filePathYToX(rider.getFilePathY()));
+            String filePathX = filePathYToX(rider.getFilePathY());
+            ManagerConfiguration<Rider> removedRiderConfiguration = mapRiderConfiguration.remove(filePathX);
             // Если контроллер найден по имени файла, удалим и из очереди
             if (removedRiderConfiguration != null) {
                 queueRiderConfiguration.remove(removedRiderConfiguration);
+                App.get(Manager.class).remove(
+                        removedRiderConfiguration.getCls(),
+                        removedRiderConfiguration.getKey(),
+                        removedRiderConfiguration.getNs()
+                );
+            }
+        }
+    }
+
+    private void removeCycleTransactionFile() {
+        while (queueTransactionFile.size() > property.getCount()) {
+            String s = queueTransactionFile.peekFirst();
+            // Если Rider существует по файлу, значит файл ещё не обработан
+            if (mapRiderConfiguration.containsKey(s)) {
+                break;
+            }
+            if (queueTransactionFile.remove(s)) {
+                try {
+                    UtilFile.remove(s);
+                } catch (Exception e) {
+                    App.error(e);
+                }
             }
         }
     }
@@ -186,6 +209,8 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
         if (!Files.exists(Paths.get(filePathXToY(filePathX)))) {
             return null;
         }
+        queueTransactionFile.add(filePathX);
+        removeCycleTransactionFile();
         return mapRiderConfiguration.computeIfAbsent(
                 filePathX, // Нам тут нужна ссылка на X так как BrokerPersistElement.getFilePath возвращает именно его
                 _ -> {
@@ -221,6 +246,9 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
 
     @Override
     public void runOperation() {
+        if (restoreElementFromByte == null) {
+            throw new RuntimeException("restoreElementFromByte is null");
+        }
         propertyDispatcher.run();
     }
 

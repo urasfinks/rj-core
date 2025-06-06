@@ -93,7 +93,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
     }
 
     @JsonValue
-    public Object getValue() {
+    public Object getJsonValue() {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())

@@ -1,8 +1,11 @@
 package ru.jamsys.core.extension.exception;
 
-import ru.jamsys.core.flat.util.UtilLog;
+import lombok.Getter;
 
+@Getter
 public class ForwardException extends RuntimeException {
+
+    Object context;
 
     public ForwardException(Throwable cause) {
         super(null, cause);
@@ -13,7 +16,8 @@ public class ForwardException extends RuntimeException {
     }
 
     public ForwardException(Object context, Throwable cause) {
-        super(UtilLog.error(context).toStringBuilder().toString(), cause);
+        super(cause);
+        this.context = context;
     }
 
 }

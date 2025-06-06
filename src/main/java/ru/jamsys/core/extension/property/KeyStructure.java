@@ -53,7 +53,7 @@ public class KeyStructure {
     }
 
     @JsonValue
-    public Object get() {
+    public Object getJsonValue() {
         List<Object> result = new ArrayList<>();
         map.get(index).forEach(o -> {
             if (o instanceof StringBuilder) {

@@ -88,7 +88,6 @@ public class UtilJson {
     }
 
     @SuppressWarnings("unused")
-    @Nullable
     public static String toStringPretty(Object object, String def) {
         DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
         prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);

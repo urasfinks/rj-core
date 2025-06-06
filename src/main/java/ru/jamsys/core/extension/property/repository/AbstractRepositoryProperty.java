@@ -68,7 +68,7 @@ public abstract class AbstractRepositoryProperty<T> {
     }
 
     @JsonValue
-    public Object getValue() {
+    public Object getJsonValue() {
         return new HashMapBuilder<String, Object>()
                 .append("listPropertyEnvelopeRepository", listPropertyEnvelopeRepository)
                 .append("init", init.get());

@@ -48,7 +48,7 @@ public class RateLimitPeriodic extends AbstractManagerElement implements Propert
     }
 
     @JsonValue
-    public Object getValue() {
+    public Object getJsonValue() {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())

@@ -3,10 +3,15 @@ package ru.jamsys.core.flat.util;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -156,6 +161,42 @@ public class Util {
             App.error(e);
         }
         return result;
+    }
+
+    public static String getHostname() {
+        // 1. Попробовать через InetAddress (самый надежный стандартный способ)
+        try {
+            String hostname = InetAddress.getLocalHost().getHostName();
+            if (hostname != null && !hostname.isEmpty()) {
+                return hostname;
+            }
+        } catch (UnknownHostException ignored) {
+            // Продолжаем пробовать другие способы
+        }
+
+        // 2. Попробовать через переменные окружения (для Linux и Windows)
+        String hostname = System.getenv("HOSTNAME");      // Linux/Unix
+        if (hostname == null || hostname.isEmpty()) {
+            hostname = System.getenv("COMPUTERNAME");     // Windows
+        }
+        if (hostname != null && !hostname.isEmpty()) {
+            return hostname;
+        }
+
+        // 3. Попробовать выполнить команду hostname (если ничего не сработало)
+        try {
+            Process process = Runtime.getRuntime().exec("hostname");
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                hostname = reader.readLine();
+                if (hostname != null && !hostname.isEmpty()) {
+                    return hostname;
+                }
+            }
+        } catch (IOException ignored) {
+            // Если и это не сработало, возвращаем "unknown"
+        }
+        return "unknown"; // Если все способы не дали результата
     }
 
     // Рассматривалось 3 варианта:

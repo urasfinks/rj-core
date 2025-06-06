@@ -39,7 +39,10 @@ build/
 /security/*
 /src/main/java/ru/jamsys/core/SecurityKey.java
 /log/
-/LogManager/
+/1LogPersist/
+/1LogPersist/*
+/1StatisticPersist/
+/1StatisticPersist/*
 /.idea/
 /remove/
 /remove/*

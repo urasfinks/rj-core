@@ -22,6 +22,9 @@ public class RepositoryPropertyAnnotationField<T> extends AbstractRepositoryProp
     public void init(PropertyDispatcher<T> propertyDispatcher) {
         if (getInit().compareAndSet(false, true)) {
             for (Field field : getClass().getDeclaredFields()) {
+                if (field.getType().isPrimitive()) {
+                    throw new RuntimeException("Filed " + field.getName() + " is primitive");
+                }
                 if (field.isAnnotationPresent(PropertyKey.class)) {
                     try {
                         // Может такое быть, что value = "", это значит что мы смотрим прямо на корневое значение ns

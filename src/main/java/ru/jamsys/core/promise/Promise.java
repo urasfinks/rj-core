@@ -203,6 +203,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
 
     // Блок должен вызываться 1 раз. Может быть такое, что 10 параллельно запущенных задач смогут вызвать 10 setError
     public void setError(String index, Throwable throwable) {
+        App.error(throwable);
         this.trace.add(new Trace<>(index, throwable));
         terminalStatus = TerminalStatus.ERROR;
         runErrorHandler();
@@ -438,7 +439,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     }
 
     @JsonValue
-    public Object getValue() {
+    public Object getJsonValue() {
         return new HashMapBuilder<String, Object>()
                 .append("addTime", getLastActivityFormat())
                 .append("expiration", getExpiredFormat())

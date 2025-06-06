@@ -1,19 +1,22 @@
 package ru.jamsys.core.component.cron;
 
+import com.influxdb.client.write.Point;
+import lombok.Getter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.manager.Manager;
+import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
+import ru.jamsys.core.extension.broker.persist.BrokerPersist;
+import ru.jamsys.core.extension.broker.persist.element.StatisticElement;
 import ru.jamsys.core.extension.log.StatDataHeader;
+import ru.jamsys.core.extension.victoria.metrics.VictoriaMetricsConvert;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 
@@ -23,13 +26,18 @@ import java.util.List;
 @SuppressWarnings("unused")
 @Component
 @Lazy
+@Getter
 public class StatisticFlush extends PromiseGenerator implements Cron1s {
 
     List<StatisticsFlushComponent> list = new ArrayList<>();
 
     String ip = Util.getIp();
 
+    String host = Util.getHostname();
+
     private final ServicePromise servicePromise;
+
+    private final ManagerConfiguration<BrokerPersist<StatisticElement>> brokerPersistManagerConfiguration;
 
     public StatisticFlush(
             ServiceClassFinder serviceClassFinder,
@@ -39,6 +47,13 @@ public class StatisticFlush extends PromiseGenerator implements Cron1s {
         this.servicePromise = servicePromise;
         serviceClassFinder.findByInstance(StatisticsFlushComponent.class).forEach(statisticsCollectorClass
                 -> list.add(App.get(statisticsCollectorClass)));
+        brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
+                BrokerPersist.class,
+                java.util.UUID.randomUUID().toString(),
+                "statistic",
+                managerElement -> managerElement
+                        .setup((bytes) -> new StatisticElement(new String(bytes)))
+        );
     }
 
     @Override
@@ -52,30 +67,16 @@ public class StatisticFlush extends PromiseGenerator implements Cron1s {
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
                 .append("main", (threadRun, _, _) -> {
-                    UtilRisc.forEach(threadRun, list, (StatisticsFlushComponent statisticsFlushComponent) -> {
-                        List<StatDataHeader> listStatistic = statisticsFlushComponent.flushAndGetStatistic(threadRun);
-                        if(statisticsFlushComponent instanceof Manager){
-                            UtilLog.printInfo(listStatistic);
+                    StringBuilder sb = new StringBuilder();
+                    for (StatisticsFlushComponent statisticsFlushComponent : list) {
+                        for (StatDataHeader statDataHeader : statisticsFlushComponent.flushAndGetStatistic(threadRun)) {
+                            Point influxPoint = VictoriaMetricsConvert.getInfluxFormat(statDataHeader);
+                            influxPoint.addTag("ip", ip);
+                            influxPoint.addTag("host", host);
+                            sb.append(influxPoint.toLineProtocol()).append("\n");
                         }
-
-//                        Map<String, String> parentTags = new LinkedHashMap<>();
-//                        String measurement = App.getUniqueClassName(statisticsFlushComponent.getClass());
-//                        parentTags.put("measurement", measurement);
-//                        parentTags.put("Host", ip);
-//                        List<Statistic> statistics = statisticsFlushComponent.flushAndGetStatistic(
-//                                parentTags,
-//                                null,
-//                                threadRun
-//                        );
-//                        if (statistics != null && !statistics.isEmpty()) {
-//                            statisticSec.getList().addAll(statistics);
-//                        }
-                    });
-                    // Несмотря на remoteStatistic надо с сервисов сбрасывать статистику
-                    // Так что мы будем всё собирать, но отправлять не будем
-//                    if (!statisticSec.getList().isEmpty() && remote) {
-//                        broker.add(new ExpirationMsImmutableEnvelope<>(statisticSec, 6_000));
-//                    }
+                    }
+                    brokerPersistManagerConfiguration.get().add(new StatisticElement(sb.toString()));
                 });
     }
 
