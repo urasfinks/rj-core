@@ -2,13 +2,17 @@ package ru.jamsys.core.extension.property;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.repository.AbstractRepositoryProperty;
 import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilLog;
 
 import java.lang.reflect.Field;
 import java.util.Objects;
@@ -19,26 +23,24 @@ import java.util.Objects;
 
 @Getter
 @Accessors(chain = true)
-@JsonPropertyOrder({"propertyKey", "repositoryPropertyKey", "fieldNameConstants", "cls", "description", "notNull", "dynamic", "value"})
 public class PropertyEnvelope<T> {
 
-    // Когда свойства в репозиторий добавляются по regexp
-    @Setter
-    private boolean dynamic = false;
+    private final boolean dynamic; // Когда свойства в репозиторий добавляются по regexp
 
     private final Class<T> cls;
 
-    @JsonIgnore
-    private Field field;
+    private final Field field;
 
     // Имя переменной в наследнике AnnotationPropertyExtractor
     private final String fieldNameConstants;
+
     // Значение аннотации @PropertyKey для переменной наследника AnnotationPropertyExtractor
     private final String repositoryPropertyKey;
 
-    @Setter
     private String description;
+
     private final boolean notNull;
+
     private T value;
 
     //propertyKey - проставляется автоматически при создании подписки
@@ -46,22 +48,23 @@ public class PropertyEnvelope<T> {
     private String propertyKey;
 
     @JsonIgnore
-    @Setter
-    ServiceProperty serviceProperty;
+    private final AbstractRepositoryProperty<T> repositoryProperty;
 
-    @JsonIgnore
-    @Setter
-    AbstractRepositoryProperty<T> repositoryProperty;
+    private final String regexp;
 
     public PropertyEnvelope(
+            AbstractRepositoryProperty<T> repositoryProperty,
             Field field,
             Class<T> cls,
             String fieldNameConstants,
             String repositoryPropertyKey,
             T value,
             String description,
-            boolean notNull
+            String regexp,
+            boolean notNull,
+            boolean dynamic
     ) {
+        this.repositoryProperty = repositoryProperty;
         this.field = field;
         this.cls = cls;
         this.fieldNameConstants = fieldNameConstants;
@@ -69,20 +72,23 @@ public class PropertyEnvelope<T> {
         this.description = description;
         this.notNull = notNull;
         this.value = value;
+        this.regexp = regexp;
+        this.dynamic = dynamic;
     }
 
-    public PropertyEnvelope(
-            Class<T> cls,
-            String repositoryPropertyKey,
-            T value,
-            boolean notNull
-    ) {
-        this.cls = cls;
-        this.repositoryPropertyKey = repositoryPropertyKey;
-        this.fieldNameConstants = null;
-        this.notNull = notNull;
-        this.value = value;
-        this.description = null;
+    @JsonValue
+    public HashMapBuilder<String, Object> getJsonValue(){
+        return new HashMapBuilder<String, Object>()
+                .append("propertyKey", propertyKey)
+                .append("repositoryPropertyKey", repositoryPropertyKey)
+                .append("fieldNameConstants", fieldNameConstants)
+                .append("cls", cls)
+                .append("description", description)
+                .append("notNull", notNull)
+                .append("dynamic", dynamic)
+                .append("regexp", regexp)
+                .append("value", value)
+                ;
     }
 
     @Override
@@ -110,13 +116,13 @@ public class PropertyEnvelope<T> {
     }
 
     public ServiceProperty.Equals propertyEquals() {
-        return serviceProperty.equals(getPropertyKey(), getValueString());
+        return App.get(ServiceProperty.class).equals(getPropertyKey(), getValueString());
     }
 
     // Пролить значения до PropertyRepository
     public PropertyEnvelope<T> syncPropertyValue() {
         // Получили default значение, получили Property, если не сошлись, считаем приоритетным Property.get()
-        Property property = serviceProperty.computeIfAbsent(
+        Property property = App.get(ServiceProperty.class).computeIfAbsent(
                 getPropertyKey(),
                 getValueString(),
                 property1 -> {
@@ -130,11 +136,23 @@ public class PropertyEnvelope<T> {
         try {
             @SuppressWarnings("unchecked")
             T apply = (T) PropertyUtil.convertType.get(cls).apply(property.get());
+            if (regexp != null) {
+
+            }
             this.value = apply;
         } catch (Throwable th) {
             throw new ForwardException(this, th);
         }
         this.description = property.getDescription();
+        return this;
+    }
+
+    public PropertyEnvelope<T> apply() {
+        try {
+            field.set(repositoryProperty, getValue());
+        } catch (Throwable th) {
+            throw new ForwardException(this, th);
+        }
         return this;
     }
 

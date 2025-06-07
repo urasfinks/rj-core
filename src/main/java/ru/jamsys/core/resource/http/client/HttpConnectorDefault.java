@@ -100,8 +100,8 @@ public class HttpConnectorDefault implements HttpConnector {
     boolean disableHostnameVerification = false;
 
     @Override
-    public HttpConnectorDefault setRequestHeader(String name, String value) {
-        headersRequest.put(name, value);
+    public HttpConnectorDefault addRequestHeader(String key, String value) {
+        headersRequest.put(key, value);
         return this;
     }
 

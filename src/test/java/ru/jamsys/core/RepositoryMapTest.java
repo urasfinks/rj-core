@@ -8,10 +8,10 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.extension.property.PropertyListener;
-import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotationField;
 import ru.jamsys.core.extension.property.PropertyEnvelope;
+import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.extension.property.repository.RepositoryProperty;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotationField;
 import ru.jamsys.core.flat.util.UtilLog;
 
 // IO time: 5ms
@@ -44,8 +44,31 @@ class RepositoryMapTest {
 
     @Test
     void eq() {
-        PropertyEnvelope<Object> p1 = new PropertyEnvelope<>(Object.class, "run.args.security.path.storage", null, false);
-        PropertyEnvelope<Object> p2 = new PropertyEnvelope<>(Object.class, "run.args.security.path.storage", null, false);
+        XX xx = new XX();
+        PropertyEnvelope<String> p1 = new PropertyEnvelope<>(
+                xx,
+                null,
+                String.class,
+                null,
+                "run.args.security.path.storage",
+                null,
+                null,
+                null,
+                false,
+                true
+        );
+        PropertyEnvelope<String> p2 = new PropertyEnvelope<>(
+                xx,
+                null,
+                String.class,
+                null,
+                "run.args.security.path.storage",
+                null,
+                null,
+                null,
+                false,
+                true
+        );
         Assertions.assertEquals(p1, p2);
     }
 

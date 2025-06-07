@@ -27,14 +27,14 @@ public interface HttpConnector {
 
     HttpConnector setKeyStore(FileKeyStoreSSLContext fileKeyStoreSSLContext);
 
-    HttpConnector setRequestHeader(String name, String value);
+    HttpConnector addRequestHeader(String key, String value);
 
     HttpConnector setPostData(byte[] postData);
 
     HttpConnector setUrl(String url);
 
     default HttpConnector setBasicAuth(String user, String pass, String charset) {
-        return setRequestHeader("Authorization", "Basic " + UtilBase64.encode(user + ":" + pass, charset, false));
+        return addRequestHeader("Authorization", "Basic " + UtilBase64.encode(user + ":" + pass, charset, false));
     }
 
     String getSslProtocol();

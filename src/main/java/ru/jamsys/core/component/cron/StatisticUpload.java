@@ -11,6 +11,10 @@ import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
+import ru.jamsys.core.resource.http.HttpResource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("unused")
 @Component
@@ -20,6 +24,8 @@ public class StatisticUpload extends PromiseGenerator implements Cron1s {
     private final ServicePromise servicePromise;
 
     private final StatisticFlush serviceFlush;
+
+    private final StatisticUploadRepositoryProperty property = new StatisticUploadRepositoryProperty();
 
     public StatisticUpload(ServicePromise servicePromise, StatisticFlush serviceFlush) {
         this.servicePromise = servicePromise;
@@ -36,17 +42,28 @@ public class StatisticUpload extends PromiseGenerator implements Cron1s {
     @Override
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
+                .appendWithResource("main", HttpResource.class, (threadRun, promiseTask, promise, resource) -> {
+//                    HttpConnectorDefault httpConnectorDefault = new HttpConnectorDefault()
+//                            .setUrl("");
+//                    HttpResponse execute = resource.execute(httpConnectorDefault);
+                })
                 .append("main", (threadRun, _, _) -> {
                     BrokerPersist<StatisticElement> statisticElementBrokerPersist =
                             serviceFlush.getBrokerPersistManagerConfiguration().get();
-                    while (true) {
+                    int batch = property.getBatchMaxSizeByte();
+                    List<X<StatisticElement>> list = new ArrayList<>();
+                    while (batch > 0) {
                         X<StatisticElement> poll = statisticElementBrokerPersist.poll();
                         if (poll == null) {
                             break;
                         }
-                        StatisticElement element = poll.getElement();
-                        statisticElementBrokerPersist.commit(poll);
+                        list.add(poll);
+                        batch--;
                     }
+                    StringBuilder sb = new StringBuilder();
+                    list.forEach(statisticElementX -> sb.append(statisticElementX.getElement().getValue()));
+
+                    list.forEach(statisticElementBrokerPersist::commit);
                 });
     }
 

@@ -29,7 +29,6 @@ public class RepositoryProperty<T> extends AbstractRepositoryProperty<T> {
             UtilRisc.forEach(null, getListPropertyEnvelopeRepository(), tPropertyEnvelopeRepository -> {
                 tPropertyEnvelopeRepository
                         .setPropertyKey(propertyDispatcher.getPropertyKey(tPropertyEnvelopeRepository.getRepositoryPropertyKey()))
-                        .setServiceProperty(propertyDispatcher.getServiceProperty())
                         .syncPropertyValue();
             });
         }
@@ -38,16 +37,18 @@ public class RepositoryProperty<T> extends AbstractRepositoryProperty<T> {
     @Override
     public void append(String repositoryPropertyKey, PropertyDispatcher<T> propertyDispatcher) {
         PropertyEnvelope<T> tPropertyEnvelope = new PropertyEnvelope<>(
+                this,
+                null,
                 cls,
+                null,
                 repositoryPropertyKey,
                 null,
-                false
+                "AdditionalProperties",
+                null,
+                false,
+                true
         )
-                .setDescription("AdditionalProperties")
                 .setPropertyKey(propertyDispatcher.getPropertyKey(repositoryPropertyKey))
-                .setServiceProperty(propertyDispatcher.getServiceProperty())
-                .setRepositoryProperty(this)
-                .setDynamic(true)
                 .syncPropertyValue();
         if (!getListPropertyEnvelopeRepository().contains(tPropertyEnvelope)) {
             getListPropertyEnvelopeRepository().add(tPropertyEnvelope);

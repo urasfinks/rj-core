@@ -52,6 +52,7 @@ class PropertySubscriptionTest {
                     "description" : null,
                     "notNull" : false,
                     "dynamic" : true,
+                    "regexp" : null,
                     "value" : "true"
                   },
                   {
@@ -62,6 +63,7 @@ class PropertySubscriptionTest {
                     "description" : null,
                     "notNull" : false,
                     "dynamic" : true,
+                    "regexp" : null,
                     "value" : "false"
                   }
                 ]""", UtilJson.toStringPretty(propertyRepositoryList.getListPropertyEnvelopeRepository(), "--"));
@@ -80,6 +82,7 @@ class PropertySubscriptionTest {
                     "description" : null,
                     "notNull" : false,
                     "dynamic" : true,
+                    "regexp" : null,
                     "value" : "true"
                   },
                   {
@@ -90,6 +93,7 @@ class PropertySubscriptionTest {
                     "description" : null,
                     "notNull" : false,
                     "dynamic" : true,
+                    "regexp" : null,
                     "value" : "false"
                   }
                 ]""", UtilJson.toStringPretty(propertyRepositoryList.getListPropertyEnvelopeRepository(), "--"));
@@ -108,6 +112,7 @@ class PropertySubscriptionTest {
                     "description" : null,
                     "notNull" : false,
                     "dynamic" : true,
+                    "regexp" : null,
                     "value" : "false"
                   },
                   {
@@ -118,6 +123,7 @@ class PropertySubscriptionTest {
                     "description" : null,
                     "notNull" : false,
                     "dynamic" : true,
+                    "regexp" : null,
                     "value" : "false"
                   }
                 ]""", UtilJson.toStringPretty(propertyRepositoryList.getListPropertyEnvelopeRepository(), "--"));
@@ -152,6 +158,7 @@ class PropertySubscriptionTest {
                       "description" : null,
                       "notNull" : false,
                       "dynamic" : true,
+                      "regexp" : null,
                       "value" : "false"
                     },
                     {
@@ -162,6 +169,7 @@ class PropertySubscriptionTest {
                       "description" : null,
                       "notNull" : false,
                       "dynamic" : true,
+                      "regexp" : null,
                       "value" : "false"
                     }
                   ],
@@ -196,6 +204,7 @@ class PropertySubscriptionTest {
                       "description" : null,
                       "notNull" : false,
                       "dynamic" : true,
+                      "regexp" : null,
                       "value" : "true"
                     },
                     {
@@ -206,6 +215,7 @@ class PropertySubscriptionTest {
                       "description" : null,
                       "notNull" : false,
                       "dynamic" : true,
+                      "regexp" : null,
                       "value" : "false"
                     },
                     {
@@ -216,6 +226,7 @@ class PropertySubscriptionTest {
                       "description" : null,
                       "notNull" : false,
                       "dynamic" : true,
+                      "regexp" : null,
                       "value" : null
                     }
                   ],
@@ -237,6 +248,7 @@ class PropertySubscriptionTest {
                       "description" : null,
                       "notNull" : false,
                       "dynamic" : true,
+                      "regexp" : null,
                       "value" : "true"
                     },
                     {
@@ -247,6 +259,7 @@ class PropertySubscriptionTest {
                       "description" : null,
                       "notNull" : false,
                       "dynamic" : true,
+                      "regexp" : null,
                       "value" : "false"
                     },
                     {
@@ -257,6 +270,7 @@ class PropertySubscriptionTest {
                       "description" : null,
                       "notNull" : false,
                       "dynamic" : true,
+                      "regexp" : null,
                       "value" : "true"
                     }
                   ],

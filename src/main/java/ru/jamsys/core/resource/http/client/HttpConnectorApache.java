@@ -114,8 +114,8 @@ public class HttpConnectorApache implements HttpConnector {
     boolean disableHostnameVerification = false;
 
     @Override
-    public HttpConnectorApache setRequestHeader(String name, String value) {
-        headersRequest.put(name, value);
+    public HttpConnectorApache addRequestHeader(String key, String value) {
+        headersRequest.put(key, value);
         return this;
     }
 

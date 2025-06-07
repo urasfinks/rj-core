@@ -4,10 +4,10 @@ import lombok.Getter;
 import ru.jamsys.core.extension.annotation.PropertyDescription;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
+import ru.jamsys.core.extension.annotation.PropertyValueRegexp;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyEnvelope;
-import ru.jamsys.core.flat.util.UtilJson;
 
 import java.lang.reflect.Field;
 
@@ -35,6 +35,7 @@ public class RepositoryPropertyAnnotationField<T> extends AbstractRepositoryProp
                         T fieldValue = (T) field.get(this);
                         String repositoryPropertyKey = field.getAnnotation(PropertyKey.class).value();
                         PropertyEnvelope<T> tPropertyEnvelope = new PropertyEnvelope<>(
+                                this,
                                 field,
                                 cls,
                                 field.getName(),
@@ -43,27 +44,21 @@ public class RepositoryPropertyAnnotationField<T> extends AbstractRepositoryProp
                                 field.isAnnotationPresent(PropertyDescription.class)
                                         ? field.getAnnotation(PropertyDescription.class).value()
                                         : null,
-                                field.isAnnotationPresent(PropertyNotNull.class)
+                                field.isAnnotationPresent(PropertyValueRegexp.class)
+                                        ? field.getAnnotation(PropertyValueRegexp.class).value()
+                                        : null,
+                                field.isAnnotationPresent(PropertyNotNull.class),
+                                false
                         )
-                                .setServiceProperty(propertyDispatcher.getServiceProperty())
                                 .setPropertyKey(propertyDispatcher.getPropertyKey(repositoryPropertyKey))
-                                .setRepositoryProperty(this)
-                                .syncPropertyValue();
-                        fill(tPropertyEnvelope);
+                                .syncPropertyValue()
+                                .apply();
                         getListPropertyEnvelopeRepository().add(tPropertyEnvelope);
                     } catch (Throwable th) {
                         throw new ForwardException(propertyDispatcher, th);
                     }
                 }
             }
-        }
-    }
-
-    private void fill(PropertyEnvelope<T> propertyEnvelope) {
-        try {
-            propertyEnvelope.getField().set(this, propertyEnvelope.getValue());
-        } catch (Throwable th) {
-            throw new RuntimeException(UtilJson.toStringPretty(propertyEnvelope, "--"), th);
         }
     }
 
@@ -77,8 +72,9 @@ public class RepositoryPropertyAnnotationField<T> extends AbstractRepositoryProp
         if (propertyEnvelope == null) {
             throw new RuntimeException("propertyEnvelopeRepository is null");
         }
-        propertyEnvelope.syncPropertyValue();
-        fill(propertyEnvelope);
+        propertyEnvelope
+                .syncPropertyValue()
+                .apply();
     }
 
 }
