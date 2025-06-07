@@ -1,7 +1,6 @@
 package ru.jamsys.core.extension.property;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +11,6 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.repository.AbstractRepositoryProperty;
 import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.flat.util.UtilLog;
 
 import java.lang.reflect.Field;
 import java.util.Objects;
