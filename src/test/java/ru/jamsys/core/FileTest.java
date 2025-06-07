@@ -8,8 +8,6 @@ import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.flat.util.UtilBase64;
 import ru.jamsys.core.flat.util.UtilFile;
-import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.flat.util.UtilUri;
 import ru.jamsys.core.resource.virtual.file.system.File;
 import ru.jamsys.core.resource.virtual.file.system.FileKeyStore;
 import ru.jamsys.core.resource.virtual.file.system.ReadFromSourceFactory;
@@ -40,10 +38,10 @@ class FileTest {
                 file -> file.setupReadFromSource(() -> null)
         );
         File file = fileManagerConfiguration.get();
-        Assertions.assertEquals("/hello/world", file.getFilePath().getFolder(), "Директория");
-        Assertions.assertEquals("1.txt", file.getFilePath().getFileName(), "Имя файла");
-        Assertions.assertEquals("txt", file.getFilePath().getExtension(), "Расширение");
-        Assertions.assertEquals("/hello/world/1.txt", file.getFilePath().getPath(), "Полный путь");
+        Assertions.assertEquals("/hello/world", file.getUniversalPath().getFolder(), "Директория");
+        Assertions.assertEquals("1.txt", file.getUniversalPath().getFileName(), "Имя файла");
+        Assertions.assertEquals("txt", file.getUniversalPath().getExtension(), "Расширение");
+        Assertions.assertEquals("/hello/world/1.txt", file.getUniversalPath().getPath(), "Полный путь");
     }
 
     @Test
@@ -55,7 +53,7 @@ class FileTest {
                 file -> file.setupReadFromSource(() -> null)
         );
         File file = fileManagerConfiguration.get();
-        Assertions.assertEquals("/1.txt", file.getFilePath().getPath(), "Полный путь");
+        Assertions.assertEquals("/1.txt", file.getUniversalPath().getPath(), "Полный путь");
     }
 
     @Test
@@ -67,7 +65,7 @@ class FileTest {
                 file -> file.setupReadFromSource(() -> null)
         );
         File file = fileManagerConfiguration.get();
-        Assertions.assertEquals("1.txt", file.getFilePath().getPath(), "Полный путь");
+        Assertions.assertEquals("1.txt", file.getUniversalPath().getPath(), "Полный путь");
     }
 
     @Test
@@ -79,7 +77,7 @@ class FileTest {
                 file -> file.setupReadFromSource(() -> null)
         );
         File file = fileManagerConfiguration.get();
-        Assertions.assertEquals("test/1.txt", file.getFilePath().getPath(), "Полный путь");
+        Assertions.assertEquals("test/1.txt", file.getUniversalPath().getPath(), "Полный путь");
     }
 
     @Test
@@ -163,78 +161,8 @@ class FileTest {
                 file1 -> file1.setupReadFromSource(ReadFromSourceFactory.fromString("Hello world", "UTF-8"))
         );
         File file1 = fileManagerConfiguration.get();
-        Assertions.assertEquals("6.txt", file1.getFilePath().getFileName());
+        Assertions.assertEquals("6.txt", file1.getUniversalPath().getFileName());
     }
 
-    @Test
-    void getExtension() {
-        Assertions.assertEquals("txt", UtilUri.parsePath("/test/1.txt").getExtension());
-        Assertions.assertEquals("txt", UtilUri.parsePath("//test//1.txt").getExtension());
-        Assertions.assertEquals("txt", UtilUri.parsePath("\test\1.txt").getExtension());
-        Assertions.assertEquals("txt", UtilUri.parsePath("\\test\\1.txt").getExtension());
-        Assertions.assertEquals("txt", UtilUri.parsePath("http://test.com/1.txt").getExtension());
-        Assertions.assertEquals("txt", UtilUri.parsePath("http://test.com/1.txt?x=y").getExtension());
-        Assertions.assertEquals("txt", UtilUri.parsePath("http://test.com/1.txt?x=y/e.pdf").getExtension());
-    }
-
-    @Test
-    void testFilePath() {
-        Assertions.assertEquals("""
-              {"path":"3/2/1.txt","folder":"3/2","fileName":"1.txt","extension":"txt","parameters":null}""",
-                UtilJson.toString(UtilUri.parsePath("3/2/1.txt"), "{}")
-        );
-        Assertions.assertEquals("""
-               {"path":"2/1.txt","folder":"2","fileName":"1.txt","extension":"txt","parameters":null}""",
-                UtilJson.toString(UtilUri.parsePath("2/1.txt"), "{}")
-        );
-        Assertions.assertEquals("""
-               {"path":"1.txt","folder":null,"fileName":"1.txt","extension":"txt","parameters":null}""",
-                UtilJson.toString(UtilUri.parsePath("2/../1.txt"), "{}")
-        );
-        Assertions.assertThrowsExactly(RuntimeException.class,
-                () -> UtilJson.toString(UtilUri.parsePath("../1.txt"), "{}")
-        );
-        Assertions.assertEquals("""
-               {"path":"/1.txt","folder":"","fileName":"1.txt","extension":"txt","parameters":null}""",
-                UtilJson.toString(UtilUri.parsePath("/1/2/../../1.txt"), "{}")
-        );
-        Assertions.assertEquals("""
-               {"path":"/1/1.txt","folder":"/1","fileName":"1.txt","extension":"txt","parameters":null}""",
-                UtilJson.toString(UtilUri.parsePath("/1/2/../1.txt"), "{}")
-        );
-        Assertions.assertEquals("""
-                {"path":"/1.txt","folder":"","fileName":"1.txt","extension":"txt","parameters":null}""",
-                UtilJson.toString(UtilUri.parsePath("/test/../1.txt"), "{}")
-        );
-        Assertions.assertEquals("""
-                {"path":"http://test.com/1.txt?x=y/e.pdf","folder":"http://test.com","fileName":"1.txt","extension":"txt","parameters":"x=y/e.pdf"}""",
-                UtilJson.toString(UtilUri.parsePath("http://test.com/1.txt?x=y/e.pdf"), "{}")
-        );
-        Assertions.assertEquals("""
-                {"path":"http://test.com/1.txt?","folder":"http://test.com","fileName":"1.txt","extension":"txt","parameters":""}""",
-                UtilJson.toString(UtilUri.parsePath("http://test.com/1.txt?"), "{}")
-        );
-        Assertions.assertEquals("""
-                {"path":"http://test.com/1.txt","folder":"http://test.com","fileName":"1.txt","extension":"txt","parameters":null}""",
-                UtilJson.toString(UtilUri.parsePath("http://test.com/1.txt"), "{}")
-        );
-        Assertions.assertEquals("""
-                {"path":"/test/1","folder":"/test","fileName":"1","extension":null,"parameters":null}""",
-                UtilJson.toString(UtilUri.parsePath("/test/1"), "{}")
-        );
-        Assertions.assertEquals("""
-                {"path":"/test/1.","folder":"/test","fileName":"1.","extension":null,"parameters":null}""",
-                UtilJson.toString(UtilUri.parsePath("/test/1."), "{}")
-        );
-        Assertions.assertEquals("""
-                {"path":"/1","folder":"","fileName":"1","extension":null,"parameters":null}""",
-                UtilJson.toString(UtilUri.parsePath("/1"), "{}")
-        );
-        Assertions.assertEquals("""
-                {"path":"1","folder":null,"fileName":"1","extension":null,"parameters":null}""",
-                UtilJson.toString(UtilUri.parsePath("1"), "{}")
-        );
-
-    }
 
 }

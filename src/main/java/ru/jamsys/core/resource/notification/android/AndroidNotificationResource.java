@@ -43,7 +43,7 @@ public class AndroidNotificationResource extends AbstractExpirationResource impl
                 .setRequestHeader("Authorization", "Bearer " + accessToken)
                 .setPostData(postData.getBytes(StandardCharsets.UTF_8));
         httpConnector.exec();
-        return httpConnector.getResponseObject();
+        return httpConnector.getHttpResponse();
     }
 
     @Override

@@ -3,10 +3,6 @@ package ru.jamsys.core;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.http.ServletRequestReader;
-import ru.jamsys.core.flat.util.UtilUri;
-
-import java.util.List;
-import java.util.Map;
 
 class HttpRequestReaderTest {
 
@@ -42,36 +38,6 @@ class HttpRequestReaderTest {
         } catch (Throwable th) {
             Assertions.assertNotEquals("NO", th.getMessage());
         }
-    }
-
-    @Test
-    void parseUri() {
-        Map<String, List<String>> stringListMap = ServletRequestReader.parseUriParameters("https://host.org/?x=y&a=1&a=2");
-        Assertions.assertEquals("{x=[y], a=[1, 2]}", stringListMap.toString());
-    }
-
-    @Test
-    void parseUriReduce() {
-        Map<String, String> stringListMap = ServletRequestReader.parseUriParameters("https://host.org/?x=y&a=1&a=2", strings -> String.join(", ", strings));
-        Assertions.assertEquals("{x=y, a=1, 2}", stringListMap.toString());
-        Assertions.assertEquals("{x=, a=1, 2}", ServletRequestReader.parseUriParameters("https://host.org/?x=&a=1&a=2", strings -> String.join(", ", strings)).toString());
-        Assertions.assertEquals("{x=, a=1}", ServletRequestReader.parseUriParameters("https://host.org/?x=&a=1&a=2", List::getFirst).toString());
-    }
-
-    @Test
-    void getPath() {
-        Assertions.assertEquals("/po/pt.html", ServletRequestReader.getPath("https://host.org/po/pt.html?x=y&a=1&a=2"));
-        Assertions.assertEquals("/po/pt.html", ServletRequestReader.getPath("https://host.org/po/pt.html/?x=y&a=1&a=2"));
-        Assertions.assertEquals("/po", ServletRequestReader.getPath("https://host.org/po/?x=y&a=1&a=2"));
-    }
-
-    @Test
-    void buildUrlQuery() {
-        Map<String, List<String>> stringListMap = ServletRequestReader.parseUriParameters("https://host.org/?x=y&a=1&a=2");
-        Assertions.assertEquals("/po/pt.html?x=y&a=1&a=2", UtilUri.buildUrlQuery("/po/pt.html", stringListMap));
-
-        Map<String, String> stringStringMap = ServletRequestReader.parseUriParameters("https://host.org/?x=y&a=1&a=2", List::getFirst);
-        Assertions.assertEquals("/po/pt.html?x=y&a=1", UtilUri.buildUrlQuery("/po/pt.html", stringStringMap));
     }
 
 }

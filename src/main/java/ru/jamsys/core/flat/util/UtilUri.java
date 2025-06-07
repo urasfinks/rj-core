@@ -1,17 +1,18 @@
 package ru.jamsys.core.flat.util;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.Getter;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class UtilUri {
 
-    public static String buildUrlQuery(String path, Map<String, ?> getParameters) {
+    public static String build(String path, Map<String, ?> getParameters) {
         List<String> part = new ArrayList<>();
         if (!getParameters.isEmpty()) {
             getParameters.forEach((key, element) -> {
@@ -41,64 +42,18 @@ public class UtilUri {
         );
     }
 
-    @JsonPropertyOrder({"path", "folder", "fileName", "extension", "uri"})
-    @Getter
-    public static class FilePath {
-
-        private final String path;          // Оригинальный путь
-        private final String folder;        // Директория от пути
-        private final String fileName;      // Имя файла
-        private final String extension;     // Расширение файла
-        private final String parameters;    // Параметры
-
-        public FilePath(String path) {
-            // ? это делитель параметров, прежде всего делим path на uri
-            if (path.contains("?")) {
-                int i = path.indexOf("?");
-                this.parameters = path.substring(i + 1);
-                path = path.substring(0, i);
-            } else {
-                this.parameters = null;
-            }
-            // Вырезка ..
-            List<String> newItems = new ArrayList<>();
-            for (String p : path.trim().split("/")) {
-                if (p != null) {
-                    if (p.equals("..")) {
-                        if (!newItems.isEmpty()) {
-                            newItems.removeLast();
-                        } else {
-                            throw new RuntimeException("Exception remove .. from path: " + path);
-                        }
-                    } else {
-                        newItems.add(p);
-                    }
-                }
-            }
-            StringBuilder newPath = new StringBuilder();
-            newPath.append(String.join("/", newItems));
-            if (parameters != null) {
-                newPath.append("?").append(parameters);
-            }
-            this.path = newPath.toString();
-            this.fileName = newItems.removeLast();
-            if (!newItems.isEmpty()) {
-                this.folder = String.join("/", newItems);
-            } else {
-                this.folder = null;
-            }
-            String[] split = this.fileName.split("\\.");
-            if (split.length > 1) {
-                this.extension = split[split.length - 1].trim();
-            } else {
-                this.extension = null;
-            }
-        }
-
+    public static Map<String, List<String>> parseParameters(String uri) {
+        return new LinkedHashMap<>(UriComponentsBuilder.fromUriString(uri).build().getQueryParams());
     }
 
-    public static FilePath parsePath(String uri) {
-        return new FilePath(uri);
+    public static Map<String, String> parseParameters(String uri, Function<List<String>, String> reduce) {
+        Map<String, String> result = new LinkedHashMap<>();
+        UriComponentsBuilder
+                .fromUriString(uri)
+                .build()
+                .getQueryParams()
+                .forEach((key, listString) -> result.put(key, reduce.apply(listString)));
+        return result;
     }
 
     public static String encode(String data, String charset) throws Exception {

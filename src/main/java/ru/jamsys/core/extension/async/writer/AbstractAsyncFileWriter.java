@@ -105,7 +105,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
         if (!isRun()) {
             throw new RuntimeException("Writer is closed");
         }
-        if (position.get() > repositoryProperty.getMaxSize()) {
+        if (position.get() > repositoryProperty.getMaxSizeByte()) {
             try {
                 onOutOfPosition.run();
             } catch (Throwable th) {
@@ -119,7 +119,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
     public int getOccupancyPercentage() {
         // repositoryProperty.getMaxSize() - 100
         // position - x
-        return (int) (((float) position.get()) * 100 / repositoryProperty.getMaxSize());
+        return (int) (((float) position.get()) * 100 / repositoryProperty.getMaxSizeByte());
     }
 
     public void flush(AtomicBoolean threadRun) throws Throwable {
@@ -129,7 +129,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                 flushLock.set(false);
                 return;
             }
-            if (position.get() > repositoryProperty.getMaxSize()) {
+            if (position.get() > repositoryProperty.getMaxSizeByte()) {
                 onOutOfPosition.run();
             }
             List<T> listPolled = new ArrayList<>();
@@ -154,7 +154,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                     byteArrayOutputStream.write(UtilByte.intToBytes(dataLength));
                     byteArrayOutputStream.write(poll.toBytes());
                     if (
-                            position.get() > repositoryProperty.getMaxSize()
+                            position.get() > repositoryProperty.getMaxSizeByte()
                                     || byteArrayOutputStream.size() >= minBatchSize // Наполнили минимальную пачку
                                     || (whileStartTime - lastTimeWrite) > eachTime // Если с прошлой записи пачки прошло 50мс
                     ) {
@@ -169,7 +169,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                         listPolled.clear();
                         writeTime.add(System.currentTimeMillis() - lastTimeWrite);
 
-                        if (position.get() > repositoryProperty.getMaxSize()) {
+                        if (position.get() > repositoryProperty.getMaxSizeByte()) {
                             onOutOfPosition.run();
                         }
 
@@ -273,7 +273,7 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
         AvgMetric.Statistic statistic = writeTime.flushStatistic();
         return List.of(new StatDataHeader(getClass(), filePath)
                 .addHeader("position", position.get())
-                .addHeader("positionMax", repositoryProperty.getMaxSize())
+                .addHeader("positionMax", repositoryProperty.getMaxSizeByte())
                 .addHeader("writeTime", statistic.getAvg())
                 .addHeader("writeTime.min", statistic.getMin())
                 .addHeader("writeTime.max", statistic.getMax())

@@ -31,9 +31,9 @@ public class BrokerPersistRepositoryProperty extends RepositoryPropertyAnnotatio
     private volatile Integer retryTimeoutMs = 10 * 60 * 1000; // 10 минут
 
     @SuppressWarnings("all")
-    @PropertyKey("max.size")
+    @PropertyKey("max.size.byte")
     @PropertyDescription("Максимальный размер файла в байтах")
-    private volatile Long maxSize = UtilByte.megabytesToBytes(20);
+    private volatile Long maxSizeByte = UtilByte.megabytesToBytes(20);
 
     @SuppressWarnings("all")
     @PropertyKey("flush.max.time.ms")

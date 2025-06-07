@@ -38,7 +38,7 @@ public class ReCaptchaResource extends AbstractExpirationResource {
         httpClient.setReadTimeoutMs(3_000);
         httpClient.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         httpClient.exec();
-        return httpClient.getResponseObject();
+        return httpClient.getHttpResponse();
     }
 
     @Override

@@ -65,7 +65,7 @@ public class AppleNotificationResource extends AbstractExpirationResource {
         );
         httpConnector.setKeyStore(fileKeyStoreSSLContextManagerConfiguration.get());
         httpConnector.exec();
-        return httpConnector.getResponseObject();
+        return httpConnector.getHttpResponse();
     }
 
     @Override

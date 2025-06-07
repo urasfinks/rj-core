@@ -61,11 +61,11 @@ public interface HttpConnector {
 
     String getResponseString(String charset) throws UnsupportedEncodingException;
 
-    default HttpResponse getResponseObject() {
-        return getResponseObject(StandardCharsets.UTF_8);
+    default HttpResponse getHttpResponse() {
+        return getHttpResponse(StandardCharsets.UTF_8);
     }
 
-    default HttpResponse getResponseObject(Charset standardCharsets) {
+    default HttpResponse getHttpResponse(Charset standardCharsets) {
         HttpResponse httpResponse = new HttpResponse();
         if (getException() != null) {
             httpResponse.addException(getException());

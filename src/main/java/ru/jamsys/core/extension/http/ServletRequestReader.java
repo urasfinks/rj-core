@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 import lombok.Getter;
 import lombok.ToString;
-import org.springframework.web.util.UriComponentsBuilder;
 import ru.jamsys.core.extension.exception.AuthException;
 import ru.jamsys.core.flat.util.Util;
 
@@ -20,7 +19,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ToString(onlyExplicitlyIncluded = true)
@@ -190,28 +188,6 @@ public class ServletRequestReader {
         String user = base64Decoded.substring(0, base64Decoded.indexOf(":"));
         String password = base64Decoded.substring(base64Decoded.indexOf(":") + 1);
         handler.accept(user, password);
-    }
-
-    public static Map<String, List<String>> parseUriParameters(String uri) {
-        return new LinkedHashMap<>(UriComponentsBuilder.fromUriString(uri).build().getQueryParams());
-    }
-
-    public static Map<String, String> parseUriParameters(String uri, Function<List<String>, String> reduce) {
-        Map<String, String> result = new LinkedHashMap<>();
-        UriComponentsBuilder
-                .fromUriString(uri)
-                .build()
-                .getQueryParams()
-                .forEach((key, listString) -> result.put(key, reduce.apply(listString)));
-        return result;
-    }
-
-    public static String getPath(String uri) {
-        String path = UriComponentsBuilder.fromUriString(uri).build().getPath();
-        if (path == null) {
-            return null;
-        }
-        return path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
     }
 
 }

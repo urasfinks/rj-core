@@ -5,14 +5,14 @@ import lombok.Getter;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.UniversalPath;
 import ru.jamsys.core.extension.functional.ConsumerThrowing;
 import ru.jamsys.core.extension.functional.SupplierThrowing;
-import ru.jamsys.core.flat.util.UtilUri;
 
 @Getter
 public class File extends AbstractManagerElement {
 
-    final private UtilUri.FilePath filePath;
+    final private UniversalPath universalPath;
 
     private SupplierThrowing<byte[]> readFromSource;
 
@@ -21,7 +21,7 @@ public class File extends AbstractManagerElement {
     protected volatile byte[] bytes;
 
     public File(String path) {
-        this.filePath = UtilUri.parsePath(path);
+        this.universalPath = new UniversalPath(path);
     }
 
     public void setupTimeoutMs(int keepAliveOnInactivityMs) {
@@ -38,7 +38,7 @@ public class File extends AbstractManagerElement {
 
     public void flush() throws Throwable {
         if (writeToDestination == null) {
-            throw new Exception("WriteToDestination is null File: " + filePath.getPath());
+            throw new Exception("WriteToDestination is null File: " + universalPath.getPath());
         }
         writeToDestination.accept(getBytes());
     }
@@ -47,14 +47,14 @@ public class File extends AbstractManagerElement {
         try {
             bytes = readFromSource.get();
         } catch (Throwable th) {
-            throw new ForwardException(filePath, th);
+            throw new ForwardException(universalPath, th);
         }
     }
 
     @Override
     public void runOperation() {
         if (readFromSource == null) {
-            throw new RuntimeException("ReadFromSource is null File: " + filePath.getPath());
+            throw new RuntimeException("ReadFromSource is null File: " + universalPath.getPath());
         }
         reloadBytes();
     }
@@ -69,7 +69,7 @@ public class File extends AbstractManagerElement {
         return new HashMapBuilder<>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
-                .append("filePath", filePath)
+                .append("filePath", universalPath)
                 ;
     }
 

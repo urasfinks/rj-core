@@ -43,7 +43,7 @@ public class TelegramNotificationResource extends AbstractExpirationResource {
         httpClient.setConnectTimeoutMs(1_000);
         httpClient.setReadTimeoutMs(telegramNotificationRepositoryProperty.getTimeoutMs());
         httpClient.exec();
-        return httpClient.getResponseObject();
+        return httpClient.getHttpResponse();
     }
 
     @Override
