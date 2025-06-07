@@ -23,12 +23,12 @@ public class AndroidNotificationResource extends AbstractExpirationResource impl
 
     private final PropertyDispatcher<Object> propertyDispatcher;
 
-    private final AndroidNotificationRepositoryProperty androidNotificationRepositoryProperty = new AndroidNotificationRepositoryProperty();
+    private final AndroidNotificationRepositoryProperty property = new AndroidNotificationRepositoryProperty();
 
     public AndroidNotificationResource(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
-                androidNotificationRepositoryProperty,
+                property,
                 getCascadeKey(ns)
         );
     }
@@ -36,11 +36,11 @@ public class AndroidNotificationResource extends AbstractExpirationResource impl
     public HttpResponse execute(AndroidNotificationRequest arguments) {
         String postData = createPostData(arguments.getTitle(), arguments.getData(), arguments.getToken());
         HttpConnector httpConnector = new HttpConnectorDefault()
-                .setUrl(androidNotificationRepositoryProperty.getUrl())
+                .setUrl(property.getUrl())
                 .setConnectTimeoutMs(1_000)
-                .setReadTimeoutMs(androidNotificationRepositoryProperty.getTimeoutMs())
-                .setRequestHeader("Content-type", "application/json")
-                .setRequestHeader("Authorization", "Bearer " + accessToken)
+                .setReadTimeoutMs(property.getTimeoutMs())
+                .addRequestHeader("Content-type", "application/json")
+                .addRequestHeader("Authorization", "Bearer " + accessToken)
                 .setPostData(postData.getBytes(StandardCharsets.UTF_8));
         httpConnector.exec();
         return httpConnector.getHttpResponse();
@@ -58,7 +58,7 @@ public class AndroidNotificationResource extends AbstractExpirationResource impl
 
         message.put("token", token);
 
-        notification.put("title", androidNotificationRepositoryProperty.getApplicationName());
+        notification.put("title", property.getApplicationName());
         notification.put("body", title);
         message.put("notification", notification);
 
@@ -89,13 +89,13 @@ public class AndroidNotificationResource extends AbstractExpirationResource impl
 
     @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
-        if (androidNotificationRepositoryProperty.getScope() == null || androidNotificationRepositoryProperty.getStorageCredentials() == null) {
+        if (property.getScope() == null || property.getStorageCredentials() == null) {
             return;
         }
         try {
-            String[] messagingScope = new String[]{androidNotificationRepositoryProperty.getScope()};
+            String[] messagingScope = new String[]{property.getScope()};
             GoogleCredentials googleCredentials = GoogleCredentials
-                    .fromStream(new FileInputStream(androidNotificationRepositoryProperty.getStorageCredentials()))
+                    .fromStream(new FileInputStream(property.getStorageCredentials()))
                     .createScoped(Arrays.asList(messagingScope));
             googleCredentials.refresh();
             this.accessToken = googleCredentials.getAccessToken().getTokenValue();

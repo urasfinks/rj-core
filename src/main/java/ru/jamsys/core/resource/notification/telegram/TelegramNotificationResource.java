@@ -16,13 +16,13 @@ public class TelegramNotificationResource extends AbstractExpirationResource {
 
     private final PropertyDispatcher<Object> propertyDispatcher;
 
-    private final TelegramNotificationRepositoryProperty telegramNotificationRepositoryProperty = new TelegramNotificationRepositoryProperty();
+    private final TelegramNotificationRepositoryProperty property = new TelegramNotificationRepositoryProperty();
 
     public TelegramNotificationResource(String ns) {
         securityComponent = App.get(SecurityComponent.class);
         propertyDispatcher = new PropertyDispatcher<>(
                 null,
-                telegramNotificationRepositoryProperty,
+                property,
                 getCascadeKey(ns)
         );
     }
@@ -35,13 +35,13 @@ public class TelegramNotificationResource extends AbstractExpirationResource {
         }
         HttpConnectorDefault httpClient = new HttpConnectorDefault();
         httpClient.setUrl(String.format(
-                telegramNotificationRepositoryProperty.getUrl(),
-                new String(securityComponent.get(telegramNotificationRepositoryProperty.getSecurityAlias())),
-                telegramNotificationRepositoryProperty.getIdChat(),
+                property.getUrl(),
+                new String(securityComponent.get(property.getSecurityAlias())),
+                property.getIdChat(),
                 URLEncoder.encode(bodyRequest, StandardCharsets.UTF_8))
         );
         httpClient.setConnectTimeoutMs(1_000);
-        httpClient.setReadTimeoutMs(telegramNotificationRepositoryProperty.getTimeoutMs());
+        httpClient.setReadTimeoutMs(property.getTimeoutMs());
         httpClient.exec();
         return httpClient.getHttpResponse();
     }

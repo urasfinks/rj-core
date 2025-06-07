@@ -30,14 +30,14 @@ public class InfluxResource extends AbstractExpirationResource implements Proper
 
     private final PropertyDispatcher<String> propertyDispatcher;
 
-    private final InfluxRepositoryProperty influxRepositoryProperty = new InfluxRepositoryProperty();
+    private final InfluxRepositoryProperty property = new InfluxRepositoryProperty();
 
     private final String ns;
 
     public InfluxResource(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
-                influxRepositoryProperty,
+                property,
                 getCascadeKey(ns)
         );
         this.ns = ns;
@@ -58,7 +58,7 @@ public class InfluxResource extends AbstractExpirationResource implements Proper
         if (client == null) {
             try {
                 SecurityComponent securityComponent = App.get(SecurityComponent.class);
-                client = InfluxDBClientFactory.create(influxRepositoryProperty.getHost(), securityComponent.get(influxRepositoryProperty.getAlias()));
+                client = InfluxDBClientFactory.create(property.getHost(), securityComponent.get(property.getAlias()));
                 client.setLogLevel(LogLevel.NONE);
                 // Как вы поняли - верхняя строчка не работает
                 Logger.getLogger(AbstractRestClient.class.getName()).setLevel(Level.OFF);
@@ -75,7 +75,7 @@ public class InfluxResource extends AbstractExpirationResource implements Proper
 
     public Void execute(List<Point> arguments) {
         if (writer != null && !arguments.isEmpty()) {
-            writer.writePoints(influxRepositoryProperty.getBucket(), influxRepositoryProperty.getOrg(), arguments);
+            writer.writePoints(property.getBucket(), property.getOrg(), arguments);
         }
         return null;
     }
@@ -103,7 +103,7 @@ public class InfluxResource extends AbstractExpirationResource implements Proper
     @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
         down();
-        if (influxRepositoryProperty.getHost() == null || influxRepositoryProperty.getAlias() == null) {
+        if (property.getHost() == null || property.getAlias() == null) {
             return;
         }
         up();

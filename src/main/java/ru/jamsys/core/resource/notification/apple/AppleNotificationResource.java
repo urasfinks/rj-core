@@ -19,12 +19,12 @@ public class AppleNotificationResource extends AbstractExpirationResource {
 
     private final PropertyDispatcher<Object> propertyDispatcher;
 
-    private final AppleNotificationRepositoryProperty appleNotificationRepositoryProperty = new AppleNotificationRepositoryProperty();
+    private final AppleNotificationRepositoryProperty property = new AppleNotificationRepositoryProperty();
 
     public AppleNotificationResource(String ns) {
         propertyDispatcher = new PropertyDispatcher<>(
                 null,
-                appleNotificationRepositoryProperty,
+                property,
                 getCascadeKey(ns)
         );
     }
@@ -32,9 +32,9 @@ public class AppleNotificationResource extends AbstractExpirationResource {
     public HttpResponse execute(AppleNotificationRequest arguments) {
 
         HttpConnector httpConnector = new HttpConnectorDefault();
-        httpConnector.setUrl(appleNotificationRepositoryProperty.getUrl() + arguments.getDevice());
+        httpConnector.setUrl(property.getUrl() + arguments.getDevice());
         httpConnector.setConnectTimeoutMs(1_000);
-        httpConnector.setReadTimeoutMs(appleNotificationRepositoryProperty.getTimeoutMs());
+        httpConnector.setReadTimeoutMs(property.getTimeoutMs());
 
         Map<String, Object> root = new LinkedHashMap<>();
         Map<String, Object> aps = new LinkedHashMap<>();
@@ -47,20 +47,20 @@ public class AppleNotificationResource extends AbstractExpirationResource {
             httpConnector.setPostData(postData.getBytes(StandardCharsets.UTF_8));
         }
 
-        httpConnector.setRequestHeader("apns-push-type", appleNotificationRepositoryProperty.getPushType());
-        httpConnector.setRequestHeader("apns-expiration", appleNotificationRepositoryProperty.getExpiration());
-        httpConnector.setRequestHeader("apns-priority", appleNotificationRepositoryProperty.getPriority());
-        httpConnector.setRequestHeader("apns-topic", appleNotificationRepositoryProperty.getTopic());
+        httpConnector.addRequestHeader("apns-push-type", property.getPushType());
+        httpConnector.addRequestHeader("apns-expiration", property.getExpiration());
+        httpConnector.addRequestHeader("apns-priority", property.getPriority());
+        httpConnector.addRequestHeader("apns-topic", property.getTopic());
 
         // getVirtualPath является уникальным ключом, key должен быть константой в разрезе всего
         ManagerConfiguration<FileKeyStoreSSLContext> fileKeyStoreSSLContextManagerConfiguration = ManagerConfiguration.getInstance(
                 FileKeyStoreSSLContext.class,
                 File.class.getName(),
-                appleNotificationRepositoryProperty.getVirtualPath(),
+                property.getVirtualPath(),
                 fileKeyStore -> {
-                    fileKeyStore.setupSecurityAlias(appleNotificationRepositoryProperty.getSecurityAlias());
+                    fileKeyStore.setupSecurityAlias(property.getSecurityAlias());
                     fileKeyStore.setupTypeKeyStorage("PKCS12");
-                    fileKeyStore.setupReadFromSource(ReadFromSourceFactory.fromFileSystem(appleNotificationRepositoryProperty.getStorage()));
+                    fileKeyStore.setupReadFromSource(ReadFromSourceFactory.fromFileSystem(property.getStorage()));
                 }
         );
         httpConnector.setKeyStore(fileKeyStoreSSLContextManagerConfiguration.get());

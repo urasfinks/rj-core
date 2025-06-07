@@ -14,7 +14,7 @@ public class ReCaptchaResource extends AbstractExpirationResource {
 
     private final SecurityComponent securityComponent;
 
-    private final ReCaptchaRepositoryProperty reCaptchaRepositoryProperty = new ReCaptchaRepositoryProperty();
+    private final ReCaptchaRepositoryProperty property = new ReCaptchaRepositoryProperty();
 
     private final PropertyDispatcher<String> propertyDispatcher;
 
@@ -22,7 +22,7 @@ public class ReCaptchaResource extends AbstractExpirationResource {
         this.securityComponent = App.get(SecurityComponent.class);
         propertyDispatcher = new PropertyDispatcher<>(
                 null,
-                reCaptchaRepositoryProperty,
+                property,
                 getCascadeKey(ns)
         );
     }
@@ -31,12 +31,12 @@ public class ReCaptchaResource extends AbstractExpirationResource {
         HttpConnectorDefault httpClient = new HttpConnectorDefault();
         httpClient.setUrl("https://www.google.com/recaptcha/api/siteverify");
 
-        String body = "secret=" + new String(securityComponent.get(reCaptchaRepositoryProperty.getSecurityAlias())) + "&response=" + captchaValue;
+        String body = "secret=" + new String(securityComponent.get(property.getSecurityAlias())) + "&response=" + captchaValue;
         httpClient.setPostData(body.getBytes(StandardCharsets.UTF_8));
 
         httpClient.setConnectTimeoutMs(1_000);
         httpClient.setReadTimeoutMs(3_000);
-        httpClient.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        httpClient.addRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         httpClient.exec();
         return httpClient.getHttpResponse();
     }

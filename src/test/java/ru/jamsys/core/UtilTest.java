@@ -192,8 +192,8 @@ class UtilTest {
 
     @Test
     void test(){
-        FileByteRepositoryProperty fileByteRepositoryProperty = new FileByteRepositoryProperty();
-        UtilLog.printInfo(fileByteRepositoryProperty.getByFieldNameConstants(FileByteRepositoryProperty.Fields.folder));
+        FileByteRepositoryProperty property = new FileByteRepositoryProperty();
+        UtilLog.printInfo(property.getByFieldNameConstants(FileByteRepositoryProperty.Fields.folder));
     }
 
     @Test

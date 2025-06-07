@@ -56,7 +56,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
     private final Lock lockAddToPark = new ReentrantLock();
 
     @Getter
-    private final PoolRepositoryProperty poolRepositoryProperty = new PoolRepositoryProperty();
+    private final PoolRepositoryProperty property = new PoolRepositoryProperty();
 
     @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;
@@ -69,7 +69,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         this.ns = ns;
         propertyDispatcher = new PropertyDispatcher<>(
                 null,
-                poolRepositoryProperty,
+                property,
                 getCascadeKey(ns)
         );
     }
@@ -118,7 +118,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         if (!isRun()) {
             App.error(new RuntimeException("Пул " + ns + " не может поместить в себя ничего, так как он выключен"));
         }
-        return isRun() && items.size() < poolRepositoryProperty.getMax();
+        return isRun() && items.size() < property.getMax();
     }
 
     // Добавить минимально кол-во элементов, если в пуле все поумирали
@@ -130,7 +130,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         // если настройки парка могут быть равны 0 и кол-во активных элементов равны 0.
         // Парк типа просто из-за неактивности ушёл в ноль, что бы не тратить ресурсы
         // иначе вернём false и просто задачи будут ждать, когда парк расширится автоматически от нагрузки
-        if (poolRepositoryProperty.getMin() == 0 && items.isEmpty()) {
+        if (property.getMin() == 0 && items.isEmpty()) {
             return addToParkNewItem();
         }
         // Если нет возможности говорим - что не создали
@@ -264,7 +264,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
             // Если паркинг был пуст уже больше секунды начнём увеличивать
             if (getTimeParkIsEmpty() > 1000 && parkQueue.isEmpty()) {
                 overclocking(formulaAddCount.apply(1));
-            } else if (items.size() > poolRepositoryProperty.getMin()) { //Кол-во больше минимума
+            } else if (items.size() > property.getMin()) { //Кол-во больше минимума
                 removeInactive();
             }
         } catch (Exception e) {
@@ -296,7 +296,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         if (cls == null) {
             throw new RuntimeException("cls is null");
         }
-        overclocking(poolRepositoryProperty.getMin());
+        overclocking(property.getMin());
         propertyDispatcher.run();
     }
 
