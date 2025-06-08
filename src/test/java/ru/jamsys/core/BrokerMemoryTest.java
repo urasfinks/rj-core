@@ -38,7 +38,7 @@ class BrokerMemoryTest {
                 BrokerMemory.class,
                 java.util.UUID.randomUUID().toString(),
                 XTest.class.getSimpleName() + "_1",
-                managerElement -> managerElement.setupOnDrop(dropped::add)
+                managerElement -> managerElement.setup(dropped::add)
         );
 
         BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();

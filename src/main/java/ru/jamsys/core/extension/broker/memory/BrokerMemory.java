@@ -72,7 +72,7 @@ public class BrokerMemory<T>
         );
     }
 
-    public void setupOnDrop(Consumer<T> onDrop){
+    public void setup(Consumer<T> onDrop){
         this.onPostDrop = onDrop;
     }
 

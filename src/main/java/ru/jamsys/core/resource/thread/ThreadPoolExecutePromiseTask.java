@@ -34,7 +34,7 @@ public class ThreadPoolExecutePromiseTask extends AbstractPoolPrivate {
                 java.util.UUID.randomUUID().toString(),
                 getCascadeKey(ns),
                 managerElement -> managerElement
-                        .setupOnDrop(promiseTask -> promiseTask
+                        .setup(promiseTask -> promiseTask
                                 .getPromise().setError("::drop", new RuntimeException())
                         )
         );

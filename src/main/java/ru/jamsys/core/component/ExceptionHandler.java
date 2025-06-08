@@ -55,7 +55,7 @@ public class ExceptionHandler {
         StackTraceElement[] elements = th.getStackTrace();
         sw.addLine(th.getClass().getName() + ": " + th.getMessage());
         if (th instanceof ForwardException forwardException) {
-            m = 1;
+            m = forwardException.getLine();
             if (forwardException.getContext() != null) {
                 try {
                     String stringPretty = UtilJson.toStringPretty(forwardException.getContext(), "{}");

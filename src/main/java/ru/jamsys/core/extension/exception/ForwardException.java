@@ -1,11 +1,17 @@
 package ru.jamsys.core.extension.exception;
 
 import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 @Getter
 public class ForwardException extends RuntimeException {
 
     Object context;
+
+    @Setter
+    @Accessors(chain = true)
+    int line = 1;
 
     public ForwardException(Throwable cause) {
         super(null, cause);

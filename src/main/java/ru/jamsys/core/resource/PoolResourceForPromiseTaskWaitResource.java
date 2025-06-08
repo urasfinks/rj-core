@@ -2,6 +2,7 @@ package ru.jamsys.core.resource;
 
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.broker.memory.BrokerMemory;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.pool.AbstractPool;
@@ -31,8 +32,13 @@ public class PoolResourceForPromiseTaskWaitResource<T extends AbstractExpiration
                 java.util.UUID.randomUUID().toString(),
                 ns,
                 promiseTaskWaitResourceBrokerMemory -> promiseTaskWaitResourceBrokerMemory
-                        .setupOnDrop(promiseTaskWaitResource -> promiseTaskWaitResource
-                                .getPromise().setError("::drop", new RuntimeException())
+                        .setup(promiseTaskWaitResource -> promiseTaskWaitResource
+                                .getPromise().setError("::drop", new ForwardException(
+                                                "drop",
+                                                promiseTaskWaitResource
+                                        )
+                                                .setLine(5)
+                                )
                         )
         );
     }

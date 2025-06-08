@@ -24,9 +24,9 @@ public class HttpResourceRepositoryProperty extends RepositoryPropertyAnnotation
     private volatile String url;
 
     @PropertyKey("method")
-    @PropertyDescription("GET/POST/PUT/DELETE")
+    @PropertyDescription("Http method")
     @PropertyValueRegexp("^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH|TRACE|CONNECT)$")
-    private volatile String method;
+    private volatile String method = "GET";
 
     @PropertyKey("header")
     @PropertyDescription("Заголовки в формате GET key=value&key2=value2")
