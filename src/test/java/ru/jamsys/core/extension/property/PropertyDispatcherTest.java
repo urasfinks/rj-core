@@ -9,6 +9,7 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.annotation.PropertyDescription;
 import ru.jamsys.core.extension.annotation.PropertyKey;
+import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.annotation.PropertyValueRegexp;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.repository.AbstractRepositoryProperty;
@@ -40,27 +41,12 @@ class PropertyDispatcherTest {
     @Getter
     public static class Property extends RepositoryPropertyAnnotationField<Object> {
 
+        @PropertyNotNull
         @PropertyKey("method")
         @PropertyDescription("Http method")
         @PropertyValueRegexp("^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH|TRACE|CONNECT)$")
         private volatile String method = "GET";
 
-    }
-
-    @Test
-    public void updateRegexpRuntime() {
-        Property property = new Property();
-        PropertyDispatcher<Object> tPropertyDispatcher = new PropertyDispatcher<>(
-                null,
-                property,
-                "test"
-        );
-        tPropertyDispatcher.run();
-        Assertions.assertEquals("GET", property.getMethod());
-        tPropertyDispatcher.set(Property.Fields.method, "POST");
-        Assertions.assertEquals("POST", property.getMethod());
-        Assertions.assertThrows(ForwardException.class, () -> tPropertyDispatcher.set(Property.Fields.method, "GETS"));
-        tPropertyDispatcher.shutdown();
     }
 
     @Test
@@ -79,6 +65,23 @@ class PropertyDispatcherTest {
                     "test"
             );
         });
+    }
+
+    @Test
+    public void updateRegexpRuntime() {
+        Property property = new Property();
+        PropertyDispatcher<Object> tPropertyDispatcher = new PropertyDispatcher<>(
+                null,
+                property,
+                "test"
+        );
+        tPropertyDispatcher.run();
+        Assertions.assertEquals("GET", property.getMethod());
+        tPropertyDispatcher.set(Property.Fields.method, "POST");
+        Assertions.assertEquals("POST", property.getMethod());
+        Assertions.assertThrows(ForwardException.class, () -> tPropertyDispatcher.set(Property.Fields.method, null));
+        Assertions.assertThrows(ForwardException.class, () -> tPropertyDispatcher.set(Property.Fields.method, "GETS"));
+        tPropertyDispatcher.shutdown();
     }
 
     private AbstractRepositoryProperty<String> repositoryProperty;

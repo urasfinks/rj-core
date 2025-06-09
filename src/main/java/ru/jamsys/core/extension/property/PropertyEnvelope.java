@@ -133,6 +133,12 @@ public class PropertyEnvelope<T> {
                     }
                 });
         String propertyValue = property.get();
+        if (notNull && propertyValue == null) {
+            throw new ForwardException("Validation failed: value is null", this);
+        }
+        if (regexp != null && propertyValue == null) {
+            throw new ForwardException("Validation regexp failed: value is null", this);
+        }
         if (regexp != null && !regexp.matcher(propertyValue).matches()) {
             throw new ForwardException(String.format(
                     "Validation failed: value '%s' does not match expected pattern '%s'",
@@ -143,7 +149,6 @@ public class PropertyEnvelope<T> {
         try {
             @SuppressWarnings("unchecked")
             T apply = (T) PropertyUtil.convertType.get(cls).apply(propertyValue);
-
             this.value = apply;
         } catch (Throwable th) {
             throw new ForwardException(this, th);
