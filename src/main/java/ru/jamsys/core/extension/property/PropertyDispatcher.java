@@ -120,7 +120,7 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
     }
 
     // Получить ключик без ns, как он числится в репозитории
-    private String getRepositoryPropertyKey(String propertyKey) {
+    public String getRepositoryPropertyKey(String propertyKey) {
         if (ns == null && propertyKey.isEmpty()) {
             throw new RuntimeException("Определитесь либо ns = null либо key.isEmpty()");
         } else if (ns == null) {
