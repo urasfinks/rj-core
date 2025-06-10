@@ -12,7 +12,7 @@ import ru.jamsys.core.flat.template.cron.release.Cron1s;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.resource.http.HttpResource;
-import ru.jamsys.core.resource.http.client.HttpConnector;
+import ru.jamsys.core.resource.http.client.AbstractHttpConnector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ public class StatisticUpload extends PromiseGenerator implements Cron1s {
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
                 .appendWithResource("main", HttpResource.class, (threadRun, promiseTask, promise, resource) -> {
-                    HttpConnector prepare = resource.prepare();
+                    AbstractHttpConnector prepare = resource.prepare();
 //                    HttpResponse execute = resource.execute(httpConnectorDefault);
                 })
                 .append("main", (threadRun, _, _) -> {

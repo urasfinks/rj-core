@@ -9,6 +9,7 @@ import ru.jamsys.core.resource.http.client.HttpResponse;
 
 import java.nio.charset.StandardCharsets;
 
+// TODO: это не ресурс
 @SuppressWarnings("unused")
 public class ReCaptchaResource extends AbstractExpirationResource {
 
@@ -32,13 +33,12 @@ public class ReCaptchaResource extends AbstractExpirationResource {
         httpClient.setUrl("https://www.google.com/recaptcha/api/siteverify");
 
         String body = "secret=" + new String(securityComponent.get(property.getSecurityAlias())) + "&response=" + captchaValue;
-        httpClient.setPostData(body.getBytes(StandardCharsets.UTF_8));
+        httpClient.setBodyRaw(body.getBytes(StandardCharsets.UTF_8));
 
         httpClient.setConnectTimeoutMs(1_000);
         httpClient.setReadTimeoutMs(3_000);
         httpClient.addRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-        httpClient.exec();
-        return httpClient.getHttpResponse();
+        return httpClient.exec();
     }
 
     @Override

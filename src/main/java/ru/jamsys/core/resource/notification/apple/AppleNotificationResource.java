@@ -4,7 +4,6 @@ import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.resource.http.client.HttpConnector;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.resource.virtual.file.system.File;
@@ -15,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+// TODO: это не ресурс
 public class AppleNotificationResource extends AbstractExpirationResource {
 
     private final PropertyDispatcher<Object> propertyDispatcher;
@@ -31,7 +31,7 @@ public class AppleNotificationResource extends AbstractExpirationResource {
 
     public HttpResponse execute(AppleNotificationRequest arguments) {
 
-        HttpConnector httpConnector = new HttpConnectorDefault();
+        HttpConnectorDefault httpConnector = new HttpConnectorDefault();
         httpConnector.setUrl(property.getUrl() + arguments.getDevice());
         httpConnector.setConnectTimeoutMs(1_000);
         httpConnector.setReadTimeoutMs(property.getTimeoutMs());
@@ -44,7 +44,7 @@ public class AppleNotificationResource extends AbstractExpirationResource {
 
         String postData = UtilJson.toString(root, "{}");
         if (postData != null) {
-            httpConnector.setPostData(postData.getBytes(StandardCharsets.UTF_8));
+            httpConnector.setBodyRaw(postData.getBytes(StandardCharsets.UTF_8));
         }
 
         httpConnector.addRequestHeader("apns-push-type", property.getPushType());
@@ -63,9 +63,9 @@ public class AppleNotificationResource extends AbstractExpirationResource {
                     fileKeyStore.setupReadFromSource(ReadFromSourceFactory.fromFileSystem(property.getStorage()));
                 }
         );
-        httpConnector.setKeyStore(fileKeyStoreSSLContextManagerConfiguration.get());
-        httpConnector.exec();
-        return httpConnector.getHttpResponse();
+        httpConnector.setFileKeyStoreSSLContext(fileKeyStoreSSLContextManagerConfiguration.get());
+        return httpConnector.exec();
+
     }
 
     @Override

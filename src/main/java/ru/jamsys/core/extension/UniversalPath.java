@@ -101,7 +101,7 @@ public class UniversalPath {
         }
         return UtilUri.parseParameters(
                 "?" + parameters,
-                strings -> String.join(",", strings)
+                strings -> String.join(";", strings)
         );
     }
 

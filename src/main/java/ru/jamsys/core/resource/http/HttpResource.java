@@ -1,22 +1,21 @@
 package ru.jamsys.core.resource.http;
 
 import lombok.Getter;
-import ru.jamsys.core.extension.UniversalPath;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
-import ru.jamsys.core.resource.http.client.HttpConnector;
+import ru.jamsys.core.flat.util.UtilUri;
+import ru.jamsys.core.resource.http.client.AbstractHttpConnector;
 import ru.jamsys.core.resource.http.client.HttpConnectorApache;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
-import ru.jamsys.core.resource.http.client.HttpResponse;
+import ru.jamsys.core.resource.http.client.HttpMethodEnum;
 
+@Getter
 public class HttpResource extends AbstractExpirationResource {
 
-    @SuppressWarnings("all")
     private final String ns;
 
     private final HttpResourceRepositoryProperty property = new HttpResourceRepositoryProperty();
 
-    @Getter
     private final PropertyDispatcher<Object> propertyDispatcher;
 
     public HttpResource(String ns) {
@@ -33,8 +32,8 @@ public class HttpResource extends AbstractExpirationResource {
         APACHE
     }
 
-    public HttpConnector prepare() {
-        HttpConnector httpConnector = switch (Type.valueOf(property.getType().toUpperCase())) {
+    public AbstractHttpConnector prepare() {
+        AbstractHttpConnector httpConnector = switch (Type.valueOf(property.getType().toUpperCase())) {
             case DEFAULT -> new HttpConnectorDefault();
             case APACHE -> new HttpConnectorApache();
         };
@@ -42,15 +41,19 @@ public class HttpResource extends AbstractExpirationResource {
             httpConnector.setUrl(property.getUrl());
         }
         if (property.getHeader() != null) {
-            UniversalPath universalPath = new UniversalPath("/?" + property.getHeader());
-            universalPath.parseParameter().forEach(httpConnector::addRequestHeader);
+            UtilUri.parseParameters(
+                    "?" + property.getHeader(),
+                    strings -> String.join(",", strings)
+            ).forEach(httpConnector::addRequestHeader);
         }
+        if (property.getConnectTimeoutMs() != null) {
+            httpConnector.setConnectTimeoutMs(property.getConnectTimeoutMs());
+        }
+        if (property.getReadTimeoutMs() != null) {
+            httpConnector.setReadTimeoutMs(property.getReadTimeoutMs());
+        }
+        httpConnector.setMethod(HttpMethodEnum.valueOf(property.getMethod()));
         return httpConnector;
-    }
-
-    public HttpResponse execute(HttpConnector arguments) {
-        arguments.exec();
-        return arguments.getHttpResponse();
     }
 
     @Override

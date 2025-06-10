@@ -5,7 +5,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.property.repository.RepositoryPropertyBuilder;
+import ru.jamsys.core.flat.util.UtilLog;
+import ru.jamsys.core.plugin.http.resource.TelegramNotificationPlugin;
 import ru.jamsys.core.promise.Promise;
+import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.resource.notification.android.AndroidNotificationRequest;
 import ru.jamsys.core.resource.notification.android.AndroidNotificationResource;
@@ -13,8 +17,7 @@ import ru.jamsys.core.resource.notification.apple.AppleNotificationRequest;
 import ru.jamsys.core.resource.notification.apple.AppleNotificationResource;
 import ru.jamsys.core.resource.notification.email.EmailNotificationResource;
 import ru.jamsys.core.resource.notification.email.EmailTemplateNotificationRequest;
-import ru.jamsys.core.resource.notification.telegram.TelegramNotificationRequest;
-import ru.jamsys.core.resource.notification.telegram.TelegramNotificationResource;
+import ru.jamsys.core.resource.notification.telegram.TelegramNotificationRepositoryProperty;
 import ru.jamsys.core.resource.yandex.speech.YandexSpeechRequest;
 import ru.jamsys.core.resource.yandex.speech.YandexSpeechResource;
 
@@ -35,12 +38,22 @@ class NotificationTest {
         App.shutdown();
     }
 
+    //@Test
     @SuppressWarnings("unused")
     void telegramSend() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
-                .appendWithResource("http", TelegramNotificationResource.class, (_, threadRun, _, telegramNotificationResource) -> {
-                    HttpResponse execute = telegramNotificationResource.execute(new TelegramNotificationRequest("Привет", "Мир"));
+                .appendWithResource("http", HttpResource.class, "telegram", (_, threadRun, _, httpResource) -> {
+                    HttpResponse execute = TelegramNotificationPlugin.execute(
+                            httpResource.prepare(),
+                            new RepositoryPropertyBuilder<>(new TelegramNotificationRepositoryProperty())
+                                    .applyServiceProperty(httpResource.getNs())
+                                    .apply(telegramNotificationRepositoryProperty ->
+                                            telegramNotificationRepositoryProperty.setMessage("Hello!")
+                                    )
+                                    .build()
+                    );
+                    UtilLog.printInfo(execute);
                 })
                 .run()
                 .await(2000);

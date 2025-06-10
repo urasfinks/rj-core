@@ -9,6 +9,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.Property;
 import ru.jamsys.core.extension.property.PropertySubscription;
 import ru.jamsys.core.flat.util.Util;
@@ -127,6 +128,18 @@ public class ServiceProperty {
                 value,
                 curValue
         );
+    }
+
+    @SuppressWarnings("all")
+    public Property getOrThrow(String key, Object context) throws Exception {
+        if (!properties.containsKey(key)) {
+            throw new ForwardException("Property: " + key + " does not exist", context);
+        }
+        return properties.get(key);
+    }
+
+    public boolean contains(String key) {
+        return properties.containsKey(key);
     }
 
     public void set(String key, Object value) {

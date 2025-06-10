@@ -34,7 +34,7 @@ public class RepositoryPropertyAnnotationField<T> extends AbstractRepositoryProp
                         @SuppressWarnings("unchecked")
                         T fieldValue = (T) field.get(this);
                         String repositoryPropertyKey = field.getAnnotation(PropertyKey.class).value();
-                        PropertyEnvelope<T> tPropertyEnvelope = new PropertyEnvelope<>(
+                        getListPropertyEnvelopeRepository().add(new PropertyEnvelope<>(
                                 this,
                                 field,
                                 cls,
@@ -52,8 +52,7 @@ public class RepositoryPropertyAnnotationField<T> extends AbstractRepositoryProp
                         )
                                 .setPropertyKey(propertyDispatcher.getPropertyKey(repositoryPropertyKey))
                                 .syncPropertyValue()
-                                .apply();
-                        getListPropertyEnvelopeRepository().add(tPropertyEnvelope);
+                                .apply());
                     } catch (Throwable th) {
                         throw new ForwardException(propertyDispatcher, th);
                     }

@@ -8,7 +8,7 @@ import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.annotation.PropertyValueRegexp;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotationField;
 
-@SuppressWarnings({"UnusedDeclaration"})
+@SuppressWarnings({"UnusedDeclaration", "all"})
 @FieldNameConstants
 @Getter
 public class HttpResourceRepositoryProperty extends RepositoryPropertyAnnotationField<Object> {
@@ -23,6 +23,7 @@ public class HttpResourceRepositoryProperty extends RepositoryPropertyAnnotation
     @PropertyDescription("Url")
     private volatile String url;
 
+    @PropertyNotNull
     @PropertyKey("method")
     @PropertyDescription("Http method")
     @PropertyValueRegexp("^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH|TRACE|CONNECT)$")
@@ -31,5 +32,13 @@ public class HttpResourceRepositoryProperty extends RepositoryPropertyAnnotation
     @PropertyKey("header")
     @PropertyDescription("Заголовки в формате GET key=value&key2=value2")
     private volatile String header;
+
+    @PropertyKey("connect.timeout.ms")
+    @PropertyDescription("Время соединения")
+    private volatile Integer connectTimeoutMs = 5_000;
+
+    @PropertyKey("read.timeout.ms")
+    @PropertyDescription("Время ожидания ответа")
+    private volatile Integer readTimeoutMs = 5_000;
 
 }

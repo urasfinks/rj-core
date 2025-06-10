@@ -1,4 +1,4 @@
-package ru.jamsys.core.handler.web.http.plugin;
+package ru.jamsys.core.plugin.promise;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;

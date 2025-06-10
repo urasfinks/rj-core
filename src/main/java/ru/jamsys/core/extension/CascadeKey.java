@@ -46,8 +46,8 @@ public interface CascadeKey {
         return (ns.contains(".") ? ("[" + ns + "]") : ("." + ns));
     }
 
-    static String complex(String key, String ns) {
-        return key + append(ns);
+    static String complex(String parent, String child) {
+        return parent + append(child);
     }
 
 }

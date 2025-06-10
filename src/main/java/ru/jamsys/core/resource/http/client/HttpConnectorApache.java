@@ -1,9 +1,7 @@
 package ru.jamsys.core.resource.http.client;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
@@ -20,136 +18,70 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import ru.jamsys.core.App;
-import ru.jamsys.core.resource.virtual.file.system.FileKeyStoreSSLContext;
+import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.extension.exception.ForwardException;
 
-import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-// Apache HttpClient был создан, потому что нативный клиент не умеет подключаться к прокси с авторизацией
-// когда надо подключаться к https ресурсу, он теряет заголовок Proxy-Authorization
-// в случает с http ресурсом всё ОК
-// Apache клиент - работает с этим отлично, но меня пугает собственный пул ресурсов
-// Предполагаю работать с Apache клиентом только в исключительных случаях
+// Apache HttpClient был создан, потому что нативный клиент не умеет подключаться к прокси с авторизацией,
+// когда надо подключаться к https ресурсу, он теряет заголовок Proxy-Authorization.
+// Apache клиент - работает с этим отлично, но меня пугает собственный пул ресурсов.
+// Предполагаю работать с Apache клиентом только в исключительных случаях.
 
-@Data
+@Getter
+@Setter
 @Accessors(chain = true)
-public class HttpConnectorApache implements HttpConnector {
+public class HttpConnectorApache extends AbstractHttpConnector {
 
-    @Getter
-    @Setter
-    private long timing;
-
-    @Getter
-    @Setter
-    private String proxyHost;
-
-    @Getter
-    @Setter
-    private int proxyPort;
-
-    @Getter
-    @Setter
-    private String proxyUser;
-
-    @Setter
-    private String proxyPassword;
-
-    @Getter
-    @Setter
-    private String sslProtocol = "TLS";
-
-    @Getter
-    @Setter
     private Authenticator authenticator = null;
 
-    @Getter
-    @Setter
-    private int connectTimeoutMs = 5_000;
-
-    @Getter
-    @Setter
-    private int readTimeoutMs = 5_000;
-
-    @Getter
-    @Setter
     private int poolWaitMs = 5_000;
 
-    @Getter
-    @Setter
-    public HttpMethodEnum method = null;
-
-    private final Map<String, String> headersRequest = new HashMap<>();
-
-    @Getter
-    private Map<String, List<String>> headerResponse = null;
-
-    private FileKeyStoreSSLContext fileKeyStoreSSLContext = null;
-
-    @Getter
-    @Setter
-    @ToString.Exclude
-    private byte[] postData = null;
-
-    @Getter
-    @Setter
-    private String url = null;
-
-    @Getter
-    @ToString.Exclude
-    private byte[] responseByte = null;
-
-    @Getter
-    private int status = -1;
-
-    @Getter
-    private Exception exception = null;
-
-    @Getter
-    @Setter
-    boolean disableHostnameVerification = false;
-
     @Override
-    public HttpConnectorApache addRequestHeader(String key, String value) {
-        headersRequest.put(key, value);
-        return this;
-    }
+    public ru.jamsys.core.resource.http.client.HttpResponse exec() {
+        int status = -1;
+        byte[] responseByte = null;
+        Map<String, List<String>> headerResponse = new LinkedHashMap<>();
+        Exception exception = null;
 
-    @Override
-    public void exec() {
         long startTime = System.currentTimeMillis();
         try {
+            if (method == null) {
+                throw new ForwardException("Method is null", this);
+            }
             HttpClientBuilder httpClientBuilder = HttpClients
                     .custom()
                     .setDefaultRequestConfig(RequestConfig.custom()
-                            .setConnectTimeout(connectTimeoutMs)    // Таймаут подключения (5 секунд)
-                            .setSocketTimeout(readTimeoutMs)     // Таймаут ожидания данных (5 секунд)
+                            .setConnectTimeout(getConnectTimeoutMs())    // Таймаут подключения (5 секунд)
+                            .setSocketTimeout(getReadTimeoutMs())     // Таймаут ожидания данных (5 секунд)
                             .setConnectionRequestTimeout(poolWaitMs) // Таймаут ожидания из пула соединений (5 секунд)
                             .build()
                     );
-            if (fileKeyStoreSSLContext != null) {
-
+            if (getFileKeyStoreSSLContext() != null) {
                 SSLConnectionSocketFactory socketFactory = disableHostnameVerification
                         ? new SSLConnectionSocketFactory(
-                        fileKeyStoreSSLContext.get(sslProtocol),
+                        getFileKeyStoreSSLContext().get(getSslProtocol()),
                         NoopHostnameVerifier.INSTANCE
                 )
                         : new SSLConnectionSocketFactory(
-                        fileKeyStoreSSLContext.get(sslProtocol)
+                        getFileKeyStoreSSLContext().get(getSslProtocol())
                 );
                 httpClientBuilder.setSSLSocketFactory(socketFactory);
             }
-            if (proxyHost != null) {
-                httpClientBuilder.setProxy(new HttpHost(proxyHost, proxyPort));
-                if (proxyUser != null) {
+            if (getProxyHost() != null) {
+                httpClientBuilder.setProxy(new HttpHost(getProxyHost(), getProxyPort()));
+                if (getProxyUser() != null) {
                     CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
                     credentialsProvider.setCredentials(
-                            new AuthScope(proxyHost, proxyPort), // Указываем область авторизации
-                            new UsernamePasswordCredentials(proxyUser, proxyPassword) // Учетные данные
+                            new AuthScope(getProxyHost(), getProxyPort()), // Указываем область авторизации
+                            new UsernamePasswordCredentials(
+                                    getProxyUser(),
+                                    new String(App.get(SecurityComponent.class).get(getProxyPasswordAlias()))
+                            ) // Учетные данные
                     );
                     httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
                 }
@@ -157,87 +89,50 @@ public class HttpConnectorApache implements HttpConnector {
 
             try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
                 if (method == null) {
-                    method = postData != null ? HttpMethodEnum.POST : HttpMethodEnum.GET;
+                    method = getBodyRaw() != null ? HttpMethodEnum.POST : HttpMethodEnum.GET;
                 }
                 HttpRequestBase request = switch (method) {
-                    case GET -> new HttpGet(url);
-                    case DELETE -> new HttpDelete(url);
+                    case GET -> new HttpGet(getUrl());
+                    case DELETE -> new HttpDelete(getUrl());
                     case POST -> {
-                        HttpPost httpPost = new HttpPost(url);
-                        httpPost.setEntity(new ByteArrayEntity(postData));
+                        HttpPost httpPost = new HttpPost(getUrl());
+                        httpPost.setEntity(new ByteArrayEntity(getBodyRaw()));
                         yield httpPost;
                     }
                     case PUT -> {
-                        HttpPut httpPut = new HttpPut(url);
-                        httpPut.setEntity(new ByteArrayEntity(postData));
+                        HttpPut httpPut = new HttpPut(getUrl());
+                        httpPut.setEntity(new ByteArrayEntity(getBodyRaw()));
                         yield httpPut;
                     }
+                    case HEAD -> new HttpHead(getUrl());
+                    case OPTIONS -> new HttpOptions(getUrl());
+                    case PATCH -> new HttpPatch(getUrl());
+                    case TRACE -> new HttpTrace(getUrl());
+                    case CONNECT -> throw new ForwardException("Connect not support in Apache Http Client", this);
                 };
-                for (Map.Entry<String, String> x : headersRequest.entrySet()) {
+                for (Map.Entry<String, String> x : getHeadersRequest().entrySet()) {
                     request.setHeader(x.getKey(), x.getValue());
                 }
 
                 try (CloseableHttpResponse response = httpClient.execute(request)) {
                     status = response.getStatusLine().getStatusCode();
                     responseByte = response.getEntity().getContent().readAllBytes();
-                    headerResponse = extractHeaders(response.getAllHeaders());
+                    for (Header header : response.getAllHeaders()) {
+                        headerResponse.computeIfAbsent(header.getName(), _ -> new ArrayList<>()).add(header.getValue());
+                    }
                 }
             }
         } catch (Exception e) {
             exception = e;
             App.error(e);
         }
-        setTiming(System.currentTimeMillis() - startTime);
-    }
-
-    private static Map<String, List<String>> extractHeaders(Header[] headers) {
-        Map<String, List<String>> headersMap = new HashMap<>();
-        for (Header header : headers) {
-            headersMap.computeIfAbsent(header.getName(), _ -> new ArrayList<>()).add(header.getValue());
-        }
-        return headersMap;
-    }
-
-    @Override
-    public String getResponseString(String charset) throws UnsupportedEncodingException {
-        if (responseByte == null) {
-            return "";
-        }
-        return new String(responseByte, charset);
-    }
-
-    @Override
-    public HttpConnector setProxy(String host, int port) {
-        this.proxyHost = host;
-        this.proxyPort = port;
-        return this;
-    }
-
-    @Override
-    public HttpConnector setProxy(String host, int port, String user, String password) {
-        this.proxyHost = host;
-        this.proxyPort = port;
-        this.proxyUser = user;
-        this.proxyPassword = password;
-        return this;
-    }
-
-    @Override
-    public HttpConnectorApache setKeyStore(FileKeyStoreSSLContext fileKeyStoreSSLContext) {
-        this.fileKeyStoreSSLContext = fileKeyStoreSSLContext;
-        return this;
-    }
-
-    @SuppressWarnings("unused")
-    @ToString.Include()
-    public String getResponseString() {
-        return responseByte != null ? new String(responseByte, StandardCharsets.UTF_8) : "null";
-    }
-
-    @SuppressWarnings("unused")
-    @ToString.Include()
-    public String getPostDataString() {
-        return postData != null ? new String(postData, StandardCharsets.UTF_8) : "null";
+        return ru.jamsys.core.resource.http.client.HttpResponse.instanceOf(
+                status,
+                headerResponse,
+                responseByte,
+                exception,
+                System.currentTimeMillis() - startTime
+        );
     }
 
 }

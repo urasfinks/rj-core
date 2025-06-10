@@ -1,4 +1,4 @@
-package ru.jamsys.core.handler.web.http.plugin;
+package ru.jamsys.core.plugin.promise;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.SecurityComponent;

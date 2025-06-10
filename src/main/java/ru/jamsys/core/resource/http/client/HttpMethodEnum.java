@@ -4,5 +4,10 @@ public enum HttpMethodEnum {
     GET,
     POST,
     PUT,
-    DELETE
+    DELETE,
+    HEAD,
+    OPTIONS,
+    PATCH,
+    TRACE,
+    CONNECT
 }

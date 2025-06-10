@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.resource.http.client.HttpConnector;
+import ru.jamsys.core.resource.http.client.AbstractHttpConnector;
 import ru.jamsys.core.resource.http.client.HttpConnectorDefault;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 
@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+// TODO: это не ресурс
 public class AndroidNotificationResource extends AbstractExpirationResource implements PropertyListener {
 
     private String accessToken;
@@ -35,15 +36,14 @@ public class AndroidNotificationResource extends AbstractExpirationResource impl
 
     public HttpResponse execute(AndroidNotificationRequest arguments) {
         String postData = createPostData(arguments.getTitle(), arguments.getData(), arguments.getToken());
-        HttpConnector httpConnector = new HttpConnectorDefault()
+        AbstractHttpConnector httpConnector = new HttpConnectorDefault()
                 .setUrl(property.getUrl())
                 .setConnectTimeoutMs(1_000)
                 .setReadTimeoutMs(property.getTimeoutMs())
                 .addRequestHeader("Content-type", "application/json")
                 .addRequestHeader("Authorization", "Bearer " + accessToken)
-                .setPostData(postData.getBytes(StandardCharsets.UTF_8));
-        httpConnector.exec();
-        return httpConnector.getHttpResponse();
+                .setBodyRaw(postData.getBytes(StandardCharsets.UTF_8));
+        return httpConnector.exec();
     }
 
     @Override

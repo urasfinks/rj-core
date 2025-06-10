@@ -23,7 +23,7 @@ import java.util.List;
 // Так сделаны плагины для HttpHandler, то есть плагины есть, но они все помечены аннотацией ServiceClassFinderIgnore
 // Для того, что бы в проекте добавить плагин, надо убрать ServiceClassFinderIgnore с плагина
 // Это можно сделать при помощи .properties:
-// App.ServiceClassFinder.ignore.ru.jamsys.core.handler.web.http.plugin.DeeplinkSchemaApple=false
+// App.ServiceClassFinder.ignore.ru.jamsys.core.plugin.promise.DeeplinkSchemaApple=false
 // По умолчанию включенный ServiceClassFinderIgnore подразумевает настройку в namespace = App.ServiceClassFinder.ignore
 // полное_имя_класса = true, то есть игнорирование включено, если поставить false => игнорирование выключено
 

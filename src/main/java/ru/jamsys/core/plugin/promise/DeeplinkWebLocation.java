@@ -1,4 +1,4 @@
-package ru.jamsys.core.handler.web.http.plugin;
+package ru.jamsys.core.plugin.promise;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,7 +12,6 @@ import ru.jamsys.core.flat.template.twix.TemplateTwix;
 import ru.jamsys.core.flat.util.UtilFileResource;
 import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseGeneratorAccess;
 
 import java.util.Map;
