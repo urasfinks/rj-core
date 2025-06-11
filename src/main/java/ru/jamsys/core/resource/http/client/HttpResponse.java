@@ -23,9 +23,8 @@ public class HttpResponse {
 
     protected Throwable exception = null;
 
-    private int statusCode;
-
-    private HttpStatus statusDesc = HttpStatus.OK;
+    @Setter
+    private HttpStatus status = HttpStatus.OK;
 
     private final Map<String, String> headers = new LinkedHashMap<>();
 
@@ -38,17 +37,14 @@ public class HttpResponse {
     @JsonValue
     public HashMapBuilder<String, Object> getJsonValue() {
         return new HashMapBuilder<String, Object>()
-                .append("statusCode", statusCode)
-                .append("statusDesc", statusDesc)
+                .append("statusDesc", status)
                 .append("headers", headers)
                 .append("body", body == null ? null : new String(body, charset))
                 .append("timing", timing)
-                .append("exception", App.get(ExceptionHandler.class).getLog(exception, null).getRawBody());
-    }
-
-    public void setStatusDesc(HttpStatus statusDesc) {
-        this.statusDesc = statusDesc;
-        this.statusCode = statusDesc.value();
+                .append("exception", exception == null
+                        ? null
+                        : App.get(ExceptionHandler.class).getLog(exception, null).getRawBody()
+                );
     }
 
     public void addHeader(String key, String value) {
@@ -56,9 +52,12 @@ public class HttpResponse {
     }
 
     public void addException(Throwable e) {
-        statusDesc = HttpStatus.EXPECTATION_FAILED;
-        statusCode = HttpStatus.EXPECTATION_FAILED.value();
+        status = HttpStatus.EXPECTATION_FAILED;
         exception = e;
+    }
+
+    public boolean isSuccess() {
+        return exception == null && status.is2xxSuccessful();
     }
 
     public static HttpResponse instanceOf(
@@ -78,8 +77,7 @@ public class HttpResponse {
                 };
                 httpResponse.addException(new ForwardException(exceptionDescription, exception));
             } else {
-                httpResponse.setStatusCode(status);
-                httpResponse.setStatusDesc(HttpStatus.valueOf(status));
+                httpResponse.setStatus(HttpStatus.valueOf(status));
                 httpResponse.setBody(body);
                 if (headerResponse != null) {
                     for (String key : headerResponse.keySet()) {

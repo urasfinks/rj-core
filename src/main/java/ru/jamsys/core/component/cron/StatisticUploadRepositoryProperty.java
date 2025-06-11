@@ -5,6 +5,7 @@ import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.annotation.PropertyDescription;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotationField;
+import ru.jamsys.core.flat.util.UtilByte;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @FieldNameConstants
@@ -14,6 +15,6 @@ public class StatisticUploadRepositoryProperty extends RepositoryPropertyAnnotat
     @SuppressWarnings("all")
     @PropertyKey("batch.max.size.byte")
     @PropertyDescription("Максимальное кол-во байт в пачке на отправку")
-    private volatile Integer batchMaxSizeByte = 60;
+    private volatile Long batchMaxSizeByte = UtilByte.megabytesToBytes(1L);
 
 }
