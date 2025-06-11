@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.notification.email;
+package ru.jamsys.core.resource.email;
 
 import lombok.Getter;
 import lombok.Setter;

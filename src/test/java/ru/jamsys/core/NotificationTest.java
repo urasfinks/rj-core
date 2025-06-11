@@ -16,8 +16,8 @@ import ru.jamsys.core.plugin.http.resource.notification.telegram.TelegramNotific
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.http.client.HttpResponse;
-import ru.jamsys.core.resource.notification.email.EmailNotificationResource;
-import ru.jamsys.core.resource.notification.email.EmailTemplateNotificationRequest;
+import ru.jamsys.core.resource.email.EmailNotificationResource;
+import ru.jamsys.core.resource.email.EmailTemplateNotificationRequest;
 import ru.jamsys.core.resource.yandex.speech.YandexSpeechRequest;
 import ru.jamsys.core.resource.yandex.speech.YandexSpeechResource;
 

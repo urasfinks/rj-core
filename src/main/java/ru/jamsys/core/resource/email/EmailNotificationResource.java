@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.notification.email;
+package ru.jamsys.core.resource.email;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;

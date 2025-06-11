@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.notification.email;
+package ru.jamsys.core.resource.email;
 
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;

@@ -88,6 +88,7 @@ class PropertyDispatcherTest {
     private ServiceProperty serviceProperty;
     private PropertyDispatcher<String> dispatcher;
 
+    @SuppressWarnings("all")
     @BeforeEach
     public void setup() {
         repositoryProperty = mock(AbstractRepositoryProperty.class);
