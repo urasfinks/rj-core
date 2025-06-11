@@ -1,8 +1,6 @@
 package ru.jamsys.core.plugin.http.resource.notification.telegram;
 
 import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 import lombok.experimental.FieldNameConstants;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
@@ -11,8 +9,6 @@ import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotation
 @SuppressWarnings({"UnusedDeclaration"})
 @FieldNameConstants
 @Getter
-@Setter
-@Accessors(chain = true)
 public class TelegramNotificationRepositoryProperty extends RepositoryPropertyAnnotationField<Object> {
 
     @PropertyNotNull

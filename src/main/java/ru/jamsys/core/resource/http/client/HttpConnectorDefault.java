@@ -1,6 +1,5 @@
 package ru.jamsys.core.resource.http.client;
 
-import lombok.experimental.Accessors;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.exception.ForwardException;

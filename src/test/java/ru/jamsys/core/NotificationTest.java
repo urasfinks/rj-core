@@ -3,11 +3,12 @@ package ru.jamsys.core;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertyBuilder;
 import ru.jamsys.core.flat.util.UtilLog;
+import ru.jamsys.core.plugin.http.resource.notification.android.AndroidNotificationPlugin;
+import ru.jamsys.core.plugin.http.resource.notification.android.AndroidNotificationRepositoryProperty;
 import ru.jamsys.core.plugin.http.resource.notification.apple.AppleNotificationPlugin;
 import ru.jamsys.core.plugin.http.resource.notification.apple.AppleNotificationRepositoryProperty;
 import ru.jamsys.core.plugin.http.resource.notification.telegram.TelegramNotificationPlugin;
@@ -15,8 +16,6 @@ import ru.jamsys.core.plugin.http.resource.notification.telegram.TelegramNotific
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.http.client.HttpResponse;
-import ru.jamsys.core.resource.notification.android.AndroidNotificationRequest;
-import ru.jamsys.core.resource.notification.android.AndroidNotificationResource;
 import ru.jamsys.core.resource.notification.email.EmailNotificationResource;
 import ru.jamsys.core.resource.notification.email.EmailTemplateNotificationRequest;
 import ru.jamsys.core.resource.yandex.speech.YandexSpeechRequest;
@@ -105,13 +104,22 @@ class NotificationTest {
         Assertions.assertEquals(Promise.TerminalStatus.SUCCESS, promise.getTerminalStatus());
     }
 
+    //@Test
     @SuppressWarnings("unused")
     void androidTest() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
-                .appendWithResource("push", AndroidNotificationResource.class, (_, _, promise1, androidNotificationResource) -> {
-                    HashMap<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 1);
-                    androidNotificationResource.execute(new AndroidNotificationRequest("Приветики", data, "fyP9dxiISLW9OLJfsb73kT:APA91bGSXWN4hR9_OdXEi3THPTNs-RAsMjASA9_XXXMpq5yjkUQAG8CUvucSopPb9xcffQgyMG5K-yoA0p5JS3DyMVVTw618a566zQdvVS_a9Tmr_ktHlI5ZY5aQ60HjkhWWzI6AwsdB"));
+                .appendWithResource("push", HttpResource.class, "android", (_, _, promise1, httpResource) -> {
+                    HttpResponse execute = AndroidNotificationPlugin.execute(
+                            httpResource.prepare(),
+                            new RepositoryPropertyBuilder<>(new AndroidNotificationRepositoryProperty(), httpResource.getNs())
+                                    .applyServiceProperty()
+                                    .apply(AndroidNotificationRepositoryProperty.Fields.title, "Hello world")
+                                    .apply(AndroidNotificationRepositoryProperty.Fields.token, "fyP9dxiISLW9OLJfsb73kT:APA91bGSXWN4hR9_OdXEi3THPTNs-RAsMjASA9_XXXMpq5yjkUQAG8CUvucSopPb9xcffQgyMG5K-yoA0p5JS3DyMVVTw618a566zQdvVS_a9Tmr_ktHlI5ZY5aQ60HjkhWWzI6AwsdB")
+                                    .applyWithoutCheck(AndroidNotificationRepositoryProperty.Fields.data, new HashMapBuilder<String, Object>().append("x1", 1))
+                                    .build()
+                    );
+                    UtilLog.printInfo(execute);
                 })
                 .run()
                 .await(3000);

@@ -5,6 +5,7 @@ import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -36,11 +37,19 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
     Consumer<T> onCreate;
 
     private ManagerConfiguration(Class<T> cls, String key, String ns, Manager manager, Consumer<T> onCreate) {
+        if (key == null || ns == null) {
+            throw new ForwardException("Null detected", new HashMapBuilder<String, Object>()
+                    .append("cls", cls)
+                    .append("key", key)
+                    .append("ns", ns)
+            );
+        }
         this.cls = cls;
         this.key = key;
         this.ns = ns;
         this.manager = manager;
         this.onCreate = onCreate;
+
     }
 
     @JsonValue
@@ -49,7 +58,8 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", cls)
                 .append("managerKey", ns)
-                .append("reference", isAlive() ? manager.get(cls, key, ns, onCreate) : null);
+                .append("reference", isAlive() ? manager.get(cls, key, ns, onCreate) : null)
+                ;
     }
 
     public boolean isAlive() {
