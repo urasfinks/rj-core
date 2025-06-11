@@ -19,13 +19,11 @@ import java.util.Map;
 import java.util.Properties;
 
 // Не работает с авторизацией прокси в случае обращения к https ресурсу
-
-@Accessors(chain = true)
 public class HttpConnectorDefault extends AbstractHttpConnector {
 
     @Override
     public ru.jamsys.core.resource.http.client.HttpResponse exec() {
-        int status = -1;
+        int status = -2;
         byte[] responseByte = null;
         Map<String, List<String>> headerResponse = new LinkedHashMap<>();
         Exception exception = null;
@@ -36,7 +34,6 @@ public class HttpConnectorDefault extends AbstractHttpConnector {
                 throw new ForwardException("Method is null", this);
             }
             HttpClient.Builder clientBuilder = HttpClient.newBuilder();
-
             if (getFileKeyStoreSSLContext() != null) {
                 if (disableHostnameVerification) {
                     Properties props = System.getProperties();
@@ -72,6 +69,7 @@ public class HttpConnectorDefault extends AbstractHttpConnector {
             );
             requestBuilder.timeout(Duration.ofMillis(getConnectTimeoutMs() + getReadTimeoutMs()));
             try (HttpClient httpClient = clientBuilder.build()) {
+                status = -1;
                 HttpResponse<byte[]> responses = httpClient.send(
                         requestBuilder.build(),
                         HttpResponse.BodyHandlers.ofByteArray()
@@ -80,7 +78,6 @@ public class HttpConnectorDefault extends AbstractHttpConnector {
                 responseByte = responses.body();
                 headerResponse = responses.headers().map();
             }
-
         } catch (Exception e) {
             exception = e;
             App.error(e);

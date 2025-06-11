@@ -43,7 +43,7 @@ public class HttpConnectorApache extends AbstractHttpConnector {
 
     @Override
     public ru.jamsys.core.resource.http.client.HttpResponse exec() {
-        int status = -1;
+        int status = -2;
         byte[] responseByte = null;
         Map<String, List<String>> headerResponse = new LinkedHashMap<>();
         Exception exception = null;
@@ -113,7 +113,7 @@ public class HttpConnectorApache extends AbstractHttpConnector {
                 for (Map.Entry<String, String> x : getHeadersRequest().entrySet()) {
                     request.setHeader(x.getKey(), x.getValue());
                 }
-
+                status = -1;
                 try (CloseableHttpResponse response = httpClient.execute(request)) {
                     status = response.getStatusLine().getStatusCode();
                     responseByte = response.getEntity().getContent().readAllBytes();

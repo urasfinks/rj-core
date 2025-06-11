@@ -7,6 +7,7 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
+import ru.jamsys.core.extension.log.Log;
 import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilLog;
@@ -20,19 +21,22 @@ public class ExceptionHandler {
     private static int maxLine = 50;
 
     public void handler(Throwable th, Object context) {
+        getLog(th, context).print();
+    }
+
+    public Log getLog(Throwable th, Object context) {
         LineWriterList lineWriterList = new LineWriterList();
         lineWriterList.addLine(
                 UtilDate.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
         );
         getTextException(th, lineWriterList);
-        UtilLog
+        return UtilLog
                 .error(context == null
                         ? lineWriterList.getResult()
                         : new HashMapBuilder<String, Object>()
                         .append("context", context)
                         .append("exception", lineWriterList.getResult())
-                )
-                .print();
+                );
     }
 
     public static void getTextException(Throwable th, LineWriter sw) {

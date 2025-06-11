@@ -5,7 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.springframework.http.HttpStatus;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -38,9 +41,9 @@ public class HttpResponse {
                 .append("statusCode", statusCode)
                 .append("statusDesc", statusDesc)
                 .append("headers", headers)
-                .append("body", new String(body, charset))
+                .append("body", body == null ? null : new String(body, charset))
                 .append("timing", timing)
-                .append("exception", exception);
+                .append("exception", App.get(ExceptionHandler.class).getLog(exception, null).getRawBody());
     }
 
     public void setStatusDesc(HttpStatus statusDesc) {
@@ -50,10 +53,6 @@ public class HttpResponse {
 
     public void addHeader(String key, String value) {
         headers.put(key, value);
-    }
-
-    public void addException(String e) {
-        addException(new RuntimeException(e));
     }
 
     public void addException(Throwable e) {
@@ -70,17 +69,17 @@ public class HttpResponse {
             long timing
     ) {
         HttpResponse httpResponse = new HttpResponse();
-        if (exception != null) {
-            httpResponse.addException(exception);
-        }
-        httpResponse.setStatusCode(status);
-        if (status == -1) {
-            httpResponse.addException("Запроса не было");
-        } else {
-            httpResponse.setStatusDesc(HttpStatus.valueOf(status));
-        }
-        if (httpResponse.getException() == null) {
-            try {
+        try {
+            if (exception != null) {
+                String exceptionDescription = switch (status) {
+                    case -2 -> "Запроса не было";
+                    case -1 -> "Ошибка в моменте выполнения запроса";
+                    default -> "Неизвестный код: " + status;
+                };
+                httpResponse.addException(new ForwardException(exceptionDescription, exception));
+            } else {
+                httpResponse.setStatusCode(status);
+                httpResponse.setStatusDesc(HttpStatus.valueOf(status));
                 httpResponse.setBody(body);
                 if (headerResponse != null) {
                     for (String key : headerResponse.keySet()) {
@@ -88,11 +87,11 @@ public class HttpResponse {
                         httpResponse.addHeader(key, String.join("; ", strings));
                     }
                 }
-            } catch (Exception e) {
-                httpResponse.addException(e);
             }
+            httpResponse.setTiming(timing);
+        } catch (Exception e) {
+            httpResponse.setException(e);
         }
-        httpResponse.setTiming(timing);
         return httpResponse;
     }
 
