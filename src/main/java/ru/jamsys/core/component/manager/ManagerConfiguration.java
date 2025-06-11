@@ -49,7 +49,6 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
         this.ns = ns;
         this.manager = manager;
         this.onCreate = onCreate;
-
     }
 
     @JsonValue

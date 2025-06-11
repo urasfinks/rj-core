@@ -1,16 +1,22 @@
-package ru.jamsys.core.resource.google;
+package ru.jamsys.core.plugin.http.resource.google;
 
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
+import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotationField;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 
-@SuppressWarnings({"UnusedDeclaration"})
+@SuppressWarnings({"UnusedDeclaration", "all"})
 @Getter
 @FieldNameConstants
 public class ReCaptchaRepositoryProperty extends RepositoryPropertyAnnotationField<String> {
 
-    @PropertyKey("re.captcha.security.alias")
+    @PropertyNotNull
+    @PropertyKey("security.alias")
     private String securityAlias;
+
+    @PropertyNotNull
+    @PropertyKey("captcha.value")
+    private String captchaValue;
 
 }
