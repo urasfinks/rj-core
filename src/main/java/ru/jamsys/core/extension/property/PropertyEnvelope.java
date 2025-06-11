@@ -3,7 +3,6 @@ package ru.jamsys.core.extension.property;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
@@ -43,8 +42,7 @@ public class PropertyEnvelope<T> {
     private T value;
 
     //propertyKey - проставляется автоматически при создании подписки
-    @Setter
-    private String propertyKey;
+    private final String propertyKey;
 
     @JsonIgnore
     private final AbstractRepositoryProperty<T> repositoryProperty;
@@ -57,6 +55,7 @@ public class PropertyEnvelope<T> {
             Class<T> cls,
             String fieldNameConstants,
             String repositoryPropertyKey,
+            String propertyKey,
             T value,
             String description,
             String regexp,
@@ -68,6 +67,7 @@ public class PropertyEnvelope<T> {
         this.cls = cls;
         this.fieldNameConstants = fieldNameConstants;
         this.repositoryPropertyKey = repositoryPropertyKey;
+        this.propertyKey = propertyKey;
         this.description = description;
         this.notNull = notNull;
         this.value = value;
@@ -132,10 +132,16 @@ public class PropertyEnvelope<T> {
                         property1.setDescriptionIfNull(description);
                     }
                 });
-        String propertyValue = property.get();
-        if (notNull && propertyValue == null) {
-            throw new ForwardException("Validation failed: value is null", this);
-        }
+        setValue(property.get());
+        this.description = property.getDescription();
+        return this;
+    }
+
+    public void checkRegexp() {
+        checkRegexp(String.valueOf(value));
+    }
+
+    public void checkRegexp(String propertyValue) {
         if (regexp != null && propertyValue == null) {
             throw new ForwardException("Validation regexp failed: value is null", this);
         }
@@ -146,6 +152,17 @@ public class PropertyEnvelope<T> {
                     regexp.pattern()
             ), this);
         }
+    }
+
+    public void checkNotNull(Object propertyValue) {
+        if (notNull && propertyValue == null) {
+            throw new ForwardException("Validation failed: value is null", this);
+        }
+    }
+
+    public void setValue(String propertyValue) {
+        checkNotNull(propertyValue);
+        checkRegexp(propertyValue);
         try {
             @SuppressWarnings("unchecked")
             T apply = (T) PropertyUtil.convertType.get(cls).apply(propertyValue);
@@ -153,8 +170,17 @@ public class PropertyEnvelope<T> {
         } catch (Throwable th) {
             throw new ForwardException(this, th);
         }
-        this.description = property.getDescription();
-        return this;
+    }
+
+    public void setValueWithoutCheck(Object propertyValue) {
+        checkNotNull(propertyValue);
+        try {
+            @SuppressWarnings("unchecked")
+            T apply = (T) propertyValue;
+            this.value = apply;
+        } catch (Throwable th) {
+            throw new ForwardException(this, th);
+        }
     }
 
     public PropertyEnvelope<T> apply() {

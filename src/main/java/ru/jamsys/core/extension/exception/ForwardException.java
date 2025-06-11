@@ -17,6 +17,10 @@ public class ForwardException extends RuntimeException {
         super(null, cause);
     }
 
+    public ForwardException(Object context) {
+        this.context = context;
+    }
+
     public ForwardException(String message, Throwable cause) {
         super(message, cause);
     }

@@ -1,4 +1,4 @@
-package ru.jamsys.core.resource.notification.telegram;
+package ru.jamsys.core.plugin.http.resource.notification.telegram;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -19,9 +19,11 @@ public class TelegramNotificationRepositoryProperty extends RepositoryPropertyAn
     @PropertyKey("security.alias")
     private String securityAlias;
 
+    @PropertyNotNull
     @PropertyKey("idChat")
     private String idChat;
 
+    @PropertyNotNull
     @PropertyKey("message")
     private String message;
 

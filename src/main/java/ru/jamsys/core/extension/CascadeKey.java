@@ -50,4 +50,8 @@ public interface CascadeKey {
         return parent + append(child);
     }
 
+    static String complexLinear(String parent, String child) {
+        return parent == null ? child : (parent + "." + child);
+    }
+
 }

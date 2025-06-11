@@ -3,21 +3,22 @@ package ru.jamsys.core;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertyBuilder;
 import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.plugin.http.resource.TelegramNotificationPlugin;
+import ru.jamsys.core.plugin.http.resource.notification.apple.AppleNotificationPlugin;
+import ru.jamsys.core.plugin.http.resource.notification.apple.AppleNotificationRepositoryProperty;
+import ru.jamsys.core.plugin.http.resource.notification.telegram.TelegramNotificationPlugin;
+import ru.jamsys.core.plugin.http.resource.notification.telegram.TelegramNotificationRepositoryProperty;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.http.client.HttpResponse;
 import ru.jamsys.core.resource.notification.android.AndroidNotificationRequest;
 import ru.jamsys.core.resource.notification.android.AndroidNotificationResource;
-import ru.jamsys.core.resource.notification.apple.AppleNotificationRequest;
-import ru.jamsys.core.resource.notification.apple.AppleNotificationResource;
 import ru.jamsys.core.resource.notification.email.EmailNotificationResource;
 import ru.jamsys.core.resource.notification.email.EmailTemplateNotificationRequest;
-import ru.jamsys.core.resource.notification.telegram.TelegramNotificationRepositoryProperty;
 import ru.jamsys.core.resource.yandex.speech.YandexSpeechRequest;
 import ru.jamsys.core.resource.yandex.speech.YandexSpeechResource;
 
@@ -46,11 +47,12 @@ class NotificationTest {
                 .appendWithResource("http", HttpResource.class, "telegram", (_, threadRun, _, httpResource) -> {
                     HttpResponse execute = TelegramNotificationPlugin.execute(
                             httpResource.prepare(),
-                            new RepositoryPropertyBuilder<>(new TelegramNotificationRepositoryProperty())
-                                    .applyServiceProperty(httpResource.getNs())
-                                    .apply(telegramNotificationRepositoryProperty ->
-                                            telegramNotificationRepositoryProperty.setMessage("Hello!")
-                                    )
+                            new RepositoryPropertyBuilder<>(
+                                    new TelegramNotificationRepositoryProperty(),
+                                    httpResource.getNs()
+                            )
+                                    .applyServiceProperty()
+                                    .apply(TelegramNotificationRepositoryProperty.Fields.message, "Hello!")
                                     .build()
                     );
                     UtilLog.printInfo(execute);
@@ -59,13 +61,25 @@ class NotificationTest {
                 .await(2000);
     }
 
+    //@Test
     @SuppressWarnings("unused")
     void appleSend() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
-                .appendWithResource("http", AppleNotificationResource.class, (_, _, _, appleNotificationResource) -> {
-                    HashMapBuilder<String, Object> data = new HashMapBuilder<String, Object>().append("x1", 123);
-                    HttpResponse execute = appleNotificationResource.execute(new AppleNotificationRequest("Привет", data, "e81156eeb16246fd0498c53f55f870dfc5892806dde0a6e073cbf586e761382c"));
+                .appendWithResource("http", HttpResource.class, "apple", (_, _, _, httpResource) -> {
+                    HttpResponse execute = AppleNotificationPlugin.execute(
+                            httpResource.prepare(),
+                            new RepositoryPropertyBuilder<>(
+                                    new AppleNotificationRepositoryProperty(),
+                                    httpResource.getNs()
+                            )
+                                    .applyServiceProperty()
+                                    .apply(AppleNotificationRepositoryProperty.Fields.device, "e81156eeb16246fd0498c53f55f870dfc5892806dde0a6e073cbf586e761382c")
+                                    .apply(AppleNotificationRepositoryProperty.Fields.title, "Привет")
+                                    .applyWithoutCheck(AppleNotificationRepositoryProperty.Fields.payload, new HashMapBuilder<String, Object>().append("x1", 123))
+                                    .build()
+                    );
+                    UtilLog.printInfo(execute);
                 })
                 .run()
                 .await(2000);

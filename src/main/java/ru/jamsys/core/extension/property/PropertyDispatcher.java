@@ -5,6 +5,7 @@ import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.AbstractLifeCycle;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.repository.AbstractRepositoryProperty;
@@ -44,7 +45,7 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
         this.ns = ns;
 
         if (this.repositoryProperty != null) {
-            this.repositoryProperty.init(this);
+            this.repositoryProperty.init(ns, true);
             this.repositoryProperty.checkNotNull();
         }
     }
@@ -56,7 +57,7 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
                 new PropertySubscription<>(this)
                         .setRegexp(regexp));
         UtilRisc.forEach(null, serviceProperty.getByRegexp(regexp), property -> {
-            repositoryProperty.append(getRepositoryPropertyKey(property.getKey()), this);
+            repositoryProperty.append(getRepositoryPropertyKey(property.getKey()), this.getNs());
         });
         if (isRun()) {
             reload();
@@ -115,7 +116,7 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
             }
             return ns;
         } else {
-            return ns != null ? (ns + "." + repositoryPropertyKey) : repositoryPropertyKey;
+            return CascadeKey.complexLinear(ns, repositoryPropertyKey);
         }
     }
 

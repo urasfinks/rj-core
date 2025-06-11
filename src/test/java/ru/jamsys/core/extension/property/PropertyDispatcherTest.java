@@ -37,6 +37,7 @@ class PropertyDispatcherTest {
         UtilLog.printInfo("Test time: " + (System.currentTimeMillis() - start));
     }
 
+    @SuppressWarnings("all")
     @FieldNameConstants
     @Getter
     public static class Property extends RepositoryPropertyAnnotationField<Object> {
@@ -58,13 +59,11 @@ class PropertyDispatcherTest {
             Assertions.fail();
         }
         Property property = new Property();
-        Assertions.assertThrows(ForwardException.class, () -> {
-            new PropertyDispatcher<>(
-                    null,
-                    property,
-                    "test"
-            );
-        });
+        Assertions.assertThrows(ForwardException.class, () -> new PropertyDispatcher<>(
+                null,
+                property,
+                "test"
+        ));
     }
 
     @Test

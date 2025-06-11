@@ -1,6 +1,8 @@
 package ru.jamsys.core.extension.property;
 
 import ru.jamsys.core.extension.builder.ArrayListBuilder;
+import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.flat.util.UtilJson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +21,13 @@ public interface PropertyUtil {
         this.put(Double.class, Double::parseDouble);
         this.put(Short.class, Short::parseShort);
         this.put(Boolean.class, Boolean::parseBoolean);
+        this.put(Map.class, string -> {
+            try {
+                return UtilJson.getMapOrThrow(string);
+            } catch (Throwable th) {
+                throw new ForwardException(th);
+            }
+        });
     }};
 
     static KeyStructure getKeyStructure(String key) {

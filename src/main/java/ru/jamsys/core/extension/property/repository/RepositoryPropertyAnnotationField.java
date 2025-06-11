@@ -1,10 +1,12 @@
 package ru.jamsys.core.extension.property.repository;
 
 import lombok.Getter;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.annotation.PropertyDescription;
 import ru.jamsys.core.extension.annotation.PropertyKey;
 import ru.jamsys.core.extension.annotation.PropertyNotNull;
 import ru.jamsys.core.extension.annotation.PropertyValueRegexp;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyEnvelope;
@@ -19,7 +21,7 @@ import java.lang.reflect.Field;
 public class RepositoryPropertyAnnotationField<T> extends AbstractRepositoryProperty<T> {
 
     @Override
-    public void init(PropertyDispatcher<T> propertyDispatcher) {
+    public void init(String ns, boolean sync) {
         if (getInit().compareAndSet(false, true)) {
             for (Field field : getClass().getDeclaredFields()) {
                 if (field.getType().isPrimitive()) {
@@ -27,19 +29,27 @@ public class RepositoryPropertyAnnotationField<T> extends AbstractRepositoryProp
                 }
                 if (field.isAnnotationPresent(PropertyKey.class)) {
                     try {
-                        // Может такое быть, что value = "", это значит что мы смотрим прямо на корневое значение ns
                         field.setAccessible(true);
                         @SuppressWarnings("unchecked")
                         Class<T> cls = (Class<T>) field.getType();
                         @SuppressWarnings("unchecked")
                         T fieldValue = (T) field.get(this);
                         String repositoryPropertyKey = field.getAnnotation(PropertyKey.class).value();
-                        getListPropertyEnvelopeRepository().add(new PropertyEnvelope<>(
+                        if (repositoryPropertyKey.isEmpty()) {
+                            throw new ForwardException(
+                                    "repositoryPropertyKey is empty",
+                                    new HashMapBuilder<String, Object>()
+                                            .append("ns", ns)
+                                            .append("field", field)
+                            );
+                        }
+                        PropertyEnvelope<T> apply = new PropertyEnvelope<>(
                                 this,
                                 field,
                                 cls,
                                 field.getName(),
                                 repositoryPropertyKey,
+                                CascadeKey.complexLinear(ns, repositoryPropertyKey),
                                 fieldValue,
                                 field.isAnnotationPresent(PropertyDescription.class)
                                         ? field.getAnnotation(PropertyDescription.class).value()
@@ -49,12 +59,19 @@ public class RepositoryPropertyAnnotationField<T> extends AbstractRepositoryProp
                                         : null,
                                 field.isAnnotationPresent(PropertyNotNull.class),
                                 false
-                        )
-                                .setPropertyKey(propertyDispatcher.getPropertyKey(repositoryPropertyKey))
-                                .syncPropertyValue()
-                                .apply());
+                        );
+                        if (sync) {
+                            apply
+                                    .syncPropertyValue()
+                                    .apply();
+                        }
+                        getListPropertyEnvelopeRepository().add(apply);
                     } catch (Throwable th) {
-                        throw new ForwardException(propertyDispatcher, th);
+                        throw new ForwardException(new HashMapBuilder<String, Object>()
+                                .append("ns", ns)
+                                .append("field", field),
+                                th
+                        );
                     }
                 }
             }

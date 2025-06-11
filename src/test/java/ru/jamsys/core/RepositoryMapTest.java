@@ -18,6 +18,7 @@ import ru.jamsys.core.flat.util.UtilLog;
 // COMPUTE time: 5ms
 
 class RepositoryMapTest {
+
     @BeforeAll
     static void beforeAll() {
         App.getRunBuilder().addTestArguments().runCore();
@@ -51,6 +52,7 @@ class RepositoryMapTest {
                 String.class,
                 null,
                 "run.args.security.path.storage",
+                "run.args.security.path.storage",
                 null,
                 null,
                 null,
@@ -62,6 +64,7 @@ class RepositoryMapTest {
                 null,
                 String.class,
                 null,
+                "run.args.security.path.storage",
                 "run.args.security.path.storage",
                 null,
                 null,
@@ -83,15 +86,15 @@ class RepositoryMapTest {
         );
         propertyDispatcher.run();
 
-        xx.append("run.args.security.path.storage", propertyDispatcher);
-        xx.append("run.args.security.path.storage", propertyDispatcher);
+        xx.append("run.args.security.path.storage", propertyDispatcher.getNs());
+        xx.append("run.args.security.path.storage", propertyDispatcher.getNs());
         propertyDispatcher.reload();
 
         Assertions.assertEquals(0, xx.c);
 
         Assertions.assertEquals(1, propertyDispatcher.getSubscriptions().size());
 
-        xx.append("run.args.security.path.public.key", propertyDispatcher);
+        xx.append("run.args.security.path.public.key", propertyDispatcher.getNs());
         propertyDispatcher.reload();
 
         Assertions.assertEquals(2, propertyDispatcher.getSubscriptions().size());
@@ -122,7 +125,7 @@ class RepositoryMapTest {
         // В репе лежит xx, а в момент простоя значение поменялось на x2
         Assertions.assertEquals(2, xx.c);
 
-        xx.append("run.args.security.path.public.key", propertyDispatcher);
+        xx.append("run.args.security.path.public.key", propertyDispatcher.getNs());
         Assertions.assertEquals(2, xx.c);
 
         serviceProperty.set("run.args.security.path.public.key", "x3");

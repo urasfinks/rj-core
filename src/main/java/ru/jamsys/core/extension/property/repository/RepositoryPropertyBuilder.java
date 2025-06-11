@@ -1,48 +1,77 @@
 package ru.jamsys.core.extension.property.repository;
 
-import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.property.PropertyDispatcher;
+import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.property.PropertyEnvelope;
+import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.Map;
-import java.util.function.Consumer;
 
 public class RepositoryPropertyBuilder<T, X extends RepositoryPropertyAnnotationField<T>> {
 
-    X x;
+    X repositoryProperty;
 
-    public RepositoryPropertyBuilder(X x) {
-        this.x = x;
+    public RepositoryPropertyBuilder(X repositoryProperty, String ns) {
+        this.repositoryProperty = repositoryProperty;
+        this.repositoryProperty.init(ns, false);
     }
 
-    public RepositoryPropertyBuilder<T, X> apply(Consumer<X> consumer) {
-        consumer.accept(x);
+    public RepositoryPropertyBuilder<T, X> apply(String fieldNameConstants, String value) {
+        PropertyEnvelope<T> byFieldNameConstants = repositoryProperty.getByFieldNameConstants(fieldNameConstants);
+        byFieldNameConstants.setValue(value);
+        return this;
+    }
+
+    // Для тех случаев, когда надо запихнуть данные в репозиторий, не простых объектов, которые сериализовать через
+    // строку не получается, либо накладно.
+    public RepositoryPropertyBuilder<T, X> applyWithoutCheck(String fieldNameConstants, Object value) {
+        PropertyEnvelope<T> byFieldNameConstants = repositoryProperty.getByFieldNameConstants(fieldNameConstants);
+        byFieldNameConstants.setValueWithoutCheck(value);
         return this;
     }
 
     // Применить значения из ServiceProperty
-    public RepositoryPropertyBuilder<T, X> applyServiceProperty(String ns) {
-        PropertyDispatcher<T> propertyDispatcher = new PropertyDispatcher<>(null, x, ns);
-        propertyDispatcher.run();
-        propertyDispatcher.shutdown();
-        return this;
-    }
-
-    // Применить значения из Map
-    public RepositoryPropertyBuilder<T, X> applyMap(Map<String, Object> map) {
-        map.forEach((key, value) -> {
-            PropertyEnvelope<T> propertyEnvelope = x.getByRepositoryPropertyKey(key);
-            try {
-                propertyEnvelope.getField().set(x, value);
-            } catch (Throwable th) {
-                throw new ForwardException(this, th);
+    public RepositoryPropertyBuilder<T, X> applyServiceProperty() {
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
+        UtilRisc.forEach(null, repositoryProperty.getListPropertyEnvelopeRepository(), tPropertyEnvelope -> {
+            if (serviceProperty.contains(tPropertyEnvelope.getPropertyKey())) {
+                tPropertyEnvelope.setValue(serviceProperty
+                        .computeIfAbsent(tPropertyEnvelope.getPropertyKey(), null)
+                        .get()
+                );
             }
         });
         return this;
     }
 
+    // Применить значения из ServiceProperty если в репозитории null
+    public RepositoryPropertyBuilder<T, X> applyServicePropertyOnlyNull() {
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
+        UtilRisc.forEach(null, repositoryProperty.getListPropertyEnvelopeRepository(), tPropertyEnvelope -> {
+            if (tPropertyEnvelope.getValue() == null && serviceProperty.contains(tPropertyEnvelope.getPropertyKey())) {
+                tPropertyEnvelope.setValue(serviceProperty
+                        .computeIfAbsent(tPropertyEnvelope.getPropertyKey(), null)
+                        .get()
+                );
+            }
+        });
+        return this;
+    }
+
+    // Применить значения из Map
+    public RepositoryPropertyBuilder<T, X> applyMap(Map<String, String> map) {
+        map.forEach((key, value) -> repositoryProperty.getByFieldNameConstants(key).setValue(value));
+        return this;
+    }
+
     public X build() {
-        return x;
+        // Применяем все установленные значения в репозиторий
+        UtilRisc.forEach(null, repositoryProperty.getListPropertyEnvelopeRepository(), tPropertyEnvelope -> {
+            tPropertyEnvelope.apply();
+        });
+        repositoryProperty.checkNotNull();
+        repositoryProperty.checkRegexp();
+        return repositoryProperty;
     }
 
 }

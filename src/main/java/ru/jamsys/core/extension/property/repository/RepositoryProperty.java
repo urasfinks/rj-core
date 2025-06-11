@@ -1,8 +1,8 @@
 package ru.jamsys.core.extension.property.repository;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyEnvelope;
@@ -15,40 +15,37 @@ public class RepositoryProperty<T> extends AbstractRepositoryProperty<T> {
 
     private final Class<T> cls;
 
-    @JsonIgnore
-    private PropertyDispatcher<T> propertyDispatcher;
-
     public RepositoryProperty(Class<T> cls) {
         this.cls = cls;
     }
 
     @Override
-    public void init(PropertyDispatcher<T> propertyDispatcher) {
-        this.propertyDispatcher = propertyDispatcher;
+    public void init(String ns, boolean sync) {
         if (getInit().compareAndSet(false, true)) {
-            UtilRisc.forEach(null, getListPropertyEnvelopeRepository(), tPropertyEnvelopeRepository -> {
-                tPropertyEnvelopeRepository
-                        .setPropertyKey(propertyDispatcher.getPropertyKey(tPropertyEnvelopeRepository.getRepositoryPropertyKey()))
-                        .syncPropertyValue();
-            });
+            if (sync) {
+                UtilRisc.forEach(null, getListPropertyEnvelopeRepository(), tPropertyEnvelopeRepository -> {
+                    tPropertyEnvelopeRepository.syncPropertyValue();
+                });
+            }
         }
     }
 
+    //TODO: поменять местами аргументы
     @Override
-    public void append(String repositoryPropertyKey, PropertyDispatcher<T> propertyDispatcher) {
+    public void append(String repositoryPropertyKey, String ns) {
         PropertyEnvelope<T> tPropertyEnvelope = new PropertyEnvelope<>(
                 this,
                 null,
                 cls,
                 null,
                 repositoryPropertyKey,
+                CascadeKey.complexLinear(ns, repositoryPropertyKey),
                 null,
                 "AdditionalProperties",
                 null,
                 false,
                 true
         )
-                .setPropertyKey(propertyDispatcher.getPropertyKey(repositoryPropertyKey))
                 .syncPropertyValue();
         if (!getListPropertyEnvelopeRepository().contains(tPropertyEnvelope)) {
             getListPropertyEnvelopeRepository().add(tPropertyEnvelope);
@@ -57,10 +54,9 @@ public class RepositoryProperty<T> extends AbstractRepositoryProperty<T> {
 
     @Override
     public void updateRepository(String repositoryPropertyKey, PropertyDispatcher<T> propertyDispatcher) {
-        this.propertyDispatcher = propertyDispatcher;
         PropertyEnvelope<T> propertyEnvelope = getByRepositoryPropertyKey(repositoryPropertyKey);
         if (propertyEnvelope == null) {
-            append(repositoryPropertyKey, propertyDispatcher);
+            append(repositoryPropertyKey, propertyDispatcher.getNs());
         } else {
             propertyEnvelope.syncPropertyValue();
         }
