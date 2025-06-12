@@ -11,6 +11,7 @@ import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.async.writer.DataReadWrite;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.log.StatDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
@@ -59,8 +60,6 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
     private final ConcurrentLinkedDeque<ManagerConfiguration<Rider>> queueRiderConfiguration = new ConcurrentLinkedDeque<>();
 
     private Function<byte[], T> restoreElementFromByte;
-
-    private final ConcurrentLinkedDeque<String> queueTransactionFile = new ConcurrentLinkedDeque<>();
 
     public BrokerPersist(String ns) {
         this.ns = ns;
@@ -121,12 +120,25 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
                 .sorted()
                 .toList()
                 .forEach(filePathY -> {
-                    String relativePath = UtilFile.getRelativePath(
+                    String relativePathX = UtilFile.getRelativePath(
                             property.getDirectory(),
                             filePathYToX(filePathY)
                     );
-                    getRiderConfiguration(relativePath, true);
+                    if (UtilFile.ifExist(relativePathX)) {
+                        getRiderConfiguration(relativePathX, true);
+                    } else {
+                        App.error(new RuntimeException(
+                                "File does not exist: " + relativePathX
+                                        + "; Remove: " + filePathY
+                        ));
+                        try {
+                            UtilFile.remove(filePathY);
+                        } catch (IOException e) {
+                            App.error(new ForwardException(e));
+                        }
+                    }
                 });
+        removeCycleTransactionFile();
     }
 
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
@@ -159,24 +171,32 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
                         removedRiderConfiguration.getNs()
                 );
             }
+            removeCycleTransactionFile();
         }
     }
 
     private void removeCycleTransactionFile() {
-        while (queueTransactionFile.size() > property.getCount()) {
-            String s = queueTransactionFile.peekFirst();
-            // Если Rider существует по файлу, значит файл ещё не обработан
-            if (mapRiderConfiguration.containsKey(s)) {
-                break;
-            }
-            if (queueTransactionFile.remove(s)) {
-                try {
-                    UtilFile.remove(s);
-                } catch (Exception e) {
-                    App.error(e);
-                }
-            }
-        }
+        // Если суммарно есть 100 файлов, 10 из которых в работе (то есть по ним есть .commit файлы) и
+        // property.getCount() = 3, после выполнения данной функции останется 13 файлов .afwr и 10 .commit файлов,
+        // так как они тут не удаляются
+        List<String> filesToRemove = UtilFile.getFilesRecursive(property.getDirectory())
+                .stream()
+                .filter(path -> path.endsWith(".afwr"))
+                .map(path -> Map.entry(path, UtilFile.getRelativePath(property.getDirectory(), path)))
+                .filter(entry -> !mapRiderConfiguration.containsKey(entry.getValue()))
+                .map(Map.Entry::getKey)
+                .sorted()
+                .toList();
+
+        filesToRemove.stream()
+                .limit(Math.max(0, filesToRemove.size() - property.getCount()))
+                .forEach(path -> {
+                    try {
+                        UtilFile.remove(path);
+                    } catch (Exception e) {
+                        App.error(e);
+                    }
+                });
     }
 
     // Вызывается когда меняется X файл, так как он достиг максимального размера
@@ -207,10 +227,12 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
         // Обязательно должен существовать commit файл, если пакет данных не обработан, после обработки commit
         // файл удаляется, если нет commit - то смысла в этом больше нет
         if (!Files.exists(Paths.get(filePathXToY(filePathX)))) {
+            App.error(new ForwardException(new HashMapBuilder<>()
+                    .append("filePathX", filePathX)
+                    .append("fileXFinishState", fileXFinishState)
+            ));
             return null;
         }
-        queueTransactionFile.add(filePathX);
-        removeCycleTransactionFile();
         return mapRiderConfiguration.computeIfAbsent(
                 filePathX, // Нам тут нужна ссылка на X так как BrokerPersistElement.getFilePath возвращает именно его
                 _ -> {

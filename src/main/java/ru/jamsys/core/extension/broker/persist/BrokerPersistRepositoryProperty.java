@@ -21,7 +21,7 @@ public class BrokerPersistRepositoryProperty extends RepositoryPropertyAnnotatio
     @SuppressWarnings("all")
     @PropertyNotNull
     @PropertyKey("count")
-    @PropertyDescription("Кол-во файлов которое храним")
+    @PropertyDescription("Кол-во файлов не в работе, которое храним")
     private volatile Integer count = 3;
 
     @SuppressWarnings("all")
