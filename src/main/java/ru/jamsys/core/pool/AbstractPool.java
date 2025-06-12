@@ -9,8 +9,8 @@ import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
-import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -47,7 +47,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
     @Setter
     private Function<Integer, Integer> formulaRemoveCount = (need) -> need; // Формула удаления
 
-    private volatile Long timestampWhenParkIsEmpty = null; // Время фиксации, что парк был пустой
+    private final EventTiming eventTimingParkIsEmpty = new EventTiming(); // Время фиксации, что парк был пустой
 
     private final AtomicInteger tpsRelease = new AtomicInteger(0);
 
@@ -74,6 +74,8 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         );
     }
 
+    // Этот метод вызывается обязательно в Manager, так как сам пул является AbstractManagerElement и это прописано в
+    // контракте использования элементов
     public void setup(Class<T> cls, Consumer<T> onCreate) {
         this.cls = cls;
         this.onCreatePoolItem = onCreate;
@@ -96,20 +98,14 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
 
     // Сколько времени паркинг был пуст
     public long getTimeParkIsEmpty() {
-        if (timestampWhenParkIsEmpty == null) {
-            return 0;
-        } else {
-            return System.currentTimeMillis() - timestampWhenParkIsEmpty;
-        }
+        return eventTimingParkIsEmpty.eventTimePassed();
     }
 
     protected void updateStatistic() {
         if (parkQueue.isEmpty()) {
-            if (timestampWhenParkIsEmpty == null) {
-                timestampWhenParkIsEmpty = System.currentTimeMillis();
-            }
+            eventTimingParkIsEmpty.event();
         } else {
-            timestampWhenParkIsEmpty = null;
+            eventTimingParkIsEmpty.reset();
         }
     }
 
@@ -137,6 +133,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         return false;
     }
 
+    // В пуле не должно быть больше 1000 элементов, поэтому пробежка по всем элементам не критична
     private ManagerConfiguration<T> find(T threadExecutePromiseTask) {
         for (ManagerConfiguration<T> x : items) {
             if (x.equalsElement(threadExecutePromiseTask)) {
@@ -192,7 +189,9 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         }
     }
 
-    // Приобрести элемент пула
+    // Приобрести элемент пула. Логика получения элемента из пула не должна быть связана с расширением пула. Расширение
+    // пула происходит отдельным потоком вызывающим balance(), потому что создание нового элемента может быть
+    // ресурсоёмкой операцией, например открытие соединения до внешнего ресурса
     public T acquire() {
         tpsAcquire.incrementAndGet();
         // Забираем с конца, что бы под нож улетели первые добавленные
