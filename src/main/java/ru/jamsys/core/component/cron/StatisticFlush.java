@@ -8,7 +8,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
-import ru.jamsys.core.component.SystemStatistic;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.broker.persist.BrokerPersist;
@@ -68,14 +67,11 @@ public class StatisticFlush extends PromiseGenerator implements Cron1s {
                 .append("main", (threadRun, _, _) -> {
                     StringBuilder sb = new StringBuilder();
                     for (StatisticsFlushComponent statisticsFlushComponent : list) {
-                        if (statisticsFlushComponent.getClass().equals(SystemStatistic.class)) {
-                            for (StatisticDataHeader statisticDataHeader : statisticsFlushComponent.flushAndGetStatistic(threadRun)) {
-                                Point influxPoint = VictoriaMetricsConvert.getInfluxFormat(statisticDataHeader);
-                                influxPoint.addTag("host", host);
-                                sb.append(influxPoint.toLineProtocol()).append("\n");
-                            }
+                        for (StatisticDataHeader statisticDataHeader : statisticsFlushComponent.flushAndGetStatistic(threadRun)) {
+                            Point influxPoint = VictoriaMetricsConvert.getInfluxFormat(statisticDataHeader);
+                            influxPoint.addTag("host", host);
+                            sb.append(influxPoint.toLineProtocol()).append("\n");
                         }
-
                     }
                     brokerPersistManagerConfiguration.get().add(new StatisticElement(sb.toString()));
                 });
