@@ -81,22 +81,4 @@ public class StatisticFlush extends PromiseGenerator implements Cron1s {
                 });
     }
 
-    public Promise generateVictoriaMetrics() {
-        return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
-                .append("main", (threadRun, _, _) -> {
-                    StringBuilder sb = new StringBuilder();
-                    for (StatisticsFlushComponent statisticsFlushComponent : list) {
-                        if (statisticsFlushComponent.getClass().equals(SystemStatistic.class)) {
-                            for (StatisticDataHeader statisticDataHeader : statisticsFlushComponent.flushAndGetStatistic(threadRun)) {
-                                Point influxPoint = VictoriaMetricsConvert.getInfluxFormat(statisticDataHeader);
-                                influxPoint.addTag("host", host);
-                                sb.append(influxPoint.toLineProtocol()).append("\n");
-                            }
-                        }
-
-                    }
-                    brokerPersistManagerConfiguration.get().add(new StatisticElement(sb.toString()));
-                });
-    }
-
 }
