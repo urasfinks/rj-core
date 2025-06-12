@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.log.StatDataHeader;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 
 import java.util.ArrayList;
@@ -60,9 +60,9 @@ public class RateLimitTps extends AbstractManagerElement {
     }
 
     @Override
-    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<StatDataHeader> result = new ArrayList<>();
-        result.add(new StatDataHeader(getClass(), ns)
+    public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<StatisticDataHeader> result = new ArrayList<>();
+        result.add(new StatisticDataHeader(getClass(), ns)
                 .addHeader("value", tps.getAndSet(0))
                 .addHeader("max", property.getMax())
         );

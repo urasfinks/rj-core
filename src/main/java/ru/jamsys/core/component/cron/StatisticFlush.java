@@ -8,11 +8,12 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceProperty;
+import ru.jamsys.core.component.SystemStatistic;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.broker.persist.BrokerPersist;
 import ru.jamsys.core.extension.broker.persist.element.StatisticElement;
-import ru.jamsys.core.extension.log.StatDataHeader;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.extension.victoria.metrics.VictoriaMetricsConvert;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.Cron1s;
@@ -30,8 +31,6 @@ import java.util.List;
 public class StatisticFlush extends PromiseGenerator implements Cron1s {
 
     List<StatisticsFlushComponent> list = new ArrayList<>();
-
-    String ip = Util.getIp();
 
     String host = Util.getHostname();
 
@@ -69,12 +68,32 @@ public class StatisticFlush extends PromiseGenerator implements Cron1s {
                 .append("main", (threadRun, _, _) -> {
                     StringBuilder sb = new StringBuilder();
                     for (StatisticsFlushComponent statisticsFlushComponent : list) {
-                        for (StatDataHeader statDataHeader : statisticsFlushComponent.flushAndGetStatistic(threadRun)) {
-                            Point influxPoint = VictoriaMetricsConvert.getInfluxFormat(statDataHeader);
-                            influxPoint.addTag("ip", ip);
-                            influxPoint.addTag("host", host);
-                            sb.append(influxPoint.toLineProtocol()).append("\n");
+                        if (statisticsFlushComponent.getClass().equals(SystemStatistic.class)) {
+                            for (StatisticDataHeader statisticDataHeader : statisticsFlushComponent.flushAndGetStatistic(threadRun)) {
+                                Point influxPoint = VictoriaMetricsConvert.getInfluxFormat(statisticDataHeader);
+                                influxPoint.addTag("host", host);
+                                sb.append(influxPoint.toLineProtocol()).append("\n");
+                            }
                         }
+
+                    }
+                    brokerPersistManagerConfiguration.get().add(new StatisticElement(sb.toString()));
+                });
+    }
+
+    public Promise generateVictoriaMetrics() {
+        return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
+                .append("main", (threadRun, _, _) -> {
+                    StringBuilder sb = new StringBuilder();
+                    for (StatisticsFlushComponent statisticsFlushComponent : list) {
+                        if (statisticsFlushComponent.getClass().equals(SystemStatistic.class)) {
+                            for (StatisticDataHeader statisticDataHeader : statisticsFlushComponent.flushAndGetStatistic(threadRun)) {
+                                Point influxPoint = VictoriaMetricsConvert.getInfluxFormat(statisticDataHeader);
+                                influxPoint.addTag("host", host);
+                                sb.append(influxPoint.toLineProtocol()).append("\n");
+                            }
+                        }
+
                     }
                     brokerPersistManagerConfiguration.get().add(new StatisticElement(sb.toString()));
                 });

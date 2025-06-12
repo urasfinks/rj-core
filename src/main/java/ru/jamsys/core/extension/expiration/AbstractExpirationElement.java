@@ -7,7 +7,7 @@ import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
-import ru.jamsys.core.extension.log.StatDataHeader;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,7 +28,7 @@ public abstract class AbstractExpirationElement
     private Long stopTimeMs = null;
 
     @Override
-    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+    public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         return List.of();
     }
 

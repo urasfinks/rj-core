@@ -10,6 +10,7 @@ import ru.jamsys.core.extension.broker.persist.element.StatisticElement;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertyBuilder;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
+import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.plugin.http.resource.victoria.metrics.VictoriaMetricsPlugin;
 import ru.jamsys.core.plugin.http.resource.victoria.metrics.VictoriaMetricsRepositoryProperty;
 import ru.jamsys.core.promise.Promise;
@@ -61,8 +62,14 @@ public class StatisticUpload extends PromiseGenerator implements Cron5s {
                                     break;
                                 }
                                 list.add(poll);
-                                sb.append(poll.getElement().getValue());
+
+                                //sb.append(poll.getElement().getValue());
                             }
+
+                            UtilRisc.forEach(null, list, statisticElementX -> {
+                                sb.append(statisticElementX.getElement().getValue());
+                            }, true);
+                            System.out.println(sb);
                             HttpResponse execute = VictoriaMetricsPlugin.execute(
                                     resource.prepare(),
                                     new RepositoryPropertyBuilder<>(new VictoriaMetricsRepositoryProperty(), resource.getNs())

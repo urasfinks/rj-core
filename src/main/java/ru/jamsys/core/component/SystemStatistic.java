@@ -3,7 +3,7 @@ package ru.jamsys.core.component;
 import com.sun.management.OperatingSystemMXBean;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
-import ru.jamsys.core.extension.log.StatDataHeader;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -43,15 +43,15 @@ public class SystemStatistic implements StatisticsFlushComponent {
     }
 
     @Override
-    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<StatDataHeader> result = new ArrayList<>();
+    public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<StatisticDataHeader> result = new ArrayList<>();
         if (first) {
             runFirst();
         } else {
             runSecond();
         }
         first = !first;
-        result.add(new StatDataHeader(getClass(), null)
+        result.add(new StatisticDataHeader(getClass(), null)
                 .addHeader("cpu", cpuUsage)
                 .addHeader("heapSize", Runtime.getRuntime().totalMemory())
                 .addHeader("heapSizeMax", Runtime.getRuntime().maxMemory())

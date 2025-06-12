@@ -13,7 +13,7 @@ import ru.jamsys.core.component.ServiceClassFinder;
 import ru.jamsys.core.extension.RouteGeneratorRepository;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.log.StatDataHeader;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.flat.util.*;
 import ru.jamsys.core.handler.web.socket.WebSocketHandler;
 import ru.jamsys.core.promise.Promise;
@@ -131,9 +131,9 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
     }
 
     @Override
-    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<StatDataHeader> result = new ArrayList<>();
-        result.add(new StatDataHeader(getClass(), null)
+    public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<StatisticDataHeader> result = new ArrayList<>();
+        result.add(new StatisticDataHeader(getClass(), null)
                 .addHeader("connections", connections.size())
                 .addHeader("subscription", subscription.size())
         );

@@ -5,7 +5,7 @@ import com.influxdb.client.write.Point;
 import lombok.Getter;
 import lombok.Setter;
 import ru.jamsys.core.extension.CascadeKey;
-import ru.jamsys.core.extension.log.StatDataHeader;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.flat.util.UtilJson;
 
 import java.util.ArrayList;
@@ -17,30 +17,30 @@ import java.util.Map;
 @Setter
 public class VictoriaMetricsConvert {
 
-    public static Point getInfluxFormat(StatDataHeader statDataHeader) {
-        Map<String, Object> header = statDataHeader.getHeader();
+    public static Point getInfluxFormat(StatisticDataHeader statisticDataHeader) {
+        Map<String, Object> header = statisticDataHeader.getHeader();
         Point point = Point
-                .measurement(statDataHeader.getCls())
+                .measurement(statisticDataHeader.getCls())
                 .addFields(header)
-                .time(statDataHeader.getTimeAdd(), WritePrecision.MS);
-        if (statDataHeader.getNs() != null) {
-            point.addTag("ns", statDataHeader.getNs());
+                .time(statisticDataHeader.getTimeAdd(), WritePrecision.MS);
+        if (statisticDataHeader.getNs() != null) {
+            point.addTag("ns", statisticDataHeader.getNs());
         }
         return point;
     }
 
     @SuppressWarnings("unused")
-    public static List<String> getVmFormat(StatDataHeader statDataHeader) {
+    public static List<String> getVmFormat(StatisticDataHeader statisticDataHeader) {
         List<String> result = new ArrayList<>();
-        Map<String, Object> header = statDataHeader.getHeader();
+        Map<String, Object> header = statisticDataHeader.getHeader();
         for (String key : header.keySet()) {
             VictoriaMetricsLineProtocolBuilder victoriaMetricsLineProtocolBuilder =
                     new VictoriaMetricsLineProtocolBuilder()
-                            .setMeasurement(CascadeKey.complex(statDataHeader.getCls(), key))
-                            .setTimestampMillis(statDataHeader.getTimeAdd())
+                            .setMeasurement(CascadeKey.complex(statisticDataHeader.getCls(), key))
+                            .setTimestampMillis(statisticDataHeader.getTimeAdd())
                     ;
-            if (statDataHeader.getNs() != null) {
-                victoriaMetricsLineProtocolBuilder.addLabel("ns", statDataHeader.getNs());
+            if (statisticDataHeader.getNs() != null) {
+                victoriaMetricsLineProtocolBuilder.addLabel("ns", statisticDataHeader.getNs());
             }
             result.add(victoriaMetricsLineProtocolBuilder.build());
 
@@ -49,19 +49,19 @@ public class VictoriaMetricsConvert {
     }
 
     @SuppressWarnings("unused")
-    public static List<String> getJsonFormat(StatDataHeader statDataHeader) {
+    public static List<String> getJsonFormat(StatisticDataHeader statisticDataHeader) {
         List<String> result = new ArrayList<>();
-        Map<String, Object> header = statDataHeader.getHeader();
+        Map<String, Object> header = statisticDataHeader.getHeader();
         for (String key : header.keySet()) {
             Map<String, Object> map = new LinkedHashMap<>();
             Map<String, Object> metric = new LinkedHashMap<>();
-            metric.put("__name__", CascadeKey.complex(statDataHeader.getCls(), key));
-            if(statDataHeader.getNs() != null){
-                metric.put("ns", statDataHeader.getNs());
+            metric.put("__name__", CascadeKey.complex(statisticDataHeader.getCls(), key));
+            if(statisticDataHeader.getNs() != null){
+                metric.put("ns", statisticDataHeader.getNs());
             }
             map.put("metric", metric);
             map.put("values", List.of(header.get(key)));
-            map.put("timestamps", statDataHeader.getTimeAdd());
+            map.put("timestamps", statisticDataHeader.getTimeAdd());
             result.add(UtilJson.toString(map, "{}"));
         }
         return result;

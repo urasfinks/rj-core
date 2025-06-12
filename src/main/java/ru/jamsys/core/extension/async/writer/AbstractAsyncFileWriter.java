@@ -13,7 +13,7 @@ import ru.jamsys.core.extension.broker.persist.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
-import ru.jamsys.core.extension.log.StatDataHeader;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.extension.statistic.AvgMetric;
 import ru.jamsys.core.flat.util.UtilByte;
 
@@ -269,9 +269,9 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
     }
 
     @Override
-    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+    public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         AvgMetric.Statistic statistic = writeTime.flushStatistic();
-        return List.of(new StatDataHeader(getClass(), filePath)
+        return List.of(new StatisticDataHeader(getClass(), filePath)
                 .addHeader("position", position.get())
                 .addHeader("positionMax", repositoryProperty.getMaxSizeByte())
                 .addHeader("writeTime", statistic.getAvg())

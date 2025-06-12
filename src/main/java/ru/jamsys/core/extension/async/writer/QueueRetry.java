@@ -11,7 +11,7 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.log.StatDataHeader;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -131,8 +131,8 @@ public class QueueRetry implements DataReader, StatisticsFlush {
     }
 
     @Override
-    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of(new StatDataHeader(getClass(), key)
+    public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        return List.of(new StatisticDataHeader(getClass(), key)
                 .addHeader("parkSize", park.size())
                 .addHeader("positionSize", position.size())
         );

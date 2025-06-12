@@ -12,7 +12,7 @@ import ru.jamsys.core.extension.async.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.async.writer.DataReadWrite;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.log.StatDataHeader;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.util.UtilFile;
@@ -347,8 +347,8 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
     }
 
     @Override
-    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of(new StatDataHeader(getClass(), ns)
+    public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        return List.of(new StatisticDataHeader(getClass(), ns)
                 .addHeader("enq", tpsEnqueue.getAndSet(0))
                 .addHeader("deq", tpsDequeue.getAndSet(0))
                 .addHeader("sizeRider", mapRiderConfiguration.size())

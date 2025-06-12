@@ -9,7 +9,7 @@ import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
-import ru.jamsys.core.extension.log.StatDataHeader;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilRisc;
@@ -273,8 +273,8 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
     }
 
     @Override
-    public List<StatDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        List<StatDataHeader> result = new ArrayList<>();
+    public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
+        List<StatisticDataHeader> result = new ArrayList<>();
         int tpsReleaseFlush = tpsRelease.getAndSet(0);
         int tpsAcquireFlush = tpsAcquire.getAndSet(0);
         // Если за последнюю секунду были возвращения элементов значит пул активен
@@ -282,7 +282,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         if (tpsReleaseFlush > 0 || tpsAcquireFlush > 0) {
             markActive();
         }
-        result.add(new StatDataHeader(getClass(), ns)
+        result.add(new StatisticDataHeader(getClass(), ns)
                 .addHeader("acquire", tpsAcquireFlush)
                 .addHeader("release", tpsReleaseFlush)
                 .addHeader("size", items.size())
