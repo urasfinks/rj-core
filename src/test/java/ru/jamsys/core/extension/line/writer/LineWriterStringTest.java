@@ -50,4 +50,5 @@ class LineWriterStringTest {
     void testEmptyWriter() {
         assertEquals("", writer.toString());
     }
+
 }
