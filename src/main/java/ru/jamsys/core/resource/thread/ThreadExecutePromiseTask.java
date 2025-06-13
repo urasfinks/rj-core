@@ -133,8 +133,10 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
                 null,
                 () -> {
                     UtilLog.printError("Поток не закончил работу после spin.set(false) -> interrupt() " + thread.getName());
-                    for (StackTraceElement element : thread.getStackTrace()) {
-                        System.err.println("\tat " + element);
+                    int maxDepth = 50;
+                    StackTraceElement[] stackTrace = thread.getStackTrace();
+                    for (int i = 0; i < Math.min(maxDepth, stackTrace.length); i++) {
+                        System.err.println("\tat " + stackTrace[i]);
                     }
                     thread.interrupt();
                 }
