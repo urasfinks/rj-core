@@ -43,7 +43,7 @@ public class HttpResponse {
                 .append("timing", timing)
                 .append("exception", exception == null
                         ? null
-                        : App.get(ExceptionHandler.class).getLog(exception, null).getRawBody()
+                        : App.get(ExceptionHandler.class).getExceptionObject(exception, null)
                 );
     }
 

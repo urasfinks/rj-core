@@ -10,6 +10,7 @@ import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmut
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
@@ -108,7 +109,7 @@ public class ExpirationList<T>
                     }
                     DisposableExpirationMsImmutableEnvelope<T> envelope = queue.poll();
                     if (envelope == null) {
-                        System.out.println("NULL");
+                        UtilLog.printError(this);
                         continue;
                     }
                     if (envelope.isNeutralized() || envelope.isStopped()) {

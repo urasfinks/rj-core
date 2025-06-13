@@ -7,9 +7,7 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
-import ru.jamsys.core.extension.log.Log;
 import ru.jamsys.core.flat.util.UtilDate;
-import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilLog;
 
 @Setter
@@ -21,22 +19,20 @@ public class ExceptionHandler {
     private static int maxLine = 50;
 
     public void handler(Throwable th, Object context) {
-        getLog(th, context).print();
+        UtilLog.error(getExceptionObject(th, context)).print();
     }
 
-    public Log getLog(Throwable th, Object context) {
+    public Object getExceptionObject(Throwable th, Object context) {
         LineWriterList lineWriterList = new LineWriterList();
         lineWriterList.addLine(
                 UtilDate.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
         );
         getTextException(th, lineWriterList);
-        return UtilLog
-                .error(context == null
-                        ? lineWriterList.getResult()
-                        : new HashMapBuilder<String, Object>()
-                        .append("context", context)
-                        .append("exception", lineWriterList.getResult())
-                );
+        return context == null
+                ? lineWriterList.getResult()
+                : new HashMapBuilder<String, Object>()
+                .append("context", context)
+                .append("exception", lineWriterList.getResult());
     }
 
     public static void getTextException(Throwable th, LineWriter sw) {
@@ -60,16 +56,8 @@ public class ExceptionHandler {
         sw.addLine(th.getClass().getName() + ": " + th.getMessage());
         if (th instanceof ForwardException forwardException) {
             m = forwardException.getLine();
-            if (forwardException.getContext() != null) {
-                try {
-                    String stringPretty = UtilJson.toStringPretty(forwardException.getContext(), "{}");
-                    sw.addLine("ForwardException.Context:");
-                    for (String str : stringPretty.split("\n")) {
-                        sw.addLine(str);
-                    }
-                } catch (Throwable thSerialize) {
-                    sw.addLine("ForwardException.Context: error serialize: " + thSerialize.getMessage());
-                }
+            if (forwardException.getContextSnapshot() != null) {
+                sw.addLineAll(forwardException.getContextSnapshot());
             }
         }
         int s = elements.length;
