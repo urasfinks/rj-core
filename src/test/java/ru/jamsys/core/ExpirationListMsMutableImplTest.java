@@ -24,18 +24,18 @@ class ExpirationListMsMutableImplTest {
         Assertions.assertTrue(timeControl.isExpired(curTime + 5_001));
 
         //Мы пока никуда не смещались у нас полный запас
-        Assertions.assertEquals(5000, timeControl.getRemainingUntilExpirationMs(curTime));
+        Assertions.assertEquals(5000, timeControl.getRemainingMs(curTime));
 
-        Assertions.assertEquals(0, timeControl.getRemainingUntilExpirationMs(curTime + 5_000));
-        Assertions.assertEquals(-1, timeControl.getRemainingUntilExpirationMs(curTime + 5_001));
+        Assertions.assertEquals(0, timeControl.getRemainingMs(curTime + 5_000));
+        Assertions.assertEquals(-1, timeControl.getRemainingMs(curTime + 5_001));
 
         // Остановим метрику, после остановки время не должно меняться
-        timeControl.stop(curTime + 5_000);
+        timeControl.markStop(curTime + 5_000);
 
         // Теперь время
-        Assertions.assertEquals(5_000, timeControl.getInactivityTimeMs(curTime + 5_001));
-        Assertions.assertEquals(5_000, timeControl.getInactivityTimeMs(curTime + 6_001));
-        Assertions.assertEquals(5_000, timeControl.getInactivityTimeMs(curTime + 7_001));
+        Assertions.assertEquals(5_000, timeControl.getDurationSinceLastActivityMs(curTime + 5_001));
+        Assertions.assertEquals(5_000, timeControl.getDurationSinceLastActivityMs(curTime + 6_001));
+        Assertions.assertEquals(5_000, timeControl.getDurationSinceLastActivityMs(curTime + 7_001));
     }
 
     @Test

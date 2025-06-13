@@ -155,7 +155,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         if (isRun()) {
             setError(
                     getNs() + "::timeOut()",
-                    new ForwardException(getTimeoutInformation()
+                    new ForwardException(getExpirationDebugInfo()
                             .append("promise", this)
                     ).setLine(10)
             );
@@ -448,7 +448,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return new HashMapBuilder<String, Object>()
                 .append("addTime", getLastActivityFormatted())
                 .append("expiration", getExpirationFormatted())
-                .append("diffTime", getInactivityTimeMs())
+                .append("diffTime", getDurationSinceLastActivityMs())
                 .append("ns", ns)
                 .append("run", run.get())
                 .append("terminalStatus", terminalStatus)

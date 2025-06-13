@@ -99,7 +99,7 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         List<LifeCycleInterface> all = new ArrayList<>();
         UtilRisc.forEach(threadRun, map, (_, mapManager) -> {
             UtilRisc.forEach(threadRun, mapManager, (key, managerElement) -> {
-                if (managerElement.isExpiredWithoutStop()) {
+                if (managerElement.isExpiredIgnoringStop()) {
                     all.add(managerElement);
                     mapManager.remove(key);
                 } else {

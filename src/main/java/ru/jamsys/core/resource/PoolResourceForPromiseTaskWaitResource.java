@@ -49,7 +49,7 @@ public class PoolResourceForPromiseTaskWaitResource<T extends AbstractExpiration
                 .get()
                 .add(new ExpirationMsImmutableEnvelope<>(
                         promiseTaskWaitResource,
-                        promiseTaskWaitResource.getPromise().getRemainingUntilExpirationMs()
+                        promiseTaskWaitResource.getPromise().getRemainingMs()
                 ));
         // Если пул был пустой, создаётся ресурс и вызывается onParkUpdate()
         // Если же в пуле были ресурсы, то вернётся false и мы самостоятельно запустим onParkUpdate()

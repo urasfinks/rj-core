@@ -60,12 +60,12 @@ class ExpirationMsTest {
 
     @Test
     void testIsExpired_Stopped_False() {
-        exp.stop();
+        exp.markStop();
         assertFalse(exp.isExpired(), "Stopped object should not be considered expired");
     }
 
     @Test
-    void testIsExpiredWithoutStop_TrueEvenIfStopped() {
+    void testIsExpiredIgnoringMarkStop_TrueEvenIfStopped() {
         // Делай объект заведомо протухшим
         long now = System.currentTimeMillis();
         long lastActivity = now - 5000; // 5 секунд назад
@@ -73,10 +73,10 @@ class ExpirationMsTest {
 
         exp = new TestExpirationMs(lastActivity, keepAlive);
 
-        exp.stop(); // Ставим флаг isStop = true
+        exp.markStop(); // Ставим флаг isStop = true
 
         assertTrue(
-                exp.isExpiredWithoutStop(now),
+                exp.isExpiredIgnoringStop(now),
                 "isExpiredWithoutStop должно вернуть true, игнорируя isStop"
         );
     }
@@ -84,32 +84,32 @@ class ExpirationMsTest {
     @Test
     void testExpiryRemainingMs_Positive() {
         exp = new TestExpirationMs(System.currentTimeMillis(), 5000);
-        assertTrue(exp.getRemainingUntilExpirationMs() > 0, "Remaining time should be positive for active object");
+        assertTrue(exp.getRemainingMs() > 0, "Remaining time should be positive for active object");
     }
 
     @Test
     void testExpiryRemainingMs_Stopped() {
-        exp.stop();
-        assertEquals(0, exp.getRemainingUntilExpirationMs(), "Remaining time should be 0 for stopped object");
+        exp.markStop();
+        assertEquals(0, exp.getRemainingMs(), "Remaining time should be 0 for stopped object");
     }
 
     @Test
     void testInactivityTimeMs_Active() {
         long now = System.currentTimeMillis();
-        long inactivity = exp.getInactivityTimeMs(now);
+        long inactivity = exp.getDurationSinceLastActivityMs(now);
         assertTrue(inactivity >= 5000, "Inactivity time should match time since lastActivity");
     }
 
     @Test
     void testInactivityTimeMs_Stopped() {
-        exp.stop(exp.getLastActivityMs() + 7000);
-        assertEquals(7000, exp.getInactivityTimeMs(), "Inactivity should be stopTime - lastActivity");
+        exp.markStop(exp.getLastActivityMs() + 7000);
+        assertEquals(7000, exp.getDurationSinceLastActivityMs(), "Inactivity should be stopTime - lastActivity");
     }
 
     @Test
-    void testStopAndIsStopped() {
+    void testMarkStopAndIsStopped() {
         assertFalse(exp.isStopped(), "Initially should not be stopped");
-        exp.stop();
+        exp.markStop();
         assertTrue(exp.isStopped(), "After stop() call, isStop() should be true");
     }
 
@@ -141,14 +141,14 @@ class ExpirationMsTest {
     }
 
     @Test
-    void getStopTimeFormatted_ShouldReturnNullIfNeverStopped() {
+    void getMarkStopTimeFormatted_ShouldReturnNullIfNeverStopped() {
         long now = System.currentTimeMillis();
         TestExpirationMs exp = new TestExpirationMs(now, 10_000);
         assertEquals("-", exp.getStopTimeFormatted());
     }
 
     @Test
-    void getStopTimeFormatted_ShouldReturnFormattedTime() {
+    void getMarkStopTimeFormatted_ShouldReturnFormattedTime() {
         long now = System.currentTimeMillis();
         TestExpirationMs exp = new TestExpirationMs(now - 10_000, 20_000);
         exp.setStopTimeMs(now);

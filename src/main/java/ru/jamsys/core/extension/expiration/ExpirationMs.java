@@ -9,6 +9,7 @@ import ru.jamsys.core.flat.util.UtilDate;
 @JsonIgnoreProperties
 public interface ExpirationMs {
 
+    // Получить время когда объект будет просрочен
     default long getExpirationTimeMs() {
         return getLastActivityMs() + getInactivityTimeoutMs();
     }
@@ -27,16 +28,16 @@ public interface ExpirationMs {
     }
 
     // Объект просрочен
-    default boolean isExpiredWithoutStop() {
-        return isExpiredWithoutStop(System.currentTimeMillis());
+    default boolean isExpiredIgnoringStop() {
+        return isExpiredIgnoringStop(System.currentTimeMillis());
     }
 
     // Объект просрочен без проверки остановки
-    default boolean isExpiredWithoutStop(long curTimeMs) {
+    default boolean isExpiredIgnoringStop(long curTimeMs) {
         return curTimeMs > getExpirationTimeMs();
     }
 
-    default HashMapBuilder<String, Object> getTimeoutInformation() {
+    default HashMapBuilder<String, Object> getExpirationDebugInfo() {
         return new HashMapBuilder<String, Object>()
                 .append("now", UtilDate.msFormat(System.currentTimeMillis()))
                 .append("lastActivity", getLastActivityFormatted())
@@ -45,7 +46,7 @@ public interface ExpirationMs {
     }
 
     // Кол-во миллисекунд до момента, когда наступит протухание
-    default long getRemainingUntilExpirationMs(long curTime) {
+    default long getRemainingMs(long curTime) {
         if (isStopped()) {
             return 0L;
         }
@@ -53,12 +54,12 @@ public interface ExpirationMs {
     }
 
     // Кол-во миллисекунд до момента, когда наступит протухание
-    default long getRemainingUntilExpirationMs() {
-        return getRemainingUntilExpirationMs(System.currentTimeMillis());
+    default long getRemainingMs() {
+        return getRemainingMs(System.currentTimeMillis());
     }
 
     // Кол-во миллисекунд с момента последней активности до остановки (если конечно она произошла)
-    default long getInactivityTimeMs(long curTime) {
+    default long getDurationSinceLastActivityMs(long curTime) {
         if (isStopped()) {
             return getStopTimeMs() - getLastActivityMs();
         } else {
@@ -67,8 +68,8 @@ public interface ExpirationMs {
     }
 
     // Кол-во миллисекунд с момента последней активности до остановки (если конечно она произошла)
-    default long getInactivityTimeMs() {
-        return getInactivityTimeMs(System.currentTimeMillis());
+    default long getDurationSinceLastActivityMs() {
+        return getDurationSinceLastActivityMs(System.currentTimeMillis());
     }
 
     // Время последней активности
@@ -88,13 +89,13 @@ public interface ExpirationMs {
     }
 
     // Зафиксировать конец активности
-    default void stop(long curTime) {
+    default void markStop(long curTime) {
         setStopTimeMs(curTime);
     }
 
     // Зафиксировать конец активности
-    default void stop() {
-        stop(System.currentTimeMillis());
+    default void markStop() {
+        markStop(System.currentTimeMillis());
     }
 
     // Остановлено

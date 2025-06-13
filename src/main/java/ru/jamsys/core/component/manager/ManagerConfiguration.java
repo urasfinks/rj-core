@@ -70,7 +70,7 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
         long l = System.currentTimeMillis();
         if (l > nextUpdate) {
             cache = manager.get(cls, key, ns, onCreate);
-            nextUpdate = cache.getRemainingUntilExpirationMs() + l;
+            nextUpdate = cache.getRemainingMs() + l;
         }
         cache.markActive();
         return cache;

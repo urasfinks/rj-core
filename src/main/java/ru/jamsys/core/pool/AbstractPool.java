@@ -154,7 +154,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         if (e != null && poolItem.checkFatalException(e)) {
             return;
         }
-        if (poolItem.isExpiredWithoutStop()) {
+        if (poolItem.isExpiredIgnoringStop()) {
             return;
         }
         // Если есть потребители, которые ждут ресурс - отдаём ресурс без перевставок в park

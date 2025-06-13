@@ -172,7 +172,7 @@ public class BrokerMemory<T>
     // Когда произошло изъятие элемента из очереди любым способом
     private void onQueueLoss(ExpirationMsImmutableEnvelope<T> envelope) {
         tpsDequeue.incrementAndGet();
-        timeInQueue.add(envelope.getInactivityTimeMs());
+        timeInQueue.add(envelope.getDurationSinceLastActivityMs());
     }
 
     //Обработка выпадающих сообщений

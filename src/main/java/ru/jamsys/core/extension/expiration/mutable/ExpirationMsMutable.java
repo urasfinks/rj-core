@@ -5,7 +5,7 @@ import ru.jamsys.core.extension.expiration.ExpirationMs;
 
 public interface ExpirationMsMutable extends ExpirationMs {
 
-    // Установить время последней активности
+    // Пометить что элемент активный
     default void markActive() {
         setLastActivityMs(System.currentTimeMillis());
     }

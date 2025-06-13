@@ -60,7 +60,7 @@ class ExpirationListTest {
         // resetLast3Digital (2024-03-06T17:11:05.000) = попал в корзину на удаление с ключом 2024-03-06T17:11:06.000
 
         //Останавливаем задачу, что бы не выполнился onExpired
-        add.stop();
+        add.markStop();
         List<StatisticDataHeader> s1 = test.flushAndGetStatistic(threadRun);
         Assertions.assertEquals("{item=1, bucket=1, remove=0, expired=0}", s1.getFirst().getHeader().toString());
         Assertions.assertEquals("[1709734266000]", test.getBucketKey().toString());
