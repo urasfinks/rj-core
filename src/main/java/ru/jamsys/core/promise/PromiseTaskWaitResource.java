@@ -62,7 +62,7 @@ public class PromiseTaskWaitResource<T extends AbstractExpirationResource> exten
 
     @Override
     protected boolean hasProcedure() {
-        return executeBlock == null;
+        return executeBlock != null;
     }
 
     // Пул вызывает этот метод, когда появляется доступный ресурс

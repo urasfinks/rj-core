@@ -65,15 +65,15 @@ public class PoolResourceForPromiseTaskWaitResource<T extends AbstractExpiration
         // Только в том случае если есть задачи в очереди есть ресурсы в парке
         BrokerMemory broker = brokerMemoryConfiguration.get();
         if (!broker.isEmpty() && !isParkQueueEmpty()) {
-            T poolItem = this.acquire();
-            if (poolItem != null) {
+            T resource = this.acquire();
+            if (resource != null) {
                 //Забираем с конца, что бы никаких штормов
                 ExpirationMsImmutableEnvelope<PromiseTaskWaitResource> envelope = broker.pollLast();
                 if (envelope != null) {
-                    envelope.getValue().onReceiveResource(new PoolItemCompletable<>(this, poolItem));
+                    envelope.getValue().onReceiveResource(new PoolItemCompletable<>(this, resource));
                 } else {
                     // Если задач более нет, возвращаем плавца в пул
-                    release(poolItem, null);
+                    release(resource, null);
                 }
             }
         }

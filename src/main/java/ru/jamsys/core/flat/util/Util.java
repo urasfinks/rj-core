@@ -123,6 +123,15 @@ public class Util {
     }
 
     @SuppressWarnings("all")
+    public static void printThreadStackTrace() {
+        System.err.println("------------------");
+        int maxDepth = 50;
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        for (int i = 0; i < Math.min(maxDepth, stackTrace.length); i++) {
+            System.err.println("\tat " + stackTrace[i]);
+        }
+    }
+
     public static void printStackTrace(String label) {
         Exception exception = new Exception(
                 UtilDate.msFormat(System.currentTimeMillis()) + " ["

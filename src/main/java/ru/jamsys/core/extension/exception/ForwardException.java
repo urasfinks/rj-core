@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.flat.util.UtilJson;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -49,8 +50,9 @@ public class ForwardException extends RuntimeException {
         }
         // Это сделано специально, что бы был snapshot в текущий момент, а не в момент POST сериализации
         String stringPretty = UtilJson.toStringPretty(context, "{}");
-        this.contextSnapshot = List.of(stringPretty.split("\n"));
+        this.contextSnapshot = new ArrayList<>();
         this.contextSnapshot.addFirst("ForwardException.Context:");
+        this.contextSnapshot.addAll(List.of(stringPretty.split("\n")));
     }
 
 }
