@@ -22,9 +22,11 @@ public class Rider extends AbstractManagerElement {
 
     private ManagerConfiguration<AsyncFileWriterWal<Y>> yWriterConfiguration;
 
-    private final String filePathX;
+    private final String ns;
 
-    private final String filePathY;
+    private String filePathX;
+
+    private String filePathY;
 
     private QueueRetry queueRetry;
 
@@ -35,16 +37,18 @@ public class Rider extends AbstractManagerElement {
     private Consumer<Rider> onWrite;
 
     // Экземпляр создаётся в onSwap и в commit
-    public Rider(String filePathX) {
-        this.filePathX = filePathX;
-        this.filePathY = BrokerPersist.filePathXToY(filePathX);
+    public Rider(String ns) {
+        this.ns = ns;
     }
 
     public void setup(
+            String filePathX,
             BrokerPersistRepositoryProperty repositoryProperty,
             Consumer<Rider> onWrite,
             boolean fileXFinishState
     ){
+        this.filePathX = filePathX;
+        this.filePathY = BrokerPersist.filePathXToY(filePathX);
         this.repositoryProperty = repositoryProperty;
         this.fileXFinishState = fileXFinishState;
         this.onWrite = onWrite;
@@ -88,7 +92,7 @@ public class Rider extends AbstractManagerElement {
         if (fileXFinishState == null) {
             throw new RuntimeException("fileXFinishState is null; filePath: " + filePathY);
         }
-        queueRetry = new QueueRetry(filePathX, fileXFinishState);
+        queueRetry = new QueueRetry(ns, fileXFinishState);
         // То, что будут коммитить - это значит, что обработано и нам надо это удалять из списка на обработку
         // В asyncWrite залетает CommitElement содержащий bin (CommitElement.getBytes() возвращает позицию bin.position)
         // В onWrite залетает список CommitElement и мы должны bin.position удалить из binReader

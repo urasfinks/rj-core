@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.StatisticsFlush;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.ExpirationList;
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // Очередь данных, которые можно взять на обработку на какое-то время. Если за это время не выполнить remove, данные
 // снова вернуться в очередь и будут повторно выданы
 
-public class QueueRetry implements DataReader, StatisticsFlush {
+public class QueueRetry implements DataReader, StatisticsFlush, CascadeKey {
 
     @Getter
     @Setter
@@ -35,13 +36,13 @@ public class QueueRetry implements DataReader, StatisticsFlush {
 
     private final ConcurrentHashMap<Long, DataReadWrite> position = new ConcurrentHashMap<>(); // key: position;
 
-    private final String key;
+    private final String ns;
 
     @Getter
     private final ManagerConfiguration<ExpirationList<QueueRetryExpirationObject>> expirationListConfiguration;
 
-    public QueueRetry(String key, boolean finishState) {
-        this.key = key;
+    public QueueRetry(String ns, boolean finishState) {
+        this.ns = ns;
         this.finishState = finishState;
         expirationListConfiguration = ManagerConfiguration.getInstance(
                 ExpirationList.class,
@@ -57,7 +58,7 @@ public class QueueRetry implements DataReader, StatisticsFlush {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
-                .append("key", key)
+                .append("ns", ns)
                 .append("finishState", finishState)
                 .append("parkSize", park.size())
                 .append("positionSize", position.size())
@@ -94,6 +95,8 @@ public class QueueRetry implements DataReader, StatisticsFlush {
         }
     }
 
+    // Получить элемент на определённое время, если своевременно его закоммитить (нейтролизовать) он снова добавится в
+    // park
     public DataReadWrite pollLast(long timeoutMs) {
         return pollLast(timeoutMs, System.currentTimeMillis());
     }
@@ -132,7 +135,7 @@ public class QueueRetry implements DataReader, StatisticsFlush {
 
     @Override
     public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
-        return List.of(new StatisticDataHeader(getClass(), key)
+        return List.of(new StatisticDataHeader(getClass(), ns)
                 .addHeader("parkSize", park.size())
                 .addHeader("positionSize", position.size())
         );

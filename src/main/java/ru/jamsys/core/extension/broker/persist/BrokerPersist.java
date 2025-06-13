@@ -239,10 +239,10 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
                     ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfiguration.getInstance(
                             Rider.class,
                             java.util.UUID.randomUUID().toString(),
-                            filePathX,
+                            getCascadeKey(ns),
                             rider -> {
                                 // Каждый блок записи list<Y> может быть последним, так как будут обработаны все X
-                                rider.setup(property, this::removeRiderIfComplete, fileXFinishState);
+                                rider.setup(filePathX, property, this::removeRiderIfComplete, fileXFinishState);
                             }
                     );
                     queueRiderConfiguration.add(riderManagerConfiguration);

@@ -70,9 +70,10 @@ class RiderTest {
         ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfiguration.getInstance(
                 Rider.class,
                 java.util.UUID.randomUUID().toString(),
-                "1LogPersist/test.bin",
+                "test",
                 managerElement -> {
                     managerElement.setup(
+                            "1LogPersist/test.bin",
                             brokerPersistRepositoryProperty,
                             null,
                             true
