@@ -111,7 +111,7 @@ public class ExpirationList<T>
                         System.out.println("NULL");
                         continue;
                     }
-                    if (envelope.isNeutralized() || envelope.isStop()) {
+                    if (envelope.isNeutralized() || envelope.isStopped()) {
                         helperRemove.incrementAndGet();
                     } else if (envelope.isExpired()) {
                         T value = envelope.getValue();
@@ -168,7 +168,7 @@ public class ExpirationList<T>
 
     public DisposableExpirationMsImmutableEnvelope<T> add(DisposableExpirationMsImmutableEnvelope<T> obj) {
         // В следующую секунду будем удалять, что бы очереди на удаление удалять полностью
-        long timeMsExpired = Util.resetLastNDigits(obj.getExpiredMs(), 3) + 1_000L;
+        long timeMsExpired = Util.resetLastNDigits(obj.getExpirationTimeMs(), 3) + 1_000L;
         bucket.computeIfAbsent(timeMsExpired, _ -> new ConcurrentLinkedQueue<>())
                 .add(obj);
         incQueueSize(timeMsExpired);
@@ -184,7 +184,7 @@ public class ExpirationList<T>
         boolean neutralize = doNeutralize && obj != null && obj.getValue() != null;
         // Если объект нейтрализован, будем перерасчитывать размер корзины
         if (neutralize) {
-            deqQueueSize(Util.resetLastNDigits(obj.getExpiredMs(), 3) + 1_000L);
+            deqQueueSize(Util.resetLastNDigits(obj.getExpirationTimeMs(), 3) + 1_000L);
         }
         return neutralize;
     }

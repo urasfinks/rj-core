@@ -446,8 +446,8 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     @JsonValue
     public Object getJsonValue() {
         return new HashMapBuilder<String, Object>()
-                .append("addTime", getLastActivityFormat())
-                .append("expiration", getExpiredFormat())
+                .append("addTime", getLastActivityFormatted())
+                .append("expiration", getExpirationFormatted())
                 .append("diffTime", getInactivityTimeMs())
                 .append("ns", ns)
                 .append("run", run.get())

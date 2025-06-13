@@ -9,7 +9,7 @@ import ru.jamsys.core.flat.util.UtilDate;
 @JsonIgnoreProperties
 public interface ExpirationMs {
 
-    default long getExpiredMs() {
+    default long getExpirationTimeMs() {
         return getLastActivityMs() + getKeepAliveOnInactivityMs();
     }
 
@@ -20,7 +20,7 @@ public interface ExpirationMs {
 
     // Объект просрочен
     default boolean isExpired(long curTimeMs) {
-        if (isStop()) {
+        if (isStopped()) {
             return false;
         }
         return curTimeMs > (getLastActivityMs() + getKeepAliveOnInactivityMs());
@@ -39,14 +39,14 @@ public interface ExpirationMs {
     default HashMapBuilder<String, Object> getTimeoutInformation() {
         return new HashMapBuilder<String, Object>()
                 .append("now", UtilDate.msFormat(System.currentTimeMillis()))
-                .append("lastActivity", getLastActivityFormat())
+                .append("lastActivity", getLastActivityFormatted())
                 .append("timeout", getKeepAliveOnInactivityMs())
                 ;
     }
 
     // Кол-во миллисекунд до момента, когда наступит протухание
     default long getExpiryRemainingMs(long curTime) {
-        if (isStop()) {
+        if (isStopped()) {
             return 0L;
         }
         return (getLastActivityMs() + getKeepAliveOnInactivityMs()) - curTime;
@@ -59,7 +59,7 @@ public interface ExpirationMs {
 
     // Кол-во миллисекунд с момента последней активности до остановки (если конечно она произошла)
     default long getInactivityTimeMs(long curTime) {
-        if (isStop()) {
+        if (isStopped()) {
             return getStopTimeMs() - getLastActivityMs();
         } else {
             return curTime - getLastActivityMs();
@@ -72,17 +72,17 @@ public interface ExpirationMs {
     }
 
     // Время последней активности
-    default String getLastActivityFormat() {
+    default String getLastActivityFormatted() {
         return UtilDate.msFormat(getLastActivityMs());
     }
 
     // Возвратит время, когда объект будет просрочен
-    default String getExpiredFormat() {
+    default String getExpirationFormatted() {
         return UtilDate.msFormat(getLastActivityMs() + getKeepAliveOnInactivityMs());
     }
 
     // Возвратит время, когда объект будет просрочен
-    default String getStopFormat() {
+    default String getStopTimeFormatted() {
         return UtilDate.msFormat(getStopTimeMs());
     }
 
@@ -97,7 +97,7 @@ public interface ExpirationMs {
     }
 
     // Зафиксировать конец активности
-    default boolean isStop() {
+    default boolean isStopped() {
         return getStopTimeMs() != null;
     }
 

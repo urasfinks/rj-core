@@ -110,15 +110,15 @@ class ExpirationMsTest {
     }
 
     @Test
-    void testStopAndIsStop() {
-        assertFalse(exp.isStop(), "Initially should not be stopped");
+    void testStopAndIsStopped() {
+        assertFalse(exp.isStopped(), "Initially should not be stopped");
         exp.stop();
-        assertTrue(exp.isStop(), "After stop() call, isStop() should be true");
+        assertTrue(exp.isStopped(), "After stop() call, isStop() should be true");
     }
 
     @Test
-    void testGetExpiredMs() {
+    void testGetExpirationTimeMs() {
         long expected = exp.getLastActivityMs() + exp.getKeepAliveOnInactivityMs();
-        assertEquals(expected, exp.getExpiredMs(), "ExpiredMs should be lastActivity + timeout");
+        assertEquals(expected, exp.getExpirationTimeMs(), "ExpiredMs should be lastActivity + timeout");
     }
 }
