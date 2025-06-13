@@ -96,7 +96,7 @@ public interface ExpirationMs {
         stop(System.currentTimeMillis());
     }
 
-    // Зафиксировать конец активности
+    // Остановлено
     default boolean isStopped() {
         return getStopTimeMs() != null;
     }
