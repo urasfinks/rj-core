@@ -40,7 +40,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
     }
 
     public void setupTimeoutMs(int keepAliveOnInactivityMs) {
-        setKeepAliveOnInactivityMs(keepAliveOnInactivityMs);
+        this.setInactivityTimeoutMs(keepAliveOnInactivityMs);
     }
 
     @JsonValue
@@ -64,7 +64,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
             envelope.getExpiration().doNeutralized();
         }
         envelope.setValue(value);
-        envelope.setExpiration(expirationMapConfiguration.get().add(envelope, getKeepAliveOnInactivityMs()));
+        envelope.setExpiration(expirationMapConfiguration.get().add(envelope, getInactivityTimeoutMs()));
         return value;
     }
 
@@ -77,7 +77,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
         if (envelope.getExpiration() != null) {
             envelope.getExpiration().doNeutralized();
         }
-        envelope.setExpiration(expirationMapConfiguration.get().add(envelope, getKeepAliveOnInactivityMs()));
+        envelope.setExpiration(expirationMapConfiguration.get().add(envelope, getInactivityTimeoutMs()));
         @SuppressWarnings("unchecked")
         V value = (V) envelope.getValue();
         return value;
@@ -92,7 +92,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
         if (envelope.getExpiration() != null) {
             envelope.getExpiration().doNeutralized();
         }
-        envelope.setExpiration(expirationMapConfiguration.get().add(envelope, getKeepAliveOnInactivityMs()));
+        envelope.setExpiration(expirationMapConfiguration.get().add(envelope, getInactivityTimeoutMs()));
         @SuppressWarnings("unchecked")
         V value = (V) envelope.getValue();
         return value;

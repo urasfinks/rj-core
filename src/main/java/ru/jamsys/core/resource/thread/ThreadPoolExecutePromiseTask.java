@@ -54,7 +54,7 @@ public class ThreadPoolExecutePromiseTask extends AbstractPoolPrivate {
         // Однако onError надо выполнить
         long timeout = promiseTask.equals(promiseTask.getPromise().getOnError())
                 ? 6_000L
-                : promiseTask.getPromise().getExpiryRemainingMs();
+                : promiseTask.getPromise().getRemainingUntilExpirationMs();
 
         brokerMemoryConfiguration.get().add(new ExpirationMsImmutableEnvelope<>(promiseTask, timeout));
         idleIfEmpty();

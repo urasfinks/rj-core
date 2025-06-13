@@ -11,7 +11,7 @@ import java.io.Serializable;
 @ToString
 public class ExpirationMsMutableImpl implements ExpirationMsMutable, Serializable {
 
-    private long keepAliveOnInactivityMs = 6_000; // Время жизни если нет активности
+    private long inactivityTimeoutMs = 6_000; // Время жизни если нет активности
 
     private volatile long lastActivityMs = System.currentTimeMillis();
 

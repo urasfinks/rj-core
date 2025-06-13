@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class ExpirationMsTest {
 
     static class TestExpirationMs implements ExpirationMs {
-        private long lastActivityMs;
-        private long keepAliveMs;
+        private final long lastActivityMs;
+        private final long keepAliveMs;
         private Long stopTimeMs = null;
 
         public TestExpirationMs(long lastActivityMs, long keepAliveMs) {
@@ -23,7 +23,7 @@ class ExpirationMsTest {
         }
 
         @Override
-        public long getKeepAliveOnInactivityMs() {
+        public long getInactivityTimeoutMs() {
             return keepAliveMs;
         }
 
@@ -37,9 +37,6 @@ class ExpirationMsTest {
             return stopTimeMs;
         }
 
-        public void advanceActivity(long millis) {
-            this.lastActivityMs += millis;
-        }
     }
 
     private TestExpirationMs exp;
@@ -87,13 +84,13 @@ class ExpirationMsTest {
     @Test
     void testExpiryRemainingMs_Positive() {
         exp = new TestExpirationMs(System.currentTimeMillis(), 5000);
-        assertTrue(exp.getExpiryRemainingMs() > 0, "Remaining time should be positive for active object");
+        assertTrue(exp.getRemainingUntilExpirationMs() > 0, "Remaining time should be positive for active object");
     }
 
     @Test
     void testExpiryRemainingMs_Stopped() {
         exp.stop();
-        assertEquals(0, exp.getExpiryRemainingMs(), "Remaining time should be 0 for stopped object");
+        assertEquals(0, exp.getRemainingUntilExpirationMs(), "Remaining time should be 0 for stopped object");
     }
 
     @Test
@@ -118,7 +115,47 @@ class ExpirationMsTest {
 
     @Test
     void testGetExpirationTimeMs() {
-        long expected = exp.getLastActivityMs() + exp.getKeepAliveOnInactivityMs();
+        long expected = exp.getLastActivityMs() + exp.getInactivityTimeoutMs();
         assertEquals(expected, exp.getExpirationTimeMs(), "ExpiredMs should be lastActivity + timeout");
     }
+
+    @Test
+    void getLastActivityFormatted_ShouldReturnFormattedTime() {
+        long now = System.currentTimeMillis();
+        TestExpirationMs exp = new TestExpirationMs(now, 10_000);
+        String result = exp.getLastActivityFormatted();
+
+        assertNotNull(result);
+        assertTrue(result.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}"));
+    }
+
+    @Test
+    void getExpirationFormatted_ShouldReturnFormattedExpirationTime() {
+        long now = System.currentTimeMillis();
+        long timeout = 15_000;
+        TestExpirationMs exp = new TestExpirationMs(now, timeout);
+        String expirationFormatted = exp.getExpirationFormatted();
+
+        assertNotNull(expirationFormatted);
+        assertTrue(expirationFormatted.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}"));
+    }
+
+    @Test
+    void getStopTimeFormatted_ShouldReturnNullIfNeverStopped() {
+        long now = System.currentTimeMillis();
+        TestExpirationMs exp = new TestExpirationMs(now, 10_000);
+        assertEquals("-", exp.getStopTimeFormatted());
+    }
+
+    @Test
+    void getStopTimeFormatted_ShouldReturnFormattedTime() {
+        long now = System.currentTimeMillis();
+        TestExpirationMs exp = new TestExpirationMs(now - 10_000, 20_000);
+        exp.setStopTimeMs(now);
+        String stopTimeFormatted = exp.getStopTimeFormatted();
+
+        assertNotNull(stopTimeFormatted);
+        assertTrue(stopTimeFormatted.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}"));
+    }
+
 }

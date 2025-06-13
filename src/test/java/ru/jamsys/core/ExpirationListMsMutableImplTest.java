@@ -17,17 +17,17 @@ class ExpirationListMsMutableImplTest {
     void test() {
         long curTime = 1709734264056L; //2024-03-06T17:11:04.056
         ExpirationMsMutable timeControl = new ExpirationMsMutableImpl();
-        timeControl.setKeepAliveOnInactivityMs(5_000);
+        timeControl.setInactivityTimeoutMs(5_000);
         timeControl.setLastActivityMs(curTime);
 
         Assertions.assertFalse(timeControl.isExpired(curTime + 5_000));
         Assertions.assertTrue(timeControl.isExpired(curTime + 5_001));
 
         //Мы пока никуда не смещались у нас полный запас
-        Assertions.assertEquals(5000, timeControl.getExpiryRemainingMs(curTime));
+        Assertions.assertEquals(5000, timeControl.getRemainingUntilExpirationMs(curTime));
 
-        Assertions.assertEquals(0, timeControl.getExpiryRemainingMs(curTime + 5_000));
-        Assertions.assertEquals(-1, timeControl.getExpiryRemainingMs(curTime + 5_001));
+        Assertions.assertEquals(0, timeControl.getRemainingUntilExpirationMs(curTime + 5_000));
+        Assertions.assertEquals(-1, timeControl.getRemainingUntilExpirationMs(curTime + 5_001));
 
         // Остановим метрику, после остановки время не должно меняться
         timeControl.stop(curTime + 5_000);
@@ -41,7 +41,7 @@ class ExpirationListMsMutableImplTest {
     @Test
     void testExpired(){
         ExpirationMsMutableEnvelope<String> expirationMsMutableEnvelope = new ExpirationMsMutableEnvelope<>("Hello world");
-        expirationMsMutableEnvelope.setKeepAliveOnInactivityMs(6_000);
+        expirationMsMutableEnvelope.setInactivityTimeoutMs(6_000);
         Assertions.assertFalse(expirationMsMutableEnvelope.isExpired());
     }
 

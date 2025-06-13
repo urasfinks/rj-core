@@ -25,7 +25,7 @@ public class File extends AbstractManagerElement {
     }
 
     public void setupTimeoutMs(int keepAliveOnInactivityMs) {
-        setKeepAliveOnInactivityMs(keepAliveOnInactivityMs);
+        this.setInactivityTimeoutMs(keepAliveOnInactivityMs);
     }
 
     public void setupReadFromSource(SupplierThrowing<byte[]> readFromSource) {

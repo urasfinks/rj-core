@@ -43,11 +43,11 @@ public class DisposableExpirationMsImmutableEnvelope<T> extends ExpirationMsImmu
     }
 
     public ExpirationMsImmutableEnvelope<T> revert() {
-        return new ExpirationMsImmutableEnvelope<>(super.getValue(), getKeepAliveOnInactivityMs(), getLastActivityMs());
+        return new ExpirationMsImmutableEnvelope<>(super.getValue(), getInactivityTimeoutMs(), getLastActivityMs());
     }
 
     public static <T> DisposableExpirationMsImmutableEnvelope<T> convert(ExpirationMsImmutableEnvelope<T> input) {
-        return new DisposableExpirationMsImmutableEnvelope<>(input.getValue(), input.getKeepAliveOnInactivityMs(), input.getLastActivityMs());
+        return new DisposableExpirationMsImmutableEnvelope<>(input.getValue(), input.getInactivityTimeoutMs(), input.getLastActivityMs());
     }
 
 }
