@@ -38,7 +38,7 @@ public class PromiseTaskWaitResource<T extends AbstractExpirationResource> exten
         this.terminalExecute = terminalExecute;
         PoolResourceForPromiseTaskWaitResource<T> poolResourceForPromiseTaskWaitResource = poolResourcePromiseTaskWaitConfiguration.get();
         getPromise().getTrace().add(new Trace<>(
-                getNs() + "::poolSubscribe(" + poolResourceForPromiseTaskWaitResource.getKey() + ")",
+                getNs() + "::poolSubscribe(" + poolResourceForPromiseTaskWaitResource.getNs() + ")",
                 null
         ));
         poolResourceForPromiseTaskWaitResource.addPromiseTask(this);
@@ -68,7 +68,13 @@ public class PromiseTaskWaitResource<T extends AbstractExpirationResource> exten
     // Пул вызывает этот метод, когда появляется доступный ресурс
     public void onReceiveResource(PoolItemCompletable<T> poolItem) {
         this.receiveResource = poolItem;
-        getPromise().getTrace().add(new Trace<>(getNs() + "::poolReceive(" + poolResourcePromiseTaskWaitConfiguration.get().getKey() + ")", null));
+        getPromise()
+                .getTrace()
+                .add(new Trace<>(getNs()
+                                + "::poolReceive(" + poolResourcePromiseTaskWaitConfiguration.get().getNs() + ")",
+                                null
+                        )
+                );
         super.prepareLaunch(null);
     }
 

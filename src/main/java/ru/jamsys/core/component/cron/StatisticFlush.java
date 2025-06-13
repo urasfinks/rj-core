@@ -47,7 +47,7 @@ public class StatisticFlush extends PromiseGenerator implements Cron1s {
                 -> list.add(App.get(statisticsCollectorClass)));
         brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
                 BrokerPersist.class,
-                java.util.UUID.randomUUID().toString(),
+                App.getUniqueClassName(StatisticFlush.class),
                 "statistic",
                 managerElement -> managerElement
                         .setup((bytes) -> new StatisticElement(new String(bytes)))

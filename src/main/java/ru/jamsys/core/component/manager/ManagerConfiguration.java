@@ -56,7 +56,8 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", cls)
-                .append("managerKey", ns)
+                .append("managerKey", key)
+                .append("ns", ns)
                 .append("reference", isAlive() ? manager.get(cls, key, ns, onCreate) : null)
                 ;
     }
