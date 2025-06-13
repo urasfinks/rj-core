@@ -12,11 +12,11 @@ public interface ExpirationMsMutable extends ExpirationMs {
 
     void setInactivityTimeoutMs(long timeMs);
 
-    default void setKeepAliveOnInactivitySec(long timeSec) {
+    default void setInactivityTimeoutSec(long timeSec) {
         setInactivityTimeoutMs(timeSec * 1_000);
     }
 
-    default void setKeepAliveOnInactivityMin(long timeMin) {
+    default void setInactivityTimeoutMin(long timeMin) {
         setInactivityTimeoutMs(timeMin * 60_000);
     }
 

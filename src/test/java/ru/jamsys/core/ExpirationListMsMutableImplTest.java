@@ -45,6 +45,7 @@ class ExpirationListMsMutableImplTest {
         Assertions.assertFalse(expirationMsMutableEnvelope.isExpired());
     }
 
+    @SuppressWarnings("all")
     @Test
     void testInstanceOf(){
         ExpirationMsImmutableImpl timeControllerMsImmutable = new ExpirationMsImmutableImpl(6_000);
