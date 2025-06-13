@@ -3,11 +3,14 @@ package ru.jamsys.core.extension.exception;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import ru.jamsys.core.flat.util.UtilJson;
+
+import java.util.List;
 
 @Getter
 public class ForwardException extends RuntimeException {
 
-    Object context;
+    List<String> contextSnapshot;
 
     @Setter
     @Accessors(chain = true)
@@ -18,7 +21,7 @@ public class ForwardException extends RuntimeException {
     }
 
     public ForwardException(Object context) {
-        this.context = context;
+        setContextSnapshot(context);
     }
 
     public ForwardException(String message, Throwable cause) {
@@ -27,17 +30,27 @@ public class ForwardException extends RuntimeException {
 
     public ForwardException(Object context, Throwable cause) {
         super(cause);
-        this.context = context;
+        setContextSnapshot(context);
     }
 
     public ForwardException(String message, Object context) {
         super(message);
-        this.context = context;
+        setContextSnapshot(context);
     }
 
     public ForwardException(String message, Object context, Throwable cause) {
         super(message, cause);
-        this.context = context;
+        setContextSnapshot(context);
+    }
+
+    private void setContextSnapshot(Object context) {
+        if (context == null) {
+            return;
+        }
+        // Это сделано специально, что бы был snapshot в текущий момент, а не в момент POST сериализации
+        String stringPretty = UtilJson.toStringPretty(context, "{}");
+        this.contextSnapshot = List.of(stringPretty.split("\n"));
+        this.contextSnapshot.addFirst("ForwardException.Context:");
     }
 
 }
