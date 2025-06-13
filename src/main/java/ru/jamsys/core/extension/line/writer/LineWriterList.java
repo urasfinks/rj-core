@@ -20,4 +20,9 @@ public class LineWriterList implements LineWriter {
         result.add(data);
     }
 
+    @Override
+    public void addLineAll(List<String> list) {
+        result.addAll(list);
+    }
+
 }
