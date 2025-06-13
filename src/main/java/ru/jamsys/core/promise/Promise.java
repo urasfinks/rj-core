@@ -43,7 +43,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     @Accessors(chain = true)
     private LogType logType;
 
-    private TerminalStatus terminalStatus = TerminalStatus.IN_PROCESS;
+    private volatile TerminalStatus terminalStatus = TerminalStatus.IN_PROCESS;
 
     private final AtomicBoolean run = new AtomicBoolean(false);
 
@@ -152,14 +152,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     }
 
     public void timeOut() {
-        if (isRun()) {
-            setError(
-                    getNs() + "::timeOut()",
-                    new ForwardException(getExpirationDebugInfo()
-                            .append("promise", this)
-                    ).setLine(10)
-            );
-        }
+        setError(getNs() + "::timeOut()", genExpiredException());
     }
 
     public void skipAllStep(AbstractPromiseTask promiseTask, String cause) {
@@ -208,7 +201,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
 
     // Блок должен вызываться 1 раз. Может быть такое, что 10 параллельно запущенных задач смогут вызвать 10 setError
     public void setError(String index, Throwable throwable) {
-        App.error(throwable);
+        App.error(new ForwardException(this, throwable));
         this.trace.add(new Trace<>(index, throwable));
         terminalStatus = TerminalStatus.ERROR;
         runErrorHandler();
