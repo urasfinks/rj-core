@@ -2,7 +2,6 @@ package ru.jamsys.core.extension.expiration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
-import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.flat.util.UtilDate;
 
 @JsonIgnoreType
@@ -37,12 +36,8 @@ public interface ExpirationMs {
         return curTimeMs > getExpirationTimeMs();
     }
 
-    default HashMapBuilder<String, Object> getExpirationDebugInfo() {
-        return new HashMapBuilder<String, Object>()
-                .append("now", UtilDate.msFormat(System.currentTimeMillis()))
-                .append("lastActivity", getLastActivityFormatted())
-                .append("timeout", getInactivityTimeoutMs())
-                ;
+    default TimeOutException genExpiredException() {
+        return new TimeOutException(getLastActivityMs(), getInactivityTimeoutMs());
     }
 
     // Кол-во миллисекунд до момента, когда наступит протухание
