@@ -153,7 +153,12 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
 
     public void timeOut() {
         if (isRun()) {
-            setError(getNs() + "::timeOut()", genExpiredException());
+            setError(
+                    getNs() + "::timeOut()",
+                    new ForwardException(getTimeoutInformation()
+                            .append("promise", this)
+                    ).setLine(10)
+            );
         }
     }
 
