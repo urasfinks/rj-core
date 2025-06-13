@@ -122,7 +122,6 @@ public class Util {
         return false;
     }
 
-    @SuppressWarnings("all")
     public static void printThreadStackTrace() {
         System.err.println("------------------");
         int maxDepth = 50;
@@ -132,6 +131,7 @@ public class Util {
         }
     }
 
+    @SuppressWarnings("all")
     public static void printStackTrace(String label) {
         Exception exception = new Exception(
                 UtilDate.msFormat(System.currentTimeMillis()) + " ["
