@@ -95,8 +95,8 @@ public class QueueRetry implements DataReader, StatisticsFlush, CascadeKey {
         }
     }
 
-    // Получить элемент на определённое время, если своевременно его закоммитить (нейтролизовать) он снова добавится в
-    // park
+    // Получить элемент на определённое время, если своевременно его не закоммитить (нейтролизовать) он снова добавится
+    // в park
     public DataReadWrite pollLast(long timeoutMs) {
         return pollLast(timeoutMs, System.currentTimeMillis());
     }

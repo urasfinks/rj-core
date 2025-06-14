@@ -17,7 +17,9 @@ import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,6 +67,8 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
     private Consumer<T> onCreatePoolItem;
 
     private Class<T> cls;
+
+    private final Map<T, ManagerConfiguration<T>> configurationReference = new ConcurrentHashMap<>();
 
     public AbstractPool(String ns) {
         this.ns = ns;
@@ -136,18 +140,8 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         return false;
     }
 
-    // В пуле не должно быть больше 1000 элементов, поэтому пробежка по всем элементам не критична
-    private ManagerConfiguration<T> find(T threadExecutePromiseTask) {
-        for (ManagerConfiguration<T> x : items) {
-            if (x.equalsElement(threadExecutePromiseTask)) {
-                return x;
-            }
-        }
-        return null;
-    }
-
     private void remove(T poolItem) {
-        ManagerConfiguration<T> tManagerConfiguration = find(poolItem);
+        ManagerConfiguration<T> tManagerConfiguration = configurationReference.remove(poolItem);
         if (tManagerConfiguration != null) {
             items.remove(tManagerConfiguration);
             // Его не должно быть в парке
@@ -184,7 +178,8 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
             updateStatistic();
             return;
         }
-        ManagerConfiguration<T> tManagerConfiguration = find(poolItem);
+
+        ManagerConfiguration<T> tManagerConfiguration = configurationReference.get(poolItem);
         if (tManagerConfiguration == null) {
             return;
         }
@@ -231,6 +226,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
             if (!poolItemElement.isValid()) {
                 continue;
             }
+            configurationReference.putIfAbsent(poolItemElement, poolItem);
             return poolItemElement;
         }
         return null;
@@ -265,7 +261,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
     // Проверка, что в парке есть элемент, это необходимо для обработки ложных срабатываний (spurious wakeups)
     // при использовании LockSupport.park(), хотя они происходят реже, чем при использовании Object.wait()
     public boolean inPark(@NonNull T poolItem) {
-        ManagerConfiguration<T> tManagerConfiguration = find(poolItem);
+        ManagerConfiguration<T> tManagerConfiguration = configurationReference.get(poolItem);
         return parkQueue.contains(tManagerConfiguration);
     }
 
@@ -279,6 +275,14 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
             if (!item.isAlive() && parkQueue.remove(item)) {
                 maxCounterRemove.decrementAndGet();
                 items.remove(item);
+                // Если в Manager нет реального элемента, то получать у ManagerConfiguration.get() уже нет смысла
+                // так как прийдёт ново-созданный элемент, которого мы в configurationReference не найдём, поэтому
+                // просто переберём все значения карты и найдём нужную нам конфигурацию. Да сложность высокая
+                UtilRisc.forEach(null, configurationReference, (t, tManagerConfiguration) -> {
+                    if (tManagerConfiguration.equals(item)) {
+                        configurationReference.remove(t);
+                    }
+                });
             }
             return true;
         });

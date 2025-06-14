@@ -10,7 +10,6 @@ import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.broker.persist.BrokerPersistRepositoryProperty;
-import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilFile;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,11 +32,6 @@ class AsyncFileWriterWalTest {
     void test() throws Throwable {
         UtilFile.removeIfExist("1StatisticPersist/1.bin");
         BrokerPersistRepositoryProperty brokerPersistRepositoryProperty = new BrokerPersistRepositoryProperty();
-        PropertyDispatcher<Object> test = new PropertyDispatcher<>(
-                null,
-                brokerPersistRepositoryProperty,
-                "$.BrokerPersist.statistic"
-        );
         ManagerConfiguration<AsyncFileWriterWal<TestElement>> yWriterConfiguration = ManagerConfiguration.getInstance(
                 AsyncFileWriterWal.class,
                 java.util.UUID.randomUUID().toString(),
@@ -45,7 +39,7 @@ class AsyncFileWriterWalTest {
                 managerElement -> {
                     System.out.println("NEW ELEMENT");
                     managerElement.setupRepositoryProperty(brokerPersistRepositoryProperty);
-                    managerElement.setupOnWrite((_, listY) -> {
+                    managerElement.setupOnWrite((_, _) -> {
                     });
                 }
         );
