@@ -20,11 +20,16 @@ public abstract class AbstractAsyncFileReader {
                 }
 
                 int length = UtilByte.bytesToInt(lengthBytes);
-
                 if (length == -1) {
                     // Маркер конца файла
-                    dataReader.setFinishState(true);
-                    break;
+                    // Проверяем: действительно ли это конец файла, или за ним есть данные
+                    if (file.getFilePointer() == file.length()) {
+                        dataReader.setFinishState(true);
+                        break;
+                    } else {
+                        // Продолжаем — это не настоящий конец, файл дописывался
+                        continue;
+                    }
                 }
 
                 if (length < 0) {
