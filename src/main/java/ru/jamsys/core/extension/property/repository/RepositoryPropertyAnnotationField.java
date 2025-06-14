@@ -69,7 +69,7 @@ public class RepositoryPropertyAnnotationField<T> extends AbstractRepositoryProp
                     } catch (Throwable th) {
                         throw new ForwardException(new HashMapBuilder<String, Object>()
                                 .append("ns", ns)
-                                .append("field", field),
+                                .append("fieldName", field.getName()),
                                 th
                         );
                     }
