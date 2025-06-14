@@ -57,12 +57,12 @@ public class ThreadPoolExecutePromiseTask extends AbstractPoolPrivate {
                 : promiseTask.getPromise().getRemainingMs();
 
         brokerMemoryConfiguration.get().add(new ExpirationMsImmutableEnvelope<>(promiseTask, timeout));
-        idleIfEmpty();
+        addIdle();
         serviceBell();
     }
 
     public ExpirationMsImmutableEnvelope<AbstractPromiseTask> getPromiseTask() {
-        return brokerMemoryConfiguration.get().pollLast();
+        return brokerMemoryConfiguration.get().poll();
     }
 
     @Override

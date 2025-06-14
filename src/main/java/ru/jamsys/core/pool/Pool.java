@@ -12,7 +12,7 @@ public interface Pool<T extends AbstractExpirationResource> extends StatisticsFl
     void release(T ret, Throwable e);
 
     // Холостое добавление элемента в пустой пул (если min = 0), для обработки внешних потребителей
-    boolean idleIfEmpty();
+    boolean addIdle();
 
     // Вызывается когда в парк добавляется ресурс
     void onParkUpdate();

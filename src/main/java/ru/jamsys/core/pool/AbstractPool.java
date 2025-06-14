@@ -117,14 +117,15 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         return isRun() && items.size() < property.getMax();
     }
 
-    // Добавить минимально кол-во элементов, если в пуле все поумирали
-    public boolean idleIfEmpty() {
-        if (!parkQueue.isEmpty()) { // Если в парке есть ресурсы, сразу говорим что всё ок
-            return true;
-        }
-        // Если всё-таки в парке нет никого проверяем возможность создать новый элемент, но только в том случае,
+    /**
+     * Добавляет минимальное количество элементов в пул, если все ресурсы завершили работу.
+     *
+     * @return true, если был добавлен новый элемент, иначе false
+     */
+    public boolean addIdle() {
+        // Если в пуле нет никого проверяем возможность создать новый элемент, но только в том случае,
         // если настройки парка могут быть равны 0 и кол-во активных элементов равны 0.
-        // Парк типа просто из-за неактивности ушёл в ноль, что бы не тратить ресурсы
+        // Парк типа просто из-за не активности ушёл в ноль, что бы не тратить ресурсы
         // иначе вернём false и просто задачи будут ждать, когда парк расширится автоматически от нагрузки
         if (property.getMin() == 0 && items.isEmpty()) {
             return addToParkNewItem();
@@ -230,6 +231,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
             items.add(poolItem);
             parkQueue.addLast(poolItem);
             updateStatistic();
+            onParkUpdate();
             return true;
         }
         return false;

@@ -67,15 +67,15 @@ class BrokerMemoryTest {
 
         Assertions.assertEquals(10, broker.size(), "#1");
 
-        ExpirationMsImmutableEnvelope<XTest> t = broker.pollFirst();
-        Assertions.assertEquals(0, t.getValue().x, "#2");
-        Assertions.assertEquals(9, broker.size(), "#3");
+        //ExpirationMsImmutableEnvelope<XTest> t = broker.pollFirst();
+        //Assertions.assertEquals(0, t.getValue().x, "#2");
+        Assertions.assertEquals(10, broker.size(), "#3");
 
-        ExpirationMsImmutableEnvelope<XTest> t2 = broker.pollLast();
+        ExpirationMsImmutableEnvelope<XTest> t2 = broker.poll();
         Assertions.assertEquals(9, t2.getValue().x, "#4");
-        Assertions.assertEquals(8, broker.size(), "#5");
+        Assertions.assertEquals(9, broker.size(), "#5");
 
-        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}]", broker.getCloneQueue(null).toString(), "#9");
+        Assertions.assertEquals("[XTest{x=0}, XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}]", broker.getCloneQueue(null).toString(), "#9");
 
 
         try {
@@ -90,7 +90,7 @@ class BrokerMemoryTest {
 
         List<XTest> tail = broker.getTailQueue(null);
         Assertions.assertEquals("[XTest{x=12}, XTest{x=13}, XTest{x=14}]", tail.toString(), "#8");
-        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}]", dropped.toString(), "#8");
+        Assertions.assertEquals("[XTest{x=0}, XTest{x=1}, XTest{x=2}]", dropped.toString(), "#8");
 
         List<XTest> cloneQueue = broker.getCloneQueue(null);
         Assertions.assertEquals("[XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}, XTest{x=13}, XTest{x=14}]", cloneQueue.toString(), "#9");
@@ -131,22 +131,22 @@ class BrokerMemoryTest {
 
         Assertions.assertEquals(10, broker.size());
 
-        ExpirationMsImmutableEnvelope<XTest> t = broker.pollFirst();
+        //ExpirationMsImmutableEnvelope<XTest> t = broker.pollFirst();
 
-        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=9}]", broker.getCloneQueue(null).toString());
+        Assertions.assertEquals("[XTest{x=0}, XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=9}]", broker.getCloneQueue(null).toString());
 
-        Assertions.assertEquals(0, t.getValue().x);
-        Assertions.assertEquals(9, broker.size());
+        //Assertions.assertEquals(0, t.getValue().x);
+        Assertions.assertEquals(10, broker.size());
 
-        ExpirationMsImmutableEnvelope<XTest> t2 = broker.pollLast();
+        ExpirationMsImmutableEnvelope<XTest> t2 = broker.poll();
 
-        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}]", broker.getCloneQueue(null).toString());
+        Assertions.assertEquals("[XTest{x=0}, XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}]", broker.getCloneQueue(null).toString());
 
         Assertions.assertEquals(9, t2.getValue().x);
-        Assertions.assertEquals(8, broker.size());
+        Assertions.assertEquals(9, broker.size());
 
         broker.add(new XTest(11), 6_000L);
-        Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}]", broker.getCloneQueue(null).toString());
+        Assertions.assertEquals("[XTest{x=0}, XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}]", broker.getCloneQueue(null).toString());
         broker.add(new XTest(12), 6_000L);
         Assertions.assertEquals("[XTest{x=1}, XTest{x=2}, XTest{x=3}, XTest{x=4}, XTest{x=5}, XTest{x=6}, XTest{x=7}, XTest{x=8}, XTest{x=11}, XTest{x=12}]", broker.getCloneQueue(null).toString());
         broker.add(new XTest(13), 6_000L);
@@ -180,7 +180,7 @@ class BrokerMemoryTest {
         Assertions.assertEquals(obj.hashCode(), cloneQueue.getFirst().hashCode(), "#1");
         broker.remove(o1);
         Assertions.assertEquals(0, broker.size(), "#1");
-        ExpirationMsImmutableEnvelope<XTest> xTestExpirationMsImmutableEnvelope = broker.pollLast();
+        ExpirationMsImmutableEnvelope<XTest> xTestExpirationMsImmutableEnvelope = broker.poll();
         Assertions.assertNull(xTestExpirationMsImmutableEnvelope, "#2");
         Assertions.assertEquals(0, broker.size(), "#1");
         broker.reset();
@@ -314,7 +314,7 @@ class BrokerMemoryTest {
         Assertions.assertTrue(timeRem < 500, "#3");
         Assertions.assertEquals(0, broker.size(), "#3");
         start = System.currentTimeMillis();
-        ExpirationMsImmutableEnvelope<XTest> xTestExpirationMsImmutableEnvelope = broker.pollLast();
+        ExpirationMsImmutableEnvelope<XTest> xTestExpirationMsImmutableEnvelope = broker.poll();
         UtilLog.printAction("pool time: " + (System.currentTimeMillis() - start));
         Assertions.assertNull(xTestExpirationMsImmutableEnvelope, "#3");
     }

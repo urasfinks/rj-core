@@ -13,7 +13,7 @@ import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 
 // Нам надо вызывать helper у ExpiredList 1 раз в секунду, а не 1раз в 3сек
-
+// TODO: надо все это сделать на виртуальных потоках, скорость нам не важна
 @SuppressWarnings("unused")
 @Component
 @Lazy

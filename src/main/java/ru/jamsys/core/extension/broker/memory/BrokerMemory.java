@@ -8,9 +8,9 @@ import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
-import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.statistic.AvgMetric;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
 
@@ -32,16 +32,15 @@ public class BrokerMemory<T>
                 DisposableExpirationMsImmutableEnvelope<T> // Должны вернуть, что бы из вне можно было сделать remove
                 > {
 
-
-    private final AtomicInteger mainQueueSize = new AtomicInteger(0);
-
-    private final AtomicInteger tailQueueSize = new AtomicInteger(0);
-
     // Основная очередь сообщений
     private final ConcurrentLinkedDeque<DisposableExpirationMsImmutableEnvelope<T>> mainQueue = new ConcurrentLinkedDeque<>();
 
     // Последний сообщения проходящие через очередь
     private final ConcurrentLinkedDeque<ExpirationMsImmutableEnvelope<T>> tailQueue = new ConcurrentLinkedDeque<>();
+
+    private final AtomicInteger mainQueueSize = new AtomicInteger(0);
+
+    private final AtomicInteger tailQueueSize = new AtomicInteger(0);
 
     // Я подумал, при деградации хорошо увидеть, что очередь вообще читается
     private final AtomicInteger tpsDequeue = new AtomicInteger(0);
@@ -106,9 +105,15 @@ public class BrokerMemory<T>
         // Мы не можем использовать queue.size() для расчёта переполнения
         // пример: вставка 100к записей занимаем 35сек
         if (mainQueueSize.get() >= getProperty().getSize()) {
-            // Он конечно протух не по своей воле, но что делать...
-            // Как будто лучше его закинуть по стандартной цепочке, что бы операция была завершена
-            onDrop(mainQueue.removeFirst());
+            DisposableExpirationMsImmutableEnvelope<T> removedFirst = mainQueue.removeFirst();
+            if (removedFirst != null) {
+                T value = removedFirst.getValue();
+                if (value != null) {
+                    mainQueueSize.decrementAndGet();
+                    timeInQueue.add(removedFirst.getDurationSinceLastActivityMs());
+                    onDrop(value);
+                }
+            }
         }
 
         mainQueue.add(convert);
@@ -123,35 +128,60 @@ public class BrokerMemory<T>
         return convert;
     }
 
-    public ExpirationMsImmutableEnvelope<T> pollFirst() {
-        return pool(true);
-    }
-
-    public ExpirationMsImmutableEnvelope<T> pollLast() {
-        return pool(false);
-    }
-
-    private ExpirationMsImmutableEnvelope<T> pool(boolean first) {
+    // Для очереди в памяти всегда изъятие происходит с конца, для изъятия сначала использовать BrokerPersist.
+    // Причина очень простая, любое замедление системы и вычитывание с начала приводит к порочному кругу, когда
+    // обрабатывая с начала времени не будет успевать обработать их, а в это время в конце очереди уже тратится время
+    // в итоге и старые не хватает времени обработать и новые тухнут к моменту их обработке. LoginStorm - это когда
+    // происходит увеличение нагрузки из-за недоступности системы, пользователи получают ошибки и пытаются снова и
+    // снова сделать проводку, тем самым увеличивая длину очереди и в случае обработки сначала - система не сможет это
+    // всё обработать и будет находиться в режиме постоянного протухания
+    public ExpirationMsImmutableEnvelope<T> poll() {
         do {
-            DisposableExpirationMsImmutableEnvelope<T> result = first ? mainQueue.pollFirst() : mainQueue.pollLast();
+            DisposableExpirationMsImmutableEnvelope<T> result = mainQueue.pollLast();
+            tpsDequeue.incrementAndGet();
             if (result == null) {
                 return null;
             }
             if (result.isExpired()) {
-                onDrop(result);
+                T value = result.getValue();
+                if (value != null) {
+                    mainQueueSize.decrementAndGet();
+                    timeInQueue.add(result.getDurationSinceLastActivityMs());
+                    onDrop(value);
+                }
                 continue;
             }
             T value = result.getValue();
             if (value == null) {
                 continue;
             }
-            onQueueLoss(result);
-            // Все операции делаем в конце, когда получаем нейтрализованный объект
-            // Так как многопоточная среда, могут выхватить из-под носа
             mainQueueSize.decrementAndGet();
+            timeInQueue.add(result.getDurationSinceLastActivityMs());
             return result.revert();
         } while (!mainQueue.isEmpty());
         return null;
+    }
+
+    public void helper(AtomicBoolean threadRun) {
+        while (threadRun.get()) {
+            DisposableExpirationMsImmutableEnvelope<T> peekResult = mainQueue.peekFirst();
+            if (peekResult == null) {
+                break;
+            }
+            if (peekResult.isExpired()) {
+                // Удаление происходит через поиск с начала очереди (removeFirstOccurrence(o)), так что это будет очень
+                // быстро
+                if (mainQueue.remove(peekResult)) {
+                    T value = peekResult.getValue();
+                    if (value != null) {
+                        mainQueueSize.decrementAndGet();
+                        timeInQueue.add(peekResult.getDurationSinceLastActivityMs());
+                    }
+                }
+            } else {
+                break;
+            }
+        }
     }
 
     public void remove(DisposableExpirationMsImmutableEnvelope<T> envelope) {
@@ -162,37 +192,18 @@ public class BrokerMemory<T>
             // Делаем так, что бы элемент больше не достался никому
             T value = envelope.getValue();
             if (value != null) {
-                onQueueLoss(envelope);
-                // Когда явно получили эксклюзивный доступ к объекту - можно и статистику посчитать
                 mainQueueSize.decrementAndGet();
+                timeInQueue.add(envelope.getDurationSinceLastActivityMs());
             }
         }
-    }
-
-    // Когда произошло изъятие элемента из очереди любым способом
-    private void onQueueLoss(ExpirationMsImmutableEnvelope<T> envelope) {
-        tpsDequeue.incrementAndGet();
-        timeInQueue.add(envelope.getDurationSinceLastActivityMs());
     }
 
     //Обработка выпадающих сообщений
     @SuppressWarnings("all")
-    public void onDrop(DisposableExpirationMsImmutableEnvelope envelope) {
-        if (envelope == null) {
-            return;
-        }
-        @SuppressWarnings("unchecked")
-        T value = (T) envelope.getValue();
-        if (value != null) {
-            // На самомом деле мы не удаляем из очереди, однако вызываем onQueueLoss, что бы увеличть счётчик на вставку
-            // так как бегать по очереди в поисках элемента - накладная операция, когда poll дойдёт до этого элемента
-            // он просто провернёт через continue его. При этом вставку в очередь будем разрешать, не смотря на
-            // то что в очереди может находится реально больше элементов, чем положено.
-            onQueueLoss(envelope);
-            tpsDrop.incrementAndGet();
-            if (onPostDrop != null) {
-                onPostDrop.accept(value);
-            }
+    public void onDrop(T value) {
+        tpsDrop.incrementAndGet();
+        if (onPostDrop != null) {
+            onPostDrop.accept(value);
         }
     }
 
@@ -239,11 +250,13 @@ public class BrokerMemory<T>
         // запихаем все не считанные сообщения в onDrop
         if (onPostDrop != null) {
             while (!mainQueue.isEmpty()) {
-                DisposableExpirationMsImmutableEnvelope<T> poll = mainQueue.pollFirst();
-                if (poll != null) {
-                    T value = poll.getValue();
+                DisposableExpirationMsImmutableEnvelope<T> pollFirst = mainQueue.pollFirst();
+                if (pollFirst != null) {
+                    T value = pollFirst.getValue();
                     if (value != null) {
-                        onPostDrop.accept(value);
+                        mainQueueSize.decrementAndGet();
+                        timeInQueue.add(pollFirst.getDurationSinceLastActivityMs());
+                        onDrop(value);
                     }
                 }
             }
@@ -255,12 +268,11 @@ public class BrokerMemory<T>
         List<StatisticDataHeader> result = new ArrayList<>();
         int tpsDequeueFlush = tpsDequeue.getAndSet(0);
         int tpsDropFlush = tpsDrop.getAndSet(0);
-        int sizeFlush = mainQueueSize.get();
         AvgMetric.Statistic statistic = timeInQueue.flushStatistic();
         result.add(new StatisticDataHeader(getClass(), ns)
                 .addHeader("tpsDeq", tpsDequeueFlush)
                 .addHeader("tpsDrop", tpsDropFlush)
-                .addHeader("size", sizeFlush)
+                .addHeader("size", mainQueueSize.get())
                 .addHeader("timeInQueue", statistic.getAvg())
                 .addHeader("timeInQueue.min", statistic.getMin())
                 .addHeader("timeInQueue.max", statistic.getMax())

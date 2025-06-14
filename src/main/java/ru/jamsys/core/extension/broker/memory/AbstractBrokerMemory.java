@@ -17,9 +17,7 @@ public abstract class AbstractBrokerMemory<T>
                 DisposableExpirationMsImmutableEnvelope<T> // Должны вернуть, что бы из вне можно было сделать remove
                 > {
 
-    abstract public ExpirationMsImmutableEnvelope<T> pollFirst();
-
-    abstract public ExpirationMsImmutableEnvelope<T> pollLast();
+    abstract public ExpirationMsImmutableEnvelope<T> poll();
 
     abstract public void remove(DisposableExpirationMsImmutableEnvelope<T> envelope);
 
