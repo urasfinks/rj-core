@@ -8,6 +8,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.statistic.StatisticDataHeader;
@@ -144,6 +145,22 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         return null;
     }
 
+    private void remove(T poolItem) {
+        ManagerConfiguration<T> tManagerConfiguration = find(poolItem);
+        if (tManagerConfiguration != null) {
+            items.remove(tManagerConfiguration);
+            // Его не должно быть в парке
+            if (parkQueue.remove(tManagerConfiguration)) {
+                App.error(new ForwardException(
+                        "Этот код не должен был случиться! Проверить логику! ",
+                        new HashMapBuilder<>()
+                                .append("tManagerConfiguration", tManagerConfiguration)
+                                .append("pool", this)
+                ));
+            }
+        }
+    }
+
     // Вернуть в пул элемент
     @Override
     public void release(T poolItem, Throwable e) {
@@ -153,9 +170,11 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         }
         // Если ошибка является критичной для пловца - выбрасываем его из пула
         if (e != null && poolItem.checkFatalException(e)) {
+            remove(poolItem);
             return;
         }
         if (poolItem.isExpiredIgnoringStop()) {
+            remove(poolItem);
             return;
         }
         // Если есть потребители, которые ждут ресурс - отдаём ресурс без перевставок в park
@@ -179,7 +198,12 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
                 updateStatistic();
                 addable = true;
             } else {
-                App.error(new RuntimeException("Этот код не должен был случиться! Проверить логику! " + tManagerConfiguration.hashCode()));
+                App.error(new ForwardException(
+                        "Этот код не должен был случиться! Проверить логику! ",
+                        new HashMapBuilder<>()
+                                .append("tManagerConfiguration", tManagerConfiguration)
+                                .append("pool", this)
+                ));
             }
         } finally {
             lockAddToPark.unlock();
@@ -248,8 +272,9 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         final AtomicInteger maxCounterRemove = new AtomicInteger(formulaRemoveCount.apply(1));
         UtilRisc.forEach(null, items, item -> {
             if (maxCounterRemove.get() == 0) {
-                return false;  // return нельзя, так как надо вернуть активных
+                return false;
             }
+            // Если Manager уже слил элемент + он находит у нас в парке и его получилось удалить
             if (!item.isAlive() && parkQueue.remove(item)) {
                 maxCounterRemove.decrementAndGet();
                 items.remove(item);
@@ -276,19 +301,17 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
     @Override
     public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         List<StatisticDataHeader> result = new ArrayList<>();
-        int tpsReleaseFlush = tpsRelease.getAndSet(0);
-        int tpsAcquireFlush = tpsAcquire.getAndSet(0);
-        // Если за последнюю секунду были возвращения элементов значит пул активен
-        // Если в пуле есть элементы и они не в паркинге - пул тоже активный
-        if (tpsReleaseFlush > 0 || tpsAcquireFlush > 0) {
-            markActive();
-        }
+        // Пул активный до тех пор, пока в нём есть элементы, если балансировщик всех удалит и новых создаваться не
+        // будет, тогда пол менеджером пойдёт под нож
         result.add(new StatisticDataHeader(getClass(), ns)
-                .addHeader("acquire", tpsAcquireFlush)
-                .addHeader("release", tpsReleaseFlush)
+                .addHeader("acquire", tpsAcquire.getAndSet(0))
+                .addHeader("release", tpsRelease.getAndSet(0))
                 .addHeader("size", items.size())
                 .addHeader("park", parkQueue.size())
         );
+        if (!items.isEmpty()) {
+            markActive();
+        }
         return result;
     }
 

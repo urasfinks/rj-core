@@ -279,7 +279,7 @@ public class BrokerMemory<T>
                 .addHeader("timeInQueue.count", statistic.getCount())
                 .addHeader("timeInQueue.sum", statistic.getSum())
         );
-        if(!mainQueue.isEmpty()){
+        if (!mainQueue.isEmpty()) {
             markActive();
         }
         return result;

@@ -1,6 +1,8 @@
 package ru.jamsys.core.resource.http;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilUri;
@@ -18,6 +20,11 @@ public class HttpResource extends AbstractExpirationResource {
 
     private final PropertyDispatcher<Object> propertyDispatcher;
 
+    public enum Type {
+        DEFAULT,
+        APACHE
+    }
+
     public HttpResource(String ns) {
         this.ns = ns;
         propertyDispatcher = new PropertyDispatcher<>(
@@ -27,9 +34,14 @@ public class HttpResource extends AbstractExpirationResource {
         );
     }
 
-    public enum Type {
-        DEFAULT,
-        APACHE
+    @JsonValue
+    public Object getJsonValue() {
+        return new HashMapBuilder<String, Object>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("class", getClass())
+                .append("ns", ns)
+                .append("propertyDispatcherNs", propertyDispatcher.getNs())
+                ;
     }
 
     public AbstractHttpConnector prepare() {

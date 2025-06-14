@@ -2,8 +2,10 @@ package ru.jamsys.core.component.manager;
 
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.*;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.statistic.StatisticDataHeader;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.lang.reflect.Constructor;
@@ -100,6 +102,11 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         UtilRisc.forEach(threadRun, map, (_, mapManager) -> {
             UtilRisc.forEach(threadRun, mapManager, (key, managerElement) -> {
                 if (managerElement.isExpiredIgnoringStop()) {
+                    UtilLog.printInfo(new HashMapBuilder<>()
+                            .append("action", getClass().getSimpleName() + ".helper()->remove()")
+                            .append("cls", managerElement.getClass())
+                            .append("element", managerElement)
+                    );
                     all.add(managerElement);
                     mapManager.remove(key);
                 } else {

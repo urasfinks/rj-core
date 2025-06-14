@@ -393,7 +393,8 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
                 getComplexIndex(indexTask),
                 this,
                 procedure,
-                // Создаём пул ресурсов, ключ которого будет имя класса ресурса, а внутри уже по ns элементы
+                // Создаём конфигурацию пула ресурсов, ключ которого будет имя класса ресурса, а внутри уже по ns
+                // элементы
                 ManagerConfiguration.getInstance(
                         PoolResourceForPromiseTaskWaitResource.class,
                         classResource.getName(),

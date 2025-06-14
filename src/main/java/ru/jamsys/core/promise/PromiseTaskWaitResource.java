@@ -5,14 +5,13 @@ import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
 import ru.jamsys.core.extension.functional.PromiseTaskWithResourceConsumerThrowing;
 import ru.jamsys.core.extension.trace.Trace;
-import ru.jamsys.core.pool.PoolItemCompletable;
 import ru.jamsys.core.resource.PoolResourceForPromiseTaskWaitResource;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PromiseTaskWaitResource<T extends AbstractExpirationResource> extends AbstractPromiseTask {
 
-    private PoolItemCompletable<T> receiveResource;
+    private T receiveResource;
 
     private final PromiseTaskWithResourceConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise, T> executeBlock;
 
@@ -38,22 +37,21 @@ public class PromiseTaskWaitResource<T extends AbstractExpirationResource> exten
         this.terminalExecute = terminalExecute;
         PoolResourceForPromiseTaskWaitResource<T> poolResourceForPromiseTaskWaitResource = poolResourcePromiseTaskWaitConfiguration.get();
         getPromise().getTrace().add(new Trace<>(
-                getNs() + "::poolSubscribe(" + poolResourceForPromiseTaskWaitResource.getNs() + ")",
+                getNs() + "::pool[" + poolResourceForPromiseTaskWaitResource.getNs() + "].submitPromiseTask()",
                 null
         ));
-        poolResourceForPromiseTaskWaitResource.addPromiseTask(this);
+        poolResourceForPromiseTaskWaitResource.submitPromiseTask(this);
     }
 
     @Override
     protected void executeProcedure() throws Throwable {
         if (receiveResource != null) {
             try {
-                executeBlock.accept(threadRun, this, this.getPromise(), receiveResource.getItem());
+                executeBlock.accept(threadRun, this, this.getPromise(), receiveResource);
+                poolResourcePromiseTaskWaitConfiguration.get().release(receiveResource, null);
             } catch (Throwable th) {
-                receiveResource.setThrowable(th);
+                poolResourcePromiseTaskWaitConfiguration.get().release(receiveResource, th);
                 throw th;
-            } finally {
-                receiveResource.close();
             }
         } else {
             throw new RuntimeException("receiveResource is null");
@@ -66,12 +64,12 @@ public class PromiseTaskWaitResource<T extends AbstractExpirationResource> exten
     }
 
     // Пул вызывает этот метод, когда появляется доступный ресурс
-    public void onReceiveResource(PoolItemCompletable<T> poolItem) {
+    public void onReceiveResource(T poolItem) {
         this.receiveResource = poolItem;
         getPromise()
                 .getTrace()
                 .add(new Trace<>(getNs()
-                                + "::poolReceive(" + poolResourcePromiseTaskWaitConfiguration.get().getNs() + ")",
+                        + "::pool[" + poolResourcePromiseTaskWaitConfiguration.get().getNs() + "].onReceiveResource()",
                                 null
                         )
                 );
