@@ -30,10 +30,6 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
 
     private final Manager manager;
 
-    private long nextUpdate;
-
-    private T cache;
-
     Consumer<T> onCreate;
 
     private ManagerConfiguration(Class<T> cls, String key, String ns, Manager manager, Consumer<T> onCreate) {
@@ -67,17 +63,18 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
     }
 
     public T get() {
-        long l = System.currentTimeMillis();
-        if (l > nextUpdate) {
-            cache = manager.get(cls, key, ns, onCreate);
-            nextUpdate = cache.getRemainingMs() + l;
-        }
-        cache.markActive();
-        return cache;
+        // Мы не можем себе позволить хранить кеш, так как мастер система хранения элементов является Manager
+        // Предположим, если прихраним кеш и Manager реально сольёт экземпляр, мы будем хранить ссылку на экземпляр
+        // и этой конфигурацией пользоваться никто не будет. Мы будем держать GC что бы он не удалял этот объект,
+        // это плохо, так как конфигурация и нужна для того, что бы дать возможность освободить память, а при
+        // необходимости возобновить экземпляр в память
+        T t = manager.get(cls, key, ns, onCreate);
+        t.markActive();
+        return t;
     }
 
     public boolean equalsElement(Object o){
-        return Objects.equals(cache, o);
+        return Objects.equals(get(), o);
     }
 
     public void execute(Consumer<T> managerElement) {
