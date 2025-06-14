@@ -129,6 +129,7 @@ public class InfluxResource extends AbstractExpirationResource implements Proper
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
                 .append("ns", ns)
+                .append("propertyDispatcherNs", propertyDispatcher.getNs())
                 ;
     }
 

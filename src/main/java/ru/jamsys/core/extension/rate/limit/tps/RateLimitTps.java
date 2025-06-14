@@ -44,6 +44,7 @@ public class RateLimitTps extends AbstractManagerElement {
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
                 .append("ns", ns)
+                .append("propertyDispatcherNs", propertyDispatcher.getNs())
                 ;
     }
 

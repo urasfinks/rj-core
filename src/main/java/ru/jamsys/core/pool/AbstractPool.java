@@ -88,6 +88,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("class", getClass())
                 .append("ns", ns)
+                .append("propertyDispatcherNs", propertyDispatcher.getNs())
                 .append("classElement", cls)
                 .append("items", items)
                 ;

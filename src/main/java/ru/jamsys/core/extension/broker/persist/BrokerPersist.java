@@ -81,6 +81,7 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
                 .append("ns", ns)
+                .append("propertyDispatcherNs", propertyDispatcher.getNs())
                 //.append("brokerPersistRepositoryProperty", property)
                 ;
     }

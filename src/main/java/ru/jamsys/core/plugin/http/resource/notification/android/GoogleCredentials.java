@@ -37,7 +37,7 @@ public class GoogleCredentials extends AbstractManagerElement implements Propert
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
                 .append("ns", ns)
-                .append("brokerRepositoryProperty", accessToken)
+                .append("propertyDispatcherNs", propertyDispatcher.getNs())
                 ;
     }
 

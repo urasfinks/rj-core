@@ -49,6 +49,8 @@ public class PoolResourceForPromiseTaskWaitResource<T extends AbstractExpiration
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
+                .append("ns", getNs())
+                .append("propertyDispatcherNs", getPropertyDispatcher().getNs())
                 ;
     }
 

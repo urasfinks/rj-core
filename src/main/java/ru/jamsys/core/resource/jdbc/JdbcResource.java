@@ -148,6 +148,7 @@ public class JdbcResource
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
                 .append("ns", ns)
+                .append("propertyDispatcherNs", propertyDispatcher.getNs())
                 ;
     }
 
