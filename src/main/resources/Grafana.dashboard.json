@@ -18,14 +18,26 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 3,
+  "id": 1,
   "links": [],
-  "liveNow": false,
   "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 18,
+      "panels": [],
+      "title": "Row title",
+      "type": "row"
+    },
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
+        "uid": "deor32yv7hgcgb"
       },
       "fieldConfig": {
         "defaults": {
@@ -36,11 +48,13 @@
             "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
+            "axisGridShow": true,
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 50,
+            "fillOpacity": 15,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -53,13 +67,11 @@
               "fill": "solid"
             },
             "lineWidth": 1,
-            "pointSize": 1,
+            "pointSize": 5,
             "scaleDistribution": {
-              "linearThreshold": 1,
-              "log": 2,
-              "type": "log"
+              "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -74,8 +86,105 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"SystemStatistic\" and r._field == \"cpu\" and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "Cpu",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "log": 2,
+              "type": "log"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
               },
               {
                 "color": "red",
@@ -83,7 +192,1308 @@
               }
             ]
           },
-          "unitScale": true
+          "unit": "ns"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 3,
+        "y": 1
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ServiceTimer\" and (r._field == \"sum\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "sum::ServiceTimer",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 70,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 9,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"BrokerMemory\" and (r._field == \"size\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "size::BrokerMemory",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 12,
+        "y": 1
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"PoolThreadExecutePromiseTask\" and (r._field == \"item\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "size::PoolThreadExecutePromiseTask",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 15,
+        "y": 1
+      },
+      "id": 19,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"PoolResourceForPromiseTaskWaitResource\" and (r._field == \"item\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "size::PoolResourceForPromiseTaskWaitResource",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "log": 2,
+              "type": "log"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 18,
+        "y": 1
+      },
+      "id": 23,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ExpirationList\" and (r._field == \"bucket\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "bucket::ExpirationList",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "log": 2,
+              "type": "log"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 21,
+        "y": 1
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"AsyncFileWriterRolling\" and (r._field == \"writeTime\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "writeTime::AsyncFileWriterRolling",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "log": 2,
+              "type": "log"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"SystemStatistic\" and (r._field == \"heapSizeMax\" or r._field == \"heapSize\" or r._field == \"heapSizeUse\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "Heap",
+      "transformations": [
+        {
+          "id": "prepareTimeSeries",
+          "options": {
+            "format": "wide"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {
+              "Time": 0,
+              "heapSize SystemStatistic": 3,
+              "heapSizeMax SystemStatistic": 1,
+              "heapSizeUse SystemStatistic": 2
+            },
+            "renameByName": {
+              "heapSize SystemStatistic": "cur",
+              "heapSizeFree SystemStatistic": "free",
+              "heapSizeMax SystemStatistic": "max",
+              "heapSizeUse SystemStatistic": "use"
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 70,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 3,
+        "y": 8
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"BrokerMemory\" and (r._field == \"timeInQueue\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "timeInQueue::BrokerMemory",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 9,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket: \"statistic\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"BrokerMemory\" and r._field == \"tpsEnq\" and r.host =~ /${host:regex}/)\n  |> drop(columns: [\"host\", \"_field\"])\n  |> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)\n",
+          "refId": "A"
+        }
+      ],
+      "title": "tpsEnq::BrokerMemory",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 12,
+        "y": 8
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"PoolThreadExecutePromiseTask\" and (r._field == \"park\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "park::PoolThreadExecutePromiseTask",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 15,
+        "y": 8
+      },
+      "id": 20,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"PoolResourceForPromiseTaskWaitResource\" and (r._field == \"park\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "park::PoolResourceForPromiseTaskWaitResource",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "log": 2,
+              "type": "log"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 18,
+        "y": 8
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ExpirationList\" and (r._field == \"item\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "item::ExpirationList",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "log": 2,
+              "type": "log"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 21,
+        "y": 8
+      },
+      "id": 25,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"AsyncFileWriterRolling\" and (r._field == \"position\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "position::AsyncFileWriterRolling",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 70,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
         },
         "overrides": [
           {
@@ -93,7 +1503,7 @@
               "options": {
                 "mode": "exclude",
                 "names": [
-                  "cpu"
+                  "$.ThreadPoolExecutePromiseTask[Helper1s.ExpirationList]"
                 ],
                 "prefix": "All except:",
                 "readOnly": true
@@ -114,42 +1524,42 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 4,
+        "w": 3,
         "x": 0,
-        "y": 0
+        "y": 15
       },
-      "id": 1,
-      "maxDataPoints": 60,
+      "id": 27,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "table",
           "placement": "bottom",
-          "showLegend": false
+          "showLegend": true
         },
         "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
+          "hideZeros": false,
+          "mode": "multi",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
+            "uid": "deor32yv7hgcgb"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ServiceSystemStatistic\" and r._field == \"cpu\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\"])\n",
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"QueueRetry\" and (r._field == \"park\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
-      "title": "StatisticSystem Cpu",
+      "title": "parkSize::QueueRetry",
       "type": "timeseries"
     },
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
+        "uid": "deor32yv7hgcgb"
       },
       "fieldConfig": {
         "defaults": {
@@ -160,11 +1570,13 @@
             "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
+            "axisGridShow": true,
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 70,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -176,30 +1588,28 @@
             "lineStyle": {
               "fill": "solid"
             },
-            "lineWidth": 1,
-            "pointSize": 1,
+            "lineWidth": 0,
+            "pointSize": 5,
             "scaleDistribution": {
-              "linearThreshold": 1,
-              "log": 2,
-              "type": "log"
+              "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
-              "mode": "none"
+              "mode": "normal"
             },
             "thresholdsStyle": {
               "mode": "off"
             }
           },
+          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -207,31 +1617,30 @@
               }
             ]
           },
-          "unit": "bytes",
-          "unitScale": true
+          "unit": "none"
         },
         "overrides": [
           {
+            "__systemRef": "hideSeriesFrom",
             "matcher": {
-              "id": "byName",
-              "options": "heapSizeFree"
-            },
-            "properties": [
-              {
-                "id": "custom.fillOpacity",
-                "value": 50
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "$.ThreadPoolExecutePromiseTask[Helper1s.ExpirationList]"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
               }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "heapSize"
             },
             "properties": [
               {
-                "id": "custom.fillOpacity",
-                "value": 5
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
               }
             ]
           }
@@ -239,49 +1648,47 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 4,
-        "x": 4,
-        "y": 0
+        "w": 3,
+        "x": 3,
+        "y": 15
       },
-      "id": 29,
-      "maxDataPoints": 60,
+      "id": 8,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "table",
           "placement": "bottom",
-          "showLegend": false
+          "showLegend": true
         },
         "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
+          "hideZeros": false,
+          "mode": "multi",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
+            "uid": "deor32yv7hgcgb"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ServiceSystemStatistic\" and (r._field == \"heapSize\" or r._field == \"heapSizeMax\" or r._field == \"heapSizeFree\") and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\"])\n",
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"RateLimitTps\" and (r._field == \"value\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
-      "title": "StatisticSystem Heap",
+      "title": "value::RateLimitTps",
       "type": "timeseries"
     },
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
+        "uid": "deor32yv7hgcgb"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "#c92020",
-            "mode": "palette-classic",
-            "seriesBy": "max"
+            "mode": "palette-classic"
           },
           "custom": {
             "axisBorderShow": false,
@@ -290,9 +1697,10 @@
             "axisGridShow": true,
             "axisLabel": "",
             "axisPlacement": "auto",
-            "barAlignment": 0,
+            "barAlignment": 1,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 50,
+            "fillOpacity": 70,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -300,18 +1708,16 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "stepBefore",
+            "lineInterpolation": "smooth",
             "lineStyle": {
               "fill": "solid"
             },
-            "lineWidth": 1,
-            "pointSize": 2,
+            "lineWidth": 0,
+            "pointSize": 5,
             "scaleDistribution": {
-              "linearThreshold": 2,
-              "log": 2,
-              "type": "symlog"
+              "type": "linear"
             },
-            "showPoints": "always",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -321,181 +1727,65 @@
               "mode": "off"
             }
           },
-          "decimals": 0,
-          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
                 "value": 80
               }
             ]
-          },
-          "unit": "short",
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 28,
-        "w": 10,
-        "x": 8,
-        "y": 0
-      },
-      "id": 18,
-      "maxDataPoints": 60,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": false
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ServicePromise\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_field\"])\n\n\n\n",
-          "refId": "A"
-        }
-      ],
-      "title": "ServicePromise Task Execute Nano",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "#c92020",
-            "mode": "palette-classic",
-            "seriesBy": "max"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "stepBefore",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 1,
-            "scaleDistribution": {
-              "linearThreshold": 2,
-              "log": 2,
-              "type": "symlog"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 0,
-          "fieldMinMax": false,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none",
-          "unitScale": true
+          }
         },
         "overrides": []
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
-        "x": 18,
-        "y": 0
+        "w": 3,
+        "x": 9,
+        "y": 15
       },
-      "id": 20,
-      "maxDataPoints": 60,
+      "id": 6,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": false
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
+          "hideZeros": false,
+          "mode": "multi",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
+            "uid": "deor32yv7hgcgb"
           },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerExpiration\" and r._field == \"ItemSize\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_field\"])\n\n\n\n",
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"BrokerMemory\" and (r._field == \"tpsDeq\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
-      "title": "ManagerExpiration ItemSize",
+      "title": "tpsDeq::BrokerMemory",
       "type": "timeseries"
     },
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
+        "uid": "deor32yv7hgcgb"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "#c92020",
-            "mode": "palette-classic",
-            "seriesBy": "max"
+            "mode": "palette-classic"
           },
           "custom": {
             "axisBorderShow": false,
@@ -505,8 +1795,9 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 50,
+            "fillOpacity": 60,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -514,18 +1805,16 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "stepBefore",
+            "lineInterpolation": "smooth",
             "lineStyle": {
               "fill": "solid"
             },
-            "lineWidth": 1,
-            "pointSize": 1,
+            "lineWidth": 0,
+            "pointSize": 5,
             "scaleDistribution": {
-              "linearThreshold": 2,
-              "log": 2,
-              "type": "symlog"
+              "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -535,75 +1824,162 @@
               "mode": "off"
             }
           },
-          "decimals": 0,
-          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
                 "value": 80
               }
             ]
-          },
-          "unit": "none",
-          "unitScale": true
+          }
         },
         "overrides": []
       },
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 0,
-        "y": 7
+        "w": 3,
+        "x": 12,
+        "y": 15
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"PoolThreadExecutePromiseTask\" and (r._field == \"acquire\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "acquire::PoolThreadExecutePromiseTask",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 15,
+        "y": 15
       },
       "id": 21,
-      "maxDataPoints": 60,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": false
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
+          "hideZeros": false,
+          "mode": "multi",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
+            "uid": "deor32yv7hgcgb"
           },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"size\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_field\"])\n\n\n\n",
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"PoolResourceForPromiseTaskWaitResource\" and (r._field == \"acquire\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
-      "title": "ManagerBroker Size",
-      "transformations": [],
+      "title": "acquire::PoolResourceForPromiseTaskWaitResource",
       "type": "timeseries"
     },
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
+        "uid": "deor32yv7hgcgb"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "#c92020",
-            "mode": "palette-classic",
-            "seriesBy": "max"
+            "mode": "palette-classic"
           },
           "custom": {
             "axisBorderShow": false,
@@ -613,8 +1989,9 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 50,
+            "fillOpacity": 60,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -622,18 +1999,17 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "stepBefore",
+            "lineInterpolation": "smooth",
             "lineStyle": {
               "fill": "solid"
             },
-            "lineWidth": 1,
-            "pointSize": 1,
+            "lineWidth": 0,
+            "pointSize": 5,
             "scaleDistribution": {
-              "linearThreshold": 2,
               "log": 2,
-              "type": "symlog"
+              "type": "log"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -643,15 +2019,12 @@
               "mode": "off"
             }
           },
-          "decimals": 0,
-          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -659,66 +2032,227 @@
               }
             ]
           },
-          "unit": "none",
-          "unitScale": true
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 18,
+        "y": 15
+      },
+      "id": 17,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ExpirationList\" and (r._field == \"remove\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "remove::ExpirationList",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "log": 2,
+              "type": "log"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 21,
+        "y": 15
+      },
+      "id": 24,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"AsyncFileWriterWal\" and (r._field == \"writeTime\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "writeTime::AsyncFileWriterWal",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 70,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
         },
         "overrides": [
           {
+            "__systemRef": "hideSeriesFrom",
             "matcher": {
-              "id": "byName",
-              "options": "SystemException"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-red",
-                  "mode": "fixed"
-                }
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "$.ThreadPoolExecutePromiseTask[Helper1s.ExpirationList]"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
               }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Error"
             },
             "properties": [
               {
-                "id": "color",
+                "id": "custom.hideFrom",
                 "value": {
-                  "fixedColor": "dark-orange",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Debug"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Info"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "semi-dark-green",
-                  "mode": "fixed"
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
                 }
               }
             ]
@@ -727,407 +2261,383 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
-        "x": 18,
-        "y": 7
+        "w": 3,
+        "x": 0,
+        "y": 22
       },
-      "id": 30,
-      "maxDataPoints": 60,
+      "id": 28,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": false
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
+          "hideZeros": false,
+          "mode": "multi",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
+            "uid": "deor32yv7hgcgb"
           },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ServiceLogger\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_measurement\"])\n\n\n\n",
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"QueueRetry\" and (r._field == \"position\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
-      "title": "ServiceLogger Tps",
-      "transformations": [
-        {
-          "id": "joinByField",
-          "options": {}
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {},
-            "includeByName": {},
-            "indexByName": {
-              "Debug": 2,
-              "Error": 1,
-              "Info": 3,
-              "SystemException": 0,
-              "Time": 4
+      "title": "positionSize::QueueRetry",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 1,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 70,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
-            "renameByName": {}
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
           }
-        }
-      ],
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "#c92020",
-            "mode": "palette-classic",
-            "seriesBy": "max"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "stepBefore",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 1,
-            "scaleDistribution": {
-              "linearThreshold": 2,
-              "log": 2,
-              "type": "symlog"
-            },
-            "showPoints": "always",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 0,
-          "fieldMinMax": false,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none",
-          "unitScale": true
         },
         "overrides": []
       },
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 0,
-        "y": 14
-      },
-      "id": 22,
-      "maxDataPoints": 60,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": false
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"tpsDeq\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_field\"])\n\n\n\n",
-          "refId": "A"
-        }
-      ],
-      "title": "ManagerBroker Dequeue",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "#c92020",
-            "mode": "palette-classic",
-            "seriesBy": "max"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "stepBefore",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 1,
-            "scaleDistribution": {
-              "linearThreshold": 2,
-              "log": 2,
-              "type": "symlog"
-            },
-            "showPoints": "always",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 0,
-          "fieldMinMax": false,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none",
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 6,
-        "x": 18,
-        "y": 14
-      },
-      "id": 23,
-      "maxDataPoints": 60,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": false
-        },
-        "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"tpsDrop\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_field\"])\n\n\n\n",
-          "refId": "A"
-        }
-      ],
-      "title": "ManagerBroker Drop",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "#c92020",
-            "mode": "palette-classic",
-            "seriesBy": "max"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "left",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "stepBefore",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 1,
-            "scaleDistribution": {
-              "linearThreshold": 2,
-              "log": 2,
-              "type": "symlog"
-            },
-            "showPoints": "always",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "normal"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 0,
-          "fieldMinMax": false,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short",
-          "unitScale": true
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 0,
-        "y": 21
+        "w": 3,
+        "x": 9,
+        "y": 22
       },
       "id": 7,
-      "maxDataPoints": 60,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Name",
-          "sortDesc": false
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "maxHeight": 600,
-          "mode": "single",
+          "hideZeros": false,
+          "mode": "multi",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
+            "uid": "deor32yv7hgcgb"
           },
-          "query": "from(bucket:v.bucket)\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ManagerBroker\" and r._field == \"timeAvg\" and r.Host =~ /${Host:regex}/)\n|> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n|> drop(columns: [\"Host\", \"_field\"])\n\n\n\n",
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"BrokerMemory\" and (r._field == \"tpsDrop\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
-      "title": "ManagerBroker TimeInQueue Avg",
+      "title": "tpsDrop::BrokerMemory",
       "type": "timeseries"
     },
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
+        "uid": "deor32yv7hgcgb"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
           },
           "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
-            "filterable": true,
-            "inspect": false
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 12,
+        "y": 22
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"PoolThreadExecutePromiseTask\" and (r._field == \"release\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "release::PoolThreadExecutePromiseTask",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 15,
+        "y": 22
+      },
+      "id": 22,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"PoolResourceForPromiseTaskWaitResource\" and (r._field == \"release\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "release::PoolResourceForPromiseTaskWaitResource",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "log": 2,
+              "type": "log"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1135,186 +2645,179 @@
               }
             ]
           },
-          "unitScale": true
+          "unit": "none"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 70
-              },
-              {
-                "id": "custom.align",
-                "value": "center"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "RateLimit"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 115
-              },
-              {
-                "id": "custom.align",
-                "value": "center"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 7,
-        "w": 6,
+        "w": 3,
         "x": 18,
-        "y": 21
+        "y": 22
       },
-      "id": 13,
+      "id": 14,
       "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showHeader": true,
-        "sortBy": []
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "10.3.3",
+      "pluginVersion": "12.0.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
+            "uid": "deor32yv7hgcgb"
           },
-          "query": "from(bucket:\"5gm\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> limit(n: 1)\n|> filter(fn: (r) => r._measurement == \"ManagerRateLimit\" and r._field == \"max\" and r.Host =~ /${Host:regex}/)\n|> drop(columns: [\"Host\", \"_start\", \"_stop\", \"_measurement\"])\n//|> group(columns: [\"_time\"])\n//|> sort(columns: [\"RateLimitKey\", \"RateLimitItem\", \"_field\", \"_value\"])",
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"ExpirationList\" and (r._field == \"expired\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
           "refId": "A"
         }
       ],
-      "title": "RateLimit",
-      "transformations": [
-        {
-          "id": "seriesToRows",
-          "options": {}
-        },
-        {
-          "id": "extractFields",
-          "options": {
-            "source": "Metric"
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Metric": true,
-              "Time": true,
-              "max": true
+      "title": "expired::ExpirationList",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "deor32yv7hgcgb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 60,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
-            "includeByName": {},
-            "indexByName": {
-              "Metric": 1,
-              "RateLimitItem": 4,
-              "RateLimitKey": 2,
-              "Time": 0,
-              "Value": 5,
-              "max": 3
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
             },
-            "renameByName": {
-              "RateLimitItem": "Item",
-              "RateLimitKey": "Key",
-              "Value": "Value"
+            "lineWidth": 0,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "log": 2,
+              "type": "log"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "fields": {},
-            "sort": [
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
               {
-                "field": "Key"
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
-          }
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 21,
+        "y": 22
+      },
+      "id": 26,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "deor32yv7hgcgb"
+          },
+          "query": "import \"math\"\n\npoints = 60\n\nrangeStart = int(v: uint(v: v.timeRangeStart))\nrangeStop = int(v: uint(v: v.timeRangeStop))\nrangeDurationNs = rangeStop - rangeStart\n\nintervalNs = rangeDurationNs / points\nintervalNsCeil = int(v: math.ceil(x: float(v: intervalNs)))\n\n// Минимум 1 секунда в наносекундах\nminIntervalNs = 1000000000\n\nfinalIntervalNs = if intervalNsCeil < minIntervalNs then minIntervalNs else intervalNsCeil\nfinalInterval = duration(v: finalIntervalNs)\n\nfrom(bucket:\"statistic\")\n|> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n|> filter(fn: (r) => r._measurement == \"AsyncFileWriterWal\" and (r._field == \"position\") and r.host =~ /${host:regex}/)\n|> drop(columns: [\"host\", \"_field\"])\n|> aggregateWindow(every: finalInterval, fn: mean, createEmpty: false)",
+          "refId": "A"
         }
       ],
-      "type": "table"
+      "title": "position::AsyncFileWriterWal",
+      "type": "timeseries"
     }
   ],
+  "preload": false,
   "refresh": "5s",
-  "schemaVersion": 39,
+  "schemaVersion": 41,
   "tags": [],
   "templating": {
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "text": "Mac-mini-Ura.local",
+          "value": "Mac-mini-Ura.local"
         },
         "datasource": {
           "type": "influxdb",
-          "uid": "P951FEA4DE68E13C5"
+          "uid": "deor32yv7hgcgb"
         },
-        "definition": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(\n    bucket: \"5gm\",\n    tag: \"Host\",\n    predicate: (r) => true,\n    start: -3000d\n)",
-        "hide": 0,
-        "includeAll": true,
-        "multi": false,
-        "name": "Host",
+        "definition": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(\n    bucket: \"statistic\",\n    tag: \"host\",\n    predicate: (r) => true,\n    start: -3000d\n)",
+        "label": "Выберете хост",
+        "name": "host",
         "options": [],
-        "query": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(\n    bucket: \"5gm\",\n    tag: \"Host\",\n    predicate: (r) => true,\n    start: -3000d\n)",
+        "query": {
+          "query": "import \"influxdata/influxdb/schema\"\n\nschema.tagValues(\n    bucket: \"statistic\",\n    tag: \"host\",\n    predicate: (r) => true,\n    start: -3000d\n)"
+        },
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "all",
-          "value": "all"
-        },
-        "hide": 0,
-        "label": "correlation",
-        "name": "correlation",
-        "options": [
-          {
-            "selected": true,
-            "text": "all",
-            "value": "all"
-          }
-        ],
-        "query": "all",
-        "skipUrlSync": false,
-        "type": "textbox"
       }
     ]
   },
   "time": {
-    "from": "now-60s",
+    "from": "now-1m",
     "to": "now"
   },
-  "timepicker": {
-    "hidden": false,
-    "nowDelay": ""
-  },
-  "timezone": "",
-  "title": "New dashboard2",
-  "uid": "fae050af-18b5-435e-8c52-0dc7ffb2dd74",
-  "version": 24,
-  "weekStart": ""
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Main",
+  "uid": "5e93b665-bbb9-4846-b570-9cc2a2c5e5e5",
+  "version": 52
 }
