@@ -98,6 +98,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
                 ;
     }
 
+    @SuppressWarnings("all")
     public boolean isParkQueueEmpty() {
         return parkQueue.isEmpty();
     }
@@ -174,6 +175,8 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         }
         // Если есть потребители, которые ждут ресурс - отдаём ресурс без перевставок в park
         if (forwardResourceWithoutParking(poolItem)) {
+            // Так как мы пробрасываем элемент без перевставки, надо ему чекнуть активацию
+            poolItem.markActive();
             // Для быстродействия вычисления нехватки ресурсов в пуле дополнительно вызовем тут
             updateStatistic();
             return;

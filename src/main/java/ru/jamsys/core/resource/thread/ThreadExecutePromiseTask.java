@@ -66,6 +66,11 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
         if (indexThread == null) {
             throw new RuntimeException("indexThread is null");
         }
+        // Жизненный цикла while может прокручиваться до 3-х раз в 1 секунду при наличии 1 задачи
+        // 1 оборот: Пришла таска, мы её обрабатываем и continue
+        // 2 оборот: pool.getPromiseTask() получаем null и уходим на парковку
+        // 3 приходит Helper3s->manager.helper()->serviceBell()
+        // Поэтому видно как поток по обслуживанию Helper1s.ExpirationList на TPS показывает 2-3
         thread = new Thread(() -> {
             threadWork.set(true);
             // При создании экземпляра в ThreadPoolPromiseTask.createPoolItem() происходит автоматически run()

@@ -67,8 +67,11 @@ public class ThreadPoolExecutePromiseTask extends AbstractPoolPrivate {
 
     @Override
     public void helper() {
-        // Если потоки остановились из-за RateLimit или задачи закончились, их надо пошевелить немного
-        serviceBell();
+        // Если потоки остановились из-за RateLimit или задачи закончились, их надо пошевелить немного, но только в том
+        // случае, если парк не пустой
+        if (!isParkQueueEmpty()) {
+            serviceBell();
+        }
     }
 
 }

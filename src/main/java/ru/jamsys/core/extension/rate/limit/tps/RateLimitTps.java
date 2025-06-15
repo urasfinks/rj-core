@@ -65,7 +65,7 @@ public class RateLimitTps extends AbstractManagerElement {
         List<StatisticDataHeader> result = new ArrayList<>();
         result.add(new StatisticDataHeader(getClass(), ns)
                 .addHeader("value", tps.getAndSet(0))
-                .addHeader("max", property.getMax())
+                //.addHeader("max", property.getMax())
         );
         return result;
     }

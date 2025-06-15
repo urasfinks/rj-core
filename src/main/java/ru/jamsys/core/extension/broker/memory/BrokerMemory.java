@@ -42,6 +42,8 @@ public class BrokerMemory<T>
 
     private final AtomicInteger tailQueueSize = new AtomicInteger(0);
 
+    private final AtomicInteger tpsEnqueue = new AtomicInteger(0);
+
     // Я подумал, при деградации хорошо увидеть, что очередь вообще читается
     private final AtomicInteger tpsDequeue = new AtomicInteger(0);
 
@@ -119,6 +121,7 @@ public class BrokerMemory<T>
 
         mainQueue.add(convert);
         mainQueueSize.incrementAndGet();
+        tpsEnqueue.incrementAndGet();
 
         if (tailQueueSize.get() >= getProperty().getTailSize()) {
             tailQueue.removeFirst();
@@ -267,12 +270,11 @@ public class BrokerMemory<T>
 
     public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         List<StatisticDataHeader> result = new ArrayList<>();
-        int tpsDequeueFlush = tpsDequeue.getAndSet(0);
-        int tpsDropFlush = tpsDrop.getAndSet(0);
         AvgMetric.Statistic statistic = timeInQueue.flushStatistic();
         result.add(new StatisticDataHeader(getClass(), ns)
-                .addHeader("tpsDeq", tpsDequeueFlush)
-                .addHeader("tpsDrop", tpsDropFlush)
+                .addHeader("tpsEnq", tpsEnqueue.getAndSet(0))
+                .addHeader("tpsDeq", tpsDequeue.getAndSet(0))
+                .addHeader("tpsDrop", tpsDrop.getAndSet(0))
                 .addHeader("size", mainQueueSize.get())
                 .addHeader("timeInQueue", statistic.getAvg())
                 .addHeader("timeInQueue.min", statistic.getMin())
