@@ -13,7 +13,7 @@ class PropertyTest {
 
     @Test
     void getKeyStructure2() {
-        KeyStructure keyStructure = PropertyUtil.getKeyStructure("$.BrokerMemory[$.ThreadPoolExecutePromiseTask[PropertyWeb.input]].size");
+        KeyStructure keyStructure = PropertyUtil.getKeyStructure("$.BrokerMemory[$.PoolThreadExecutePromiseTask[PropertyWeb.input]].size");
         UtilLog.printInfo(keyStructure);
     }
 

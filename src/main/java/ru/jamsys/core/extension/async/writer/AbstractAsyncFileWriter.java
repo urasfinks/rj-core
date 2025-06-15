@@ -273,12 +273,12 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
         AvgMetric.Statistic statistic = writeTime.flushStatistic();
         return List.of(new StatisticDataHeader(getClass(), filePath)
                 .addHeader("position", position.get())
-                .addHeader("positionMax", repositoryProperty.getMaxSizeByte())
+                //.addHeader("positionMax", repositoryProperty.getMaxSizeByte())
                 .addHeader("writeTime", statistic.getAvg())
-                .addHeader("writeTime.min", statistic.getMin())
-                .addHeader("writeTime.max", statistic.getMax())
-                .addHeader("writeTime.count", statistic.getCount())
-                .addHeader("writeTime.sum", statistic.getSum())
+                //.addHeader("writeTime.min", statistic.getMin())
+                //.addHeader("writeTime.max", statistic.getMax())
+                //.addHeader("writeTime.count", statistic.getCount())
+                //.addHeader("writeTime.sum", statistic.getSum())
         );
     }
 

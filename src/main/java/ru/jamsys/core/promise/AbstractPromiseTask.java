@@ -17,7 +17,7 @@ import ru.jamsys.core.extension.functional.PromiseTaskConsumerThrowing;
 import ru.jamsys.core.extension.log.LogType;
 import ru.jamsys.core.extension.statistic.timer.nano.TimerNanoEnvelope;
 import ru.jamsys.core.extension.trace.Trace;
-import ru.jamsys.core.resource.thread.ThreadPoolExecutePromiseTask;
+import ru.jamsys.core.resource.thread.PoolThreadExecutePromiseTask;
 
 import java.util.Collection;
 import java.util.Map;
@@ -50,7 +50,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
     protected AtomicBoolean threadRun;
 
     @JsonIgnore
-    private final ManagerConfiguration<ThreadPoolExecutePromiseTask> computeThreadConfiguration;
+    private final ManagerConfiguration<PoolThreadExecutePromiseTask> computeThreadConfiguration;
 
     public AbstractPromiseTask(
             String ns,
@@ -65,7 +65,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
         // Тут ns это promise.key+task.index
         // В разрезе одинаковых ключей у всех будет общий ThreadPoolExecutePromiseTask
         computeThreadConfiguration = ManagerConfiguration.getInstance(
-                ThreadPoolExecutePromiseTask.class,
+                PoolThreadExecutePromiseTask.class,
                 AbstractPromiseTask.class.getName(),
                 ns,
                 LifeCycleInterface::run

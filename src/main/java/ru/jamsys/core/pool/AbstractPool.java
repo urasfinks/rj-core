@@ -314,7 +314,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         result.add(new StatisticDataHeader(getClass(), ns)
                 .addHeader("acquire", tpsAcquire.getAndSet(0))
                 .addHeader("release", tpsRelease.getAndSet(0))
-                .addHeader("size", items.size())
+                .addHeader("item", items.size())
                 .addHeader("park", parkQueue.size())
         );
         if (!items.isEmpty()) {

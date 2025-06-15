@@ -11,7 +11,7 @@ import ru.jamsys.core.promise.AbstractPromiseTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
-public class ThreadPoolExecutePromiseTask extends AbstractPoolPrivate {
+public class PoolThreadExecutePromiseTask extends AbstractPoolPrivate {
 
     AtomicInteger counter = new AtomicInteger(1);
 
@@ -20,7 +20,7 @@ public class ThreadPoolExecutePromiseTask extends AbstractPoolPrivate {
     @SuppressWarnings("all")
     private final ManagerConfiguration<BrokerMemory<AbstractPromiseTask>> brokerMemoryConfiguration;
 
-    public ThreadPoolExecutePromiseTask(String ns) {
+    public PoolThreadExecutePromiseTask(String ns) {
         super(ns);
         // Для каждого ThreadPoolExecutePromiseTask должен быть свой RateLimitTps, поэтому uuid
         rateLimitConfiguration = ManagerConfiguration.getInstance(

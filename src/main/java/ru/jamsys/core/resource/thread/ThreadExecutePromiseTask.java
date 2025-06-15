@@ -23,7 +23,7 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
 
     private final AtomicBoolean threadWork = new AtomicBoolean(true);
 
-    private ThreadPoolExecutePromiseTask pool;
+    private PoolThreadExecutePromiseTask pool;
 
     private ManagerConfiguration<RateLimitTps> rateLimitConfiguration;
 
@@ -37,7 +37,7 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
     }
 
     public void setup(
-            ThreadPoolExecutePromiseTask pool,
+            PoolThreadExecutePromiseTask pool,
             ManagerConfiguration<RateLimitTps> rateLimitConfiguration,
             Integer indexThread
     ) {

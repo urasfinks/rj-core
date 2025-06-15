@@ -60,8 +60,8 @@ public class QueueRetry implements DataReader, StatisticsFlush, CascadeKey {
                 .append("cls", getClass())
                 .append("ns", ns)
                 .append("finishState", finishState)
-                .append("parkSize", park.size())
-                .append("positionSize", position.size())
+                .append("park", park.size())
+                .append("position", position.size())
                 ;
     }
 
@@ -136,8 +136,8 @@ public class QueueRetry implements DataReader, StatisticsFlush, CascadeKey {
     @Override
     public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         return List.of(new StatisticDataHeader(getClass(), ns)
-                .addHeader("parkSize", park.size())
-                .addHeader("positionSize", position.size())
+                .addHeader("park", park.size())
+                .addHeader("position", position.size())
         );
     }
 

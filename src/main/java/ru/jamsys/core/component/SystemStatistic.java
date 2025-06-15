@@ -51,11 +51,12 @@ public class SystemStatistic implements StatisticsFlushComponent {
             runSecond();
         }
         first = !first;
+        long cur = Runtime.getRuntime().totalMemory();
         result.add(new StatisticDataHeader(getClass(), null)
                 .addHeader("cpu", cpuUsage)
                 .addHeader("heapSize", Runtime.getRuntime().totalMemory())
                 .addHeader("heapSizeMax", Runtime.getRuntime().maxMemory())
-                .addHeader("heapSizeFree", Runtime.getRuntime().freeMemory()));
+                .addHeader("heapSizeUse", cur - Runtime.getRuntime().freeMemory()));
         return result;
     }
 
