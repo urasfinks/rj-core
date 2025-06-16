@@ -89,14 +89,14 @@ class LogBrokerPersistTest {
                 () -> {
                     for (Iterator<ManagerConfiguration<Rider>> it = test.getQueueRiderConfiguration().descendingIterator(); it.hasNext(); ) {
                         ManagerConfiguration<Rider> config = it.next();
-                        if (config.get().getQueueRetry().size() > 0) {
+                        if (config.get().getQueueRetry().sizeWait() > 0) {
                             return false;
                         }
                     }
                     return true;
                 },
                 (timing) -> UtilLog.printInfo("Success: " + timing),
-                () -> Assertions.fail("Error: " + test.getLastRiderConfiguration().get().getQueueRetry().size())
+                () -> Assertions.fail("Error: " + test.getLastRiderConfiguration().get().getQueueRetry().sizeWait())
         );
         Assertions.assertEquals(1, test.getMapRiderConfiguration().size());
     }
