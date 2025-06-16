@@ -57,7 +57,7 @@ public class PropertyDispatcher<T> extends AbstractLifeCycle implements LifeCycl
                 new PropertySubscription<>(this)
                         .setRegexp(regexp));
         UtilRisc.forEach(null, serviceProperty.getByRegexp(regexp), property -> {
-            repositoryProperty.append(getRepositoryPropertyKey(property.getKey()), this.getNs());
+            repositoryProperty.append(this.getNs(), getRepositoryPropertyKey(property.getKey()));
         });
         if (isRun()) {
             reload();

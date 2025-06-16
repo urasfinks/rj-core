@@ -86,15 +86,15 @@ class RepositoryMapTest {
         );
         propertyDispatcher.run();
 
-        xx.append("run.args.security.path.storage", propertyDispatcher.getNs());
-        xx.append("run.args.security.path.storage", propertyDispatcher.getNs());
+        xx.append(propertyDispatcher.getNs(), "run.args.security.path.storage");
+        xx.append(propertyDispatcher.getNs(), "run.args.security.path.storage");
         propertyDispatcher.reload();
 
         Assertions.assertEquals(0, xx.c);
 
         Assertions.assertEquals(1, propertyDispatcher.getSubscriptions().size());
 
-        xx.append("run.args.security.path.public.key", propertyDispatcher.getNs());
+        xx.append(propertyDispatcher.getNs(), "run.args.security.path.public.key");
         propertyDispatcher.reload();
 
         Assertions.assertEquals(2, propertyDispatcher.getSubscriptions().size());
@@ -108,8 +108,6 @@ class RepositoryMapTest {
         // Дубликат значения не должен вызывать onPropUpdate
         serviceProperty.set("run.args.security.path.storage", "xx");
         Assertions.assertEquals(1, xx.c);
-
-
 
         propertyDispatcher.shutdown();
         //Assertions.assertEquals(0, propertySubscriber.getListSubscriber().size());
@@ -125,7 +123,7 @@ class RepositoryMapTest {
         // В репе лежит xx, а в момент простоя значение поменялось на x2
         Assertions.assertEquals(2, xx.c);
 
-        xx.append("run.args.security.path.public.key", propertyDispatcher.getNs());
+        xx.append(propertyDispatcher.getNs(), "run.args.security.path.public.key");
         Assertions.assertEquals(2, xx.c);
 
         serviceProperty.set("run.args.security.path.public.key", "x3");

@@ -30,9 +30,8 @@ public class RepositoryProperty<T> extends AbstractRepositoryProperty<T> {
         }
     }
 
-    //TODO: поменять местами аргументы
     @Override
-    public void append(String repositoryPropertyKey, String ns) {
+    public void append(String ns, String repositoryPropertyKey) {
         PropertyEnvelope<T> tPropertyEnvelope = new PropertyEnvelope<>(
                 this,
                 null,
@@ -56,7 +55,7 @@ public class RepositoryProperty<T> extends AbstractRepositoryProperty<T> {
     public void updateRepository(String repositoryPropertyKey, PropertyDispatcher<T> propertyDispatcher) {
         PropertyEnvelope<T> propertyEnvelope = getByRepositoryPropertyKey(repositoryPropertyKey);
         if (propertyEnvelope == null) {
-            append(repositoryPropertyKey, propertyDispatcher.getNs());
+            append(propertyDispatcher.getNs(), repositoryPropertyKey);
         } else {
             propertyEnvelope.syncPropertyValue();
         }
