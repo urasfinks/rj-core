@@ -82,7 +82,7 @@ class RiderTest {
         );
 
         Rider rider = riderManagerConfiguration.get();
-        Assertions.assertEquals(1, rider.getQueueRetry().size());
+        Assertions.assertEquals(1, rider.getQueueRetry().sizeWait());
         Assertions.assertEquals("world", new String(rider.getQueueRetry().getForUnitTest(9L).getBytes()));
     }
 }

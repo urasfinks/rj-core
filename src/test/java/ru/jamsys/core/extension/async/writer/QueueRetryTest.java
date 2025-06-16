@@ -35,23 +35,23 @@ class QueueRetryTest {
         QueueRetry test = new QueueRetry("test", true);
 
         test.add(0, null, "Hello");
-        Assertions.assertEquals(1, test.size());
+        Assertions.assertEquals(1, test.sizeWait());
         Assertions.assertTrue(test.getExpirationListConfiguration().get().isEmpty());
 
         DataReadWrite dataReadWrite = test.pollLast(1_000, curTimeMs);
-        Assertions.assertEquals(1, test.size());
+        Assertions.assertEquals(1, test.sizeWait());
         Assertions.assertFalse(test.getExpirationListConfiguration().get().isEmpty());
 
         test.getExpirationListConfiguration().get().helper(threadRun, curTimeMs + 2000);
 
         // Должно произойти протухание и обратно в queue вставиться
-        Assertions.assertEquals(1, test.size());
+        Assertions.assertEquals(1, test.sizeWait());
         Assertions.assertTrue(test.getExpirationListConfiguration().get().isEmpty());
 
         DataReadWrite dataReadWrite2 = test.pollLast(1_500, curTimeMs);
         // Это 2 одинаковых объекта
         Assertions.assertEquals(dataReadWrite, dataReadWrite2);
-        Assertions.assertEquals(1, test.size());
+        Assertions.assertEquals(1, test.sizeWait());
         Assertions.assertFalse(test.getExpirationListConfiguration().get().isEmpty());
         Assertions.assertFalse(test.isProcessed());
 
@@ -60,7 +60,7 @@ class QueueRetryTest {
         test.getExpirationListConfiguration().get().helper(threadRun, curTimeMs + 2000);
 
         // Теперь ничего не должно нигде остаться
-        Assertions.assertEquals(0, test.size());
+        Assertions.assertEquals(0, test.sizeWait());
         Assertions.assertTrue(test.getExpirationListConfiguration().get().isEmpty());
         Assertions.assertTrue(test.isProcessed());
 
@@ -81,7 +81,7 @@ class QueueRetryTest {
         DataReadWrite dataReadWrite = new DataReadWrite(2L, new byte[]{9, 8}, null);
         queueRetry.add(dataReadWrite);
         queueRetry.add(dataReadWrite); // should log error, not throw
-        Assertions.assertEquals(1, queueRetry.size());
+        Assertions.assertEquals(1, queueRetry.sizeWait());
     }
 
     @Test

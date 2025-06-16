@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 // Очередь данных, которые можно взять на обработку на какое-то время. Если за это время не выполнить remove, данные
 // снова вернуться в очередь и будут повторно выданы
@@ -32,22 +33,28 @@ public class QueueRetry implements DataReader, StatisticsFlush, CascadeKey {
     @Setter
     private volatile boolean finishState; // Встретили -1 длину данных. -1 это EOF
 
-    private final ConcurrentLinkedDeque<DataReadWrite> park = new ConcurrentLinkedDeque<>();
+    // Очередь в которую добавляют данные на обработку
+    private final ConcurrentLinkedDeque<DataReadWrite> queue = new ConcurrentLinkedDeque<>();
 
-    private final ConcurrentHashMap<Long, DataReadWrite> position = new ConcurrentHashMap<>(); // key: position;
+    // Позиции
+    private final ConcurrentHashMap<Long, DataReadWrite> waitPosition = new ConcurrentHashMap<>(); // key: position;
 
     private final String ns;
 
     @Getter
     private final ManagerConfiguration<ExpirationList<QueueRetryExpirationObject>> expirationListConfiguration;
 
+    private final AtomicLong tpsEnq = new AtomicLong(0);
+
+    private final AtomicLong tpsDeq = new AtomicLong(0);
+
     public QueueRetry(String ns, boolean finishState) {
         this.ns = ns;
         this.finishState = finishState;
         expirationListConfiguration = ManagerConfiguration.getInstance(
                 ExpirationList.class,
-                QueueRetry.class.getName(), // Это общий ExpirationList для всех экземпляров QueueRetry
-                QueueRetry.class.getName(), // Это общий ExpirationList для всех экземпляров QueueRetry
+                App.getUniqueClassName(QueueRetry.class), // Это общий ExpirationList для всех экземпляров QueueRetry
+                App.getUniqueClassName(QueueRetry.class), // Это общий ExpirationList для всех экземпляров QueueRetry
                 queueRetryExpirationObjectExpirationList -> queueRetryExpirationObjectExpirationList
                         .setupOnExpired(QueueRetryExpirationObject::insert)
         );
@@ -60,29 +67,30 @@ public class QueueRetry implements DataReader, StatisticsFlush, CascadeKey {
                 .append("cls", getClass())
                 .append("ns", ns)
                 .append("finishState", finishState)
-                .append("park", park.size())
-                .append("position", position.size())
+                .append("queue", queue.size())
+                .append("waitPosition", waitPosition.size())
                 ;
     }
 
     // Размер не обработанных элементов
-    public int size() {
-        return position.size();
+    public int sizeWait() {
+        return waitPosition.size();
     }
 
     @Override
     public void add(@NonNull DataReadWrite dataReadWrite) {
         // Хотел через computeIfAbsent, основа которого не вызывать исполнение лямды в случае отсутствия позиции,
         // но тогда надо делать атомики для контроля добавления и это больше исключение чем постоянная история
-        if (position.putIfAbsent(dataReadWrite.getPosition(), dataReadWrite) == null) {
-            park.add(dataReadWrite);
+        if (waitPosition.putIfAbsent(dataReadWrite.getPosition(), dataReadWrite) == null) {
+            tpsEnq.incrementAndGet();
+            queue.add(dataReadWrite);
         } else {
             App.error(new RuntimeException("Duplicate DataReadWrite detected at position: " + dataReadWrite.getPosition()));
         }
     }
 
     public void remove(long position) {
-        DataReadWrite dataReadWrite = this.position.remove(position);
+        DataReadWrite dataReadWrite = this.waitPosition.remove(position);
         if (dataReadWrite != null) {
             dataReadWrite.setRemove(true);
             DisposableExpirationMsImmutableEnvelope<?> expiration = dataReadWrite.getExpiration();
@@ -104,19 +112,20 @@ public class QueueRetry implements DataReader, StatisticsFlush, CascadeKey {
     public DataReadWrite pollLast(long timeoutMs, long currentTimestamp) {
         DataReadWrite dataReadWrite;
         while (true) {
-            dataReadWrite = park.pollLast();
+            dataReadWrite = queue.pollLast();
             if (dataReadWrite == null) {
                 break;
             }
             if (!dataReadWrite.isRemove()) {
                 QueueRetryExpirationObject foreignExpirationObject = new QueueRetryExpirationObject(
-                        park,
+                        queue,
                         dataReadWrite
                 );
                 dataReadWrite.setExpiration(expirationListConfiguration
                         .get()
                         .add(new ExpirationMsImmutableEnvelope<>(foreignExpirationObject, timeoutMs, currentTimestamp))
                 );
+                tpsDeq.incrementAndGet();
                 return dataReadWrite;
             }
         }
@@ -125,19 +134,21 @@ public class QueueRetry implements DataReader, StatisticsFlush, CascadeKey {
 
     // Очередь полностью обработана
     public boolean isProcessed() {
-        return finishState && position.isEmpty();
+        return finishState && waitPosition.isEmpty();
     }
 
     // Только для unit тестов
     public DataReadWrite getForUnitTest(long position) {
-        return this.position.get(position);
+        return this.waitPosition.get(position);
     }
 
     @Override
     public List<StatisticDataHeader> flushAndGetStatistic(AtomicBoolean threadRun) {
         return List.of(new StatisticDataHeader(getClass(), ns)
-                .addHeader("park", park.size())
-                .addHeader("position", position.size())
+                .addHeader("size", queue.size())
+                .addHeader("tpsEnq", tpsEnq.getAndSet(0))
+                .addHeader("tpsDeq", tpsDeq.getAndSet(0))
+                .addHeader("waitPosition", waitPosition.size())
         );
     }
 

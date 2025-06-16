@@ -60,8 +60,9 @@ class BrokerPersistTest {
     @BeforeEach
     void beforeEach() {
         UtilFile.removeAllFilesInFolder("1LogPersist");
-        if (App.get(Manager.class).contains(ExpirationList.class, QueueRetry.class.getName(), QueueRetry.class.getName())) {
-            App.get(Manager.class).get(ExpirationList.class, QueueRetry.class.getName(), QueueRetry.class.getName(), null).unitTestReset();
+        String uniqueClassName = App.getUniqueClassName(QueueRetry.class);
+        if (App.get(Manager.class).contains(ExpirationList.class, uniqueClassName, uniqueClassName)) {
+            App.get(Manager.class).get(ExpirationList.class, uniqueClassName, uniqueClassName, null).unitTestReset();
         }
     }
 
@@ -87,7 +88,7 @@ class BrokerPersistTest {
         test.add(new TestElement("Hello"));
         // Данные добавлены в очередь на запись, но реально ещё не сохранились на файловую систему. То есть в последний
         // rider они упадут только после записи и на текущий момент размер = 0
-        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().size());
+        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
         // Записали на фс данные
         test.getXWriterConfiguration().get().flush(run);
         assertArrayEquals(
@@ -105,21 +106,21 @@ class BrokerPersistTest {
         );
 
         // Должна появится 1 не обработанная запись
-        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().size());
+        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
         // Забираем элемент на обработку
         X<TestElement> poll = test.poll();
         Assertions.assertEquals("Hello", new String(poll.toBytes()));
         // Теперь надо закоммитить
         test.commit(poll);
         // Должны получить, что элементов пока ещё 1, так как не произошла запись на диск
-        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().size());
+        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
         // Запускаем запись wal
         test
                 .getLastRiderConfiguration().get()
                 .getYWriterConfiguration().get()
                 .flush(run);
         // Теперь после записи не должно остаться не обработанных элементов
-        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().size());
+        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
 
         assertArrayEquals(
                 ((Supplier<byte[]>) () -> {
@@ -136,7 +137,7 @@ class BrokerPersistTest {
         );
         Assertions.assertFalse(test.getLastRiderConfiguration().get().getQueueRetry().isProcessed());
         // Осталось обработать позиций 0
-        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().size());
+        Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
         // Статус оригинального файла - не завершён
         Assertions.assertFalse(test.getLastRiderConfiguration().get().getQueueRetry().isFinishState());
 
@@ -226,7 +227,7 @@ class BrokerPersistTest {
         X<TestElement> poll = test.poll();
         // Очередь последнего rider полностью вычитана
         Assertions.assertEquals("1LogPersist/test2.afwr.commit", test.getLastRiderConfiguration().get().getFilePathY());
-        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().size());
+        Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
 
         // В данный момент последний райдер не завершён, так как ждёт коммита выданного элемента
         Assertions.assertEquals("cha__", poll.getElement().getValue());
@@ -288,10 +289,10 @@ class BrokerPersistTest {
         Assertions.assertEquals(1, test.getMapRiderConfiguration().size());
 
         // проверим, что rider остался ещё 1 элемент
-        Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().size());
+        Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
 
         X<TestElement> poll1 = test.poll();
-        Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().size());
+        Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
         X<TestElement> poll2 = test.poll();
 
         Assertions.assertThrows(RuntimeException.class, () -> test.commit(poll));
@@ -300,7 +301,7 @@ class BrokerPersistTest {
         test.commit(poll2);
 
         // Но при этом размер rider ещё 2, так как он ещё на файловую систему не сброшено состояние
-        Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().size());
+        Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
 
         test
                 .getLastRiderConfiguration()
