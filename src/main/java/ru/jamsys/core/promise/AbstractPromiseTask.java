@@ -9,7 +9,6 @@ import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.component.ServiceThreadVirtual;
 import ru.jamsys.core.component.ServiceTimer;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
-import ru.jamsys.core.extension.LifeCycleInterface;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.functional.ProcedureThrowing;
@@ -68,7 +67,7 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
                 PoolThreadExecutePromiseTask.class,
                 AbstractPromiseTask.class.getName(),
                 ns,
-                LifeCycleInterface::run
+                null
         );
     }
 
