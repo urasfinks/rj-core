@@ -31,7 +31,7 @@ public class PoolResourceForPromiseTaskWaitResource<T extends AbstractExpiration
         brokerMemoryConfiguration = ManagerConfiguration.getInstance(
                 BrokerMemory.class,
                 java.util.UUID.randomUUID().toString(),
-                ns,
+                getCascadeKey(ns),
                 promiseTaskWaitResourceBrokerMemory -> promiseTaskWaitResourceBrokerMemory
                         .setup(promiseTaskWaitResource -> promiseTaskWaitResource
                                 .getPromise().setError("::drop", new ForwardException(
