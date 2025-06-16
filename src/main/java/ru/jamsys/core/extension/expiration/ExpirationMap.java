@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.expiration;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -32,8 +33,8 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
         this.ns = ns;
         expirationMapConfiguration = ManagerConfiguration.getInstance(
                 ExpirationList.class,
-                ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров ExpirationMap
-                ExpirationMap.class.getName(), // Это общий ExpirationList для всех экземпляров ExpirationMap
+                App.getUniqueClassName(ExpirationMap.class), // Это общий ExpirationList для всех экземпляров ExpirationMap
+                App.getUniqueClassName(ExpirationMap.class), // Это общий ExpirationList для всех экземпляров ExpirationMap
                 expirationMapExpirationObjectExpirationList -> expirationMapExpirationObjectExpirationList
                         .setupOnExpired(ExpirationMapExpirationObject::remove)
         );
