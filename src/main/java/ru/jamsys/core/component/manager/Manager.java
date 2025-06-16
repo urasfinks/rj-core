@@ -73,10 +73,25 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
                         if (onCreate != null) {
                             onCreate.accept(newInstance);
                         }
-                        newInstance.run();
+                        ResultOperation run = newInstance.run();
+                        if (!run.isComplete()) {
+                            throw new ForwardException(new HashMapBuilder<>()
+                                    .append("cls", cls)
+                                    .append("key", key)
+                                    .append("ns", ns)
+                                    .append("LifeCycleInterface.ResultOperation", run)
+                            ).setLine(10);
+                        }
                         return newInstance;
+                    } catch (ForwardException th) {
+                        throw th;
                     } catch (Throwable th) {
-                        throw new ForwardException("Failed to instantiate " + CascadeKey.complex(key, ns) + "<" + cls + ">(String)", th);
+                        throw new ForwardException(new HashMapBuilder<>()
+                                .append("cls", cls)
+                                .append("key", key)
+                                .append("ns", ns),
+                                th
+                        ).setLine(10);
                     }
                 });
         return mapElement;
