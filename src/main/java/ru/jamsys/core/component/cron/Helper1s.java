@@ -31,7 +31,7 @@ public class Helper1s extends PromiseGenerator implements Cron1s  {
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
                 .append(
-                        ExpirationList.class.getSimpleName(),
+                        App.getUniqueClassName(ExpirationList.class),
                         (run, _, _) -> manager.groupAccept(
                                 ExpirationList.class,
                                 expirationList -> expirationList.helper(run, System.currentTimeMillis())
