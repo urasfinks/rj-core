@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.logs (
     log_id bigint NOT NULL DEFAULT nextval('logs_log_id_seq'),
     log_uuid uuid NOT NULL,
     log_timestamp timestamp WITHOUT TIME ZONE NOT NULL DEFAULT now(),
-    message text COLLATE pg_catalog."default",
+    message text NOT NULL COLLATE pg_catalog."default",
     CONSTRAINT logs_pkey PRIMARY KEY (log_id, log_timestamp)
 ) PARTITION BY RANGE (log_timestamp);
 
@@ -61,6 +61,10 @@ DECLARE
     right_bound TEXT;
     i INTEGER := 0;
 BEGIN
+    IF days <= 0 THEN
+        RETURN;
+    END IF;
+
     WHILE i < days LOOP
         prefix := table_name || '_' || to_char(from_date + i * INTERVAL '1 day', 'YYYYMMDD');
         left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
@@ -120,6 +124,10 @@ DECLARE
     right_bound TEXT;
     i INTEGER := 0;
 BEGIN
+    IF days <= 0 THEN
+        RETURN;
+    END IF;
+
     WHILE i < days LOOP
         prefix := table_name || '_' || to_char(from_date + i * INTERVAL '1 day', 'YYYYMMDD');
         left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
@@ -185,6 +193,10 @@ $$;
      right_bound TEXT;
      i INTEGER := 0;
  BEGIN
+     IF days <= 0 THEN
+         RETURN;
+     END IF;
+
      WHILE i < days LOOP
          prefix := table_name || '_' || to_char(from_date + i * INTERVAL '1 day', 'YYYYMMDD');
          left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
