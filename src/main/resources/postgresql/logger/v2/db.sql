@@ -79,10 +79,19 @@ BEGIN
             'ALTER TABLE %I ADD CONSTRAINT %I CHECK (log_timestamp >= %L::timestamp AND log_timestamp < %L::timestamp);',
             prefix, prefix || '_check_bounds', left_bound, right_bound
         );
+
+        -- Индекс по log_timestamp
         EXECUTE format(
             'CREATE INDEX IF NOT EXISTS %I ON %I (log_timestamp);',
             prefix || '_log_timestamp_idx', prefix
         );
+
+        -- Новый индекс по log_uuid
+        EXECUTE format(
+            'CREATE INDEX IF NOT EXISTS %I ON %I (log_uuid);',
+            prefix || '_log_uuid_idx', prefix
+        );
+
         EXECUTE format(
             'ALTER TABLE %I ATTACH PARTITION %I FOR VALUES FROM (%L) TO (%L);',
             table_name, prefix, left_bound, right_bound
