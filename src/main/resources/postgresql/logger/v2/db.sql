@@ -3,7 +3,7 @@ CREATE SEQUENCE IF NOT EXISTS logs_log_id_seq
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
-    CACHE 1;
+    CACHE 100;
 
 -- DROP TABLE IF EXISTS public.logs;
 
@@ -20,7 +20,7 @@ CREATE SEQUENCE IF NOT EXISTS tags_tag_id_seq
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
-    CACHE 1;
+    CACHE 100;
 
 -- DROP TABLE IF EXISTS public.tags;
 
@@ -212,12 +212,6 @@ $$;
          );
 
          -- Индекс по (log_id, log_timestamp) — ускоряет соединение с logs
-         EXECUTE format(
-             'CREATE INDEX IF NOT EXISTS %I ON %I (log_id, log_timestamp);',
-             prefix || '_log_idx', prefix
-         );
-
-         -- Дублирующие индексы (по сути, повторяют вышеуказанные) — можно удалить при необходимости
          EXECUTE format(
              'CREATE INDEX IF NOT EXISTS %I ON %I (tag_id, tag_timestamp);',
              prefix || '_idx_tag_id_timestamp', prefix
