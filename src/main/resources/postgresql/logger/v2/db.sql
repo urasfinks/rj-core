@@ -60,12 +60,11 @@ BEGIN
         left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
         right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
-        IF prefix IN (
-            SELECT child.relname
-            FROM pg_inherits
-            JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
-            JOIN pg_class child ON pg_inherits.inhrelid = child.oid
-            WHERE parent.relname = table_name
+        -- Проверка существования партиции через pg_partition_tree
+        IF EXISTS (
+            SELECT 1
+            FROM pg_partition_tree(table_name::regclass)
+            WHERE relname = prefix
         ) THEN
             i := i + 1;
             CONTINUE;
@@ -80,13 +79,13 @@ BEGIN
             prefix, prefix || '_check_bounds', left_bound, right_bound
         );
 
-        -- Индекс по log_timestamp
+        -- Индекс по log_timestamp — ускоряет фильтрацию логов по времени
         EXECUTE format(
             'CREATE INDEX IF NOT EXISTS %I ON %I (log_timestamp);',
             prefix || '_log_timestamp_idx', prefix
         );
 
-        -- Новый индекс по log_uuid
+        -- Индекс по log_uuid — ускоряет поиск логов по уникальному идентификатору события
         EXECUTE format(
             'CREATE INDEX IF NOT EXISTS %I ON %I (log_uuid);',
             prefix || '_log_uuid_idx', prefix
@@ -118,12 +117,11 @@ BEGIN
         left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
         right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
-        IF prefix IN (
-            SELECT child.relname
-            FROM pg_inherits
-            JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
-            JOIN pg_class child ON pg_inherits.inhrelid = child.oid
-            WHERE parent.relname = table_name
+        -- Проверка существования партиции через pg_partition_tree
+        IF EXISTS (
+            SELECT 1
+            FROM pg_partition_tree(table_name::regclass)
+            WHERE relname = prefix
         ) THEN
             i := i + 1;
             CONTINUE;
@@ -138,19 +136,19 @@ BEGIN
             prefix, prefix || '_check_bounds', left_bound, right_bound
         );
 
-        -- Индекс для tag_timestamp (часто для диапазонов)
+        -- Индекс по tag_timestamp — ускоряет фильтрацию тегов по времени
         EXECUTE format(
             'CREATE INDEX IF NOT EXISTS %I ON %I (tag_timestamp);',
             prefix || '_tag_timestamp_idx', prefix
         );
 
-        -- Индекс для поиска по name и value вместе с tag_timestamp (уникальный ключ)
+        -- Индекс по (name, value, tag_timestamp) — обеспечивает уникальность и ускоряет поиск
         EXECUTE format(
             'CREATE INDEX IF NOT EXISTS %I ON %I (name, value, tag_timestamp);',
             prefix || '_name_value_timestamp_idx', prefix
         );
 
-        -- Новый индекс для поиска по name и value без tag_timestamp
+        -- Доп. индекс по (name, value) — ускоряет поиск без учёта времени
         EXECUTE format(
             'CREATE INDEX IF NOT EXISTS %I ON %I (name, value);',
             prefix || '_name_value_idx', prefix
@@ -182,12 +180,11 @@ $$;
          left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
          right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
-         IF prefix IN (
-             SELECT child.relname
-             FROM pg_inherits
-             JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
-             JOIN pg_class child ON pg_inherits.inhrelid = child.oid
-             WHERE parent.relname = table_name
+         -- Проверка существования партиции через pg_partition_tree
+         IF EXISTS (
+             SELECT 1
+             FROM pg_partition_tree(table_name::regclass)
+             WHERE relname = prefix
          ) THEN
              i := i + 1;
              CONTINUE;
@@ -202,17 +199,19 @@ $$;
              prefix, prefix || '_check_bounds', left_bound, right_bound
          );
 
+         -- Индекс по (log_id, log_timestamp) — ускоряет соединение с logs
          EXECUTE format(
              'CREATE INDEX IF NOT EXISTS %I ON %I (log_id, log_timestamp);',
              prefix || '_log_idx', prefix
          );
-         -- ИНДЕКС ДЛЯ БЫСТРОГО ПОИСКА ПО ТЕГУ (tag_uuid, tag_timestamp)
+
+         -- Индекс по (tag_id, tag_timestamp) — ускоряет соединение с tags
          EXECUTE format(
              'CREATE INDEX IF NOT EXISTS %I ON %I (tag_id, tag_timestamp);',
              prefix || '_tag_idx', prefix
          );
 
-         -- ИНДЕКС ДЛЯ СОЕДИНЕНИЯ С LOGS (log_uuid, log_timestamp)
+         -- Дублирующие индексы (по сути, повторяют вышеуказанные) — можно удалить при необходимости
          EXECUTE format(
              'CREATE INDEX IF NOT EXISTS %I ON %I (tag_id, tag_timestamp);',
              prefix || '_idx_tag_id_timestamp', prefix
