@@ -15,6 +15,14 @@ CREATE TABLE IF NOT EXISTS public.logs (
     CONSTRAINT logs_pkey PRIMARY KEY (log_id, log_timestamp)
 ) PARTITION BY RANGE (log_timestamp);
 
+-- Комментарии для таблицы logs
+COMMENT ON TABLE public.logs IS 'Основная таблица логов с уникальными записями событий.';
+
+COMMENT ON COLUMN public.logs.log_id IS 'Уникальный идентификатор записи лога, генерируется последовательностью.';
+COMMENT ON COLUMN public.logs.log_uuid IS 'Уникальный UUID события для глобальной идентификации.';
+COMMENT ON COLUMN public.logs.log_timestamp IS 'Временная метка события, используется для партицирования и фильтрации.';
+COMMENT ON COLUMN public.logs.message IS 'Текстовое сообщение лога, содержащее детали события.';
+
 CREATE SEQUENCE IF NOT EXISTS tags_tag_id_seq
     START WITH 1
     INCREMENT BY 1
@@ -33,6 +41,14 @@ CREATE TABLE IF NOT EXISTS public.tags (
     CONSTRAINT tags_name_value_key UNIQUE (name, value, tag_timestamp)
 ) PARTITION BY RANGE (tag_timestamp);
 
+-- Комментарии для таблицы tags
+COMMENT ON TABLE public.tags IS 'Таблица тегов, связанных с логами, с уникальным именем и значением.';
+
+COMMENT ON COLUMN public.tags.tag_id IS 'Уникальный идентификатор тега, генерируется последовательностью.';
+COMMENT ON COLUMN public.tags.tag_timestamp IS 'Временная метка тега, используется для партицирования.';
+COMMENT ON COLUMN public.tags.name IS 'Имя тега, например, категория или тип.';
+COMMENT ON COLUMN public.tags.value IS 'Значение тега, связанное с именем.';
+
 -- DROP TABLE IF EXISTS public.log_tags;
 
 CREATE TABLE IF NOT EXISTS public.log_tags (
@@ -50,6 +66,14 @@ CREATE TABLE IF NOT EXISTS public.log_tags (
         REFERENCES public.tags (tag_id, tag_timestamp)
         ON DELETE CASCADE
 ) PARTITION BY RANGE (log_timestamp);
+
+-- Комментарии для таблицы log_tags
+COMMENT ON TABLE public.log_tags IS 'Таблица связей между логами и тегами для реализации многие-ко-многим.';
+
+COMMENT ON COLUMN public.log_tags.log_id IS 'Идентификатор лога, ссылается на logs.log_id.';
+COMMENT ON COLUMN public.log_tags.log_timestamp IS 'Временная метка лога, ссылается на logs.log_timestamp.';
+COMMENT ON COLUMN public.log_tags.tag_id IS 'Идентификатор тега, ссылается на tags.tag_id.';
+COMMENT ON COLUMN public.log_tags.tag_timestamp IS 'Временная метка тега, ссылается на tags.tag_timestamp.';
 
 CREATE OR REPLACE PROCEDURE create_partitions_logs(from_date timestamp without time zone, days integer)
 LANGUAGE plpgsql
