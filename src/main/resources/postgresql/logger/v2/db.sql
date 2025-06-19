@@ -24,7 +24,7 @@ CREATE SEQUENCE IF NOT EXISTS tags_tag_id_seq
 
 -- DROP TABLE IF EXISTS public.tags;
 
-CREATE TABLE public.tags (
+CREATE TABLE IF NOT EXISTS public.tags (
     tag_id bigint NOT NULL DEFAULT nextval('tags_tag_id_seq'),
     tag_timestamp timestamp WITHOUT TIME ZONE NOT NULL DEFAULT date_trunc('day', now()),
     name varchar(100) NOT NULL,
@@ -67,11 +67,13 @@ BEGIN
         right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
         -- Проверка существования партиции через pg_partition_tree
-        IF EXISTS (
-            SELECT 1
-            FROM pg_partition_tree(table_name::regclass)
-            WHERE relname = prefix
-        ) THEN
+        IF prefix IN (SELECT child.relname AS part
+                      FROM pg_inherits
+                               JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
+                               JOIN pg_class child ON pg_inherits.inhrelid = child.oid
+                               JOIN pg_namespace nmsp_parent ON nmsp_parent.oid = parent.relnamespace
+                               JOIN pg_namespace nmsp_child ON nmsp_child.oid = child.relnamespace
+                      WHERE parent.relname = table_name) THEN
             i := i + 1;
             CONTINUE;
         END IF;
@@ -124,11 +126,13 @@ BEGIN
         right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
         -- Проверка существования партиции через pg_partition_tree
-        IF EXISTS (
-            SELECT 1
-            FROM pg_partition_tree(table_name::regclass)
-            WHERE relname = prefix
-        ) THEN
+        IF prefix IN (SELECT child.relname AS part
+                      FROM pg_inherits
+                               JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
+                               JOIN pg_class child ON pg_inherits.inhrelid = child.oid
+                               JOIN pg_namespace nmsp_parent ON nmsp_parent.oid = parent.relnamespace
+                               JOIN pg_namespace nmsp_child ON nmsp_child.oid = child.relnamespace
+                      WHERE parent.relname = table_name) THEN
             i := i + 1;
             CONTINUE;
         END IF;
@@ -187,11 +191,13 @@ $$;
          right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
          -- Проверка существования партиции через pg_partition_tree
-         IF EXISTS (
-             SELECT 1
-             FROM pg_partition_tree(table_name::regclass)
-             WHERE relname = prefix
-         ) THEN
+         IF prefix IN (SELECT child.relname AS part
+                       FROM pg_inherits
+                                JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
+                                JOIN pg_class child ON pg_inherits.inhrelid = child.oid
+                                JOIN pg_namespace nmsp_parent ON nmsp_parent.oid = parent.relnamespace
+                                JOIN pg_namespace nmsp_child ON nmsp_child.oid = child.relnamespace
+                       WHERE parent.relname = table_name) THEN
              i := i + 1;
              CONTINUE;
          END IF;
@@ -232,15 +238,15 @@ $$;
  END;
  $$;
 
- CREATE OR REPLACE PROCEDURE create_partitions(
-     from_date timestamp without time zone,
-     days integer
- )
- LANGUAGE plpgsql
- AS $$
- BEGIN
-     PERFORM create_partitions_logs(from_date, days);
-     PERFORM create_partitions_tags(from_date, days);
-     PERFORM create_partitions_log_tags(from_date, days);
- END;
- $$;
+CREATE OR REPLACE PROCEDURE create_partitions(
+    from_date timestamp without time zone,
+    days integer
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    CALL create_partitions_logs(from_date, days);
+    CALL create_partitions_tags(from_date, days);
+    CALL create_partitions_log_tags(from_date, days);
+END;
+$$;
