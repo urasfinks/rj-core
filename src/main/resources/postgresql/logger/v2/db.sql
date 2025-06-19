@@ -5,6 +5,8 @@ CREATE SEQUENCE IF NOT EXISTS logs_log_id_seq
     NO MAXVALUE
     CACHE 1;
 
+-- DROP TABLE IF EXISTS public.logs;
+
 CREATE TABLE IF NOT EXISTS public.logs (
     log_id bigint NOT NULL DEFAULT nextval('logs_log_id_seq'),
     log_uuid uuid NOT NULL,
@@ -20,6 +22,8 @@ CREATE SEQUENCE IF NOT EXISTS tags_tag_id_seq
     NO MAXVALUE
     CACHE 1;
 
+-- DROP TABLE IF EXISTS public.tags;
+
 CREATE TABLE public.tags (
     tag_id bigint NOT NULL DEFAULT nextval('tags_tag_id_seq'),
     tag_timestamp timestamp WITHOUT TIME ZONE NOT NULL DEFAULT date_trunc('day', now()),
@@ -28,6 +32,8 @@ CREATE TABLE public.tags (
     CONSTRAINT tags_pkey PRIMARY KEY (tag_id, tag_timestamp),
     CONSTRAINT tags_name_value_key UNIQUE (name, value, tag_timestamp)
 ) PARTITION BY RANGE (tag_timestamp);
+
+-- DROP TABLE IF EXISTS public.log_tags;
 
 CREATE TABLE IF NOT EXISTS public.log_tags (
     log_id bigint NOT NULL,
