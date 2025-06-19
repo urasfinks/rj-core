@@ -91,61 +91,72 @@ CREATE OR REPLACE PROCEDURE create_partitions_logs(from_date timestamp without t
  END;
  $$;
 
- CREATE OR REPLACE PROCEDURE create_partitions_tags(from_date timestamp without time zone, days integer)
- LANGUAGE plpgsql
- AS $$
- DECLARE
-     table_name TEXT := 'tags';
-     prefix TEXT;
-     left_bound TEXT;
-     right_bound TEXT;
-     i INTEGER := 0;
- BEGIN
-     WHILE i < days LOOP
-         prefix := table_name || '_' || to_char(from_date + i * INTERVAL '1 day', 'YYYYMMDD');
-         left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
-         right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
-         IF prefix IN (
-             SELECT child.relname
-             FROM pg_inherits
-             JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
-             JOIN pg_class child ON pg_inherits.inhrelid = child.oid
-             WHERE parent.relname = table_name
-         ) THEN
-             i := i + 1;
-             CONTINUE;
-         END IF;
+sql
+Копировать
+Редактировать
+CREATE OR REPLACE PROCEDURE create_partitions_tags(from_date timestamp without time zone, days integer)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    table_name TEXT := 'tags';
+    prefix TEXT;
+    left_bound TEXT;
+    right_bound TEXT;
+    i INTEGER := 0;
+BEGIN
+    WHILE i < days LOOP
+        prefix := table_name || '_' || to_char(from_date + i * INTERVAL '1 day', 'YYYYMMDD');
+        left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
+        right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
-         EXECUTE format(
-             'CREATE TABLE IF NOT EXISTS %I (LIKE %I INCLUDING ALL) TABLESPACE pg_default;',
-             prefix, table_name
-         );
-         EXECUTE format(
-             'ALTER TABLE %I ADD CONSTRAINT %I CHECK (tag_timestamp >= %L::timestamp AND tag_timestamp < %L::timestamp);',
-             prefix, prefix || '_check_bounds', left_bound, right_bound
-         );
+        IF prefix IN (
+            SELECT child.relname
+            FROM pg_inherits
+            JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
+            JOIN pg_class child ON pg_inherits.inhrelid = child.oid
+            WHERE parent.relname = table_name
+        ) THEN
+            i := i + 1;
+            CONTINUE;
+        END IF;
 
-         EXECUTE format(
-             'CREATE INDEX IF NOT EXISTS %I ON %I (tag_timestamp);',
-             prefix || '_tag_timestamp_idx', prefix
-         );
+        EXECUTE format(
+            'CREATE TABLE IF NOT EXISTS %I (LIKE %I INCLUDING ALL) TABLESPACE pg_default;',
+            prefix, table_name
+        );
+        EXECUTE format(
+            'ALTER TABLE %I ADD CONSTRAINT %I CHECK (tag_timestamp >= %L::timestamp AND tag_timestamp < %L::timestamp);',
+            prefix, prefix || '_check_bounds', left_bound, right_bound
+        );
 
-         -- ВАЖНО: индекс для поиска по name и value вместе с tag_timestamp
-         EXECUTE format(
-             'CREATE INDEX IF NOT EXISTS %I ON %I (name, value, tag_timestamp);',
-             prefix || '_name_value_timestamp_idx', prefix
-         );
+        -- Индекс для tag_timestamp (часто для диапазонов)
+        EXECUTE format(
+            'CREATE INDEX IF NOT EXISTS %I ON %I (tag_timestamp);',
+            prefix || '_tag_timestamp_idx', prefix
+        );
 
-         EXECUTE format(
-             'ALTER TABLE %I ATTACH PARTITION %I FOR VALUES FROM (%L) TO (%L);',
-             table_name, prefix, left_bound, right_bound
-         );
+        -- Индекс для поиска по name и value вместе с tag_timestamp (уникальный ключ)
+        EXECUTE format(
+            'CREATE INDEX IF NOT EXISTS %I ON %I (name, value, tag_timestamp);',
+            prefix || '_name_value_timestamp_idx', prefix
+        );
 
-         i := i + 1;
-     END LOOP;
- END;
- $$;
+        -- Новый индекс для поиска по name и value без tag_timestamp
+        EXECUTE format(
+            'CREATE INDEX IF NOT EXISTS %I ON %I (name, value);',
+            prefix || '_name_value_idx', prefix
+        );
+
+        EXECUTE format(
+            'ALTER TABLE %I ATTACH PARTITION %I FOR VALUES FROM (%L) TO (%L);',
+            table_name, prefix, left_bound, right_bound
+        );
+
+        i := i + 1;
+    END LOOP;
+END;
+$$;
 
 
  CREATE OR REPLACE PROCEDURE create_partitions_log_tags(from_date timestamp without time zone, days integer)
