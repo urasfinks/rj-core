@@ -1,16 +1,30 @@
+CREATE SEQUENCE IF NOT EXISTS logs_log_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE TABLE IF NOT EXISTS public.logs (
-    log_uuid uuid NOT NULL,
+    log_id bigint NOT NULL DEFAULT nextval('logs_log_id_seq'),
     log_timestamp timestamp WITHOUT TIME ZONE NOT NULL DEFAULT now(),
     message text COLLATE pg_catalog."default",
-    CONSTRAINT logs_pkey PRIMARY KEY (log_uuid, log_timestamp)
+    CONSTRAINT logs_pkey PRIMARY KEY (log_id, log_timestamp)
 ) PARTITION BY RANGE (log_timestamp);
 
+CREATE SEQUENCE IF NOT EXISTS tags_tag_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE TABLE public.tags (
-    tag_uuid uuid NOT NULL,
+    tag_id bigint NOT NULL DEFAULT nextval('tags_tag_id_seq'),
     tag_timestamp timestamp WITHOUT TIME ZONE NOT NULL DEFAULT date_trunc('day', now()),
     name varchar(100) NOT NULL,
     value varchar(255) NOT NULL,
-    CONSTRAINT tags_pkey PRIMARY KEY (tag_uuid, tag_timestamp),
+    CONSTRAINT tags_pkey PRIMARY KEY (tag_id, tag_timestamp),
     CONSTRAINT tags_name_value_key UNIQUE (name, value, tag_timestamp)
 ) PARTITION BY RANGE (tag_timestamp);
 
@@ -20,18 +34,18 @@ CREATE INDEX IF NOT EXISTS idx_tags_name_value_timestamp
 
 
 CREATE TABLE IF NOT EXISTS public.log_tags (
-    log_uuid uuid NOT NULL,
+    log_id bigint NOT NULL,
     log_timestamp timestamp NOT NULL,
-    tag_uuid uuid NOT NULL,
+    tag_id bigint NOT NULL,
     tag_timestamp timestamp NOT NULL,
-    CONSTRAINT log_tags_pkey PRIMARY KEY (log_uuid, log_timestamp, tag_uuid, tag_timestamp),
+    CONSTRAINT log_tags_pkey PRIMARY KEY (log_id, log_timestamp, tag_id, tag_timestamp),
 
-    CONSTRAINT log_tags_log_fkey FOREIGN KEY (log_uuid, log_timestamp)
-        REFERENCES public.logs (log_uuid, log_timestamp)
+    CONSTRAINT log_tags_log_fkey FOREIGN KEY (log_id, log_timestamp)
+        REFERENCES public.logs (log_id, log_timestamp)
         ON DELETE CASCADE,
 
-    CONSTRAINT log_tags_tag_fkey FOREIGN KEY (tag_uuid, tag_timestamp)
-        REFERENCES public.tags (tag_uuid, tag_timestamp)
+    CONSTRAINT log_tags_tag_fkey FOREIGN KEY (tag_id, tag_timestamp)
+        REFERENCES public.tags (tag_id, tag_timestamp)
         ON DELETE CASCADE
 ) PARTITION BY RANGE (log_timestamp);
 
@@ -44,57 +58,54 @@ CREATE INDEX IF NOT EXISTS idx_log_tags_log
     ON public.log_tags (log_uuid, log_timestamp);
 
 CREATE OR REPLACE PROCEDURE create_partitions_logs(from_date timestamp without time zone, days integer)
- LANGUAGE plpgsql
- AS $$
- DECLARE
-     table_name TEXT := 'logs';
-     prefix TEXT;
-     left_bound TEXT;
-     right_bound TEXT;
-     i INTEGER := 0;
- BEGIN
-     WHILE i < days LOOP
-         prefix := table_name || '_' || to_char(from_date + i * INTERVAL '1 day', 'YYYYMMDD');
-         left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
-         right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    table_name TEXT := 'logs';
+    prefix TEXT;
+    left_bound TEXT;
+    right_bound TEXT;
+    i INTEGER := 0;
+BEGIN
+    WHILE i < days LOOP
+        prefix := table_name || '_' || to_char(from_date + i * INTERVAL '1 day', 'YYYYMMDD');
+        left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
+        right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
-         IF prefix IN (
-             SELECT child.relname
-             FROM pg_inherits
-             JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
-             JOIN pg_class child ON pg_inherits.inhrelid = child.oid
-             WHERE parent.relname = table_name
-         ) THEN
-             i := i + 1;
-             CONTINUE;
-         END IF;
+        IF prefix IN (
+            SELECT child.relname
+            FROM pg_inherits
+            JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
+            JOIN pg_class child ON pg_inherits.inhrelid = child.oid
+            WHERE parent.relname = table_name
+        ) THEN
+            i := i + 1;
+            CONTINUE;
+        END IF;
 
-         EXECUTE format(
-             'CREATE TABLE IF NOT EXISTS %I (LIKE %I INCLUDING ALL) TABLESPACE pg_default;',
-             prefix, table_name
-         );
-         EXECUTE format(
-             'ALTER TABLE %I ADD CONSTRAINT %I CHECK (log_timestamp >= %L::timestamp AND log_timestamp < %L::timestamp);',
-             prefix, prefix || '_check_bounds', left_bound, right_bound
-         );
-         EXECUTE format(
-             'CREATE INDEX IF NOT EXISTS %I ON %I (log_timestamp);',
-             prefix || '_log_timestamp_idx', prefix
-         );
-         EXECUTE format(
-             'ALTER TABLE %I ATTACH PARTITION %I FOR VALUES FROM (%L) TO (%L);',
-             table_name, prefix, left_bound, right_bound
-         );
+        EXECUTE format(
+            'CREATE TABLE IF NOT EXISTS %I (LIKE %I INCLUDING ALL) TABLESPACE pg_default;',
+            prefix, table_name
+        );
+        EXECUTE format(
+            'ALTER TABLE %I ADD CONSTRAINT %I CHECK (log_timestamp >= %L::timestamp AND log_timestamp < %L::timestamp);',
+            prefix, prefix || '_check_bounds', left_bound, right_bound
+        );
+        EXECUTE format(
+            'CREATE INDEX IF NOT EXISTS %I ON %I (log_timestamp);',
+            prefix || '_log_timestamp_idx', prefix
+        );
+        EXECUTE format(
+            'ALTER TABLE %I ATTACH PARTITION %I FOR VALUES FROM (%L) TO (%L);',
+            table_name, prefix, left_bound, right_bound
+        );
 
-         i := i + 1;
-     END LOOP;
- END;
- $$;
+        i := i + 1;
+    END LOOP;
+END;
+$$;
 
 
-sql
-Копировать
-Редактировать
 CREATE OR REPLACE PROCEDURE create_partitions_tags(from_date timestamp without time zone, days integer)
 LANGUAGE plpgsql
 AS $$
@@ -195,19 +206,24 @@ $$;
          );
 
          EXECUTE format(
-             'CREATE INDEX IF NOT EXISTS %I ON %I (log_uuid, log_timestamp);',
+             'CREATE INDEX IF NOT EXISTS %I ON %I (log_id, log_timestamp);',
              prefix || '_log_idx', prefix
          );
          -- ИНДЕКС ДЛЯ БЫСТРОГО ПОИСКА ПО ТЕГУ (tag_uuid, tag_timestamp)
          EXECUTE format(
-             'CREATE INDEX IF NOT EXISTS %I ON %I (tag_uuid, tag_timestamp);',
-             prefix || '_idx_tag_uuid_timestamp', prefix
+             'CREATE INDEX IF NOT EXISTS %I ON %I (tag_id, tag_timestamp);',
+             prefix || '_tag_idx', prefix
          );
 
          -- ИНДЕКС ДЛЯ СОЕДИНЕНИЯ С LOGS (log_uuid, log_timestamp)
          EXECUTE format(
-             'CREATE INDEX IF NOT EXISTS %I ON %I (log_uuid, log_timestamp);',
-             prefix || '_idx_log_uuid_timestamp', prefix
+             'CREATE INDEX IF NOT EXISTS %I ON %I (tag_id, tag_timestamp);',
+             prefix || '_idx_tag_id_timestamp', prefix
+         );
+
+         EXECUTE format(
+             'CREATE INDEX IF NOT EXISTS %I ON %I (log_id, log_timestamp);',
+             prefix || '_idx_log_id_timestamp', prefix
          );
 
          EXECUTE format(
