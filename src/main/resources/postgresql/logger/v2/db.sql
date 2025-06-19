@@ -7,6 +7,7 @@ CREATE SEQUENCE IF NOT EXISTS logs_log_id_seq
 
 CREATE TABLE IF NOT EXISTS public.logs (
     log_id bigint NOT NULL DEFAULT nextval('logs_log_id_seq'),
+    log_uuid uuid NOT NULL,
     log_timestamp timestamp WITHOUT TIME ZONE NOT NULL DEFAULT now(),
     message text COLLATE pg_catalog."default",
     CONSTRAINT logs_pkey PRIMARY KEY (log_id, log_timestamp)
@@ -28,11 +29,6 @@ CREATE TABLE public.tags (
     CONSTRAINT tags_name_value_key UNIQUE (name, value, tag_timestamp)
 ) PARTITION BY RANGE (tag_timestamp);
 
---Это ускорит SELECT tag_uuid FROM tags WHERE name = 'env' AND value = 'prod' AND tag_timestamp = '2025-06-19'
-CREATE INDEX IF NOT EXISTS idx_tags_name_value_timestamp
-    ON public.tags (name, value, tag_timestamp);
-
-
 CREATE TABLE IF NOT EXISTS public.log_tags (
     log_id bigint NOT NULL,
     log_timestamp timestamp NOT NULL,
@@ -48,14 +44,6 @@ CREATE TABLE IF NOT EXISTS public.log_tags (
         REFERENCES public.tags (tag_id, tag_timestamp)
         ON DELETE CASCADE
 ) PARTITION BY RANGE (log_timestamp);
-
---для поиска всех логов по тегу
-CREATE INDEX IF NOT EXISTS idx_log_tags_tag
-    ON public.log_tags (tag_uuid, tag_timestamp);
-
--- для джойна с logs
-CREATE INDEX IF NOT EXISTS idx_log_tags_log
-    ON public.log_tags (log_uuid, log_timestamp);
 
 CREATE OR REPLACE PROCEDURE create_partitions_logs(from_date timestamp without time zone, days integer)
 LANGUAGE plpgsql
