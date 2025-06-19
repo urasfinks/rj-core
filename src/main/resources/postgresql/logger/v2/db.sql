@@ -110,6 +110,13 @@ BEGIN
             'CREATE TABLE IF NOT EXISTS %I (LIKE %I INCLUDING ALL) TABLESPACE pg_default;',
             prefix, table_name
         );
+
+        -- Установка STORAGE EXTENDED для колонки message
+        EXECUTE format(
+            'ALTER TABLE %I ALTER COLUMN message SET STORAGE EXTENDED;',
+            prefix
+        );
+
         EXECUTE format(
             'ALTER TABLE %I ADD CONSTRAINT %I CHECK (log_timestamp >= %L::timestamp AND log_timestamp < %L::timestamp);',
             prefix, prefix || '_check_bounds', left_bound, right_bound
