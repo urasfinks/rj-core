@@ -31,9 +31,9 @@ CREATE TABLE public.tags (
 
 CREATE TABLE IF NOT EXISTS public.log_tags (
     log_id bigint NOT NULL,
-    log_timestamp timestamp NOT NULL,
+    log_timestamp timestamp WITHOUT TIME ZONE NOT NULL,
     tag_id bigint NOT NULL,
-    tag_timestamp timestamp NOT NULL,
+    tag_timestamp timestamp WITHOUT TIME ZONE NOT NULL,
     CONSTRAINT log_tags_pkey PRIMARY KEY (log_id, log_timestamp, tag_id, tag_timestamp),
 
     CONSTRAINT log_tags_log_fkey FOREIGN KEY (log_id, log_timestamp)
@@ -203,12 +203,6 @@ $$;
          EXECUTE format(
              'CREATE INDEX IF NOT EXISTS %I ON %I (log_id, log_timestamp);',
              prefix || '_log_idx', prefix
-         );
-
-         -- Индекс по (tag_id, tag_timestamp) — ускоряет соединение с tags
-         EXECUTE format(
-             'CREATE INDEX IF NOT EXISTS %I ON %I (tag_id, tag_timestamp);',
-             prefix || '_tag_idx', prefix
          );
 
          -- Дублирующие индексы (по сути, повторяют вышеуказанные) — можно удалить при необходимости
