@@ -94,7 +94,7 @@ BEGIN
         left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
         right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
-        -- Проверка существования партиции через pg_partition_tree
+        -- Проверка существования партиции
         IF prefix IN (SELECT child.relname AS part
                       FROM pg_inherits
                                JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
@@ -164,7 +164,7 @@ BEGIN
         left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
         right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
-        -- Проверка существования партиции через pg_partition_tree
+        -- Проверка существования партиции
         IF prefix IN (SELECT child.relname AS part
                       FROM pg_inherits
                                JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
@@ -233,7 +233,7 @@ $$;
          left_bound := to_char(from_date + i * INTERVAL '1 day', 'YYYY-MM-DD');
          right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
-         -- Проверка существования партиции через pg_partition_tree
+         -- Проверка существования партиции
          IF prefix IN (SELECT child.relname AS part
                        FROM pg_inherits
                                 JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
@@ -285,5 +285,118 @@ BEGIN
     CALL create_partitions_logs(from_date, days);
     CALL create_partitions_tags(from_date, days);
     CALL create_partitions_log_tags(from_date, days);
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION get_or_create_tag_id(
+    tag_name TEXT,
+    tag_value TEXT,
+    tag_ts TIMESTAMP WITHOUT TIME ZONE
+)
+RETURNS BIGINT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    tag_id_val BIGINT;
+BEGIN
+    -- Попытка найти существующий тег
+    SELECT t.tag_id
+    INTO tag_id_val
+    FROM tags t
+    WHERE t.name = tag_name
+      AND t.value = tag_value
+      AND t.tag_timestamp = tag_ts;
+
+    IF FOUND THEN
+        RETURN tag_id_val;
+    END IF;
+
+    -- Вставка, если не найден
+    INSERT INTO tags (name, value, tag_timestamp)
+    VALUES (tag_name, tag_value, tag_ts)
+    ON CONFLICT ON CONSTRAINT tags_name_value_key
+    DO NOTHING;
+
+    -- Повторный SELECT — гарантирует, что мы получим id
+    SELECT t.tag_id
+    INTO STRICT tag_id_val
+    FROM tags t
+    WHERE t.name = tag_name
+      AND t.value = tag_value
+      AND t.tag_timestamp = tag_ts;
+
+    RETURN tag_id_val;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE insert_log_with_tags(
+    log_uuid UUID,
+    message TEXT,
+    log_timestamp TIMESTAMP WITHOUT TIME ZONE,
+    tag_names TEXT[],
+    tag_values TEXT[]
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    i INTEGER;
+    log_id_val BIGINT;
+    tag_id_val BIGINT;
+    tag_ts_val TIMESTAMP := date_trunc('day', log_timestamp);
+BEGIN
+    IF array_length(tag_names, 1) IS DISTINCT FROM array_length(tag_values, 1) THEN
+        RAISE EXCEPTION 'tag_names and tag_values must be of same length';
+    END IF;
+
+    -- Вставка лога
+    INSERT INTO logs (log_uuid, message, log_timestamp)
+    VALUES (log_uuid, message, log_timestamp)
+    RETURNING log_id INTO log_id_val;
+
+    -- Обработка тегов
+    FOR i IN 1 .. array_length(tag_names, 1) LOOP
+        tag_id_val := get_or_create_tag_id(tag_names[i], tag_values[i], tag_ts_val);
+
+        INSERT INTO log_tags (log_id, log_timestamp, tag_id, tag_timestamp)
+        VALUES (log_id_val, log_timestamp, tag_id_val, tag_ts_val);
+    END LOOP;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE drop_old_partitions(days_threshold INTEGER)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    tables TEXT[] := ARRAY['logs', 'tags', 'log_tags'];
+    tbl TEXT;
+    cutoff_date TEXT;
+    cutoff_table TEXT;
+    table_ref RECORD;
+BEGIN
+    IF days_threshold < 0 THEN
+        RAISE EXCEPTION 'days_threshold must be non-negative';
+    END IF;
+
+    cutoff_date := to_char(now() - INTERVAL (days_threshold || ' days'), 'YYYYMMDD');
+
+    FOREACH tbl IN ARRAY tables LOOP
+        cutoff_table := tbl || '_' || cutoff_date;
+
+        FOR table_ref IN
+            SELECT
+                child.relname      AS part,
+                nmsp_child.nspname AS child_schema
+            FROM pg_inherits
+            JOIN pg_class parent          ON pg_inherits.inhparent = parent.oid
+            JOIN pg_class child           ON pg_inherits.inhrelid = child.oid
+            JOIN pg_namespace nmsp_parent ON nmsp_parent.oid = parent.relnamespace
+            JOIN pg_namespace nmsp_child  ON nmsp_child.oid = child.relnamespace
+            WHERE parent.relname = tbl
+              AND child.relname < cutoff_table
+        LOOP
+            RAISE NOTICE 'Dropping partition: %.%', table_ref.child_schema, table_ref.part;
+            EXECUTE format('DROP TABLE IF EXISTS %I.%I CASCADE', table_ref.child_schema, table_ref.part);
+        END LOOP;
+    END LOOP;
 END;
 $$;
