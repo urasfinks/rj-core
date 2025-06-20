@@ -377,7 +377,7 @@ BEGIN
         RAISE EXCEPTION 'days_threshold must be non-negative';
     END IF;
 
-    cutoff_date := to_char(now() - INTERVAL (days_threshold || ' days'), 'YYYYMMDD');
+    cutoff_date := to_char(now() - (days_threshold || ' days')::interval, 'YYYYMMDD');
 
     FOREACH tbl IN ARRAY tables LOOP
         cutoff_table := tbl || '_' || cutoff_date;
