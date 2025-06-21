@@ -30,17 +30,20 @@ public class Argument {
     }
 
     public static Argument getInstance(String keyTemplate) {
+        if (keyTemplate == null || keyTemplate.isEmpty()) {
+            throw new IllegalArgumentException("Пустой шаблон аргумента недопустим");
+        }
+
         String[] keys = keyTemplate.split("\\.");
-        if (keys.length == 1) {
-            throw new RuntimeException("Не достаточно описания для " + keyTemplate + "; Должно быть ${direction.var::type}");
+        if (keys.length < 2) {
+            throwInvalidTemplate(keyTemplate);
         }
+
         String[] types = keys[1].split("::");
-        if (types.length == 1) {
-            throw new RuntimeException("Не достаточно описания для " + keyTemplate + "; Должно быть ${direction.var::type}");
+        if (types.length < 2 || types[0].isEmpty() || types[1].isEmpty()) {
+            throwInvalidTemplate(keyTemplate);
         }
-        if (types[0].isEmpty()) {
-            throw new RuntimeException("Не достаточно описания для " + keyTemplate + "; Должно быть ${direction.var::type}");
-        }
+
         return new Argument(
                 ArgumentDirection.valueOf(keys[0]),
                 ArgumentType.valueOf(types[1]),
@@ -49,4 +52,9 @@ public class Argument {
         );
     }
 
+    private static void throwInvalidTemplate(String keyTemplate) {
+        throw new IllegalArgumentException(
+                "Недостаточное описание шаблона: \"" + keyTemplate + "\". Ожидается формат: ${direction.var::type}"
+        );
+    }
 }
