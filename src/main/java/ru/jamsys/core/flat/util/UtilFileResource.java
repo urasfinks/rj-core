@@ -12,8 +12,8 @@ public class UtilFileResource {
 
     public enum Direction {
         WEB,
-        CORE,
-        PROJECT
+        RESOURCE_CORE,
+        RESOURCE_PROJECT
     }
 
     public static InputStream get(String path) throws IOException {
@@ -42,8 +42,8 @@ public class UtilFileResource {
     public static InputStream get(String path, Direction direction) throws IOException {
         return switch (direction) {
             case WEB -> new FileInputStream(UtilFile.getWebFile(path));
-            case CORE -> get(path, App.class.getClassLoader());
-            case PROJECT -> get(path);
+            case RESOURCE_CORE -> get(path, App.class.getClassLoader());
+            case RESOURCE_PROJECT -> get(path);
         };
     }
 
@@ -58,8 +58,8 @@ public class UtilFileResource {
     public static String getAsString(String path, Direction direction) throws IOException {
         return switch (direction) {
             case WEB -> UtilFile.getWebContent(path);
-            case CORE -> getAsString(path, App.class.getClassLoader());
-            case PROJECT -> getAsString(path);
+            case RESOURCE_CORE -> getAsString(path, App.class.getClassLoader());
+            case RESOURCE_PROJECT -> getAsString(path);
         };
     }
 
