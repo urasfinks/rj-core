@@ -1,39 +1,52 @@
 package ru.jamsys.core.flat.template.jdbc;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
-@Data
-public class Argument implements Cloneable {
+@Getter
+@Setter
+@Accessors(chain = true)
+public class Argument {
 
-    int index;
-    ArgumentDirection direction;
-    ArgumentType type;
-    String key;
-    Object value;
-    String sqlKeyTemplate;
+    private int index;
+    private Object value;
 
-    public void parseSqlKey(String sqlKeyTemplate) {
-        this.sqlKeyTemplate = sqlKeyTemplate;
-        String[] keys = sqlKeyTemplate.split("\\.");
-        if (keys.length == 1) {
-            throw new RuntimeException("Не достаточно описания для " + sqlKeyTemplate + "; Должно быть ${direction.var::type}");
-        }
-        this.direction = ArgumentDirection.valueOf(keys[0]);
-        String[] types = keys[1].split("::");
-        if (types.length == 1) {
-            throw new RuntimeException("Не достаточно описания для " + sqlKeyTemplate + "; Должно быть ${direction.var::type}");
-        }
-        this.key = types[0];
-        this.type = ArgumentType.valueOf(types[1]);
+    private final ArgumentDirection direction;
+    private final ArgumentType type;
+    private final String key;
+    private final String keySqlTemplate;
 
-        if (key.isEmpty()) {
-            throw new RuntimeException("Не достаточно описания для " + sqlKeyTemplate + "; Должно быть ${direction.var::type}");
-        }
+    public Argument(
+            ArgumentDirection direction,
+            ArgumentType type,
+            String key,
+            String keySqlTemplate
+    ) {
+        this.direction = direction;
+        this.type = type;
+        this.key = key;
+        this.keySqlTemplate = keySqlTemplate;
     }
 
-    @Override
-    public Argument clone() throws CloneNotSupportedException {
-        return (Argument) super.clone();
+    public static Argument getInstance(String keyTemplate) {
+        String[] keys = keyTemplate.split("\\.");
+        if (keys.length == 1) {
+            throw new RuntimeException("Не достаточно описания для " + keyTemplate + "; Должно быть ${direction.var::type}");
+        }
+        String[] types = keys[1].split("::");
+        if (types.length == 1) {
+            throw new RuntimeException("Не достаточно описания для " + keyTemplate + "; Должно быть ${direction.var::type}");
+        }
+        if (types[0].isEmpty()) {
+            throw new RuntimeException("Не достаточно описания для " + keyTemplate + "; Должно быть ${direction.var::type}");
+        }
+        return new Argument(
+                ArgumentDirection.valueOf(keys[0]),
+                ArgumentType.valueOf(types[1]),
+                types[0],
+                keyTemplate
+        );
     }
 
 }

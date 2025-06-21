@@ -8,14 +8,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.flat.template.jdbc.CompiledSqlTemplate;
 import ru.jamsys.core.flat.template.jdbc.DataMapper;
-import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
-import ru.jamsys.core.flat.template.jdbc.StatementType;
+import ru.jamsys.core.flat.template.jdbc.DebugVisualizer;
+import ru.jamsys.core.flat.template.jdbc.SqlTemplateCompiled;
+import ru.jamsys.core.flat.template.jdbc.SqlTemplateCompiler;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.jt.Logger;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.resource.jdbc.JdbcRequest;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
+import ru.jamsys.core.resource.jdbc.SqlArgumentBuilder;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ import java.util.Map;
 // IO time: 6ms
 // COMPUTE time: 6ms
 
-class JdbcRequestRepositoryTest {
+class SqlTemplateCompilerRepositoryTest {
 
     public static ServicePromise servicePromise;
 
@@ -42,7 +43,7 @@ class JdbcRequestRepositoryTest {
 
     @Test
     void parseSql2() throws Exception {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate("""
+        SqlTemplateCompiler sqlTemplateCompiler = new SqlTemplateCompiler("""
                 SELECT
                     type_data AS key,
                     max(revision_data) AS max
@@ -54,13 +55,13 @@ class JdbcRequestRepositoryTest {
                 AND lazy_sync_data IN (${IN.lazy::IN_ENUM_VARCHAR})
                 AND uuid_device_data = ${IN.uuid_device::VARCHAR}
                 GROUP BY type_data;
-                """, StatementType.SELECT_WITH_AUTO_COMMIT);
+                """);
         HashMap<String, Object> args = new HashMap<>();
         args.put("id_user", 1);
         args.put("uuid_device", "a1b2c3");
         args.put("lazy", List.of("Hello", "world", "wfe"));
 
-        CompiledSqlTemplate compiledSqlTemplate = jdbcTemplate.compile(args);
+        SqlTemplateCompiled sqlTemplateCompiled = sqlTemplateCompiler.compile(args);
         Assertions.assertEquals("""
                 SELECT
                     type_data AS key,
@@ -73,7 +74,7 @@ class JdbcRequestRepositoryTest {
                 AND lazy_sync_data IN (?,?,?)
                 AND uuid_device_data = ?
                 GROUP BY type_data;
-                """, compiledSqlTemplate.getSql(), "#1");
+                """, sqlTemplateCompiled.getSql(), "#1");
 
         Assertions.assertEquals("""
                 SELECT
@@ -87,21 +88,24 @@ class JdbcRequestRepositoryTest {
                 AND lazy_sync_data IN ('Hello','world','wfe')
                 AND uuid_device_data = 'a1b2c3'
                 GROUP BY type_data;
-                """, jdbcTemplate.getSqlWithArgumentsValue(compiledSqlTemplate), "#2");
+                """, DebugVisualizer.get(sqlTemplateCompiled), "#2");
+
     }
 
     @Test
-    void parseSql() {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate("select * from table where c1 = ${IN.name::VARCHAR} and c2 = ${IN.name::VARCHAR}", StatementType.SELECT_WITH_AUTO_COMMIT);
-        Assertions.assertEquals("select * from table where c1 = ? and c2 = ?", jdbcTemplate.getSql(), "#1");
+    void parseSql() throws CloneNotSupportedException {
+        SqlTemplateCompiler sqlTemplateCompiler = new SqlTemplateCompiler("select * from table where c1 = ${IN.name::VARCHAR} and c2 = ${IN.name::VARCHAR}");
+        Assertions.assertEquals("select * from table where c1 = ? and c2 = ?", sqlTemplateCompiler.compile(new HashMap<>()).getSql(), "#1");
     }
 
+    @SuppressWarnings("all")
     void testPostgreSql() {
         Promise promise = servicePromise.get("testPromisePosgreSQL", 6_000L);
         promise
                 .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, _, jdbcResource) -> {
                     try {
-                        List<Map<String, Object>> execute = jdbcResource.execute(new JdbcRequest(TestJdbcRequestRepository.GET_LOG));
+                        List<Map<String, Object>> execute = jdbcResource.execute(TestSqlStatementDefinition.GET_LOG, new SqlArgumentBuilder());
+                        UtilLog.printInfo(execute);
                     } catch (Throwable th) {
                         App.error(th);
                     }
@@ -110,25 +114,26 @@ class JdbcRequestRepositoryTest {
                 .await(2000);
     }
 
+    @SuppressWarnings("all")
     void testInsertLog() {
         Promise promise = servicePromise.get("testPromisePosgreSQL", 6_000L);
         promise
                 .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, _, jdbcResource) -> {
                     try {
-                        JdbcRequest jdbcRequest = new JdbcRequest(Logger.INSERT);
+                        SqlArgumentBuilder sqlArgumentBuilder = new SqlArgumentBuilder();
                         int idx = 0;
                         for (int i = 0; i < 2; i++) {
-                            jdbcRequest
-                                    .addArg("date_add", System.currentTimeMillis())
-                                    .addArg("type", "Info")
-                                    .addArg("correlation", java.util.UUID.randomUUID().toString())
-                                    .addArg("host", "abc")
-                                    .addArg("ext_index", null)
-                                    .addArg("data", "{\"idx\":" + (idx++) + "}")
+                            sqlArgumentBuilder
+                                    .add("date_add", System.currentTimeMillis())
+                                    .add("type", "Info")
+                                    .add("correlation", java.util.UUID.randomUUID().toString())
+                                    .add("host", "abc")
+                                    .add("ext_index", null)
+                                    .add("data", "{\"idx\":" + (idx++) + "}")
                                     .nextBatch()
                             ;
                         }
-                        List<Map<String, Object>> execute = jdbcResource.execute(jdbcRequest);
+                        List<Map<String, Object>> execute = jdbcResource.execute(Logger.INSERT, sqlArgumentBuilder);
                     } catch (Throwable th) {
                         App.error(th);
                     }

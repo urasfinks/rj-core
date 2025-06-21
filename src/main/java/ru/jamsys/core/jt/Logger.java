@@ -1,10 +1,12 @@
 package ru.jamsys.core.jt;
 
-import ru.jamsys.core.flat.template.jdbc.JdbcRequestRepository;
-import ru.jamsys.core.flat.template.jdbc.StatementType;
-import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
+import lombok.Getter;
+import ru.jamsys.core.flat.template.jdbc.SqlExecutionMode;
+import ru.jamsys.core.flat.template.jdbc.SqlStatementDefinition;
+import ru.jamsys.core.flat.template.jdbc.SqlTemplateCompiler;
 
-public enum Logger implements JdbcRequestRepository {
+@Getter
+public enum Logger implements SqlStatementDefinition {
 
     INSERT("""
             INSERT INTO logger (
@@ -20,17 +22,16 @@ public enum Logger implements JdbcRequestRepository {
                 ${IN.data::VARCHAR}
                 ${IN.header::VARCHAR}
             );
-            """, StatementType.SELECT_WITH_AUTO_COMMIT);
+            """, SqlExecutionMode.SELECT_WITH_AUTO_COMMIT);
 
-    private final JdbcTemplate jdbcTemplate;
+    private final SqlTemplateCompiler sqlTemplateCompiler;
 
-    Logger(String sql, StatementType statementType) {
-        jdbcTemplate = new JdbcTemplate(sql, statementType);
-    }
+    private final SqlExecutionMode sqlExecutionMode;
 
-    @Override
-    public JdbcTemplate getJdbcTemplate() {
-        return jdbcTemplate;
+    Logger(String sql, SqlExecutionMode sqlExecutionMode) {
+        this.sqlTemplateCompiler = new SqlTemplateCompiler(sql);
+        this.sqlExecutionMode = sqlExecutionMode;
+        analyze();
     }
 
 }

@@ -17,12 +17,15 @@ public class ForwardException extends RuntimeException {
     @Accessors(chain = true)
     int line = 1;
 
+    int lineWithoutThrowableCause = 10; // Если нет корневого Throwable cause
+
     public ForwardException(Throwable cause) {
         super(null, cause);
     }
 
     public ForwardException(Object context) {
         setContextSnapshot(context);
+        setLine(lineWithoutThrowableCause);
     }
 
     public ForwardException(String message, Throwable cause) {
@@ -37,6 +40,7 @@ public class ForwardException extends RuntimeException {
     public ForwardException(String message, Object context) {
         super(message);
         setContextSnapshot(context);
+        setLine(lineWithoutThrowableCause);
     }
 
     public ForwardException(String message, Object context, Throwable cause) {

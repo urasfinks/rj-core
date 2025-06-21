@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class CompiledSqlTemplate {
+public class SqlTemplateCompiled {
     private List<Argument> listArgument = new ArrayList<>();
     private String sql;
 }

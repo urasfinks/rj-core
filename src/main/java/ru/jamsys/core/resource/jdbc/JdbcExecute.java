@@ -10,50 +10,51 @@ public interface JdbcExecute {
 
     default List<Map<String, Object>> execute(
             Connection conn,
-            JdbcTemplate jdbcTemplate,
-            List<Map<String, Object>> argsList,
-            StatementControl statementControl,
+            SqlStatementDefinition sqlStatementDefinition,
+            SqlArgumentBuilder argumentsBuilder,
+            JdbcStatementAdapter jdbcStatementAdapter,
             boolean debug
     ) throws Exception {
         if (conn == null) {
             throw new RuntimeException("Connection is null");
         }
+        List<Map<String, Object>> arguments = argumentsBuilder.get();
         List<Map<String, Object>> result = new ArrayList<>();
-        if (argsList == null) {
+        if (arguments == null) {
             return result;
         }
         // Динамичный фрагмент не может использоваться в executeBatch
-        if (jdbcTemplate.isDynamicArgument() && argsList.size() > 1) {
+        if (sqlStatementDefinition.getSqlTemplateCompiler().isDynamicArgument() && arguments.size() > 1) {
             throw new RuntimeException("ExecuteBatch not support DynamicArguments");
         }
-        CompiledSqlTemplate compiledSqlTemplate = jdbcTemplate.compile(argsList.getFirst());
+        SqlTemplateCompiled sqlTemplateCompiled = sqlStatementDefinition.getSqlTemplateCompiler().compile(arguments.getFirst());
         if (debug) {
-            UtilLog.printInfo(compiledSqlTemplate.getSql());
-            UtilLog.printInfo(jdbcTemplate.getSqlWithArgumentsValue(compiledSqlTemplate));
+            UtilLog.printInfo(sqlTemplateCompiled.getSql());
+            UtilLog.printInfo(DebugVisualizer.get(sqlTemplateCompiled));
         }
-        StatementType statementType = jdbcTemplate.getStatementType();
-        conn.setAutoCommit(statementType.isAutoCommit());
+        SqlExecutionMode sqlExecutionMode = sqlStatementDefinition.getSqlExecutionMode();
+        conn.setAutoCommit(sqlExecutionMode.isAutoCommit());
         PreparedStatement preparedStatement =
-                statementType.isSelect()
-                        ? conn.prepareStatement(compiledSqlTemplate.getSql())
-                        : conn.prepareCall(compiledSqlTemplate.getSql());
-        if (argsList.size() == 1) {
-            for (Argument argument : compiledSqlTemplate.getListArgument()) {
-                setParam(statementControl, conn, preparedStatement, argument);
+                sqlExecutionMode.isSelect()
+                        ? conn.prepareStatement(sqlTemplateCompiled.getSql())
+                        : conn.prepareCall(sqlTemplateCompiled.getSql());
+        if (arguments.size() == 1) {
+            for (Argument argument : sqlTemplateCompiled.getListArgument()) {
+                setParam(jdbcStatementAdapter, preparedStatement, argument);
             }
             preparedStatement.execute();
-        } else if (!argsList.isEmpty()) {
-            for (Map<String, Object> qArgs : argsList) {
-                CompiledSqlTemplate tmp = jdbcTemplate.compile(qArgs);
+        } else if (!arguments.isEmpty()) {
+            for (Map<String, Object> qArgs : arguments) {
+                SqlTemplateCompiled tmp = sqlStatementDefinition.getSqlTemplateCompiler().compile(qArgs);
                 for (Argument argument : tmp.getListArgument()) {
-                    setParam(statementControl, conn, preparedStatement, argument);
+                    setParam(jdbcStatementAdapter, preparedStatement, argument);
                 }
                 preparedStatement.addBatch();
             }
             preparedStatement.executeBatch();
         }
 
-        switch (jdbcTemplate.getStatementType()) {
+        switch (sqlStatementDefinition.getSqlExecutionMode()) {
             case SELECT_WITHOUT_AUTO_COMMIT:
             case SELECT_WITH_AUTO_COMMIT:
                 try (ResultSet resultSet = preparedStatement.getResultSet()) {
@@ -84,12 +85,12 @@ public interface JdbcExecute {
             case CALL_WITHOUT_AUTO_COMMIT:
             case CALL_WITH_AUTO_COMMIT:
                 Map<String, Object> row = new LinkedHashMap<>();
-                for (Argument argument : compiledSqlTemplate.getListArgument()) {
+                for (Argument argument : sqlTemplateCompiled.getListArgument()) {
                     ArgumentDirection direction = argument.getDirection();
                     if (direction == ArgumentDirection.OUT || direction == ArgumentDirection.IN_OUT) {
                         row.put(
                                 argument.getKey(),
-                                statementControl.getOutParam(
+                                jdbcStatementAdapter.getOutParam(
                                         (CallableStatement) preparedStatement,
                                         argument.getType(),
                                         argument.getIndex())
@@ -106,19 +107,18 @@ public interface JdbcExecute {
     }
 
     private static void setParam(
-            StatementControl statementControl,
-            Connection conn,
+            JdbcStatementAdapter jdbcStatementAdapter,
             PreparedStatement preparedStatement,
             Argument arg
     ) throws Exception {
         switch (arg.getDirection()) {
             case IN ->
-                    statementControl.setInParam(conn, preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());
+                    jdbcStatementAdapter.setInParam(preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());
             case OUT ->
-                    statementControl.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
+                    jdbcStatementAdapter.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
             case IN_OUT -> {
-                statementControl.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
-                statementControl.setInParam(conn, preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());
+                jdbcStatementAdapter.setOutParam((CallableStatement) preparedStatement, arg.getType(), arg.getIndex());
+                jdbcStatementAdapter.setInParam(preparedStatement, arg.getType(), arg.getIndex(), arg.getValue());
             }
         }
     }

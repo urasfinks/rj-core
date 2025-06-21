@@ -5,7 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.resource.jdbc.JdbcRequest;
+import ru.jamsys.core.resource.jdbc.SqlArgumentBuilder;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
 
 import java.util.List;
@@ -34,9 +34,9 @@ class ConnectionResourceTest {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
                 .appendWithResource("jdbc", JdbcResource.class, (_, _, _, jdbcResource) -> {
-                    JdbcRequest jdbcRequest = new JdbcRequest(TestJdbcRequestRepository.TEST);
+                    SqlArgumentBuilder sqlArgumentBuilder = new SqlArgumentBuilder();
                     try {
-                        List<Map<String, Object>> execute = jdbcResource.execute(jdbcRequest);
+                        List<Map<String, Object>> execute = jdbcResource.execute(TestSqlStatementDefinition.TEST, sqlArgumentBuilder);
                         promise.setRepositoryMap("req1", execute);
                     } catch (Throwable e) {
                         throw new ForwardException(promise, e);

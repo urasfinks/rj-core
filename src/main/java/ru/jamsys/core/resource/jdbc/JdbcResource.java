@@ -9,9 +9,8 @@ import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.template.jdbc.DataMapper;
-import ru.jamsys.core.flat.template.jdbc.DefaultStatementControl;
-import ru.jamsys.core.flat.template.jdbc.JdbcTemplate;
-import ru.jamsys.core.flat.template.jdbc.StatementControl;
+import ru.jamsys.core.flat.template.jdbc.JdbcStatementAdapter;
+import ru.jamsys.core.flat.template.jdbc.SqlStatementDefinition;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -25,7 +24,7 @@ public class JdbcResource
         JdbcExecute,
         PropertyListener {
 
-    private final StatementControl statementControl;
+    private final JdbcStatementAdapter jdbcStatementAdapter;
 
     private Connection connection;
 
@@ -42,7 +41,8 @@ public class JdbcResource
                 property,
                 getCascadeKey(ns)
         );
-        this.statementControl = new DefaultStatementControl();
+        // Если когда-нибудь появятся ещё БД, можно будет через Property выбирать другой класс работы с statement
+        this.jdbcStatementAdapter = new JdbcStatementAdapter();
     }
 
     private void up() {
@@ -71,15 +71,76 @@ public class JdbcResource
         }
     }
 
-    public List<Map<String, Object>> execute(JdbcRequest arguments) throws Throwable {
+    public List<Map<String, Object>> execute(
+            SqlStatementDefinition sqlStatementDefinition,
+            SqlArgumentBuilder sqlArgumentBuilder
+    ) throws Throwable {
+        return execute(sqlStatementDefinition, sqlArgumentBuilder, false);
+    }
+
+    public List<Map<String, Object>> execute(
+            SqlStatementDefinition sqlStatementDefinition,
+            SqlArgumentBuilder sqlArgumentBuilder,
+            boolean debug
+    ) throws Throwable {
         if (connection == null) {
             throw new ForwardException("Connection is null", this);
         }
-        JdbcTemplate jdbcTemplate = arguments.getJdbcTemplate();
-        if (jdbcTemplate == null) {
-            throw new ForwardException("TemplateEnum: " + arguments.getName() + " return null template", this);
+        if (sqlStatementDefinition == null) {
+            throw new ForwardException(new HashMapBuilder<String, Object>()
+                    .append("sqlTemplateCompiler", null)
+                    .append("sqlArgumentBuilder", sqlArgumentBuilder)
+                    .append("self", this));
         }
-        return execute(connection, jdbcTemplate, arguments.getListArgs(), statementControl, arguments.isDebug());
+        return execute(
+                connection,
+                sqlStatementDefinition,
+                sqlArgumentBuilder,
+                jdbcStatementAdapter,
+                debug
+        );
+    }
+
+    public <T extends DataMapper<T>> List<T> execute(
+            SqlStatementDefinition sqlStatementDefinition,
+            SqlArgumentBuilder sqlArgumentBuilder,
+            Class<T> cls
+    ) throws Throwable {
+        return execute(sqlStatementDefinition, sqlArgumentBuilder, cls, false);
+    }
+
+    public <T extends DataMapper<T>> List<T> execute(
+            SqlStatementDefinition sqlStatementDefinition,
+            SqlArgumentBuilder sqlArgumentBuilder,
+            Class<T> cls,
+            boolean debug
+    ) throws Throwable {
+        if (connection == null) {
+            throw new RuntimeException("Connection is null");
+        }
+        if (sqlStatementDefinition == null) {
+            throw new ForwardException(new HashMapBuilder<String, Object>()
+                    .append("sqlTemplateCompiler", null)
+                    .append("sqlArgumentBuilder", sqlArgumentBuilder)
+                    .append("self", this));
+        }
+        List<Map<String, Object>> execute = execute(
+                connection,
+                sqlStatementDefinition,
+                sqlArgumentBuilder,
+                jdbcStatementAdapter,
+                debug
+        );
+        List<T> result = new ArrayList<>();
+        execute.forEach(map -> {
+            try {
+                T t = cls.getDeclaredConstructor().newInstance();
+                result.add(t.fromMap(map, DataMapper.TransformCodeStyle.SNAKE_TO_CAMEL));
+            } catch (Throwable th) {
+                throw new ForwardException(this, th);
+            }
+        });
+        return result;
     }
 
     @Override
@@ -99,27 +160,6 @@ public class JdbcResource
             return false;
         }
         return true;
-    }
-
-    public <T extends DataMapper<T>> List<T> execute(JdbcRequest arguments, Class<T> cls) throws Throwable {
-        if (connection == null) {
-            throw new RuntimeException("Connection is null");
-        }
-        JdbcTemplate jdbcTemplate = arguments.getJdbcTemplate();
-        if (jdbcTemplate == null) {
-            throw new RuntimeException("TemplateEnum: " + arguments.getName() + " return null template");
-        }
-        List<Map<String, Object>> execute = execute(connection, jdbcTemplate, arguments.getListArgs(), statementControl, arguments.isDebug());
-        List<T> result = new ArrayList<>();
-        execute.forEach(map -> {
-            try {
-                T t = cls.getDeclaredConstructor().newInstance();
-                result.add(t.fromMap(map, DataMapper.TransformCodeStyle.SNAKE_TO_CAMEL));
-            } catch (Throwable th) {
-                throw new ForwardException(this, th);
-            }
-        });
-        return result;
     }
 
     @Override
