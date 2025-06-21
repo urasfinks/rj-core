@@ -12,7 +12,7 @@ public class EmailTemplateNotificationRequest extends EmailNotificationRequest {
     public EmailTemplateNotificationRequest(
             String title,
             String data,
-            String templateClassLoader,
+            String templateFileLoader,
             String templatePath,
             Map<String, String> args,
             String to
@@ -20,12 +20,12 @@ public class EmailTemplateNotificationRequest extends EmailNotificationRequest {
         super(title, data, "", to);
         try {
             setDataHtml(TemplateTwix.template(
-                    UtilFileResource.getAsString(templatePath, UtilFileResource.Direction.valueOf(templateClassLoader)),
+                    UtilFileResource.getAsString(templatePath, UtilFileResource.Direction.valueOf(templateFileLoader)),
                     args
             ));
         } catch (Exception e) {
             throw new ForwardException(new HashMapBuilder<>()
-                    .append("templateClassLoader", templateClassLoader)
+                    .append("templateFileLoader", templateFileLoader)
                     .append("templatePath", templatePath)
                     .append("args", args),
                     e);

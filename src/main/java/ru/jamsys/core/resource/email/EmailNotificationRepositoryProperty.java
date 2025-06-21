@@ -10,37 +10,37 @@ import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotation
 @Getter
 public class EmailNotificationRepositoryProperty extends RepositoryPropertyAnnotationField<Object> {
 
-    @PropertyKey("notification.email.host")
+    @PropertyKey("host")
     private String host;
 
-    @PropertyKey("notification.email.user")
+    @PropertyKey("user")
     private String user;
 
-    @PropertyKey("notification.email.from")
+    @PropertyKey("from")
     private String from;
 
-    @PropertyKey("notification.email.charset")
+    @PropertyKey("charset")
     private String charset;
 
-    @PropertyKey("notification.email.security.alias")
+    @PropertyKey("security.alias")
     private String securityAlias;
 
-    @PropertyKey("notification.email.port")
+    @PropertyKey("port")
     private Integer port;
 
-    @PropertyKey("notification.email.timeoutMs")
+    @PropertyKey("timeoutMs")
     private Integer connectTimeoutMs;
 
-    @PropertyKey("notification.email.ssl")
+    @PropertyKey("ssl")
     private Boolean ssl;
 
-    @PropertyKey("notification.email.support.address")
+    @PropertyKey("support.address")
     private String support;
 
-    @PropertyKey("notification.email.template.path")
+    @PropertyKey("template.path")
     private String templatePath;
 
-    @PropertyKey("notification.email.template.class.loader")
-    private String templateClassLoader;
+    @PropertyKey("template.file.loader")
+    private String templateFileLoader;
 
 }

@@ -10,16 +10,16 @@ import ru.jamsys.core.extension.annotation.PropertyKey;
 @Getter
 public class InfluxRepositoryProperty extends RepositoryPropertyAnnotationField<String> {
 
-    @PropertyKey("influx.org")
+    @PropertyKey("org")
     private String org;
 
-    @PropertyKey("influx.bucket")
+    @PropertyKey("bucket")
     private String bucket;
 
-    @PropertyKey("influx.host")
+    @PropertyKey("host")
     private String host;
 
-    @PropertyKey("influx.security.alias")
+    @PropertyKey("security.alias")
     private String alias;
 
 }

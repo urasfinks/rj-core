@@ -10,13 +10,13 @@ import ru.jamsys.core.extension.annotation.PropertyKey;
 @Getter
 public class YandexSpeechRepositoryProperty extends RepositoryPropertyAnnotationField<Object> {
 
-    @PropertyKey("yandex.speech.kit.host")
+    @PropertyKey("host")
     private String host;
 
-    @PropertyKey("yandex.speech.kit.port")
+    @PropertyKey("port")
     private Integer port;
 
-    @PropertyKey("yandex.speech.kit.security.alias")
+    @PropertyKey("security.alias")
     private String alias;
 
 }

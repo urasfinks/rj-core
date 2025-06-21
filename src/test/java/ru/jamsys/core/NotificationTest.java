@@ -137,7 +137,7 @@ class NotificationTest {
                     emailNotificationResource.execute(new EmailTemplateNotificationRequest(
                             "Title",
                             "data",
-                            emailNotificationResource.getProperty().getTemplateClassLoader(),
+                            emailNotificationResource.getProperty().getTemplateFileLoader(),
                             emailNotificationResource.getProperty().getTemplatePath(),
                             data,
                             "urasfinks@yandex.ru"

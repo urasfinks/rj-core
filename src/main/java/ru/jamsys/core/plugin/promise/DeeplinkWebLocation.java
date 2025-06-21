@@ -58,7 +58,7 @@ public class DeeplinkWebLocation extends PromiseGeneratorAccess implements HttpH
                                     UtilFileResource.Direction.valueOf(
                                             App.get(ServiceProperty.class)
                                                     .computeIfAbsent(
-                                                            "run.args.plugin.deeplink.template.class.loader",
+                                                            "run.args.plugin.deeplink.template.file.loader",
                                                             ""
                                                     )
                                                     .get()

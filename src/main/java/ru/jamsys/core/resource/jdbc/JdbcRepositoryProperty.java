@@ -10,13 +10,13 @@ import ru.jamsys.core.extension.annotation.PropertyKey;
 @Getter
 public class JdbcRepositoryProperty extends RepositoryPropertyAnnotationField<String> {
 
-    @PropertyKey("jdbc.uri")
+    @PropertyKey("uri")
     private String uri;
 
-    @PropertyKey("jdbc.user")
+    @PropertyKey("user")
     private String user;
 
-    @PropertyKey("jdbc.security.alias")
+    @PropertyKey("security.alias")
     private String securityAlias;
 
 }
