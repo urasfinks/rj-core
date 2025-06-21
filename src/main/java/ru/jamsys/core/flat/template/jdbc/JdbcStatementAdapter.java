@@ -52,6 +52,7 @@ public class JdbcStatementAdapter {
         };
     }
 
+    @SuppressWarnings("unused")
     public Object getColumn(ResultSet rs, ArgumentType type, String name) throws Exception {
         return switch (type) {
             case VARCHAR -> rs.getString(name);
