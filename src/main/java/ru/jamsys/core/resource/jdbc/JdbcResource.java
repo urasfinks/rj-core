@@ -8,12 +8,15 @@ import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.expiration.AbstractExpirationResource;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
+import ru.jamsys.core.flat.template.jdbc.ArgumentType;
 import ru.jamsys.core.flat.template.jdbc.DataMapper;
 import ru.jamsys.core.flat.template.jdbc.JdbcStatementAdapter;
 import ru.jamsys.core.flat.template.jdbc.SqlStatementDefinition;
 
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +46,11 @@ public class JdbcResource
         );
         // Если когда-нибудь появятся ещё БД, можно будет через Property выбирать другой класс работы с statement
         this.jdbcStatementAdapter = new JdbcStatementAdapter();
+    }
+
+    @SuppressWarnings("unused")
+    public Array createArray(ArgumentType argumentType, Object[] javaArray) throws SQLException {
+        return connection.createArrayOf(argumentType.getTypeName(), javaArray);
     }
 
     private void up() {

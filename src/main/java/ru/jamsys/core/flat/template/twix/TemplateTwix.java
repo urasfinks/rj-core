@@ -40,7 +40,7 @@ public class TemplateTwix {
     public static String template(List<TemplateItemTwix> parsedTemplate, Map<String, String> args, boolean forwardVariableIfNull) {
         StringBuilder sb = new StringBuilder();
         for (TemplateItemTwix templateItemTwix : parsedTemplate) {
-            if (templateItemTwix.isStatic()) {
+            if (templateItemTwix.isStaticFragment()) {
                 sb.append(templateItemTwix.getValue());
             } else {
                 String value = args.get(templateItemTwix.getValue());
@@ -76,7 +76,7 @@ public class TemplateTwix {
                 break;
             }
             TemplateItemTwix templateItemTwix = input.get(index++);
-            if (!templateItemTwix.isStatic()) {
+            if (!templateItemTwix.isStaticFragment()) {
                 get(tmp, result);
                 tmp.clear();
                 result.add(templateItemTwix);

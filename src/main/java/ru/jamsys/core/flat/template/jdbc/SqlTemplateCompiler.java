@@ -9,31 +9,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Компилятор для JdbcStatement. Закидывается map для наполнения sql шаблона, на выходе получаем подготовленный набор
-// для statement состоящий из собранного sql с "?" и индексируемые аргументы со значениями и типами
+/**
+ * Компилирует SQL-шаблон с параметрами, преобразуя их в подготовленный SQL-запрос и список аргументов.
+ */
 
 @Getter
 public class SqlTemplateCompiler {
 
+    private final String originalTemplate;
+
     private String cache;
 
-    private boolean dynamicArgument = false; // Если есть в аргументах динамичные фрагменты (IN_ENUM)
+    private boolean dynamicArgument = false;
 
-    private List<TemplateItemTwix> listTemplateItemTwix;
+    private List<TemplateItemTwix> templateItems;
 
-    private List<Argument> listArgument;
+    private List<Argument> arguments;
 
     public SqlTemplateCompiler(String sqlTemplate) {
+        this.originalTemplate = sqlTemplate;
         parse(sqlTemplate);
     }
 
     private void parse(String sql) {
-        listTemplateItemTwix = TemplateTwix.getParsedTemplate(sql);
-        listArgument = new ArrayList<>();
-        for (TemplateItemTwix templateItemTwix : listTemplateItemTwix) {
-            if (!templateItemTwix.isStatic) {
-                Argument argument = Argument.getInstance(templateItemTwix.value);
-                listArgument.add(argument);
+        templateItems = TemplateTwix.getParsedTemplate(sql);
+        arguments = new ArrayList<>();
+
+        for (TemplateItemTwix item : templateItems) {
+            if (!item.isStaticFragment()) {
+                Argument argument = Argument.getInstance(item.getValue());
+                arguments.add(argument);
+
                 if (DynamicFragment.check(argument.getType())) {
                     dynamicArgument = true;
                 }
@@ -42,48 +48,67 @@ public class SqlTemplateCompiler {
     }
 
     public SqlTemplateCompiled compile(Map<String, Object> args) throws CloneNotSupportedException {
-        Map<String, String> templateArgs = new HashMap<>();
-        SqlTemplateCompiled sqlTemplateCompiled = new SqlTemplateCompiled();
-        List<Argument> resultListArgument = sqlTemplateCompiled.getListArgument();
-        int nextIndex = 1;
-        for (Argument argument : listArgument) {
-            Object argumentValue = args.get(argument.getKey());
+        Map<String, String> resolvedFragments = new HashMap<>();
+        SqlTemplateCompiled result = new SqlTemplateCompiled();
+        List<Argument> compiledArguments = result.getListArgument();
+        int index = 1;
+
+        for (Argument argument : arguments) {
+            Object value = args.get(argument.getKey());
+
             if (DynamicFragment.check(argument.getType())) {
-                templateArgs.put(
+                if (value == null) {
+                    // Убираем фрагмент SQL, если значение null
+                    resolvedFragments.put(argument.getKeySqlTemplate(), "");
+                    continue;
+                }
+
+                if (!(value instanceof List<?> valueList)) {
+                    throw new IllegalArgumentException("Expected a List for dynamic argument: " + argument.getKey());
+                }
+
+                resolvedFragments.put(
                         argument.getKeySqlTemplate(),
-                        DynamicFragment.compile(argument.getType(), argumentValue, argument.getKey())
+                        DynamicFragment.compile(argument.getType(), valueList, argument.getKey())
                 );
-                for (Object obj : (List<?>) argumentValue) {
-                    resultListArgument.add(new Argument(
-                            ArgumentDirection.IN,
-                            DynamicFragment.mapType.get(argument.getType()),
-                            argument.getKey(),
-                            argument.getKeySqlTemplate()
-                    )
-                            .setIndex(nextIndex++)
-                            .setValue(obj));
+
+                for (Object obj : valueList) {
+                    compiledArguments.add(
+                            new Argument(
+                                    ArgumentDirection.IN,
+                                    DynamicFragment.mapType.get(argument.getType()),
+                                    argument.getKey(),
+                                    argument.getKeySqlTemplate()
+                            ).setIndex(index++)
+                                    .setValue(obj)
+                    );
                 }
             } else {
-                templateArgs.put(argument.getKeySqlTemplate(), "?");
-                resultListArgument.add(new Argument(
-                        argument.getDirection(),
-                        argument.getType(),
-                        argument.getKey(),
-                        argument.getKeySqlTemplate()
-                )
-                        .setIndex(nextIndex++)
-                        .setValue(argumentValue));
+                resolvedFragments.put(argument.getKeySqlTemplate(), "?");
+
+                compiledArguments.add(
+                        new Argument(
+                                argument.getDirection(),
+                                argument.getType(),
+                                argument.getKey(),
+                                argument.getKeySqlTemplate()
+                        ).setIndex(index++)
+                                .setValue(value) // null допустим
+                );
             }
         }
-        if (cache == null && !dynamicArgument) {
-            cache = TemplateTwix.template(listTemplateItemTwix, templateArgs);
-        }
-        if (dynamicArgument) {
-            sqlTemplateCompiled.setSql(TemplateTwix.template(listTemplateItemTwix, templateArgs));
-        } else {
-            sqlTemplateCompiled.setSql(cache);
-        }
-        return sqlTemplateCompiled;
-    }
 
+        // Генерация SQL: используем кэш, если шаблон статичный
+        if (cache == null && !dynamicArgument) {
+            cache = TemplateTwix.template(templateItems, resolvedFragments);
+        }
+
+        String finalSql = dynamicArgument
+                ? TemplateTwix.template(templateItems, resolvedFragments)
+                : cache;
+
+        result.setSql(finalSql);
+        return result;
+    }
 }
+

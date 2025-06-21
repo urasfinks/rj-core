@@ -10,12 +10,13 @@ import lombok.ToString;
 @ToString
 public final class TemplateItemTwix {
 
-    public final boolean isStatic;
-    public final String value;
+    private final boolean staticFragment;
 
-    public TemplateItemTwix(boolean isStatic, String value) {
-        this.isStatic = isStatic;
-        this.value = isStatic ? value : value.substring(2, value.length() - 1);
+    private final String value;
+
+    public TemplateItemTwix(boolean staticFragment, String value) {
+        this.staticFragment = staticFragment;
+        this.value = staticFragment ? value : value.substring(2, value.length() - 1);
     }
 
 }

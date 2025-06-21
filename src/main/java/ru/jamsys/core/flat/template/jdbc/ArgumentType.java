@@ -9,19 +9,23 @@ import java.sql.Types;
 @Getter
 public enum ArgumentType {
 
-    VARCHAR(Types.VARCHAR),
-    NUMBER(Types.NUMERIC),
-    TIMESTAMP(Types.TIMESTAMP),
-    ARRAY(Types.ARRAY),
+    VARCHAR(Types.VARCHAR, "text"),
+    NUMBER(Types.NUMERIC, "numeric"),
+    TIMESTAMP(Types.TIMESTAMP, "timestamp"),
+    BOOLEAN(Types.BOOLEAN, "boolean"),
+    ARRAY(Types.ARRAY, null),
 
-    IN_ENUM_VARCHAR(-1),
-    IN_ENUM_TIMESTAMP(-1),
-    IN_ENUM_NUMBER(-1);
+    IN_ENUM_VARCHAR(-1, null),
+    IN_ENUM_TIMESTAMP(-1, null),
+    IN_ENUM_NUMBER(-1, null);
 
     private final int type;
 
-    ArgumentType(int type) {
+    private final String typeName;
+
+    ArgumentType(int type, String typeName) {
         this.type = type;
+        this.typeName = typeName;
     }
 
     @JsonValue
