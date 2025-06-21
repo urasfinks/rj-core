@@ -40,52 +40,40 @@ class ArgumentTest {
     @Test
     void testTemplateMissingDirectionShouldThrow() {
         String template = "someKey::VARCHAR";
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            Argument.getInstance(template);
-        });
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> Argument.getInstance(template));
         assertTrue(ex.getMessage().contains("Недостаточное описание шаблона"));
     }
 
     @Test
     void testTemplateMissingTypeShouldThrow() {
         String template = "IN.someKey";
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            Argument.getInstance(template);
-        });
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> Argument.getInstance(template));
         assertTrue(ex.getMessage().contains("Недостаточное описание шаблона"));
     }
 
     @Test
     void testEmptyTemplateShouldThrow() {
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            Argument.getInstance("");
-        });
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> Argument.getInstance(""));
         assertTrue(ex.getMessage().contains("Пустой шаблон"));
     }
 
     @Test
     void testNullTemplateShouldThrow() {
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            Argument.getInstance(null);
-        });
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> Argument.getInstance(null));
         assertTrue(ex.getMessage().contains("Пустой шаблон"));
     }
 
     @Test
     void testInvalidDirectionShouldThrow() {
         String template = "UNKNOWN.key::VARCHAR";
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            Argument.getInstance(template);
-        });
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> Argument.getInstance(template));
         assertTrue(ex.getMessage().contains("No enum constant"));
     }
 
     @Test
     void testInvalidTypeShouldThrow() {
         String template = "IN.key::UNKNOWN_TYPE";
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            Argument.getInstance(template);
-        });
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> Argument.getInstance(template));
         assertTrue(ex.getMessage().contains("No enum constant"));
     }
 
