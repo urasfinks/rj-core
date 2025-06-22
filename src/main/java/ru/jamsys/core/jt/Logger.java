@@ -8,21 +8,26 @@ import ru.jamsys.core.flat.template.jdbc.SqlTemplateCompiler;
 @Getter
 public enum Logger implements SqlStatementDefinition {
 
-    INSERT("""
-            INSERT INTO logger (
-                date_add,
-                type,
-                host,
-                data,
-                header
-            ) values (
+    DROP_OLD_PARTITION("""
+            CALL drop_old_partitions(
+                ${IN.days_threshold::NUMBER}::integer
+            );""", SqlExecutionMode.CALL_WITH_AUTO_COMMIT),
+
+    CREATE_PARTITIONS("""
+            CALL create_partitions(
+                now()::timestamp,
+                ${IN.days::NUMBER}::integer
+            );""", SqlExecutionMode.CALL_WITH_AUTO_COMMIT),
+
+    INSERT_LOG("""
+            CALL insert_log_with_tags(
+                ${IN.uuid::VARCHAR}::uuid,
+                ${IN.message::VARCHAR},
                 ${IN.date_add::TIMESTAMP},
-                ${IN.type::VARCHAR},
-                ${IN.host::VARCHAR},
-                ${IN.data::VARCHAR}
-                ${IN.header::VARCHAR}
+                ${IN.tag_keys::VARCHAR}::text[],
+                ${IN.tag_values::VARCHAR}::text[]
             );
-            """, SqlExecutionMode.SELECT_WITH_AUTO_COMMIT);
+            """, SqlExecutionMode.CALL_WITH_AUTO_COMMIT);
 
     private final SqlTemplateCompiler sqlTemplateCompiler;
 
