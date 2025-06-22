@@ -321,6 +321,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return then(createTaskCompute(index, fn));
     }
 
+    @SuppressWarnings("unused")
     public Promise thenIO(String index, PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
         return then(createTaskIO(index, fn));
     }
