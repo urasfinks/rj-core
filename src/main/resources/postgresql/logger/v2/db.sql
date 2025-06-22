@@ -15,6 +15,13 @@ CREATE TABLE IF NOT EXISTS public.logs (
     CONSTRAINT logs_pkey PRIMARY KEY (log_id, log_timestamp)
 ) PARTITION BY RANGE (log_timestamp);
 
+CREATE TABLE IF NOT EXISTS logs_default
+PARTITION OF logs DEFAULT;
+
+-- Желательно создать хотя бы базовые индексы
+CREATE INDEX IF NOT EXISTS logs_default_log_timestamp_idx ON logs_default (log_timestamp);
+CREATE INDEX IF NOT EXISTS logs_default_log_uuid_idx ON logs_default (log_uuid);
+
 -- Комментарии для таблицы logs
 COMMENT ON TABLE public.logs IS 'Основная таблица логов с уникальными записями событий.';
 
@@ -41,6 +48,12 @@ CREATE TABLE IF NOT EXISTS public.tags (
     CONSTRAINT tags_name_value_key UNIQUE (name, value, tag_timestamp)
 ) PARTITION BY RANGE (tag_timestamp);
 
+CREATE TABLE IF NOT EXISTS tags_default
+PARTITION OF tags DEFAULT;
+
+CREATE INDEX IF NOT EXISTS tags_default_tag_timestamp_idx ON tags_default (tag_timestamp);
+CREATE INDEX IF NOT EXISTS tags_default_name_value_idx ON tags_default (name, value);
+
 -- Комментарии для таблицы tags
 COMMENT ON TABLE public.tags IS 'Таблица тегов, связанных с логами, с уникальным именем и значением.';
 
@@ -66,6 +79,12 @@ CREATE TABLE IF NOT EXISTS public.log_tags (
         REFERENCES public.tags (tag_id, tag_timestamp)
         ON DELETE CASCADE
 ) PARTITION BY RANGE (log_timestamp);
+
+CREATE TABLE IF NOT EXISTS log_tags_default
+PARTITION OF log_tags DEFAULT;
+
+CREATE INDEX IF NOT EXISTS log_tags_default_log_id_timestamp_idx ON log_tags_default (log_id, log_timestamp);
+CREATE INDEX IF NOT EXISTS log_tags_default_tag_id_timestamp_idx ON log_tags_default (tag_id, tag_timestamp);
 
 -- Комментарии для таблицы log_tags
 COMMENT ON TABLE public.log_tags IS 'Таблица связей между логами и тегами для реализации многие-ко-многим.';
