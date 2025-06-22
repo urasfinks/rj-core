@@ -98,50 +98,6 @@ class SqlTemplateCompilerRepositoryTest {
         Assertions.assertEquals("select * from table where c1 = ? and c2 = ?", sqlTemplateCompiler.compile(new HashMap<>()).getSql(), "#1");
     }
 
-    @SuppressWarnings("all")
-    void testPostgreSql() {
-        Promise promise = servicePromise.get("testPromisePosgreSQL", 6_000L);
-        promise
-                .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, _, jdbcResource) -> {
-                    try {
-                        List<Map<String, Object>> execute = jdbcResource.execute(TestSqlStatementDefinition.GET_LOG, new SqlArgumentBuilder());
-                        UtilLog.printInfo(execute);
-                    } catch (Throwable th) {
-                        App.error(th);
-                    }
-                })
-                .run()
-                .await(2000);
-    }
-
-    @SuppressWarnings("all")
-    void testInsertLog() {
-        Promise promise = servicePromise.get("testPromisePosgreSQL", 6_000L);
-        promise
-                .appendWithResource("jdbc", JdbcResource.class, "logger", (_, _, _, jdbcResource) -> {
-                    try {
-                        SqlArgumentBuilder sqlArgumentBuilder = new SqlArgumentBuilder();
-                        int idx = 0;
-                        for (int i = 0; i < 2; i++) {
-                            sqlArgumentBuilder
-                                    .add("date_add", System.currentTimeMillis())
-                                    .add("type", "Info")
-                                    .add("correlation", java.util.UUID.randomUUID().toString())
-                                    .add("host", "abc")
-                                    .add("ext_index", null)
-                                    .add("data", "{\"idx\":" + (idx++) + "}")
-                                    .nextBatch()
-                            ;
-                        }
-                        List<Map<String, Object>> execute = jdbcResource.execute(Logger.INSERT, sqlArgumentBuilder);
-                    } catch (Throwable th) {
-                        App.error(th);
-                    }
-                })
-                .run()
-                .await(2000);
-    }
-
     @Getter
     @Setter
     public static class Test1 extends DataMapper<Test1> {

@@ -8,9 +8,7 @@ import ru.jamsys.core.flat.template.jdbc.SqlTemplateCompiler;
 @Getter
 public enum TestSqlStatementDefinition implements SqlStatementDefinition {
 
-    TEST("select * from test", SqlExecutionMode.SELECT_WITH_AUTO_COMMIT),
-
-    GET_LOG("select * from logger", SqlExecutionMode.SELECT_WITH_AUTO_COMMIT);
+    TEST("select * from test", SqlExecutionMode.SELECT_WITH_AUTO_COMMIT);
 
     private final SqlTemplateCompiler sqlTemplateCompiler;
 
