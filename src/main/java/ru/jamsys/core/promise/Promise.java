@@ -202,6 +202,8 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     // Блок должен вызываться 1 раз. Может быть такое, что 10 параллельно запущенных задач смогут вызвать 10 setError
     public void setError(String index, Throwable throwable) {
         App.error(new ForwardException(this, throwable));
+        // Так как ошибка, завершаем процесс ожидания timeOut
+        App.get(ServicePromise.class).removeTimeout(registeredTimeOutExpiration);
         this.trace.add(new Trace<>(index, throwable));
         terminalStatus = TerminalStatus.ERROR;
         runErrorHandler();
