@@ -10,6 +10,7 @@ CREATE SEQUENCE IF NOT EXISTS logs_log_id_seq
 CREATE TABLE IF NOT EXISTS public.logs (
     log_id bigint NOT NULL DEFAULT nextval('logs_log_id_seq'),
     log_uuid uuid NOT NULL,
+    log_type varchar(10),
     log_timestamp timestamp WITHOUT TIME ZONE NOT NULL DEFAULT now(),
     message text NOT NULL COLLATE pg_catalog."default",
     CONSTRAINT logs_pkey PRIMARY KEY (log_id, log_timestamp)
@@ -114,17 +115,20 @@ BEGIN
         right_bound := to_char(from_date + (i + 1) * INTERVAL '1 day', 'YYYY-MM-DD');
 
         -- Проверка существования партиции
-        IF prefix IN (SELECT child.relname AS part
-                      FROM pg_inherits
-                               JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
-                               JOIN pg_class child ON pg_inherits.inhrelid = child.oid
-                               JOIN pg_namespace nmsp_parent ON nmsp_parent.oid = parent.relnamespace
-                               JOIN pg_namespace nmsp_child ON nmsp_child.oid = child.relnamespace
-                      WHERE parent.relname = table_name) THEN
+        IF prefix IN (
+            SELECT child.relname AS part
+            FROM pg_inherits
+                     JOIN pg_class parent ON pg_inherits.inhparent = parent.oid
+                     JOIN pg_class child ON pg_inherits.inhrelid = child.oid
+                     JOIN pg_namespace nmsp_parent ON nmsp_parent.oid = parent.relnamespace
+                     JOIN pg_namespace nmsp_child ON nmsp_child.oid = child.relnamespace
+            WHERE parent.relname = table_name
+        ) THEN
             i := i + 1;
             CONTINUE;
         END IF;
 
+        -- Создание партиции
         EXECUTE format(
             'CREATE TABLE IF NOT EXISTS %I (LIKE %I INCLUDING ALL) TABLESPACE pg_default;',
             prefix, table_name
@@ -136,23 +140,31 @@ BEGIN
             prefix
         );
 
+        -- Добавление CHECK-ограничения по времени
         EXECUTE format(
             'ALTER TABLE %I ADD CONSTRAINT %I CHECK (log_timestamp >= %L::timestamp AND log_timestamp < %L::timestamp);',
             prefix, prefix || '_check_bounds', left_bound, right_bound
         );
 
-        -- Индекс по log_timestamp — ускоряет фильтрацию логов по времени
+        -- Индекс по log_timestamp
         EXECUTE format(
             'CREATE INDEX IF NOT EXISTS %I ON %I (log_timestamp);',
             prefix || '_log_timestamp_idx', prefix
         );
 
-        -- Индекс по log_uuid — ускоряет поиск логов по уникальному идентификатору события
+        -- Индекс по log_uuid
         EXECUTE format(
             'CREATE INDEX IF NOT EXISTS %I ON %I (log_uuid);',
             prefix || '_log_uuid_idx', prefix
         );
 
+        -- Индекс по log_type
+        EXECUTE format(
+            'CREATE INDEX IF NOT EXISTS %I ON %I (log_type);',
+            prefix || '_log_type_idx', prefix
+        );
+
+        -- Присоединение партиции
         EXECUTE format(
             'ALTER TABLE %I ATTACH PARTITION %I FOR VALUES FROM (%L) TO (%L);',
             table_name, prefix, left_bound, right_bound
@@ -350,6 +362,7 @@ $$;
 
 CREATE OR REPLACE PROCEDURE insert_log_with_tags(
     log_uuid UUID,
+    log_type VARCHAR,
     message TEXT,
     log_timestamp TIMESTAMP WITHOUT TIME ZONE,
     tag_names TEXT[],
@@ -368,8 +381,8 @@ BEGIN
     END IF;
 
     -- Вставка лога
-    INSERT INTO logs (log_uuid, message, log_timestamp)
-    VALUES (log_uuid, message, log_timestamp)
+    INSERT INTO logs (log_uuid, message, log_timestamp, log_type)
+    VALUES (log_uuid, message, log_timestamp, log_type)
     RETURNING log_id INTO log_id_val;
 
     -- Обработка тегов

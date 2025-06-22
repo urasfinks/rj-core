@@ -2,6 +2,7 @@ package ru.jamsys.core;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.flat.template.jdbc.ArgumentType;
 import ru.jamsys.core.jt.Logger;
@@ -29,7 +30,7 @@ class ConnectionResourceTest {
 
     @SuppressWarnings("unused")
     // Без контекста БД невозможно в тестах запускать
-    // @Test
+     @Test
     void promiseTaskWithPool() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise
@@ -38,6 +39,7 @@ class ConnectionResourceTest {
                             Logger.INSERT_LOG,
                             new SqlArgumentBuilder()
                                     .add("uuid", java.util.UUID.randomUUID().toString())
+                                    .add("log_type", "INFO")
                                     .add("message", "Hello world")
                                     .add("date_add", System.currentTimeMillis())
                                     .add("tag_keys", jdbcResource.createArray(

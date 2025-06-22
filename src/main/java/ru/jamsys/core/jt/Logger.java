@@ -22,6 +22,7 @@ public enum Logger implements SqlStatementDefinition {
     INSERT_LOG("""
             CALL insert_log_with_tags(
                 ${IN.uuid::VARCHAR}::uuid,
+                ${IN.log_type::VARCHAR},
                 ${IN.message::VARCHAR},
                 ${IN.date_add::TIMESTAMP},
                 ${IN.tag_keys::VARCHAR}::text[],
