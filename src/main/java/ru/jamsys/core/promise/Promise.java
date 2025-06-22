@@ -220,12 +220,12 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
     }
 
     public Promise onComplete(PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
-        AbstractPromiseTask promiseTask = createTaskCompute("onComplete", fn);
+        AbstractPromiseTask promiseTask = createTaskIO("onComplete", fn);
         return setOnComplete(promiseTask);
     }
 
     public Promise onError(PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
-        AbstractPromiseTask promiseTask = createTaskCompute("onError", fn);
+        AbstractPromiseTask promiseTask = createTaskIO("onError", fn);
         return setOnError(promiseTask);
     }
 
@@ -236,6 +236,10 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
 
     public Promise append(String index, PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
         return append(createTaskCompute(index, fn));
+    }
+
+    public Promise appendIO(String index, PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
+        return append(createTaskIO(index, fn));
     }
 
     public Promise modifyLastPromiseTask(Consumer<AbstractPromiseTask> fn) {
@@ -317,6 +321,10 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return then(createTaskCompute(index, fn));
     }
 
+    public Promise thenIO(String index, PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn) {
+        return then(createTaskIO(index, fn));
+    }
+
     @SuppressWarnings("all")
     public Promise appendWait() {
         if (queueTask.getMainQueue().isEmpty()) {
@@ -365,8 +373,7 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
         return new PromiseTask(getComplexIndex(index), this, PromiseTaskExecuteType.COMPUTE, fn);
     }
 
-    @SuppressWarnings("unused")
-    public AbstractPromiseTask createTaskIo(
+    public AbstractPromiseTask createTaskIO(
             String index,
             PromiseTaskConsumerThrowing<AtomicBoolean, AbstractPromiseTask, Promise> fn
     ) {

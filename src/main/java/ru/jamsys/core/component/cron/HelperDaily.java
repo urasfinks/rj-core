@@ -13,8 +13,6 @@ import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.resource.jdbc.JdbcResource;
 import ru.jamsys.core.resource.jdbc.SqlArgumentBuilder;
 
-// Удаление протухших элементов в Manager
-// TODO: надо все это сделать на виртуальных потоках, скорость нам не важна
 @SuppressWarnings("unused")
 @Component
 public class HelperDaily extends PromiseGenerator implements CronConfigurator {
@@ -39,7 +37,7 @@ public class HelperDaily extends PromiseGenerator implements CronConfigurator {
 
     @Override
     public Promise generate() {
-        return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
+        return servicePromise.get(App.getUniqueClassName(getClass()), 60_000L)
                 .thenWithResource(
                         "dropPartition",
                         JdbcResource.class,

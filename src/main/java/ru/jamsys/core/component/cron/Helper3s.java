@@ -12,7 +12,6 @@ import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 
 // Удаление протухших элементов в Manager
-// TODO: надо все это сделать на виртуальных потоках, скорость нам не важна
 @SuppressWarnings("unused")
 @Component
 public class Helper3s extends PromiseGenerator implements Cron3s {
@@ -32,10 +31,10 @@ public class Helper3s extends PromiseGenerator implements Cron3s {
     @Override
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
-                .append("manager", (run, _, _) -> manager.helper(run))
-                .append("balancePool", (run, _, _) -> manager.groupAcceptByInterface(AbstractPool.class, AbstractPool::balance))
-                .append("timer", (threadRun, _, _) -> serviceTimer.helper(threadRun))
-                .append(
+                .appendIO("manager", (run, _, _) -> manager.helper(run))
+                .appendIO("balancePool", (run, _, _) -> manager.groupAcceptByInterface(AbstractPool.class, AbstractPool::balance))
+                .appendIO("timer", (threadRun, _, _) -> serviceTimer.helper(threadRun))
+                .appendIO(
                         BrokerMemory.class.getSimpleName(),
                         (run, _, _) -> manager.groupAccept(
                                 BrokerMemory.class,

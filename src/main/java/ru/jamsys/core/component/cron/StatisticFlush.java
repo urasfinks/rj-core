@@ -64,7 +64,7 @@ public class StatisticFlush extends PromiseGenerator implements Cron1s {
     @Override
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
-                .append("main", (threadRun, _, _) -> {
+                .appendIO("main", (threadRun, _, _) -> {
                     StringBuilder sb = new StringBuilder();
                     for (StatisticsFlushComponent statisticsFlushComponent : list) {
                         for (StatisticDataHeader statisticDataHeader : statisticsFlushComponent.flushAndGetStatistic(threadRun)) {

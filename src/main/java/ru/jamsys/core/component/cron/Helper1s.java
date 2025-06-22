@@ -13,7 +13,6 @@ import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 
 // Нам надо вызывать helper у ExpiredList 1 раз в секунду, а не 1раз в 3сек
-// TODO: надо все это сделать на виртуальных потоках, скорость нам не важна
 @SuppressWarnings("unused")
 @Component
 @Lazy
@@ -30,14 +29,14 @@ public class Helper1s extends PromiseGenerator implements Cron1s  {
     @Override
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
-                .append(
+                .appendIO(
                         App.getUniqueClassName(ExpirationList.class),
                         (run, _, _) -> manager.groupAccept(
                                 ExpirationList.class,
                                 expirationList -> expirationList.helper(run, System.currentTimeMillis())
                         )
                 )
-                .append(AbstractAsyncFileWriter.class.getSimpleName(),
+                .appendIO(AbstractAsyncFileWriter.class.getSimpleName(),
                         (run, _, _) -> manager.groupAcceptByInterface(AbstractAsyncFileWriter.class, abstractAsyncFileWriter -> {
                             try {
                                 abstractAsyncFileWriter.flush(run);
