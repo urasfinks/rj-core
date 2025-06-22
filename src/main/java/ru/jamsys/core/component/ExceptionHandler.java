@@ -1,8 +1,6 @@
 package ru.jamsys.core.component;
 
 import lombok.Setter;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
@@ -11,18 +9,16 @@ import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilLog;
 
 @Setter
-@Component
-@Lazy
 public class ExceptionHandler {
 
     @SuppressWarnings("all")
     private static int maxLine = 50;
 
-    public void handler(Throwable th, Object context) {
+    public static void handler(Throwable th, Object context) {
         UtilLog.error(getExceptionObject(th, context)).print();
     }
 
-    public Object getExceptionObject(Throwable th, Object context) {
+    public static Object getExceptionObject(Throwable th, Object context) {
         LineWriterList lineWriterList = new LineWriterList();
         lineWriterList.addLine(
                 UtilDate.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()

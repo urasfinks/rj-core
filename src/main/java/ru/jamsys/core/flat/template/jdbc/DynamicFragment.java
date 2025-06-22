@@ -11,54 +11,60 @@ import java.util.function.Function;
 
 public abstract class DynamicFragment {
 
-    public static final Function<Object, String> enumInFunction = object -> {
-        if (object instanceof List) {
-            @SuppressWarnings("rawtypes")
-            List<?> listArgs = (List) object;
-            if (listArgs.isEmpty()) {
-                throw new RuntimeException("enumInFunction list is empty");
-            }
-            String[] array = new String[listArgs.size()];
-            Arrays.fill(array, "?");
-            return String.join(",", array);
+    private static final Function<Object, String> enumInFunction = obj -> {
+        List<?> values = castToList(obj);
+
+        if (values.isEmpty()) {
+            throw new IllegalArgumentException("DynamicFragment: IN list is empty");
         }
-        throw new RuntimeException("enumInFunction object: " + object + " is not List");
+
+        String[] placeholders = new String[values.size()];
+        Arrays.fill(placeholders, "?");
+        return String.join(",", placeholders);
     };
 
-    public static final Map<ArgumentType, Function<Object, String>> dynamicType = new HashMapBuilder<ArgumentType, Function<Object, String>>()
-            .append(ArgumentType.IN_ENUM_VARCHAR, enumInFunction)
-            .append(ArgumentType.IN_ENUM_TIMESTAMP, enumInFunction)
-            .append(ArgumentType.IN_ENUM_NUMBER, enumInFunction);
+    private static final Map<ArgumentType, Function<Object, String>> dynamicType = Map.of(
+            ArgumentType.IN_ENUM_VARCHAR, enumInFunction,
+            ArgumentType.IN_ENUM_TIMESTAMP, enumInFunction,
+            ArgumentType.IN_ENUM_NUMBER, enumInFunction
+    );
 
-    public static final HashMapBuilder<ArgumentType, ArgumentType> mapType = new HashMapBuilder<ArgumentType, ArgumentType>()
-            .append(ArgumentType.IN_ENUM_VARCHAR, ArgumentType.VARCHAR)
-            .append(ArgumentType.IN_ENUM_TIMESTAMP, ArgumentType.TIMESTAMP)
-            .append(ArgumentType.IN_ENUM_NUMBER, ArgumentType.NUMBER);
+    public static final Map<ArgumentType, ArgumentType> mapType = Map.of(
+            ArgumentType.IN_ENUM_VARCHAR, ArgumentType.VARCHAR,
+            ArgumentType.IN_ENUM_TIMESTAMP, ArgumentType.TIMESTAMP,
+            ArgumentType.IN_ENUM_NUMBER, ArgumentType.NUMBER
+    );
 
-    public static String compile(ArgumentType argumentType, Object obj, String information) {
-        // Не конкурентная проверка
-        if (dynamicType.containsKey(argumentType)) {
-            try {
-                return dynamicType.get(argumentType).apply(obj);
-            } catch (Exception e) {
-                throw new ForwardException(new HashMapBuilder<>()
-                        .append("object", obj)
-                        .append("information", information),
-                        e
-                );
-            }
+    public static String compile(ArgumentType argumentType, Object obj){
+        Function<Object, String> compiler = dynamicType.get(argumentType);
+
+        if (compiler == null) {
+            throw new ForwardException("Unsupported dynamic argument type", new HashMapBuilder<String, Object>()
+                    .append("argumentType", argumentType)
+                    .append("object", obj)
+            );
         }
-        throw new ForwardException(new HashMapBuilder<>()
-                .append("cause", "Function does not exist")
-                .append("argumentType", argumentType)
-                .append("object", obj)
-                .append("information", information)
-        );
+
+        try {
+            return compiler.apply(obj);
+        } catch (Exception e) {
+            throw new ForwardException(new HashMapBuilder<String, Object>()
+                    .append("object", obj)
+                    .append("argumentType", argumentType)
+                    , e);
+        }
     }
 
     public static boolean check(ArgumentType argumentType) {
-        // Не конкурентная проверка
         return dynamicType.containsKey(argumentType);
+    }
+
+    private static List<?> castToList(Object obj) {
+        if (obj instanceof List<?>) {
+            return (List<?>) obj;
+        }
+        throw new IllegalArgumentException("DynamicFragment: " + "enumInFunction" + " expects List, got " +
+                (obj == null ? "null" : obj.getClass().getSimpleName()));
     }
 
 }

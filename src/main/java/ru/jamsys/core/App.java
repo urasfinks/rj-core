@@ -97,16 +97,8 @@ public class App implements CascadeKey {
         error(th, null);
     }
 
-    @SuppressWarnings("all")
     public static void error(Throwable th, Object context) {
-        if (applicationContext != null) {
-            ExceptionHandler exceptionHandler = get(ExceptionHandler.class);
-            if (exceptionHandler != null) {
-                exceptionHandler.handler(th, context);
-                return;
-            }
-        }
-        th.printStackTrace();
+        ExceptionHandler.handler(th, context);
     }
 
     public static AppRunBuilder getRunBuilder() {

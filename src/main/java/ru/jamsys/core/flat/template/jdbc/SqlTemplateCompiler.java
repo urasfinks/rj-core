@@ -1,6 +1,7 @@
 package ru.jamsys.core.flat.template.jdbc;
 
 import lombok.Getter;
+import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.template.twix.TemplateItemTwix;
 import ru.jamsys.core.flat.template.twix.TemplateTwix;
 
@@ -67,11 +68,14 @@ public class SqlTemplateCompiler {
                     throw new IllegalArgumentException("Expected a List for dynamic argument: " + argument.getKey());
                 }
 
-                resolvedFragments.put(
-                        argument.getKeySqlTemplate(),
-                        DynamicFragment.compile(argument.getType(), valueList, argument.getKey())
-                );
-
+                try {
+                    resolvedFragments.put(
+                            argument.getKeySqlTemplate(),
+                            DynamicFragment.compile(argument.getType(), valueList)
+                    );
+                } catch (Exception e) {
+                    throw new ForwardException(argument, e);
+                }
                 for (Object obj : valueList) {
                     compiledArguments.add(
                             new Argument(
@@ -110,5 +114,6 @@ public class SqlTemplateCompiler {
         result.setSql(finalSql);
         return result;
     }
+
 }
 
