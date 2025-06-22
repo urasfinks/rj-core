@@ -40,26 +40,36 @@ public class HelperDaily extends PromiseGenerator implements CronConfigurator {
     @Override
     public Promise generate() {
         return servicePromise.get(App.getUniqueClassName(getClass()), 6_000L)
-                .thenWithResource("dropPartition", JdbcResource.class, "postgresql.remote.log", (_, task, _, jdbcResource) -> {
-                    jdbcResource.execute(
-                            Logger.DROP_OLD_PARTITION,
-                            new SqlArgumentBuilder()
-                                    .add("days_threshold", App.get(ServiceProperty.class)
-                                            .getOrThrow(getCascadeKey("drop.old.partition.day.threshold"), this)
-                                            .get(Integer.class))
+                .thenWithResource(
+                        "dropPartition",
+                        JdbcResource.class,
+                        "postgresql.remote.log",
+                        (_, task, _, jdbcResource) -> jdbcResource.execute(
+                                Logger.DROP_OLD_PARTITION,
+                                new SqlArgumentBuilder()
+                                        .add("days_threshold", App.get(ServiceProperty.class)
+                                                .getOrThrow(
+                                                        getCascadeKey("drop.old.partition.day.threshold"),
+                                                        this
+                                                )
+                                                .get(Integer.class))
 
-                    );
-                })
-                .thenWithResource("createPartition", JdbcResource.class, "postgresql.remote.log", (_, task, _, jdbcResource) -> {
-                    jdbcResource.execute(
-                            Logger.CREATE_PARTITIONS,
-                            new SqlArgumentBuilder()
-                                    .add("days", App.get(ServiceProperty.class)
-                                            .getOrThrow(getCascadeKey("create.partitions.day"), this)
-                                            .get(Integer.class))
+                        ))
+                .thenWithResource(
+                        "createPartition",
+                        JdbcResource.class,
+                        "postgresql.remote.log",
+                        (_, task, _, jdbcResource) -> jdbcResource.execute(
+                                Logger.CREATE_PARTITIONS,
+                                new SqlArgumentBuilder()
+                                        .add("days", App.get(ServiceProperty.class)
+                                                .getOrThrow(
+                                                        getCascadeKey("create.partitions.day"),
+                                                        this
+                                                )
+                                                .get(Integer.class))
 
-                    );
-                })
+                        ))
                 ;
 
     }

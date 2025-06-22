@@ -12,16 +12,10 @@ import ru.jamsys.core.flat.template.jdbc.DataMapper;
 import ru.jamsys.core.flat.template.jdbc.DebugVisualizer;
 import ru.jamsys.core.flat.template.jdbc.SqlTemplateCompiled;
 import ru.jamsys.core.flat.template.jdbc.SqlTemplateCompiler;
-import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.jt.Logger;
-import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.resource.jdbc.JdbcResource;
-import ru.jamsys.core.resource.jdbc.SqlArgumentBuilder;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 // IO time: 6ms
 // COMPUTE time: 6ms
