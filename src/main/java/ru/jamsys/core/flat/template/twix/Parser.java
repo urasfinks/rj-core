@@ -1,18 +1,21 @@
 package ru.jamsys.core.flat.template.twix;
 
+import lombok.Getter;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+@Getter
 public class Parser {
 
-    private Dictionary[] future;
+    private Dictionary[] expectedNextStates;
     private Dictionary lastState = Dictionary.ANY;
     private final Map<Dictionary, Dictionary[]> follow = new HashMap<>();
-    private StringBuilder sb = new StringBuilder();
-    private boolean isTerminal = false;
-    private boolean isFinish = false;
-    private boolean isParse = false;
+    private final StringBuilder buffer = new StringBuilder();
+    private boolean terminal = false;
+    private boolean finished = false;
+    private boolean parsing = false;
     private boolean firstEntry = false;
 
     public Parser() {
@@ -22,84 +25,77 @@ public class Parser {
         follow.put(Dictionary.ANY, new Dictionary[]{Dictionary.ANY, Dictionary.CURLY_BRACE_CLOSE, Dictionary.ESCAPE});
     }
 
-    public void read(String ch) {
-        boolean append = true;
-        Dictionary curState = Dictionary.parse(ch);
-        if (curState == Dictionary.DOLLAR && !isParse && lastState == Dictionary.ESCAPE) {
-            String curSb = sb.toString();
-            if (!curSb.isEmpty()) {
-                sb = new StringBuilder();
-                sb.append(curSb, 0, curSb.length() - 1);
+    public void read(String inputChar) {
+        boolean shouldAppend = true;
+        Dictionary currentState = Dictionary.parse(inputChar);
+
+        if (currentState == Dictionary.DOLLAR && !parsing && lastState == Dictionary.ESCAPE) {
+            if (!buffer.isEmpty()) {
+                buffer.setLength(buffer.length() - 1);
             }
         }
-        if (curState == Dictionary.DOLLAR && !isParse && lastState != Dictionary.ESCAPE) {
-            isParse = true;
-            isTerminal = true;
-            setFuture(curState);
-            append = false;
+
+        if (currentState == Dictionary.DOLLAR && !parsing && lastState != Dictionary.ESCAPE) {
+            parsing = true;
+            terminal = true;
+            setExpectedNextStates(currentState);
             firstEntry = true;
-        } else if (isParse) {
+            shouldAppend = false;
+        } else if (parsing) {
             if (firstEntry) {
-                sb.append(Dictionary.DOLLAR.getAlias());
+                buffer.append(Dictionary.DOLLAR.getAlias());
                 firstEntry = false;
             }
-            if (isMust(curState)) {
-                if (curState == Dictionary.ESCAPE) {
-                    append = false;
+
+            if (isExpected(currentState)) {
+                if (currentState == Dictionary.ESCAPE) {
+                    shouldAppend = false;
                 }
+
                 if (lastState == Dictionary.ESCAPE) {
-                    if (curState == Dictionary.ESCAPE) {
-                        append = true;
+                    if (currentState == Dictionary.ESCAPE) {
+                        shouldAppend = true;
                     }
-                    setFuture(Dictionary.ANY);
-                } else if (curState == Dictionary.CURLY_BRACE_CLOSE) {
-                    isFinish = true;
-                    isParse = false;
+                    setExpectedNextStates(Dictionary.ANY);
+                } else if (currentState == Dictionary.CURLY_BRACE_CLOSE) {
+                    finished = true;
+                    parsing = false;
                 } else {
-                    setFuture(curState);
+                    setExpectedNextStates(currentState);
                 }
             } else {
-                isTerminal = true;
-                isParse = false;
-                if (curState == Dictionary.DOLLAR) {
-                    append = false;
-                    isParse = true;
+                terminal = true;
+                parsing = false;
+
+                if (currentState == Dictionary.DOLLAR) {
+                    parsing = true;
                     firstEntry = true;
+                    shouldAppend = false;
                 }
             }
         }
-        if (append) {
-            sb.append(ch);
+
+        if (shouldAppend) {
+            buffer.append(inputChar);
         }
-        lastState = curState;
+
+        lastState = currentState;
     }
 
-    private boolean isMust(Dictionary dictionary) {
-        // Не конкурентная проверка
-        return Arrays.asList(future).contains(dictionary);
+    private boolean isExpected(Dictionary state) {
+        return expectedNextStates != null && Arrays.asList(expectedNextStates).contains(state);
     }
 
-    private void setFuture(Dictionary dictionary) {
-        future = follow.get(dictionary);
-    }
-
-    public boolean isParse() {
-        return isParse;
-    }
-
-    public boolean isTerminal() {
-        return isTerminal;
-    }
-
-    public boolean isFinish() {
-        return isFinish;
+    private void setExpectedNextStates(Dictionary currentState) {
+        expectedNextStates = follow.get(currentState);
     }
 
     public String flush() {
-        isTerminal = false;
-        isFinish = false;
-        String result = sb.toString();
-        sb = new StringBuilder();
+        terminal = false;
+        finished = false;
+        String result = buffer.toString();
+        buffer.setLength(0);
         return result;
     }
+
 }

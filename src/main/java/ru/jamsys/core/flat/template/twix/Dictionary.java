@@ -19,6 +19,9 @@ public enum Dictionary implements CamelNormalization {
     }
 
     public static Dictionary parse(String ch) {
+        if (ch == null) {
+            throw new IllegalArgumentException("Input character cannot be null");
+        }
         return switch (ch) {
             case "$" -> Dictionary.DOLLAR;
             case "{" -> Dictionary.CURLY_BRACE_OPEN;
@@ -27,4 +30,5 @@ public enum Dictionary implements CamelNormalization {
             default -> Dictionary.ANY;
         };
     }
+
 }
