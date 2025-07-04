@@ -10,6 +10,7 @@ import ru.jamsys.core.extension.broker.persist.element.StatisticElement;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertyBuilder;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.template.cron.release.Cron5s;
+import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.plugin.http.resource.influx.InfluxPlugin;
 import ru.jamsys.core.plugin.http.resource.influx.InfluxRepositoryProperty;
 import ru.jamsys.core.plugin.http.resource.victoria.metrics.VictoriaMetricsRepositoryProperty;
@@ -73,6 +74,8 @@ public class StatisticUpload extends PromiseGenerator implements Cron5s {
                             );
                             if (execute.isSuccess()) {
                                 list.forEach(statisticElementBrokerPersist::commit);
+                            } else {
+                                UtilLog.printError(execute);
                             }
                         })
                 ;
