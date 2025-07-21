@@ -276,4 +276,36 @@ public class Util {
                 .orElse((Collection<Collection<?>>) nCol.get());
     }
 
+    /**
+     * Вычисляет декартово произведение списка списков.
+     *
+     * @param lists список списков, для которых нужно взять декартово произведение
+     * @param <T>   тип элементов списков
+     * @return список всех комбинаций (каждая комбинация — список из одного элемента из каждого входного списка)
+     */
+    public static <T> List<List<T>> cartesian(List<List<T>> lists) {
+        // Если вход пустой или содержит пустой список — результат пуст
+        if (lists == null || lists.isEmpty() || lists.stream().anyMatch(List::isEmpty)) {
+            return Collections.emptyList();
+        }
+
+        // Начинаем с единственной «пустой» комбинации
+        List<List<T>> result = new ArrayList<>();
+        result.add(new ArrayList<>());
+
+        // Для каждого входного списка «дописать» к существующим комбинациям все его элементы
+        for (List<T> currentList : lists) {
+            List<List<T>> newResult = new ArrayList<>();
+            for (List<T> partial : result) {
+                for (T element : currentList) {
+                    List<T> next = new ArrayList<>(partial);
+                    next.add(element);
+                    newResult.add(next);
+                }
+            }
+            result = newResult;
+        }
+        return result;
+    }
+
 }

@@ -449,4 +449,37 @@ class UtilTest {
                 Util.getHash("test", "MD5", "INVALID_ENCODING"));
     }
 
+    @Test
+    void cartesianProduct(){
+        List<List<String>> input = new ArrayList<>();
+        input.add(List.of("A", "B"));
+        input.add(List.of("1"));
+        input.add(List.of("X", "Y"));
+
+        List<List<String>> product = Util.cartesian(input);
+        Assertions.assertEquals("""
+                [
+                  [
+                    "A",
+                    "1",
+                    "X"
+                  ],
+                  [
+                    "A",
+                    "1",
+                    "Y"
+                  ],
+                  [
+                    "B",
+                    "1",
+                    "X"
+                  ],
+                  [
+                    "B",
+                    "1",
+                    "Y"
+                  ]
+                ]""", UtilJson.toStringPretty(product, "{}"));
+    }
+
 }
