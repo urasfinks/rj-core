@@ -308,4 +308,33 @@ public class Util {
         return result;
     }
 
+    /**
+     * Фильтрует пары размером 2: убирает дубляжи [x,x] и зеркальные дубликаты [b,a] при наличии [a,b].
+     *
+     * @param pairs  список списков размера 2
+     * @param <T>    тип элементов, должен корректно реализовывать equals()/hashCode()
+     * @return       новый список, содержащий только уникальные комбинации
+     */
+    public static <T> List<List<T>> cartesianFilter(List<List<T>> pairs) {
+        List<List<T>> result = new ArrayList<>();
+        // множество для «ключей» без учёта порядка
+        Set<Set<T>> seen = new HashSet<>();
+
+        for (List<T> p : pairs) {
+            // пропускаем не пары или пары одинаковых элементов
+            if (p.size() != 2 || p.get(0).equals(p.get(1))) {
+                continue;
+            }
+            // создаём key-Set без учёта порядка
+            Set<T> key = Set.of(p.get(0), p.get(1));
+            // если такой ключ в seen ещё не был — добавляем пару в результат
+            if (seen.add(key)) {
+                result.add(p);
+            }
+        }
+        return result;
+    }
+
+
+
 }
