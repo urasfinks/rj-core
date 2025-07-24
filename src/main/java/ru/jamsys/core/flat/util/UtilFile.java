@@ -147,7 +147,7 @@ public class UtilFile {
         return false;
     }
 
-    public static String getWebContent(String relativeWebPath) {
+    public static String getWebFileAsString(String relativeWebPath) {
         String location = App.get(ServiceProperty.class)
                 .computeIfAbsent("run.args.web.resource.location", "")
                 .get();

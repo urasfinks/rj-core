@@ -31,7 +31,7 @@ public class DeeplinkSchemaApple extends PromiseGeneratorAccess implements HttpH
         return servicePromise.get(App.getUniqueClassName(getClass()), 7_000L)
                 .append("input", (_, _, promise) -> {
                     ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
-                    servletHandler.setResponseBody(UtilFile.getWebContent(".well-known/apple-app-site-association.json"));
+                    servletHandler.setResponseBody(UtilFile.getWebFileAsString(".well-known/apple-app-site-association.json"));
                 });
     }
 

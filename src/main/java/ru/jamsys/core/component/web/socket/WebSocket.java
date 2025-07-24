@@ -15,6 +15,7 @@ import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.flat.util.*;
+import ru.jamsys.core.flat.util.validate.JsonSchema;
 import ru.jamsys.core.handler.web.socket.WebSocketHandler;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
@@ -101,7 +102,7 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
     protected void handleTextMessage(@NotNull WebSocketSession session, @NotNull TextMessage message) throws Exception {
         super.handleTextMessage(session, message);
         String request = message.getPayload();
-        JsonSchema.validate(request, UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"), null);
+        JsonSchema.validate(request, UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"));
         Map<String, Object> req;
         try {
             req = UtilJson.getMapOrThrow(request);

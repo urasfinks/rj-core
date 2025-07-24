@@ -57,7 +57,7 @@ public class UtilFileResource {
 
     public static String getAsString(String path, Direction direction) throws IOException {
         return switch (direction) {
-            case WEB -> UtilFile.getWebContent(path);
+            case WEB -> UtilFile.getWebFileAsString(path);
             case RESOURCE_CORE -> getAsString(path, App.class.getClassLoader());
             case RESOURCE_PROJECT -> getAsString(path);
         };
