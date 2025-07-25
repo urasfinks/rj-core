@@ -25,6 +25,7 @@ class WsdlTest {
             );
         } catch (Exception e) {
             App.error(e);
+            Assertions.fail();
         }
     }
 

@@ -100,7 +100,7 @@ public class Wsdl {
 
             // 4) Строим SchemaFactory и настраиваем resolver для <xsd:import>
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            sf.setResourceResolver((type, namespaceURI, publicId, systemId, baseURI) -> {
+            sf.setResourceResolver((_, _, publicId, systemId, baseURI) -> {
                 InputStream in = Objects.requireNonNull(
                         importResolver.apply(systemId),
                         () -> "importResolver returned null for " + systemId
@@ -135,8 +135,7 @@ public class Wsdl {
             NodeList envChildren = envelope.getChildNodes();
             for (int i = 0; i < envChildren.getLength(); i++) {
                 Node n = envChildren.item(i);
-                if (!(n instanceof Element)) continue;
-                Element el = (Element) n;
+                if (!(n instanceof Element el)) continue;
                 switch (el.getLocalName()) {
                     case "Header":
                         headerEl = el;
@@ -176,8 +175,7 @@ public class Wsdl {
                 NodeList headers = headerEl.getChildNodes();
                 for (int i = 0; i < headers.getLength(); i++) {
                     Node n = headers.item(i);
-                    if (!(n instanceof Element)) continue;
-                    Element he = (Element) n;
+                    if (!(n instanceof Element he)) continue;
                     String mu = he.getAttributeNS(soapEnvNs, "mustUnderstand");
                     if ("1".equals(mu) || "true".equals(mu)) {
                         // проверяем actor (1.1) или role (1.2)

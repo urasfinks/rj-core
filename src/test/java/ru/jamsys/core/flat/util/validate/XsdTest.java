@@ -25,6 +25,7 @@ class XsdTest {
             );
         } catch (Exception e) {
             App.error(e);
+            Assertions.fail();
         }
     }
 
