@@ -1,0 +1,19 @@
+<soapenv:Envelope
+        xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+        xmlns:tns="http://example.com/shiporder"
+        xmlns:com="http://example.com/common">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <!-- Здесь обязательно совпадение регистра и пространства имён -->
+        <tns:ShipOrder>
+            <tns:orderId>889923</tns:orderId>
+            <tns:orderPerson>John Smith</tns:orderPerson>
+            <tns:shipTo>
+                <com:name>Ola Nordmann</com:name>
+                <com:address>Langgt 23</com:address>
+                <com:city>4000 Stavanger</com:city>
+                <com:country>Norway</com:country>
+            </tns:shipTo>
+        </tns:ShipOrder>
+    </soapenv:Body>
+</soapenv:Envelope>
