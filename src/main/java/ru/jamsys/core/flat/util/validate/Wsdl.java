@@ -24,116 +24,158 @@ import java.util.function.Function;
 
 public class Wsdl {
 
-    public static void validate(InputStream soap, InputStream wsdl, Function<String, InputStream> importSchemeResolver) throws Exception {
+    /**
+     * Читает InputStream-ы и делегирует валидацию по строкам.
+     */
+    public static void validate(InputStream soap, InputStream wsdl,
+                                Function<String, InputStream> importResolver) throws Exception {
         try (
                 InputStream inSoap = Objects.requireNonNull(soap, "SOAP data is null");
                 InputStream inWsdl = Objects.requireNonNull(wsdl, "WSDL schema is null")
         ) {
-            validate(
-                    new String(inSoap.readAllBytes()),
-                    new String(inWsdl.readAllBytes()),
-                    importSchemeResolver
-            );
+            String soapXml = new String(inSoap.readAllBytes());
+            String wsdlXml = new String(inWsdl.readAllBytes());
+            validate(soapXml, wsdlXml, importResolver);
         }
     }
 
-    public static void validate(
-            String soap,
-            String wsdl,
-            Function<String, InputStream> importResolver
-    ) throws Exception {
-        try {
-            if (soap == null || soap.isEmpty()) {
-                throw new IllegalArgumentException("SOAP is empty");
-            }
-            if (wsdl == null || wsdl.isEmpty()) {
-                throw new IllegalArgumentException("WSDL is empty");
-            }
-            // 1. Собираем бизнес‑схемы из WSDL (<xsd:schema> внутри <wsdl:types>)
-            final String XSD_NS = XMLConstants.W3C_XML_SCHEMA_NS_URI;
-            final String WSDL_NS = "http://schemas.xmlsoap.org/wsdl/";
-            final String SOAP_ENV_NS = "http://schemas.xmlsoap.org/soap/envelope/";
+    /**
+     * Основной метод валидации.
+     * 1) Собирает все <xsd:schema> из <wsdl:types>
+     * 2) Строит единый javax.xml.validation.Schema
+     * 3) Парсит SOAP, определяет его namespace (SOAP 1.1 или SOAP 1.2)
+     * 4) Валидирует каждый элемент внутри <Envelope>/<Body>
+     * 5) Проверяет наличие <Fault> и mustUnderstand‑заголовков
+     */
+    public static void validate(String soap,
+                                String wsdl,
+                                Function<String, InputStream> importResolver) throws Exception {
+        Objects.requireNonNull(soap, "soapXml is null");
+        Objects.requireNonNull(wsdl, "wsdlXml is null");
+        Objects.requireNonNull(importResolver, "importResolver is null");
 
+        try {
+            final String XSD_NS  = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+            final String WSDL_NS = "http://schemas.xmlsoap.org/wsdl/";
+
+            // Парсер DOM
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
 
-            // 1.1 Парсим WSDL
-            Document wsdlDoc = dbf.newDocumentBuilder().parse(new InputSource(new StringReader(wsdl)));
+            // 1) Загружаем WSDL и собираем все <xsd:schema>
+            Document wsdlDoc = dbf.newDocumentBuilder()
+                    .parse(new InputSource(new StringReader(wsdl)));
             NodeList typesList = wsdlDoc.getElementsByTagNameNS(WSDL_NS, "types");
             if (typesList.getLength() == 0) {
                 throw new IllegalArgumentException("WSDL не содержит <wsdl:types>");
             }
 
-            // 1.2 Собираем все <xsd:schema>
             List<Source> schemaSources = new ArrayList<>();
-            for (int t = 0; t < typesList.getLength(); t++) {
-                Element typesEl = (Element) typesList.item(t);
+            for (int i = 0;  i < typesList.getLength();  i++) {
+                Element typesEl = (Element) typesList.item(i);
                 NodeList schemas = typesEl.getElementsByTagNameNS(XSD_NS, "schema");
-                for (int i = 0; i < schemas.getLength(); i++) {
-                    schemaSources.add(new DOMSource(schemas.item(i)));
+                for (int j = 0;  j < schemas.getLength();  j++) {
+                    schemaSources.add(new DOMSource(schemas.item(j)));
                 }
             }
             if (schemaSources.isEmpty()) {
                 throw new IllegalArgumentException("Во WSDL не найдено ни одной <xsd:schema>");
             }
 
-            // 2. Настраиваем SchemaFactory с резолвом для <import> / <include>
+            // 2) Строим SchemaFactory и настраиваем resolver для <xsd:import>
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             sf.setResourceResolver((type, namespaceURI, publicId, systemId, baseURI) -> {
                 InputStream in = Objects.requireNonNull(
                         importResolver.apply(systemId),
-                        () -> "Не найден XSD для systemId=" + systemId
+                        () -> "resolver returned null for " + systemId
                 );
                 SimpleLSInput input = new SimpleLSInput(publicId, systemId, in);
                 input.setBaseURI(baseURI);
                 return input;
             });
 
-            // 3. Компилируем единый Schema
+            // Собираем общий Schema и инициализируем Validator
             Schema schema = sf.newSchema(schemaSources.toArray(new Source[0]));
-
-            // 4. Создаём Validator и собираем ошибки
             Validator validator = schema.newValidator();
 
-            // 5. Парсим SOAP‑сообщение
-            Document soapDoc = dbf.newDocumentBuilder().parse(new InputSource(new StringReader(soap)));
+            // 3) Парсим SOAP-документ
+            Document soapDoc = dbf.newDocumentBuilder()
+                    .parse(new InputSource(new StringReader(soap)));
 
-            // 6. Извлекаем payload из <soapenv:Body>
-            NodeList bodies = soapDoc.getElementsByTagNameNS(SOAP_ENV_NS, "Body");
-            if (bodies.getLength() == 0) {
-                throw new IllegalArgumentException("В SOAP‑сообщении нет <soapenv:Body>");
+            // Определяем namespace на корневом элементе (<Envelope>)
+            Element envelope = soapDoc.getDocumentElement();
+            String soapEnvNs = envelope.getNamespaceURI();
+            if (!"http://schemas.xmlsoap.org/soap/envelope/".equals(soapEnvNs) &&
+                    !"http://www.w3.org/2003/05/soap-envelope".equals(soapEnvNs)) {
+                throw new IllegalArgumentException(
+                        "Неизвестное SOAP-пространство имён: " + soapEnvNs
+                );
             }
-            Element bodyEl = (Element) bodies.item(0);
 
-            Element payload = null;
-            for (Node n = bodyEl.getFirstChild(); n != null; n = n.getNextSibling()) {
-                if (n instanceof Element) {
-                    payload = (Element) n;
-                    break;
+            // 4) Валидируем содержимое Body
+            NodeList bodyList = soapDoc.getElementsByTagNameNS(soapEnvNs, "Body");
+            if (bodyList.getLength() == 0) {
+                throw new IllegalArgumentException("В SOAP‑сообщении нет <Envelope>/<Body>");
+            }
+            Element bodyEl = (Element) bodyList.item(0);
+
+            for (Node child = bodyEl.getFirstChild();  child != null;  child = child.getNextSibling()) {
+                if (child instanceof Element) {
+                    validator.validate(new DOMSource(child));
                 }
             }
-            if (payload == null) {
-                throw new IllegalArgumentException("В <soapenv:Body> нет элемента для валидации");
+
+            // 5a) Проверка на SOAP Fault
+            NodeList faults = bodyEl.getElementsByTagNameNS(soapEnvNs, "Fault");
+            if (faults.getLength() > 0) {
+                Node fault = faults.item(0);
+                throw new ForwardException(
+                        new HashMapBuilder<String, Object>()
+                                .append("soapFault", nodeToString(fault)),
+                        null
+                );
             }
 
-            // 7. Валидируем только payload
-            validator.validate(new DOMSource(payload));
+            // 5b) Проверка mustUnderstand‑заголовков
+            NodeList headerList = soapDoc.getElementsByTagNameNS(soapEnvNs, "Header");
+            if (headerList.getLength() > 0) {
+                Element headerEl = (Element) headerList.item(0);
+                for (Node n = headerEl.getFirstChild();  n != null;  n = n.getNextSibling()) {
+                    if (n instanceof Element) {
+                        Element he = (Element) n;
+                        String mu = he.getAttributeNS(soapEnvNs, "mustUnderstand");
+                        if ("1".equals(mu) || "true".equals(mu)) {
+                            throw new ForwardException(
+                                    new HashMapBuilder<String, Object>()
+                                            .append("unhandledHeader", he.getLocalName())
+                                            .append("mustUnderstand", mu),
+                                    null
+                            );
+                        }
+                    }
+                }
+            }
+
         } catch (Exception e) {
-            throw new ForwardException(new HashMapBuilder<String, Object>()
-                    .append("soap", soap)
-                    .append("wsdl", wsdl)
-                    ,
+            // В случае любой ошибки — оборачиваем в ForwardException с исходными XML для отладки
+            throw new ForwardException(
+                    new HashMapBuilder<String, Object>()
+                            .append("soap", soap)
+                            .append("wsdl", wsdl),
                     e
             );
         }
     }
 
-    // Вспомогательный: сериализация DOM-узла в строку
+    /**
+     * Сериализует DOM-узел в строку для логирования/исключений
+     */
     private static String nodeToString(Node node) {
+        if (node == null) return "";
         try {
-            javax.xml.transform.Transformer t =
-                    javax.xml.transform.TransformerFactory.newInstance().newTransformer();
-            java.io.StringWriter sw = new java.io.StringWriter();
+            var tf = javax.xml.transform.TransformerFactory.newInstance();
+            var t  = tf.newTransformer();
+            var sw = new java.io.StringWriter();
             t.transform(new DOMSource(node), new javax.xml.transform.stream.StreamResult(sw));
             return sw.toString();
         } catch (Exception e) {
