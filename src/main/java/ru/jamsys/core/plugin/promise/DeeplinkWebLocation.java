@@ -12,7 +12,7 @@ import ru.jamsys.core.flat.template.twix.TemplateTwix;
 import ru.jamsys.core.flat.util.UtilFileResource;
 import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseGeneratorAccess;
+import ru.jamsys.core.promise.PromiseGeneratorExternalRequest;
 
 import java.util.Map;
 
@@ -23,7 +23,7 @@ import java.util.Map;
 @Component
 @SuppressWarnings("unused")
 @RequestMapping("/deeplink/**")
-public class DeeplinkWebLocation extends PromiseGeneratorAccess implements HttpHandler {
+public class DeeplinkWebLocation extends PromiseGeneratorExternalRequest implements HttpHandler {
 
     private final ServicePromise servicePromise;
 

@@ -52,7 +52,7 @@ public class GlobalAuthInterceptor implements HttpInterceptor {
         try {
             servletHandler.getRequestReader().basicAuthHandler((user, password) -> {
                 try {
-                    if (password == null || !password.equals(new String(securityComponent.get("web.auth.password.admin." + user)))) {
+                    if (password == null || !password.equals(new String(securityComponent.get("web.auth.password." + user)))) {
                         // 0xFF - просто что бы различать
                         throw new AuthException("Authorization failed 0xFF for user: " + user);
                     }

@@ -6,15 +6,15 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.http.ServletHandler;
+import ru.jamsys.core.plugin.promise.PropertyWeb;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseGenerator;
-import ru.jamsys.core.promise.PromiseGeneratorAccess;
+import ru.jamsys.core.promise.PromiseGeneratorExternalRequest;
 
 @ServiceClassFinderIgnore
 @Component
 @SuppressWarnings("unused")
 @RequestMapping("/**")
-public class FirstHttpHandler extends PromiseGeneratorAccess implements HttpHandler {
+public class FirstHttpHandler extends PromiseGeneratorExternalRequest implements HttpHandler {
 
     private final ServicePromise servicePromise;
 

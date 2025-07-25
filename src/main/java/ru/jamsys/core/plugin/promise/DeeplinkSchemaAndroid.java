@@ -9,7 +9,7 @@ import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseGeneratorAccess;
+import ru.jamsys.core.promise.PromiseGeneratorExternalRequest;
 
 /*
  * Эту драгу опрашивает Google, что бы в телефоне зарегистрировать схему для открытия приложения
@@ -18,7 +18,7 @@ import ru.jamsys.core.promise.PromiseGeneratorAccess;
 @Component
 @SuppressWarnings("unused")
 @RequestMapping("/.well-known/assetlinks.json")
-public class DeeplinkSchemaAndroid extends PromiseGeneratorAccess implements HttpHandler {
+public class DeeplinkSchemaAndroid extends PromiseGeneratorExternalRequest implements HttpHandler {
 
     private final ServicePromise servicePromise;
 

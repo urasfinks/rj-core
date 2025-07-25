@@ -21,7 +21,7 @@ import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.handler.web.http.HttpInterceptor;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseGeneratorAccess;
+import ru.jamsys.core.promise.PromiseGeneratorExternalRequest;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -154,7 +154,7 @@ public class HttpController {
                 return null;
             }
 
-            PromiseGeneratorAccess promiseGenerator = routeGeneratorRepository.match(uri);
+            PromiseGeneratorExternalRequest promiseGenerator = routeGeneratorRepository.match(uri);
             if (promiseGenerator == null) {
                 servletHandler.responseError("Generator not found");
                 return null;

@@ -8,7 +8,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.extension.RouteGeneratorRepository;
 import ru.jamsys.core.flat.util.UtilListSort;
 import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.promise.PromiseGeneratorAccess;
+import ru.jamsys.core.promise.PromiseGeneratorExternalRequest;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -44,16 +44,16 @@ public class RouteGenerator {
         отсортируем
         */
         RouteGeneratorRepository routeGeneratorRepository = new RouteGeneratorRepository(antPathMatcher);
-        Map<String, PromiseGeneratorAccess> repository = routeGeneratorRepository.getRepository();
+        Map<String, PromiseGeneratorExternalRequest> repository = routeGeneratorRepository.getRepository();
         Map<String, String> info = routeGeneratorRepository.getInfo();
-        Map<String, PromiseGeneratorAccess> tmp = new HashMap<>();
-        serviceClassFinder.findByInstance(PromiseGeneratorAccess.class).forEach(promiseGeneratorClass -> {
+        Map<String, PromiseGeneratorExternalRequest> tmp = new HashMap<>();
+        serviceClassFinder.findByInstance(PromiseGeneratorExternalRequest.class).forEach(promiseGeneratorClass -> {
             if (!ServiceClassFinder.instanceOf(promiseGeneratorClass, interfaceMatcher)) {
                 return;
             }
             for (Annotation annotation : promiseGeneratorClass.getAnnotations()) {
                 if (ServiceClassFinder.instanceOf(annotation.annotationType(), clsAnnotation)) {
-                    PromiseGeneratorAccess promiseGenerator = App.get(promiseGeneratorClass);
+                    PromiseGeneratorExternalRequest promiseGenerator = App.get(promiseGeneratorClass);
                     String[] values = promiseGeneratorClass.getAnnotation(clsAnnotation).value();
                     if (values.length > 0) {
                         for (String value : values) {

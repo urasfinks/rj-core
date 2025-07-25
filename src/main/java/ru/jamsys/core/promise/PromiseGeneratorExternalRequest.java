@@ -10,10 +10,11 @@ import ru.jamsys.core.flat.util.UtilText;
 import java.util.ArrayList;
 import java.util.List;
 
-// Для использования Promise для внешних потребителей, например HttpController
+// Для использования Promise для внешних запросов, например HttpHandler/WebSocketHandler
+// имеет RateLimitTps + список пользователей (права доступа) Пароли через Security надо проверять самостоятельно
 
 @Getter
-public abstract class PromiseGeneratorAccess extends PromiseGenerator implements PropertyListener {
+public abstract class PromiseGeneratorExternalRequest extends PromiseGenerator implements PropertyListener {
 
     private final PropertyDispatcher<Object> propertyDispatcher;
 
@@ -21,12 +22,12 @@ public abstract class PromiseGeneratorAccess extends PromiseGenerator implements
 
     private final ManagerConfiguration<RateLimitTps> rateLimitConfiguration;
 
-    private final List<String> user = new ArrayList<>(); // Пользователи которым доступ вызов этого Promise
+    private final List<String> user = new ArrayList<>(); // Пользователи которым доступен вызов этого Promise
 
-    public PromiseGeneratorAccess() {
+    public PromiseGeneratorExternalRequest() {
         rateLimitConfiguration = ManagerConfiguration.getInstance(
                 RateLimitTps.class,
-                java.util.UUID.randomUUID().toString(),
+                getCascadeKey(),
                 getCascadeKey(),
                 null
         );
