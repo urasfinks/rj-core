@@ -9,7 +9,7 @@ import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGeneratorExternalRequest;
-import ru.jamsys.core.promise.PromiseGeneratorAccessRepositoryProperty;
+import ru.jamsys.core.promise.PromiseGeneratorExternalRequestRepositoryProperty;
 
 /*
  * Зарегистрированные Property
@@ -24,7 +24,7 @@ public class PropertyWeb extends PromiseGeneratorExternalRequest implements Http
 
     public PropertyWeb(ServicePromise servicePromise) {
         this.servicePromise = servicePromise;
-        getPropertyDispatcher().set(PromiseGeneratorAccessRepositoryProperty.Fields.auth, true);
+        getPropertyDispatcher().set(PromiseGeneratorExternalRequestRepositoryProperty.Fields.auth, true);
     }
 
     @Override

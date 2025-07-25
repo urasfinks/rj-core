@@ -13,21 +13,24 @@ class JsonSchemaTest {
     @Test
     void test1() {
         try {
-            JsonSchema.validate(
+            ValidateType.JSON.validate(
                     UtilFileResource.get("schema/test/2.json"),
-                    UtilFileResource.get("schema/test/1-schema.json")
+                    UtilFileResource.get("schema/test/1-schema.json"),
+                    null
             );
         } catch (Throwable th) {
             th.printStackTrace();
+            Assertions.fail();
         }
     }
 
     @Test
     void test2() {
         try {
-            JsonSchema.validate(
+            ValidateType.JSON.validate(
                     UtilFileResource.get("schema/test/1.json"),
-                    UtilFileResource.get("schema/test/1-schema.json")
+                    UtilFileResource.get("schema/test/1-schema.json"),
+                    null
             );
             Assertions.fail();
         } catch (Throwable th) {
@@ -40,21 +43,24 @@ class JsonSchemaTest {
     void test3() {
         // Просто повтор, что статика работает
         try {
-            JsonSchema.validate(
+            ValidateType.JSON.validate(
                     UtilFileResource.get("schema/test/2.json"),
-                    UtilFileResource.get("schema/test/1-schema.json")
+                    UtilFileResource.get("schema/test/1-schema.json"),
+                    null
             );
         } catch (Throwable th) {
             th.printStackTrace();
+            Assertions.fail();
         }
     }
 
     @Test
     void test4() {
         try {
-            JsonSchema.validate(
+            ValidateType.JSON.validate(
                     UtilFileResource.get("schema/test/1.json"),
-                    UtilFileResource.get("schema/test/1-schema.json")
+                    UtilFileResource.get("schema/test/1-schema.json"),
+                    null
             );
             Assertions.fail();
         } catch (Throwable th) {

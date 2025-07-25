@@ -10,7 +10,7 @@ class WsdlTest {
     @Test
     public void test() throws Exception {
         try {
-            Wsdl.validate(
+            ValidateType.WSDL.validate(
                     UtilFileResource.get("schema/soap/true-soap.xml", UtilFileResource.Direction.RESOURCE_CORE),
                     UtilFileResource.get("schema/soap/test.wsdl", UtilFileResource.Direction.RESOURCE_CORE),
                     s -> UtilFileResource.get("schema/xsd/" + s, UtilFileResource.Direction.RESOURCE_CORE)
@@ -24,7 +24,7 @@ class WsdlTest {
     @Test
     public void testFail() {
         try {
-            Wsdl.validate(
+            ValidateType.WSDL.validate(
                     UtilFileResource.get("schema/soap/false-soap.xml", UtilFileResource.Direction.RESOURCE_CORE),
                     UtilFileResource.get("schema/soap/test.wsdl", UtilFileResource.Direction.RESOURCE_CORE),
                     s -> UtilFileResource.get("schema/xsd/" + s, UtilFileResource.Direction.RESOURCE_CORE)

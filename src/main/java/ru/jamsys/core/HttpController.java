@@ -14,10 +14,8 @@ import ru.jamsys.core.extension.exception.AuthException;
 import ru.jamsys.core.extension.http.ServletHandler;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.repository.RepositoryProperty;
-import ru.jamsys.core.flat.util.UtilFile;
-import ru.jamsys.core.flat.util.UtilJson;
-import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.flat.util.UtilRisc;
+import ru.jamsys.core.flat.util.*;
+import ru.jamsys.core.flat.util.validate.ValidateType;
 import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.handler.web.http.HttpInterceptor;
 import ru.jamsys.core.promise.Promise;
@@ -163,7 +161,7 @@ public class HttpController {
                 servletHandler.response(429, "Too Many Requests", StandardCharsets.UTF_8);
                 return null;
             }
-            if (promiseGenerator.getPromiseGeneratorAccessRepositoryProperty().getAuth()) {
+            if (promiseGenerator.getProperty().getAuth()) {
                 servletHandler
                         .getRequestReader()
                         .basicAuthHandler((user, password) -> {
@@ -181,6 +179,32 @@ public class HttpController {
                             }
                         });
             }
+
+            if (!promiseGenerator.getProperty().getValidationType().isEmpty()) {
+                try {
+                    String webFolder = "schema/" + promiseGenerator.getCascadeKey().substring(2) + "/";
+                    ValidateType
+                            .valueOf(promiseGenerator.getProperty().getValidationType())
+                            .validate(
+                                    servletHandler.getRequestReader().getData(),
+                                    //UtilFileResource.getAsString("schema/xsd/false-xsd.xml", UtilFileResource.Direction.RESOURCE_CORE),
+                                    UtilFileResource.getAsString(
+                                            webFolder + promiseGenerator.getProperty().getValidationScheme(),
+                                            UtilFileResource.Direction.WEB
+                                    ),
+                                    s -> UtilFileResource.get(webFolder + s, UtilFileResource.Direction.WEB)
+                            );
+                } catch (Throwable th) {
+                    App.error(th);
+                    // При неудачной валидации XML по схеме обычно возвращают HTTP 400 Bad Request, поскольку это
+                    // ошибка на стороне клиента: он прислал «неправильный» документ.
+                    // HTTP 422 Unprocessable Entity — он чётко говорит, что сервер понял запрос, но не может его
+                    // обработать из‑за семантической (валидационной) ошибки.
+                    servletHandler.response(422, "Unprocessable Entity (" + th.getMessage() + ")", StandardCharsets.UTF_8);
+                    return null;
+                }
+            }
+
             Promise promise = promiseGenerator.generate();
 
             if (promise == null) {

@@ -44,11 +44,13 @@ public class Property implements PropertyUtil {
         traceSetup.add(new TraceSetup(value));
     }
 
+    @JsonIgnore
     @SuppressWarnings("unused")
     public KeyStructure getKeyStructure() {
         return PropertyUtil.getKeyStructure(key);
     }
 
+    @SuppressWarnings("all")
     public Property setDescriptionIfNull(String description) {
         if (description == null) {
             return this;

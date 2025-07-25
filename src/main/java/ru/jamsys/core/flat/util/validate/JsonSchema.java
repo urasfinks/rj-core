@@ -7,6 +7,7 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.functional.FunctionThrowing;
 
 import java.io.InputStream;
 import java.util.Objects;
@@ -14,22 +15,30 @@ import java.util.Set;
 
 //https://bjdash.github.io/JSON-Schema-Builder/
 
-public class JsonSchema {
+public class JsonSchema implements Validate {
 
     public static ObjectMapper objectMapper = new ObjectMapper();
 
     public static JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
 
-    public static void validate(InputStream json, InputStream schema) throws Exception {
+    public void validate(
+            InputStream json,
+            InputStream schema,
+            FunctionThrowing<String, InputStream> importSchemeResolver
+    ) throws Exception {
         try (
                 InputStream inJson = Objects.requireNonNull(json, "json data is null");
                 InputStream inSchema = Objects.requireNonNull(schema, "json schema is null")
         ) {
-            validate(new String(inJson.readAllBytes()), new String(inSchema.readAllBytes()));
+            validate(new String(inJson.readAllBytes()), new String(inSchema.readAllBytes()), importSchemeResolver);
         }
     }
 
-    public static void validate(String json, String schema) throws Exception {
+    public void validate(
+            String json,
+            String schema,
+            FunctionThrowing<String, InputStream> importSchemeResolver
+    ) throws Exception {
         if (json == null || json.isEmpty()) {
             throw new ForwardException(new HashMapBuilder<String, Object>()
                     .append("json", json)

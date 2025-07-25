@@ -10,7 +10,7 @@ class XsdTest {
     @Test
     public void test() throws Exception {
         try {
-            Xsd.validate(
+            ValidateType.XSD.validate(
                     UtilFileResource.get("schema/xsd/true-xsd.xml", UtilFileResource.Direction.RESOURCE_CORE),
                     UtilFileResource.get("schema/xsd/test.xsd", UtilFileResource.Direction.RESOURCE_CORE),
                     s -> UtilFileResource.get("schema/xsd/" + s, UtilFileResource.Direction.RESOURCE_CORE)
@@ -24,7 +24,7 @@ class XsdTest {
     @Test
     public void testFail() {
         try {
-            Xsd.validate(
+            ValidateType.XSD.validate(
                     UtilFileResource.get("schema/xsd/false-xsd.xml", UtilFileResource.Direction.RESOURCE_CORE),
                     UtilFileResource.get("schema/xsd/test.xsd", UtilFileResource.Direction.RESOURCE_CORE),
                     s -> UtilFileResource.get("schema/xsd/" + s, UtilFileResource.Direction.RESOURCE_CORE)

@@ -24,14 +24,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Wsdl {
+public class Wsdl implements Validate {
 
-    /**
-     * Вариант для InputStream-ов.
-     */
-    public static void validate(InputStream soapStream,
-                                InputStream wsdlStream,
-                                FunctionThrowing<String, InputStream> importSchemeResolver) throws Exception {
+    public void validate(
+            InputStream soapStream,
+            InputStream wsdlStream,
+            FunctionThrowing<String, InputStream> importSchemeResolver
+    ) throws Exception {
         try (
                 InputStream soapIn = Objects.requireNonNull(soapStream, "SOAP data is null");
                 InputStream wsdlIn = Objects.requireNonNull(wsdlStream, "WSDL schema is null")
@@ -42,14 +41,13 @@ public class Wsdl {
         }
     }
 
-    /**
-     * Основной метод валидации.
-     */
-    public static void validate(String soapXml,
-                                String wsdlXml,
-                                FunctionThrowing<String, InputStream> importSchemeResolver) throws Exception {
-        Objects.requireNonNull(soapXml, "soapXml is null");
-        Objects.requireNonNull(wsdlXml, "wsdlXml is null");
+    public void validate(
+            String soap,
+            String wsdl,
+            FunctionThrowing<String, InputStream> importSchemeResolver
+    ) throws Exception {
+        Objects.requireNonNull(soap, "soapXml is null");
+        Objects.requireNonNull(wsdl, "wsdlXml is null");
         Objects.requireNonNull(importSchemeResolver, "importResolver is null");
 
         try {
@@ -65,7 +63,7 @@ public class Wsdl {
 
             // 2) Собираем все <xsd:schema> из <wsdl:types>
             Document wsdlDoc = dbf.newDocumentBuilder()
-                    .parse(new InputSource(new StringReader(wsdlXml)));
+                    .parse(new InputSource(new StringReader(wsdl)));
             NodeList typesList = wsdlDoc.getElementsByTagNameNS(WSDL_NS, "types");
             if (typesList.getLength() == 0) {
                 throw new IllegalArgumentException("WSDL не содержит <wsdl:types>");
@@ -120,7 +118,7 @@ public class Wsdl {
 
             // 6) Парсим SOAP-документ
             Document soapDoc = dbf.newDocumentBuilder()
-                    .parse(new InputSource(new StringReader(soapXml)));
+                    .parse(new InputSource(new StringReader(soap)));
 
             // 7) Проверяем корневой <Envelope>
             Element envelope = soapDoc.getDocumentElement();
@@ -200,16 +198,13 @@ public class Wsdl {
             // Оборачиваем в ForwardException для логирования исходных XML
             throw new ForwardException(
                     new HashMapBuilder<String, Object>()
-                            .append("soap", soapXml)
-                            .append("wsdl", wsdlXml),
+                            .append("soap", soap)
+                            .append("wsdl", wsdl),
                     e
             );
         }
     }
 
-    /**
-     * Сериализует DOM-узел в строку для логов/исключений.
-     */
     private static String nodeToString(Node node) {
         if (node == null) return "";
         try {

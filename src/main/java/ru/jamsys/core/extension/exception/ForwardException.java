@@ -20,7 +20,7 @@ public class ForwardException extends RuntimeException {
     int lineWithoutThrowableCause = 10; // Если нет корневого Throwable cause
 
     public ForwardException(Throwable cause) {
-        super(null, cause);
+        super(cause.getMessage(), cause);
     }
 
     public ForwardException(Object context) {

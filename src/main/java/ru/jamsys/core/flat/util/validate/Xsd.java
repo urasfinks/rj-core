@@ -17,9 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Xsd {
+public class Xsd implements Validate {
 
-    public static void validate(InputStream xml, InputStream xsd, FunctionThrowing<String, InputStream> importSchemeResolver) throws Exception {
+    public void validate(InputStream xml, InputStream xsd, FunctionThrowing<String, InputStream> importSchemeResolver) throws Exception {
         try (
                 InputStream inXml = Objects.requireNonNull(xml, "xml data is null");
                 InputStream inXsd = Objects.requireNonNull(xsd, "xsd schema is null")
@@ -32,7 +32,7 @@ public class Xsd {
         }
     }
 
-    public static void validate(String xml, String xsd, FunctionThrowing<String, InputStream> importSchemeResolver) {
+    public void validate(String xml, String xsd, FunctionThrowing<String, InputStream> importSchemeResolver) throws Exception {
         if (xml == null || xml.isEmpty()) {
             throw new IllegalArgumentException("XML is empty");
         }

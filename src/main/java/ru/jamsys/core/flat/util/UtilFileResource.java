@@ -33,7 +33,7 @@ public class UtilFileResource {
     public static InputStream get(String path, ClassLoader classLoader) throws IOException {
         URL resource = classLoader.getResource(path);
         if (resource == null) {
-            throw new RuntimeException("URL is null (" + path + ")");
+            throw new RuntimeException("ClassLoader.getResource(" + path + ") return null");
         }
         URLConnection conn = resource.openConnection();
         return conn.getInputStream();

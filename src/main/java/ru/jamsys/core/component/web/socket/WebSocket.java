@@ -14,11 +14,15 @@ import ru.jamsys.core.extension.RouteGeneratorRepository;
 import ru.jamsys.core.extension.StatisticsFlushComponent;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.statistic.StatisticDataHeader;
-import ru.jamsys.core.flat.util.*;
-import ru.jamsys.core.flat.util.validate.JsonSchema;
+import ru.jamsys.core.flat.util.Util;
+import ru.jamsys.core.flat.util.UtilFileResource;
+import ru.jamsys.core.flat.util.UtilJson;
+import ru.jamsys.core.flat.util.UtilRisc;
+import ru.jamsys.core.flat.util.validate.ValidateType;
 import ru.jamsys.core.handler.web.socket.WebSocketHandler;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
+import ru.jamsys.core.promise.PromiseGeneratorExternalRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,14 +106,19 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
     protected void handleTextMessage(@NotNull WebSocketSession session, @NotNull TextMessage message) throws Exception {
         super.handleTextMessage(session, message);
         String request = message.getPayload();
-        JsonSchema.validate(request, UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"));
+        // TODO: валидация должна быть через PromiseGeneratorExternalRequest
+        ValidateType.JSON.validate(
+                request,
+                UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"),
+                null
+        );
         Map<String, Object> req;
         try {
             req = UtilJson.getMapOrThrow(request);
         } catch (Throwable th) {
             throw new ForwardException(message, th);
         }
-        PromiseGenerator promiseGenerator = routeGeneratorRepository.match((String) req.get("uri"));
+        PromiseGeneratorExternalRequest promiseGenerator = routeGeneratorRepository.match((String) req.get("uri"));
         if (promiseGenerator == null) {
             App.error(new RuntimeException("PromiseGenerator not found"));
             return;

@@ -18,7 +18,7 @@ public abstract class PromiseGeneratorExternalRequest extends PromiseGenerator i
 
     private final PropertyDispatcher<Object> propertyDispatcher;
 
-    private final PromiseGeneratorAccessRepositoryProperty promiseGeneratorAccessRepositoryProperty = new PromiseGeneratorAccessRepositoryProperty();
+    private final PromiseGeneratorExternalRequestRepositoryProperty property = new PromiseGeneratorExternalRequestRepositoryProperty();
 
     private final ManagerConfiguration<RateLimitTps> rateLimitConfiguration;
 
@@ -33,18 +33,18 @@ public abstract class PromiseGeneratorExternalRequest extends PromiseGenerator i
         );
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
-                promiseGeneratorAccessRepositoryProperty,
+                property,
                 getCascadeKey()
         );
         propertyDispatcher.run();
-        updateUsers(promiseGeneratorAccessRepositoryProperty.getUsers());
+        updateUsers(property.getUsers());
     }
 
     public abstract Promise generate();
 
     @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
-        if (key.equals(PromiseGeneratorAccessRepositoryProperty.Fields.users)) {
+        if (key.equals(PromiseGeneratorExternalRequestRepositoryProperty.Fields.users)) {
             updateUsers(newValue);
         }
     }
