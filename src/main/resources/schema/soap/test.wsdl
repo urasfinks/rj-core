@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:xs="http://www.w3.org/2001/XMLSchema"
+             xmlns:ship="http://example.com/shiporder"
+             xmlns:com="http://example.com/common"
+             xmlns:tns="http://example.com/shiporder"
+             targetNamespace="http://example.com/shiporder">
+
+    <types>
+        <xs:schema>
+            <!-- Импортируем вашу XSD-схему и общий XSD -->
+            <xs:import namespace="http://example.com/shiporder"
+                       schemaLocation="test.xsd"/>
+            <xs:import namespace="http://example.com/common"
+                       schemaLocation="common.xsd"/>
+        </xs:schema>
+    </types>
+
+    <!-- Сообщение запроса — весь элемент shiporder -->
+    <message name="ShipOrderRequest">
+        <part name="payload" element="ship:shiporder"/>
+    </message>
+
+    <!-- Сообщение ответа — простая строка-подтверждение -->
+    <message name="ShipOrderResponse">
+        <part name="confirmation" type="xs:string"/>
+    </message>
+
+    <!-- Описание порта и операции -->
+    <portType name="ShipOrderPortType">
+        <operation name="PlaceOrder">
+            <input  message="tns:ShipOrderRequest"/>
+            <output message="tns:ShipOrderResponse"/>
+        </operation>
+    </portType>
+
+    <!-- Привязка SOAP -->
+    <binding name="ShipOrderBinding" type="tns:ShipOrderPortType">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http"
+                      style="document"/>
+        <operation name="PlaceOrder">
+            <soap:operation soapAction="http://example.com/shiporder/PlaceOrder"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+
+    <!-- Сервис -->
+    <service name="ShipOrderService">
+        <port name="ShipOrderPort" binding="tns:ShipOrderBinding">
+            <soap:address location="http://example.com/shiporder"/>
+        </port>
+    </service>
+</definitions>

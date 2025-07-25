@@ -5,23 +5,15 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.App;
 import ru.jamsys.core.flat.util.UtilFileResource;
 
-import java.io.IOException;
-
 class WsdlTest {
 
     @Test
     public void test() throws Exception {
         try {
             Wsdl.validate(
-                    UtilFileResource.get("schema/xsd/true-soap.xml", UtilFileResource.Direction.RESOURCE_CORE),
-                    UtilFileResource.get("schema/xsd/test.wsdl", UtilFileResource.Direction.RESOURCE_CORE),
-                    _ -> {
-                        try {
-                            return UtilFileResource.get("schema/xsd/common.xsd", UtilFileResource.Direction.RESOURCE_CORE);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
+                    UtilFileResource.get("schema/soap/true-soap.xml", UtilFileResource.Direction.RESOURCE_CORE),
+                    UtilFileResource.get("schema/soap/test.wsdl", UtilFileResource.Direction.RESOURCE_CORE),
+                    s -> UtilFileResource.get("schema/xsd/" + s, UtilFileResource.Direction.RESOURCE_CORE)
             );
         } catch (Exception e) {
             App.error(e);
@@ -33,15 +25,9 @@ class WsdlTest {
     public void testFail() {
         try {
             Wsdl.validate(
-                    UtilFileResource.get("schema/xsd/false-soap.xml", UtilFileResource.Direction.RESOURCE_CORE),
-                    UtilFileResource.get("schema/xsd/test.wsdl", UtilFileResource.Direction.RESOURCE_CORE),
-                    _ -> {
-                        try {
-                            return UtilFileResource.get("schema/xsd/common.xsd", UtilFileResource.Direction.RESOURCE_CORE);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
+                    UtilFileResource.get("schema/soap/false-soap.xml", UtilFileResource.Direction.RESOURCE_CORE),
+                    UtilFileResource.get("schema/soap/test.wsdl", UtilFileResource.Direction.RESOURCE_CORE),
+                    s -> UtilFileResource.get("schema/xsd/" + s, UtilFileResource.Direction.RESOURCE_CORE)
             );
             Assertions.fail();
         } catch (Exception e) {

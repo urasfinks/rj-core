@@ -4,6 +4,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXParseException;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.functional.FunctionThrowing;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
@@ -15,11 +16,10 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 public class Xsd {
 
-    public static void validate(InputStream xml, InputStream xsd, Function<String, InputStream> importSchemeResolver) throws Exception {
+    public static void validate(InputStream xml, InputStream xsd, FunctionThrowing<String, InputStream> importSchemeResolver) throws Exception {
         try (
                 InputStream inXml = Objects.requireNonNull(xml, "xml data is null");
                 InputStream inXsd = Objects.requireNonNull(xsd, "xsd schema is null")
@@ -32,7 +32,7 @@ public class Xsd {
         }
     }
 
-    public static void validate(String xml, String xsd, Function<String, InputStream> importSchemeResolver) {
+    public static void validate(String xml, String xsd, FunctionThrowing<String, InputStream> importSchemeResolver) {
         if (xml == null || xml.isEmpty()) {
             throw new IllegalArgumentException("XML is empty");
         }
@@ -43,14 +43,17 @@ public class Xsd {
         try {
             SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             schemaFactory.setResourceResolver((_, _, publicId, systemId, baseURI) -> {
-                // 1) забираем InputStream (не try-with-resources!)
-                InputStream in = Objects.requireNonNull(
-                        importSchemeResolver.apply(systemId),
-                        () -> "resolver returned null for " + systemId
-                );
-                SimpleLSInput input = new SimpleLSInput(publicId, systemId, in);
-                input.setBaseURI(baseURI);
-                return input;
+                try {
+                    InputStream apply = importSchemeResolver.apply(systemId);
+                    if (apply == null) {
+                        throw new RuntimeException("Resolver return null value for systemId = " + systemId);
+                    }
+                    SimpleLSInput input = new SimpleLSInput(publicId, systemId, apply);
+                    input.setBaseURI(baseURI);
+                    return input;
+                } catch (Throwable e) {
+                    throw new ForwardException(e);
+                }
             });
             Schema schema = schemaFactory.newSchema(new StreamSource(new StringReader(xsd)));
             if (schema == null) {

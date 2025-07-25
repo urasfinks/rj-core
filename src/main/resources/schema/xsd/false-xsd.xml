@@ -4,33 +4,33 @@
         xmlns:com="http://example.com/common"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="
-        http://example.com/shiporder shiporder.xsd
+        http://example.com/shiporder test.xsd
         http://example.com/common  common.xsd"
-        orderid="889923">
+        orderid="ORD-638210">
 
     <!-- исправили опечатку в теге -->
-    <orderperson1>John Smith</orderperson>
+    <orderperson1>Сергей Кузнецов</orderperson1>
 
     <!-- shipto остаётся в основном пространстве имён,
          а вложенные элементы идут из common.xsd -->
     <shipto>
-        <com:name>Ola Nordmann</com:name>
-        <com:address>Langgt 23</com:address>
-        <com:city>4000 Stavanger</com:city>
-        <com:country>Norway</com:country>
+        <com:name>Екатерина Смирнова</com:name>
+        <com:address>ул. Лесная 5, стр. 2</com:address>
+        <com:city>190000 Санкт-Петербург</com:city>
+        <com:country>Россия</com:country>
     </shipto>
 
     <!-- эти элементы описаны локально в shiporder.xsd -->
     <item>
-        <title>Empire Burlesque</title>
-        <note>Special Edition</note>
+        <title>Преступление и наказание</title>
+        <note>Твердый переплёт</note>
         <quantity>1</quantity>
-        <price>10.90</price>
+        <price>15.00</price>
     </item>
     <item>
-        <title>Hide your heart</title>
-        <quantity>1</quantity>
-        <price>9.90</price>
+        <title>Анна Каренина</title>
+        <quantity>2</quantity>
+        <price>18.25</price>
     </item>
 
 </shiporder>

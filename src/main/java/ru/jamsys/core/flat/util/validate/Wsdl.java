@@ -7,6 +7,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.extension.functional.FunctionThrowing;
 import ru.jamsys.core.flat.util.UtilFileResource;
 
 import javax.xml.XMLConstants;
@@ -22,7 +23,6 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 public class Wsdl {
 
@@ -31,14 +31,14 @@ public class Wsdl {
      */
     public static void validate(InputStream soapStream,
                                 InputStream wsdlStream,
-                                Function<String, InputStream> importResolver) throws Exception {
+                                FunctionThrowing<String, InputStream> importSchemeResolver) throws Exception {
         try (
                 InputStream soapIn = Objects.requireNonNull(soapStream, "SOAP data is null");
                 InputStream wsdlIn = Objects.requireNonNull(wsdlStream, "WSDL schema is null")
         ) {
             String soapXml = new String(soapIn.readAllBytes());
             String wsdlXml = new String(wsdlIn.readAllBytes());
-            validate(soapXml, wsdlXml, importResolver);
+            validate(soapXml, wsdlXml, importSchemeResolver);
         }
     }
 
@@ -47,10 +47,10 @@ public class Wsdl {
      */
     public static void validate(String soapXml,
                                 String wsdlXml,
-                                Function<String, InputStream> importResolver) throws Exception {
+                                FunctionThrowing<String, InputStream> importSchemeResolver) throws Exception {
         Objects.requireNonNull(soapXml, "soapXml is null");
         Objects.requireNonNull(wsdlXml, "wsdlXml is null");
-        Objects.requireNonNull(importResolver, "importResolver is null");
+        Objects.requireNonNull(importSchemeResolver, "importResolver is null");
 
         try {
             final String XSD_NS  = XMLConstants.W3C_XML_SCHEMA_NS_URI;
@@ -99,19 +99,23 @@ public class Wsdl {
             schemaSources.add(new StreamSource(soap12Xsd));
 
             // 4) Строим SchemaFactory и настраиваем resolver для <xsd:import>
-            SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            sf.setResourceResolver((_, _, publicId, systemId, baseURI) -> {
-                InputStream in = Objects.requireNonNull(
-                        importResolver.apply(systemId),
-                        () -> "importResolver returned null for " + systemId
-                );
-                SimpleLSInput input = new SimpleLSInput(publicId, systemId, in);
-                input.setBaseURI(baseURI);
-                return input;
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            schemaFactory.setResourceResolver((_, _, publicId, systemId, baseURI) -> {
+                try {
+                    InputStream apply = importSchemeResolver.apply(systemId);
+                    if (apply == null) {
+                        throw new RuntimeException("Resolver return null value for systemId = " + systemId);
+                    }
+                    SimpleLSInput input = new SimpleLSInput(publicId, systemId, apply);
+                    input.setBaseURI(baseURI);
+                    return input;
+                } catch (Throwable e) {
+                    throw new ForwardException(e);
+                }
             });
 
             // 5) Собираем единый Schema и инициализируем Validator
-            Schema schema = sf.newSchema(schemaSources.toArray(new Source[0]));
+            Schema schema = schemaFactory.newSchema(schemaSources.toArray(new Source[0]));
             Validator validator = schema.newValidator();
 
             // 6) Парсим SOAP-документ

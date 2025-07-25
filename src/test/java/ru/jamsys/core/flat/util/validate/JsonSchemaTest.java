@@ -1,9 +1,9 @@
-package ru.jamsys.core;
+package ru.jamsys.core.flat.util.validate;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.App;
 import ru.jamsys.core.flat.util.UtilFileResource;
-import ru.jamsys.core.flat.util.validate.JsonSchema;
 
 // IO time: 139ms
 // COMPUTE time: 141ms
@@ -13,7 +13,10 @@ class JsonSchemaTest {
     @Test
     void test1() {
         try {
-            JsonSchema.validate(UtilFileResource.get("schema/test/2.json"), UtilFileResource.get("schema/test/1-schema.json"));
+            JsonSchema.validate(
+                    UtilFileResource.get("schema/test/2.json"),
+                    UtilFileResource.get("schema/test/1-schema.json")
+            );
         } catch (Throwable th) {
             th.printStackTrace();
         }
@@ -22,7 +25,10 @@ class JsonSchemaTest {
     @Test
     void test2() {
         try {
-            JsonSchema.validate(UtilFileResource.get("schema/test/1.json"), UtilFileResource.get("schema/test/1-schema.json"));
+            JsonSchema.validate(
+                    UtilFileResource.get("schema/test/1.json"),
+                    UtilFileResource.get("schema/test/1-schema.json")
+            );
             Assertions.fail();
         } catch (Throwable th) {
             App.error(th);
@@ -34,7 +40,10 @@ class JsonSchemaTest {
     void test3() {
         // Просто повтор, что статика работает
         try {
-            JsonSchema.validate(UtilFileResource.get("schema/test/2.json"), UtilFileResource.get("schema/test/1-schema.json"));
+            JsonSchema.validate(
+                    UtilFileResource.get("schema/test/2.json"),
+                    UtilFileResource.get("schema/test/1-schema.json")
+            );
         } catch (Throwable th) {
             th.printStackTrace();
         }
@@ -43,7 +52,10 @@ class JsonSchemaTest {
     @Test
     void test4() {
         try {
-            JsonSchema.validate(UtilFileResource.get("schema/test/1.json"), UtilFileResource.get("schema/test/1-schema.json"));
+            JsonSchema.validate(
+                    UtilFileResource.get("schema/test/1.json"),
+                    UtilFileResource.get("schema/test/1-schema.json")
+            );
             Assertions.fail();
         } catch (Throwable th) {
             App.error(th);

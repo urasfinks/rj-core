@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:ship="http://example.com/shiporder"
+                  xmlns:com="http://example.com/common">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <ship:shiporder1 orderid="452781">
+            <ship:orderperson>Мария Иванова</ship:orderperson>
+            <ship:shipto>
+                <com:name>Алексей Петров</com:name>
+                <com:address>ул. Мира 12, кв. 45</com:address>
+                <com:city>123456 Москва</com:city>
+                <com:country>Россия</com:country>
+            </ship:shipto>
+            <ship:item>
+                <ship:title>Война и мир</ship:title>
+                <ship:note>Твердый переплёт</ship:note>
+                <ship:quantity>2</ship:quantity>
+                <ship:price>12.50</ship:price>
+            </ship:item>
+            <ship:item>
+                <ship:title>Мастер и Маргарита</ship:title>
+                <ship:quantity>1</ship:quantity>
+                <ship:price>14.75</ship:price>
+            </ship:item>
+        </ship:shiporder1>
+    </soapenv:Body>
+</soapenv:Envelope>
