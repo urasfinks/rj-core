@@ -130,6 +130,10 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
                         FileWriteOptions.CREATE_OR_REPLACE
                 );
                 System.err.println("Create file: [" + property.getPathInitSecurityKeyJava() + "] please restart application");
+                new Thread(() -> {
+                    Util.testSleepMs(2_000);
+                    System.exit(-1);
+                }).start();
             } else {
                 System.err.println("== INIT SECURITY ===========================");
                 System.err.println("** Update file [" + property.getPathJsonCred() + "]; password field must not be empty");
@@ -151,6 +155,10 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
             bytesPasswordKeyStore = UtilRsa.decrypt(input, UtilRsa.getPrivateKey(bytesPrivateKey));
         } catch (Exception e) {
             UtilFile.removeIfExist(property.getPathPublicKey());
+            new Thread(() -> {
+                Util.testSleepMs(2_000);
+                System.exit(-1);
+            }).start();
             throw new ForwardException("Decrypt token exception. File: [" + property.getPathPublicKey() + "] removed, please restart application", e);
         }
         if (bytesPasswordKeyStore == null || bytesPasswordKeyStore.length == 0) {

@@ -146,6 +146,9 @@ public class HttpController {
             if (httpInterceptor != null && !httpInterceptor.handle(servletHandler)) {
                 return null;
             }
+            if (serviceProperty.computeIfAbsent("run.args.web.update-static-file", false).get(Boolean.class)) {
+                updateStaticFile();
+            }
             String uri = request.getRequestURI();
             if (staticFile.containsKey(uri)) {
                 servletHandler.writeFileToOutput(new File(staticFile.get(uri)));
