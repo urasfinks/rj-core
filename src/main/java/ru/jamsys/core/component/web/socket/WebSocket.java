@@ -1,5 +1,7 @@
 package ru.jamsys.core.component.web.socket;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -21,7 +23,6 @@ import ru.jamsys.core.flat.util.UtilRisc;
 import ru.jamsys.core.flat.util.validate.ValidateType;
 import ru.jamsys.core.handler.web.socket.WebSocketHandler;
 import ru.jamsys.core.promise.Promise;
-import ru.jamsys.core.promise.PromiseGenerator;
 import ru.jamsys.core.promise.PromiseGeneratorExternalRequest;
 
 import java.util.ArrayList;
@@ -102,11 +103,24 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
         remove(webSocketSession);
     }
 
+    @Getter
+    @Setter
+    public static class Request {
+        private final WebSocketSession webSocketSession;
+        private final Map<String, Object> request;
+
+        public Request(WebSocketSession webSocketSession, Map<String, Object> request) {
+            this.webSocketSession = webSocketSession;
+            this.request = request;
+        }
+
+    }
+
     @Override
     protected void handleTextMessage(@NotNull WebSocketSession session, @NotNull TextMessage message) throws Exception {
         super.handleTextMessage(session, message);
         String request = message.getPayload();
-        // TODO: валидация должна быть через PromiseGeneratorExternalRequest
+        // Что бы маршрутизировать сообщение в генератор, надо получить uri маршрутизации, поэтому валидация
         ValidateType.JSON.validate(
                 request,
                 UtilFileResource.getAsString("schema/web/socket/ProtocolRequest.json"),
@@ -128,7 +142,7 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
             App.error(new RuntimeException("Promise is null"));
             return;
         }
-        promise.setRepositoryMap("WebSocketSession", session);
+        promise.setRepositoryMapClass(Request.class, new Request(session, req));
         promise.run();
     }
 

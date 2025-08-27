@@ -46,7 +46,17 @@ public class AppConfiguration implements WebSocketConfigurer {
             String path = serviceProperty
                     .computeIfAbsent("run.args.web.socket.uri", "/socket/*")
                     .get(String.class);
-            registry.addHandler(App.get(WebSocket.class), path);
+
+            String origins = serviceProperty
+                    .computeIfAbsent("run.args.web.socket.origins", "")
+                    .get(String.class);
+            if (origins.isEmpty()) {
+                registry.addHandler(App.get(WebSocket.class), path);
+            } else {
+                registry
+                    .addHandler(App.get(WebSocket.class), path)
+                    .setAllowedOrigins(origins);
+            }
             ((ServletWebSocketHandlerRegistry) registry).setOrder(-1);
         } else {
             App.get(ServiceClassFinder.class).removeAvailableClass(
