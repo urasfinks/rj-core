@@ -1,0 +1,64 @@
+package ru.jamsys.core.handler.web.socket;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.flat.util.UtilLog;
+import ru.jamsys.core.handler.web.socket.snapshot.Operation;
+import ru.jamsys.core.handler.web.socket.snapshot.OperationClient;
+import ru.jamsys.core.handler.web.socket.snapshot.OperationType;
+
+import java.util.HashMap;
+import java.util.Map;
+
+class SnapshotTest {
+
+    @Test
+    public void x() {
+        Snapshot snapshot = new Snapshot();
+        Operation op1 = snapshot.accept(getUserOperation(OperationType.CREATE, "1", null, new HashMapBuilder<String, Object>().append("x", "y1")), "1");
+        Assertions.assertTrue(op1.getServerCommit().isCommit());
+        Assertions.assertEquals(0, op1.getServerCommit().getId());
+
+        Operation op2 = snapshot.accept(getUserOperation(OperationType.CREATE, "1", null, null), "1");
+        Assertions.assertFalse(op2.getServerCommit().isCommit());
+        Assertions.assertEquals(-1, op2.getServerCommit().getId());
+
+        Operation op3 = snapshot.accept(getUserOperation(OperationType.UPDATE, "1", "1", new HashMapBuilder<String, Object>().append("x", "y2")), "1");
+        Assertions.assertTrue(op3.getServerCommit().isCommit());
+        Assertions.assertEquals(1, op3.getServerCommit().getId());
+
+        Operation op4 = snapshot.accept(getUserOperation(OperationType.DELETE, "1", "1", null), "1");
+        Assertions.assertFalse(op4.getServerCommit().isCommit());
+        Assertions.assertEquals(-1, op4.getServerCommit().getId());
+        Assertions.assertEquals("invalid token 1", op4.getServerCommit().getCause());
+
+        Operation op5 = snapshot.accept(getUserOperation(OperationType.DELETE, "1", op3.getServerCommit().getNewTokenForUpdate(), new HashMap<>()), "1");
+        Assertions.assertTrue(op5.getServerCommit().isCommit());
+        Assertions.assertEquals(2, op5.getServerCommit().getId());
+
+        Operation op6 = snapshot.accept(getUserOperation(OperationType.UPDATE, "2", "2", null), "1");
+        Assertions.assertFalse(op6.getServerCommit().isCommit());
+        Assertions.assertEquals("not found 2", op6.getServerCommit().getCause());
+
+
+        UtilLog.printInfo(snapshot);
+    }
+
+    private OperationClient getUserOperation(
+            OperationType operationType,
+            String uuidObject,
+            String token,
+            Map<String, Object> data
+    ) {
+        return new OperationClient(
+                java.util.UUID.randomUUID().toString(),
+                System.currentTimeMillis(),
+                operationType,
+                token,
+                uuidObject,
+                data
+        );
+    }
+
+}
