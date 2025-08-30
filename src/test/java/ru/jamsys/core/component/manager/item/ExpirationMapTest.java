@@ -33,7 +33,8 @@ class ExpirationMapTest {
                         ExpirationMap.class,
                         java.util.UUID.randomUUID().toString(),
                         "test",
-                        integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutMs(1000)
+                        // устанавливаем для элементов map срок хранения
+                        integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutMs(1_000)
                 );
 
 
@@ -41,10 +42,8 @@ class ExpirationMapTest {
         XTest s = test.computeIfAbsent(10, _ -> new XTest());
 
         Assertions.assertEquals(1, test.size());
-        //Assertions.assertEquals(1, test.getExpirationMap().size());
         Assertions.assertEquals(s.hashCode(), test.get(10).hashCode());
-        Assertions.assertEquals(s.hashCode(), test.get(10).hashCode());
-        Util.testSleepMs(2000);
+        Util.testSleepMs(2_000);
         Assertions.assertEquals(0, test.size());
         //Assertions.assertEquals(0, test.getExpirationMap().size());
     }

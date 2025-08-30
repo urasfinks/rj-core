@@ -417,4 +417,11 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
         return mainMap.remove(key) != null;
     }
 
+    @Override
+    public void helper() {
+        if (!mainMap.isEmpty()) {
+            markActive();
+        }
+    }
+
 }
