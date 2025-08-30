@@ -91,6 +91,19 @@ class UtilUriTest {
     }
 
     @Test
+    public void testEncode2() {
+        String uri = "/test?x=a%2Fb+c";
+        Map<String, String> params = UtilUri.parseParameters(uri, list -> {
+            try {
+                return UtilUri.decode(String.join(",", list));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        assertEquals("a/b c", params.get("x"));
+    }
+
+    @Test
     public void testDecode() throws Exception {
         assertEquals("a/b c", UtilUri.decode("a%2Fb+c", "UTF-8"));
     }
