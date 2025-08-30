@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import ru.jamsys.core.flat.util.UtilDate;
 
+// Интерфейс просто наделяет статическим функционал объект протухания, даёт базовый набор метрик
+
 @JsonIgnoreType
 @JsonIgnoreProperties
 public interface ExpirationMs {
@@ -26,7 +28,7 @@ public interface ExpirationMs {
         return curTimeMs > getExpirationTimeMs();
     }
 
-    // Объект просрочен
+    // Объект просрочен без проверки остановки
     default boolean isExpiredIgnoringStop() {
         return isExpiredIgnoringStop(System.currentTimeMillis());
     }
@@ -108,5 +110,8 @@ public interface ExpirationMs {
     void setStopTimeMs(Long timeMs);
 
     Long getStopTimeMs();
+
+    // Поменить объект, что они живой, что бы его не слил менеджер
+    void markActive();
 
 }

@@ -43,7 +43,7 @@ public class UtilSelectorTest {
         ForwardException ex = assertThrows(ForwardException.class, () ->
                 UtilSelector.selector(sample, "user.profile.unknown")
         );
-        assertTrue(ex.getMessage().contains("Map not contains key"));
+        assertTrue(ex.getMessage().contains("Map does not contain key"));
     }
 
     @Test
@@ -51,7 +51,8 @@ public class UtilSelectorTest {
         ForwardException ex = assertThrows(ForwardException.class, () ->
                 UtilSelector.selector(sample, "user.profile.age.value")
         );
-        assertTrue(ex.getMessage().contains("Is not a Map"));
+        System.out.println(ex.getMessage());
+        assertTrue(ex.getMessage().contains("Current object is neither Map nor List"));
     }
 
     @Test
@@ -59,7 +60,7 @@ public class UtilSelectorTest {
         ForwardException ex = assertThrows(ForwardException.class, () ->
                 UtilSelector.selector(sample, "invalid.key")
         );
-        assertTrue(ex.getMessage().contains("Map not contains key"));
+        assertTrue(ex.getMessage().contains("Map does not contain key"));
     }
 
     @Test

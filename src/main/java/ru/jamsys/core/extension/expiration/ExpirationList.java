@@ -3,6 +3,7 @@ package ru.jamsys.core.extension.expiration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
+import ru.jamsys.core.App;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.addable.AddToList;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -117,6 +118,13 @@ public class ExpirationList<T>
                     } else if (envelope.isExpired()) {
                         T value = envelope.getValue();
                         if (value != null) {
+                            if (value instanceof Expiration expiration) {
+                                try {
+                                    expiration.onExpired();
+                                } catch (Throwable th) {
+                                    App.error(th);
+                                }
+                            }
                             if (onExpired != null) {
                                 onExpired.accept(value);
                             }

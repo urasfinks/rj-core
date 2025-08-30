@@ -37,6 +37,11 @@ class ExpirationMsTest {
             return stopTimeMs;
         }
 
+        @Override
+        public void markActive() {
+            throw new RuntimeException("--");
+        }
+
     }
 
     private TestExpirationMs exp;

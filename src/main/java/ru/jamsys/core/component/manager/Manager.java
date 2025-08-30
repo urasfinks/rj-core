@@ -1,6 +1,7 @@
 package ru.jamsys.core.component.manager;
 
 import org.springframework.stereotype.Component;
+import ru.jamsys.core.App;
 import ru.jamsys.core.extension.*;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -122,6 +123,11 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
                             .append("cls", managerElement.getClass())
                             .append("element", managerElement)
                     );
+                    try {
+                        managerElement.onExpired();
+                    } catch (Throwable th) {
+                        App.error(th);
+                    }
                     all.add(managerElement);
                     mapManager.remove(key);
                 } else {

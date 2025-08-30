@@ -2,6 +2,7 @@ package ru.jamsys.core.extension.expiration;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.jamsys.core.App;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 
 import java.util.Map;
@@ -24,7 +25,14 @@ public class ExpirationMapExpirationObject {
     }
 
     public void remove() {
-        map.remove(key);
+        Object remove = map.remove(key);
+        if (remove instanceof Expiration expiration1) {
+            try {
+                expiration1.onExpired();
+            } catch (Throwable th) {
+                App.error(th);
+            }
+        }
     }
 
 }

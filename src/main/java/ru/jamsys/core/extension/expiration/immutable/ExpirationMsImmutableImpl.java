@@ -23,4 +23,10 @@ public class ExpirationMsImmutableImpl implements ExpirationMsImmutable {
         this.lastActivityMs = System.currentTimeMillis();
     }
 
+
+    @Override
+    public void markActive() {
+        throw new RuntimeException(this.getClass().getName() + " not mutable");
+    }
+
 }
