@@ -260,6 +260,19 @@ public class SecurityComponent extends AbstractLifeCycle implements LifeCycleCom
         return keySpec.getPassword();
     }
 
+    // Рекомендация использовать char[] get, этот метод является не безопасным
+    public byte[] getByte(String alias) throws Exception {
+        if (keyStore == null) {
+            throw new RuntimeException("Security component not initialize");
+        }
+        KeyStore.SecretKeyEntry ske = (KeyStore.SecretKeyEntry) keyStore.getEntry(alias, keyStorePP);
+        if (ske == null) {
+            throw new RuntimeException("Alias: " + alias + " does not exist");
+        }
+        SecretKey secretKey = ske.getSecretKey();
+        return secretKey.getEncoded();
+    }
+
     public void remove(String key, char[] password) throws Exception {
         if (checkPassword(password)) {
             keyStore.deleteEntry(key);
