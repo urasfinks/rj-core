@@ -75,9 +75,13 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
         throw new RuntimeException("Out of position");
     };
 
-    @SuppressWarnings("unused")
-    public AbstractAsyncFileWriter(String ns) {
+    @Getter
+    private final String key;
+
+    //@SuppressWarnings("unused")
+    public AbstractAsyncFileWriter(String ns, String key) {
         this.filePath = ns;
+        this.key = key;
     }
 
     public void setupRepositoryProperty(BrokerPersistRepositoryProperty repositoryProperty) {

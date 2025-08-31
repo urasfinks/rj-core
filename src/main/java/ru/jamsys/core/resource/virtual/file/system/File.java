@@ -20,8 +20,11 @@ public class File extends AbstractManagerElement {
 
     protected volatile byte[] bytes;
 
-    public File(String path) {
-        this.universalPath = new UniversalPath(path);
+    private final String key;
+
+    public File(String ns, String key) {
+        this.universalPath = new UniversalPath(ns);
+        this.key = key;
     }
 
     public void setupTimeoutMs(int keepAliveOnInactivityMs) {

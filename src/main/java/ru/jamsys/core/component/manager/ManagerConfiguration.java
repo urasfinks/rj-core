@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 // То есть сам объект ExpiredElement находится в Manager и для двух ManagerConfiguration ссылка будет на один
 // элемент. А onCreate же будет два, каждый для своего ManagerConfiguration. GC удаляет ManagerConfiguration и onCreate
 // улетает в след за ним. Выросло это всё из того, что хотелось в одном месте сконфигурировать объект, а в другом
-// просто получить, ничего не зная о onCreate. Ранее onCreate жил в Manager.mapBuilder, но не удалялись и текли
+// просто получить, ничего не зная о onCreate. Ранее onCreate жил в Manager.mapBuilder, но ссылки не удалялись и текли
 // соответственно. Поэтому разместили onCreate в ManagerConfiguration
 
 public class ManagerConfiguration<T extends AbstractManagerElement> {

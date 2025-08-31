@@ -22,7 +22,10 @@ public class EmailNotificationResource extends AbstractExpirationResource {
 
     private final String ns;
 
-    public EmailNotificationResource(String ns) {
+    @Getter
+    private final String key;
+
+    public EmailNotificationResource(String ns, String key) {
         securityComponent = App.get(SecurityComponent.class);
         propertyDispatcher = new PropertyDispatcher<>(
                 null,
@@ -30,6 +33,7 @@ public class EmailNotificationResource extends AbstractExpirationResource {
                 getCascadeKey(ns)
         );
         this.ns = ns;
+        this.key = key;
     }
 
     public Void execute(EmailNotificationRequest arguments) {

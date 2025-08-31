@@ -43,6 +43,8 @@ public class ExpirationList<T>
 
     private final String ns;
 
+    private final String key;
+
     @JsonIgnore
     private final ConcurrentSkipListMap<Long, ConcurrentLinkedQueue<DisposableExpirationMsImmutableEnvelope<T>>> bucket = new ConcurrentSkipListMap<>();
 
@@ -56,8 +58,9 @@ public class ExpirationList<T>
     // Сколько было передано в OnExpired
     private final AtomicLong helperOnExpired = new AtomicLong(0);
 
-    public ExpirationList(String ns) {
+    public ExpirationList(String ns, String key) {
         this.ns = ns;
+        this.key = key;
     }
 
     public void setupOnExpired(Consumer<T> onExpired){
@@ -118,9 +121,9 @@ public class ExpirationList<T>
                     } else if (envelope.isExpired()) {
                         T value = envelope.getValue();
                         if (value != null) {
-                            if (value instanceof Expiration expiration) {
+                            if (value instanceof ExpirationDrop expirationDrop) {
                                 try {
-                                    expiration.onExpired();
+                                    expirationDrop.onExpirationDrop();
                                 } catch (Throwable th) {
                                     App.error(th);
                                 }

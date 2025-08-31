@@ -16,6 +16,8 @@ public class HttpResource extends AbstractExpirationResource {
 
     private final String ns;
 
+    private final String key;
+
     private final HttpResourceRepositoryProperty property = new HttpResourceRepositoryProperty();
 
     private final PropertyDispatcher<Object> propertyDispatcher;
@@ -25,8 +27,9 @@ public class HttpResource extends AbstractExpirationResource {
         APACHE
     }
 
-    public HttpResource(String ns) {
+    public HttpResource(String ns, String key) {
         this.ns = ns;
+        this.key = key;
         propertyDispatcher = new PropertyDispatcher<>(
                 null,
                 property,

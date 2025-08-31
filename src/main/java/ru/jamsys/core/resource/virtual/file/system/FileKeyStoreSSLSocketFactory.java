@@ -15,8 +15,8 @@ public class FileKeyStoreSSLSocketFactory extends FileKeyStore {
 
     CustomTrustManager trustManager = new CustomTrustManager();
 
-    public FileKeyStoreSSLSocketFactory(String path) {
-        super(path);
+    public FileKeyStoreSSLSocketFactory(String ns, String key) {
+        super(ns, key);
     }
 
     @SuppressWarnings("unused")

@@ -24,8 +24,8 @@ public class FileKeyStore extends File {
 
     private KeyManager[] keyManagers;
 
-    public FileKeyStore(String path) {
-        super(path);
+    public FileKeyStore(String ns, String key) {
+        super(ns, key);
     }
 
     public void setupTypeKeyStorage(String typeKeyStorage) {

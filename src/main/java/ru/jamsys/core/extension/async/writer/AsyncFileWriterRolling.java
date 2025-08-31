@@ -26,8 +26,8 @@ public class AsyncFileWriterRolling<T extends Position & ByteSerializable>
             + ".afwr";
 
     @SuppressWarnings("all")
-    public AsyncFileWriterRolling(String ns) { // Тут fileName нужен только для поддержания контракта ManagerElement
-        super(null);
+    public AsyncFileWriterRolling(String ns, String key) { // Тут fileName нужен только для поддержания контракта ManagerElement
+        super(null, key);
         super.setupStandardOpenOption(StandardOpenOption.TRUNCATE_EXISTING);
     }
 

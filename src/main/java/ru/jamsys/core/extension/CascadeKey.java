@@ -10,11 +10,6 @@ import ru.jamsys.core.App;
 
 public interface CascadeKey {
 
-    // Если реализация является фабрикой, допустимо возвращать null
-    default String getKey() {
-        return null;
-    }
-
     // Нельзя возвращать null, если нет родителя, используйте return App.cascadeName;
     default CascadeKey getParentCascadeKey() {
         return App.cascadeName;
@@ -34,12 +29,7 @@ public interface CascadeKey {
     }
 
     default String getCascadeKey() {
-        String key = getKey();
-        if (key == null) {
-            return complex(getParentCascadeKey().getCascadeKey(), App.getUniqueClassName(getClass()));
-        } else {
-            return complex(complex(getParentCascadeKey().getCascadeKey(), App.getUniqueClassName(getClass())), key);
-        }
+        return complex(getParentCascadeKey().getCascadeKey(), App.getUniqueClassName(getClass()));
     }
 
     static String append(String ns) {

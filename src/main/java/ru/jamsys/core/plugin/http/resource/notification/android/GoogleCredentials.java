@@ -22,8 +22,11 @@ public class GoogleCredentials extends AbstractManagerElement implements Propert
 
     private final String ns;
 
-    public GoogleCredentials(String ns) {
+    private final String key;
+
+    public GoogleCredentials(String ns, String key) {
         this.ns = ns;
+        this.key = key;
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
                 property,

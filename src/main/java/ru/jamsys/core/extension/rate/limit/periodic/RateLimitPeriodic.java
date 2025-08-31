@@ -32,13 +32,17 @@ public class RateLimitPeriodic extends AbstractManagerElement implements Propert
     @Getter
     private final String ns;
 
+    @Getter
+    private final String key;
+
     private final RateLimitPeriodicRepositoryProperty property = new RateLimitPeriodicRepositoryProperty();
 
     @Getter
     private final PropertyDispatcher<Object> propertyDispatcher;
 
-    public RateLimitPeriodic(String ns) {
+    public RateLimitPeriodic(String ns, String key) {
         this.ns = ns;
+        this.key = key;
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
                 property,

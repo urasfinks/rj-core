@@ -24,6 +24,8 @@ public class Rider extends AbstractManagerElement {
 
     private final String ns;
 
+    private final String managerKey;
+
     private String filePathX;
 
     private String filePathY;
@@ -37,8 +39,9 @@ public class Rider extends AbstractManagerElement {
     private Consumer<Rider> onWrite;
 
     // Экземпляр создаётся в onSwap и в commit
-    public Rider(String ns) {
+    public Rider(String ns, String managerKey) {
         this.ns = ns;
+        this.managerKey = managerKey;
     }
 
     public void setup(

@@ -1,13 +1,17 @@
 package ru.jamsys.core.component.manager.item;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.junit.jupiter.api.*;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
+import ru.jamsys.core.extension.expiration.ExpirationDrop;
 import ru.jamsys.core.extension.expiration.ExpirationMap;
 import ru.jamsys.core.flat.util.Util;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class ExpirationMapTest {
@@ -22,24 +26,52 @@ class ExpirationMapTest {
         App.shutdown();
     }
 
-    public static class XTest {
+    @Getter
+    @Setter
+    public static class XTest implements ExpirationDrop {
 
+        private String data = "";
+
+        @Override
+        public void onExpirationDrop() {
+            Util.printStackTrace("iam expired");
+        }
+    }
+
+    private ExpirationMap<String, String> map;
+
+    @BeforeEach
+    void setUp() {
+        ManagerConfiguration<ExpirationMap<String, String>> expirationMapConfiguration =
+                ManagerConfiguration.getInstance(
+                        ExpirationMap.class,
+                        java.util.UUID.randomUUID().toString(),
+                        "testMap",
+                        integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutElementExpirationMs(1_000)
+                );
+        map = expirationMapConfiguration.get();
+        map.clear();
     }
 
     @Test
     void computeIfAbsent() {
+        String uuid = UUID.randomUUID().toString();
         ManagerConfiguration<ExpirationMap<Integer, XTest>> expirationMapConfiguration =
                 ManagerConfiguration.getInstance(
                         ExpirationMap.class,
-                        java.util.UUID.randomUUID().toString(),
+                        uuid,
                         "test",
                         // устанавливаем для элементов map срок хранения
-                        integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutMs(1_000)
+                        integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutElementExpirationMs(1_000)
                 );
 
 
         ExpirationMap<Integer, XTest> test = expirationMapConfiguration.get();
-        XTest s = test.computeIfAbsent(10, _ -> new XTest());
+        XTest s = test.computeIfAbsent(10, _ -> {
+            XTest xTest = new XTest();
+            xTest.setData("Hello world");
+            return xTest;
+        });
 
         Assertions.assertEquals(1, test.size());
         Assertions.assertEquals(s.hashCode(), test.get(10).hashCode());
@@ -48,20 +80,6 @@ class ExpirationMapTest {
         //Assertions.assertEquals(0, test.getExpirationMap().size());
     }
 
-    private ExpirationMap<String, String> map;
-
-    @BeforeEach
-    void setUp() {
-        ManagerConfiguration<ExpirationMap<String, String>> expirationMapConfiguration =
-        ManagerConfiguration.getInstance(
-                ExpirationMap.class,
-                java.util.UUID.randomUUID().toString(),
-                "testMap",
-                integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutMs(10_000)
-        );
-        map = expirationMapConfiguration.get();
-        map.clear();
-    }
 
     @Test
     void testPutAndGet() {
@@ -158,13 +176,13 @@ class ExpirationMapTest {
     @Test
     void testPeek() {
         map.put("x", "peekable");
-        Assertions.assertEquals("peekable", map.peek("x"));
+        Assertions.assertEquals("peekable", map.get("x", false));
     }
 
     @Test
     void testExpireNow() {
         map.put("temp", "data");
-        Assertions.assertTrue(map.expireNow("temp"));
+        map.remove("temp");
         Assertions.assertFalse(map.containsKey("temp"));
     }
 

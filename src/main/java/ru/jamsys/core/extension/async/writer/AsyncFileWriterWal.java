@@ -11,8 +11,8 @@ import java.nio.file.StandardOpenOption;
 public class AsyncFileWriterWal<T extends Position & ByteSerializable>
         extends AbstractAsyncFileWriter<T> {
 
-    public AsyncFileWriterWal(String ns) {
-        super(ns);
+    public AsyncFileWriterWal(String ns, String key) {
+        super(ns, key);
         super.setupStandardOpenOption(StandardOpenOption.APPEND);
     }
 

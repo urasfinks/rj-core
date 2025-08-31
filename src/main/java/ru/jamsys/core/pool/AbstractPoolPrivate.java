@@ -9,8 +9,8 @@ import ru.jamsys.core.resource.thread.ThreadExecutePromiseTask;
 
 public abstract class AbstractPoolPrivate extends AbstractPool<ThreadExecutePromiseTask> {
 
-    public AbstractPoolPrivate(String key) {
-        super(key);
+    public AbstractPoolPrivate(String ns, String key) {
+        super(ns, key);
     }
 
     // Звоночек, что бы взбодрить приватные ресурсы

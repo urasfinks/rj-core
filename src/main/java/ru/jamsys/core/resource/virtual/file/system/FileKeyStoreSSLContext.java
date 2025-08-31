@@ -14,8 +14,8 @@ public class FileKeyStoreSSLContext extends FileKeyStore {
 
     CustomTrustManager trustManager = new CustomTrustManager();
 
-    public FileKeyStoreSSLContext(String path) {
-        super(path);
+    public FileKeyStoreSSLContext(String ns, String key) {
+        super(ns, key);
     }
 
     @SuppressWarnings("unused")

@@ -7,7 +7,6 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 
 import java.util.*;
@@ -25,23 +24,28 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
 
     private final String ns;
 
-    public ManagerConfiguration<ExpirationList<ExpirationMapExpirationObject>> expirationMapConfiguration;
+    private final String key;
 
-    private final Map<K, ExpirationMapExpirationObject> mainMap = new ConcurrentHashMap<>(); // Основная карта, в которой хранятся сессионные данные
+    public ManagerConfiguration<ExpirationList<EnvelopeObject>> expirationMapConfiguration;
 
-    public ExpirationMap(String ns) {
+    private final Map<K, EnvelopeObject> mainMap = new ConcurrentHashMap<>(); // Основная карта, в которой хранятся сессионные данные
+
+    private int timeoutElementExpirationMs = 6_000;
+
+    public ExpirationMap(String ns, String key) {
         this.ns = ns;
+        this.key = key;
         expirationMapConfiguration = ManagerConfiguration.getInstance(
                 ExpirationList.class,
                 App.getUniqueClassName(ExpirationMap.class), // Это общий ExpirationList для всех экземпляров ExpirationMap
                 App.getUniqueClassName(ExpirationMap.class), // Это общий ExpirationList для всех экземпляров ExpirationMap
                 expirationMapExpirationObjectExpirationList -> expirationMapExpirationObjectExpirationList
-                        .setupOnExpired(ExpirationMapExpirationObject::remove)
+                        .setupOnExpired(EnvelopeObject::remove)
         );
     }
 
-    public void setupTimeoutMs(int keepAliveOnInactivityMs) {
-        this.setInactivityTimeoutMs(keepAliveOnInactivityMs);
+    public void setupTimeoutElementExpirationMs(int timeoutElementExpirationMs) {
+        this.timeoutElementExpirationMs = timeoutElementExpirationMs;
     }
 
     @JsonValue
@@ -50,6 +54,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
                 .append("ns", ns)
+                .append("key", key)
                 .append("size", size())
                 ;
     }
@@ -60,40 +65,37 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
 
     @Override
     public V put(K key, V value) {
-        ExpirationMapExpirationObject envelope = mainMap.computeIfAbsent(key, k -> new ExpirationMapExpirationObject(k, mainMap));
-        if (envelope.getExpiration() != null) {
-            envelope.getExpiration().doNeutralized();
-        }
-        envelope.setValue(value);
-        envelope.setExpiration(expirationMapConfiguration.get().add(envelope, getInactivityTimeoutMs()));
-        return value;
+        V remove = remove(key);
+        EnvelopeObject envelope = new EnvelopeObject(key, value, mainMap);
+        envelope.updateExpiration(expirationMapConfiguration.get(), timeoutElementExpirationMs);
+        mainMap.put(key, envelope);
+        return remove;
     }
 
     @Override
     public V get(Object key) {
-        ExpirationMapExpirationObject envelope = mainMap.get(key);
+        return get(key, true);
+    }
+
+    public V get(Object key, boolean updateExpiration) {
+        EnvelopeObject envelope = mainMap.get(key);
         if (envelope == null) {
             return null;
         }
-        if (envelope.getExpiration() != null) {
-            envelope.getExpiration().doNeutralized();
+        if (updateExpiration) {
+            envelope.updateExpiration(expirationMapConfiguration.get(), timeoutElementExpirationMs);
         }
-        envelope.setExpiration(expirationMapConfiguration.get().add(envelope, getInactivityTimeoutMs()));
         @SuppressWarnings("unchecked")
         V value = (V) envelope.getValue();
         return value;
     }
 
     public V computeIfAbsent(K key, @NotNull Function<? super K, ? extends V> mappingFunction) {
-        ExpirationMapExpirationObject envelope = mainMap.computeIfAbsent(key, k -> {
-            ExpirationMapExpirationObject envelope1 = new ExpirationMapExpirationObject(k, mainMap);
-            envelope1.setValue(mappingFunction.apply(k));
-            return envelope1;
-        });
-        if (envelope.getExpiration() != null) {
-            envelope.getExpiration().doNeutralized();
-        }
-        envelope.setExpiration(expirationMapConfiguration.get().add(envelope, getInactivityTimeoutMs()));
+        EnvelopeObject envelope = mainMap.computeIfAbsent(
+                key,
+                k -> new EnvelopeObject(k, mappingFunction.apply(k), mainMap)
+        );
+        envelope.updateExpiration(expirationMapConfiguration.get(), timeoutElementExpirationMs);
         @SuppressWarnings("unchecked")
         V value = (V) envelope.getValue();
         return value;
@@ -105,13 +107,14 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
     // памяти, не связанная с бизнес-логикой.
     @Override
     public V remove(Object key) {
-        ExpirationMapExpirationObject envelope = mainMap.remove(key);
+        EnvelopeObject envelope = mainMap.remove(key);
         if (envelope == null) {
             return null;
         }
         if (envelope.getExpiration() != null) {
             envelope.getExpiration().doNeutralized();
         }
+        envelope.remove();
         @SuppressWarnings("unchecked")
         V value = (V) envelope.getValue();
         return value;
@@ -124,12 +127,12 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
 
     @Override
     public void clear() {
-        Collection<ExpirationMapExpirationObject> values = mainMap.values();
-        for (ExpirationMapExpirationObject envelope : values) {
-            DisposableExpirationMsImmutableEnvelope<?> expiration = envelope.getExpiration();
-            if (expiration != null) {
-                expiration.doNeutralized();
+        Collection<EnvelopeObject> values = mainMap.values();
+        for (EnvelopeObject envelope : values) {
+            if (envelope.getExpiration() != null) {
+                envelope.getExpiration().doNeutralized();
             }
+            envelope.remove();
         }
         mainMap.clear();
     }
@@ -141,10 +144,10 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
             @NotNull
             @Override
             public Iterator<K> iterator() {
-                Iterator<Entry<K, ExpirationMapExpirationObject>> internalIterator = mainMap.entrySet().iterator();
+                Iterator<Entry<K, EnvelopeObject>> internalIterator = mainMap.entrySet().iterator();
 
                 return new Iterator<>() {
-                    private Entry<K, ExpirationMapExpirationObject> current;
+                    private Entry<K, EnvelopeObject> current;
 
                     @Override
                     public boolean hasNext() {
@@ -199,10 +202,10 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
             @NotNull
             @Override
             public Iterator<V> iterator() {
-                Iterator<Entry<K, ExpirationMapExpirationObject>> internalIterator = mainMap.entrySet().iterator();
+                Iterator<Entry<K, EnvelopeObject>> internalIterator = mainMap.entrySet().iterator();
 
                 return new Iterator<>() {
-                    private Entry<K, ExpirationMapExpirationObject> current;
+                    private Entry<K, EnvelopeObject> current;
 
                     @Override
                     public boolean hasNext() {
@@ -234,7 +237,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
 
             @Override
             public boolean contains(Object o) {
-                for (ExpirationMapExpirationObject envelope : mainMap.values()) {
+                for (EnvelopeObject envelope : mainMap.values()) {
                     if (Objects.equals(envelope.getValue(), o)) {
                         return true;
                     }
@@ -249,8 +252,8 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
 
             @Override
             public boolean remove(Object o) {
-                for (Iterator<Entry<K, ExpirationMapExpirationObject>> it = mainMap.entrySet().iterator(); it.hasNext(); ) {
-                    Entry<K, ExpirationMapExpirationObject> entry = it.next();
+                for (Iterator<Entry<K, EnvelopeObject>> it = mainMap.entrySet().iterator(); it.hasNext(); ) {
+                    Entry<K, EnvelopeObject> entry = it.next();
                     if (Objects.equals(entry.getValue().getValue(), o)) {
                         it.remove();
                         return true;
@@ -270,10 +273,10 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
             @NotNull
             @Override
             public Iterator<Entry<K, V>> iterator() {
-                Iterator<Entry<K, ExpirationMapExpirationObject>> internalIterator = mainMap.entrySet().iterator();
+                Iterator<Entry<K, EnvelopeObject>> internalIterator = mainMap.entrySet().iterator();
 
                 return new Iterator<>() {
-                    private Entry<K, ExpirationMapExpirationObject> current;
+                    private Entry<K, EnvelopeObject> current;
 
                     @Override
                     public boolean hasNext() {
@@ -299,7 +302,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
                             @SuppressWarnings("unchecked")
                             @Override
                             public V setValue(V value) {
-                                ExpirationMapExpirationObject envelope = current.getValue();
+                                EnvelopeObject envelope = current.getValue();
                                 V old = (V) envelope.getValue();
                                 envelope.setValue(value);
                                 return old;
@@ -349,7 +352,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
             @Override
             public boolean contains(Object o) {
                 if (!(o instanceof Entry<?, ?> entry)) return false;
-                ExpirationMapExpirationObject envelope = mainMap.get(entry.getKey());
+                EnvelopeObject envelope = mainMap.get(entry.getKey());
                 if (envelope == null) return false;
                 return Objects.equals(envelope.getValue(), entry.getValue());
             }
@@ -358,10 +361,10 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
             @Override
             public boolean remove(Object o) {
                 if (!(o instanceof Entry<?, ?> entry)) return false;
-                ExpirationMapExpirationObject envelope = mainMap.get(entry.getKey());
+                EnvelopeObject envelope = mainMap.get(entry.getKey());
                 if (envelope == null) return false;
                 if (Objects.equals(envelope.getValue(), entry.getValue())) {
-                    mainMap.remove(entry.getKey());
+                    ExpirationMap.this.remove(entry.getKey());
                     return true;
                 }
                 return false;
@@ -381,7 +384,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
 
     @Override
     public boolean containsValue(Object value) {
-        for (ExpirationMapExpirationObject envelope : mainMap.values()) {
+        for (EnvelopeObject envelope : mainMap.values()) {
             if (Objects.equals(envelope.getValue(), value)) {
                 return true;
             }
@@ -405,16 +408,6 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
                 .addHeader("size", size())
         );
         return result;
-    }
-
-    @SuppressWarnings("all")
-    public V peek(Object key) {
-        ExpirationMapExpirationObject envelope = mainMap.get(key);
-        return envelope != null ? (V) envelope.getValue() : null;
-    }
-
-    public boolean expireNow(K key) {
-        return mainMap.remove(key) != null;
     }
 
     @Override

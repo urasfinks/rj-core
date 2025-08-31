@@ -2,7 +2,7 @@ package ru.jamsys.core.extension;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.extension.expiration.Expiration;
+import ru.jamsys.core.extension.expiration.ExpirationDrop;
 import ru.jamsys.core.extension.expiration.mutable.ExpirationMsMutable;
 import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 
@@ -15,7 +15,7 @@ public abstract class AbstractManagerElement extends AbstractLifeCycle
         implements ExpirationMsMutable,
         LifeCycleInterface,
         StatisticsFlush,
-        Expiration,
+        ExpirationDrop,
         CascadeKey {
 
     private long inactivityTimeoutMs = 6_000; // Время жизни если нет активности
@@ -33,7 +33,7 @@ public abstract class AbstractManagerElement extends AbstractLifeCycle
     }
 
     @Override
-    public void onExpired() {
+    public void onExpirationDrop() {
 
     }
 

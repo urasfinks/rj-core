@@ -31,7 +31,7 @@ public class BalancerStickySessions<T> {
                 java.util.UUID.randomUUID().toString(),
                 ns,
                 stringResolvedExpirationMap -> stringResolvedExpirationMap
-                        .setupTimeoutMs(keepAliveOnInactivityMs)
+                        .setupTimeoutElementExpirationMs(keepAliveOnInactivityMs)
         );
     }
 

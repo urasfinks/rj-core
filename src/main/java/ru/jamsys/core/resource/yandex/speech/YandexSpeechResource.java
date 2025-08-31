@@ -1,6 +1,7 @@
 package ru.jamsys.core.resource.yandex.speech;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -21,17 +22,21 @@ public class YandexSpeechResource
 
     private final String ns;
 
+    @Getter
+    private final String key;
+
     private final PropertyDispatcher<Object> propertyDispatcher;
 
     private final YandexSpeechRepositoryProperty property = new YandexSpeechRepositoryProperty();
 
-    public YandexSpeechResource(String ns) {
+    public YandexSpeechResource(String ns, String key) {
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
                 property,
                 getCascadeKey(ns)
         );
         this.ns = ns;
+        this.key = key;
     }
 
     public Void execute(YandexSpeechRequest arguments) {

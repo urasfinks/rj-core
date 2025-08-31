@@ -62,10 +62,12 @@ public class BrokerMemory<T>
     @Getter
     private final PropertyDispatcher<Integer> propertyDispatcher;
 
-    public BrokerMemory(
-            String ns
-    ) {
+    @Getter
+    private final String key;
+
+    public BrokerMemory(String ns, String key) {
         this.ns = ns;
+        this.key = key;
         propertyDispatcher = new PropertyDispatcher<>(
                 null,
                 getProperty(),

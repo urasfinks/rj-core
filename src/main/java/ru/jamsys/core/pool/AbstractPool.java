@@ -39,6 +39,9 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
     @Getter
     protected final String ns;
 
+    @Getter
+    private final String key;
+
     // Общая очередь, где находятся все объекты
     protected final Set<ManagerConfiguration<T>> items = Util.getConcurrentHashSet();
 
@@ -70,8 +73,9 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
 
     private final Map<T, ManagerConfiguration<T>> configurationReference = new ConcurrentHashMap<>();
 
-    public AbstractPool(String ns) {
+    public AbstractPool(String ns, String key) {
         this.ns = ns;
+        this.key = key;
         propertyDispatcher = new PropertyDispatcher<>(
                 null,
                 property,

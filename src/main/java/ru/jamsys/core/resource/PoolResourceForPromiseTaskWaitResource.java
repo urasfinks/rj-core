@@ -26,8 +26,8 @@ public class PoolResourceForPromiseTaskWaitResource<T extends AbstractExpiration
     @SuppressWarnings("all")
     private final ManagerConfiguration<BrokerMemory<PromiseTaskWaitResource>> brokerMemoryConfiguration;
 
-    public PoolResourceForPromiseTaskWaitResource(String ns) {
-        super(ns);
+    public PoolResourceForPromiseTaskWaitResource(String ns, String key) {
+        super(ns, key);
         brokerMemoryConfiguration = ManagerConfiguration.getInstance(
                 BrokerMemory.class,
                 java.util.UUID.randomUUID().toString(),

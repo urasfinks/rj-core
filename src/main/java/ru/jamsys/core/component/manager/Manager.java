@@ -44,6 +44,7 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         }
     }
 
+    // Вызвать accept для всех элементов по классу
     public <R extends AbstractManagerElement> void groupAccept(Class<R> cls, Consumer<R> consumer) {
         Map<String, ? extends AbstractManagerElement> innerMap = map.get(cls);
         if (innerMap != null) {
@@ -68,9 +69,9 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
                 .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
                 .computeIfAbsent(CascadeKey.complex(key, ns), _ -> {
                     try {
-                        Constructor<?> c = cls.getConstructor(String.class);
+                        Constructor<?> c = cls.getConstructor(String.class, String.class);
                         @SuppressWarnings("unchecked")
-                        R newInstance = (R) c.newInstance(ns);
+                        R newInstance = (R) c.newInstance(ns, key);
                         if (onCreate != null) {
                             onCreate.accept(newInstance);
                         }
@@ -124,7 +125,7 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
                             .append("element", managerElement)
                     );
                     try {
-                        managerElement.onExpired();
+                        managerElement.onExpirationDrop();
                     } catch (Throwable th) {
                         App.error(th);
                     }

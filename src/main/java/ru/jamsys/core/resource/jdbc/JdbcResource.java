@@ -1,6 +1,7 @@
 package ru.jamsys.core.resource.jdbc;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -37,8 +38,12 @@ public class JdbcResource
 
     private final String ns;
 
-    public JdbcResource(String ns) {
+    @Getter
+    private final String key;
+
+    public JdbcResource(String ns, String key) {
         this.ns = ns;
+        this.key = key;
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
                 property,

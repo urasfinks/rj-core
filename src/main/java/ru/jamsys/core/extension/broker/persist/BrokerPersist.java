@@ -42,6 +42,8 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
 
     private final String ns;
 
+    private final String key;
+
     private final BrokerPersistRepositoryProperty property = new BrokerPersistRepositoryProperty();
 
     private final PropertyDispatcher<Object> propertyDispatcher;
@@ -61,8 +63,9 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
 
     private Function<byte[], T> restoreElementFromByte;
 
-    public BrokerPersist(String ns) {
+    public BrokerPersist(String ns, String key) {
         this.ns = ns;
+        this.key = key;
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
                 property,

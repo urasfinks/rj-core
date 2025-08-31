@@ -7,6 +7,7 @@ import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.write.Point;
 import com.influxdb.internal.AbstractRestClient;
+import lombok.Getter;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -34,13 +35,17 @@ public class InfluxResource extends AbstractExpirationResource implements Proper
 
     private final String ns;
 
-    public InfluxResource(String ns) {
+    @Getter
+    private final String managerKey;
+
+    public InfluxResource(String ns, String managerKey) {
         propertyDispatcher = new PropertyDispatcher<>(
                 this,
                 property,
                 getCascadeKey(ns)
         );
         this.ns = ns;
+        this.managerKey = managerKey;
     }
 
     private void down() {

@@ -32,8 +32,12 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
     @Getter
     private final String ns;
 
-    public ThreadExecutePromiseTask(String ns) {
+    @Getter
+    private final String key;
+
+    public ThreadExecutePromiseTask(String ns, String key) {
         this.ns = ns;
+        this.key = key;
     }
 
     public void setup(

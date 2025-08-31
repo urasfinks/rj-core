@@ -20,8 +20,8 @@ public class PoolThreadExecutePromiseTask extends AbstractPoolPrivate {
     @SuppressWarnings("all")
     private final ManagerConfiguration<BrokerMemory<AbstractPromiseTask>> brokerMemoryConfiguration;
 
-    public PoolThreadExecutePromiseTask(String ns) {
-        super(ns);
+    public PoolThreadExecutePromiseTask(String ns, String key) {
+        super(ns, key);
         // Для каждого ThreadPoolExecutePromiseTask должен быть свой RateLimitTps, поэтому uuid
         rateLimitConfiguration = ManagerConfiguration.getInstance(
                 RateLimitTps.class,
