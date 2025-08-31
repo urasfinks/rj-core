@@ -16,12 +16,21 @@ public class OperationClient {
 
     public OperationClient(
             String uuid,
-            long timestampAdd,
+            Long timestampAdd,
             OperationType operationType,
             String tokenForUpdate,
             String uuidObject,
             Map<String, Object> data
     ) {
+        if (uuid == null) {
+            throw new RuntimeException("uuid is null");
+        }
+        if (timestampAdd == null) {
+            throw new RuntimeException("timestampAdd is null");
+        }
+        if (uuidObject == null) {
+            throw new RuntimeException("uuidObject is null");
+        }
         this.uuid = uuid;
         this.timestampAdd = timestampAdd;
         this.operationType = operationType;

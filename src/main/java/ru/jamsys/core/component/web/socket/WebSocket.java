@@ -88,7 +88,7 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
         });
     }
 
-    private void send(@NotNull WebSocketSession session, String data) {
+    public void send(@NotNull WebSocketSession session, String data) {
         try {
             session.sendMessage(new TextMessage(data));
         } catch (Throwable th) {
@@ -134,7 +134,7 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
         }
         PromiseGeneratorExternalRequest promiseGenerator = routeGeneratorRepository.match((String) req.get("uri"));
         if (promiseGenerator == null) {
-            App.error(new RuntimeException("PromiseGenerator not found"));
+            App.error(new RuntimeException("PromiseGenerator not found"), req);
             return;
         }
         Promise promise = promiseGenerator.generate();

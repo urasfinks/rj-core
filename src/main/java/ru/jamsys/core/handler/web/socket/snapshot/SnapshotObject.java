@@ -8,18 +8,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Getter
 public class SnapshotObject {
 
-    @Getter
     private final AtomicReference<String> token;
     private final Map<String, Object> data = new HashMap<>();
-    private boolean remove = false;
+    private volatile boolean remove = false;
 
     public SnapshotObject(String token) {
         this.token = new AtomicReference<>(token);
     }
 
     public void accept(Operation operation) {
+        if (remove) {
+            return;
+        }
         if (operation.getOperationClient().getOperationType() == OperationType.DELETE) {
             remove = true;
             return;

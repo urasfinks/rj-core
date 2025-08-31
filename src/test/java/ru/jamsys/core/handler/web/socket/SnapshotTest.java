@@ -18,7 +18,7 @@ class SnapshotTest {
         Snapshot snapshot = new Snapshot();
         Operation op1 = snapshot.accept(getUserOperation(OperationType.CREATE, "1", null, new HashMapBuilder<String, Object>().append("x", "y1")), "1");
         Assertions.assertTrue(op1.getServerCommit().isCommit());
-        Assertions.assertEquals(0, op1.getServerCommit().getId());
+        Assertions.assertEquals(1, op1.getServerCommit().getId());
 
         Operation op2 = snapshot.accept(getUserOperation(OperationType.CREATE, "1", null, null), "1");
         Assertions.assertFalse(op2.getServerCommit().isCommit());
@@ -26,21 +26,34 @@ class SnapshotTest {
 
         Operation op3 = snapshot.accept(getUserOperation(OperationType.UPDATE, "1", "1", new HashMapBuilder<String, Object>().append("x", "y2")), "1");
         Assertions.assertTrue(op3.getServerCommit().isCommit());
-        Assertions.assertEquals(1, op3.getServerCommit().getId());
+        Assertions.assertEquals(2, op3.getServerCommit().getId());
 
         Operation op4 = snapshot.accept(getUserOperation(OperationType.DELETE, "1", "1", null), "1");
         Assertions.assertFalse(op4.getServerCommit().isCommit());
         Assertions.assertEquals(-1, op4.getServerCommit().getId());
-        Assertions.assertEquals("invalid token 1", op4.getServerCommit().getCause());
+        Assertions.assertEquals("invalid token", op4.getServerCommit().getCause());
 
         Operation op5 = snapshot.accept(getUserOperation(OperationType.DELETE, "1", op3.getServerCommit().getNewTokenForUpdate(), new HashMap<>()), "1");
         Assertions.assertTrue(op5.getServerCommit().isCommit());
-        Assertions.assertEquals(2, op5.getServerCommit().getId());
+        Assertions.assertEquals(3, op5.getServerCommit().getId());
 
         Operation op6 = snapshot.accept(getUserOperation(OperationType.UPDATE, "2", "2", null), "1");
         Assertions.assertFalse(op6.getServerCommit().isCommit());
         Assertions.assertEquals("not found 2", op6.getServerCommit().getCause());
 
+
+        UtilLog.printInfo(snapshot);
+    }
+
+    @Test
+    public void delete() {
+        Snapshot snapshot = new Snapshot();
+        Operation op1 = snapshot.accept(getUserOperation(OperationType.CREATE, "1", null, new HashMapBuilder<String, Object>().append("x", "y1")), "1");
+        Assertions.assertTrue(op1.getServerCommit().isCommit());
+        Assertions.assertEquals(1, op1.getServerCommit().getId());
+
+        Operation op5 = snapshot.accept(getUserOperation(OperationType.DELETE, "1", "1", new HashMap<>()), "1");
+        Assertions.assertTrue(op5.getServerCommit().isCommit());
 
         UtilLog.printInfo(snapshot);
     }
