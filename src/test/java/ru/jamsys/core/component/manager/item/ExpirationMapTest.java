@@ -34,7 +34,7 @@ class ExpirationMapTest {
 
         @Override
         public void onExpirationDrop() {
-            Util.printStackTrace("iam expired");
+            data = "YES";
         }
     }
 
@@ -77,7 +77,7 @@ class ExpirationMapTest {
         Assertions.assertEquals(s.hashCode(), test.get(10).hashCode());
         Util.testSleepMs(2_000);
         Assertions.assertEquals(0, test.size());
-        //Assertions.assertEquals(0, test.getExpirationMap().size());
+        Assertions.assertEquals("YES", s.getData());
     }
 
 

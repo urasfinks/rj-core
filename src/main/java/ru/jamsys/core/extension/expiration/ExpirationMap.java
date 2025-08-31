@@ -66,7 +66,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
     @Override
     public V put(K key, V value) {
         V remove = remove(key);
-        EnvelopeObject envelope = new EnvelopeObject(key, value, mainMap);
+        EnvelopeObject envelope = new EnvelopeObject(key, value, this);
         envelope.updateExpiration(expirationMapConfiguration.get(), timeoutElementExpirationMs);
         mainMap.put(key, envelope);
         return remove;
@@ -93,7 +93,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
     public V computeIfAbsent(K key, @NotNull Function<? super K, ? extends V> mappingFunction) {
         EnvelopeObject envelope = mainMap.computeIfAbsent(
                 key,
-                k -> new EnvelopeObject(k, mappingFunction.apply(k), mainMap)
+                k -> new EnvelopeObject(k, mappingFunction.apply(k), this)
         );
         envelope.updateExpiration(expirationMapConfiguration.get(), timeoutElementExpirationMs);
         @SuppressWarnings("unchecked")
@@ -114,9 +114,15 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
         if (envelope.getExpiration() != null) {
             envelope.getExpiration().doNeutralized();
         }
-        envelope.remove();
         @SuppressWarnings("unchecked")
         V value = (V) envelope.getValue();
+        if (value instanceof ExpirationDrop expirationDrop) {
+            try {
+                expirationDrop.onExpirationDrop();
+            } catch (Throwable th) {
+                App.error(th);
+            }
+        }
         return value;
     }
 

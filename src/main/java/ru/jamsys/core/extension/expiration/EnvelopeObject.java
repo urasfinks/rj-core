@@ -3,11 +3,8 @@ package ru.jamsys.core.extension.expiration;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.Setter;
-import ru.jamsys.core.App;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
-
-import java.util.Map;
 
 @Getter
 @Setter
@@ -17,7 +14,7 @@ public class EnvelopeObject {
 
     private Object value;
 
-    private final Map<?, ?> map;
+    private final ExpirationMap<?, ?> map;
 
     private DisposableExpirationMsImmutableEnvelope<?> expiration;
 
@@ -25,7 +22,7 @@ public class EnvelopeObject {
     public EnvelopeObject(
             Object key,
             Object value,
-            Map<?, ?> map
+            ExpirationMap<?, ?> map
     ) {
         this.key = key;
         this.value = value;
@@ -41,14 +38,7 @@ public class EnvelopeObject {
     }
 
     public void remove() {
-        Object remove = map.remove(key);
-        if (remove instanceof ExpirationDrop expirationDrop) {
-            try {
-                expirationDrop.onExpirationDrop();
-            } catch (Throwable th) {
-                App.error(th);
-            }
-        }
+        map.remove(key);
     }
 
     @JsonValue
