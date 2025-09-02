@@ -11,51 +11,51 @@ import ru.jamsys.core.handler.web.socket.operation.OperationType;
 import java.util.HashMap;
 import java.util.Map;
 
-class SnapshotOperationObjectTest {
+class OperationRepositoryTest {
 
     @Test
     public void x() {
-        SnapshotOperationObject snapshotOperationObject = new SnapshotOperationObject();
-        Operation op1 = snapshotOperationObject.accept(getUserOperation(OperationType.CREATE, "1", null, new HashMapBuilder<String, Object>().append("x", "y1")), "1");
+        OperationRepository operationRepository = new OperationRepository();
+        Operation op1 = operationRepository.accept(getUserOperation(OperationType.CREATE, "1", null, new HashMapBuilder<String, Object>().append("x", "y1")), "1");
         Assertions.assertTrue(op1.getServerCommit().isCommit());
         Assertions.assertEquals(1, op1.getServerCommit().getId());
 
-        Operation op2 = snapshotOperationObject.accept(getUserOperation(OperationType.CREATE, "1", null, null), "1");
+        Operation op2 = operationRepository.accept(getUserOperation(OperationType.CREATE, "1", null, null), "1");
         Assertions.assertFalse(op2.getServerCommit().isCommit());
         Assertions.assertEquals(-1, op2.getServerCommit().getId());
 
-        Operation op3 = snapshotOperationObject.accept(getUserOperation(OperationType.UPDATE, "1", "1", new HashMapBuilder<String, Object>().append("x", "y2")), "1");
+        Operation op3 = operationRepository.accept(getUserOperation(OperationType.UPDATE, "1", "1", new HashMapBuilder<String, Object>().append("x", "y2")), "1");
         Assertions.assertTrue(op3.getServerCommit().isCommit());
         Assertions.assertEquals(2, op3.getServerCommit().getId());
 
-        Operation op4 = snapshotOperationObject.accept(getUserOperation(OperationType.DELETE, "1", "1", null), "1");
+        Operation op4 = operationRepository.accept(getUserOperation(OperationType.DELETE, "1", "1", null), "1");
         Assertions.assertFalse(op4.getServerCommit().isCommit());
         Assertions.assertEquals(-1, op4.getServerCommit().getId());
         Assertions.assertEquals("invalid token", op4.getServerCommit().getCause());
 
-        Operation op5 = snapshotOperationObject.accept(getUserOperation(OperationType.DELETE, "1", op3.getServerCommit().getNewTokenForUpdate(), new HashMap<>()), "1");
+        Operation op5 = operationRepository.accept(getUserOperation(OperationType.DELETE, "1", op3.getServerCommit().getNewTokenForUpdate(), new HashMap<>()), "1");
         Assertions.assertTrue(op5.getServerCommit().isCommit());
         Assertions.assertEquals(3, op5.getServerCommit().getId());
 
-        Operation op6 = snapshotOperationObject.accept(getUserOperation(OperationType.UPDATE, "2", "2", null), "1");
+        Operation op6 = operationRepository.accept(getUserOperation(OperationType.UPDATE, "2", "2", null), "1");
         Assertions.assertFalse(op6.getServerCommit().isCommit());
         Assertions.assertEquals("not found 2", op6.getServerCommit().getCause());
 
 
-        UtilLog.printInfo(snapshotOperationObject);
+        UtilLog.printInfo(operationRepository);
     }
 
     @Test
     public void delete() {
-        SnapshotOperationObject snapshotOperationObject = new SnapshotOperationObject();
-        Operation op1 = snapshotOperationObject.accept(getUserOperation(OperationType.CREATE, "1", null, new HashMapBuilder<String, Object>().append("x", "y1")), "1");
+        OperationRepository operationRepository = new OperationRepository();
+        Operation op1 = operationRepository.accept(getUserOperation(OperationType.CREATE, "1", null, new HashMapBuilder<String, Object>().append("x", "y1")), "1");
         Assertions.assertTrue(op1.getServerCommit().isCommit());
         Assertions.assertEquals(1, op1.getServerCommit().getId());
 
-        Operation op5 = snapshotOperationObject.accept(getUserOperation(OperationType.DELETE, "1", "1", new HashMap<>()), "1");
+        Operation op5 = operationRepository.accept(getUserOperation(OperationType.DELETE, "1", "1", new HashMap<>()), "1");
         Assertions.assertTrue(op5.getServerCommit().isCommit());
 
-        UtilLog.printInfo(snapshotOperationObject);
+        UtilLog.printInfo(operationRepository);
     }
 
     private OperationClient getUserOperation(

@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Getter
-public class SnapshotOperationObject {
+public class OperationRepository {
 
     private final Map<String, OperationObject> operationObjects = new ConcurrentHashMap<>();
     private final AtomicInteger serial = new AtomicInteger(0);
