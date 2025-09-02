@@ -1,4 +1,4 @@
-package ru.jamsys.core.handler.web.socket.snapshot;
+package ru.jamsys.core.handler.web.socket.operation;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
@@ -9,13 +9,13 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Getter
-public class SnapshotObject {
+public class OperationObject {
 
     private final AtomicReference<String> token;
     private final Map<String, Object> data = new HashMap<>();
     private volatile boolean remove = false;
 
-    public SnapshotObject(String token) {
+    public OperationObject(String token) {
         this.token = new AtomicReference<>(token);
     }
 

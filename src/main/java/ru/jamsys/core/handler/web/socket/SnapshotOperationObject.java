@@ -1,10 +1,10 @@
 package ru.jamsys.core.handler.web.socket;
 
 import lombok.Getter;
-import ru.jamsys.core.handler.web.socket.snapshot.Operation;
-import ru.jamsys.core.handler.web.socket.snapshot.OperationClient;
-import ru.jamsys.core.handler.web.socket.snapshot.ServerCommit;
-import ru.jamsys.core.handler.web.socket.snapshot.SnapshotObject;
+import ru.jamsys.core.handler.web.socket.operation.Operation;
+import ru.jamsys.core.handler.web.socket.operation.OperationClient;
+import ru.jamsys.core.handler.web.socket.operation.ServerCommit;
+import ru.jamsys.core.handler.web.socket.operation.OperationObject;
 
 import java.util.Map;
 import java.util.Objects;
@@ -16,9 +16,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Getter
-public class Snapshot {
+public class SnapshotOperationObject {
 
-    private final Map<String, SnapshotObject> objects = new ConcurrentHashMap<>();
+    private final Map<String, OperationObject> operationObjects = new ConcurrentHashMap<>();
     private final AtomicInteger serial = new AtomicInteger(0);
     private final ConcurrentLinkedQueue<Operation> operations = new ConcurrentLinkedQueue<>();
 
@@ -28,11 +28,11 @@ public class Snapshot {
         switch (resultOperation.getOperationClient().getOperationType()) {
             case CREATE -> {
                 AtomicBoolean created = new AtomicBoolean(false);
-                SnapshotObject snapshotObject = objects.computeIfAbsent(
-                        operationClient.getUuidObject(),
+                OperationObject operationObject = operationObjects.computeIfAbsent(
+                        operationClient.getUuidOperationObject(),
                         uuid -> {
                             created.set(true);
-                            return new SnapshotObject(uuid);
+                            return new OperationObject(uuid);
                         }
                 );
 
@@ -42,36 +42,36 @@ public class Snapshot {
                             this.serial.incrementAndGet(),
                             idUser,
                             null,
-                            operationClient.getUuidObject()
+                            operationClient.getUuidOperationObject()
                     ));
-                    snapshotObject.accept(resultOperation);
+                    operationObject.accept(resultOperation);
                     operations.add(resultOperation);
                 } else {
                     resultOperation.setServerCommit(new ServerCommit(
                             false,
                             -1,
                             idUser,
-                            "duplicate " + operationClient.getUuidObject(),
+                            "duplicate " + operationClient.getUuidOperationObject(),
                             null
                     ));
                 }
             }
 
             case UPDATE, DELETE -> {
-                SnapshotObject snapshotObject = objects.get(operationClient.getUuidObject());
-                if (snapshotObject == null) {
+                OperationObject operationObject = operationObjects.get(operationClient.getUuidOperationObject());
+                if (operationObject == null) {
                     resultOperation.setServerCommit(new ServerCommit(
                             false,
                             -1,
                             idUser,
-                            "not found " + operationClient.getUuidObject(),
+                            "not found " + operationClient.getUuidOperationObject(),
                             null
                     ));
                     break;
                 }
 
                 // 1) Читаем текущее значение из AtomicReference
-                String currentToken = snapshotObject.getToken().get();
+                String currentToken = operationObject.getToken().get();
 
                 // 2) Сверяем с клиентским по СОДЕРЖИМОМУ
                 if (!Objects.equals(currentToken, operationClient.getTokenForUpdate())) {
@@ -87,7 +87,7 @@ public class Snapshot {
 
                 // 3) Пытаемся атомарно заменить ТО, ЧТО ПРОЧИТАЛИ
                 String newToken = UUID.randomUUID().toString();
-                if (snapshotObject.getToken().compareAndSet(currentToken, newToken)) {
+                if (operationObject.getToken().compareAndSet(currentToken, newToken)) {
                     resultOperation.setServerCommit(new ServerCommit(
                             true,
                             this.serial.incrementAndGet(),
@@ -95,11 +95,11 @@ public class Snapshot {
                             null,
                             newToken
                     ));
-                    snapshotObject.accept(resultOperation);
+                    operationObject.accept(resultOperation);
                     operations.add(resultOperation);
                 } else {
                     // между get и CAS кто-то успел обновить
-                    String now = snapshotObject.getToken().get();
+                    String now = operationObject.getToken().get();
                     resultOperation.setServerCommit(new ServerCommit(
                             false,
                             -1,
@@ -114,8 +114,8 @@ public class Snapshot {
         return resultOperation;
     }
 
-    public Map<String, SnapshotObject> getActiveObjects() {
-        return objects.entrySet().stream()
+    public Map<String, OperationObject> getActiveObjects() {
+        return operationObjects.entrySet().stream()
                 .filter(e -> !e.getValue().isRemove())   // используем геттер
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,

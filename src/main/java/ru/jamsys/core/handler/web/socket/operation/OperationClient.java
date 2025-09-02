@@ -1,4 +1,4 @@
-package ru.jamsys.core.handler.web.socket.snapshot;
+package ru.jamsys.core.handler.web.socket.operation;
 
 import lombok.Getter;
 
@@ -11,7 +11,7 @@ public class OperationClient {
     private final long timestampAdd;
     private final OperationType operationType;
     private final String tokenForUpdate;
-    private final String uuidObject;
+    private final String uuidOperationObject;
     private final Map<String, Object> data;
 
     public OperationClient(
@@ -19,7 +19,7 @@ public class OperationClient {
             Long timestampAdd,
             OperationType operationType,
             String tokenForUpdate,
-            String uuidObject,
+            String uuidOperationObject,
             Map<String, Object> data
     ) {
         if (uuid == null) {
@@ -28,14 +28,14 @@ public class OperationClient {
         if (timestampAdd == null) {
             throw new RuntimeException("timestampAdd is null");
         }
-        if (uuidObject == null) {
+        if (uuidOperationObject == null) {
             throw new RuntimeException("uuidObject is null");
         }
         this.uuid = uuid;
         this.timestampAdd = timestampAdd;
         this.operationType = operationType;
         this.tokenForUpdate = tokenForUpdate;
-        this.uuidObject = uuidObject;
+        this.uuidOperationObject = uuidOperationObject;
         this.data = data;
     }
 
