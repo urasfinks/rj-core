@@ -3,8 +3,8 @@ package ru.jamsys.core.handler.web.socket;
 import lombok.Getter;
 import ru.jamsys.core.handler.web.socket.operation.Operation;
 import ru.jamsys.core.handler.web.socket.operation.OperationClient;
-import ru.jamsys.core.handler.web.socket.operation.ServerCommit;
 import ru.jamsys.core.handler.web.socket.operation.OperationObject;
+import ru.jamsys.core.handler.web.socket.operation.ServerCommit;
 
 import java.util.Map;
 import java.util.Objects;
@@ -26,6 +26,13 @@ public class OperationRepository {
         Operation resultOperation = new Operation(operationClient);
 
         switch (resultOperation.getOperationClient().getOperationType()) {
+            case CREATE_OR_REPLACE -> {
+                OperationObject operationObject = operationObjects.computeIfAbsent(
+                        operationClient.getUuidOperationObject(),
+                        OperationObject::new
+                );
+                cas(operationObject, operationClient.getTokenForUpdate(), resultOperation, idUser);
+            }
             case CREATE -> {
                 AtomicBoolean created = new AtomicBoolean(false);
                 OperationObject operationObject = operationObjects.computeIfAbsent(
@@ -69,49 +76,52 @@ public class OperationRepository {
                     ));
                     break;
                 }
-
-                // 1) Читаем текущее значение из AtomicReference
-                String currentToken = operationObject.getToken().get();
-
-                // 2) Сверяем с клиентским по СОДЕРЖИМОМУ
-                if (!Objects.equals(currentToken, operationClient.getTokenForUpdate())) {
-                    resultOperation.setServerCommit(new ServerCommit(
-                            false,
-                            -1,
-                            idUser,
-                            "invalid token",
-                            null
-                    ));
-                    break;
-                }
-
-                // 3) Пытаемся атомарно заменить ТО, ЧТО ПРОЧИТАЛИ
-                String newToken = UUID.randomUUID().toString();
-                if (operationObject.getToken().compareAndSet(currentToken, newToken)) {
-                    resultOperation.setServerCommit(new ServerCommit(
-                            true,
-                            this.serial.incrementAndGet(),
-                            idUser,
-                            null,
-                            newToken
-                    ));
-                    operationObject.accept(resultOperation);
-                    operations.add(resultOperation);
-                } else {
-                    // между get и CAS кто-то успел обновить
-                    String now = operationObject.getToken().get();
-                    resultOperation.setServerCommit(new ServerCommit(
-                            false,
-                            -1,
-                            idUser,
-                            "token changed concurrently; expected: '" + currentToken + "', now: '" + now + "'",
-                            null
-                    ));
-                }
+                cas(operationObject, operationClient.getTokenForUpdate(), resultOperation, idUser);
             }
         }
 
         return resultOperation;
+    }
+
+    private void cas(OperationObject operationObject, String tokenForUpdate, Operation resultOperation, String idUser) {
+        // 1) Читаем текущее значение из AtomicReference
+        String currentToken = operationObject.getToken().get();
+
+        // 2) Сверяем с клиентским по СОДЕРЖИМОМУ
+        if (!Objects.equals(currentToken, tokenForUpdate)) {
+            resultOperation.setServerCommit(new ServerCommit(
+                    false,
+                    -1,
+                    idUser,
+                    "invalid token",
+                    null
+            ));
+            return;
+        }
+
+        // 3) Пытаемся атомарно заменить ТО, ЧТО ПРОЧИТАЛИ
+        String newToken = UUID.randomUUID().toString();
+        if (operationObject.getToken().compareAndSet(currentToken, newToken)) {
+            resultOperation.setServerCommit(new ServerCommit(
+                    true,
+                    this.serial.incrementAndGet(),
+                    idUser,
+                    null,
+                    newToken
+            ));
+            operationObject.accept(resultOperation);
+            operations.add(resultOperation);
+        } else {
+            // между get и CAS кто-то успел обновить
+            String now = operationObject.getToken().get();
+            resultOperation.setServerCommit(new ServerCommit(
+                    false,
+                    -1,
+                    idUser,
+                    "token changed concurrently; expected: '" + currentToken + "', now: '" + now + "'",
+                    null
+            ));
+        }
     }
 
     public Map<String, OperationObject> getActiveObjects() {
