@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
+import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.handler.web.socket.operation.Operation;
 import ru.jamsys.core.handler.web.socket.operation.OperationClient;
@@ -17,11 +18,11 @@ class OperationRepositoryTest {
     @Test
     public void x() {
         OperationRepository operationRepository = new OperationRepository();
-        Operation op1 = operationRepository.accept(getUserOperation(OperationType.CREATE, "1", null, new HashMapBuilder<String, Object>().append("x", "y1")), "1");
+        Operation op1 = operationRepository.accept(getUserOperation(OperationType.CREATE, "1", "1", new HashMapBuilder<String, Object>().append("x", "y1")), "1");
         Assertions.assertTrue(op1.getServerCommit().isCommit());
         Assertions.assertEquals(1, op1.getServerCommit().getId());
 
-        Operation op2 = operationRepository.accept(getUserOperation(OperationType.CREATE, "1", null, null), "1");
+        Operation op2 = operationRepository.accept(getUserOperation(OperationType.CREATE, "1", "1", null), "1");
         Assertions.assertFalse(op2.getServerCommit().isCommit());
         Assertions.assertNotNull(op2.getServerCommit().getReplaceOperationObject());
         Assertions.assertEquals(-1, op2.getServerCommit().getId());
@@ -50,7 +51,7 @@ class OperationRepositoryTest {
     @Test
     public void delete() {
         OperationRepository operationRepository = new OperationRepository();
-        Operation op1 = operationRepository.accept(getUserOperation(OperationType.CREATE, "1", null, new HashMapBuilder<String, Object>().append("x", "y1")), "1");
+        Operation op1 = operationRepository.accept(getUserOperation(OperationType.CREATE, "1", "1", new HashMapBuilder<String, Object>().append("x", "y1")), "1");
         Assertions.assertTrue(op1.getServerCommit().isCommit());
         Assertions.assertEquals(1, op1.getServerCommit().getId());
 
@@ -114,6 +115,29 @@ class OperationRepositoryTest {
                 }
                 """;
         OperationClient operationClient = OperationClient.fromJson(json, "/message");
+        Assertions.assertEquals("12345", operationClient.getUuid());
+    }
+
+    @Test
+    public void convert3() throws Throwable {
+        String json = """
+                {
+                    "xx": "yy",
+                    "message": {
+                      "uuid": "12345",
+                      "timestampAdd": 1693838321,
+                      "operationType": "CREATE",
+                      "tokenForUpdate": "abc123",
+                      "uuidOperationObject": "obj-789",
+                      "data": {
+                        "field1": "value1",
+                        "field2": 42
+                      }
+                    }
+                }
+                """;
+        Map<String, Object> mapOrThrow = UtilJson.getMapOrThrow(json);
+        OperationClient operationClient = OperationClient.fromMap((Map<String, Object>) mapOrThrow.get("message"));
         Assertions.assertEquals("12345", operationClient.getUuid());
     }
 

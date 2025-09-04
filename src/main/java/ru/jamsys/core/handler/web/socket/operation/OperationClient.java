@@ -21,22 +21,37 @@ public class OperationClient {
 
     @JsonCreator
     public OperationClient(
-            @JsonProperty("uuid") String uuid,
-            @JsonProperty("timestampAdd") Long timestampAdd,
-            @JsonProperty("operationType") OperationType operationType,
-            @JsonProperty("tokenForUpdate") String tokenForUpdate,
-            @JsonProperty("uuidOperationObject") String uuidOperationObject,
-            @JsonProperty("data") Map<String, Object> data
+            @JsonProperty(value = "uuid", required = true) String uuid,
+            @JsonProperty(value = "timestampAdd", required = true) Long timestampAdd,
+            @JsonProperty(value = "operationType", required = true) OperationType operationType,
+            @JsonProperty(value = "tokenForUpdate", required = true) String tokenForUpdate,
+            @JsonProperty(value = "uuidOperationObject", required = true) String uuidOperationObject,
+            @JsonProperty(value = "data") Map<String, Object> data
     ) {
-        if (uuid == null) {
+        if (uuid == null || uuid.isBlank()) {
             throw new RuntimeException("uuid is null");
         }
-        if (timestampAdd == null) {
+        if (timestampAdd == null || timestampAdd < 0) {
             throw new RuntimeException("timestampAdd is null");
         }
-        if (uuidOperationObject == null) {
+        if (operationType == null) {
+            throw new RuntimeException("operationType is null");
+        }
+        if (tokenForUpdate == null) {
+            throw new RuntimeException("tokenForUpdate is null");
+        }
+        if (uuidOperationObject == null || uuidOperationObject.isBlank()) {
             throw new RuntimeException("uuidObject is null");
         }
+
+        // Необязательные поля — проверяем при необходимости
+        if (tokenForUpdate.length() > 256) {
+            throw new IllegalArgumentException("tokenForUpdate is too long");
+        }
+        if (data != null && data.size() > 50) {
+            throw new IllegalArgumentException("data has too many entries");
+        }
+
         this.uuid = uuid;
         this.timestampAdd = timestampAdd;
         this.operationType = operationType;
@@ -53,6 +68,10 @@ public class OperationClient {
         JsonNode root = UtilJson.objectMapper.readTree(json);
         JsonNode node = root.at(jsonPtrExpr);
         return UtilJson.objectMapper.treeToValue(node, OperationClient.class);
+    }
+
+    public static OperationClient fromMap(Map<String, Object> map) {
+        return UtilJson.objectMapper.convertValue(map, OperationClient.class);
     }
 
 }
