@@ -26,13 +26,6 @@ public class OperationRepository {
         Operation resultOperation = new Operation(operationClient);
 
         switch (resultOperation.getOperationClient().getOperationType()) {
-            case CREATE_OR_REPLACE -> {
-                OperationObject operationObject = operationObjects.computeIfAbsent(
-                        operationClient.getUuidOperationObject(),
-                        OperationObject::new
-                );
-                cas(operationObject, operationClient.getTokenForUpdate(), resultOperation, idUser);
-            }
             case CREATE -> {
                 AtomicBoolean created = new AtomicBoolean(false);
                 OperationObject operationObject = operationObjects.computeIfAbsent(
@@ -49,7 +42,8 @@ public class OperationRepository {
                             this.serial.incrementAndGet(),
                             idUser,
                             null,
-                            operationClient.getUuidOperationObject()
+                            operationClient.getUuidOperationObject(),
+                            null
                     ));
                     operationObject.accept(resultOperation);
                     operations.add(resultOperation);
@@ -59,7 +53,8 @@ public class OperationRepository {
                             -1,
                             idUser,
                             "duplicate " + operationClient.getUuidOperationObject(),
-                            null
+                            null,
+                            operationObject
                     ));
                 }
             }
@@ -72,6 +67,7 @@ public class OperationRepository {
                             -1,
                             idUser,
                             "not found " + operationClient.getUuidOperationObject(),
+                            null,
                             null
                     ));
                     break;
@@ -94,6 +90,7 @@ public class OperationRepository {
                     -1,
                     idUser,
                     "invalid token",
+                    null,
                     null
             ));
             return;
@@ -107,7 +104,8 @@ public class OperationRepository {
                     this.serial.incrementAndGet(),
                     idUser,
                     null,
-                    newToken
+                    newToken,
+                    null
             ));
             operationObject.accept(resultOperation);
             operations.add(resultOperation);
@@ -119,6 +117,7 @@ public class OperationRepository {
                     -1,
                     idUser,
                     "token changed concurrently; expected: '" + currentToken + "', now: '" + now + "'",
+                    null,
                     null
             ));
         }

@@ -1,6 +1,11 @@
 package ru.jamsys.core.handler.web.socket.operation;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
+import ru.jamsys.core.flat.util.UtilJson;
 
 import java.util.Map;
 
@@ -14,13 +19,14 @@ public class OperationClient {
     private final String uuidOperationObject;
     private final Map<String, Object> data;
 
+    @JsonCreator
     public OperationClient(
-            String uuid,
-            Long timestampAdd,
-            OperationType operationType,
-            String tokenForUpdate,
-            String uuidOperationObject,
-            Map<String, Object> data
+            @JsonProperty("uuid") String uuid,
+            @JsonProperty("timestampAdd") Long timestampAdd,
+            @JsonProperty("operationType") OperationType operationType,
+            @JsonProperty("tokenForUpdate") String tokenForUpdate,
+            @JsonProperty("uuidOperationObject") String uuidOperationObject,
+            @JsonProperty("data") Map<String, Object> data
     ) {
         if (uuid == null) {
             throw new RuntimeException("uuid is null");
@@ -37,6 +43,16 @@ public class OperationClient {
         this.tokenForUpdate = tokenForUpdate;
         this.uuidOperationObject = uuidOperationObject;
         this.data = data;
+    }
+
+    public static OperationClient fromJson(String json) throws JsonProcessingException {
+        return UtilJson.objectMapper.readValue(json, OperationClient.class);
+    }
+
+    public static OperationClient fromJson(String json, String jsonPtrExpr) throws JsonProcessingException {
+        JsonNode root = UtilJson.objectMapper.readTree(json);
+        JsonNode node = root.at(jsonPtrExpr);
+        return UtilJson.objectMapper.treeToValue(node, OperationClient.class);
     }
 
 }
