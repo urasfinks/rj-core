@@ -18,32 +18,31 @@ class OperationRepositoryTest {
     @Test
     public void x() {
         OperationRepository operationRepository = new OperationRepository();
-        Operation op1 = operationRepository.accept(getUserOperation(OperationType.CREATE, "1", "1", new HashMapBuilder<String, Object>().append("x", "y1")), "1");
+        Operation op1 = operationRepository.accept(getUserOperation(OperationType.PUT, "1", "1", new HashMapBuilder<String, Object>().append("x", "y1")), "1");
+
         Assertions.assertTrue(op1.getServerCommit().isCommit());
         Assertions.assertEquals(1, op1.getServerCommit().getId());
 
-        Operation op2 = operationRepository.accept(getUserOperation(OperationType.CREATE, "1", "1", null), "1");
+        Operation op2 = operationRepository.accept(getUserOperation(OperationType.PUT, "1", "1", null), "1");
         Assertions.assertFalse(op2.getServerCommit().isCommit());
         Assertions.assertNotNull(op2.getServerCommit().getReplaceOperationObject());
         Assertions.assertEquals(-1, op2.getServerCommit().getId());
 
-        Operation op3 = operationRepository.accept(getUserOperation(OperationType.UPDATE, "1", "1", new HashMapBuilder<String, Object>().append("x", "y2")), "1");
+        Operation op3 = operationRepository.accept(getUserOperation(OperationType.PUT, "1", op1.getServerCommit().getNewTokenForUpdate(), new HashMapBuilder<String, Object>().append("x", "y2")), "1");
         Assertions.assertTrue(op3.getServerCommit().isCommit());
         Assertions.assertEquals(2, op3.getServerCommit().getId());
 
-        Operation op4 = operationRepository.accept(getUserOperation(OperationType.DELETE, "1", "1", null), "1");
+        Operation op4 = operationRepository.accept(getUserOperation(OperationType.REMOVE, "1", "1", null), "1");
         Assertions.assertFalse(op4.getServerCommit().isCommit());
         Assertions.assertEquals(-1, op4.getServerCommit().getId());
-        Assertions.assertEquals("invalid token", op4.getServerCommit().getCause());
 
-        Operation op5 = operationRepository.accept(getUserOperation(OperationType.DELETE, "1", op3.getServerCommit().getNewTokenForUpdate(), new HashMap<>()), "1");
+        Operation op5 = operationRepository.accept(getUserOperation(OperationType.REMOVE, "1", op3.getServerCommit().getNewTokenForUpdate(), new HashMap<>()), "1");
         Assertions.assertTrue(op5.getServerCommit().isCommit());
         Assertions.assertEquals(3, op5.getServerCommit().getId());
 
-        Operation op6 = operationRepository.accept(getUserOperation(OperationType.UPDATE, "2", "2", null), "1");
-        Assertions.assertFalse(op6.getServerCommit().isCommit());
-        Assertions.assertEquals("not found 2", op6.getServerCommit().getCause());
-
+        Operation op6 = operationRepository.accept(getUserOperation(OperationType.PUT, "2", "2", null), "1");
+        Assertions.assertTrue(op6.getServerCommit().isCommit());
+        Assertions.assertEquals(4, op6.getServerCommit().getId());
 
         UtilLog.printInfo(operationRepository);
     }
@@ -51,11 +50,11 @@ class OperationRepositoryTest {
     @Test
     public void delete() {
         OperationRepository operationRepository = new OperationRepository();
-        Operation op1 = operationRepository.accept(getUserOperation(OperationType.CREATE, "1", "1", new HashMapBuilder<String, Object>().append("x", "y1")), "1");
+        Operation op1 = operationRepository.accept(getUserOperation(OperationType.PUT, "1", "1", new HashMapBuilder<String, Object>().append("x", "y1")), "1");
         Assertions.assertTrue(op1.getServerCommit().isCommit());
         Assertions.assertEquals(1, op1.getServerCommit().getId());
 
-        Operation op5 = operationRepository.accept(getUserOperation(OperationType.DELETE, "1", "1", new HashMap<>()), "1");
+        Operation op5 = operationRepository.accept(getUserOperation(OperationType.REMOVE, "1", op1.getServerCommit().getNewTokenForUpdate(), new HashMap<>()), "1");
         Assertions.assertTrue(op5.getServerCommit().isCommit());
 
         UtilLog.printInfo(operationRepository);
@@ -63,7 +62,7 @@ class OperationRepositoryTest {
 
     private OperationClient getUserOperation(
             OperationType operationType,
-            String uuidObject,
+            String uuidOperationObject,
             String token,
             Map<String, Object> data
     ) {
@@ -72,7 +71,7 @@ class OperationRepositoryTest {
                 System.currentTimeMillis(),
                 operationType,
                 token,
-                uuidObject,
+                uuidOperationObject,
                 data
         );
     }
@@ -83,7 +82,7 @@ class OperationRepositoryTest {
                 {
                   "uuid": "12345",
                   "timestampAdd": 1693838321,
-                  "operationType": "CREATE",
+                  "operationType": "PUT",
                   "tokenForUpdate": "abc123",
                   "uuidOperationObject": "obj-789",
                   "data": {
@@ -104,7 +103,7 @@ class OperationRepositoryTest {
                     "message": {
                       "uuid": "12345",
                       "timestampAdd": 1693838321,
-                      "operationType": "CREATE",
+                      "operationType": "PUT",
                       "tokenForUpdate": "abc123",
                       "uuidOperationObject": "obj-789",
                       "data": {
@@ -126,7 +125,7 @@ class OperationRepositoryTest {
                     "message": {
                       "uuid": "12345",
                       "timestampAdd": 1693838321,
-                      "operationType": "CREATE",
+                      "operationType": "PUT",
                       "tokenForUpdate": "abc123",
                       "uuidOperationObject": "obj-789",
                       "data": {

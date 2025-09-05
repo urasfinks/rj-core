@@ -9,7 +9,6 @@ public class ServerCommit {
     private final boolean commit;
     private final int id;
     private final String idUser;
-    private final String cause;
     private final String newTokenForUpdate;
 
     // Для случаев, когда происходит дупликация при вставке, мы будем оповещать commit false и возвращать замещающий
@@ -19,7 +18,6 @@ public class ServerCommit {
             boolean commit,
             int id,
             String idUser,
-            String cause,
             String newTokenForUpdate,
             OperationObject replaceOperationObject
     ) {
@@ -27,7 +25,6 @@ public class ServerCommit {
         this.commit = commit;
         this.id = id;
         this.idUser = idUser;
-        this.cause = cause;
         this.newTokenForUpdate = newTokenForUpdate;
         this.replaceOperationObject = replaceOperationObject;
     }

@@ -11,19 +11,21 @@ import java.util.concurrent.atomic.AtomicReference;
 @Getter
 public class OperationObject {
 
-    private final AtomicReference<String> token;
+    private final String uuid;
+    private final AtomicReference<String> refToken;
     private final Map<String, Object> data = new HashMap<>();
     private volatile boolean remove = false;
 
-    public OperationObject(String token) {
-        this.token = new AtomicReference<>(token);
+    public OperationObject(String uuid, String token) {
+        this.uuid = uuid;
+        this.refToken = new AtomicReference<>(token);
     }
 
     public void accept(Operation operation) {
         if (remove) {
             return;
         }
-        if (operation.getOperationClient().getOperationType() == OperationType.DELETE) {
+        if (operation.getOperationClient().getOperationType() == OperationType.REMOVE) {
             remove = true;
             return;
         }
@@ -39,7 +41,7 @@ public class OperationObject {
     @JsonValue
     public Map<String, Object> getData() {
         return new HashMapBuilder<String, Object>()
-                .append("token", token.get())
+                .append("token", refToken.get())
                 .append("remove", remove)
                 .append("data", data)
                 ;

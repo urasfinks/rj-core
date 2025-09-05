@@ -15,6 +15,7 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -335,6 +336,13 @@ public class Util {
         return result;
     }
 
-
+    public static <T> boolean casByEquals(AtomicReference<T> ref, T expectedByValue, T newValue) {
+        for (; ; ) {
+            T cur = ref.get();
+            if (!Objects.equals(cur, expectedByValue)) return false; // содержимое не совпало
+            if (ref.compareAndSet(cur, newValue)) return true;       // удалось обновить
+            // иначе был гонка — повторяем
+        }
+    }
 
 }
