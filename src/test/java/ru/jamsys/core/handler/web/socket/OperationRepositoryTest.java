@@ -48,6 +48,21 @@ class OperationRepositoryTest {
     }
 
     @Test
+    public void serial() {
+        OperationRepository operationRepository = new OperationRepository();
+
+        operationRepository.accept(getUserOperation(OperationType.PUT, "1", "1", new HashMapBuilder<String, Object>().append("x", "y1")), "1");
+        Operation op2 = operationRepository.accept(getUserOperation(OperationType.PUT, "2", "2", new HashMapBuilder<String, Object>().append("x", "y1")), "1");
+        operationRepository.accept(getUserOperation(OperationType.PUT, "3", "3", new HashMapBuilder<String, Object>().append("x", "y1")), "1");
+
+        operationRepository.accept(getUserOperation(OperationType.REMOVE, "2", op2.getServerCommit().getNewTokenForUpdate(), null), "1");
+
+        Assertions.assertEquals(2, operationRepository.getActiveObjectsKeySerial().size());
+        Assertions.assertEquals("1", operationRepository.getActiveObjectsKeySerial().getFirst());
+        Assertions.assertEquals("3", operationRepository.getActiveObjectsKeySerial().getLast());
+    }
+
+    @Test
     public void delete() {
         OperationRepository operationRepository = new OperationRepository();
         Operation op1 = operationRepository.accept(getUserOperation(OperationType.PUT, "1", "1", new HashMapBuilder<String, Object>().append("x", "y1")), "1");

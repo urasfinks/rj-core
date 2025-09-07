@@ -7,8 +7,7 @@ import ru.jamsys.core.handler.web.socket.operation.OperationClient;
 import ru.jamsys.core.handler.web.socket.operation.OperationObject;
 import ru.jamsys.core.handler.web.socket.operation.ServerCommit;
 
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,6 +53,20 @@ public class OperationRepository {
         return resultOperation;
     }
 
+    public List<String> getActiveObjectsKeySerial() {
+        LinkedHashSet<String> serialSet = new LinkedHashSet<>();
+        for (Operation operation : operations) {
+            if (!operation.getServerCommit().isCommit()) {
+                continue;
+            }
+            String uuid = operation.getOperationClient().getUuidOperationObject();
+            OperationObject operationObject = operationObjects.get(uuid);
+            if (operationObject != null && !operationObject.isRemove()) {
+                serialSet.add(uuid);
+            }
+        }
+        return new ArrayList<>(serialSet);
+    }
 
     public Map<String, OperationObject> getActiveObjects() {
         return operationObjects.entrySet().stream()
