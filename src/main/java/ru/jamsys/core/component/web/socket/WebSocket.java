@@ -66,6 +66,13 @@ public class WebSocket extends TextWebSocketHandler implements StatisticsFlushCo
     }
 
     @SuppressWarnings("unused")
+    public void unsubscribeAll(WebSocketSession webSocketSession) {
+        UtilRisc.forEach(null, subscription, (s, webSocketSessions) -> {
+            webSocketSessions.remove(webSocketSession);
+        });
+    }
+
+    @SuppressWarnings("unused")
     public void notify(String key, String data) {
         UtilRisc.forEach(null, subscription.getOrDefault(key, List.of()), webSocketSession -> {
             send(webSocketSession, data);
