@@ -137,18 +137,21 @@ public class ServletHandler {
 
     public void responseError(int status, String cause) {
         setResponseStatus(status);
+        setResponseContentType("application/json");
         setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
         responseComplete();
     }
 
     public void responseError(String cause) {
         setResponseStatus(HttpStatus.BAD_REQUEST.value());
+        setResponseContentType("application/json");
         setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
         responseComplete();
     }
 
     public void response(Map<String, Object> data) {
         setResponseStatus(HttpStatus.OK.value());
+        setResponseContentType("application/json");
         setResponseBodyFromMap(new HashMapBuilder<String, Object>()
                 .append("status", true)
                 .append("data", data));
