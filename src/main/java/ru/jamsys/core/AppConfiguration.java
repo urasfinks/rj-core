@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.unit.DataSize;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.ServletWebSocketHandlerRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -33,7 +34,7 @@ import ru.jamsys.core.flat.util.UtilLog;
 @Configuration
 @EnableWebSocket
 @PropertySource("global.properties")
-public class AppConfiguration implements WebSocketConfigurer {
+public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
 
     public AppConfiguration(ApplicationContext applicationContext) {
         App.applicationContext = applicationContext;
@@ -63,6 +64,22 @@ public class AppConfiguration implements WebSocketConfigurer {
                     WebSocket.class,
                     "run.args.web.socket = false"
             );
+        }
+    }
+
+    @Override
+    public void addCorsMappings(@NotNull org.springframework.web.servlet.config.annotation.CorsRegistry registry) {
+        ServiceProperty serviceProperty = App.get(ServiceProperty.class);
+        String mapping = serviceProperty
+                .computeIfAbsent("run.args.web.http.origins.mapping", "")
+                .get(String.class);
+        if (!mapping.isEmpty()) {
+            registry.addMapping(mapping)
+                    .allowedOrigins("*") // не "*" если есть cookie/Authorization
+                    .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                    .allowedHeaders("*") // или перечисли явно: "Authorization","Content-Type"
+                    .allowCredentials(false)
+                    .maxAge(3600);
         }
     }
 
