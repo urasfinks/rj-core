@@ -19,7 +19,7 @@ public class PromiseGeneratorExternalRequestRepositoryProperty extends Repositor
     @PropertyKey("validation.type") // [JSON|XSD|WSDL]
     private String validationType = "";
 
-    // Файлы схем должны лежать в /web/${classNamePromiseGenerator}/${имя схемы}
+    // Файлы схем должны лежать в /web/scheme/${classNamePromiseGenerator}/${имя схемы}
     @PropertyKey("validation.scheme") // file.xsd
     private String validationScheme = "";
 
