@@ -3,6 +3,7 @@ package ru.jamsys.core;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.jamsys.core.component.RouteGenerator;
@@ -185,17 +186,17 @@ public class HttpController {
 
             if (!promiseGenerator.getProperty().getValidationType().isEmpty()) {
                 try {
-                    String webFolder = "schema/" + promiseGenerator.getCascadeKey().substring(2) + "/";
+                    String webSchemeFolder = "schema/" + promiseGenerator.getCascadeKey().substring(2) + "/";
                     ValidateType
                             .valueOf(promiseGenerator.getProperty().getValidationType())
                             .validate(
                                     servletHandler.getRequestReader().getData(),
                                     //UtilFileResource.getAsString("schema/xsd/false-xsd.xml", UtilFileResource.Direction.RESOURCE_CORE),
                                     UtilFileResource.getAsString(
-                                            webFolder + promiseGenerator.getProperty().getValidationScheme(),
+                                            webSchemeFolder + promiseGenerator.getProperty().getValidationScheme(),
                                             UtilFileResource.Direction.WEB
                                     ),
-                                    s -> UtilFileResource.get(webFolder + s, UtilFileResource.Direction.WEB)
+                                    s -> UtilFileResource.get(webSchemeFolder + s, UtilFileResource.Direction.WEB)
                             );
                 } catch (Throwable th) {
                     App.error(th);
@@ -203,7 +204,7 @@ public class HttpController {
                     // ошибка на стороне клиента: он прислал «неправильный» документ.
                     // HTTP 422 Unprocessable Entity — он чётко говорит, что сервер понял запрос, но не может его
                     // обработать из‑за семантической (валидационной) ошибки.
-                    servletHandler.response(422, "Unprocessable Entity (" + th.getMessage() + ")", StandardCharsets.UTF_8);
+                    servletHandler.responseError(HttpStatus.UNPROCESSABLE_ENTITY.value(), "Unprocessable Entity (" + th.getMessage() + ")");
                     return null;
                 }
             }
