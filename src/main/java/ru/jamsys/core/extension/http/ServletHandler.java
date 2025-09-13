@@ -147,6 +147,14 @@ public class ServletHandler {
         responseComplete();
     }
 
+    public void response(Map<String, Object> data) {
+        setResponseStatus(HttpStatus.OK.value());
+        setResponseBodyFromMap(new HashMapBuilder<String, Object>()
+                .append("status", true)
+                .append("data", data));
+        responseComplete();
+    }
+
     public void response(int httpCode, String body, Charset charset) {
         setResponseStatus(httpCode);
         try (OutputStream out = getResponseOutputStream()) {
