@@ -40,14 +40,14 @@ public class JsonSchema implements Validate {
             FunctionThrowing<String, InputStream> importSchemeResolver
     ) throws Exception {
         if (json == null || json.isEmpty()) {
-            throw new ForwardException(new HashMapBuilder<String, Object>()
+            throw new ForwardException("json data is empty", new HashMapBuilder<String, Object>()
                     .append("json", json)
                     .append("schema", schema)
                     .append("errors", Set.of("json data is empty"))
             );
         }
         if (schema == null || schema.isEmpty()) {
-            throw new ForwardException(new HashMapBuilder<String, Object>()
+            throw new ForwardException("json schema is empty", new HashMapBuilder<String, Object>()
                     .append("json", json)
                     .append("schema", schema)
                     .append("errors", Set.of("json schema is empty"))
@@ -57,7 +57,10 @@ public class JsonSchema implements Validate {
 
         Set<ValidationMessage> errors = schemaFactory.getSchema(schema).validate(jsonObject);
         if (!errors.isEmpty()) {
-            throw new ForwardException(new HashMapBuilder<String, Object>()
+            String errorMessage = errors.stream()
+                    .map(ValidationMessage::getMessage)
+                    .reduce("", (a, b) -> a + "\n" + b);
+            throw new ForwardException(errorMessage.trim(), new HashMapBuilder<String, Object>()
                     .append("json", json)
                     .append("schema", schema)
                     .append("errors", errors)
