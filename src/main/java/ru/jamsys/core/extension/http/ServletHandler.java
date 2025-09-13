@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.http.HttpStatus;
 import ru.jamsys.core.App;
 import ru.jamsys.core.HttpController;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
@@ -134,7 +135,14 @@ public class ServletHandler {
         completableFuture.complete(null);
     }
 
+    public void responseError(int status, String cause) {
+        setResponseStatus(status);
+        setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
+        responseComplete();
+    }
+
     public void responseError(String cause) {
+        setResponseStatus(HttpStatus.BAD_REQUEST.value());
         setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
         responseComplete();
     }
