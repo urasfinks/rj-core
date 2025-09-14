@@ -135,21 +135,19 @@ public class ServletHandler {
         completableFuture.complete(null);
     }
 
-    public void responseError(int status, String cause) {
-        setResponseStatus(status);
+    public void responseError(int httpCode, String cause) {
+        setResponseStatus(httpCode);
         setResponseContentType("application/json");
         setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
         responseComplete();
     }
 
     public void responseError(String cause) {
-        setResponseStatus(HttpStatus.BAD_REQUEST.value());
-        setResponseContentType("application/json");
-        setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
-        responseComplete();
+        responseError(HttpStatus.BAD_REQUEST.value(), cause);
     }
 
-    public void response(Map<String, Object> data) {
+    // Response должен всегда отдавать успешный ответ
+    public void responseSuccess(Map<String, Object> data) {
         setResponseStatus(HttpStatus.OK.value());
         setResponseContentType("application/json");
         setResponseBodyFromMap(new HashMapBuilder<String, Object>()
