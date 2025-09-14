@@ -42,6 +42,14 @@ class UtilDateTest {
     }
 
     @Test
+    void ex() throws ParseException {
+        String timeBetween = UtilDate
+                .getTimeBetween(1733916800, 1733916800)
+                .getDescription(6, UtilDate.TimeBetween.StyleDescription.FORMAL);
+        Assertions.assertNull(timeBetween);
+    }
+
+    @Test
     void timeBetween() throws Exception {
         Assertions.assertEquals("""
                 {

@@ -202,11 +202,13 @@ public class UtilDate {
                     return String.join(" ", list);
                 }
                 case FORMAL -> {
-                    String last = list.removeLast();
-                    if (list.isEmpty()) {
-                        return last;
-                    } else {
-                        return String.join(", ", list) + " и " + last;
+                    if (!list.isEmpty()) {
+                        String last = list.removeLast();
+                        if (list.isEmpty()) {
+                            return last;
+                        } else {
+                            return String.join(", ", list) + " и " + last;
+                        }
                     }
                 }
             }
