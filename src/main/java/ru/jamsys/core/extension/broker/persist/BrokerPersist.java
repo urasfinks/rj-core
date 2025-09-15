@@ -12,9 +12,9 @@ import ru.jamsys.core.extension.async.writer.AsyncFileWriterRolling;
 import ru.jamsys.core.extension.async.writer.DataReadWrite;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
+import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.flat.util.UtilFile;
 
 import java.io.IOException;
@@ -287,7 +287,7 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
         // Все смежные ресурсы будут выключены в Manager
     }
 
-    public void add(@NotNull T element) {
+    public void add(@NotNull T element) throws Exception {
         tpsEnqueue.incrementAndGet();
         xWriterConfiguration.get().writeAsync(new X<>(element));
     }
@@ -308,12 +308,17 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
         // мы должны перебирать всех Rider с конца очереди queueRiderConfiguration в поиске LastDataWrite
         for (Iterator<ManagerConfiguration<Rider>> it = queueRiderConfiguration.descendingIterator(); it.hasNext(); ) {
             ManagerConfiguration<Rider> riderConfig = it.next();
-            DataReadWrite dataReadWrite = riderConfig
-                    .get()
-                    .getQueueRetry()
-                    .pollLast(property.getRetryTimeoutMs());
-            if (dataReadWrite != null) {
-                return new LastDataWrite(dataReadWrite, riderConfig);
+            try {
+                // Может такое случится, что Rider не сможет стартануть из-за того, что файла на FS не будет
+                DataReadWrite dataReadWrite = riderConfig
+                        .get()
+                        .getQueueRetry()
+                        .pollLast(property.getRetryTimeoutMs());
+                if (dataReadWrite != null) {
+                    return new LastDataWrite(dataReadWrite, riderConfig);
+                }
+            } catch (Throwable th) {
+                App.error(th);
             }
         }
         return null;
