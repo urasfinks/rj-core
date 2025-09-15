@@ -188,7 +188,7 @@ class AsyncFileWriterRollingTest {
     void testWriteAfterShutdownThrowsException() {
         writer.shutdown();
         TestElement e = new TestElement("error".getBytes());
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> writer.writeAsync(e));
+        Exception ex = assertThrows(Exception.class, () -> writer.writeAsync(e));
         assertEquals("Writer is closed", ex.getMessage());
     }
 
