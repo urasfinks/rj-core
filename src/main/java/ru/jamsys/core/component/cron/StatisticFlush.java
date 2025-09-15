@@ -73,6 +73,12 @@ public class StatisticFlush extends PromiseGenerator implements Cron1s {
                             sb.append(influxPoint.toLineProtocol()).append("\n");
                         }
                     }
+                    brokerPersistManagerConfiguration.get().add(new StatisticElement(sb.toString()));
+                    // После изучения проблемы ниже, было выявленно, что хранить некорректную ссылку невозможно
+                    // ManagerConfiguration.get() возвращает объект напрямую из Manager а там всё сделано на concurrent.
+                    // Проблема в гонке получения get() и одновременном Manager.helper() -> shutdown().
+                    // Это история должна быть разовой
+
                     // TODO: [
                     //  "2025-09-06T12:47:08.006 v-thread-141353",
                     //  "ru.jamsys.core.extension.exception.ForwardException: ru.jamsys.core.extension.exception.ForwardException: java.lang.RuntimeException: Writer is closed",
@@ -113,7 +119,6 @@ public class StatisticFlush extends PromiseGenerator implements Cron1s {
                     //  "   at java.util.concurrent.FutureTask.run(FutureTask.java:317)",
                     //  "   at java.lang.VirtualThread.run(VirtualThread.java:329)"
                     //]
-                    brokerPersistManagerConfiguration.get().add(new StatisticElement(sb.toString()));
                 });
     }
 
