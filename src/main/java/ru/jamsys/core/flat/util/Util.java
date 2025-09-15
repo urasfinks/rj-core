@@ -345,4 +345,12 @@ public class Util {
         }
     }
 
+    @SafeVarargs
+    public static <T> T firstNonNull(T... values) {
+        for (T v : values) {
+            if (v != null) return v;
+        }
+        return null; // или можно кинуть исключение
+    }
+
 }
