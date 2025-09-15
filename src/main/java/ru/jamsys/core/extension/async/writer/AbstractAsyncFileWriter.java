@@ -105,9 +105,9 @@ public class AbstractAsyncFileWriter<T extends Position & ByteSerializable>
                 ;
     }
 
-    public void writeAsync(T data) {
+    public void writeAsync(T data) throws Exception {
         if (!isRun()) {
-            throw new RuntimeException("Writer is closed");
+            throw new Exception("Writer is closed");
         }
         if (position.get() > repositoryProperty.getMaxSizeByte()) {
             try {
