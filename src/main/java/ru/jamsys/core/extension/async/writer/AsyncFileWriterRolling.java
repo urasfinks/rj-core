@@ -62,9 +62,9 @@ public class AsyncFileWriterRolling<T extends Position & ByteSerializable>
 
     // Переопределяем, чтобы не получить Exception на вставке, при выходе за границы maxPosition
     @Override
-    public void writeAsync(T data) {
+    public void writeAsync(T data) throws Exception {
         if (!isRun()) {
-            throw new RuntimeException("Writer is closed");
+            throw new Exception("Writer is closed");
         }
         getInputQueue().add(data);
     }
