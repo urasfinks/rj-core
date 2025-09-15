@@ -53,8 +53,12 @@ class LogBrokerPersistTest {
             Thread thread = new Thread(() -> {
                 int c1 = c / 4;
                 for (int j = 0; j < c1; j++) {
-                    test.add(UtilLog.info("Hello world"));
-                    write.incrementAndGet();
+                    try {
+                        test.add(UtilLog.info("Hello world"));
+                        write.incrementAndGet();
+                    } catch (Exception e) {
+                        App.error(e);
+                    }
                 }
             });
             thread.start();
