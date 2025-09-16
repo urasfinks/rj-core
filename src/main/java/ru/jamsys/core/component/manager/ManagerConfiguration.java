@@ -3,6 +3,7 @@ package ru.jamsys.core.component.manager;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import ru.jamsys.core.App;
+import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
@@ -30,7 +31,7 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
 
     private final Manager manager;
 
-    Consumer<T> onCreate;
+    private final Consumer<T> onNativeCreate;
 
     private ManagerConfiguration(Class<T> cls, String key, String ns, Manager manager, Consumer<T> onCreate) {
         if (key == null || ns == null) {
@@ -44,7 +45,20 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
         this.key = key;
         this.ns = ns;
         this.manager = manager;
-        this.onCreate = onCreate;
+        this.onNativeCreate = onCreate;
+    }
+
+    public void onCreate(T item) {
+        try {
+            item.setInactivityTimeoutMs(App.get(ServiceProperty.class)
+                    .computeIfAbsent(item.getCascadeKey(ns) + ".expiration.ms", 6_000)
+                    .get(Long.class));
+        } catch (Exception e) {
+            App.error(e);
+        }
+        if (this.onNativeCreate != null) {
+            this.onNativeCreate.accept(item);
+        }
     }
 
     @JsonValue
@@ -54,7 +68,7 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
                 .append("cls", cls)
                 .append("managerKey", key)
                 .append("ns", ns)
-                .append("reference", isAlive() ? manager.get(cls, key, ns, onCreate) : null)
+                .append("reference", isAlive() ? manager.get(cls, key, ns, this::onCreate) : null)
                 ;
     }
 
@@ -68,7 +82,7 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
         // и этой конфигурацией пользоваться никто не будет. Мы будем держать GC что бы он не удалял этот объект,
         // это плохо, так как конфигурация и нужна для того, что бы дать возможность освободить память, а при
         // необходимости возобновить экземпляр в память
-        T t = manager.get(cls, key, ns, onCreate);
+        T t = manager.get(cls, key, ns, this::onCreate);
         t.markActive();
         return t;
     }
