@@ -85,9 +85,9 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
 
     // Этот метод вызывается обязательно в Manager, так как сам пул является AbstractManagerElement и это прописано в
     // контракте использования элементов
-    public void setup(Class<T> cls, Consumer<T> onCreate) {
+    public void setup(Class<T> cls, Consumer<T> onCreatePoolItem) {
         this.cls = cls;
-        this.onCreatePoolItem = onCreate;
+        this.onCreatePoolItem = onCreatePoolItem;
     }
 
     @JsonValue
@@ -254,7 +254,7 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
                     cls,
                     java.util.UUID.randomUUID().toString(),
                     ns,
-                    onCreatePoolItem
+                    this.onCreatePoolItem
             );
             items.add(poolItem);
             parkQueue.addLast(poolItem);
