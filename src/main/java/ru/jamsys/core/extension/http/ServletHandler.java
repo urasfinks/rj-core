@@ -15,14 +15,17 @@ import ru.jamsys.core.flat.util.UtilJson;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ServletHandler {
 
     @JsonIgnore
     @Getter
     private final CompletableFuture<Void> completableFuture;
+
 
     @JsonIgnore
     @Getter
@@ -31,140 +34,129 @@ public class ServletHandler {
     @JsonIgnore
     private final HttpServletResponse response;
 
-    @Setter
-    @Getter
-    private String responseContentType = "application/json";
-
-    @Setter
-    @Getter
-    private String responseBody = "";
-
     @Getter
     private ServletRequestReader requestReader;
 
-    public ServletHandler(
-            CompletableFuture<Void> completableFuture,
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) {
+    // Флаги управления жизненным циклом
+    @JsonIgnore
+    private final AtomicBoolean completed = new AtomicBoolean(false);
+
+    @SuppressWarnings("all")
+    public boolean isCompleted() {
+        return completed.get();
+    }
+
+    public ServletHandler(CompletableFuture<Void> completableFuture, HttpServletRequest request, HttpServletResponse response) {
         this.completableFuture = completableFuture;
         this.request = request;
         this.response = response;
     }
 
+    @Getter
+    private final HashMapBuilder<String, String> responseHeader = new HashMapBuilder<>();
+
+    @Getter
+    @Setter
+    private HttpStatus responseHttpStatus = HttpStatus.OK;
+
     public void init() throws ServletException, IOException {
         requestReader = new ServletRequestReader(request);
     }
 
-    public void setResponseBodyFromMap(Map<?, ?> data) {
-        setResponseBody(UtilJson.toStringPretty(data, "{}"));
-    }
-
-    @JsonIgnore
-    public boolean isEmptyBody() {
-        return this.responseBody.isEmpty();
-    }
-
-    public void setBodyIfEmpty(String body) {
-        if (this.responseBody.isEmpty()) {
-            this.responseBody = body;
+    public void send(String data, Charset charset) {
+        if (completed.compareAndSet(false, true)) {
+            try {
+                response.setStatus(responseHttpStatus.value());
+                responseHeader.forEach(response::setHeader);
+                try (ServletOutputStream so = response.getOutputStream()) {
+                    so.write(data.getBytes(charset));
+                    so.flush();
+                }
+            } catch (Throwable th) {
+                App.error(th, this);
+            } finally {
+                completableFuture.complete(null);
+            }
         }
     }
 
-    public void writeFileToOutput(File file) throws IOException {
-        String mimeType = HttpController.getMimeType(request.getServletContext(), file.getAbsolutePath());
-        response.setContentType(mimeType);
-        OutputStream out = response.getOutputStream();
-        FileInputStream in = new FileInputStream(file);
-        byte[] buffer = new byte[4096];
-        int length;
-        while ((length = in.read(buffer)) > 0) {
-            out.write(buffer, 0, length);
+    public void send(InputStream data) {
+        if (completed.compareAndSet(false, true)) {
+            try {
+                response.setStatus(responseHttpStatus.value());
+                responseHeader.forEach(response::setHeader);
+                try (ServletOutputStream out = response.getOutputStream(); InputStream in = data) {
+                    byte[] buf = new byte[8192];
+                    int n;
+                    while ((n = in.read(buf)) != -1) {
+                        out.write(buf, 0, n);
+                    }
+                    out.flush();
+                }
+            } catch (Throwable th) {
+                App.error(th, this);
+            } finally {
+                completableFuture.complete(null);
+            }
         }
-        in.close();
-        out.flush();
-        getCompletableFuture().complete(null);
     }
 
-    public void setResponseHeader(String key, String value) {
-        response.setHeader(key, value);
-    }
-
-    public void setResponseStatus(int code) {
-        response.setStatus(code);
-    }
-
-    private ServletOutputStream servletOutputStream;
-
-    @JsonIgnore
-    public ServletOutputStream getResponseOutputStream() throws IOException {
-        if (servletOutputStream == null) {
-            servletOutputStream = response.getOutputStream();
+    public void send(File file) {
+        if (completed.compareAndSet(false, true)) {
+            try {
+                String mimeType = HttpController.getMimeType(request.getServletContext(), file.getAbsolutePath());
+                response.setStatus(responseHttpStatus.value());
+                response.setContentType(mimeType != null ? mimeType : "application/octet-stream");
+                try (InputStream in = new FileInputStream(file);
+                     OutputStream out = response.getOutputStream()) {
+                    in.transferTo(out);
+                    out.flush();
+                }
+            } catch (Throwable th) {
+                App.error(th, this);
+            } finally {
+                completableFuture.complete(null);
+            }
         }
-        return servletOutputStream;
     }
 
-    public void responseComplete() {
-        response.setContentType(responseContentType);
-        try (ServletOutputStream so = getResponseOutputStream()) {
-            so.write(responseBody.getBytes());
-        } catch (Throwable th) {
-            App.error(th, this);
-        }
-        completableFuture.complete(null);
+    public void sendUnauthorized() {
+        responseHeader.append("WWW-Authenticate", "Basic realm=\"" + App.applicationName + "\"");
+        setResponseHttpStatus(HttpStatus.UNAUTHORIZED);
+        send("<html><body><h1>401. Unauthorized</h1></body>", StandardCharsets.UTF_8);
+    }
+
+    public void sendErrorJson(HttpStatus httpStatus, String cause) {
+        setResponseHttpStatus(httpStatus);
+        responseHeader.append("Content-Type", "application/json");
+        String body = UtilJson.toStringPretty(
+                new HashMapBuilder<>()
+                        .append("status", false)
+                        .append("cause", cause),
+                "{}"
+        );
+        send(body, StandardCharsets.UTF_8);
+    }
+
+    public void sendErrorJson(String cause) {
+        sendErrorJson(HttpStatus.BAD_REQUEST, cause);
+    }
+
+    public void sendSuccessJson(HttpStatus httpStatus, Map<String, Object> data) {
+        setResponseHttpStatus(httpStatus);
+        responseHeader.append("Content-Type", "application/json");
+        String body = UtilJson.toStringPretty(
+                new HashMapBuilder<>()
+                        .append("status", true)
+                        .append("data", data),
+                "{}"
+        );
+        send(body, StandardCharsets.UTF_8);
     }
 
     @SuppressWarnings("unused")
-    public void responseComplete(InputStream inputStream) {
-        try (OutputStream out = getResponseOutputStream()) {
-            byte[] buffer = new byte[4096];
-            int length;
-            while ((length = inputStream.read(buffer)) > 0) {
-                out.write(buffer, 0, length);
-            }
-            inputStream.close();
-            out.flush();
-        } catch (Throwable th) {
-            App.error(th, this);
-        }
-        completableFuture.complete(null);
-    }
-
-    public void responseUnauthorized() {
-        ServletResponseWriter.setResponseUnauthorized(response);
-        completableFuture.complete(null);
-    }
-
-    public void responseError(int httpCode, String cause) {
-        setResponseStatus(httpCode);
-        setResponseContentType("application/json");
-        setResponseBodyFromMap(new HashMapBuilder<>().append("status", false).append("cause", cause));
-        responseComplete();
-    }
-
-    public void responseError(String cause) {
-        responseError(HttpStatus.BAD_REQUEST.value(), cause);
-    }
-
-    // Response должен всегда отдавать успешный ответ
-    public void responseSuccess(Map<String, Object> data) {
-        setResponseStatus(HttpStatus.OK.value());
-        setResponseContentType("application/json");
-        setResponseBodyFromMap(new HashMapBuilder<String, Object>()
-                .append("status", true)
-                .append("data", data));
-        responseComplete();
-    }
-
-    public void response(int httpCode, String body, Charset charset) {
-        setResponseStatus(httpCode);
-        try (OutputStream out = getResponseOutputStream()) {
-            out.write(body.getBytes(charset));
-            out.flush();
-        } catch (Throwable th) {
-            App.error(th, this);
-        }
-        completableFuture.complete(null);
+    public void sendSuccessJson(Map<String, Object> data) {
+        sendSuccessJson(HttpStatus.OK, data);
     }
 
 }

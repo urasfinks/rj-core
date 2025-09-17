@@ -142,6 +142,7 @@ public class HttpController {
             HttpServletResponse response
     ) {
         ServletHandler servletHandler = new ServletHandler(new CompletableFuture<>(), request, response);
+
         try {
             servletHandler.init();
             if (httpInterceptor != null && !httpInterceptor.handle(servletHandler)) {
@@ -152,17 +153,17 @@ public class HttpController {
             }
             String uri = request.getRequestURI();
             if (staticFile.containsKey(uri)) {
-                servletHandler.writeFileToOutput(new File(staticFile.get(uri)));
+                servletHandler.send(new File(staticFile.get(uri)));
                 return null;
             }
 
             PromiseGeneratorExternalRequest promiseGenerator = routeGeneratorRepository.match(uri);
             if (promiseGenerator == null) {
-                servletHandler.responseError("Generator not found");
+                servletHandler.sendErrorJson("Generator not found");
                 return null;
             }
             if (!promiseGenerator.getRateLimitConfiguration().get().check()) {
-                servletHandler.response(429, "Too Many Requests", StandardCharsets.UTF_8);
+                servletHandler.sendErrorJson(HttpStatus.TOO_MANY_REQUESTS, "Too Many Requests");
                 return null;
             }
             if (promiseGenerator.getProperty().getAuth()) {
@@ -204,7 +205,7 @@ public class HttpController {
                     // ошибка на стороне клиента: он прислал «неправильный» документ.
                     // HTTP 422 Unprocessable Entity — он чётко говорит, что сервер понял запрос, но не может его
                     // обработать из‑за семантической (валидационной) ошибки.
-                    servletHandler.responseError(HttpStatus.UNPROCESSABLE_ENTITY.value(), "Unprocessable Entity (" + th.getMessage() + ")");
+                    servletHandler.sendErrorJson(HttpStatus.UNPROCESSABLE_ENTITY, "Unprocessable Entity (" + th.getMessage() + ")");
                     return null;
                 }
             }
@@ -212,36 +213,35 @@ public class HttpController {
             Promise promise = promiseGenerator.generate();
 
             if (promise == null) {
-                servletHandler.responseError("Promise is null");
+                servletHandler.sendErrorJson("Promise is null");
                 return null;
             }
 
             if (!promise.hasErrorHandler()) {
                 promise.onError((_, _, p) -> {
                     ServletHandler srvHandler = p.getRepositoryMapClass(ServletHandler.class);
-                    srvHandler.setResponseBody(UtilJson.toStringPretty(p, "{}"));
-                    srvHandler.responseComplete();
+                    if (!srvHandler.isCompleted()) {
+                        srvHandler.setResponseHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                        srvHandler.send(UtilJson.toStringPretty(p, "{}"), StandardCharsets.UTF_8);
+                    }
                 });
             }
             if (!promise.hasCompleteHandler()) {
                 promise.onComplete((_, _, p) -> {
                     ServletHandler srvHandler = p.getRepositoryMapClass(ServletHandler.class);
-                    if (srvHandler.isEmptyBody()) {
-                        srvHandler.setBodyIfEmpty(UtilJson.toStringPretty(p, "{}"));
+                    if (!srvHandler.isCompleted()) {
+                        srvHandler.send(UtilJson.toStringPretty(p, "{}"), StandardCharsets.UTF_8);
                     }
-                    srvHandler.responseComplete();
                 });
             }
             promise.setRepositoryMapClass(ServletHandler.class, servletHandler);
             promise.run();
         } catch (AuthException th) {
             App.error(th);
-            servletHandler.responseUnauthorized();
-            return null;
+            servletHandler.sendUnauthorized();
         } catch (Throwable th) {
             App.error(th);
-            servletHandler.responseError(th.getMessage());
-            return null;
+            servletHandler.sendErrorJson(th.getMessage());
         }
         return servletHandler.getCompletableFuture();
     }

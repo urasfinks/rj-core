@@ -6,9 +6,10 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.annotation.ServiceClassFinderIgnore;
 import ru.jamsys.core.extension.http.ServletHandler;
-import ru.jamsys.core.plugin.promise.PropertyWeb;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGeneratorExternalRequest;
+
+import java.nio.charset.StandardCharsets;
 
 @ServiceClassFinderIgnore
 @Component
@@ -27,8 +28,11 @@ public class FirstHttpHandler extends PromiseGeneratorExternalRequest implements
         return servicePromise.get(App.getUniqueClassName(getClass()), 7_000L)
                 .append("input", (_, _, promise) -> {
                     ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
-                    servletHandler.setResponseBody("Hello world");
-                    servletHandler.setResponseHeader("opa", "cha");
+                    servletHandler.getResponseHeader().append("opae", "cha");
+                    servletHandler.send(
+                            "Hello world",
+                            StandardCharsets.UTF_8
+                    );
                 });
     }
 

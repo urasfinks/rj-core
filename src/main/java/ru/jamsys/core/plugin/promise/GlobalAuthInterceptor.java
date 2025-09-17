@@ -1,5 +1,6 @@
 package ru.jamsys.core.plugin.promise;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.ServiceProperty;
@@ -63,9 +64,9 @@ public class GlobalAuthInterceptor implements HttpInterceptor {
             });
             return true;
         } catch (AuthException th) {
-            servletHandler.responseUnauthorized();
+            servletHandler.sendUnauthorized();
         } catch (Exception e) {
-            servletHandler.setResponseStatus(500);
+            servletHandler.sendErrorJson(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
         return false;
     }

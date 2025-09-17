@@ -11,6 +11,8 @@ import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGeneratorExternalRequest;
 
+import java.nio.charset.StandardCharsets;
+
 /*
  * Эту драгу опрашивает Apple, что бы в телефоне зарегистрировать схему для открытия приложения
  * */
@@ -31,7 +33,11 @@ public class DeeplinkSchemaApple extends PromiseGeneratorExternalRequest impleme
         return servicePromise.get(App.getUniqueClassName(getClass()), 7_000L)
                 .append("input", (_, _, promise) -> {
                     ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
-                    servletHandler.setResponseBody(UtilFile.getWebFileAsString(".well-known/apple-app-site-association.json"));
+                    servletHandler.getResponseHeader().append("Content-Type", "application/json");
+                    servletHandler.send(
+                            UtilFile.getWebFileAsString(".well-known/apple-app-site-association.json"),
+                            StandardCharsets.UTF_8
+                    );
                 });
     }
 

@@ -11,6 +11,8 @@ import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGeneratorExternalRequest;
 import ru.jamsys.core.promise.PromiseGeneratorExternalRequestRepositoryProperty;
 
+import java.nio.charset.StandardCharsets;
+
 /*
  * Зарегистрированные Property
  * */
@@ -32,8 +34,8 @@ public class PropertyWeb extends PromiseGeneratorExternalRequest implements Http
         return servicePromise.get(App.getUniqueClassName(getClass()), 7_000L)
                 .append("input", (_, _, promise) -> {
                     ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
-                    servletHandler.setResponseContentType("application/json");
-                    servletHandler.setResponseBody(App.get(ServiceProperty.class).getJsonValue());
+                    servletHandler.getResponseHeader().append("Content-Type", "application/json");
+                    servletHandler.send(App.get(ServiceProperty.class).getJsonValue(), StandardCharsets.UTF_8);
                 });
     }
 

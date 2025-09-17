@@ -14,6 +14,7 @@ import ru.jamsys.core.handler.web.http.HttpHandler;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGeneratorExternalRequest;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /*
@@ -36,7 +37,6 @@ public class DeeplinkWebLocation extends PromiseGeneratorExternalRequest impleme
         return servicePromise.get(App.getUniqueClassName(getClass()), 7_000L)
                 .append("input", (_, _, promise) -> {
                     ServletHandler servletHandler = promise.getRepositoryMapClass(ServletHandler.class);
-                    servletHandler.setResponseContentType("text/html");
                     Map<String, String> args = new HashMapBuilder<String, String>()
                             .append("urlSchemes", App.get(ServiceProperty.class)
                                     .computeIfAbsent(
@@ -52,7 +52,8 @@ public class DeeplinkWebLocation extends PromiseGeneratorExternalRequest impleme
                                     )
                                     .get()
                             );
-                    servletHandler.setResponseBody(TemplateTwix.template(
+                    servletHandler.getResponseHeader().append("Content-Type", "text/html");
+                    servletHandler.send(TemplateTwix.template(
                             UtilFileResource.getAsString(
                                     "static/deeplink.html",
                                     UtilFileResource.Direction.valueOf(
@@ -65,7 +66,7 @@ public class DeeplinkWebLocation extends PromiseGeneratorExternalRequest impleme
                                     )
                             ),
                             args
-                    ));
+                    ), StandardCharsets.UTF_8);
                 });
     }
 
