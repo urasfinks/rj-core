@@ -19,6 +19,7 @@ public class OperationRepository {
     private final Map<String, OperationObject> operationObjects = new ConcurrentHashMap<>();
     private final AtomicInteger serial = new AtomicInteger(0);
     private final ConcurrentLinkedQueue<Operation> operations = new ConcurrentLinkedQueue<>();
+    LinkedHashSet<String> serialSet = new LinkedHashSet<>();
 
     public Operation accept(OperationClient operationClient, String idUser) {
         Operation resultOperation = new Operation(operationClient);
@@ -41,6 +42,7 @@ public class OperationRepository {
             ));
             operationObject.accept(resultOperation);
             operations.add(resultOperation);
+            serialSet.add(resultOperation.getOperationClient().getUuidOperationObject());
         } else {
             resultOperation.setServerCommit(new ServerCommit(
                     false,
@@ -53,18 +55,8 @@ public class OperationRepository {
         return resultOperation;
     }
 
+    // Возвращает последовательность добавления объектов
     public List<String> getActiveObjectsKeySerial() {
-        LinkedHashSet<String> serialSet = new LinkedHashSet<>();
-        for (Operation operation : operations) {
-            if (!operation.getServerCommit().isCommit()) {
-                continue;
-            }
-            String uuid = operation.getOperationClient().getUuidOperationObject();
-            OperationObject operationObject = operationObjects.get(uuid);
-            if (operationObject != null && !operationObject.isRemove()) {
-                serialSet.add(uuid);
-            }
-        }
         return new ArrayList<>(serialSet);
     }
 
