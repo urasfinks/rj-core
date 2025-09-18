@@ -44,6 +44,11 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
         );
     }
 
+    // Получить небезопасную map, если надо провести манипуляцию без обновления expiration
+    public Map<K, EnvelopeObject> getUnsafeMap() {
+        return mainMap;
+    }
+
     public void setupTimeoutElementExpirationMs(int timeoutElementExpirationMs) {
         this.timeoutElementExpirationMs = timeoutElementExpirationMs;
     }
