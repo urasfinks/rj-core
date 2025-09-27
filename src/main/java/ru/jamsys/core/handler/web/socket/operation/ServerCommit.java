@@ -1,5 +1,7 @@
 package ru.jamsys.core.handler.web.socket.operation;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
 @Getter
@@ -14,12 +16,13 @@ public class ServerCommit {
     // Для случаев, когда происходит дупликация при вставке, мы будем оповещать commit false и возвращать замещающий
     private final OperationObject replaceOperationObject;
 
+    @JsonCreator
     public ServerCommit(
-            boolean commit,
-            int id,
-            String idUser,
-            String newTokenForUpdate,
-            OperationObject replaceOperationObject
+            @JsonProperty("commit") boolean commit,
+            @JsonProperty("id") int id,
+            @JsonProperty("idUser") String idUser,
+            @JsonProperty("newTokenForUpdate") String newTokenForUpdate,
+            @JsonProperty("replaceOperationObject") OperationObject replaceOperationObject
     ) {
         this.timestampAdd = System.currentTimeMillis();
         this.commit = commit;

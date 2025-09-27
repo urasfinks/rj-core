@@ -55,6 +55,16 @@ public class OperationRepository {
         return resultOperation;
     }
 
+    // Это когда из базы восстанавливаем, что бы в operation не добавлялось
+    public void restore(Operation operation) {
+        OperationObject operationObject = operationObjects.computeIfAbsent(
+                operation.getOperationClient().getUuidOperationObject(),
+                uuid -> new OperationObject(uuid, uuid)
+        );
+        operationObject.accept(operation);
+        serialSet.add(operation.getOperationClient().getUuidOperationObject());
+    }
+
     // Возвращает последовательность добавления объектов
     public List<String> getActiveObjectsKeySerial() {
         return new ArrayList<>(serialSet);
