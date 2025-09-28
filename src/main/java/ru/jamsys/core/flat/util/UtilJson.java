@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
 import ru.jamsys.core.App;
+import ru.jamsys.core.extension.exception.ForwardException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -81,15 +82,18 @@ public class UtilJson {
             Map<String, Object> map = (Map<String, Object>) objectMapper.readValue(json, Map.class);
             return map;
         } catch (Throwable th) {
-            UtilLog.printError(json);
-            throw th;
+            throw new ForwardException("Parsing error", json, th);
         }
     }
 
     public static List<Object> getListOrThrow(String json) throws Throwable {
-        @SuppressWarnings("unchecked")
-        List<Object> list = objectMapper.readValue(json, List.class);
-        return list;
+        try {
+            @SuppressWarnings("unchecked")
+            List<Object> list = objectMapper.readValue(json, List.class);
+            return list;
+        } catch (Throwable th) {
+            throw new ForwardException("Parsing error", json, th);
+        }
     }
 
     // Возникла потребность хранить состояние объекта на момент времени.
