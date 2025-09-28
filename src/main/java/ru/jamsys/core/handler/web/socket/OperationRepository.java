@@ -63,6 +63,9 @@ public class OperationRepository {
         );
         operationObject.accept(operation);
         serialSet.add(operation.getOperationClient().getUuidOperationObject());
+        if (operation.getOperationClient().getOperationType().equals(OperationType.REMOVE)) {
+            serialSet.remove(operation.getOperationClient().getUuidOperationObject());
+        }
     }
 
     // Возвращает последовательность добавления объектов
