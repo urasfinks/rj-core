@@ -70,7 +70,7 @@ class LogBrokerPersistTest {
         for (int i = 0; i < 4; i++) {
             Thread thread = new Thread(() -> {
                 while (write.get() > 0) {
-                    X<Log> poll = test.poll();
+                    BlockData<Log> poll = test.poll();
                     if (poll != null) {
                         test.commit(poll);
                         write.decrementAndGet();

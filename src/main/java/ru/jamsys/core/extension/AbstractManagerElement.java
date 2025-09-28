@@ -32,6 +32,10 @@ public abstract class AbstractManagerElement extends AbstractLifeCycle
     public void helper() {
     }
 
+    // Вызывается:
+    // 1) после удаления из Manager.mapManager
+    // 2) ExpirationList если envelope.isExpired()
+    // 3) после удаление из ExpirationMap.mainMap
     @Override
     public void onExpirationDrop() {
 

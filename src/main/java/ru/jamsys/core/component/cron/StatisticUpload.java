@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.ServicePromise;
 import ru.jamsys.core.extension.broker.persist.BrokerPersist;
-import ru.jamsys.core.extension.broker.persist.X;
+import ru.jamsys.core.extension.broker.persist.BlockData;
 import ru.jamsys.core.extension.broker.persist.element.StatisticElement;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertyBuilder;
 import ru.jamsys.core.flat.template.cron.Cron;
@@ -55,10 +55,10 @@ public class StatisticUpload extends PromiseGenerator implements Cron5s {
                         (threadRun, promiseTask, promise, resource) -> {
                             BrokerPersist<StatisticElement> statisticElementBrokerPersist =
                                     statisticFlush.getBrokerPersistManagerConfiguration().get();
-                            List<X<StatisticElement>> list = new ArrayList<>();
+                            List<BlockData<StatisticElement>> list = new ArrayList<>();
                             StringBuilder sb = new StringBuilder();
                             while (sb.length() < property.getBatchMaxSizeByte()) {
-                                X<StatisticElement> poll = statisticElementBrokerPersist.poll();
+                                BlockData<StatisticElement> poll = statisticElementBrokerPersist.poll();
                                 if (poll == null) {
                                     break;
                                 }

@@ -63,7 +63,7 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
     // Как действовать? Получили результат get(), поработали с ним и выбросили. При новой необходимости снова get()
     // не храните ссылки на результат get()
 
-    public <R extends AbstractManagerElement> R get(Class<R> cls, String key, String ns, Consumer<R> onCreate) {
+    private <R extends AbstractManagerElement> R nativeGet(Class<R> cls, String key, String ns, Consumer<R> onCreate) {
         @SuppressWarnings("unchecked")
         R mapElement = (R) map
                 .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
@@ -99,6 +99,16 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         return mapElement;
     }
 
+    public <R extends AbstractManagerElement> R get(Class<R> cls, String key, String ns, Consumer<R> onCreate) {
+        R mapElement = nativeGet(cls, key, ns, onCreate);
+        if (!mapElement.isRun()) {
+            App.error(new Exception("mapElement is not run!"));
+            map.computeIfAbsent(cls, _ -> new ConcurrentHashMap<>()).remove(CascadeKey.complex(key, ns));
+            mapElement = nativeGet(cls, key, ns, onCreate);
+        }
+        return mapElement;
+    }
+
     public <R extends AbstractManagerElement> boolean contains(Class<R> cls, String key, String ns) {
         return map
                 .computeIfAbsent(cls, _ -> new ConcurrentHashMap<>())
@@ -124,15 +134,19 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
                             .append("cls", managerElement.getClass())
                             .append("element", managerElement)
                     );
+                    all.add(managerElement);
+                    mapManager.remove(key);
                     try {
                         managerElement.onExpirationDrop();
                     } catch (Throwable th) {
                         App.error(th);
                     }
-                    all.add(managerElement);
-                    mapManager.remove(key);
                 } else {
-                    managerElement.helper();
+                    try {
+                        managerElement.helper();
+                    } catch (Throwable th) {
+                        App.error(th);
+                    }
                 }
             });
         });

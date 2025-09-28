@@ -59,7 +59,7 @@ class BrokerPersistStatTest {
                 );
         BrokerPersist<StatisticElement> statisticElementBrokerPersist = brokerPersistManagerConfiguration.get();
         while (true) {
-            X<StatisticElement> poll = statisticElementBrokerPersist.poll();
+            BlockData<StatisticElement> poll = statisticElementBrokerPersist.poll();
             if (poll == null) {
                 break;
             }

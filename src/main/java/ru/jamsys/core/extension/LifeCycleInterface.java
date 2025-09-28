@@ -12,11 +12,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface LifeCycleInterface {
 
+    // Вызывается после того, как выполнится shutdownOperation(); и getRun().set(false);
     List<ProcedureThrowing> getListOnPostShutdown();
 
+    // Нужен для сортировки упорядоченного выключения
     @JsonIgnore
     List<LifeCycleInterface> getListShutdownAfter();
 
+    // Нужен для сортировки упорядоченного выключения
     @JsonIgnore
     List<LifeCycleInterface> getListShutdownBefore();
 

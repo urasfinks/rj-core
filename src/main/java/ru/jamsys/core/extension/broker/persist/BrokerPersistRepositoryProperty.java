@@ -15,7 +15,7 @@ public class BrokerPersistRepositoryProperty extends RepositoryPropertyAnnotatio
     @SuppressWarnings("all")
     @PropertyNotNull
     @PropertyKey("directory")
-    @PropertyDescription("Директория для хранения .bin и .commit")
+    @PropertyDescription("Директория для хранения .data и .control")
     private volatile String directory;
 
     @SuppressWarnings("all")

@@ -53,7 +53,7 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
 
     private final AtomicInteger tpsEnqueue = new AtomicInteger(0);
 
-    private ManagerConfiguration<AsyncFileWriterRolling<X<T>>> xWriterConfiguration;
+    private ManagerConfiguration<AsyncFileWriterRolling<BlockData<T>>> writerManagerConfiguration;
 
     // Конфиг может быть удалён, только если файл полностью обработан, до этого момента он должен быть тут 100%
     private final Map<String, ManagerConfiguration<Rider>> mapRiderConfiguration = new ConcurrentHashMap<>();
@@ -71,7 +71,7 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
                 property,
                 getCascadeKey(ns)
         );
-        xWriterInit();
+        dataWriterInit();
     }
 
     public void setup(Function<byte[], T> restoreElementFromByte) {
@@ -89,25 +89,25 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
                 ;
     }
 
-    public void xWriterInit() {
+    public void dataWriterInit() {
         String key = "X";
-        if (xWriterConfiguration != null) {
+        if (writerManagerConfiguration != null) {
             App.get(Manager.class).remove(AsyncFileWriterRolling.class, key, getCascadeKey(ns));
         }
-        xWriterConfiguration = ManagerConfiguration.getInstance(
+        writerManagerConfiguration = ManagerConfiguration.getInstance(
                 AsyncFileWriterRolling.class,
                 key,
                 getCascadeKey(ns),
-                managerElement -> {
-                    managerElement.setupRepositoryProperty(property);
-                    managerElement.setupOnFileSwap(this::onXFileSwap);
-                    managerElement.setupOnWrite(this::onXWrite);
+                asyncFileWriterRolling -> {
+                    asyncFileWriterRolling.setupRepositoryProperty(property);
+                    asyncFileWriterRolling.setupOnFileSwap(this::onDataFileSwap);
+                    asyncFileWriterRolling.setupOnWrite(this::onDataWrite);
                     // Если по каким-то причинам закрывается файл данных, надо оповестить rider
                     // При обычной работе происходит просто onSwap и едем дальше, а при завершении работы приложения
                     // или просто BrokerPersist отъехал от дел, буду закрываться ресурсы, вот тут тоже вызовется
-                    managerElement.getListOnPostShutdown().add(() -> {
+                    asyncFileWriterRolling.getListOnPostShutdown().add(() -> {
                         ManagerConfiguration<Rider> riderConfiguration = mapRiderConfiguration
-                                .get(managerElement.getFilePath());
+                                .get(asyncFileWriterRolling.getFilePath());
                         if (riderConfiguration != null && riderConfiguration.isAlive()) {
                             riderConfiguration.get().getQueueRetry().setFinishState(true);
                         }
@@ -115,28 +115,28 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
                 }
         );
 
-        // При старте мы должны поднять все CommitController в карту commitControllers это надо, что бы наполнять
+        // При старте мы должны поднять все Rider в карту mapRiderConfiguration это надо, что бы наполнять
         // очередь, так как она цикличная
         UtilFile
                 .getFilesRecursive(property.getDirectory())
                 .stream()
-                .filter(s -> s.endsWith(".commit"))
+                .filter(s -> s.endsWith(".control"))
                 .sorted()
                 .toList()
-                .forEach(filePathY -> {
-                    String relativePathX = UtilFile.getRelativePath(
+                .forEach(filePathControl -> {
+                    String relativePathData = UtilFile.getRelativePath(
                             property.getDirectory(),
-                            filePathYToX(filePathY)
+                            filePathControlToData(filePathControl)
                     );
-                    if (UtilFile.ifExist(relativePathX)) {
-                        getRiderConfiguration(relativePathX, true);
+                    if (UtilFile.ifExist(relativePathData)) {
+                        getRiderConfiguration(relativePathData, true);
                     } else {
                         App.error(new RuntimeException(
-                                "File does not exist: " + relativePathX
-                                        + "; Remove: " + filePathY
+                                "File does not exist: " + relativePathData
+                                        + "; Remove: " + filePathControl
                         ));
                         try {
-                            UtilFile.remove(filePathY);
+                            UtilFile.remove(filePathControl);
                         } catch (IOException e) {
                             App.error(new ForwardException(e));
                         }
@@ -146,7 +146,7 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
     }
 
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
-    public void onXWrite(String filePath, List<X<T>> listX) {
+    public void onDataWrite(String filePath, List<BlockData<T>> listBlockData) {
         ManagerConfiguration<Rider> riderConfiguration = mapRiderConfiguration.get(filePath);
         if (riderConfiguration == null) {
             throw new RuntimeException("Rider(" + filePath + ") not found");
@@ -154,9 +154,9 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
         // Бывает такое, что конфигурации останавливаются, из-за того, что не используются. Используются, это когда
         // в них коммитят позиции, извлекают из них не закоммиченные позиции
         riderConfiguration.executeIfAlive(rider -> {
-            for (X<T> x : listX) {
-                x.setRiderConfiguration(riderConfiguration);
-                rider.onWriteX(x);
+            for (BlockData<T> blockData : listBlockData) {
+                blockData.setRiderConfiguration(riderConfiguration);
+                rider.onWriteData(blockData);
             }
         });
     }
@@ -164,8 +164,8 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
     // Вызывается из планировщика выполняющего запись в файл (однопоточное использование)
     private void removeRiderIfComplete(Rider rider) {
         if (rider.getQueueRetry().isProcessed()) {
-            String filePathX = filePathYToX(rider.getFilePathY());
-            ManagerConfiguration<Rider> removedRiderConfiguration = mapRiderConfiguration.remove(filePathX);
+            String filePathData = filePathControlToData(rider.getFilePathControl());
+            ManagerConfiguration<Rider> removedRiderConfiguration = mapRiderConfiguration.remove(filePathData);
             // Если контроллер найден по имени файла, удалим и из очереди
             if (removedRiderConfiguration != null) {
                 queueRiderConfiguration.remove(removedRiderConfiguration);
@@ -180,7 +180,7 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
     }
 
     private void removeCycleTransactionFile() {
-        // Если суммарно есть 100 файлов, 10 из которых в работе (то есть по ним есть .commit файлы) и
+        // Если суммарно есть 100 файлов, 10 из которых в работе (то есть по ним есть .control файлы) и
         // property.getCount() = 3, после выполнения данной функции останется 13 файлов .afwr и 10 .commit файлов,
         // так как они тут не удаляются
         List<String> filesToRemove = UtilFile.getFilesRecursive(property.getDirectory())
@@ -204,7 +204,7 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
     }
 
     // Вызывается когда меняется X файл, так как он достиг максимального размера
-    public void onXFileSwap(String fileName, AsyncFileWriterRolling<X<T>> xAsyncFileWriterRolling) {
+    public void onDataFileSwap(String fileName, AsyncFileWriterRolling<BlockData<T>> xAsyncFileWriterRolling) {
         // Если последний зарегистрированный Rider существует и ещё жив - оповестим, что запись закончена
         ManagerConfiguration<Rider> lastRiderConfiguration = queueRiderConfiguration.peekLast();
         if (lastRiderConfiguration != null && lastRiderConfiguration.isAlive()) {
@@ -214,7 +214,7 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
         // обработан, так как после обработки файл удаляется
         String filePath = property.getDirectory() + "/" + fileName;
         try {
-            UtilFile.createNewFile(filePathXToY(filePath));
+            UtilFile.createNewFile(filePathDataToControl(filePath));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -227,18 +227,18 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
         }
     }
 
-    private ManagerConfiguration<Rider> getRiderConfiguration(String filePathX, boolean fileXFinishState) {
+    private ManagerConfiguration<Rider> getRiderConfiguration(String filePathData, boolean fileXFinishState) {
         // Обязательно должен существовать commit файл, если пакет данных не обработан, после обработки commit
         // файл удаляется, если нет commit - то смысла в этом больше нет
-        if (!Files.exists(Paths.get(filePathXToY(filePathX)))) {
+        if (!Files.exists(Paths.get(filePathDataToControl(filePathData)))) {
             App.error(new ForwardException(new HashMapBuilder<>()
-                    .append("filePathX", filePathX)
+                    .append("filePathData", filePathData)
                     .append("fileXFinishState", fileXFinishState)
             ));
             return null;
         }
         return mapRiderConfiguration.computeIfAbsent(
-                filePathX, // Нам тут нужна ссылка на X так как BrokerPersistElement.getFilePath возвращает именно его
+                filePathData, // Нам тут нужна ссылка на X так как BrokerPersistElement.getFilePath возвращает именно его
                 _ -> {
                     ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfiguration.getInstance(
                             Rider.class,
@@ -246,7 +246,7 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
                             getCascadeKey(ns),
                             rider -> {
                                 // Каждый блок записи list<Y> может быть последним, так как будут обработаны все X
-                                rider.setup(filePathX, property, this::removeRiderIfComplete, fileXFinishState);
+                                rider.setup(filePathData, property, this::removeRiderIfComplete, fileXFinishState);
                             }
                     );
                     queueRiderConfiguration.add(riderManagerConfiguration);
@@ -254,12 +254,12 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
                 });
     }
 
-    public static String filePathXToY(String filePathX) {
-        return filePathX + ".commit";
+    public static String filePathDataToControl(String filePathData) {
+        return filePathData + ".control";
     }
 
-    public static String filePathYToX(String filePathY) {
-        return filePathY.substring(0, filePathY.length() - 7);
+    public static String filePathControlToData(String filePathControl) {
+        return filePathControl.substring(0, filePathControl.length() - 8);
     }
 
     public boolean isEmpty() {
@@ -289,16 +289,16 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
 
     public void add(@NotNull T element) throws Exception {
         tpsEnqueue.incrementAndGet();
-        xWriterConfiguration.get().writeAsync(new X<>(element));
+        writerManagerConfiguration.get().writeAsync(new BlockData<>(element));
     }
 
-    public void commit(X<T> element) {
+    public void commit(BlockData<T> element) {
         // К моменту commit уже должна быть конфигурация Rider
         ManagerConfiguration<Rider> riderConfiguration = element.getRiderConfiguration();
         if (riderConfiguration == null) {
             throw new RuntimeException("Rider is null");
         }
-        riderConfiguration.get().onCommitX(element);
+        riderConfiguration.get().onCommitData(element);
     }
 
     public record LastDataWrite(DataReadWrite dataReadWrite, ManagerConfiguration<Rider> riderConfiguration) {}
@@ -324,7 +324,7 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
         return null;
     }
 
-    public X<T> poll() {
+    public BlockData<T> poll() {
         LastDataWrite lastDataWrite = getLastDataWrite();
         if (lastDataWrite == null) {
             return null;
@@ -335,10 +335,10 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
         Object object = dataReadWrite.getObject();
         if (object != null) {
             @SuppressWarnings("unchecked")
-            X<T> cast = (X<T>) object;
+            BlockData<T> cast = (BlockData<T>) object;
             return cast;
         }
-        X<T> tx = new X<>(restoreElementFromByte.apply(dataReadWrite.getBytes()));
+        BlockData<T> tx = new BlockData<>(restoreElementFromByte.apply(dataReadWrite.getBytes()));
         tx.setPosition(dataReadWrite.getPosition());
         tx.setRiderConfiguration(lastDataWrite.riderConfiguration());
         return tx;
@@ -347,7 +347,7 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
     @Override
     public void onPropertyUpdate(String key, String oldValue, String newValue) {
         if (key.equals("directory")) {
-            xWriterInit();
+            dataWriterInit();
         }
     }
 

@@ -90,7 +90,7 @@ class BrokerPersistTest {
         // rider они упадут только после записи и на текущий момент размер = 0
         Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
         // Записали на фс данные
-        test.getXWriterConfiguration().get().flush(run);
+        test.getWriterManagerConfiguration().get().flush(run);
         assertArrayEquals(
                 ((Supplier<byte[]>) () -> {
                     ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -102,13 +102,13 @@ class BrokerPersistTest {
                     }
                     return output.toByteArray();
                 }).get(),
-                Files.readAllBytes(Paths.get(test.getXWriterConfiguration().get().getFilePath()))
+                Files.readAllBytes(Paths.get(test.getWriterManagerConfiguration().get().getFilePath()))
         );
 
         // Должна появится 1 не обработанная запись
         Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
         // Забираем элемент на обработку
-        X<TestElement> poll = test.poll();
+        BlockData<TestElement> poll = test.poll();
         Assertions.assertEquals("Hello", new String(poll.toBytes()));
         // Теперь надо закоммитить
         test.commit(poll);
@@ -117,7 +117,7 @@ class BrokerPersistTest {
         // Запускаем запись wal
         test
                 .getLastRiderConfiguration().get()
-                .getYWriterConfiguration().get()
+                .getControlWriterConfiguration().get()
                 .flush(run);
         // Теперь после записи не должно остаться не обработанных элементов
         Assertions.assertEquals(0, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
@@ -133,7 +133,7 @@ class BrokerPersistTest {
                     }
                     return output.toByteArray();
                 }).get(),
-                Files.readAllBytes(Paths.get(test.getLastRiderConfiguration().get().getFilePathY()))
+                Files.readAllBytes(Paths.get(test.getLastRiderConfiguration().get().getFilePathControl()))
         );
         Assertions.assertFalse(test.getLastRiderConfiguration().get().getQueueRetry().isProcessed());
         // Осталось обработать позиций 0
@@ -141,7 +141,9 @@ class BrokerPersistTest {
         // Статус оригинального файла - не завершён
         Assertions.assertFalse(test.getLastRiderConfiguration().get().getQueueRetry().isFinishState());
 
-        test.getXWriterConfiguration().get().shutdown();
+        String filePath = test.getWriterManagerConfiguration().get().getFilePath();
+
+        test.getWriterManagerConfiguration().get().shutdown();
 
         // Проверим что записался в конце -1
         assertArrayEquals(
@@ -156,11 +158,12 @@ class BrokerPersistTest {
                     }
                     return output.toByteArray();
                 }).get(),
-                Files.readAllBytes(Paths.get(test.getXWriterConfiguration().get().getFilePath()))
+                Files.readAllBytes(Paths.get(filePath))
         );
+        String filePathControl = test.getLastRiderConfiguration().get().getFilePathControl();
         test.getLastRiderConfiguration().get().shutdown();
         // Проверим что файл удалился так как завершился CommitController и он был isComplete
-        Assertions.assertFalse(Files.exists(Paths.get(test.getLastRiderConfiguration().get().getFilePathY())));
+        Assertions.assertFalse(Files.exists(Paths.get(filePathControl)));
 
     }
 
@@ -186,7 +189,7 @@ class BrokerPersistTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        UtilFile.createNewFile("1LogPersist/test1.afwr.commit");
+        UtilFile.createNewFile("1LogPersist/test1.afwr.control");
 
         // 2 записи; 1 коммит
         UtilFile.writeBytes("1LogPersist/test2.afwr", ((Supplier<byte[]>) () -> {
@@ -203,7 +206,7 @@ class BrokerPersistTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        UtilFile.writeBytes("1LogPersist/test2.afwr.commit", ((Supplier<byte[]>) () -> {
+        UtilFile.writeBytes("1LogPersist/test2.afwr.control", ((Supplier<byte[]>) () -> {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             try {
                 output.write(UtilByte.intToBytes(8));
@@ -224,9 +227,9 @@ class BrokerPersistTest {
         BrokerPersist<TestElement> test = brokerPersistManagerConfiguration.get();
 
         Assertions.assertEquals(2, test.getMapRiderConfiguration().size());
-        X<TestElement> poll = test.poll();
+        BlockData<TestElement> poll = test.poll();
         // Очередь последнего rider полностью вычитана
-        Assertions.assertEquals("1LogPersist/test2.afwr.commit", test.getLastRiderConfiguration().get().getFilePathY());
+        Assertions.assertEquals("1LogPersist/test2.afwr.control", test.getLastRiderConfiguration().get().getFilePathControl());
         Assertions.assertEquals(1, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
 
         // В данный момент последний райдер не завершён, так как ждёт коммита выданного элемента
@@ -251,7 +254,7 @@ class BrokerPersistTest {
         Assertions.assertEquals(1, test
                 .getLastRiderConfiguration()
                 .get()
-                .getYWriterConfiguration()
+                .getControlWriterConfiguration()
                 .get()
                 .getInputQueue()
                 .size()
@@ -259,14 +262,14 @@ class BrokerPersistTest {
         test
                 .getLastRiderConfiguration()
                 .get()
-                .getYWriterConfiguration()
+                .getControlWriterConfiguration()
                 .get()
                 .flush(run);
 
         Assertions.assertEquals(0, test
                 .getLastRiderConfiguration()
                 .get()
-                .getYWriterConfiguration()
+                .getControlWriterConfiguration()
                 .get()
                 .getInputQueue()
                 .size()
@@ -274,16 +277,16 @@ class BrokerPersistTest {
 
         // Проверяем что rider преисполнился, то есть у него в очередях ничего нет и нет в expirationList ожиданий
         // и файл по которому мы читали записан до конца (finishState)
-        Assertions.assertEquals("1LogPersist/test2.afwr.commit", lastRider.getFilePathY());
+        Assertions.assertEquals("1LogPersist/test2.afwr.control", lastRider.getFilePathControl());
         Assertions.assertTrue(lastRider.getQueueRetry().isProcessed());
 
         // Эмулируем работу менеджера, завершаем rider
         lastRider.shutdown();
 
         // Проверяем что файла больше нет
-        Assertions.assertFalse(UtilFile.ifExist("1LogPersist/test2.afwr.commit"));
+        Assertions.assertFalse(UtilFile.ifExist("1LogPersist/test2.afwr.control"));
         // После удаления ещё должен поменяться и
-        Assertions.assertEquals("1LogPersist/test1.afwr.commit", test.getLastRiderConfiguration().get().getFilePathY());
+        Assertions.assertEquals("1LogPersist/test1.afwr.control", test.getLastRiderConfiguration().get().getFilePathControl());
 
         // После удаления rider в мапе должен остаться только 1
         Assertions.assertEquals(1, test.getMapRiderConfiguration().size());
@@ -291,9 +294,9 @@ class BrokerPersistTest {
         // проверим, что rider остался ещё 1 элемент
         Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
 
-        X<TestElement> poll1 = test.poll();
+        BlockData<TestElement> poll1 = test.poll();
         Assertions.assertEquals(2, test.getLastRiderConfiguration().get().getQueueRetry().sizeWait());
-        X<TestElement> poll2 = test.poll();
+        BlockData<TestElement> poll2 = test.poll();
 
         Assertions.assertThrows(RuntimeException.class, () -> test.commit(poll));
 
@@ -306,7 +309,7 @@ class BrokerPersistTest {
         test
                 .getLastRiderConfiguration()
                 .get()
-                .getYWriterConfiguration()
+                .getControlWriterConfiguration()
                 .get()
                 .flush(run);
 

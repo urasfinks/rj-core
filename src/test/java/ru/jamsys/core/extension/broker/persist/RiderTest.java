@@ -56,7 +56,7 @@ class RiderTest {
             return output.toByteArray();
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
-        UtilFile.writeBytes("1LogPersist/test.bin.commit", ((Supplier<byte[]>) () -> {
+        UtilFile.writeBytes("1LogPersist/test.bin.control", ((Supplier<byte[]>) () -> {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             try {
                 output.write(UtilByte.intToBytes(8));

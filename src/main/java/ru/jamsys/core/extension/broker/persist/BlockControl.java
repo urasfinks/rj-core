@@ -6,22 +6,21 @@ import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.async.writer.Position;
 import ru.jamsys.core.flat.util.UtilByte;
 
-// TODO: После того, как всё будет отлажено переименовать в более подходящее имя.
 @Getter
 @Setter
-public class Y implements ByteSerializable, Position {
+public class BlockControl implements ByteSerializable, Position {
 
-    private final Position x; // Это блок данных .afwr
+    private final Position data; // Это блок данных .afwr
 
     private long position; // Это позиция записанных данных в .commit (нам не понадобится)
 
-    public Y(Position x) {
-        this.x = x;
+    public BlockControl(Position data) {
+        this.data = data;
     }
 
     @Override
     public byte[] toBytes() {
-        return UtilByte.longToBytes(x.getPosition());
+        return UtilByte.longToBytes(data.getPosition());
     }
 
 }

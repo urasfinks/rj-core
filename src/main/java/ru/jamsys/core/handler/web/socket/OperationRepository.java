@@ -2,10 +2,7 @@ package ru.jamsys.core.handler.web.socket;
 
 import lombok.Getter;
 import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.handler.web.socket.operation.Operation;
-import ru.jamsys.core.handler.web.socket.operation.OperationClient;
-import ru.jamsys.core.handler.web.socket.operation.OperationObject;
-import ru.jamsys.core.handler.web.socket.operation.ServerCommit;
+import ru.jamsys.core.handler.web.socket.operation.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,6 +40,9 @@ public class OperationRepository {
             operationObject.accept(resultOperation);
             operations.add(resultOperation);
             serialSet.add(resultOperation.getOperationClient().getUuidOperationObject());
+            if (operationClient.getOperationType().equals(OperationType.REMOVE)) {
+                serialSet.remove(resultOperation.getOperationClient().getUuidOperationObject());
+            }
         } else {
             resultOperation.setServerCommit(new ServerCommit(
                     false,

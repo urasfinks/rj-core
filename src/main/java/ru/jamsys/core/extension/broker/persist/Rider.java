@@ -20,21 +20,21 @@ import java.util.function.Consumer;
 @Getter
 public class Rider extends AbstractManagerElement {
 
-    private ManagerConfiguration<AsyncFileWriterWal<Y>> yWriterConfiguration;
+    private ManagerConfiguration<AsyncFileWriterWal<BlockControl>> controlWriterConfiguration;
 
     private final String ns;
 
     private final String managerKey;
 
-    private String filePathX;
+    private String filePathData;
 
-    private String filePathY;
+    private String filePathControl;
 
     private QueueRetry queueRetry;
 
     private BrokerPersistRepositoryProperty repositoryProperty;
 
-    private Boolean fileXFinishState;
+    private Boolean fileBinFinishState;
 
     private Consumer<Rider> onWrite;
 
@@ -45,15 +45,15 @@ public class Rider extends AbstractManagerElement {
     }
 
     public void setup(
-            String filePathX,
+            String filePathData,
             BrokerPersistRepositoryProperty repositoryProperty,
             Consumer<Rider> onWrite,
-            boolean fileXFinishState
+            boolean fileDataFinishState
     ){
-        this.filePathX = filePathX;
-        this.filePathY = BrokerPersist.filePathXToY(filePathX);
+        this.filePathData = filePathData;
+        this.filePathControl = BrokerPersist.filePathDataToControl(filePathData);
         this.repositoryProperty = repositoryProperty;
-        this.fileXFinishState = fileXFinishState;
+        this.fileBinFinishState = fileDataFinishState;
         this.onWrite = onWrite;
     }
 
@@ -62,26 +62,26 @@ public class Rider extends AbstractManagerElement {
         return new HashMapBuilder<String, Object>()
                 .append("hashCode", Integer.toHexString(hashCode()))
                 .append("cls", getClass())
-                .append("filePath", filePathY)
+                .append("filePath", filePathControl)
                 .append("queueRetry", queueRetry)
-                .append("yWriterConfiguration", yWriterConfiguration)
+                .append("yWriterConfiguration", controlWriterConfiguration)
                 ;
     }
 
-    // Когда коммитят X, мы запускаем запись каммита, а после записи - по x.position удаляем из queueRetry
-    // что бы этот X больше никому не выпал на обработку
-    public void onCommitX(Position x) {
+    // Когда коммитят Data, мы запускаем запись коммита, а после записи - по data.position удаляем из queueRetry
+    // что бы этот Data больше никому не выпал на обработку
+    public void onCommitData(Position data) {
         if (queueRetry.isProcessed()) {
-            throw new RuntimeException(filePathY + " queue is empty");
+            throw new RuntimeException(filePathControl + " queue is empty");
         }
-        yWriterConfiguration.get().writeAsync(new Y(x));
+        controlWriterConfiguration.get().writeAsync(new BlockControl(data));
     }
 
-    // Вызывается, когда записалась пачка X на файловую систему, нам надо разместить её в queueRetry, что бы потом
-    // кому-нибудь выдать этот X на обработку
-    public <T extends Position & ByteSerializable> void onWriteX(T x) {
+    // Вызывается, когда записалась пачка Data на файловую систему, нам надо разместить её в queueRetry, что бы потом
+    // кому-нибудь выдать этот Data на обработку
+    public <T extends Position & ByteSerializable> void onWriteData(T data) {
         try {
-            queueRetry.add(x.getPosition(), null, x);
+            queueRetry.add(data.getPosition(), null, data);
         } catch (Exception e) {
             App.error(e);
         }
@@ -90,24 +90,24 @@ public class Rider extends AbstractManagerElement {
     @Override
     public void runOperation() {
         if (repositoryProperty == null) {
-            throw new RuntimeException("repositoryProperty is null; filePath: " + filePathY);
+            throw new RuntimeException("repositoryProperty is null; filePath: " + filePathControl);
         }
-        if (fileXFinishState == null) {
-            throw new RuntimeException("fileXFinishState is null; filePath: " + filePathY);
+        if (fileBinFinishState == null) {
+            throw new RuntimeException("fileXFinishState is null; filePath: " + filePathControl);
         }
-        queueRetry = new QueueRetry(ns, fileXFinishState);
+        queueRetry = new QueueRetry(ns, fileBinFinishState);
         // То, что будут коммитить - это значит, что обработано и нам надо это удалять из списка на обработку
         // В asyncWrite залетает CommitElement содержащий bin (CommitElement.getBytes() возвращает позицию bin.position)
         // В onWrite залетает список CommitElement и мы должны bin.position удалить из binReader
-        yWriterConfiguration = ManagerConfiguration.getInstance(
+        controlWriterConfiguration = ManagerConfiguration.getInstance(
                 AsyncFileWriterWal.class,
                 java.util.UUID.randomUUID().toString(),
-                filePathY,
+                filePathControl,
                 managerElement -> {
                     managerElement.setupRepositoryProperty(repositoryProperty);
                     managerElement.setupOnWrite((_, listY) -> {
-                        for (Y y : listY) {
-                            queueRetry.remove(y.getX().getPosition());
+                        for (BlockControl blockControl : listY) {
+                            queueRetry.remove(blockControl.getData().getPosition());
                         }
                         if (onWrite != null) {
                             onWrite.accept(this);
@@ -119,12 +119,12 @@ public class Rider extends AbstractManagerElement {
         // Просто всегда считываем данные из файла. Может быть прийдётся подтюнячить, что бы восстановление не падало
         // при одновременной записи
         try {
-            AbstractAsyncFileReader.read(BrokerPersist.filePathYToX(filePathY), queueRetry);
-            SimpleDataReader yFileReaderResult = new SimpleDataReader();
-            AbstractAsyncFileReader.read(filePathY, yFileReaderResult);
-            yFileReaderResult.getQueue().forEach((dataReadWrite) -> {
-                long xPosition = UtilByte.bytesToLong(dataReadWrite.getBytes());
-                queueRetry.remove(xPosition);
+            AbstractAsyncFileReader.read(BrokerPersist.filePathControlToData(filePathControl), queueRetry);
+            SimpleDataReader controlFileReaderResult = new SimpleDataReader();
+            AbstractAsyncFileReader.read(filePathControl, controlFileReaderResult);
+            controlFileReaderResult.getQueue().forEach((dataReadWrite) -> {
+                long dataPosition = UtilByte.bytesToLong(dataReadWrite.getBytes());
+                queueRetry.remove(dataPosition);
             });
         } catch (Throwable th) {
             throw new ForwardException(this, th);
@@ -135,7 +135,7 @@ public class Rider extends AbstractManagerElement {
     public void shutdownOperation() {
         if (queueRetry.isProcessed()) {
             try {
-                UtilFile.remove(filePathY);
+                UtilFile.remove(filePathControl);
             } catch (Exception e) {
                 App.error(e);
             }
