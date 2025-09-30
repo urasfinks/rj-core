@@ -51,7 +51,7 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
             String origins = serviceProperty
                     .computeIfAbsent("run.args.web.socket.origins", "")
                     .get(String.class);
-            if (origins.isEmpty()) {
+            if (origins.isEmpty() || origins.equals("null")) {
                 registry.addHandler(App.get(WebSocket.class), path);
             } else {
                 registry
@@ -73,7 +73,7 @@ public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
         String mapping = serviceProperty
                 .computeIfAbsent("run.args.web.http.origins.mapping", "")
                 .get(String.class);
-        if (!mapping.isEmpty()) {
+        if (!mapping.isEmpty() && !mapping.equals("null")) {
             registry.addMapping(mapping)
                     .allowedOrigins("*") // не "*" если есть cookie/Authorization
                     .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
