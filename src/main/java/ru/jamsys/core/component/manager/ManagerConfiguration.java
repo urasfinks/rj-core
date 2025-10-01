@@ -8,7 +8,6 @@ import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 
 // Создан для хранения onCreate функционала, что бы в Manager не было утечек builder.

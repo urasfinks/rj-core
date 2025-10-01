@@ -45,6 +45,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
     }
 
     // Получить небезопасную map, если надо провести манипуляцию без обновления expiration
+    @SuppressWarnings("unused")
     public Map<K, EnvelopeObject> getUnsafeMap() {
         return mainMap;
     }
@@ -82,6 +83,7 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
         return get(key, true);
     }
 
+    @SuppressWarnings("all")
     public V get(Object key, boolean updateExpiration) {
         EnvelopeObject envelope = mainMap.get(key);
         if (envelope == null) {
