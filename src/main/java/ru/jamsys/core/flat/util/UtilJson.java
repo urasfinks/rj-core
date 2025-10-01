@@ -32,11 +32,13 @@ public class UtilJson {
         selector.forEach((s, s2) -> res.put(s, ctx.read(s2)));
     }
 
+    @SuppressWarnings("unused")
     public static Object selector(String json, String selector) {
         ReadContext ctx = getContext(json);
         return ctx.read(selector);
     }
 
+    @SuppressWarnings("unused")
     public static void selector(String json, Map<String, String> selector, Map<String, Object> res, String def) {
         ReadContext ctx = getContext(json);
         selector.forEach((s, s2) -> {
@@ -72,10 +74,12 @@ public class UtilJson {
         return def;
     }
 
+    @SuppressWarnings("unused")
     public static <T> T toObject(String json, Class<T> cls) throws Throwable {
         return objectMapperSkipUnknown.readValue(json, cls);
     }
 
+    @SuppressWarnings("all")
     public static Map<String, Object> getMapOrThrow(String json) throws Throwable {
         try {
             @SuppressWarnings("unchecked")
@@ -86,6 +90,7 @@ public class UtilJson {
         }
     }
 
+    @SuppressWarnings("all")
     public static List<Object> getListOrThrow(String json) throws Throwable {
         try {
             @SuppressWarnings("unchecked")

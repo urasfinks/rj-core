@@ -87,10 +87,6 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
         return t;
     }
 
-    public boolean equalsElement(Object o){
-        return Objects.equals(get(), o);
-    }
-
     public void execute(Consumer<T> managerElement) {
         T t = get();
         if (t != null) {
