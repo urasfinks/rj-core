@@ -27,9 +27,9 @@ public class BalancerStickySessions<T> {
 
     public BalancerStickySessions(String ns, int keepAliveOnInactivityMs) {
         expirationStickyMapConfiguration = ManagerConfiguration.getInstance(
-                ExpirationMap.class,
-                java.util.UUID.randomUUID().toString(),
                 ns,
+                java.util.UUID.randomUUID().toString(),
+                ExpirationMap.class,
                 stringResolvedExpirationMap -> stringResolvedExpirationMap
                         .setupTimeoutElementExpirationMs(keepAliveOnInactivityMs)
         );

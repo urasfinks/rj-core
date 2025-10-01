@@ -406,9 +406,9 @@ public class Promise extends ExpirationMsImmutableImpl implements RepositoryMapC
                 // Создаём конфигурацию пула ресурсов, ключ которого будет имя класса ресурса, а внутри уже по ns
                 // элементы
                 ManagerConfiguration.getInstance(
-                        PoolResourceForPromiseTaskWaitResource.class,
-                        classResource.getName(),
                         nsResource,
+                        classResource.getName(),
+                        PoolResourceForPromiseTaskWaitResource.class,
                         poolResourceForPromiseTaskWaitResource -> poolResourceForPromiseTaskWaitResource
                                 .setup(classResource, null)
                 )

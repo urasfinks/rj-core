@@ -52,9 +52,9 @@ public class QueueRetry implements DataReader, StatisticsFlush, CascadeKey {
         this.ns = ns;
         this.finishState = finishState;
         expirationListConfiguration = ManagerConfiguration.getInstance(
+                App.getUniqueClassName(QueueRetry.class), // Это общий ExpirationList для всех экземпляров QueueRetry
+                App.getUniqueClassName(QueueRetry.class), // Это общий ExpirationList для всех экземпляров QueueRetry
                 ExpirationList.class,
-                App.getUniqueClassName(QueueRetry.class), // Это общий ExpirationList для всех экземпляров QueueRetry
-                App.getUniqueClassName(QueueRetry.class), // Это общий ExpirationList для всех экземпляров QueueRetry
                 queueRetryExpirationObjectExpirationList -> queueRetryExpirationObjectExpirationList
                         .setupOnExpired(QueueRetryExpirationObject::insert)
         );

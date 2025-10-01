@@ -128,9 +128,9 @@ class PromiseImplTest {
     @Test
     void test3() {
         ManagerConfiguration<RateLimitTps> rateLimitItemConfiguration = ManagerConfiguration.getInstance(
-                RateLimitTps.class,
-                java.util.UUID.randomUUID().toString(),
                 Promise.getComplexIndex("test", "test"),
+                java.util.UUID.randomUUID().toString(),
+                RateLimitTps.class,
                 null
         );
         rateLimitItemConfiguration.get().setMax(10000);
@@ -209,9 +209,9 @@ class PromiseImplTest {
     @Test
     void test5() {
         ManagerConfiguration<RateLimitTps> rateLimitItemConfiguration = ManagerConfiguration.getInstance(
-                RateLimitTps.class,
-                java.util.UUID.randomUUID().toString(),
                 Promise.getComplexIndex("test", "test"),
+                java.util.UUID.randomUUID().toString(),
+                RateLimitTps.class,
                 null
         );
         rateLimitItemConfiguration.get().setMax(100000000);

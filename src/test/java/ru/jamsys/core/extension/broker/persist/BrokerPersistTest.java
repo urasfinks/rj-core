@@ -76,9 +76,9 @@ class BrokerPersistTest {
     public void test1() throws Throwable {
         App.get(ServiceProperty.class).set("$.BrokerPersist.test1.directory", "1LogPersist");
         ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
-                BrokerPersist.class,
-                java.util.UUID.randomUUID().toString(),
                 "test1",
+                java.util.UUID.randomUUID().toString(),
+                BrokerPersist.class,
                 managerElement -> {
                     managerElement.setup(bytes -> new TestElement(new String(bytes)));
                 }
@@ -218,9 +218,9 @@ class BrokerPersistTest {
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
         ManagerConfiguration<BrokerPersist<TestElement>> brokerPersistManagerConfiguration = ManagerConfiguration.getInstance(
-                BrokerPersist.class,
-                java.util.UUID.randomUUID().toString(),
                 "test2",
+                java.util.UUID.randomUUID().toString(),
+                BrokerPersist.class,
                 managerElement -> managerElement.setup((bytes) -> new TestElement(new String(bytes)))
         );
 

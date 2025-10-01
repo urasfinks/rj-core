@@ -24,15 +24,15 @@ public class PoolThreadExecutePromiseTask extends AbstractPoolPrivate {
         super(ns, key);
         // Для каждого ThreadPoolExecutePromiseTask должен быть свой RateLimitTps, поэтому uuid
         rateLimitConfiguration = ManagerConfiguration.getInstance(
-                RateLimitTps.class,
-                java.util.UUID.randomUUID().toString(),
                 getCascadeKey(ns),
+                java.util.UUID.randomUUID().toString(),
+                RateLimitTps.class,
                 null
         );
         brokerMemoryConfiguration = ManagerConfiguration.getInstance(
-                BrokerMemory.class,
-                java.util.UUID.randomUUID().toString(),
                 getCascadeKey(ns),
+                java.util.UUID.randomUUID().toString(),
+                BrokerMemory.class,
                 managerElement -> managerElement
                         .setup(promiseTask -> promiseTask
                                 .getPromise().setError("::drop", new RuntimeException())

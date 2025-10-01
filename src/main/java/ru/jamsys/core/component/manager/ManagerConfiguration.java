@@ -106,9 +106,9 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
     }
 
     public static <R extends AbstractManagerElement, S extends AbstractManagerElement> ManagerConfiguration<R> getInstance(
-            Class<S> cls,
-            String key,
             String ns,
+            String key,
+            Class<S> cls,
             Consumer<R> onCreate
     ) {
         @SuppressWarnings("unchecked")

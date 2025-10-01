@@ -251,9 +251,9 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
     private boolean addToParkNewItem() {
         if (isSizeExtend()) {
             ManagerConfiguration<T> poolItem = ManagerConfiguration.getInstance(
-                    cls,
-                    java.util.UUID.randomUUID().toString(),
                     ns,
+                    java.util.UUID.randomUUID().toString(),
+                    cls,
                     this.onCreatePoolItem
             );
             items.add(poolItem);

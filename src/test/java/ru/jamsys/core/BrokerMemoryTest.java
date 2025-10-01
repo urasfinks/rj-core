@@ -35,9 +35,9 @@ class BrokerMemoryTest {
     void testLiner() {
         List<XTest> dropped = new ArrayList<>();
         ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfiguration.getInstance(
-                BrokerMemory.class,
-                java.util.UUID.randomUUID().toString(),
                 XTest.class.getSimpleName() + "_1",
+                java.util.UUID.randomUUID().toString(),
+                BrokerMemory.class,
                 managerElement -> managerElement.setup(dropped::add)
         );
 
@@ -101,9 +101,9 @@ class BrokerMemoryTest {
     @Test
     void testCyclic() {
         ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfiguration.getInstance(
-                BrokerMemory.class,
-                java.util.UUID.randomUUID().toString(),
                 XTest.class.getSimpleName(),
+                java.util.UUID.randomUUID().toString(),
+                BrokerMemory.class,
                 null
         );
         BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();
@@ -167,9 +167,9 @@ class BrokerMemoryTest {
     @Test
     void testReference() {
         ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfiguration.getInstance(
-                BrokerMemory.class,
-                java.util.UUID.randomUUID().toString(),
                 XTest.class.getSimpleName(),
+                java.util.UUID.randomUUID().toString(),
+                BrokerMemory.class,
                 null
         );
         BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();
@@ -191,9 +191,9 @@ class BrokerMemoryTest {
         AtomicBoolean run = new AtomicBoolean(true);
 
         ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfiguration.getInstance(
-                BrokerMemory.class,
-                java.util.UUID.randomUUID().toString(),
                 XTest.class.getSimpleName(),
+                java.util.UUID.randomUUID().toString(),
+                BrokerMemory.class,
                 null
         );
         BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();
@@ -240,9 +240,9 @@ class BrokerMemoryTest {
     @Test
     void testProperty() {
         ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfiguration.getInstance(
-                BrokerMemory.class,
-                java.util.UUID.randomUUID().toString(),
                 XTest.class.getSimpleName(),
+                java.util.UUID.randomUUID().toString(),
+                BrokerMemory.class,
                 null
         );
         BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();
@@ -281,9 +281,9 @@ class BrokerMemoryTest {
         int selection = 1_000_000;
 
         ManagerConfiguration<BrokerMemory<XTest>> brokerMemoryManagerConfiguration = ManagerConfiguration.getInstance(
-                BrokerMemory.class,
-                java.util.UUID.randomUUID().toString(),
                 XTest.class.getSimpleName(),
+                java.util.UUID.randomUUID().toString(),
+                BrokerMemory.class,
                 null
         );
         BrokerMemory<XTest> broker = brokerMemoryManagerConfiguration.get();

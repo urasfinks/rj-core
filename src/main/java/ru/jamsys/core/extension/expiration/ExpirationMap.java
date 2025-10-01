@@ -36,9 +36,9 @@ public class ExpirationMap<K, V> extends AbstractManagerElement implements Map<K
         this.ns = ns;
         this.key = key;
         expirationMapConfiguration = ManagerConfiguration.getInstance(
+                App.getUniqueClassName(ExpirationMap.class), // Это общий ExpirationList для всех экземпляров ExpirationMap
+                App.getUniqueClassName(ExpirationMap.class), // Это общий ExpirationList для всех экземпляров ExpirationMap
                 ExpirationList.class,
-                App.getUniqueClassName(ExpirationMap.class), // Это общий ExpirationList для всех экземпляров ExpirationMap
-                App.getUniqueClassName(ExpirationMap.class), // Это общий ExpirationList для всех экземпляров ExpirationMap
                 expirationMapExpirationObjectExpirationList -> expirationMapExpirationObjectExpirationList
                         .setupOnExpired(EnvelopeObject::remove)
         );

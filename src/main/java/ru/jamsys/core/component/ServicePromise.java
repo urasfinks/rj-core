@@ -6,10 +6,10 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.extension.expiration.ExpirationList;
-import ru.jamsys.core.promise.AbstractPromiseTask;
-import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.extension.expiration.immutable.DisposableExpirationMsImmutableEnvelope;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
+import ru.jamsys.core.promise.AbstractPromiseTask;
+import ru.jamsys.core.promise.Promise;
 
 // Сервис управления перезапуска задач
 
@@ -26,15 +26,15 @@ public class ServicePromise implements CascadeKey {
     public ServicePromise() {
         // Так как это компонент, у нас не может быть множества экземпляров key будет константой
         timeOutExpirationList = ManagerConfiguration.getInstance(
-                ExpirationList.class,
-                ServicePromise.class.getName(),
                 getCascadeKey("timeOut"),
+                ServicePromise.class.getName(),
+                ExpirationList.class,
                 promiseExpirationList -> promiseExpirationList.setupOnExpired(Promise::timeOut)
         );
         retryExporationList = ManagerConfiguration.getInstance(
-                ExpirationList.class,
-                ServicePromise.class.getName(),
                 getCascadeKey("retry"),
+                ServicePromise.class.getName(),
+                ExpirationList.class,
                 abstractPromiseTaskExpirationList -> abstractPromiseTaskExpirationList
                         .setupOnExpired(promiseTask -> promiseTask.prepareLaunch(null))
         );

@@ -30,7 +30,7 @@ class ConnectionResourceTest {
 
     @SuppressWarnings("unused")
     // Без контекста БД невозможно в тестах запускать
-     @Test
+    // @Test
     void promiseTaskWithPool() {
         Promise promise = servicePromise.get("testPromise", 6_000L);
         promise

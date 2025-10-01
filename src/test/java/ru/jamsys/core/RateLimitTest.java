@@ -45,7 +45,7 @@ class RateLimitTest {
         App.get(ServiceProperty.class).set("$.RateLimitPeriodic.day.period", "DAY_OF_WEEK");
         App.get(ServiceProperty.class).set("$.RateLimitPeriodic.month.period", "MONTH");
 
-        ManagerConfiguration<RateLimitPeriodic> minConfigure = ManagerConfiguration.getInstance(RateLimitPeriodic.class, java.util.UUID.randomUUID().toString(), "min", null);
+        ManagerConfiguration<RateLimitPeriodic> minConfigure = ManagerConfiguration.getInstance("min", java.util.UUID.randomUUID().toString(), RateLimitPeriodic.class, null);
         RateLimitPeriodic rateLimitItemPeriodic = minConfigure.get();
 
 
@@ -63,21 +63,21 @@ class RateLimitTest {
         Assertions.assertEquals("2024-03-06T17:13:04.056", rateLimitItemPeriodic.getNextTime());
 
 
-        ManagerConfiguration<RateLimitPeriodic> hourConfigure = ManagerConfiguration.getInstance(RateLimitPeriodic.class,java.util.UUID.randomUUID().toString(), "hour",null);
+        ManagerConfiguration<RateLimitPeriodic> hourConfigure = ManagerConfiguration.getInstance("hour", java.util.UUID.randomUUID().toString(), RateLimitPeriodic.class, null);
         rateLimitItemPeriodic = hourConfigure.get();
 
         rateLimitItemPeriodic.setMax(999999);
         Assertions.assertEquals("{period=HourOfDay, max=999999, tpp=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());
         Assertions.assertEquals("2024-03-06T18:11:04.056", rateLimitItemPeriodic.getNextTime());
 
-        ManagerConfiguration<RateLimitPeriodic> dayConfigure = ManagerConfiguration.getInstance(RateLimitPeriodic.class,java.util.UUID.randomUUID().toString(), "day", null);
+        ManagerConfiguration<RateLimitPeriodic> dayConfigure = ManagerConfiguration.getInstance("day", java.util.UUID.randomUUID().toString(), RateLimitPeriodic.class, null);
         rateLimitItemPeriodic = dayConfigure.get();
 
         rateLimitItemPeriodic.setMax(999999);
         Assertions.assertEquals("{period=DayOfWeek, max=999999, tpp=0, flushed=true}", rateLimitItemPeriodic.flushAndGetStatistic(curTime).getHeader().toString());
         Assertions.assertEquals("2024-03-07T17:11:04.056", rateLimitItemPeriodic.getNextTime());
 
-        ManagerConfiguration<RateLimitPeriodic> monthConfigure = ManagerConfiguration.getInstance(RateLimitPeriodic.class,java.util.UUID.randomUUID().toString(), "month", null);
+        ManagerConfiguration<RateLimitPeriodic> monthConfigure = ManagerConfiguration.getInstance("month", java.util.UUID.randomUUID().toString(), RateLimitPeriodic.class, null);
         rateLimitItemPeriodic = monthConfigure.get();
 
         rateLimitItemPeriodic.setMax(999999);
@@ -116,7 +116,7 @@ class RateLimitTest {
 
     @Test
     void testTps() {
-        ManagerConfiguration<RateLimitTps> tpsConfigure = ManagerConfiguration.getInstance(RateLimitTps.class, java.util.UUID.randomUUID().toString(),"tps", null);
+        ManagerConfiguration<RateLimitTps> tpsConfigure = ManagerConfiguration.getInstance("tps", java.util.UUID.randomUUID().toString(), RateLimitTps.class, null);
         RateLimitTps rateLimitTps = tpsConfigure.get();
         rateLimitTps.run();
         rateLimitTps.setMax(2);

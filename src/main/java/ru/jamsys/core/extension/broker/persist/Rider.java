@@ -100,9 +100,9 @@ public class Rider extends AbstractManagerElement {
         // В asyncWrite залетает CommitElement содержащий bin (CommitElement.getBytes() возвращает позицию bin.position)
         // В onWrite залетает список CommitElement и мы должны bin.position удалить из binReader
         controlWriterConfiguration = ManagerConfiguration.getInstance(
-                AsyncFileWriterWal.class,
-                java.util.UUID.randomUUID().toString(),
                 filePathControl,
+                java.util.UUID.randomUUID().toString(),
+                AsyncFileWriterWal.class,
                 managerElement -> {
                     managerElement.setupRepositoryProperty(repositoryProperty);
                     managerElement.setupOnWrite((_, listY) -> {

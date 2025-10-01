@@ -54,9 +54,9 @@ class AsyncFileWriterRollingTest {
         );
         test.run();
         ManagerConfiguration<AsyncFileWriterRolling<TestElement>> asyncFileWriterRollingManagerConfiguration = ManagerConfiguration.getInstance(
+                java.util.UUID.randomUUID().toString(),
+                java.util.UUID.randomUUID().toString(),
                 AsyncFileWriterRolling.class,
-                java.util.UUID.randomUUID().toString(),
-                java.util.UUID.randomUUID().toString(),
                 managerElement -> {
                     managerElement.setupOnWrite((_, testElements) -> outputQueue.addAll(testElements));
                     managerElement.setupOnFileSwap((fileName, _) -> System.out.println("SWAP: " + fileName));

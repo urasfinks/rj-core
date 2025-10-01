@@ -52,9 +52,9 @@ class BrokerPersistStatTest {
     public void test() throws Throwable {
         ManagerConfiguration<BrokerPersist<StatisticElement>> brokerPersistManagerConfiguration =
                 ManagerConfiguration.getInstance(
-                        BrokerPersist.class,
-                        java.util.UUID.randomUUID().toString(),
                         "statistic",
+                        java.util.UUID.randomUUID().toString(),
+                        BrokerPersist.class,
                         managerElement -> managerElement.setup((bytes) -> new StatisticElement(new String(bytes)))
                 );
         BrokerPersist<StatisticElement> statisticElementBrokerPersist = brokerPersistManagerConfiguration.get();

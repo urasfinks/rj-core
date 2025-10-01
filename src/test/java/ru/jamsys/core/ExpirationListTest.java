@@ -48,9 +48,9 @@ class ExpirationListTest {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         AtomicInteger counterExpired = new AtomicInteger(0);
         ManagerConfiguration<ExpirationList<XItem>> configureTest = ManagerConfiguration.getInstance(
-                ExpirationList.class,
-                java.util.UUID.randomUUID().toString(),
                 "test1",
+                java.util.UUID.randomUUID().toString(),
+                ExpirationList.class,
                 xItemExpirationList -> xItemExpirationList.setupOnExpired(_ -> counterExpired.incrementAndGet())
         );
         ExpirationList<XItem> test = configureTest.get();
@@ -85,9 +85,9 @@ class ExpirationListTest {
     void checkSize() {
         long curTimeMs = 1709734264056L; //2024-03-06T17:11:04.056
         ManagerConfiguration<ExpirationList<XItem>> testConfigure = ManagerConfiguration.getInstance(
-                ExpirationList.class,
-                java.util.UUID.randomUUID().toString(),
                 "test2",
+                java.util.UUID.randomUUID().toString(),
+                ExpirationList.class,
                 null
         );
         ExpirationList<XItem> test = testConfigure.get();
@@ -148,9 +148,9 @@ class ExpirationListTest {
         AtomicInteger success = new AtomicInteger(0);
 
         ManagerConfiguration<ExpirationList<XItem>> configureTest = ManagerConfiguration.getInstance(
-                ExpirationList.class,
-                java.util.UUID.randomUUID().toString(),
                 "test3",
+                java.util.UUID.randomUUID().toString(),
+                ExpirationList.class,
                 xItemExpirationList -> xItemExpirationList.setupOnExpired(_ -> success.incrementAndGet())
         );
         ExpirationList<XItem> test = configureTest.get();

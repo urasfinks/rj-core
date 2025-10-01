@@ -26,9 +26,9 @@ public abstract class PromiseGeneratorExternalRequest extends PromiseGenerator i
 
     public PromiseGeneratorExternalRequest() {
         rateLimitConfiguration = ManagerConfiguration.getInstance(
+                getCascadeKey(),
+                getCascadeKey(),
                 RateLimitTps.class,
-                getCascadeKey(),
-                getCascadeKey(),
                 null
         );
         propertyDispatcher = new PropertyDispatcher<>(

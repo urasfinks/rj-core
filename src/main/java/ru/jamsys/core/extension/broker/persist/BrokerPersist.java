@@ -95,9 +95,9 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
             App.get(Manager.class).remove(AsyncFileWriterRolling.class, key, getCascadeKey(ns));
         }
         writerManagerConfiguration = ManagerConfiguration.getInstance(
-                AsyncFileWriterRolling.class,
-                key,
                 getCascadeKey(ns),
+                key,
+                AsyncFileWriterRolling.class,
                 asyncFileWriterRolling -> {
                     asyncFileWriterRolling.setupRepositoryProperty(property);
                     asyncFileWriterRolling.setupOnFileSwap(this::onDataFileSwap);
@@ -241,9 +241,9 @@ public class BrokerPersist<T extends ByteSerializable> extends AbstractManagerEl
                 filePathData, // Нам тут нужна ссылка на X так как BrokerPersistElement.getFilePath возвращает именно его
                 _ -> {
                     ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfiguration.getInstance(
-                            Rider.class,
-                            java.util.UUID.randomUUID().toString(),
                             getCascadeKey(ns),
+                            java.util.UUID.randomUUID().toString(),
+                            Rider.class,
                             rider -> {
                                 // Каждый блок записи list<Y> может быть последним, так как будут обработаны все X
                                 rider.setup(filePathData, property, this::removeRiderIfComplete, fileXFinishState);

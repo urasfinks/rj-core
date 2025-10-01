@@ -44,9 +44,9 @@ class ExpirationMapTest {
     void setUp() {
         ManagerConfiguration<ExpirationMap<String, String>> expirationMapConfiguration =
                 ManagerConfiguration.getInstance(
-                        ExpirationMap.class,
-                        java.util.UUID.randomUUID().toString(),
                         "testMap",
+                        java.util.UUID.randomUUID().toString(),
+                        ExpirationMap.class,
                         integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutElementExpirationMs(1_000)
                 );
         map = expirationMapConfiguration.get();
@@ -58,9 +58,9 @@ class ExpirationMapTest {
         String uuid = UUID.randomUUID().toString();
         ManagerConfiguration<ExpirationMap<Integer, XTest>> expirationMapConfiguration =
                 ManagerConfiguration.getInstance(
-                        ExpirationMap.class,
-                        uuid,
                         "test",
+                        uuid,
+                        ExpirationMap.class,
                         // устанавливаем для элементов map срок хранения
                         integerXTestExpirationMap -> integerXTestExpirationMap.setupTimeoutElementExpirationMs(1_000)
                 );

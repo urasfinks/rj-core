@@ -68,9 +68,9 @@ class RiderTest {
         }).get(), FileWriteOptions.CREATE_OR_REPLACE);
 
         ManagerConfiguration<Rider> riderManagerConfiguration = ManagerConfiguration.getInstance(
-                Rider.class,
-                java.util.UUID.randomUUID().toString(),
                 "test",
+                java.util.UUID.randomUUID().toString(),
+                Rider.class,
                 managerElement -> {
                     managerElement.setup(
                             "1LogPersist/test.bin",

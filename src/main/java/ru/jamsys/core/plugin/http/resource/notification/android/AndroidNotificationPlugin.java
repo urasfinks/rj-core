@@ -16,9 +16,9 @@ public class AndroidNotificationPlugin {
             AndroidNotificationRepositoryProperty repositoryProperty
     ) {
         ManagerConfiguration<GoogleCredentials> googleCredentials = ManagerConfiguration.getInstance(
-                GoogleCredentials.class,
-                App.getUniqueClassName(GoogleCredentials.class),
                 repositoryProperty.getApplicationName(),
+                App.getUniqueClassName(GoogleCredentials.class),
+                GoogleCredentials.class,
                 null
         );
         abstractHttpConnector

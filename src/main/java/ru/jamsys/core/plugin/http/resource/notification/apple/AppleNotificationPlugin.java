@@ -32,9 +32,9 @@ public class AppleNotificationPlugin {
 
         // getVirtualPath является уникальным ключом, key должен быть константой в разрезе всего
         ManagerConfiguration<FileKeyStoreSSLContext> fileKeyStoreSSLContextManagerConfiguration = ManagerConfiguration.getInstance(
-                FileKeyStoreSSLContext.class,
-                File.class.getName(),
                 repositoryProperty.getVirtualPath(),
+                File.class.getName(),
+                FileKeyStoreSSLContext.class,
                 fileKeyStore -> {
                     fileKeyStore.setupSecurityAlias(repositoryProperty.getSecurityAlias());
                     fileKeyStore.setupTypeKeyStorage("PKCS12");

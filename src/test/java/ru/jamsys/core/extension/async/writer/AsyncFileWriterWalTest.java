@@ -33,9 +33,9 @@ class AsyncFileWriterWalTest {
         UtilFile.removeIfExist("1StatisticPersist/1.bin");
         BrokerPersistRepositoryProperty brokerPersistRepositoryProperty = new BrokerPersistRepositoryProperty();
         ManagerConfiguration<AsyncFileWriterWal<TestElement>> yWriterConfiguration = ManagerConfiguration.getInstance(
-                AsyncFileWriterWal.class,
-                java.util.UUID.randomUUID().toString(),
                 "1StatisticPersist/1.bin",
+                java.util.UUID.randomUUID().toString(),
+                AsyncFileWriterWal.class,
                 managerElement -> {
                     System.out.println("NEW ELEMENT");
                     managerElement.setupRepositoryProperty(brokerPersistRepositoryProperty);

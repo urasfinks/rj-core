@@ -64,9 +64,9 @@ public abstract class AbstractPromiseTask implements Runnable, WaitQueueElement 
         // Тут ns это promise.key+task.index
         // В разрезе одинаковых ключей у всех будет общий ThreadPoolExecutePromiseTask
         computeThreadConfiguration = ManagerConfiguration.getInstance(
-                PoolThreadExecutePromiseTask.class,
-                AbstractPromiseTask.class.getName(),
                 ns,
+                AbstractPromiseTask.class.getName(),
+                PoolThreadExecutePromiseTask.class,
                 null
         );
     }
