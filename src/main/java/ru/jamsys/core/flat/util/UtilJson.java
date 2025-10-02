@@ -1,5 +1,6 @@
 package ru.jamsys.core.flat.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -75,7 +76,7 @@ public class UtilJson {
     }
 
     @SuppressWarnings("unused")
-    public static <T> T toObject(String json, Class<T> cls) throws Throwable {
+    public static <T> T toObject(String json, Class<T> cls) throws JsonProcessingException {
         return objectMapperSkipUnknown.readValue(json, cls);
     }
 
