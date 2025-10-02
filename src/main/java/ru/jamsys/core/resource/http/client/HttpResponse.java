@@ -1,5 +1,6 @@
 package ru.jamsys.core.resource.http.client;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.Setter;
@@ -53,6 +54,11 @@ public class HttpResponse {
     public void addException(Throwable e) {
         status = HttpStatus.EXPECTATION_FAILED;
         exception = e;
+    }
+
+    @JsonIgnore
+    public String getBodyAsString() {
+        return new String(body, charset);
     }
 
     public boolean isSuccess() {
