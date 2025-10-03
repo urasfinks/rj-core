@@ -20,8 +20,11 @@ import java.lang.reflect.Field;
 @Getter
 public class RepositoryPropertyAnnotationField<T> extends AbstractRepositoryProperty<T> {
 
+    private String ns;
+
     @Override
     public void init(String ns, boolean sync) {
+        this.ns = ns;
         if (getInit().compareAndSet(false, true)) {
             for (Field field : getClass().getDeclaredFields()) {
                 if (field.getType().isPrimitive()) {

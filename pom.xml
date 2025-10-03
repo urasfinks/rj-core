@@ -22,6 +22,7 @@
 		<protoc.version>4.27.0-RC1</protoc.version>
 		<maven.compiler.source>22</maven.compiler.source>
 		<maven.compiler.target>22</maven.compiler.target>
+		<telegram.version>6.9.7.1</telegram.version>
 	</properties>
 
 	<dependencies>
@@ -144,6 +145,17 @@
 			<artifactId>mockito-core</artifactId>
 			<version>5.5.0</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.telegram</groupId>
+			<artifactId>telegrambots</artifactId>
+			<version>${telegram.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.telegram</groupId>
+			<artifactId>telegrambotsextensions</artifactId>
+			<version>${telegram.version}</version>
 		</dependency>
 
 
