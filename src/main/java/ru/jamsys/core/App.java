@@ -8,12 +8,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 import ru.jamsys.core.component.Core;
 import ru.jamsys.core.component.ExceptionHandler;
-import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.CascadeKey;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilLog;
-import ru.jamsys.core.plugin.telegram.message.TelegramOutputMessage;
-import ru.jamsys.core.plugin.telegram.sender.TelegramSenderHttp;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,21 +68,7 @@ public class App implements CascadeKey {
             );
         });
         run(args);
-        ManagerConfiguration<TelegramSenderHttp> telegramSenderHttpManagerConfiguration = ManagerConfiguration.getInstance(
-                "test",
-                "test",
-                TelegramSenderHttp.class,
-                null
-        );
-        telegramSenderHttpManagerConfiguration.get().send(new TelegramOutputMessage(
-                        TelegramOutputMessage.MessageType.SendMessage,
-                        290029195L
-                )
-                        .setMessage("Hello world")
-        );
     }
-
-    //public static List<String> dep = new ArrayList<>();
 
     @SuppressWarnings("all")
     public static <T> T get(Class<T> cls) {
