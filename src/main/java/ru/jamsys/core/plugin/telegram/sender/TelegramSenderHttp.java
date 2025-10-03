@@ -40,6 +40,7 @@ public class TelegramSenderHttp extends AbstractManagerElement implements Telegr
 
     private final String ns;
 
+    @SuppressWarnings("all")
     private final String key;
 
     @JsonIgnore

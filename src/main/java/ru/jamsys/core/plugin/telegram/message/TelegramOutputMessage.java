@@ -74,11 +74,13 @@ public class TelegramOutputMessage {
         this.idChat = idChat;
     }
 
+    @SuppressWarnings("unused")
     @JsonIgnore
     public TelegramOutputMessage fromJson(String json) throws JsonProcessingException {
         return UtilJson.toObject(json, TelegramOutputMessage.class);
     }
 
+    @SuppressWarnings("unused")
     @JsonIgnore
     public String toJson() {
         return UtilJson.toStringPretty(this, "{}");

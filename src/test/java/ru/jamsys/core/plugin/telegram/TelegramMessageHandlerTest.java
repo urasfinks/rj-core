@@ -15,14 +15,10 @@ import ru.jamsys.core.extension.expiration.ExpirationMap;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.plugin.telegram.sender.TelegramSenderEmbedded;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.*;
 
 class TelegramMessageHandlerTest {
-
-    AtomicBoolean threadRun = new AtomicBoolean(true);
 
     @BeforeAll
     static void beforeAll() {
@@ -80,7 +76,7 @@ class TelegramMessageHandlerTest {
         when(telegramBot.getBotRepositoryProperty().getName()).thenReturn("test_bot");
 
 
-        when(telegramBot.getRouterRepository()).thenReturn(App.get(RouteGenerator.class).getRouterRepository(TestMarker.class));
+        when(telegramBot.getRouterRepository()).thenReturn(App.get(RouteGenerator.class).getRouterRepository(App.class));
         //when(generator.generate()).thenReturn(promise);
 
         // 3) sender config с deep-stub, чтобы .get().send(...)

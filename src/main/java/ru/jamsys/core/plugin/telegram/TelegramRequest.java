@@ -47,6 +47,7 @@ public class TelegramRequest {
             return status == null;
         }
 
+        @SuppressWarnings("unused")
         public boolean isRetry() {
             if (status == Status.OK) { // Если нет исключения - то незамем повторять
                 return false;

@@ -54,6 +54,7 @@ public class TelegramInputMessage {
         return null;
     }
 
+    @SuppressWarnings("unused")
     public String getUserInfo() {
         if (msg.hasCallbackQuery()) {
             return UtilJson.toStringPretty(msg.getCallbackQuery().getFrom(), "{}");
@@ -66,14 +67,10 @@ public class TelegramInputMessage {
     public boolean isBot() {
         if (msg.hasCallbackQuery()) {
             return msg.getCallbackQuery().getFrom().getIsBot();
-        } else if (msg.hasMessage()) {
+        } else // Если какие-то обходные пути будут, лучше прикрыть, так как я не знаю
+            if (msg.hasMessage()) {
             return msg.getMessage().getFrom().getIsBot();
-        } else if (msg.hasPreCheckoutQuery()) {
-            return false;
-        } else {
-            // Если какие-то обходные пути будут, лучше прикрыть, так как я не знаю
-            return true;
-        }
+        } else return !msg.hasPreCheckoutQuery();
     }
 
 }
