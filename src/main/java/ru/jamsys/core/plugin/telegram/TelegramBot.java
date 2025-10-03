@@ -68,10 +68,7 @@ public class TelegramBot extends AbstractManagerElement {
     @Override
     public void shutdownOperation() {
         this.propertyDispatcher.shutdown();
-//        if (session != null) {
-//            // Зависает остановка
-//            //session.stop();
-//        }
+        // session.stop(); - зависает, не могу использовать
         session = null;
     }
 
