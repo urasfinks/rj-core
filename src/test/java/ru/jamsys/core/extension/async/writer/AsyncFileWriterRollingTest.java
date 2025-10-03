@@ -59,7 +59,7 @@ class AsyncFileWriterRollingTest {
                 AsyncFileWriterRolling.class,
                 managerElement -> {
                     managerElement.setupOnWrite((_, testElements) -> outputQueue.addAll(testElements));
-                    managerElement.setupOnFileSwap((fileName, _) -> System.out.println("SWAP: " + fileName));
+                    managerElement.setupOnFileSwap((fileName, _) -> UtilLog.printInfo("SWAP: " + fileName));
                     managerElement.setupRepositoryProperty(brokerPersistRepositoryProperty);
                 }
         );
@@ -243,7 +243,7 @@ class AsyncFileWriterRollingTest {
                 .append("sizeMb", ((float) writer.getPosition().get()) / 1024 / 1024)
                 .append("time", fin)
         );
-        System.out.println("fin: " + fin);
+        UtilLog.printInfo("fin: " + fin);
         Assertions.assertTrue(fin < 100);
     }
 

@@ -13,7 +13,8 @@ import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilUri;
 import ru.jamsys.core.plugin.telegram.message.TelegramInputMessage;
 import ru.jamsys.core.plugin.telegram.message.TelegramOutputMessage;
-import ru.jamsys.core.plugin.telegram.sender.TelegramSenderEmbedded;
+import ru.jamsys.core.plugin.telegram.structure.MessageType;
+import ru.jamsys.core.plugin.telegram.structure.SendType;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 
@@ -21,8 +22,6 @@ import ru.jamsys.core.promise.PromiseGenerator;
 public class TelegramMessageHandler extends TelegramLongPollingBot {
 
     private final TelegramBot telegramBot;
-
-    private final ManagerConfiguration<TelegramSenderEmbedded> telegramSenderEmbeddedManagerConfiguration;
 
     private final ManagerConfiguration<ExpirationMap<Long, String>> stepHandler;
 
@@ -32,12 +31,6 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
     public TelegramMessageHandler(TelegramBot telegramBot) throws Exception {
         super(new String(App.get(SecurityComponent.class).get(telegramBot.getBotRepositoryProperty().getSecurityAlias())));
         this.telegramBot = telegramBot;
-        this.telegramSenderEmbeddedManagerConfiguration = ManagerConfiguration.getInstance(
-                telegramBot.getNs(),
-                telegramBot.getNs(),
-                TelegramSenderEmbedded.class,
-                null
-        );
         stepHandler = ManagerConfiguration.getInstance(
                 telegramBot.getBotRepositoryProperty().getName(),
                 telegramBot.getBotRepositoryProperty().getName(),
@@ -57,18 +50,19 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
         if (msg == null) {
             return;
         }
-        UtilLog.printInfo(msg);
+        //UtilLog.printInfo(msg);
         TelegramInputMessage telegramInputMessage = new TelegramInputMessage(msg);
         if (msg.hasCallbackQuery()) {
-            TelegramOutputMessage telegramOutputMessage = new TelegramOutputMessage(
-                    TelegramOutputMessage.MessageType.AnswerCallbackQuery,
-                    telegramInputMessage.getIdChat()
+            new TelegramOutputMessage(
+                    MessageType.AnswerCallbackQuery,
+                    telegramInputMessage.getIdChat(),
+                    SendType.EMBEDDED,
+                    telegramBot.getNs()
             )
                     .setIdCallbackQuery(telegramInputMessage.getCallbackQueryId())
-                    .setMessage("");
-            this.telegramSenderEmbeddedManagerConfiguration
-                    .get()
-                    .send(telegramOutputMessage);
+                    .setMessage("")
+                    .send();
+
 
         }
         Long idChat = telegramInputMessage.getIdChat();
@@ -143,14 +137,14 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
     }
 
     private void answer(Long idChat, String message) {
-        TelegramOutputMessage telegramOutputMessage = new TelegramOutputMessage(
-                TelegramOutputMessage.MessageType.SendMessage,
-                idChat
+        TelegramRequest.Result result = new TelegramOutputMessage(
+                MessageType.SendMessage,
+                idChat,
+                SendType.EMBEDDED,
+                telegramBot.getNs()
         )
-                .setMessage(message);
-        TelegramRequest.Result result = telegramSenderEmbeddedManagerConfiguration
-                .get()
-                .send(telegramOutputMessage);
+                .setMessage(message)
+                .send();
         UtilLog.printInfo(result);
     }
 

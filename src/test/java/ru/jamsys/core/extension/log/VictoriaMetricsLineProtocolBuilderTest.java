@@ -2,6 +2,7 @@ package ru.jamsys.core.extension.log;
 
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.victoria.metrics.VictoriaMetricsLineProtocolBuilder;
+import ru.jamsys.core.flat.util.UtilLog;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -52,7 +53,7 @@ class VictoriaMetricsLineProtocolBuilderTest {
                 .addLabel("key", "val")
                 .setValue(1)
                 .build();
-        System.out.println(line);
+        UtilLog.printInfo(line);
         // Запятая, пробел и равно в measurement должны быть экранированы
         assertTrue(line.startsWith("mea\\,s\\ ure\\=ment,"));
     }

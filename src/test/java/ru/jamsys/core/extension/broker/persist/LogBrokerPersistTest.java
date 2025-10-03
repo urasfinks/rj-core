@@ -64,8 +64,7 @@ class LogBrokerPersistTest {
             thread.start();
             thread.join();
         }
-
-        System.out.println("add: " + (System.currentTimeMillis() - s1));
+        UtilLog.printInfo("add: " + (System.currentTimeMillis() - s1));
 
         for (int i = 0; i < 4; i++) {
             Thread thread = new Thread(() -> {

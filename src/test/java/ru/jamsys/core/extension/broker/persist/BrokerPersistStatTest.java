@@ -66,7 +66,6 @@ class BrokerPersistStatTest {
             statisticElementBrokerPersist.commit(poll);
             App.get(Helper1s.class).generate().run().await(1000);
         }
-        System.out.println(1);
     }
 
 }

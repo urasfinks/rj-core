@@ -161,7 +161,7 @@ class ExpirationListTest {
         long initialDelay = 1000 - (now % 1000);
         scheduler.scheduleAtFixedRate(
                 () -> {
-                    System.out.println(UtilDate.msFormat(System.currentTimeMillis()));
+                    UtilLog.printInfo(UtilDate.msFormat(System.currentTimeMillis()));
                     test.helper(run, System.currentTimeMillis());
                 },
                 initialDelay,

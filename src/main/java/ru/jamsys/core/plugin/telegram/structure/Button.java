@@ -1,4 +1,4 @@
-package ru.jamsys.core.plugin.telegram;
+package ru.jamsys.core.plugin.telegram.structure;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

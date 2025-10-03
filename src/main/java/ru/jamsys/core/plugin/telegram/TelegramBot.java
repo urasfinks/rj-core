@@ -43,7 +43,7 @@ public class TelegramBot extends AbstractManagerElement {
         this.propertyDispatcher = new PropertyDispatcher<>(
                 null,
                 botRepositoryProperty,
-                getCascadeKey(ns)
+                ns
         );
     }
 

@@ -51,7 +51,7 @@ public class UtilSelectorTest {
         ForwardException ex = assertThrows(ForwardException.class, () ->
                 UtilSelector.selector(sample, "user.profile.age.value")
         );
-        System.out.println(ex.getMessage());
+        UtilLog.printError(ex.getMessage());
         assertTrue(ex.getMessage().contains("Current object is neither Map nor List"));
     }
 

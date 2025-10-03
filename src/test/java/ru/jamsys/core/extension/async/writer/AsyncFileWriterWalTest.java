@@ -11,6 +11,7 @@ import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.ByteSerializable;
 import ru.jamsys.core.extension.broker.persist.BrokerPersistRepositoryProperty;
 import ru.jamsys.core.flat.util.UtilFile;
+import ru.jamsys.core.flat.util.UtilLog;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -37,7 +38,7 @@ class AsyncFileWriterWalTest {
                 java.util.UUID.randomUUID().toString(),
                 AsyncFileWriterWal.class,
                 managerElement -> {
-                    System.out.println("NEW ELEMENT");
+                    UtilLog.printInfo("NEW ELEMENT");
                     managerElement.setupRepositoryProperty(brokerPersistRepositoryProperty);
                     managerElement.setupOnWrite((_, _) -> {
                     });

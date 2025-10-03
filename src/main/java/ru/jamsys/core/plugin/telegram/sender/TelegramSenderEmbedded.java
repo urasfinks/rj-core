@@ -24,10 +24,11 @@ import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.UniversalPath;
 import ru.jamsys.core.extension.builder.ArrayListBuilder;
 import ru.jamsys.core.flat.util.UtilFile;
-import ru.jamsys.core.plugin.telegram.Button;
+import ru.jamsys.core.plugin.telegram.structure.Button;
 import ru.jamsys.core.plugin.telegram.TelegramBot;
 import ru.jamsys.core.plugin.telegram.TelegramRequest;
 import ru.jamsys.core.plugin.telegram.message.TelegramOutputMessage;
+import ru.jamsys.core.plugin.telegram.structure.Invoice;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -124,7 +125,7 @@ public class TelegramSenderEmbedded extends AbstractManagerElement implements Te
                 return nativeSend(answer);
             }
             case SendInvoice -> {
-                TelegramOutputMessage.Invoice invoice = telegramOutputMessage.getInvoice();
+                Invoice invoice = telegramOutputMessage.getInvoice();
                 if (invoice == null) {
                     return null;
                 }

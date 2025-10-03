@@ -6,6 +6,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
+import ru.jamsys.core.component.manager.Manager;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.UniversalPath;
@@ -16,9 +17,10 @@ import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.flat.util.UtilFile;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.plugin.telegram.BotRepositoryProperty;
-import ru.jamsys.core.plugin.telegram.Button;
 import ru.jamsys.core.plugin.telegram.TelegramRequest;
 import ru.jamsys.core.plugin.telegram.message.TelegramOutputMessage;
+import ru.jamsys.core.plugin.telegram.structure.Button;
+import ru.jamsys.core.plugin.telegram.structure.FileSource;
 import ru.jamsys.core.resource.http.HttpResource;
 import ru.jamsys.core.resource.http.client.AbstractHttpConnector;
 import ru.jamsys.core.resource.http.client.HttpResponse;
@@ -122,15 +124,19 @@ public class TelegramSenderHttp extends AbstractManagerElement implements Telegr
                 HttpResource.class,
                 null
         );
-        //UtilLog.printError(httpResourceManagerConfiguration.get().getProperty());
-        AbstractHttpConnector httpConnector = httpResourceManagerConfiguration.get().prepare();
+        AbstractHttpConnector httpConnector = App.get(Manager.class).get(
+                        HttpResource.class,
+                        getClass().getSimpleName(),
+                        getClass().getSimpleName(),
+                        null
+                )
+                .prepare();
         return TelegramRequest.execute(result -> {
             setup.accept(httpConnector);
             httpConnector.addRequestHeader("Content-Type", "application/json");
             if (httpConnector.getUrl() == null) {
                 throw new RuntimeException("url is null");
             }
-            System.out.println(httpConnector.getUrl());
             httpConnector.setUrl(String.format(
                     httpConnector.getUrl(),
                     new String(securityComponent.get(botRepositoryProperty.getSecurityAlias())),
@@ -156,7 +162,7 @@ public class TelegramSenderHttp extends AbstractManagerElement implements Telegr
     }
 
     private TelegramRequest.Result sendImageMultipart(TelegramOutputMessage telegramOutputMessage) {
-        TelegramOutputMessage.Source image = telegramOutputMessage.getImage();
+        FileSource image = telegramOutputMessage.getImage();
         TelegramRequest.Result sendRaw = nativeSend("sendPhoto", telegramOutputMessage, abstractHttpConnector -> {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.addTextBody("chat_id", String.valueOf(telegramOutputMessage.getIdChat()));
@@ -186,7 +192,7 @@ public class TelegramSenderHttp extends AbstractManagerElement implements Telegr
     }
 
     private TelegramRequest.Result sendImage(TelegramOutputMessage telegramOutputMessage) {
-        TelegramOutputMessage.Source image = telegramOutputMessage.getImage();
+        FileSource image = telegramOutputMessage.getImage();
         if (image.getId() == null || image.getId().isEmpty()) {
             image.setId(fileUploadManagerConfiguration.get().get(image.getPath()));
         }
@@ -210,7 +216,7 @@ public class TelegramSenderHttp extends AbstractManagerElement implements Telegr
 
     private TelegramRequest.Result sendVideo(TelegramOutputMessage telegramOutputMessage) {
         // TODO: дописать загрузку видео
-        TelegramOutputMessage.Source video = telegramOutputMessage.getImage();
+        FileSource video = telegramOutputMessage.getImage();
         if (video.getId() == null || video.getId().isEmpty()) {
             return null;
         }
