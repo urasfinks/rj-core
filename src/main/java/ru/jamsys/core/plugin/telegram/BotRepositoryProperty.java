@@ -31,4 +31,9 @@ public class BotRepositoryProperty extends RepositoryPropertyAnnotationField<Obj
     @PropertyDescription("Маркер интерфейс для PromiseGenerator")
     private String promiseGeneratorClass;
 
+    // Пример: /ask_question/?question=
+    @PropertyKey("not.command.prefix")
+    @PropertyDescription("Префикс для сообщения если оно начинается без /")
+    private String notCommandPrefix;
+
 }

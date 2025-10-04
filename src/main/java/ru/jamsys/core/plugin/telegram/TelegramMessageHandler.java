@@ -31,6 +31,10 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
     public TelegramMessageHandler(TelegramBot telegramBot) throws Exception {
         super(new String(App.get(SecurityComponent.class).get(telegramBot.getBotRepositoryProperty().getSecurityAlias())));
         this.telegramBot = telegramBot;
+        if (telegramBot.getBotRepositoryProperty().getNotCommandPrefix() != null
+            && !telegramBot.getBotRepositoryProperty().getNotCommandPrefix().isEmpty()) {
+            notCommandPrefix = telegramBot.getBotRepositoryProperty().getNotCommandPrefix();
+        }
         stepHandler = ManagerConfiguration.getInstance(
                 telegramBot.getBotRepositoryProperty().getName(),
                 telegramBot.getBotRepositoryProperty().getName(),
@@ -145,7 +149,7 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
         )
                 .setMessage(message)
                 .send();
-        UtilLog.printInfo(result);
+        UtilLog.printError(result);
     }
 
 }
