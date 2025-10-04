@@ -1,5 +1,6 @@
 package ru.jamsys.core.plugin.telegram.message;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -14,6 +15,7 @@ public class TelegramInputMessage {
         this.msg = msg;
     }
 
+    @JsonIgnore
     @SuppressWarnings("unused")
     public Integer getIdMessage() {
         if (msg.hasCallbackQuery()) {
@@ -24,6 +26,7 @@ public class TelegramInputMessage {
         return null;
     }
 
+    @JsonIgnore
     public String getCallbackQueryId() {
         if (msg.hasCallbackQuery()) {
             return msg.getCallbackQuery().getId();
@@ -31,6 +34,7 @@ public class TelegramInputMessage {
         return null;
     }
 
+    @JsonIgnore
     @SuppressWarnings("unused")
     public Long getIdChat() {
         // Если это запрос от Telegram Payments, фиктивно подменяем idChat, так как у pre_checkout_query нет id_chat
@@ -44,6 +48,7 @@ public class TelegramInputMessage {
         return null;
     }
 
+    @JsonIgnore
     @SuppressWarnings("unused")
     public String getData() {
         if (msg.hasCallbackQuery()) {
@@ -54,6 +59,7 @@ public class TelegramInputMessage {
         return null;
     }
 
+    @JsonIgnore
     @SuppressWarnings("unused")
     public String getUserInfo() {
         if (msg.hasCallbackQuery()) {
@@ -64,6 +70,7 @@ public class TelegramInputMessage {
         return null;
     }
 
+    @JsonIgnore
     public boolean isBot() {
         if (msg.hasCallbackQuery()) {
             return msg.getCallbackQuery().getFrom().getIsBot();

@@ -83,14 +83,15 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
             // Если надо допустим принять картинку или видео, конечно при условии наличия stepHandler
             data = "";
         }
-
         String preparedUrl = null;
         if (msg.hasMessage() && msg.getMessage().hasSuccessfulPayment()) {
             preparedUrl = "/successful_payment";
         } else if (msg.hasPreCheckoutQuery()) {
             preparedUrl = "/pre_checkout_query";
         } else {
-            Map<String, Object> stringObjectMap = sessions.get().get(telegramInputMessage.getIdChat());
+            Map<String, Object> stringObjectMap = sessions
+                    .get()
+                    .computeIfAbsent(telegramInputMessage.getIdChat(), _ -> new HashMap<>());
             // Можно наперёд установить в обработчике прошлого шага, что данные которые пошлёт клиент
             // пойдут по установленному url
             Object urlFromLastSetup = stringObjectMap.remove("url");
@@ -102,15 +103,13 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
         if (preparedUrl == null && defaultUrl != null) {
             preparedUrl = defaultUrl;
         }
-
         // Тут 2 варианта:
         // 1) Приходит чистое сообщение от пользователя
         // 2) Приходит ButtonCallbackData - подразумевает, что имеет полный путь /command/?args=...
         // Не должно быть чистого сообщения от пользователя содержащего контекст и начало с /
-        if (preparedUrl != null && msg.hasMessage() && data.startsWith("/")) {
+        if (data.startsWith("/")) {
             preparedUrl = null;
         }
-
         if (preparedUrl != null) {
             try {
                 data = preparedUrl + UtilUri.encode(data);

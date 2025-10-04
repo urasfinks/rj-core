@@ -24,10 +24,10 @@ import ru.jamsys.core.extension.AbstractManagerElement;
 import ru.jamsys.core.extension.UniversalPath;
 import ru.jamsys.core.extension.builder.ArrayListBuilder;
 import ru.jamsys.core.flat.util.UtilFile;
-import ru.jamsys.core.plugin.telegram.structure.Button;
 import ru.jamsys.core.plugin.telegram.TelegramBot;
 import ru.jamsys.core.plugin.telegram.TelegramRequest;
 import ru.jamsys.core.plugin.telegram.message.TelegramOutputMessage;
+import ru.jamsys.core.plugin.telegram.structure.Button;
 import ru.jamsys.core.plugin.telegram.structure.Invoice;
 
 import java.io.Serializable;
@@ -193,11 +193,9 @@ public class TelegramSenderEmbedded extends AbstractManagerElement implements Te
             InlineKeyboardButton markupInline = new InlineKeyboardButton(button.getData());
             if (button.getWebapp() != null) {
                 markupInline.setWebApp(new WebAppInfo(button.getWebapp()));
-            }
-            if (button.getCallback() != null) {
+            } else if (button.getCallback() != null) {
                 markupInline.setCallbackData(button.getCallback());
-            }
-            if (button.getUrl() != null) {
+            } else if (button.getUrl() != null) {
                 markupInline.setUrl(button.getUrl());
             }
             list.add(List.of(markupInline));

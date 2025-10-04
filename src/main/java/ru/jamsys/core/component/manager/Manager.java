@@ -129,11 +129,11 @@ public class Manager extends AbstractLifeCycle implements LifeCycleComponent, St
         UtilRisc.forEach(threadRun, map, (_, mapManager) -> {
             UtilRisc.forEach(threadRun, mapManager, (key, managerElement) -> {
                 if (managerElement.isExpiredIgnoringStop()) {
-                    UtilLog.printInfo(new HashMapBuilder<>()
-                            .append("action", getClass().getSimpleName() + ".helper()->remove()")
-                            .append("cls", managerElement.getClass())
-                            .append("element", managerElement)
-                    );
+//                    UtilLog.printInfo(new HashMapBuilder<>()
+//                            .append("action", getClass().getSimpleName() + ".helper()->remove()")
+//                            .append("cls", managerElement.getClass())
+//                            .append("element", managerElement)
+//                    );
                     all.add(managerElement);
                     mapManager.remove(key);
                     try {

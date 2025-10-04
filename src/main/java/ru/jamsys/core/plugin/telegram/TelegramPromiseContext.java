@@ -16,7 +16,6 @@ public class TelegramPromiseContext {
 
     private final UniversalPath universalPath;
 
-    @JsonIgnore
     private final Map<String, Object> session;
 
     private final TelegramInputMessage telegramInputMessage;

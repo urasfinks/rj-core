@@ -92,11 +92,9 @@ public class TelegramSenderHttp extends AbstractManagerElement implements Telegr
                             objectObjectHashMap.put("text", button.getData());
                             if (button.getCallback() != null) {
                                 objectObjectHashMap.put("callback_data", button.getCallback());
-                            }
-                            if (button.getUrl() != null) {
+                            } else if (button.getUrl() != null) {
                                 objectObjectHashMap.put("url", button.getUrl());
-                            }
-                            if (button.getWebapp() != null) {
+                            } else if (button.getWebapp() != null) {
                                 objectObjectHashMap.put("web_app", new HashMapBuilder<String, String>()
                                         .append("url", button.getWebapp()));
                             }
