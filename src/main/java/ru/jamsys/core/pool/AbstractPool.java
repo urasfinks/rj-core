@@ -139,7 +139,13 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
         // Парк типа просто из-за не активности ушёл в ноль, что бы не тратить ресурсы
         // иначе вернём false и просто задачи будут ждать, когда парк расширится автоматически от нагрузки
         if (property.getMin() == 0 && items.isEmpty()) {
-            return addToParkNewItem();
+            // addIdle выполняется средством потока, в котором исполняется бизнес логика
+            // из-за того, что создание нового элемента может выбросить исключение, надо экранировать
+            try {
+                return addToParkNewItem();
+            } catch (Throwable th) {
+                App.error(th);
+            }
         }
         // Если нет возможности говорим - что не создали
         return false;
@@ -147,6 +153,21 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
 
     private void remove(T poolItem) {
         ManagerConfiguration<T> tManagerConfiguration = configurationReference.remove(poolItem);
+        if (tManagerConfiguration != null) {
+            items.remove(tManagerConfiguration);
+            // Его не должно быть в парке
+            if (parkQueue.remove(tManagerConfiguration)) {
+                App.error(new ForwardException(
+                        "Этот код не должен был случиться! Проверить логику! ",
+                        new HashMapBuilder<>()
+                                .append("tManagerConfiguration", tManagerConfiguration)
+                                .append("pool", this)
+                ));
+            }
+        }
+    }
+
+    private void remove(ManagerConfiguration<T> tManagerConfiguration) {
         if (tManagerConfiguration != null) {
             items.remove(tManagerConfiguration);
             // Его не должно быть в парке
@@ -229,8 +250,20 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
             if (poolItem == null) {
                 continue;
             }
-            T poolItemElement = poolItem.get();
+            T poolItemElement = null;
+            // Может случиться, что при item.runOperation() может быть выброшено исключение (jdbc connection refused)
+            // Надо такой элемент выбрасывать из пула
+            try {
+                poolItemElement = poolItem.get();
+            } catch (Throwable th) {
+                App.error(th);
+            }
+            if (poolItemElement == null) {
+                remove(poolItem);
+                continue;
+            }
             if (!poolItemElement.isValid()) {
+                remove(poolItemElement);
                 continue;
             }
             configurationReference.putIfAbsent(poolItemElement, poolItem);
@@ -259,6 +292,9 @@ public abstract class AbstractPool<T extends AbstractExpirationResource>
             items.add(poolItem);
             parkQueue.addLast(poolItem);
             updateStatistic();
+            // Получилась такая история: создался конфигуратор jdbc но его старт только при poolItem.get()
+            // но сейчас он тут ещё не запущен и мы его уже добавили в items и parkQueue. Далее в onParkUpdate он
+            // поднимается и при старте кидает исключение "Connection refused"
             onParkUpdate();
             return true;
         }
