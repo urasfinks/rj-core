@@ -105,6 +105,23 @@ public class UniversalPath {
         );
     }
 
+    @SuppressWarnings("unused")
+    public Map<String, String> parseParameterWithUrlDecode() {
+        if (parameters == null || parameters.isEmpty()) {
+            return Map.of();
+        }
+        return UtilUri.parseParameters(
+                "?" + parameters,
+                strings -> {
+                    try {
+                        return UtilUri.decode(String.join(",", strings));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
+    }
+
     @JsonValue
     public HashMapBuilder<String, Object> getJsonValue() {
         return new HashMapBuilder<String, Object>()
