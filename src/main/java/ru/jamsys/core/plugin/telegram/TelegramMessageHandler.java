@@ -107,6 +107,7 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
                 data = remove + UtilUri.encode(data);
             } catch (Exception e) {
                 App.error(e);
+                return;
             }
         }
         if (data.startsWith("/")) {
@@ -119,7 +120,7 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
                 return;
             }
             if (data.startsWith("/start ")) {
-                data = "/start/?playload=" + data.substring(7);
+                data = "/start/?payload=" + data.substring(7);
             }
             PromiseGenerator match = telegramBot.getRouterRepository().match(data);
             if (match == null) {
