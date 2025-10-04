@@ -22,7 +22,6 @@ public class TelegramPromiseContext {
     @JsonIgnore
     private Map<Long, String> stepHandler;
 
-    @JsonIgnore
     private TelegramInputMessage telegramInputMessage;
 
 }
