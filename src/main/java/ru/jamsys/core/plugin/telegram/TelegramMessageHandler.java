@@ -8,6 +8,7 @@ import ru.jamsys.core.App;
 import ru.jamsys.core.component.SecurityComponent;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.UniversalPath;
+import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.expiration.ExpirationMap;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.flat.util.UtilUri;
@@ -110,11 +111,11 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
         }
         if (data.startsWith("/")) {
             if (idChat < 0) {
-                answer(idChat, "Группы не поддерживаются");
+                answer(telegramInputMessage, "Группы не поддерживаются");
                 return;
             }
             if (telegramInputMessage.isBot()) {
-                answer(idChat, "Боты не поддерживаются");
+                answer(telegramInputMessage, "Боты не поддерживаются");
                 return;
             }
             if (data.startsWith("/start ")) {
@@ -122,7 +123,7 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
             }
             PromiseGenerator match = telegramBot.getRouterRepository().match(data);
             if (match == null) {
-                answer(idChat, "Команда " + data + " не поддерживается");
+                answer(telegramInputMessage, "Команда " + data + " не поддерживается");
                 return;
             }
             Promise promise = match.generate();
@@ -140,16 +141,20 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
         }
     }
 
-    private void answer(Long idChat, String message) {
-        TelegramRequest.Result result = new TelegramOutputMessage(
+    private void answer(TelegramInputMessage telegramInputMessage, String message) {
+        TelegramOutputMessage telegramOutputMessage = new TelegramOutputMessage(
                 MessageType.SendMessage,
-                idChat,
+                telegramInputMessage.getIdChat(),
                 SendType.EMBEDDED,
                 telegramBot.getNs()
         )
-                .setMessage(message)
-                .send();
-        UtilLog.printError(result);
+                .setMessage(message);
+        TelegramRequest.Result result = telegramOutputMessage.send();
+        UtilLog.printError(new HashMapBuilder<String, Object>()
+                .append("telegramInputMessage", telegramInputMessage)
+                .append("telegramOutputMessage", telegramOutputMessage)
+                .append("result", result)
+        );
     }
 
 }
