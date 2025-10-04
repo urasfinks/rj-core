@@ -86,6 +86,10 @@ public class ManagerConfiguration<T extends AbstractManagerElement> {
         return t;
     }
 
+    public void remove() {
+        manager.remove(cls, key, ns);
+    }
+
     public void execute(Consumer<T> managerElement) {
         T t = get();
         if (t != null) {
