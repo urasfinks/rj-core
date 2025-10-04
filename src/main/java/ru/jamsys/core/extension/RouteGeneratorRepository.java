@@ -1,5 +1,6 @@
 package ru.jamsys.core.extension;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -15,6 +16,7 @@ public class RouteGeneratorRepository {
     private final Map<String, PromiseGeneratorExternalRequest> repository = new LinkedHashMap<>();
     public final Map<String, String> info = new LinkedHashMap<>();
 
+    @JsonIgnore
     @Setter
     @Accessors(chain = true)
     private PathMatcher pathMatcher;
