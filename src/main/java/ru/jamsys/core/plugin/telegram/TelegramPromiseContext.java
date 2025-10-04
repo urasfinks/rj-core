@@ -7,7 +7,6 @@ import lombok.experimental.Accessors;
 import ru.jamsys.core.extension.UniversalPath;
 import ru.jamsys.core.plugin.telegram.message.TelegramInputMessage;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Setter
