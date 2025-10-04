@@ -61,11 +61,22 @@ public class TelegramInputMessage {
 
     @JsonIgnore
     @SuppressWarnings("unused")
-    public String getUserInfo() {
+    public String getUserInfoString() {
         if (msg.hasCallbackQuery()) {
             return UtilJson.toStringPretty(msg.getCallbackQuery().getFrom(), "{}");
         } else if (msg.hasMessage()) {
             return UtilJson.toStringPretty(msg.getMessage().getFrom(), "{}");
+        }
+        return null;
+    }
+
+    @JsonIgnore
+    @SuppressWarnings("unused")
+    public Object getUserInfo() {
+        if (msg.hasCallbackQuery()) {
+            return msg.getCallbackQuery().getFrom();
+        } else if (msg.hasMessage()) {
+            return msg.getMessage().getFrom();
         }
         return null;
     }
