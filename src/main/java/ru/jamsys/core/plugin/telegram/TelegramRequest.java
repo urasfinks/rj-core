@@ -28,19 +28,19 @@ public class TelegramRequest {
     @Accessors(chain = true)
     public static class Result {
 
-        long timeCreate = System.currentTimeMillis();
+        private long timeCreate = System.currentTimeMillis();
 
-        long executeTiming;
+        private long executeTiming;
 
-        Status status = Status.OK;
+        private Status status = Status.OK;
 
-        String cause;
+        private String cause;
 
-        HttpResponse httpResponse;
+        private HttpResponse httpResponse;
 
-        Object embeddedResponse;
+        private Object embeddedResponse;
 
-        Map<String, Object> parsedResponse;
+        private Map<String, Object> parsedResponse;
 
         @SuppressWarnings("unused")
         public boolean isOk() {
