@@ -17,8 +17,6 @@ public class TelegramPromiseContext {
 
     private UniversalPath universalPath;
 
-    private Map<String, Object> anyData = new HashMap<>();
-
     @JsonIgnore
     private Map<Long, String> stepHandler;
 
