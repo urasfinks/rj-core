@@ -19,24 +19,27 @@ import ru.jamsys.core.plugin.telegram.structure.SendType;
 import ru.jamsys.core.promise.Promise;
 import ru.jamsys.core.promise.PromiseGenerator;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Getter
 public class TelegramMessageHandler extends TelegramLongPollingBot {
 
     private final TelegramBot telegramBot;
 
-    private final ManagerConfiguration<ExpirationMap<Long, String>> stepHandler;
+    private final ManagerConfiguration<ExpirationMap<Long, Map<String, Object>>> sessions;
 
     @Setter
-    private String notCommandPrefix = null; //Если приход чистое сообщение от пользователя без команды и нет данных из шага
+    private String defaultUrl = null; //Если приход чистое сообщение от пользователя без команды и нет данных из шага
 
     public TelegramMessageHandler(TelegramBot telegramBot) throws Exception {
         super(new String(App.get(SecurityComponent.class).get(telegramBot.getBotRepositoryProperty().getSecurityAlias())));
         this.telegramBot = telegramBot;
-        if (telegramBot.getBotRepositoryProperty().getNotCommandPrefix() != null
-            && !telegramBot.getBotRepositoryProperty().getNotCommandPrefix().isEmpty()) {
-            notCommandPrefix = telegramBot.getBotRepositoryProperty().getNotCommandPrefix();
+        if (telegramBot.getBotRepositoryProperty().getDefaultUrl() != null
+            && !telegramBot.getBotRepositoryProperty().getDefaultUrl().isEmpty()) {
+            defaultUrl = telegramBot.getBotRepositoryProperty().getDefaultUrl();
         }
-        stepHandler = ManagerConfiguration.getInstance(
+        sessions = ManagerConfiguration.getInstance(
                 telegramBot.getBotRepositoryProperty().getName(),
                 telegramBot.getBotRepositoryProperty().getName(),
                 ExpirationMap.class,
@@ -81,30 +84,36 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
             data = "";
         }
 
-        String remove;
+        String preparedUrl = null;
         if (msg.hasMessage() && msg.getMessage().hasSuccessfulPayment()) {
-            remove = "/successful_payment";
+            preparedUrl = "/successful_payment";
         } else if (msg.hasPreCheckoutQuery()) {
-            remove = "/pre_checkout_query";
+            preparedUrl = "/pre_checkout_query";
         } else {
-            remove = stepHandler.get().remove(idChat);
+            Map<String, Object> stringObjectMap = sessions.get().get(telegramInputMessage.getIdChat());
+            // Можно наперёд установить в обработчике прошлого шага, что данные которые пошлёт клиент
+            // пойдут по установленному url
+            Object urlFromLastSetup = stringObjectMap.remove("url");
+            if (urlFromLastSetup != null) {
+                preparedUrl = urlFromLastSetup.toString();
+            }
         }
 
-        if (remove == null && notCommandPrefix != null) {
-            remove = notCommandPrefix;
+        if (preparedUrl == null && defaultUrl != null) {
+            preparedUrl = defaultUrl;
         }
 
         // Тут 2 варианта:
         // 1) Приходит чистое сообщение от пользователя
         // 2) Приходит ButtonCallbackData - подразумевает, что имеет полный путь /command/?args=...
         // Не должно быть чистого сообщения от пользователя содержащего контекст и начало с /
-        if (remove != null && msg.hasMessage() && data.startsWith("/")) {
-            remove = null;
+        if (preparedUrl != null && msg.hasMessage() && data.startsWith("/")) {
+            preparedUrl = null;
         }
 
-        if (remove != null) {
+        if (preparedUrl != null) {
             try {
-                data = remove + UtilUri.encode(data);
+                data = preparedUrl + UtilUri.encode(data);
             } catch (Exception e) {
                 App.error(e);
                 return;
@@ -132,12 +141,15 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
                 App.error(new RuntimeException("Promise is null"));
                 return;
             }
-
-            promise.setRepositoryMapClass(TelegramPromiseContext.class, new TelegramPromiseContext()
-                    .setTelegramInputMessage(telegramInputMessage)
-                    .setStepHandler(stepHandler.get())
-                    .setUniversalPath(new UniversalPath(data))
-            );
+            Map<String, Object> session = sessions
+                    .get()
+                    .computeIfAbsent(telegramInputMessage.getIdChat(), _ -> new HashMap<>());
+            promise.setRepositoryMapClass(TelegramPromiseContext.class, new TelegramPromiseContext(
+                    new UniversalPath(data),
+                    session,
+                    telegramInputMessage,
+                    telegramBot.getNs()
+            ));
             promise.run();
         }
     }

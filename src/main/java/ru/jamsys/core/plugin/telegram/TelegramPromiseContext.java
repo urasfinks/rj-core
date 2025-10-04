@@ -14,11 +14,25 @@ import java.util.Map;
 @Accessors(chain = true)
 public class TelegramPromiseContext {
 
-    private UniversalPath universalPath;
+    private final UniversalPath universalPath;
 
     @JsonIgnore
-    private Map<Long, String> stepHandler;
+    private final Map<String, Object> session;
 
-    private TelegramInputMessage telegramInputMessage;
+    private final TelegramInputMessage telegramInputMessage;
+
+    private final String botNs;
+
+    public TelegramPromiseContext(
+            UniversalPath universalPath,
+            Map<String, Object> session,
+            TelegramInputMessage telegramInputMessage,
+            String botNs
+    ) {
+        this.universalPath = universalPath;
+        this.session = session;
+        this.telegramInputMessage = telegramInputMessage;
+        this.botNs = botNs;
+    }
 
 }

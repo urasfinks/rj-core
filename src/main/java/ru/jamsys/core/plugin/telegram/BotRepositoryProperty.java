@@ -32,8 +32,8 @@ public class BotRepositoryProperty extends RepositoryPropertyAnnotationField<Obj
     private String promiseGeneratorClass;
 
     // Пример: /ask_question/?question=
-    @PropertyKey("not.command.prefix")
-    @PropertyDescription("Префикс для сообщения если оно начинается без /")
-    private String notCommandPrefix;
+    @PropertyKey("default.url")
+    @PropertyDescription("Url по умолчанию, если клиент пишет без команды")
+    private String defaultUrl;
 
 }
