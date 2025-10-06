@@ -79,6 +79,9 @@ public class TelegramSenderHttp extends AbstractManagerElement implements Telegr
                 return nativeSend("sendMessage", telegramOutputMessage, abstractHttpConnector -> {
                     Map<String, Object> requestBody = new HashMap<>();
                     requestBody.put("chat_id", telegramOutputMessage.getIdChat());
+                    if (telegramOutputMessage.getReplyToMessageId() != null) {
+                        requestBody.put("reply_to_message_id", telegramOutputMessage.getReplyToMessageId());
+                    }
                     requestBody.put("parse_mode", "HTML");
                     String message = telegramOutputMessage.getMessage();
                     if (message != null && !message.isEmpty()) {

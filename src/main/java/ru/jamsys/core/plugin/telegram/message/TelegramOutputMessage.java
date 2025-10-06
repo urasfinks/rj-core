@@ -48,6 +48,8 @@ public class TelegramOutputMessage {
 
     private String idCallbackQuery = null;
 
+    private Integer replyToMessageId = null;
+
     public TelegramOutputMessage(
             @JsonProperty("messageType") MessageType messageType,
             @JsonProperty("idChat") long idChat,

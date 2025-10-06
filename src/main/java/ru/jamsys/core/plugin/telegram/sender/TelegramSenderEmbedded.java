@@ -82,6 +82,9 @@ public class TelegramSenderEmbedded extends AbstractManagerElement implements Te
                 message.setChatId(telegramOutputMessage.getIdChat());
                 message.setText(telegramOutputMessage.getMessage());
                 message.setParseMode("HTML");
+                if (telegramOutputMessage.getReplyToMessageId() != null) {
+                    message.setReplyToMessageId(telegramOutputMessage.getReplyToMessageId());
+                }
                 if (telegramOutputMessage.getButtons() != null && !telegramOutputMessage.getButtons().isEmpty()) {
                     addMessageButtonList(message, telegramOutputMessage.getButtons());
                 }
