@@ -10,5 +10,6 @@ public enum MessageType {
     SendInvoice,
     SendPhoto,
     SendVideo,
-    SetMyCommands
+    SetMyCommands,
+    forwardMessage
 }

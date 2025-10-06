@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.AnswerPreCheckoutQuery;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.ForwardMessage;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.invoices.SendInvoice;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -76,6 +77,13 @@ public class TelegramSenderEmbedded extends AbstractManagerElement implements Te
                         .getTelegramMessageHandler()
                         .execute(sendPhoto)
                 ));
+            }
+            case forwardMessage -> {
+                ForwardMessage forwardMessage = new ForwardMessage();
+                forwardMessage.setChatId(telegramOutputMessage.getIdChat());     // куда переслать
+                forwardMessage.setFromChatId(telegramOutputMessage.getFromIdChat()); // откуда
+                forwardMessage.setMessageId(telegramOutputMessage.getMessageId());
+                return nativeSend(forwardMessage);
             }
             case SendMessage -> {
                 SendMessage message = new SendMessage();

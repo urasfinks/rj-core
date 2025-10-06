@@ -29,6 +29,10 @@ public class TelegramOutputMessage {
 
     private final long idChat;
 
+    private long fromIdChat; // Для пересылки сообщений
+
+    private int messageId; // Для пересылки сообщений
+
     private final SendType sendType;
 
     private final String botNs;

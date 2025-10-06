@@ -75,6 +75,17 @@ public class TelegramSenderHttp extends AbstractManagerElement implements Telegr
             case SendVideo -> {
                 return sendVideo(telegramOutputMessage);
             }
+            case forwardMessage -> {
+                return nativeSend("sendMessage", telegramOutputMessage, abstractHttpConnector -> {
+                    Map<String, Object> requestBody = new HashMap<>();
+                    requestBody.put("chat_id", telegramOutputMessage.getIdChat());
+                    requestBody.put("from_chat_id", telegramOutputMessage.getFromIdChat());
+                    requestBody.put("message_id", telegramOutputMessage.getMessageId());
+                    abstractHttpConnector.setBodyRaw(
+                            UtilJson.toStringPretty(requestBody, "{}").getBytes(StandardCharsets.UTF_8)
+                    );
+                });
+            }
             case SendMessage -> {
                 return nativeSend("sendMessage", telegramOutputMessage, abstractHttpConnector -> {
                     Map<String, Object> requestBody = new HashMap<>();
