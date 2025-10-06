@@ -50,19 +50,6 @@ public class TelegramBot extends AbstractManagerElement {
         );
     }
 
-    public boolean isAvailableGroup(int idChat) {
-        String availableGroup = getBotRepositoryProperty().getAvailableGroup();
-        if (availableGroup == null) {
-            return false;
-        }
-        List<Integer> ids = Arrays.stream(availableGroup.split(","))
-                .map(String::trim)
-                .map(Integer::parseInt)
-                .toList();
-
-        return ids.contains(idChat);
-    }
-
     public boolean isAvailableGroup(long idChat) {
         String availableGroup = getBotRepositoryProperty().getAvailableGroup();
         if (availableGroup == null) {

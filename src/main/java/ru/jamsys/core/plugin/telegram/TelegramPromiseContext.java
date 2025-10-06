@@ -1,6 +1,5 @@
 package ru.jamsys.core.plugin.telegram;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
