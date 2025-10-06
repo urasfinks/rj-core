@@ -12,6 +12,9 @@ import ru.jamsys.core.extension.RouteGeneratorRepository;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Getter
 public class TelegramBot extends AbstractManagerElement {
 
@@ -45,6 +48,32 @@ public class TelegramBot extends AbstractManagerElement {
                 botRepositoryProperty,
                 ns
         );
+    }
+
+    public boolean isAvailableGroup(int idChat) {
+        String availableGroup = getBotRepositoryProperty().getAvailableGroup();
+        if (availableGroup == null) {
+            return false;
+        }
+        List<Integer> ids = Arrays.stream(availableGroup.split(","))
+                .map(String::trim)
+                .map(Integer::parseInt)
+                .toList();
+
+        return ids.contains(idChat);
+    }
+
+    public boolean isAvailableGroup(long idChat) {
+        String availableGroup = getBotRepositoryProperty().getAvailableGroup();
+        if (availableGroup == null) {
+            return false;
+        }
+        List<Long> ids = Arrays.stream(availableGroup.split(","))
+                .map(String::trim)
+                .map(Long::parseLong)
+                .toList();
+
+        return ids.contains(idChat);
     }
 
     @Override

@@ -58,7 +58,7 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
         if (msg == null) {
             return;
         }
-        //UtilLog.printInfo(msg);
+        UtilLog.printInfo(msg);
         TelegramInputMessage telegramInputMessage = new TelegramInputMessage(msg);
         if (msg.hasCallbackQuery()) {
             new TelegramOutputMessage(
@@ -119,7 +119,7 @@ public class TelegramMessageHandler extends TelegramLongPollingBot {
             }
         }
         if (data.startsWith("/")) {
-            if (idChat < 0) {
+            if (idChat < 0 && !telegramBot.isAvailableGroup(idChat)) {
                 answer(telegramInputMessage, "Группы не поддерживаются");
                 return;
             }

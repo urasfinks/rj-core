@@ -36,4 +36,9 @@ public class BotRepositoryProperty extends RepositoryPropertyAnnotationField<Obj
     @PropertyDescription("Url по умолчанию, если клиент пишет без команды")
     private String defaultUrl;
 
+    //-4988580871,
+    @PropertyKey("available.group")
+    @PropertyDescription("Url по умолчанию, если клиент пишет без команды")
+    private String availableGroup;
+
 }
