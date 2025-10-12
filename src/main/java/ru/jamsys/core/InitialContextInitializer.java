@@ -1,15 +1,15 @@
 package ru.jamsys.core;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 
+// Данный класс добавлен в META-INF/spring.factories как ранний хук, без бинов
 @SuppressWarnings("unused")
-@Component
-@Order(1)
-public class ApplicationContextInject {
+public class InitialContextInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-    public ApplicationContextInject(ApplicationContext applicationContext) {
+    @Override
+    public void initialize(@NotNull ConfigurableApplicationContext applicationContext) {
         // Мы не можем это сделать в AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer
         // потому что если выключить run.args.web = false конфигуратор перестанет запускаться,
         // и initialContext будет null. Нам надо иметь статичный initialContext для получения бинов при старте spring,

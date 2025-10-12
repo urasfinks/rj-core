@@ -1,2 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   ru.jamsys.core.AppConfiguration
+org.springframework.context.ApplicationContextInitializer=\
+  ru.jamsys.core.InitialContextInitializer
