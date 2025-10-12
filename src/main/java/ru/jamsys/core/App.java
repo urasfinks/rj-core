@@ -29,7 +29,7 @@ public class App implements CascadeKey {
 
     public static ConfigurableApplicationContext context = null; // Для выключения
 
-    public static ApplicationContext applicationContext = null; // Для создания бинов
+    public static ApplicationContext initialContext = null; // Для создания бинов
 
     public static SpringApplication application;
 
@@ -79,7 +79,7 @@ public class App implements CascadeKey {
             return (T) mapBean.get(cls);
         }
         try {
-            T t = App.applicationContext.getBean(cls);
+            T t = App.initialContext.getBean(cls);
             if (t == null) {
                 throw new RuntimeException("App.get(" + cls.getName() + ") return null");
             }

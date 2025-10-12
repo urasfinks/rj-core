@@ -11,7 +11,6 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -35,10 +34,6 @@ import ru.jamsys.core.flat.util.UtilLog;
 @EnableWebSocket
 @PropertySource("global.properties")
 public class AppConfiguration implements WebSocketConfigurer, WebMvcConfigurer {
-
-    public AppConfiguration(ApplicationContext applicationContext) {
-        App.applicationContext = applicationContext;
-    }
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
