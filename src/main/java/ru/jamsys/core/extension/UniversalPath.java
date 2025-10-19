@@ -68,6 +68,18 @@ public class UniversalPath {
         }
     }
 
+    public String getFileNameWithoutExtension() {
+        if (fileName == null || extension == null) {
+            return fileName;
+        }
+        // Учитываем точку перед расширением
+        int suffixLength = extension.length() + 1; // +1 для точки
+        if (fileName.length() <= suffixLength) {
+            return ""; // или return fileName; — но по логике, если имя == ".ext", то без расширения будет пусто
+        }
+        return fileName.substring(0, fileName.length() - suffixLength);
+    }
+
     public String getUri() {
         StringBuilder newPath = new StringBuilder(path);
         if (parameters != null) {
