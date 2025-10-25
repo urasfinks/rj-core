@@ -124,6 +124,8 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
                 // pool.remove(this); - если не вернуть элемент в пул, он не будет никому возвращаться, он протухнет и
                 // автоматом будет выкинут из пула
                 threadWork.set(false);
+                // ЧТо бы пул выкинул этот поток, надо его для начала вернуть.
+                pool.release(this, null);
             }
         });
         // Поток должен называться явно с указанием кто он
@@ -133,6 +135,12 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
 
     @Override
     public void shutdownOperation() {
+        // Прочитать!
+        // Мы не имеем права при shutdown возвращать элемент в пул. Потому что поток после остановки должен сам себя
+        // вернуть в пул, перед этим поменяв threadWork.set(false); и только тогда пул перед новой выдачей проверит
+        // isValid() и выкинет его из пула. Если поток не завершается мы не должны брать ответственность на себя.
+        // Поток завис, висит в пуле, мы не выкидываем его на автоматике. Надо чинить логику потока, что бы он завершался
+        // а не просто выкидывать на него ссылку, что бы потом схлопотать переполнение памяти
         spin.set(false); //Говорим закончить
         LockSupport.unpark(thread);
         Util.await(
@@ -154,7 +162,6 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
                 null,
                 () -> UtilLog.printError("Поток не закончил работу после interrupt() " + thread.getName())
         );
-
         // Так как мы не можем больше повлиять на остановку
         // В java 22 больше нет функционала принудительной остановки thread.stop()
         // Таску мы не будем удалять из тайминга - пусть растёт время, а то слишком круто будет новым житься
@@ -171,7 +178,7 @@ public class ThreadExecutePromiseTask extends AbstractExpirationResource {
 
     @Override
     public boolean isValid() {
-        return true;
+        return threadWork.get();
     }
 
     @Override

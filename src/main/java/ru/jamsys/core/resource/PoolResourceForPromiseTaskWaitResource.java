@@ -97,6 +97,10 @@ public class PoolResourceForPromiseTaskWaitResource<T extends AbstractExpiration
     @Override
     public boolean forwardResourceWithoutParking(T resource) {
         BrokerMemory broker = brokerMemoryConfiguration.get();
+        // Если есть данные на обработку и resource не валиден
+        if (!broker.isEmpty() && resource.isValid()) {
+            return false;
+        }
         ExpirationMsImmutableEnvelope<PromiseTaskWaitResource> envelope = broker.poll();
         if (envelope != null) {
             envelope.getValue().onReceiveResource(resource);
