@@ -24,20 +24,19 @@ public class OperationRepository {
                 operationClient.getUuidOperationObject(),
                 uuid -> new OperationObject(uuid, uuid)
         );
-        String newToken = UUID.randomUUID().toString();
-        if (Util.casByEquals(
-                operationObject.getRefToken(),
+        OperationObject.ResultAccept resultAccept = operationObject.accept(
                 operationClient.getTokenForUpdate(),
-                newToken
-        )) {
+                operationClient.getOperationType(),
+                operationClient.getData()
+        );
+        if (resultAccept.isAccepted()) {
             resultOperation.setServerCommit(new ServerCommit(
                     true,
                     this.serial.incrementAndGet(),
                     idUser,
-                    newToken,
+                    resultAccept.getNewToken(),
                     null
             ));
-            operationObject.accept(resultOperation);
             operations.add(resultOperation);
             serialSet.add(resultOperation.getOperationClient().getUuidOperationObject());
             if (operationClient.getOperationType().equals(OperationType.REMOVE)) {
