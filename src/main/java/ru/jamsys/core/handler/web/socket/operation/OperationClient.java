@@ -64,9 +64,9 @@ public class OperationClient {
         return UtilJson.objectMapper.readValue(json, OperationClient.class);
     }
 
-    public static OperationClient fromJson(String json, String jsonPtrExpr) throws JsonProcessingException {
+    public static OperationClient fromJson(String json, String rootField) throws JsonProcessingException {
         JsonNode root = UtilJson.objectMapper.readTree(json);
-        JsonNode node = root.at(jsonPtrExpr);
+        JsonNode node = root.at(rootField);
         return UtilJson.objectMapper.treeToValue(node, OperationClient.class);
     }
 
