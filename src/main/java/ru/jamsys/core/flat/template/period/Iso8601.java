@@ -31,13 +31,13 @@ import java.time.Period;
  * */
 
 @Getter
-public class IsoDuration {
+public class Iso8601 {
 
     private final Period period;
     private final Duration duration;
     private final String iso;
 
-    private IsoDuration(Period period, Duration duration, String iso) {
+    private Iso8601(Period period, Duration duration, String iso) {
         this.period = period;
         this.duration = duration;
         this.iso = iso;
@@ -111,10 +111,10 @@ public class IsoDuration {
             return this;
         }
 
-        public IsoDuration build() {
+        public Iso8601 build() {
             if (!used) {
                 // канонический ноль ISO 8601
-                return new IsoDuration(Period.ZERO, Duration.ZERO, "PT0S");
+                return new Iso8601(Period.ZERO, Duration.ZERO, "PT0S");
             }
 
             Period p = Period.of(years, months, days);
@@ -125,7 +125,7 @@ public class IsoDuration {
 
             String iso = buildIsoString();
 
-            return new IsoDuration(p, d, iso);
+            return new Iso8601(p, d, iso);
         }
 
         // ---------- helpers ----------
@@ -175,7 +175,7 @@ public class IsoDuration {
         }
     }
 
-    public static IsoDuration parse(String iso) {
+    public static Iso8601 parse(String iso) {
         if (iso == null || iso.isBlank()) throw new IllegalArgumentException("iso is blank");
         if (!iso.startsWith("P")) throw new IllegalArgumentException("Not an ISO-8601 duration: " + iso);
 
@@ -194,6 +194,7 @@ public class IsoDuration {
             // Duration.parse умеет PTnHnMnS (и PnD тоже, но мы оставляем дни в Period)
             d = Duration.parse(timePart);
         }
-        return new IsoDuration(p, d, iso);
+        return new Iso8601(p, d, iso);
     }
+
 }

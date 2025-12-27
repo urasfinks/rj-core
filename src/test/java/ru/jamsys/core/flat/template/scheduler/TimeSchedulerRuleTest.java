@@ -13,7 +13,6 @@ class TimeSchedulerRuleTest {
         TimeSchedulerRule timeSchedulerRule = TimeSchedulerRule.fromJson("""
                 {
                   "title": "description",
-                  "start": 1766827964000,
                   "years": [],
                   "months": [],
                   "days": [],
@@ -33,7 +32,6 @@ class TimeSchedulerRuleTest {
         TimeSchedulerRule timeSchedulerRule = TimeSchedulerRule.fromJson("""
                 {
                   "title": "description",
-                  "start": 1766827964000,
                   "years": [],
                   "months": [],
                   "days": [],
@@ -53,7 +51,6 @@ class TimeSchedulerRuleTest {
         TimeSchedulerRule timeSchedulerRule = TimeSchedulerRule.fromJson("""
                 {
                   "title": "description",
-                  "start": 1766827964000,
                   "years": [],
                   "months": [],
                   "days": [],
@@ -73,7 +70,6 @@ class TimeSchedulerRuleTest {
         TimeSchedulerRule timeSchedulerRule = TimeSchedulerRule.fromJson("""
                 {
                   "title": "description",
-                  "start": 1766827964000,
                   "years": [],
                   "months": [],
                   "days": [],
@@ -93,7 +89,6 @@ class TimeSchedulerRuleTest {
         TimeSchedulerRule timeSchedulerRule = TimeSchedulerRule.fromJson("""
                 {
                   "title": "description",
-                  "start": 1766827964000,
                   "years": [],
                   "months": [],
                   "days": [],
@@ -113,7 +108,6 @@ class TimeSchedulerRuleTest {
         TimeSchedulerRule timeSchedulerRule = TimeSchedulerRule.fromJson("""
                 {
                   "title": "description",
-                  "start": 1766827964000,
                   "years": [],
                   "months": [],
                   "days": [],
@@ -133,7 +127,6 @@ class TimeSchedulerRuleTest {
         TimeSchedulerRule timeSchedulerRule = TimeSchedulerRule.fromJson("""
                 {
                   "title": "description",
-                  "start": 1766827964000,
                   "years": [],
                   "months": [],
                   "days": [],
@@ -153,7 +146,6 @@ class TimeSchedulerRuleTest {
         TimeSchedulerRule timeSchedulerRule = TimeSchedulerRule.fromJson("""
                 {
                   "title": "description",
-                  "start": 1766827964000,
                   "years": [],
                   "months": [],
                   "days": [1],
@@ -173,7 +165,6 @@ class TimeSchedulerRuleTest {
         TimeSchedulerRule timeSchedulerRule = TimeSchedulerRule.fromJson("""
                 {
                   "title": "description",
-                  "start": 1766827964000,
                   "years": [],
                   "months": [],
                   "days": [28],
@@ -193,7 +184,6 @@ class TimeSchedulerRuleTest {
         TimeSchedulerRule timeSchedulerRule = TimeSchedulerRule.fromJson("""
                 {
                   "title": "description",
-                  "start": 1766827964000,
                   "years": [],
                   "months": [],
                   "days": [],
@@ -213,7 +203,6 @@ class TimeSchedulerRuleTest {
         TimeSchedulerRule timeSchedulerRule = TimeSchedulerRule.fromJson("""
                 {
                   "title": "description",
-                  "start": 1766827964000,
                   "years": [2026],
                   "months": [],
                   "days": [],
@@ -233,7 +222,6 @@ class TimeSchedulerRuleTest {
         TimeSchedulerRule timeSchedulerRule = TimeSchedulerRule.fromJson("""
                 {
                   "title": "description",
-                  "start": 1766827964000,
                   "years": [2026],
                   "months": [2],
                   "days": [],

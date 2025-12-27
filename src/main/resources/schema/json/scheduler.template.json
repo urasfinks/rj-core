@@ -4,15 +4,11 @@
   "title": "Time Scheduler Rule Schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["title", "start"],
+  "required": ["title"],
   "properties": {
     "title": {
       "type": "string",
       "description": "Описание или название правила"
-    },
-    "start": {
-      "type": "integer",
-      "description": "Начальная точка времени (например, Unix timestamp)"
     },
     "years": {
       "type": "array",

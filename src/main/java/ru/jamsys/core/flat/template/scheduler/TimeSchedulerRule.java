@@ -18,7 +18,6 @@ import java.util.Map;
 public class TimeSchedulerRule {
 
     private final String title;
-    private final long start;
 
     private final List<Integer> years;
     private final List<Integer> months;
@@ -36,7 +35,6 @@ public class TimeSchedulerRule {
     @JsonCreator
     public TimeSchedulerRule(
             @JsonProperty(value = "title", required = true) String title,
-            @JsonProperty(value = "start", required = true) Long start,
 
             @JsonProperty("years") List<Integer> years,
             @JsonProperty("months") List<Integer> months,
@@ -54,9 +52,6 @@ public class TimeSchedulerRule {
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("title is null/blank");
         }
-        if (start == null || start < 0) {
-            throw new IllegalArgumentException("start is null or negative");
-        }
 
         // validate ranges (optional fields)
         validateRangeList("months", months, 1, 12);
@@ -73,8 +68,6 @@ public class TimeSchedulerRule {
         }
 
         this.title = title;
-        this.start = start;
-
         this.years = years;
         this.months = months;
         this.days = days;

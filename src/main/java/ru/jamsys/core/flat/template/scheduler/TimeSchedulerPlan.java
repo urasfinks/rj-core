@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
  * - days (day-of-month) + daysOfWeek are combined with AND when both are constrained.
  *   If you want OR semantics, see adjustDay() marked section.
  * - exclude: List<Integer> is treated as epoch seconds (int cannot hold epoch millis).
- * - offset: interpreted as seconds.
  */
 public final class TimeSchedulerPlan {
 
@@ -88,30 +87,19 @@ public final class TimeSchedulerPlan {
      * @return next execution time in epoch millis
      */
     public long nextAfter(long afterEpochMillis) {
-        // Enforce rule.start as lower bound
-        long base = Math.max(afterEpochMillis, rule.getStart());
 
         // Work in seconds granularity (your rule has seconds field)
         // "strictly after" => +1 second.
-        long candidateMs = base + 1000L;
 
-        ZonedDateTime zdt = Instant.ofEpochMilli(candidateMs).atZone(zone);
+        ZonedDateTime zdt = Instant.ofEpochMilli(afterEpochMillis).atZone(zone);
 
         for (int guard = 0; guard < guardMaxIterations; guard++) {
             ZonedDateTime matched = adjustToNextMatch(zdt);
 
             long outMs = matched.toInstant().toEpochMilli();
 
-            // Must still satisfy start bound after offset is applied
             if (outMs <= afterEpochMillis) {
-                // This can happen around truncation/offset edges; push forward.
                 zdt = matched.plusSeconds(1);
-                continue;
-            }
-            if (outMs < rule.getStart()) {
-                // push to start boundary (in shifted domain)
-                long ms = rule.getStart();
-                zdt = Instant.ofEpochMilli(ms).atZone(zone);
                 continue;
             }
             if (!excludeEpochMillis.contains(outMs)) {

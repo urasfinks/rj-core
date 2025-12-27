@@ -38,6 +38,12 @@ public class UtilDate {
         return d1.getTime() / 1000;
     }
 
+    public static long getTime(String date) throws ParseException {
+        DateFormat dateFormat = new SimpleDateFormat(format);
+        Date d1 = dateFormat.parse(date);
+        return d1.getTime();
+    }
+
     public static long getTimestamp(String date, String format, long def) {
         try {
             DateFormat dateFormat = new SimpleDateFormat(format);
