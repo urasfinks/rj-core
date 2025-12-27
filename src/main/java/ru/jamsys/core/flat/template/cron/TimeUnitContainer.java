@@ -25,7 +25,7 @@ public class TimeUnitContainer {
         if (x >= timeUnit.getMin() && x <= timeUnit.getMax()) {
             list.add(x);
         } else {
-            Util.printStackTrace(getClass().getName() + " unit value: " + x + " overflow between [" + timeUnit.getMin() + ", " + timeUnit.getMax() + "]");
+            Util.printStackTrace(getClass().getName() + " unit " + timeUnit + " value: " + x + " overflow between [" + timeUnit.getMin() + ", " + timeUnit.getMax() + "]");
         }
     }
 
