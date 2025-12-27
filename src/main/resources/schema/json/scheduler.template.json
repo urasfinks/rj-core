@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/time-rule.schema.json",
+  "title": "Time Scheduler Rule Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "start"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Описание или название правила"
+    },
+    "start": {
+      "type": "integer",
+      "description": "Начальная точка времени (например, Unix timestamp)"
+    },
+    "years": {
+      "type": "array",
+      "items": { "type": "integer" },
+      "description": "Список допустимых лет"
+    },
+    "months": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 12
+      },
+      "description": "Список месяцев (1–12)"
+    },
+    "days": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 31
+      },
+      "description": "Список дней месяца (1–31)"
+    },
+    "hours": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 23
+      },
+      "description": "Список часов (0–23)"
+    },
+    "minutes": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 59
+      },
+      "description": "Список минут (0–59)"
+    },
+    "seconds": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 59
+      },
+      "description": "Список секунд (0–59)"
+    },
+    "truncate_time": {
+      "type": "boolean",
+      "description": "Флаги усечения времени перед применением offset"
+    },
+    "offset": {
+      "type": "integer",
+      "description": "Смещение времени (например, в секундах)"
+    },
+    "exclude": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "description": "Исключаемые значения времени"
+    },
+    "quarters": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 4
+      },
+      "description": "Кварталы года (1–4)"
+    },
+    "days_of_week": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 7
+      },
+      "description": "Дни недели (1–7, например: 1 = понедельник)"
+    }
+  }
+}
