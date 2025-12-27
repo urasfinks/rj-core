@@ -64,14 +64,6 @@
       },
       "description": "Список секунд (0–59)"
     },
-    "truncate_time": {
-      "type": "boolean",
-      "description": "Флаги усечения времени перед применением offset"
-    },
-    "offset": {
-      "type": "integer",
-      "description": "Смещение времени (например, в секундах)"
-    },
     "exclude": {
       "type": "array",
       "items": {

@@ -27,10 +27,6 @@ public class TimeSchedulerRule {
     private final List<Integer> minutes;
     private final List<Integer> seconds;
 
-    private final Boolean truncateTime;
-
-    private final Integer offset;
-
     private final List<Integer> exclude;
 
     private final List<Integer> quarters;
@@ -48,10 +44,6 @@ public class TimeSchedulerRule {
             @JsonProperty("hours") List<Integer> hours,
             @JsonProperty("minutes") List<Integer> minutes,
             @JsonProperty("seconds") List<Integer> seconds,
-
-            @JsonProperty("truncate_time") Boolean truncateTime,
-
-            @JsonProperty("offset") Integer offset,
 
             @JsonProperty("exclude") List<Integer> exclude,
 
@@ -89,10 +81,6 @@ public class TimeSchedulerRule {
         this.hours = hours;
         this.minutes = minutes;
         this.seconds = seconds;
-
-        this.truncateTime = truncateTime;
-
-        this.offset = offset;
 
         this.exclude = exclude;
 

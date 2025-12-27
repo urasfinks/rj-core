@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
  *   If you want OR semantics, see adjustDay() marked section.
  * - exclude: List<Integer> is treated as epoch seconds (int cannot hold epoch millis).
  * - offset: interpreted as seconds.
- * - truncateTime=true => truncate candidate to start-of-day before search.
  */
 public final class TimeSchedulerPlan {
 
@@ -33,9 +32,6 @@ public final class TimeSchedulerPlan {
     private final BitSet dowAllowed;   // 1..7
 
     private final NavigableSet<Integer> yearAllowedOrNull; // null => any year
-
-    private final boolean truncateToDay;
-    private final int offsetSeconds;
 
     private final Set<Long> excludeEpochMillis; // epoch millis
 
@@ -54,9 +50,6 @@ public final class TimeSchedulerPlan {
         this.rule = Objects.requireNonNull(rule, "rule");
         this.zone = (zone == null) ? ZoneId.systemDefault() : zone;
         this.guardMaxIterations = Math.max(10_000, guardMaxIterations);
-
-        this.truncateToDay = Boolean.TRUE.equals(rule.getTruncateTime());
-        this.offsetSeconds = (rule.getOffset() == null) ? 0 : rule.getOffset();
 
         // Build allowed sets; empty list => ANY (full range)
         this.secAllowed = buildAllowed(rule.getSeconds(), 0, 59);
@@ -102,19 +95,12 @@ public final class TimeSchedulerPlan {
         // "strictly after" => +1 second.
         long candidateMs = base + 1000L;
 
-        // Apply phase offset (do search in shifted time domain)
-        candidateMs -= offsetSeconds * 1000L;
-
         ZonedDateTime zdt = Instant.ofEpochMilli(candidateMs).atZone(zone);
-
-        if (truncateToDay) {
-            zdt = zdt.toLocalDate().atStartOfDay(zone);
-        }
 
         for (int guard = 0; guard < guardMaxIterations; guard++) {
             ZonedDateTime matched = adjustToNextMatch(zdt);
 
-            long outMs = matched.toInstant().toEpochMilli() + offsetSeconds * 1000L;
+            long outMs = matched.toInstant().toEpochMilli();
 
             // Must still satisfy start bound after offset is applied
             if (outMs <= afterEpochMillis) {
@@ -124,7 +110,7 @@ public final class TimeSchedulerPlan {
             }
             if (outMs < rule.getStart()) {
                 // push to start boundary (in shifted domain)
-                long ms = rule.getStart() - offsetSeconds * 1000L;
+                long ms = rule.getStart();
                 zdt = Instant.ofEpochMilli(ms).atZone(zone);
                 continue;
             }

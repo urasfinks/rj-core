@@ -20,8 +20,6 @@ class TimeSchedulerRuleTest {
                   "hours": [],
                   "minutes": [],
                   "seconds": [],
-                  "truncate_time": false,
-                  "offset": 0,
                   "exclude": [],
                   "quarters": [],
                   "days_of_week": []
@@ -42,8 +40,6 @@ class TimeSchedulerRuleTest {
                   "hours": [],
                   "minutes": [],
                   "seconds": [47],
-                  "truncate_time": false,
-                  "offset": 0,
                   "exclude": [],
                   "quarters": [],
                   "days_of_week": []
@@ -64,8 +60,6 @@ class TimeSchedulerRuleTest {
                   "hours": [],
                   "minutes": [33],
                   "seconds": [],
-                  "truncate_time": false,
-                  "offset": 0,
                   "exclude": [],
                   "quarters": [],
                   "days_of_week": []
@@ -86,8 +80,6 @@ class TimeSchedulerRuleTest {
                   "hours": [],
                   "minutes": [33],
                   "seconds": [47],
-                  "truncate_time": false,
-                  "offset": 0,
                   "exclude": [],
                   "quarters": [],
                   "days_of_week": []
@@ -108,8 +100,6 @@ class TimeSchedulerRuleTest {
                   "hours": [12],
                   "minutes": [33],
                   "seconds": [47],
-                  "truncate_time": false,
-                  "offset": 0,
                   "exclude": [],
                   "quarters": [],
                   "days_of_week": []
@@ -130,8 +120,6 @@ class TimeSchedulerRuleTest {
                   "hours": [12],
                   "minutes": [33],
                   "seconds": [47],
-                  "truncate_time": false,
-                  "offset": 0,
                   "exclude": [],
                   "quarters": [],
                   "days_of_week": [1]
@@ -152,8 +140,6 @@ class TimeSchedulerRuleTest {
                   "hours": [12],
                   "minutes": [33],
                   "seconds": [47],
-                  "truncate_time": false,
-                  "offset": 0,
                   "exclude": [],
                   "quarters": [1],
                   "days_of_week": [1]
@@ -174,8 +160,6 @@ class TimeSchedulerRuleTest {
                   "hours": [12],
                   "minutes": [33],
                   "seconds": [47],
-                  "truncate_time": false,
-                  "offset": 0,
                   "exclude": [],
                   "quarters": [1],
                   "days_of_week": [1]
@@ -196,8 +180,6 @@ class TimeSchedulerRuleTest {
                   "hours": [12],
                   "minutes": [33],
                   "seconds": [47],
-                  "truncate_time": false,
-                  "offset": 0,
                   "exclude": [],
                   "quarters": [],
                   "days_of_week": [7]
@@ -218,8 +200,6 @@ class TimeSchedulerRuleTest {
                   "hours": [],
                   "minutes": [],
                   "seconds": [],
-                  "truncate_time": false,
-                  "offset": 0,
                   "exclude": [],
                   "quarters": [],
                   "days_of_week": [1]
@@ -240,8 +220,6 @@ class TimeSchedulerRuleTest {
                   "hours": [],
                   "minutes": [],
                   "seconds": [],
-                  "truncate_time": false,
-                  "offset": 0,
                   "exclude": [],
                   "quarters": [],
                   "days_of_week": []
@@ -262,8 +240,6 @@ class TimeSchedulerRuleTest {
                   "hours": [],
                   "minutes": [],
                   "seconds": [],
-                  "truncate_time": false,
-                  "offset": 0,
                   "exclude": [],
                   "quarters": [],
                   "days_of_week": []
