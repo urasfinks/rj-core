@@ -5,6 +5,31 @@ import lombok.Getter;
 import java.time.Duration;
 import java.time.Period;
 
+/*
+* P[n]Y[n]M[n]DT[n]H[n]M[n]S
+*
+* P — начало duration
+* T — разделитель date/time части
+*
+*** Date-часть (до T) ***
+* [n]Y  — годы //P1Y
+* [n]M  — месяцы //P2M
+* [n]D  — дни //P10D
+* P1Y2M10D
+
+*** Time-часть (после T) ***
+* [n]H  — часы //PT12H
+* [n]M  — минуты //PT30M
+* [n]S  — секунды //PT10S
+* PT1H30M / PT1.5S
+
+*** ВАЖНО ***
+* IsoDuration не имеет привязок к календарю, он не знает дни недели! Нельзя сделать шаблон на каждый понедельник
+* P1M     = 1 месяц
+* PT1M    = 1 минута
+* P1MT12H ≠ (не равно) каждый месяц в 12:00 (ШАБЛОН НАКОПИТЕЛЬНЫЙ!!!)
+ * */
+
 @Getter
 public class IsoDuration {
 
