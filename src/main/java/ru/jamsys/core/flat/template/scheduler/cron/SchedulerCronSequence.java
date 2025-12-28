@@ -1,11 +1,13 @@
 package ru.jamsys.core.flat.template.scheduler.cron;
 
+import ru.jamsys.core.flat.template.scheduler.SchedulerSequence;
+
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class SchedulerCronSequence {
+public final class SchedulerCronSequence implements SchedulerSequence {
 
     private final ZoneId zone;
 
@@ -66,7 +68,7 @@ public final class SchedulerCronSequence {
         }
     }
 
-    public long nextAfter(long afterEpochMillis) {
+    public long next(long afterEpochMillis) {
 
         // Work in seconds granularity (your rule has seconds field)
         // "strictly after" => +1 second.
@@ -97,7 +99,7 @@ public final class SchedulerCronSequence {
         ArrayList<Long> result = new ArrayList<>(Math.max(0, count));
         long t = afterEpochMillis;
         for (int i = 0; i < count; i++) {
-            long next = nextAfter(t);
+            long next = next(t);
             result.add(next);
             t = next;
         }

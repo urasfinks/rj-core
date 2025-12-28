@@ -20,7 +20,7 @@ class SchedulerCronSequenceTest {
         SchedulerCronSequence schedulerCronSequence = new SchedulerCronSequence(schedulerCronTemplate, ZONE);
         Assertions.assertEquals(
                 "2025-12-27T13:32:45.000",
-                UtilDate.msFormat(schedulerCronSequence.nextAfter(UtilDate.getTime("2025-12-27T13:32:44.000")))
+                UtilDate.msFormat(schedulerCronSequence.next(UtilDate.getTime("2025-12-27T13:32:44.000")))
         );
     }
 
@@ -33,7 +33,7 @@ class SchedulerCronSequenceTest {
         SchedulerCronSequence schedulerCronSequence = new SchedulerCronSequence(schedulerCronTemplate, ZONE);
         Assertions.assertEquals(
                 "2025-12-27T13:32:47.000",
-                UtilDate.msFormat(schedulerCronSequence.nextAfter(UtilDate.getTime("2025-12-27T13:32:44.000")))
+                UtilDate.msFormat(schedulerCronSequence.next(UtilDate.getTime("2025-12-27T13:32:44.000")))
         );
     }
 
@@ -46,7 +46,7 @@ class SchedulerCronSequenceTest {
         SchedulerCronSequence schedulerCronSequence = new SchedulerCronSequence(schedulerCronTemplate, ZONE);
         Assertions.assertEquals(
                 "2025-12-27T13:33:00.000",
-                UtilDate.msFormat(schedulerCronSequence.nextAfter(UtilDate.getTime("2025-12-27T13:32:44.000")))
+                UtilDate.msFormat(schedulerCronSequence.next(UtilDate.getTime("2025-12-27T13:32:44.000")))
         );
     }
 
@@ -60,7 +60,7 @@ class SchedulerCronSequenceTest {
         SchedulerCronSequence schedulerCronSequence = new SchedulerCronSequence(schedulerCronTemplate, ZONE);
         Assertions.assertEquals(
                 "2025-12-27T13:33:47.000",
-                UtilDate.msFormat(schedulerCronSequence.nextAfter(UtilDate.getTime("2025-12-27T13:32:44.000")))
+                UtilDate.msFormat(schedulerCronSequence.next(UtilDate.getTime("2025-12-27T13:32:44.000")))
         );
     }
 
@@ -75,7 +75,7 @@ class SchedulerCronSequenceTest {
         SchedulerCronSequence schedulerCronSequence = new SchedulerCronSequence(schedulerCronTemplate, ZONE);
         Assertions.assertEquals(
                 "2025-12-28T12:33:47.000",
-                UtilDate.msFormat(schedulerCronSequence.nextAfter(UtilDate.getTime("2025-12-27T13:32:44.000")))
+                UtilDate.msFormat(schedulerCronSequence.next(UtilDate.getTime("2025-12-27T13:32:44.000")))
         );
     }
 
@@ -91,7 +91,7 @@ class SchedulerCronSequenceTest {
         SchedulerCronSequence schedulerCronSequence = new SchedulerCronSequence(schedulerCronTemplate, ZONE);
         Assertions.assertEquals(
                 "2025-12-29T12:33:47.000",
-                UtilDate.msFormat(schedulerCronSequence.nextAfter(UtilDate.getTime("2025-12-27T13:32:44.000")))
+                UtilDate.msFormat(schedulerCronSequence.next(UtilDate.getTime("2025-12-27T13:32:44.000")))
         );
     }
 
@@ -108,7 +108,7 @@ class SchedulerCronSequenceTest {
         SchedulerCronSequence schedulerCronSequence = new SchedulerCronSequence(schedulerCronTemplate, ZONE);
         Assertions.assertEquals(
                 "2026-01-05T12:33:47.000",
-                UtilDate.msFormat(schedulerCronSequence.nextAfter(UtilDate.getTime("2025-12-27T13:32:44.000")))
+                UtilDate.msFormat(schedulerCronSequence.next(UtilDate.getTime("2025-12-27T13:32:44.000")))
         );
     }
 
@@ -126,7 +126,7 @@ class SchedulerCronSequenceTest {
         SchedulerCronSequence schedulerCronSequence = new SchedulerCronSequence(schedulerCronTemplate, ZONE);
         Assertions.assertEquals(
                 "2027-02-01T12:33:47.000",
-                UtilDate.msFormat(schedulerCronSequence.nextAfter(UtilDate.getTime("2025-12-27T13:32:44.000")))
+                UtilDate.msFormat(schedulerCronSequence.next(UtilDate.getTime("2025-12-27T13:32:44.000")))
         );
     }
 
@@ -143,7 +143,7 @@ class SchedulerCronSequenceTest {
         SchedulerCronSequence schedulerCronSequence = new SchedulerCronSequence(schedulerCronTemplate, ZONE);
         Assertions.assertEquals(
                 "2025-12-28T12:33:47.000",
-                UtilDate.msFormat(schedulerCronSequence.nextAfter(UtilDate.getTime("2025-12-27T13:32:44.000")))
+                UtilDate.msFormat(schedulerCronSequence.next(UtilDate.getTime("2025-12-27T13:32:44.000")))
         );
     }
 
@@ -156,7 +156,7 @@ class SchedulerCronSequenceTest {
         SchedulerCronSequence schedulerCronSequence = new SchedulerCronSequence(schedulerCronTemplate, ZONE);
         Assertions.assertEquals(
                 "2025-12-29T00:00:00.000",
-                UtilDate.msFormat(schedulerCronSequence.nextAfter(UtilDate.getTime("2025-12-27T13:32:44.000")))
+                UtilDate.msFormat(schedulerCronSequence.next(UtilDate.getTime("2025-12-27T13:32:44.000")))
         );
     }
 
@@ -169,7 +169,7 @@ class SchedulerCronSequenceTest {
         SchedulerCronSequence schedulerCronSequence = new SchedulerCronSequence(schedulerCronTemplate, ZONE);
         Assertions.assertEquals(
                 "2026-01-01T00:00:00.000",
-                UtilDate.msFormat(schedulerCronSequence.nextAfter(UtilDate.getTime("2025-12-27T13:32:44.000")))
+                UtilDate.msFormat(schedulerCronSequence.next(UtilDate.getTime("2025-12-27T13:32:44.000")))
         );
     }
 
@@ -183,7 +183,7 @@ class SchedulerCronSequenceTest {
         SchedulerCronSequence schedulerCronSequence = new SchedulerCronSequence(schedulerCronTemplate, ZONE);
         Assertions.assertEquals(
                 "2026-02-01T00:00:00.000",
-                UtilDate.msFormat(schedulerCronSequence.nextAfter(UtilDate.getTime("2025-12-27T13:32:44.000")))
+                UtilDate.msFormat(schedulerCronSequence.next(UtilDate.getTime("2025-12-27T13:32:44.000")))
         );
     }
 
