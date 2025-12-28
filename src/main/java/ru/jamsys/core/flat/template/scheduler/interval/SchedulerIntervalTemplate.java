@@ -17,7 +17,7 @@ import java.time.ZoneId;
 import java.util.Map;
 
 @Getter
-public class TemplateInterval {
+public class SchedulerIntervalTemplate {
 
     private final Period period;
     private final Duration duration;
@@ -33,7 +33,7 @@ public class TemplateInterval {
                 .append("zone", Util.firstNonNull(zone, "null").toString());
     }
 
-    private TemplateInterval(long startEpochMillis, Period period, Duration duration, String template, ZoneId zone) {
+    private SchedulerIntervalTemplate(long startEpochMillis, Period period, Duration duration, String template, ZoneId zone) {
         // Validate step
         if (period == null) {
             throw new ForwardException("period must not be null", getContext());
@@ -202,14 +202,14 @@ public class TemplateInterval {
                     ;
         }
 
-        public TemplateInterval build() {
+        public SchedulerIntervalTemplate build() {
             Period p = Period.of(years, months, days);
             Duration d = Duration.ofHours(hours)
                     .plusMinutes(minutes)
                     .plusSeconds(seconds)
                     .plusNanos(nanos);
 
-            return new TemplateInterval(
+            return new SchedulerIntervalTemplate(
                     startEpochMillis,
                     p,
                     d,

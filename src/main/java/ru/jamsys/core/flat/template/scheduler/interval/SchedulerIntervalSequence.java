@@ -9,9 +9,9 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
-public class SequenceInterval implements SchedulerSequence {
+public class SchedulerIntervalSequence implements SchedulerSequence {
 
-    private final TemplateInterval template;
+    private final SchedulerIntervalTemplate template;
 
     private int guardMaxIterations = 1_000_000;
 
@@ -21,7 +21,7 @@ public class SequenceInterval implements SchedulerSequence {
     /** Enforces monotonic afterEpochMillis contract (forward-only usage). */
     private long lastAfterEpochMillis = Long.MIN_VALUE;
 
-    public SequenceInterval(TemplateInterval template) {
+    public SchedulerIntervalSequence(SchedulerIntervalTemplate template) {
         this.template = Objects.requireNonNull(template, "template must not be null");
 
         this.currentOffset = OffsetDateTime.ofInstant(

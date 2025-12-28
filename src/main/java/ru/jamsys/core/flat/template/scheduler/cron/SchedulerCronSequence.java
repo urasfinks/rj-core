@@ -5,7 +5,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class SequenceCron {
+public final class SchedulerCronSequence {
 
     private final ZoneId zone;
 
@@ -24,15 +24,15 @@ public final class SequenceCron {
     // guard for unsatisfiable / bug cases
     private final int guardMaxIterations;
 
-    public SequenceCron(TemplateCron templateCron) {
-        this(templateCron, ZoneId.systemDefault());
+    public SchedulerCronSequence(SchedulerCronTemplate schedulerCronTemplate) {
+        this(schedulerCronTemplate, ZoneId.systemDefault());
     }
 
-    public SequenceCron(TemplateCron rule, ZoneId zone) {
+    public SchedulerCronSequence(SchedulerCronTemplate rule, ZoneId zone) {
         this(rule, zone, 1_000_000);
     }
 
-    public SequenceCron(TemplateCron template, ZoneId zone, int guardMaxIterations) {
+    public SchedulerCronSequence(SchedulerCronTemplate template, ZoneId zone, int guardMaxIterations) {
         this.zone = (zone == null) ? ZoneId.systemDefault() : zone;
         this.guardMaxIterations = Math.max(10_000, guardMaxIterations);
 

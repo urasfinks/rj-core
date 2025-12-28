@@ -1,9 +1,8 @@
-package ru.jamsys.core.flat.template.scheduler.iso8601;
+package ru.jamsys.core.flat.template.scheduler.interval;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.extension.exception.ForwardException;
-import ru.jamsys.core.flat.template.scheduler.interval.TemplateInterval;
 import ru.jamsys.core.flat.util.UtilJson;
 
 import java.time.Duration;
@@ -14,10 +13,10 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TemplateIntervalTest {
+class SchedulerIntervalTemplateTest {
     @Test
     public void test() throws Exception {
-        TemplateInterval.Builder builder = TemplateInterval.Builder.fromJson("""
+        SchedulerIntervalTemplate.Builder builder = SchedulerIntervalTemplate.Builder.fromJson("""
                 {
                   "startEpochMillis": 1766827964,
                   "zone": "UTC"
@@ -57,7 +56,7 @@ class TemplateIntervalTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = 1_700_000_000_000L;
 
-        TemplateInterval t = TemplateInterval.builder(start, zone)
+        SchedulerIntervalTemplate t = SchedulerIntervalTemplate.builder(start, zone)
                 .setYears(1).setMonths(2).setDays(3)
                 .setHours(4).setMinutes(5).setSeconds(6)
                 .setNanos(7)
@@ -78,7 +77,7 @@ class TemplateIntervalTest {
         long start = 1_700_000_000_000L;
 
         assertThrows(ForwardException.class, () ->
-                TemplateInterval.builder(start, zone)
+                SchedulerIntervalTemplate.builder(start, zone)
                         .build()
         );
     }
@@ -88,7 +87,7 @@ class TemplateIntervalTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = 1_700_000_000_000L;
 
-        TemplateInterval.Builder b = TemplateInterval.builder(start, zone);
+        SchedulerIntervalTemplate.Builder b = SchedulerIntervalTemplate.builder(start, zone);
 
         assertThrows(ForwardException.class, () -> b.setNanos(-1));
     }
@@ -98,7 +97,7 @@ class TemplateIntervalTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = 1_700_000_000_000L;
 
-        TemplateInterval.Builder b = TemplateInterval.builder(start, zone);
+        SchedulerIntervalTemplate.Builder b = SchedulerIntervalTemplate.builder(start, zone);
 
         assertThrows(ForwardException.class, () -> b.setNanos(1_000_000_000));
     }
@@ -116,8 +115,8 @@ class TemplateIntervalTest {
         map.put("seconds", 4);
         map.put("nanos", 5);
 
-        TemplateInterval.Builder b = TemplateInterval.Builder.fromMap(map);
-        TemplateInterval t = b.build();
+        SchedulerIntervalTemplate.Builder b = SchedulerIntervalTemplate.Builder.fromMap(map);
+        SchedulerIntervalTemplate t = b.build();
 
         assertEquals(ZoneId.of("UTC"), t.getZone());
         assertEquals(Period.of(0, 1, 0), t.getPeriod());
@@ -127,7 +126,7 @@ class TemplateIntervalTest {
     @Test
     void builder_jsonCreator_rejectsBlankZone() {
         assertThrows(IllegalArgumentException.class, () ->
-                new TemplateInterval.Builder(
+                new SchedulerIntervalTemplate.Builder(
                         1_700_000_000_000L,
                         "   ",
                         0, 0, 0,
@@ -140,7 +139,7 @@ class TemplateIntervalTest {
     @Test
     void builder_jsonCreator_rejectsInvalidZone() {
         assertThrows(IllegalArgumentException.class, () ->
-                new TemplateInterval.Builder(
+                new SchedulerIntervalTemplate.Builder(
                         1_700_000_000_000L,
                         "No/Such_Zone",
                         0, 0, 0,
@@ -153,7 +152,7 @@ class TemplateIntervalTest {
     @Test
     void builder_jsonCreator_rejectsNegativeStartEpochMillis() {
         assertThrows(IllegalArgumentException.class, () ->
-                new TemplateInterval.Builder(
+                new SchedulerIntervalTemplate.Builder(
                         -1,
                         "UTC",
                         0, 0, 0,
@@ -167,7 +166,7 @@ class TemplateIntervalTest {
     void builder_jsonCreator_rejectsNegativeParts() {
         // years < 0
         assertThrows(IllegalArgumentException.class, () ->
-                new TemplateInterval.Builder(
+                new SchedulerIntervalTemplate.Builder(
                         1_700_000_000_000L,
                         "UTC",
                         -1, 0, 0,
@@ -178,7 +177,7 @@ class TemplateIntervalTest {
 
         // minutes < 0
         assertThrows(IllegalArgumentException.class, () ->
-                new TemplateInterval.Builder(
+                new SchedulerIntervalTemplate.Builder(
                         1_700_000_000_000L,
                         "UTC",
                         0, 0, 0,
@@ -190,7 +189,7 @@ class TemplateIntervalTest {
 
     @Test
     void builder_jsonCreator_acceptsNullFieldsAsZero() {
-        TemplateInterval.Builder b = new TemplateInterval.Builder(
+        SchedulerIntervalTemplate.Builder b = new SchedulerIntervalTemplate.Builder(
                 1_700_000_000_000L,
                 "UTC",
                 null, null, null,
@@ -198,7 +197,7 @@ class TemplateIntervalTest {
                 null
         );
 
-        TemplateInterval t = b.build();
+        SchedulerIntervalTemplate t = b.build();
         assertEquals(Period.ZERO, t.getPeriod());
         assertEquals(Duration.ofSeconds(1), t.getDuration());
     }
@@ -221,8 +220,8 @@ class TemplateIntervalTest {
                 }
                 """;
 
-        TemplateInterval.Builder b = TemplateInterval.Builder.fromJson(json);
-        TemplateInterval t = b.build();
+        SchedulerIntervalTemplate.Builder b = SchedulerIntervalTemplate.Builder.fromJson(json);
+        SchedulerIntervalTemplate t = b.build();
 
         assertEquals(1_700_000_000_000L, t.getStartEpochMillis());
         assertEquals(ZoneId.of("UTC"), t.getZone());
@@ -235,7 +234,7 @@ class TemplateIntervalTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = 1_700_000_000_000L;
 
-        TemplateInterval t = TemplateInterval.builder(start, zone)
+        SchedulerIntervalTemplate t = SchedulerIntervalTemplate.builder(start, zone)
                 .setDays(1)
                 .build();
 
@@ -256,7 +255,7 @@ class TemplateIntervalTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = 1_700_000_000_000L;
 
-        TemplateInterval.Builder b = TemplateInterval.builder(start, zone)
+        SchedulerIntervalTemplate.Builder b = SchedulerIntervalTemplate.builder(start, zone)
                 .setYears(1).setMonths(2).setDays(3)
                 .setHours(4).setMinutes(5).setSeconds(6)
                 .setNanos(7);
@@ -286,7 +285,7 @@ class TemplateIntervalTest {
         // В TemplateInterval.Builder JsonCreator сам запрещает отрицательные компоненты,
         // так что негатив туда не попадёт; но этот тест подтверждает поведение.
         assertThrows(IllegalArgumentException.class, () ->
-                new TemplateInterval.Builder(
+                new SchedulerIntervalTemplate.Builder(
                         1_700_000_000_000L,
                         "UTC",
                         0, 0, -1,      // days negative
@@ -298,7 +297,7 @@ class TemplateIntervalTest {
 
     @Test
     void build_rejectsStepWherePeriodAndDurationBothZero_viaJsonCreatorPath() {
-        TemplateInterval.Builder b = new TemplateInterval.Builder(
+        SchedulerIntervalTemplate.Builder b = new SchedulerIntervalTemplate.Builder(
                 1_700_000_000_000L,
                 "UTC",
                 0, 0, 0,
