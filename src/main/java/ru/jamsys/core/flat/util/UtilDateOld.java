@@ -1,12 +1,6 @@
 package ru.jamsys.core.flat.util;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.Accessors;
 import ru.jamsys.core.App;
-import ru.jamsys.core.extension.builder.HashMapBuilder;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
