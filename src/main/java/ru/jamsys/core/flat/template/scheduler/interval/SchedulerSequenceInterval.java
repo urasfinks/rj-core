@@ -3,7 +3,6 @@ package ru.jamsys.core.flat.template.scheduler.interval;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.template.scheduler.SchedulerSequence;
-import ru.jamsys.core.flat.util.Util;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;

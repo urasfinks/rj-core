@@ -191,7 +191,7 @@ public class SchedulerTemplateInterval implements SchedulerTemplate {
         public Object getJsonValue() {
             return new HashMapBuilder<String, Object>()
                     .append("startEpochMillis", startEpochMillis)
-                    .append("zone", Util.firstNonNull(zone, "null").toString())
+                    .append("zone", Objects.toString(zone, null))
 
                     .append("years", years)
                     .append("months", months)
