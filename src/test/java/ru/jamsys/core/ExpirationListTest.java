@@ -27,8 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class ExpirationListTest {
 
-    public static String msFormat(long ms){
-        return UtilDate.formatEpochMilli(ms, UtilDate.DEFAULT_PATTERN, ZoneId.of("Europe/Moscow"));
+    public static String msFormat(long ms) {
+        return UtilDate.millis(ms).setZoneMoscow().toDate().getDate();
     }
 
     AtomicBoolean threadRun = new AtomicBoolean(true);

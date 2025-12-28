@@ -18,8 +18,8 @@ import java.time.ZoneId;
 
 class RateLimitTest {
 
-    public static String msFormat(long ms){
-        return UtilDate.formatEpochMilli(ms, UtilDate.DEFAULT_PATTERN, ZoneId.of("Europe/Moscow"));
+    public static String msFormat(long ms) {
+        return UtilDate.millis(ms).setZoneMoscow().toDate().getDate();
     }
 
     @BeforeAll

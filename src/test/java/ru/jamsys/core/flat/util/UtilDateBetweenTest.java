@@ -94,8 +94,8 @@ class UtilDateBetweenTest {
                   },
                   "description" : "1 день"
                 }""", UtilJson.toStringPretty(UtilDateBetween.betweenEpochMillis(
-                UtilDate.parseToEpochMilli("2025-01-19", "uuuu-MM-dd"),
-                UtilDate.parseToEpochMilli("2025-01-20", "uuuu-MM-dd")
+                UtilDate.date("2025-01-19").setPatternDate().toMillis().getMillis(),
+                UtilDate.date("2025-01-20").setPatternDate().toMillis().getMillis()
         ), "{}"));
 
         Assertions.assertEquals("""
@@ -110,8 +110,8 @@ class UtilDateBetweenTest {
                   },
                   "description" : "2 дня"
                 }""", UtilJson.toStringPretty(UtilDateBetween.betweenEpochMillis(
-                UtilDate.parseToEpochMilli("2025-01-19", "uuuu-MM-dd"),
-                UtilDate.parseToEpochMilli("2025-01-21", "uuuu-MM-dd")
+                UtilDate.date("2025-01-19").setPatternDate().toMillis().getMillis(),
+                UtilDate.date("2025-01-21").setPatternDate().toMillis().getMillis()
         ), "{}"));
 
         Assertions.assertEquals("""
@@ -126,8 +126,8 @@ class UtilDateBetweenTest {
                   },
                   "description" : "2 дня 1 час"
                 }""", UtilJson.toStringPretty(UtilDateBetween.betweenEpochMillis(
-                UtilDate.parseToEpochMilli("2025-01-19 00:00:00", "uuuu-MM-dd HH:mm:ss"),
-                UtilDate.parseToEpochMilli("2025-01-21 01:00:00", "uuuu-MM-dd HH:mm:ss")
+                UtilDate.date("2025-01-19 00:00:00").setPatternDateTime().compile().toMillis().getMillis(),
+                UtilDate.date("2025-01-21 01:00:00").setPatternDateTime().compile().toMillis().getMillis()
         ), "{}"));
 
         Assertions.assertEquals("""
@@ -142,8 +142,8 @@ class UtilDateBetweenTest {
                   },
                   "description" : "2 дня 23 часа 59 минут 59 секунд"
                 }""", UtilJson.toStringPretty(UtilDateBetween.betweenEpochMillis(
-                UtilDate.parseToEpochMilli("2025-01-19 00:00:00", "uuuu-MM-dd HH:mm:ss"),
-                UtilDate.parseToEpochMilli("2025-01-21 23:59:59", "uuuu-MM-dd HH:mm:ss")
+                UtilDate.date("2025-01-19 00:00:00").setPatternDateTime().compile().toMillis().getMillis(),
+                UtilDate.date("2025-01-21 23:59:59").setPatternDateTime().compile().toMillis().getMillis()
         ), "{}"));
 
         Assertions.assertEquals("""
@@ -158,8 +158,8 @@ class UtilDateBetweenTest {
                   },
                   "description" : "3 дня"
                 }""", UtilJson.toStringPretty(UtilDateBetween.betweenEpochMillis(
-                UtilDate.parseToEpochMilli("2025-01-19 00:00:00", "uuuu-MM-dd HH:mm:ss"),
-                UtilDate.parseToEpochMilli("2025-01-22 00:00:00", "uuuu-MM-dd HH:mm:ss")
+                UtilDate.date("2025-01-19 00:00:00").setPatternDateTime().compile().toMillis().getMillis(),
+                UtilDate.date("2025-01-22 00:00:00").setPatternDateTime().compile().toMillis().getMillis()
         ), "{}"));
 
     }

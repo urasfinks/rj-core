@@ -4,17 +4,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.template.cron.Cron;
 import ru.jamsys.core.flat.util.UtilDate;
-import ru.jamsys.core.flat.util.UtilDateOld;
-
-import java.time.ZoneId;
 
 // IO time: 53
 // COMPUTE time: 54
 
 class CronTest {
 
-    public static String msFormat(long ms){
-        return UtilDate.formatEpochMilli(ms, UtilDate.DEFAULT_PATTERN, ZoneId.of("Europe/Moscow"));
+    public static String msFormat(long ms) {
+        return UtilDate.millis(ms).setZoneMoscow().toDate().getDate();
     }
 
     @Test
