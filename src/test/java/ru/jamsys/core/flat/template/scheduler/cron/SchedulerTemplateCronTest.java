@@ -197,7 +197,7 @@ class SchedulerTemplateCronTest {
                 .buildTemplate();
 
         Object jsonVal = tpl.getJsonValue();
-        assertTrue(jsonVal instanceof Map);
+        assertInstanceOf(Map.class, jsonVal);
 
         @SuppressWarnings("unchecked")
         Map<String, Object> map = (Map<String, Object>) jsonVal;
@@ -215,7 +215,7 @@ class SchedulerTemplateCronTest {
                 .setDaysOfWeek(List.of(3, 4));
 
         Object jsonVal = b.getJsonValue();
-        assertTrue(jsonVal instanceof Map);
+        assertInstanceOf(Map.class, jsonVal);
 
         @SuppressWarnings("unchecked")
         Map<String, Object> map = (Map<String, Object>) jsonVal;
@@ -260,13 +260,13 @@ class SchedulerTemplateCronTest {
         );
 
         // опционально: проверяем, что в цепочке причин есть ForwardException
-        assertTrue(hasCause(ex, ru.jamsys.core.extension.exception.ForwardException.class));
+        assertTrue(hasCause(ex));
     }
 
-    private static boolean hasCause(Throwable t, Class<? extends Throwable> type) {
+    private static boolean hasCause(Throwable t) {
         Throwable cur = t;
         while (cur != null) {
-            if (type.isInstance(cur)) return true;
+            if (ForwardException.class.isInstance(cur)) return true;
             cur = cur.getCause();
         }
         return false;

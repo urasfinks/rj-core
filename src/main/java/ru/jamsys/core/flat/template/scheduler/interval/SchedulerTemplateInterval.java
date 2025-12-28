@@ -8,7 +8,6 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.template.scheduler.SchedulerSequence;
 import ru.jamsys.core.flat.template.scheduler.SchedulerTemplate;
-import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilFileResource;
 import ru.jamsys.core.flat.util.UtilJson;
 import ru.jamsys.core.flat.util.validate.ValidateType;
