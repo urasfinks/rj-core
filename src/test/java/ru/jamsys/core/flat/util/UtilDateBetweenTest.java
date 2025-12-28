@@ -13,7 +13,7 @@ class UtilDateBetweenTest {
     }
 
     @Test
-    void timeBetween() throws Exception {
+    void timeBetween() {
         Assertions.assertEquals("""
                 {
                   "units" : {
