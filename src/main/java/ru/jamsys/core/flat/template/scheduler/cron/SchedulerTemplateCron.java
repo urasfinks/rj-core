@@ -37,6 +37,7 @@ public class SchedulerTemplateCron implements SchedulerTemplate {
 
     private final String template;
 
+    @SuppressWarnings("all")
     private Map<String, Object> getContext() {
         return new HashMapBuilder<String, Object>()
                 .append("template", template)

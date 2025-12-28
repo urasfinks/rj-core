@@ -33,6 +33,7 @@ class SchedulerSequenceIntervalTest {
         return b.buildTemplate();
     }
 
+    @SuppressWarnings("all")
     private static long epochMillis(ZoneId zone, int y, int mo, int d, int h, int mi, int s) {
         return ZonedDateTime.of(LocalDateTime.of(y, mo, d, h, mi, s), zone).toInstant().toEpochMilli();
     }
@@ -91,9 +92,9 @@ class SchedulerSequenceIntervalTest {
         SchedulerTemplateInterval t = tpl(start, zone, Period.ofDays(2), Duration.ZERO);
         SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
-        long after = start; // строго после -> +2 дня
+        // строго после -> +2 дня
         long expected = ZonedDateTime.ofInstant(Instant.ofEpochMilli(start), zone).plusDays(2).toInstant().toEpochMilli();
-        assertEquals(expected, seq.next(after));
+        assertEquals(expected, seq.next(start));
     }
 
     @Test
@@ -105,14 +106,13 @@ class SchedulerSequenceIntervalTest {
         SchedulerTemplateInterval t = tpl(start, zone, Period.ofMonths(1), Duration.ZERO);
         SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
-        long after = start;
-        long res = seq.next(after);
+        long res = seq.next(start);
 
         ZonedDateTime zStart = ZonedDateTime.ofInstant(Instant.ofEpochMilli(start), zone);
         long expected = zStart.plusMonths(1).toInstant().toEpochMilli();
 
         assertEquals(expected, res);
-        assertTrue(res > after);
+        assertTrue(res > start);
     }
 
     @Test
@@ -159,14 +159,14 @@ class SchedulerSequenceIntervalTest {
         SchedulerTemplateInterval t = tpl(start, zone, Period.ofDays(1), Duration.ofHours(2));
         SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
-        long after = start; // строго после => start + 1d + 2h
+        // строго после => start + 1d + 2h
         long expected = ZonedDateTime.ofInstant(Instant.ofEpochMilli(start), zone)
                 .plusDays(1)
                 .plusHours(2)
                 .toInstant()
                 .toEpochMilli();
 
-        assertEquals(expected, seq.next(after));
+        assertEquals(expected, seq.next(start));
     }
 
     @Test

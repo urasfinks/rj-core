@@ -239,7 +239,7 @@ class SchedulerTemplateIntervalTest {
                 .buildTemplate();
 
         Object jsonValue = t.getJsonValue();
-        assertTrue(jsonValue instanceof Map);
+        assertInstanceOf(Map.class, jsonValue);
 
         @SuppressWarnings("unchecked")
         Map<String, Object> m = (Map<String, Object>) jsonValue;
@@ -261,7 +261,7 @@ class SchedulerTemplateIntervalTest {
                 .setNanos(7);
 
         Object jsonValue = b.getJsonValue();
-        assertTrue(jsonValue instanceof Map);
+        assertInstanceOf(Map.class, jsonValue);
 
         @SuppressWarnings("unchecked")
         Map<String, Object> m = (Map<String, Object>) jsonValue;

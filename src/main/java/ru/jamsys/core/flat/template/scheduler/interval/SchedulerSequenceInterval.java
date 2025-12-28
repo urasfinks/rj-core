@@ -176,8 +176,8 @@ public class SchedulerSequenceInterval implements SchedulerSequence {
                         new HashMapBuilder<String, Object>()
                                 .append("guardMaxIterations", guardMaxIterations)
                                 .append("template", template)
-                                .append("currentOffset", Util.firstNonNull(currentOffset, "null").toString())
-                                .append("after", Util.firstNonNull(after, "null").toString())
+                                .append("currentOffset",Objects.toString(currentOffset, null))
+                                .append("after", Objects.toString(after, null))
                 );
             }
 

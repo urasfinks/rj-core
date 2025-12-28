@@ -23,6 +23,7 @@ public class HashMapBuilder<K, V> extends LinkedHashMap<K, V> {
         return this;
     }
 
+    @SuppressWarnings("unused")
     public HashMapBuilder<K, V> appendIfNotNull(K key, V value) {
         if (value != null) {
             put(key, value);
@@ -30,6 +31,7 @@ public class HashMapBuilder<K, V> extends LinkedHashMap<K, V> {
         return this;
     }
 
+    @SuppressWarnings("unused")
     public HashMapBuilder<K, V> appendIfNonZero(K key, int value) {
         if (value != 0) {
             @SuppressWarnings("unchecked")

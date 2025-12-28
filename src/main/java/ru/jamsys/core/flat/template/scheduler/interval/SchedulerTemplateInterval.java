@@ -17,6 +17,7 @@ import java.time.Duration;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.Map;
+import java.util.Objects;
 
 @Getter
 public class SchedulerTemplateInterval implements SchedulerTemplate {
@@ -30,9 +31,9 @@ public class SchedulerTemplateInterval implements SchedulerTemplate {
     private Map<String, Object> getContext() {
         return new HashMapBuilder<String, Object>()
                 .append("template", template)
-                .append("period", Util.firstNonNull(period, "null").toString())
-                .append("duration", Util.firstNonNull(duration, "null").toString())
-                .append("zone", Util.firstNonNull(zone, "null").toString());
+                .append("period", Objects.toString(period, null))
+                .append("duration", Objects.toString(duration, null))
+                .append("zone", Objects.toString(zone, null));
     }
 
     private SchedulerTemplateInterval(long startEpochMillis, Period period, Duration duration, String template, ZoneId zone) {

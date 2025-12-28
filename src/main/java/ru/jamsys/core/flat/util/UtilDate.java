@@ -16,6 +16,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class UtilDate {
 
     public static String format = "yyyy-MM-dd'T'HH:mm:ss";

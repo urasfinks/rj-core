@@ -5,13 +5,12 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.template.scheduler.interval.SchedulerTemplateInterval;
 import ru.jamsys.core.flat.util.UtilDate;
 
-import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.time.ZoneId;
 
 class SchedulerSequenceTest {
     @Test
-    public void testInterval() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, ParseException {
+    public void testInterval() throws ParseException {
         Assertions.assertEquals("2025-12-27T13:32:45.000",
                 UtilDate.msFormat(new SchedulerTemplateInterval.Builder(
                         UtilDate.getTime("2025-12-27T13:32:44.000"),
