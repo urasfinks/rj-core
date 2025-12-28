@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.template.scheduler.interval.SchedulerTemplateInterval;
 import ru.jamsys.core.flat.util.UtilDate;
 
-import java.text.ParseException;
 import java.time.ZoneId;
 
 class SchedulerSequenceTest {
