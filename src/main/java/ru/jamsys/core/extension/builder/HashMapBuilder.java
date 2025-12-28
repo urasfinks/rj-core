@@ -23,4 +23,20 @@ public class HashMapBuilder<K, V> extends LinkedHashMap<K, V> {
         return this;
     }
 
+    public HashMapBuilder<K, V> appendIfNotNull(K key, V value) {
+        if (value != null) {
+            put(key, value);
+        }
+        return this;
+    }
+
+    public HashMapBuilder<K, V> appendIfNonZero(K key, int value) {
+        if (value != 0) {
+            @SuppressWarnings("unchecked")
+            V o = (V) Integer.valueOf(value);
+            put(key, o);
+        }
+        return this;
+    }
+
 }

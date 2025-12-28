@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/template-iso8601-builder-internal.json",
+  "title": "TemplateISO8601.Builder (internal)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["startEpochMillis", "zone"],
+  "properties": {
+    "startEpochMillis": {
+      "type": "integer",
+      "format": "int64"
+    },
+    "zone": {
+      "type": "string",
+      "description": "IANA ZoneId (e.g., Europe/Amsterdam). Ignored in JSON by @JsonIgnore.",
+      "examples": ["Europe/Amsterdam", "UTC"]
+    },
+    "years": { "type": "integer", "minimum": 0, "default": 0 },
+    "months": { "type": "integer", "minimum": 0, "default": 0 },
+    "days": { "type": "integer", "minimum": 0, "default": 0 },
+    "hours": { "type": "integer", "minimum": 0, "default": 0 },
+    "minutes": { "type": "integer", "minimum": 0, "default": 0 },
+    "seconds": { "type": "integer", "minimum": 0, "default": 0 },
+    "nanos": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 999999999,
+      "default": 0
+    }
+  }
+}
