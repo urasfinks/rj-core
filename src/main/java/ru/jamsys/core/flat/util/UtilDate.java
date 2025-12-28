@@ -23,7 +23,7 @@ public final class UtilDate {
     /**
      * Базовый паттерн проекта для локального date-time без зоны/offset.
      */
-    public static final String DEFAULT_PATTERN = "uuuu-MM-dd'T'HH:mm:ss";
+    public static final String DEFAULT_PATTERN = "uuuu-MM-dd'T'HH:mm:ss.SSS";
 
     /**
      * Создаёт строгий {@link DateTimeFormatter} по заданному pattern.
@@ -141,6 +141,10 @@ public final class UtilDate {
      */
     public static String formatEpochMilli(long epochMilli, String pattern, ZoneId zoneId) {
         return format(Instant.ofEpochMilli(epochMilli), pattern, zoneId);
+    }
+
+    public static String formatEpochMilli(long epochMilli) {
+        return format(Instant.ofEpochMilli(epochMilli), DEFAULT_PATTERN, DEFAULT_ZONE);
     }
 
     /**
