@@ -11,24 +11,29 @@ import java.util.Objects;
 @SuppressWarnings("unused")
 public final class UtilDate {
 
-    private UtilDate() {}
+    private UtilDate() {
+    }
 
-    /** Дефолтная зона проекта для интерпретации локальных дат/дат-времени без offset/zone в строке. */
+    /**
+     * Дефолтная зона проекта для интерпретации локальных дат/дат-времени без offset/zone в строке.
+     */
     public static final ZoneId DEFAULT_ZONE = ZoneId.of("Europe/Moscow");
 
-    /** Базовый паттерн проекта для локального date-time без зоны/offset. */
+    /**
+     * Базовый паттерн проекта для локального date-time без зоны/offset.
+     */
     public static final String DEFAULT_PATTERN = "uuuu-MM-dd'T'HH:mm:ss";
 
     /**
      * Создаёт строгий {@link DateTimeFormatter} по заданному pattern.
-     *
+     * <p>
      * Для чего:
      * - Гарантирует строгий парсинг дат (без "подгонки" типа 2025-02-31 -> 2025-03-03).
      * - Унифицирует поведение парсинга и форматирования в проекте.
-     *
+     * <p>
      * Важно:
      * - В паттернах month = {@code MM}, minutes = {@code mm}.
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * DateTimeFormatter fmt = UtilDate.formatter("uuuu-MM-dd");
@@ -44,11 +49,11 @@ public final class UtilDate {
 
     /**
      * Возвращает текущий момент времени как {@link Instant} (UTC-линия времени).
-     *
+     * <p>
      * Для чего:
      * - Хранение/передача "абсолютного" времени без зон.
      * - Основа для epochSecond/epochMilli.
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * Instant now = UtilDate.nowInstant();
@@ -60,10 +65,10 @@ public final class UtilDate {
 
     /**
      * Возвращает текущее время в epoch seconds (секунды с 1970-01-01T00:00:00Z).
-     *
+     * <p>
      * Для чего:
      * - Компактное хранение (например, в интеграциях/логах, где принято seconds).
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * long sec = UtilDate.nowEpochSecond();
@@ -75,10 +80,10 @@ public final class UtilDate {
 
     /**
      * Возвращает текущее время в epoch millis (миллисекунды с 1970-01-01T00:00:00Z).
-     *
+     * <p>
      * Для чего:
      * - Наиболее распространённый формат времени в Java/JS и в БД (BIGINT).
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * long ms = UtilDate.nowEpochMilli();
@@ -92,10 +97,10 @@ public final class UtilDate {
 
     /**
      * Форматирует {@link Instant} в строку в заданной зоне {@code zoneId} по {@code pattern}.
-     *
+     * <p>
      * Для чего:
      * - Представление момента времени пользователю в нужной временной зоне.
-     *
+     * <p>
      * Пример (Москва):
      * <pre>{@code
      * Instant t = Instant.ofEpochSecond(1737268800L);
@@ -108,12 +113,25 @@ public final class UtilDate {
         return instant.atZone(zoneId).format(formatter(pattern));
     }
 
+    public static String format(Instant instant, String patternd) {
+        return format(instant, patternd, DEFAULT_ZONE);
+    }
+
+    public static String convert(String data, String oldPatternd, String newPatternd, ZoneId zoneId) {
+        Instant instant = UtilDate.parseToInstant(data, oldPatternd, zoneId);
+        return UtilDate.format(instant, newPatternd, zoneId);
+    }
+
+    public static String convert(String data, String oldPatternd, String newPatternd) {
+        return convert(data, oldPatternd, newPatternd, DEFAULT_ZONE);
+    }
+
     /**
      * Форматирует epochMillis в строку в заданной зоне по {@code pattern}.
-     *
+     * <p>
      * Для чего:
      * - Когда данные хранятся/передаются как миллисекунды, но нужно вывести строкой.
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * long ms = 1737268800000L;
@@ -126,10 +144,10 @@ public final class UtilDate {
 
     /**
      * Форматирует epochSeconds в строку в заданной зоне по {@code pattern}.
-     *
+     * <p>
      * Для чего:
      * - Когда данные хранятся/передаются как секунды, но нужно вывести строкой.
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * long sec = 1737268800L;
@@ -142,10 +160,10 @@ public final class UtilDate {
 
     /**
      * Возвращает текущий момент, отформатированный в строку в заданной зоне.
-     *
+     * <p>
      * Для чего:
      * - Логи/метрики/вывод пользователю в одном месте.
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * String now = UtilDate.now("uuuu-MM-dd'T'HH:mm:ss", UtilDate.DEFAULT_ZONE);
@@ -159,17 +177,17 @@ public final class UtilDate {
 
     /**
      * Универсально парсит {@code text} по {@code pattern} и возвращает {@link Instant}.
-     *
+     * <p>
      * Правила интерпретации:
      * 1) Если текст/паттерн содержит zone (например [Europe/Moscow]) -> парсим как {@link ZonedDateTime} -> Instant.
      * 2) Если содержит offset (например Z или +03:00) -> парсим как {@link OffsetDateTime} -> Instant.
      * 3) Если содержит date+time, но без zone/offset -> считаем это локальным временем в {@code zoneId}.
      * 4) Если содержит только date -> считаем начало дня (00:00:00) в {@code zoneId}.
      * 5) Если содержит только time -> это НЕ момент времени (нет даты) -> исключение.
-     *
+     * <p>
      * Для чего:
      * - Один предсказуемый метод вместо набора parseDate/parseLocalDateTime.
-     *
+     * <p>
      * Примеры:
      * <pre>{@code
      * // Только дата -> начало дня в DEFAULT_ZONE
@@ -245,7 +263,7 @@ public final class UtilDate {
 
     /**
      * То же, что {@link #parseToInstant(String, String, ZoneId)}, но используется {@link #DEFAULT_ZONE}.
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * Instant t = UtilDate.parseToInstant("2025-01-19", "uuuu-MM-dd");
@@ -257,10 +275,10 @@ public final class UtilDate {
 
     /**
      * Универсально парсит {@code text} по {@code pattern} и возвращает epochMillis.
-     *
+     * <p>
      * Для чего:
      * - Когда нужно получить миллисекунды напрямую (для БД/кэша/сериализации).
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * long ms = UtilDate.parseToEpochMilli("2025-01-19", "uuuu-MM-dd");
@@ -279,10 +297,10 @@ public final class UtilDate {
 
     /**
      * Универсально парсит {@code text} по {@code pattern} и возвращает epochSeconds.
-     *
+     * <p>
      * Для чего:
      * - Когда интеграция/контракт ожидает seconds.
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * long sec = UtilDate.parseToEpochSecond("2025-01-19T10:15:00", "uuuu-MM-dd'T'HH:mm:ss");
@@ -301,15 +319,15 @@ public final class UtilDate {
 
     /**
      * Парсит ISO-8601 строку, где offset/zone зашиты в тексте.
-     *
+     * <p>
      * Для чего:
      * - Когда вы получаете дату из внешних систем в ISO-формате (обычно это лучший вариант обмена).
-     *
+     * <p>
      * Поддерживаемые примеры:
      * - "2025-01-19T07:15:00Z"
      * - "2025-01-19T10:15:00+03:00"
      * - "2025-01-19T10:15:00+03:00[Europe/Moscow]"
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * Instant t1 = UtilDate.parseIso("2025-01-19T07:15:00Z");
@@ -334,10 +352,10 @@ public final class UtilDate {
     /**
      * Строго валидирует, что {@code text} парсится по {@code pattern} в момент времени (Instant)
      * с правилами {@link #parseToInstant(String, String, ZoneId)}.
-     *
+     * <p>
      * Для чего:
      * - Проверка пользовательского ввода или данных конфигурации.
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * boolean ok1 = UtilDate.validate("2025-01-19", "uuuu-MM-dd");
@@ -364,10 +382,10 @@ public final class UtilDate {
 
     /**
      * Возвращает смещение (offset) в секундах для {@code zoneId} на конкретный момент {@code instant}.
-     *
+     * <p>
      * Для чего:
      * - Если зона поддерживает DST, offset может меняться во времени, и его нужно вычислять "на момент".
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * int offset = UtilDate.offsetSecondsAt(ZoneId.of("Europe/Amsterdam"), Instant.now());
@@ -381,10 +399,10 @@ public final class UtilDate {
 
     /**
      * Возвращает текущий offset (в секундах) для {@code zoneId}.
-     *
+     * <p>
      * Для чего:
      * - Быстрый доступ к текущему смещению (важно: для DST-зон будет зависеть от даты).
-     *
+     * <p>
      * Пример:
      * <pre>{@code
      * int msk = UtilDate.currentOffsetSeconds(UtilDate.DEFAULT_ZONE); // обычно 10800
