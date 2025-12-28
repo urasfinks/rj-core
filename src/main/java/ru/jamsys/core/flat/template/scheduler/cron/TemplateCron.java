@@ -1,4 +1,4 @@
-package ru.jamsys.core.flat.template.scheduler;
+package ru.jamsys.core.flat.template.scheduler.cron;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = false)
-public class TimeSchedulerRule {
+public class TemplateCron {
 
     private final String title;
 
@@ -33,7 +33,7 @@ public class TimeSchedulerRule {
     private final List<Integer> daysOfWeek;
 
     @JsonCreator
-    public TimeSchedulerRule(
+    public TemplateCron(
             @JsonProperty(value = "title", required = true) String title,
 
             @JsonProperty("years") List<Integer> years,
@@ -96,23 +96,23 @@ public class TimeSchedulerRule {
         }
     }
 
-    public static TimeSchedulerRule fromJson(String json) throws Exception {
+    public static TemplateCron fromJson(String json) throws Exception {
         ValidateType.JSON.validate(
                 json,
                 UtilFileResource.getAsString("schema/json/scheduler.template.json"),
                 null
         );
-        return UtilJson.objectMapper.readValue(json, TimeSchedulerRule.class);
+        return UtilJson.objectMapper.readValue(json, TemplateCron.class);
     }
 
-    public static TimeSchedulerRule fromJson(String json, String rootField) throws JsonProcessingException {
+    public static TemplateCron fromJson(String json, String rootField) throws JsonProcessingException {
         JsonNode root = UtilJson.objectMapper.readTree(json);
         JsonNode node = root.at(rootField);
-        return UtilJson.objectMapper.treeToValue(node, TimeSchedulerRule.class);
+        return UtilJson.objectMapper.treeToValue(node, TemplateCron.class);
     }
 
-    public static TimeSchedulerRule fromMap(Map<String, Object> map) {
-        return UtilJson.objectMapper.convertValue(map, TimeSchedulerRule.class);
+    public static TemplateCron fromMap(Map<String, Object> map) {
+        return UtilJson.objectMapper.convertValue(map, TemplateCron.class);
     }
 
 }

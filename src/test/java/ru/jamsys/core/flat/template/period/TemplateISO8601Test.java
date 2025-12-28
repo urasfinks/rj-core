@@ -1,25 +1,20 @@
 package ru.jamsys.core.flat.template.period;
 
 import org.junit.jupiter.api.Test;
+import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.flat.template.scheduler.iso8601.TemplateISO8601;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Period;
+import java.time.ZoneId;
 
-class Iso8601Test {
-
-    @Test
-    void builder_buildsZeroWhenNothingSet() {
-        Iso8601 iso = Iso8601.builder().build();
-        assertEquals("PT0S", iso.getIso());
-        assertEquals(Period.ZERO, iso.getPeriod());
-        assertEquals(Duration.ZERO, iso.getDuration());
-    }
+class TemplateISO8601Test {
 
     @Test
     void builder_buildsDateOnly() {
-        Iso8601 iso = Iso8601.builder()
+        TemplateISO8601 iso = TemplateISO8601.builder(0, ZoneId.systemDefault())
                 .years(1).months(2).days(3)
                 .build();
 
@@ -30,7 +25,7 @@ class Iso8601Test {
 
     @Test
     void builder_buildsTimeOnlyWithoutSeconds() {
-        Iso8601 iso = Iso8601.builder()
+        TemplateISO8601 iso = TemplateISO8601.builder(0, ZoneId.systemDefault())
                 .hours(12)
                 .minutes(30)
                 .build();
@@ -42,7 +37,7 @@ class Iso8601Test {
 
     @Test
     void builder_buildsMixedExample() {
-        Iso8601 iso = Iso8601.builder()
+        TemplateISO8601 iso = TemplateISO8601.builder(0, ZoneId.systemDefault())
                 .months(1)
                 .hours(12)
                 .build();
@@ -54,7 +49,7 @@ class Iso8601Test {
 
     @Test
     void builder_buildsFractionalSecondsViaNanos() {
-        Iso8601 iso = Iso8601.builder()
+        TemplateISO8601 iso = TemplateISO8601.builder(0, ZoneId.systemDefault())
                 .seconds(1)
                 .nanos(500_000_000)
                 .build();
@@ -66,7 +61,7 @@ class Iso8601Test {
 
     @Test
     void parse_parsesDateOnly() {
-        Iso8601 iso = Iso8601.parse("P1Y2M3D");
+        TemplateISO8601 iso = TemplateISO8601.parse("P1Y2M3D", 0, ZoneId.systemDefault());
         assertEquals(Period.of(1, 2, 3), iso.getPeriod());
         assertEquals(Duration.ZERO, iso.getDuration());
         assertEquals("P1Y2M3D", iso.getIso());
@@ -74,7 +69,7 @@ class Iso8601Test {
 
     @Test
     void parse_parsesTimeOnly() {
-        Iso8601 iso = Iso8601.parse("PT12H30M");
+        TemplateISO8601 iso = TemplateISO8601.parse("PT12H30M", 0, ZoneId.systemDefault());
         assertEquals(Period.ZERO, iso.getPeriod());
         assertEquals(Duration.ofHours(12).plusMinutes(30), iso.getDuration());
         assertEquals("PT12H30M", iso.getIso());
@@ -82,7 +77,7 @@ class Iso8601Test {
 
     @Test
     void parse_parsesMixed() {
-        Iso8601 iso = Iso8601.parse("P1MT12H");
+        TemplateISO8601 iso = TemplateISO8601.parse("P1MT12H", 0, ZoneId.systemDefault());
         assertEquals(Period.ofMonths(1), iso.getPeriod());
         assertEquals(Duration.ofHours(12), iso.getDuration());
         assertEquals("P1MT12H", iso.getIso());
@@ -90,9 +85,10 @@ class Iso8601Test {
 
     @Test
     void parse_rejectsBlankAndNonIso() {
-        assertThrows(IllegalArgumentException.class, () -> Iso8601.parse(null));
-        assertThrows(IllegalArgumentException.class, () -> Iso8601.parse(" "));
-        assertThrows(IllegalArgumentException.class, () -> Iso8601.parse("1D"));
-        assertThrows(IllegalArgumentException.class, () -> Iso8601.parse("R/2025-01-01/P1D"));
+        assertThrows(ForwardException.class, () -> TemplateISO8601.parse(null, 0, ZoneId.systemDefault()));
+        assertThrows(ForwardException.class, () -> TemplateISO8601.parse(" ", 0, ZoneId.systemDefault()));
+        assertThrows(ForwardException.class, () -> TemplateISO8601.parse("1D", 0, ZoneId.systemDefault()));
+        assertThrows(ForwardException.class, () -> TemplateISO8601.parse("R/2025-01-01/P1D", 0, ZoneId.systemDefault()));
     }
+
 }

@@ -1,25 +1,12 @@
-package ru.jamsys.core.flat.template.scheduler;
+package ru.jamsys.core.flat.template.scheduler.cron;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Fast "next execution time" calculator using carry-algorithm (no cartesian products).
- *
- * Semantics (as you specified):
- * - EMPTY LIST ([]) means "ANY" for that field.
- * - Non-empty list means "only these values allowed".
- *
- * Notes:
- * - days (day-of-month) + daysOfWeek are combined with AND when both are constrained.
- *   If you want OR semantics, see adjustDay() marked section.
- * - exclude: List<Integer> is treated as epoch seconds (int cannot hold epoch millis).
- */
-public final class TimeSchedulerPlan {
+public final class SequenceCron {
 
-    private final TimeSchedulerRule rule;
     private final ZoneId zone;
 
     // Allowed sets; indexes are "natural values" (e.g., month 1..12, dow 1..7)
@@ -37,29 +24,28 @@ public final class TimeSchedulerPlan {
     // guard for unsatisfiable / bug cases
     private final int guardMaxIterations;
 
-    public TimeSchedulerPlan(TimeSchedulerRule rule) {
-        this(rule, ZoneId.systemDefault());
+    public SequenceCron(TemplateCron templateCron) {
+        this(templateCron, ZoneId.systemDefault());
     }
 
-    public TimeSchedulerPlan(TimeSchedulerRule rule, ZoneId zone) {
+    public SequenceCron(TemplateCron rule, ZoneId zone) {
         this(rule, zone, 1_000_000);
     }
 
-    public TimeSchedulerPlan(TimeSchedulerRule rule, ZoneId zone, int guardMaxIterations) {
-        this.rule = Objects.requireNonNull(rule, "rule");
+    public SequenceCron(TemplateCron template, ZoneId zone, int guardMaxIterations) {
         this.zone = (zone == null) ? ZoneId.systemDefault() : zone;
         this.guardMaxIterations = Math.max(10_000, guardMaxIterations);
 
         // Build allowed sets; empty list => ANY (full range)
-        this.secAllowed = buildAllowed(rule.getSeconds(), 0, 59);
-        this.minAllowed = buildAllowed(rule.getMinutes(), 0, 59);
-        this.hourAllowed = buildAllowed(rule.getHours(), 0, 23);
-        this.domAllowed = buildAllowed(rule.getDays(), 1, 31);
-        this.dowAllowed = buildAllowed(rule.getDaysOfWeek(), 1, 7);
+        this.secAllowed = buildAllowed(template.getSeconds(), 0, 59);
+        this.minAllowed = buildAllowed(template.getMinutes(), 0, 59);
+        this.hourAllowed = buildAllowed(template.getHours(), 0, 23);
+        this.domAllowed = buildAllowed(template.getDays(), 1, 31);
+        this.dowAllowed = buildAllowed(template.getDaysOfWeek(), 1, 7);
 
-        this.monthAllowed = buildMonthAllowed(rule.getMonths(), rule.getQuarters());
+        this.monthAllowed = buildMonthAllowed(template.getMonths(), template.getQuarters());
 
-        List<Integer> years = rule.getYears();
+        List<Integer> years = template.getYears();
         if (years == null || years.isEmpty()) {
             this.yearAllowedOrNull = null; // ANY
         } else {
@@ -68,7 +54,7 @@ public final class TimeSchedulerPlan {
         }
 
         // exclude: interpret as epoch seconds -> millis
-        List<Integer> ex = rule.getExclude();
+        List<Integer> ex = template.getExclude();
         if (ex == null || ex.isEmpty()) {
             this.excludeEpochMillis = Set.of();
         } else {
@@ -80,12 +66,6 @@ public final class TimeSchedulerPlan {
         }
     }
 
-    /**
-     * Returns the next execution time strictly AFTER the provided timestamp.
-     *
-     * @param afterEpochMillis current time in epoch millis (exclusive boundary)
-     * @return next execution time in epoch millis
-     */
     public long nextAfter(long afterEpochMillis) {
 
         // Work in seconds granularity (your rule has seconds field)
@@ -113,9 +93,6 @@ public final class TimeSchedulerPlan {
         throw new IllegalStateException("No next time found (guard exceeded). Rule may be unsatisfiable.");
     }
 
-    /**
-     * Convenience: generate a series of next timestamps.
-     */
     public List<Long> series(long afterEpochMillis, int count) {
         ArrayList<Long> result = new ArrayList<>(Math.max(0, count));
         long t = afterEpochMillis;
@@ -126,10 +103,6 @@ public final class TimeSchedulerPlan {
         }
         return result;
     }
-
-    // =========================
-    // Core carry algorithm
-    // =========================
 
     private ZonedDateTime adjustToNextMatch(ZonedDateTime zdt) {
         // Normalize nanos
@@ -215,15 +188,6 @@ public final class TimeSchedulerPlan {
         }
     }
 
-    /**
-     * Adjusts date part (Y-M-D) to satisfy:
-     * - monthAllowed (already satisfied when called)
-     * - domAllowed (if constrained)
-     * - dowAllowed (if constrained)
-     *
-     * Current implementation: AND semantics when both constrained.
-     * If you want OR semantics, see comment below.
-     */
     private ZonedDateTime adjustDay(ZonedDateTime zdt) {
         boolean domAny = isFull(domAllowed, 1, 31);
         boolean dowAny = isFull(dowAllowed, 1, 7);
@@ -263,8 +227,7 @@ public final class TimeSchedulerPlan {
         }
 
         // If not found within ~13 months, push to next allowed month start and let upper loop handle carries.
-        ZonedDateTime nextMonth = zdt.plusMonths(1).withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS);
-        return nextMonth;
+        return zdt.plusMonths(1).withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS);
     }
 
     private boolean matchesAll(ZonedDateTime zdt) {
@@ -294,14 +257,6 @@ public final class TimeSchedulerPlan {
                 .withHour(0).withMinute(0).withSecond(0).withNano(0);
     }
 
-    // =========================
-    // Builders / helpers
-    // =========================
-
-    /**
-     * Build allowed BitSet for [min..max] inclusive.
-     * Empty list or null => FULL range (ANY).
-     */
     private static BitSet buildAllowed(List<Integer> values, int min, int max) {
         BitSet bs = new BitSet(max + 1);
         if (values == null || values.isEmpty()) {
@@ -321,13 +276,6 @@ public final class TimeSchedulerPlan {
         return bs;
     }
 
-    /**
-     * months + quarters handling for "[] means ANY".
-     * - both empty => all months
-     * - months only => months
-     * - quarters only => quarter months
-     * - both => intersection
-     */
     private static BitSet buildMonthAllowed(List<Integer> months, List<Integer> quarters) {
         boolean monthsAny = (months == null || months.isEmpty());
         boolean quartersAny = (quarters == null || quarters.isEmpty());
@@ -335,30 +283,14 @@ public final class TimeSchedulerPlan {
         if (monthsAny && quartersAny) {
             return fullRangeBitSet(1, 12);
         }
-
         if (!monthsAny && quartersAny) {
             return buildAllowed(months, 1, 12);
         }
 
-        BitSet quarterMonths = new BitSet(13);
-        if (quartersAny) {
-            // not reachable due to earlier branches, but keep safe
-            for (int m = 1; m <= 12; m++) quarterMonths.set(m);
-        } else {
-            for (Integer q : quarters) {
-                if (q == null) continue;
-                if (q < 1 || q > 4) {
-                    throw new IllegalArgumentException("quarter out of range [1..4]: " + q);
-                }
-                int start = (q - 1) * 3 + 1;
-                for (int m = start; m < start + 3; m++) quarterMonths.set(m);
-            }
-        }
+        // quartersAny == false here (otherwise we would have returned above)
+        BitSet quarterMonths = buildQuarterMonths(quarters);
 
         if (monthsAny) {
-            if (quarterMonths.isEmpty()) {
-                throw new IllegalArgumentException("quarters produced empty month set");
-            }
             return quarterMonths;
         }
 
@@ -370,18 +302,38 @@ public final class TimeSchedulerPlan {
         return monthSet;
     }
 
+    private static BitSet buildQuarterMonths(List<Integer> quarters) {
+        if (quarters == null || quarters.isEmpty()) {
+            // По смыслу buildMonthAllowed сюда не должен попадать,
+            // но делаем безопасно:
+            return fullRangeBitSet(1, 12);
+        }
+
+        BitSet quarterMonths = new BitSet(13);
+        for (Integer q : quarters) {
+            if (q == null) continue;
+            if (q < 1 || q > 4) {
+                throw new IllegalArgumentException("quarter out of range [1..4]: " + q);
+            }
+            int start = (q - 1) * 3 + 1; // 1,4,7,10
+            quarterMonths.set(start);
+            quarterMonths.set(start + 1);
+            quarterMonths.set(start + 2);
+        }
+
+        if (quarterMonths.isEmpty()) {
+            throw new IllegalArgumentException("quarters produced empty month set");
+        }
+        return quarterMonths;
+    }
+
+    @SuppressWarnings("all")
     private static BitSet fullRangeBitSet(int min, int max) {
         BitSet bs = new BitSet(max + 1);
         for (int i = min; i <= max; i++) bs.set(i);
         return bs;
     }
 
-    /**
-     * Returns:
-     * - current if current is allowed
-     * - next allowed >= current if exists
-     * - -1 if no allowed value in [current..max] (carry)
-     */
     private static int nextOrCarry(BitSet allowed, int current, int max) {
         int next = allowed.nextSetBit(current);
         if (next == current) return current;
@@ -389,6 +341,7 @@ public final class TimeSchedulerPlan {
         return -1;
     }
 
+    @SuppressWarnings("all")
     private static boolean isFull(BitSet bs, int min, int max) {
         int first = bs.nextSetBit(min);
         if (first != min) return false;
@@ -397,4 +350,5 @@ public final class TimeSchedulerPlan {
         }
         return true;
     }
+
 }
