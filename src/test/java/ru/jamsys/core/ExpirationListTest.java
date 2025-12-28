@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.date.UtilDate;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
 

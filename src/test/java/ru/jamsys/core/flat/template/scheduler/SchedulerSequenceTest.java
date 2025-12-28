@@ -3,7 +3,7 @@ package ru.jamsys.core.flat.template.scheduler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.template.scheduler.interval.SchedulerTemplateInterval;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.date.UtilDate;
 
 import java.time.ZoneId;
 

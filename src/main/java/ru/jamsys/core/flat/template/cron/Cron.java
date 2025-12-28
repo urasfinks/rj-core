@@ -3,7 +3,7 @@ package ru.jamsys.core.flat.template.cron;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.date.UtilDate;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.extension.statistic.AvgMetric;
 

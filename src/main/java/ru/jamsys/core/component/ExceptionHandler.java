@@ -5,7 +5,7 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.date.UtilDate;
 import ru.jamsys.core.flat.util.UtilLog;
 
 @Setter

@@ -2,7 +2,7 @@ package ru.jamsys.core.flat.template.scheduler.cron;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.date.UtilDate;
 
 import java.text.ParseException;
 import java.util.List;

@@ -7,7 +7,7 @@ import lombok.Setter;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.date.UtilDate;
 
 public class Trace<K, V> {
 

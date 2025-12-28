@@ -1,4 +1,4 @@
-package ru.jamsys.core.flat.util;
+package ru.jamsys.core.flat.util.date;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;

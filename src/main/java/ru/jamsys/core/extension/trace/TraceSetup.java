@@ -12,7 +12,7 @@ import ru.jamsys.core.extension.property.PropertyEnvelope;
 import ru.jamsys.core.extension.property.PropertySubscription;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotationField;
 import ru.jamsys.core.extension.property.repository.RepositoryProperty;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.date.UtilDate;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.concurrent.ConcurrentHashMap;

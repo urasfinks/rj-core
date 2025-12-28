@@ -1,7 +1,7 @@
 package ru.jamsys.core.extension.expiration;
 
 
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.date.UtilDate;
 
 public class TimeOutException extends Exception {
 

@@ -2,7 +2,7 @@ package ru.jamsys.core.extension.expiration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.date.UtilDate;
 
 // Интерфейс просто наделяет статическим функционал объект протухания, даёт базовый набор метрик
 

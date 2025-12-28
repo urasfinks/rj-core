@@ -8,7 +8,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.rate.limit.periodic.RateLimitPeriodic;
 import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.date.UtilDate;
 
 // IO time: 6ms
 // COMPUTE time: 5ms

@@ -8,7 +8,7 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 
 import org.junit.jupiter.api.function.Executable;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.date.UtilDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
