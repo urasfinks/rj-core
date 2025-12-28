@@ -6,6 +6,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.flat.template.scheduler.SchedulerSequence;
+import ru.jamsys.core.flat.template.scheduler.SchedulerTemplate;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilFileResource;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -15,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-public class SchedulerCronTemplate {
+public class SchedulerTemplateCron implements SchedulerTemplate {
 
     private final String title;
 
@@ -50,7 +52,7 @@ public class SchedulerCronTemplate {
                 .append("days_of_week", daysOfWeek);
     }
 
-    private SchedulerCronTemplate(
+    private SchedulerTemplateCron(
             String title,
             List<Integer> years,
             List<Integer> months,
@@ -126,7 +128,7 @@ public class SchedulerCronTemplate {
     @Setter
     @Accessors(chain = true)
     @JsonIgnoreProperties()
-    public static class Builder {
+    public static class Builder implements SchedulerTemplate.Builder<SchedulerTemplateCron> {
 
         private final String title;
 
@@ -233,8 +235,8 @@ public class SchedulerCronTemplate {
                     .append("days_of_week", daysOfWeek);
         }
 
-        public SchedulerCronTemplate build() {
-            return new SchedulerCronTemplate(
+        public SchedulerTemplateCron buildTemplate() {
+            return new SchedulerTemplateCron(
                     title,
                     years,
                     months,
@@ -248,5 +250,10 @@ public class SchedulerCronTemplate {
                     UtilJson.toStringPretty(getJsonValue(), "{}")
             );
         }
+
+        public SchedulerSequence buildSequence(){
+            return new SchedulerSequenceCron(buildTemplate());
+        }
+
     }
 }

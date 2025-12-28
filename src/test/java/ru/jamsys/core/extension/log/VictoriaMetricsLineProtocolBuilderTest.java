@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class VictoriaMetricsLineProtocolBuilderTest {
 
     @Test
-    public void testBuildWithSingleLabelAndTimestamp() {
+    public void testBuildTemplateWithSingleLabelAndTimestamp() {
         String line = new VictoriaMetricsLineProtocolBuilder()
                 .setMeasurement("myMetric")
                 .addLabel("region", "us-west")
@@ -21,7 +21,7 @@ class VictoriaMetricsLineProtocolBuilderTest {
     }
 
     @Test
-    public void testBuildWithMultipleLabels() {
+    public void testBuildTemplateWithMultipleLabels() {
         String line = new VictoriaMetricsLineProtocolBuilder()
                 .setMeasurement("cpu_load")
                 .addLabel("host", "server1")
@@ -35,7 +35,7 @@ class VictoriaMetricsLineProtocolBuilderTest {
     }
 
     @Test
-    public void testBuildWithoutTimestamp() {
+    public void testBuildTemplateWithoutTimestamp() {
         String line = new VictoriaMetricsLineProtocolBuilder()
                 .setMeasurement("requests")
                 .addLabel("status", "200")

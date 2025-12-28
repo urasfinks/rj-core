@@ -13,10 +13,10 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class SchedulerIntervalTemplateTest {
+class SchedulerTemplateIntervalTest {
     @Test
     public void test() throws Exception {
-        SchedulerIntervalTemplate.Builder builder = SchedulerIntervalTemplate.Builder.fromJson("""
+        SchedulerTemplateInterval.Builder builder = SchedulerTemplateInterval.Builder.fromJson("""
                 {
                   "startEpochMillis": 1766827964,
                   "zone": "UTC"
@@ -56,11 +56,11 @@ class SchedulerIntervalTemplateTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = 1_700_000_000_000L;
 
-        SchedulerIntervalTemplate t = SchedulerIntervalTemplate.builder(start, zone)
+        SchedulerTemplateInterval t = SchedulerTemplateInterval.builder(start, zone)
                 .setYears(1).setMonths(2).setDays(3)
                 .setHours(4).setMinutes(5).setSeconds(6)
                 .setNanos(7)
-                .build();
+                .buildTemplate();
 
         assertEquals(start, t.getStartEpochMillis());
         assertEquals(zone, t.getZone());
@@ -77,8 +77,8 @@ class SchedulerIntervalTemplateTest {
         long start = 1_700_000_000_000L;
 
         assertThrows(ForwardException.class, () ->
-                SchedulerIntervalTemplate.builder(start, zone)
-                        .build()
+                SchedulerTemplateInterval.builder(start, zone)
+                        .buildTemplate()
         );
     }
 
@@ -87,7 +87,7 @@ class SchedulerIntervalTemplateTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = 1_700_000_000_000L;
 
-        SchedulerIntervalTemplate.Builder b = SchedulerIntervalTemplate.builder(start, zone);
+        SchedulerTemplateInterval.Builder b = SchedulerTemplateInterval.builder(start, zone);
 
         assertThrows(ForwardException.class, () -> b.setNanos(-1));
     }
@@ -97,7 +97,7 @@ class SchedulerIntervalTemplateTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = 1_700_000_000_000L;
 
-        SchedulerIntervalTemplate.Builder b = SchedulerIntervalTemplate.builder(start, zone);
+        SchedulerTemplateInterval.Builder b = SchedulerTemplateInterval.builder(start, zone);
 
         assertThrows(ForwardException.class, () -> b.setNanos(1_000_000_000));
     }
@@ -115,8 +115,8 @@ class SchedulerIntervalTemplateTest {
         map.put("seconds", 4);
         map.put("nanos", 5);
 
-        SchedulerIntervalTemplate.Builder b = SchedulerIntervalTemplate.Builder.fromMap(map);
-        SchedulerIntervalTemplate t = b.build();
+        SchedulerTemplateInterval.Builder b = SchedulerTemplateInterval.Builder.fromMap(map);
+        SchedulerTemplateInterval t = b.buildTemplate();
 
         assertEquals(ZoneId.of("UTC"), t.getZone());
         assertEquals(Period.of(0, 1, 0), t.getPeriod());
@@ -126,7 +126,7 @@ class SchedulerIntervalTemplateTest {
     @Test
     void builder_jsonCreator_rejectsBlankZone() {
         assertThrows(IllegalArgumentException.class, () ->
-                new SchedulerIntervalTemplate.Builder(
+                new SchedulerTemplateInterval.Builder(
                         1_700_000_000_000L,
                         "   ",
                         0, 0, 0,
@@ -139,7 +139,7 @@ class SchedulerIntervalTemplateTest {
     @Test
     void builder_jsonCreator_rejectsInvalidZone() {
         assertThrows(IllegalArgumentException.class, () ->
-                new SchedulerIntervalTemplate.Builder(
+                new SchedulerTemplateInterval.Builder(
                         1_700_000_000_000L,
                         "No/Such_Zone",
                         0, 0, 0,
@@ -152,7 +152,7 @@ class SchedulerIntervalTemplateTest {
     @Test
     void builder_jsonCreator_rejectsNegativeStartEpochMillis() {
         assertThrows(IllegalArgumentException.class, () ->
-                new SchedulerIntervalTemplate.Builder(
+                new SchedulerTemplateInterval.Builder(
                         -1,
                         "UTC",
                         0, 0, 0,
@@ -166,7 +166,7 @@ class SchedulerIntervalTemplateTest {
     void builder_jsonCreator_rejectsNegativeParts() {
         // years < 0
         assertThrows(IllegalArgumentException.class, () ->
-                new SchedulerIntervalTemplate.Builder(
+                new SchedulerTemplateInterval.Builder(
                         1_700_000_000_000L,
                         "UTC",
                         -1, 0, 0,
@@ -177,7 +177,7 @@ class SchedulerIntervalTemplateTest {
 
         // minutes < 0
         assertThrows(IllegalArgumentException.class, () ->
-                new SchedulerIntervalTemplate.Builder(
+                new SchedulerTemplateInterval.Builder(
                         1_700_000_000_000L,
                         "UTC",
                         0, 0, 0,
@@ -189,7 +189,7 @@ class SchedulerIntervalTemplateTest {
 
     @Test
     void builder_jsonCreator_acceptsNullFieldsAsZero() {
-        SchedulerIntervalTemplate.Builder b = new SchedulerIntervalTemplate.Builder(
+        SchedulerTemplateInterval.Builder b = new SchedulerTemplateInterval.Builder(
                 1_700_000_000_000L,
                 "UTC",
                 null, null, null,
@@ -197,7 +197,7 @@ class SchedulerIntervalTemplateTest {
                 null
         );
 
-        SchedulerIntervalTemplate t = b.build();
+        SchedulerTemplateInterval t = b.buildTemplate();
         assertEquals(Period.ZERO, t.getPeriod());
         assertEquals(Duration.ofSeconds(1), t.getDuration());
     }
@@ -220,8 +220,8 @@ class SchedulerIntervalTemplateTest {
                 }
                 """;
 
-        SchedulerIntervalTemplate.Builder b = SchedulerIntervalTemplate.Builder.fromJson(json);
-        SchedulerIntervalTemplate t = b.build();
+        SchedulerTemplateInterval.Builder b = SchedulerTemplateInterval.Builder.fromJson(json);
+        SchedulerTemplateInterval t = b.buildTemplate();
 
         assertEquals(1_700_000_000_000L, t.getStartEpochMillis());
         assertEquals(ZoneId.of("UTC"), t.getZone());
@@ -234,9 +234,9 @@ class SchedulerIntervalTemplateTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = 1_700_000_000_000L;
 
-        SchedulerIntervalTemplate t = SchedulerIntervalTemplate.builder(start, zone)
+        SchedulerTemplateInterval t = SchedulerTemplateInterval.builder(start, zone)
                 .setDays(1)
-                .build();
+                .buildTemplate();
 
         Object jsonValue = t.getJsonValue();
         assertTrue(jsonValue instanceof Map);
@@ -255,7 +255,7 @@ class SchedulerIntervalTemplateTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = 1_700_000_000_000L;
 
-        SchedulerIntervalTemplate.Builder b = SchedulerIntervalTemplate.builder(start, zone)
+        SchedulerTemplateInterval.Builder b = SchedulerTemplateInterval.builder(start, zone)
                 .setYears(1).setMonths(2).setDays(3)
                 .setHours(4).setMinutes(5).setSeconds(6)
                 .setNanos(7);
@@ -285,7 +285,7 @@ class SchedulerIntervalTemplateTest {
         // В TemplateInterval.Builder JsonCreator сам запрещает отрицательные компоненты,
         // так что негатив туда не попадёт; но этот тест подтверждает поведение.
         assertThrows(IllegalArgumentException.class, () ->
-                new SchedulerIntervalTemplate.Builder(
+                new SchedulerTemplateInterval.Builder(
                         1_700_000_000_000L,
                         "UTC",
                         0, 0, -1,      // days negative
@@ -297,7 +297,7 @@ class SchedulerIntervalTemplateTest {
 
     @Test
     void build_rejectsStepWherePeriodAndDurationBothZero_viaJsonCreatorPath() {
-        SchedulerIntervalTemplate.Builder b = new SchedulerIntervalTemplate.Builder(
+        SchedulerTemplateInterval.Builder b = new SchedulerTemplateInterval.Builder(
                 1_700_000_000_000L,
                 "UTC",
                 0, 0, 0,
@@ -305,7 +305,7 @@ class SchedulerIntervalTemplateTest {
                 0
         );
 
-        assertThrows(ForwardException.class, b::build);
+        assertThrows(ForwardException.class, b::buildTemplate);
     }
 
 }

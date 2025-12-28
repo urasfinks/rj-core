@@ -6,6 +6,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
+import ru.jamsys.core.flat.template.scheduler.SchedulerSequence;
+import ru.jamsys.core.flat.template.scheduler.SchedulerTemplate;
 import ru.jamsys.core.flat.util.Util;
 import ru.jamsys.core.flat.util.UtilFileResource;
 import ru.jamsys.core.flat.util.UtilJson;
@@ -17,7 +19,7 @@ import java.time.ZoneId;
 import java.util.Map;
 
 @Getter
-public class SchedulerIntervalTemplate {
+public class SchedulerTemplateInterval implements SchedulerTemplate {
 
     private final Period period;
     private final Duration duration;
@@ -33,7 +35,7 @@ public class SchedulerIntervalTemplate {
                 .append("zone", Util.firstNonNull(zone, "null").toString());
     }
 
-    private SchedulerIntervalTemplate(long startEpochMillis, Period period, Duration duration, String template, ZoneId zone) {
+    private SchedulerTemplateInterval(long startEpochMillis, Period period, Duration duration, String template, ZoneId zone) {
         // Validate step
         if (period == null) {
             throw new ForwardException("period must not be null", getContext());
@@ -77,7 +79,7 @@ public class SchedulerIntervalTemplate {
     @Setter
     @Accessors(chain = true)
     @JsonIgnoreProperties()
-    public static class Builder {
+    public static class Builder implements SchedulerTemplate.Builder<SchedulerTemplateInterval> {
 
         private final long startEpochMillis;
 
@@ -202,14 +204,14 @@ public class SchedulerIntervalTemplate {
                     ;
         }
 
-        public SchedulerIntervalTemplate build() {
+        public SchedulerTemplateInterval buildTemplate() {
             Period p = Period.of(years, months, days);
             Duration d = Duration.ofHours(hours)
                     .plusMinutes(minutes)
                     .plusSeconds(seconds)
                     .plusNanos(nanos);
 
-            return new SchedulerIntervalTemplate(
+            return new SchedulerTemplateInterval(
                     startEpochMillis,
                     p,
                     d,
@@ -218,7 +220,11 @@ public class SchedulerIntervalTemplate {
             );
         }
 
-    }
+        @Override
+        public SchedulerSequence buildSequence() {
+            return new SchedulerSequenceInterval(buildTemplate());
+        }
 
+    }
 
 }

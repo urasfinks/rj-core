@@ -44,6 +44,11 @@ public class UtilDate {
         return d1.getTime();
     }
 
+    public static long getTime() {
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        return timestamp.getTime();
+    }
+
     public static long getTimestamp(String date, String format, long def) {
         try {
             DateFormat dateFormat = new SimpleDateFormat(format);

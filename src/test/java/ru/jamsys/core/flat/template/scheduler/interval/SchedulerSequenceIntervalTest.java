@@ -12,12 +12,12 @@ import ru.jamsys.core.flat.util.UtilDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class SchedulerIntervalSequenceTest {
+class SchedulerSequenceIntervalTest {
 
-    private static SchedulerIntervalTemplate tpl(long startEpochMillis, ZoneId zone, Period p, Duration d) {
+    private static SchedulerTemplateInterval tpl(long startEpochMillis, ZoneId zone, Period p, Duration d) {
         // В проде TemplateInterval создаётся через builder, но для тестов можно использовать builder,
         // чтобы сохранять контракт валидации.
-        SchedulerIntervalTemplate.Builder b = SchedulerIntervalTemplate.builder(startEpochMillis, zone);
+        SchedulerTemplateInterval.Builder b = SchedulerTemplateInterval.builder(startEpochMillis, zone);
         // builder не принимает Period/Duration напрямую, зададим поля
         // (используем доступные сеттеры Lombok @Accessors(chain=true))
         b.setYears(p.getYears()).setMonths(p.getMonths()).setDays(p.getDays());
@@ -30,7 +30,7 @@ class SchedulerIntervalSequenceTest {
 
         // В Builder поля int, тесты держим в разумных пределах
         b.setHours((int) hours).setMinutes((int) minutes).setSeconds((int) secs).setNanos(nanos);
-        return b.build();
+        return b.buildTemplate();
     }
 
     private static long epochMillis(ZoneId zone, int y, int mo, int d, int h, int mi, int s) {
@@ -42,8 +42,8 @@ class SchedulerIntervalSequenceTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = epochMillis(zone, 2025, 1, 1, 0, 0, 0);
 
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ZERO, Duration.ofMinutes(5));
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ZERO, Duration.ofMinutes(5));
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         long after = start - 1;
         assertEquals(start, seq.next(after));
@@ -54,8 +54,8 @@ class SchedulerIntervalSequenceTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = epochMillis(zone, 2025, 1, 1, 0, 0, 0);
 
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ZERO, Duration.ofMinutes(10));
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ZERO, Duration.ofMinutes(10));
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         // after == start -> next is start + 10m (strictly after)
         assertEquals(start + 10 * 60_000L, seq.next(start));
@@ -73,8 +73,8 @@ class SchedulerIntervalSequenceTest {
         long start = epochMillis(zone, 2025, 1, 1, 0, 0, 0);
 
         Duration step = Duration.ofSeconds(2);
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ZERO, step);
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ZERO, step);
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         long after = start + 123_456_789L;
         long res = seq.next(after);
@@ -88,8 +88,8 @@ class SchedulerIntervalSequenceTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = epochMillis(zone, 2025, 1, 1, 0, 0, 0);
 
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ofDays(2), Duration.ZERO);
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ofDays(2), Duration.ZERO);
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         long after = start; // строго после -> +2 дня
         long expected = ZonedDateTime.ofInstant(Instant.ofEpochMilli(start), zone).plusDays(2).toInstant().toEpochMilli();
@@ -102,8 +102,8 @@ class SchedulerIntervalSequenceTest {
         long start = epochMillis(zone, 2025, 1, 31, 0, 0, 0);
 
         // +1 month от 31 января = 28 февраля (или 29 в високосный)
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ofMonths(1), Duration.ZERO);
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ofMonths(1), Duration.ZERO);
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         long after = start;
         long res = seq.next(after);
@@ -120,8 +120,8 @@ class SchedulerIntervalSequenceTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = epochMillis(zone, 2000, 1, 1, 0, 0, 0);
 
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ofMonths(3), Duration.ZERO);
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ofMonths(3), Duration.ZERO);
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         long after = epochMillis(zone, 2025, 12, 1, 0, 0, 0);
         long res = seq.next(after);
@@ -140,8 +140,8 @@ class SchedulerIntervalSequenceTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = epochMillis(zone, 2000, 1, 1, 0, 0, 0);
 
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ofDays(10), Duration.ZERO);
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ofDays(10), Duration.ZERO);
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         long after = epochMillis(zone, 2025, 12, 1, 0, 0, 0);
         long res = seq.next(after);
@@ -156,8 +156,8 @@ class SchedulerIntervalSequenceTest {
         long start = epochMillis(zone, 2025, 1, 1, 0, 0, 0);
 
         // Шаг: +1 день + 2 часа
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ofDays(1), Duration.ofHours(2));
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ofDays(1), Duration.ofHours(2));
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         long after = start; // строго после => start + 1d + 2h
         long expected = ZonedDateTime.ofInstant(Instant.ofEpochMilli(start), zone)
@@ -174,8 +174,8 @@ class SchedulerIntervalSequenceTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = epochMillis(zone, 2025, 1, 1, 0, 0, 0);
 
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ZERO, Duration.ofSeconds(1));
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ZERO, Duration.ofSeconds(1));
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         long a1 = start + 10_000;
         long a2 = start + 9_000;
@@ -191,8 +191,8 @@ class SchedulerIntervalSequenceTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = epochMillis(zone, 2025, 1, 1, 0, 0, 0);
 
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ofDays(1), Duration.ZERO);
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ofDays(1), Duration.ZERO);
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         long r1 = seq.next(start);
         long r2 = seq.next(r1); // after == r1 -> строго после => следующий день
@@ -207,8 +207,8 @@ class SchedulerIntervalSequenceTest {
         long start = epochMillis(zone, 2025, 1, 1, 0, 0, 0);
 
         // ВАЖНО: period != 0 и duration != 0 => next() всегда идёт в advanceUntilAfter (цикл с guard)
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ofDays(1), Duration.ofSeconds(1));
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ofDays(1), Duration.ofSeconds(1));
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         int guard = 5;
         seq.setGuardMaxIterations(guard);
@@ -231,8 +231,8 @@ class SchedulerIntervalSequenceTest {
         ZoneId zone = ZoneId.of("UTC");
         long start = epochMillis(zone, 2025, 1, 1, 0, 0, 0);
 
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ZERO, Duration.ofSeconds(1));
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ZERO, Duration.ofSeconds(1));
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         assertThrows(RuntimeException.class, () -> seq.setGuardMaxIterations(0));
         assertThrows(RuntimeException.class, () -> seq.setGuardMaxIterations(-10));
@@ -244,8 +244,8 @@ class SchedulerIntervalSequenceTest {
         long start = epochMillis(zone, 2025, 1, 1, 0, 0, 0);
 
         // Duration.ofNanos(500_000) = 0.5ms -> toMillis() == 0 => должно упасть
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.ZERO, Duration.ofNanos(500_000));
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.ZERO, Duration.ofNanos(500_000));
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         assertThrows(RuntimeException.class, () -> seq.next(start));
     }
@@ -266,8 +266,8 @@ class SchedulerIntervalSequenceTest {
 
         // Mixed months+days: fastForwardPeriodOnly вернёт start без ускорения,
         // затем advanceUntilAfter всё равно дойдёт до корректного значения.
-        SchedulerIntervalTemplate t = tpl(start, zone, Period.of(0, 1, 1), Duration.ZERO); // +1 month +1 day
-        SchedulerIntervalSequence seq = new SchedulerIntervalSequence(t);
+        SchedulerTemplateInterval t = tpl(start, zone, Period.of(0, 1, 1), Duration.ZERO); // +1 month +1 day
+        SchedulerSequenceInterval seq = new SchedulerSequenceInterval(t);
 
         long after = epochMillis(zone, 2025, 6, 1, 0, 0, 0);
         long res = seq.next(after);
@@ -287,13 +287,13 @@ class SchedulerIntervalSequenceTest {
 
     @Test
     public void test() throws ParseException {
-        SchedulerIntervalTemplate build = new SchedulerIntervalTemplate.Builder(
+        SchedulerTemplateInterval build = new SchedulerTemplateInterval.Builder(
                 UtilDate.getTime("2024-02-29T00:00:00"),
                 ZoneId.systemDefault()
         )
                 .setYears(1)
-                .build();
-        long next = new SchedulerIntervalSequence(build).next(UtilDate.getTime("2024-02-29T00:00:00"));
+                .buildTemplate();
+        long next = new SchedulerSequenceInterval(build).next(UtilDate.getTime("2024-02-29T00:00:00"));
         Assertions.assertEquals("2025-02-28T00:00:00.000", UtilDate.msFormat(next));
     }
 }
