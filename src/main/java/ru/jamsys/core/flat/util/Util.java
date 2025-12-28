@@ -135,7 +135,7 @@ public class Util {
     @SuppressWarnings("all")
     public static void printStackTrace(String label) {
         Exception exception = new Exception(
-                UtilDateOld.msFormat(System.currentTimeMillis()) + " ["
+                UtilDate.millis(System.currentTimeMillis()).toDate().getDate() + " ["
                         + Thread.currentThread().getName() + "] "
                         + "Util.printStackTrace: " + label + "\r\n"
         );

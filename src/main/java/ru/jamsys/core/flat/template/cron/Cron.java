@@ -3,7 +3,7 @@ package ru.jamsys.core.flat.template.cron;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import ru.jamsys.core.flat.util.UtilDateOld;
+import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.extension.statistic.AvgMetric;
 
@@ -86,7 +86,7 @@ public class Cron {
         List<String> result = new ArrayList<>();
         List<Long> series = getSeries(curTime, count);
         for (Long ms : series) {
-            result.add(UtilDateOld.msFormat(ms));
+            result.add(UtilDate.millis(ms).toDate().getDate());
         }
         return result;
     }
@@ -147,12 +147,12 @@ public class Cron {
 
         @SuppressWarnings("unused")
         public String getFormatBeforeTimestamp() {
-            return UtilDateOld.msFormat(beforeTimestamp);
+            return UtilDate.millis(beforeTimestamp).toDate().getDate();
         }
 
         @SuppressWarnings("unused")
         public String getFormatNextTimestamp() {
-            return UtilDateOld.msFormat(nextTimestamp);
+            return UtilDate.millis(nextTimestamp).toDate().getDate();
         }
 
         public boolean isTimeHasCome() {
@@ -189,7 +189,7 @@ public class Cron {
         }
         if (debug) {
             UtilLog.info(null)
-                    .addHeader("min", UtilDateOld.msFormat(statistic.getMin()))
+                    .addHeader("min", UtilDate.millis(statistic.getMin()).toDate().getDate())
                     .addHeader("realMs", statistic.getMin())
                     .print();
         }

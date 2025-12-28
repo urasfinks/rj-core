@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import ru.jamsys.core.flat.util.UtilDateOld;
+import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilJson;
 
 import java.io.PrintStream;
@@ -37,7 +37,7 @@ public class Log extends DataHeaderPersistent {
     public StringBuilder toStringBuilder() {
         StringBuilder sb = new StringBuilder();
         sb
-                .append(UtilDateOld.msFormat(getTimeAdd()))
+                .append(UtilDate.millis(getTimeAdd()).toDate().getDate())
                 .append("\t")
                 .append(UtilJson.toString(getHeader(), "{}"));
 

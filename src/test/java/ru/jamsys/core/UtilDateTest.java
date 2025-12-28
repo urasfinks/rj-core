@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.util.UtilDate;
 
-class UtilDateOldTest {
+class UtilDateTest {
 
     @Test
     void format() {

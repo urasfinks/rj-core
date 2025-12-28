@@ -16,7 +16,10 @@ import ru.jamsys.core.flat.util.UtilDate;
 class RateLimitTest {
 
     public static String msFormat(long ms) {
-        return UtilDate.millis(ms).setZoneMoscow().toDate().getDate();
+        return UtilDate.millis(ms)
+                //.setZoneMoscow()
+                .toDate()
+                .getDate();
     }
 
     @BeforeAll
@@ -39,7 +42,7 @@ class RateLimitTest {
 
     @Test
     void testPeriodic() {
-        long curTime = 1709734264056L; //2024-03-06T17:11:04.056
+        long curTime = UtilDate.date("2024-03-06T17:11:04.056").toMillis().getMillis();// 1709734264056L; //2024-03-06T17:11:04.056
         long aLong = 60_000L;
 
         App.get(ServiceProperty.class).set("$.RateLimitPeriodic.min.period", "MINUTE");

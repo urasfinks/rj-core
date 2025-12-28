@@ -41,7 +41,7 @@ public class DataHeaderPersistent extends DataHeader implements DataPersistent {
                 .append(
                         "header",
                         new HashMapBuilder<>(header)
-                                .append("time", UtilDateOld.msFormat(getTimeAdd()))
+                                .append("time", UtilDate.millis(getTimeAdd()).toDate().getDate())
                 )
                 .append("body", getBody())
         );

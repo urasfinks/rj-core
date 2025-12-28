@@ -5,7 +5,7 @@ import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.extension.line.writer.LineWriter;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
-import ru.jamsys.core.flat.util.UtilDateOld;
+import ru.jamsys.core.flat.util.UtilDate;
 import ru.jamsys.core.flat.util.UtilLog;
 
 @Setter
@@ -21,7 +21,7 @@ public class ExceptionHandler {
     public static Object getExceptionObject(Throwable th, Object context) {
         LineWriterList lineWriterList = new LineWriterList();
         lineWriterList.addLine(
-                UtilDateOld.msFormat(System.currentTimeMillis()) + " " + Thread.currentThread().getName()
+                UtilDate.millis(System.currentTimeMillis()).toDate().getDate() + " " + Thread.currentThread().getName()
         );
         getTextException(th, lineWriterList);
         return context == null

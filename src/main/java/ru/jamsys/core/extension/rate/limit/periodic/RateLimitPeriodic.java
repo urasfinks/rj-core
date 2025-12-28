@@ -9,7 +9,7 @@ import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.extension.property.PropertyDispatcher;
 import ru.jamsys.core.extension.property.PropertyListener;
 import ru.jamsys.core.flat.template.cron.TimeUnit;
-import ru.jamsys.core.flat.util.UtilDateOld;
+import ru.jamsys.core.flat.util.UtilDate;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -95,7 +95,7 @@ public class RateLimitPeriodic extends AbstractManagerElement implements Propert
             period.addValue(now, 1);
             long timeInMs = now.getTimeInMillis();
             nextTimeFlush.set(timeInMs);
-            nextTimeFlushFormat = UtilDateOld.msFormat(timeInMs);
+            nextTimeFlushFormat = UtilDate.millis(timeInMs).toDate().getDate();
             statistic.addHeader("tpp", tpp.getAndSet(0));
             statistic.addHeader("flushed", true);
         } else {
