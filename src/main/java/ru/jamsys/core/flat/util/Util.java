@@ -157,6 +157,7 @@ public class Util {
         return (x / tenToTheN) * tenToTheN;
     }
 
+    @SuppressWarnings("unused")
     public static String getIp() {
         String result = null;
         try {
@@ -316,6 +317,7 @@ public class Util {
      * @param <T>    тип элементов, должен корректно реализовывать equals()/hashCode()
      * @return       новый список, содержащий только уникальные комбинации
      */
+    @SuppressWarnings("unused")
     public static <T> List<List<T>> cartesianFilter(List<List<T>> pairs) {
         List<List<T>> result = new ArrayList<>();
         // множество для «ключей» без учёта порядка

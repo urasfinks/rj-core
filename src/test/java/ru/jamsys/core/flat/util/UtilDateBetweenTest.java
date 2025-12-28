@@ -3,8 +3,6 @@ package ru.jamsys.core.flat.util;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class UtilDateBetweenTest {
     @Test
     void ex() {

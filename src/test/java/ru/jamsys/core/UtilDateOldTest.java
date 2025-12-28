@@ -3,9 +3,7 @@ package ru.jamsys.core;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.jamsys.core.flat.util.UtilDate;
-import ru.jamsys.core.flat.util.UtilDateOld;
 
-import java.text.ParseException;
 import java.time.ZoneOffset;
 
 class UtilDateOldTest {

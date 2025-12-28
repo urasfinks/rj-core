@@ -1,5 +1,7 @@
 package ru.jamsys.core.flat.util;
 
+import lombok.Getter;
+
 import java.time.*;
 import java.util.EnumMap;
 import java.util.Map;
@@ -33,15 +35,12 @@ public class UtilDateBetween {
         }
     }
 
+    @Getter
     public static final class TimeBetween {
         private final Map<Unit, Long> units = new EnumMap<>(Unit.class);
 
         public TimeBetween() {
             for (Unit u : Unit.values()) units.put(u, 0L);
-        }
-
-        public Map<Unit, Long> getUnits() {
-            return units;
         }
 
         public TimeBetween set(Unit unit, long value) {
@@ -62,8 +61,8 @@ public class UtilDateBetween {
             return switch (style) {
                 case STANDARD -> String.join(" ", list);
                 case FORMAL -> {
-                    if (list.size() == 1) yield list.get(0);
-                    String last = list.remove(list.size() - 1);
+                    if (list.size() == 1) yield list.getFirst();
+                    String last = list.removeLast();
                     yield String.join(", ", list) + " и " + last;
                 }
             };

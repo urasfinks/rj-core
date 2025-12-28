@@ -266,7 +266,7 @@ class SchedulerTemplateCronTest {
     private static boolean hasCause(Throwable t) {
         Throwable cur = t;
         while (cur != null) {
-            if (ForwardException.class.isInstance(cur)) return true;
+            if (cur instanceof ForwardException) return true;
             cur = cur.getCause();
         }
         return false;
