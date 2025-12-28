@@ -17,7 +17,8 @@ public final class UtilDate {
     /**
      * Дефолтная зона проекта для интерпретации локальных дат/дат-времени без offset/zone в строке.
      */
-    public static final ZoneId DEFAULT_ZONE = ZoneId.of("Europe/Moscow");
+    //public static final ZoneId DEFAULT_ZONE = ZoneId.of("Europe/Moscow");
+    public static final ZoneId DEFAULT_ZONE = ZoneId.systemDefault();
 
     /**
      * Базовый паттерн проекта для локального date-time без зоны/offset.
