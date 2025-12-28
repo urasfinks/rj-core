@@ -35,7 +35,7 @@ class SchedulerSequenceCronTest {
     }
 
     @Test
-    public void test3() throws ParseException {
+    public void test3() {
         SchedulerTemplateCron schedulerTemplateCron = SchedulerTemplateCron.builder("description")
                 .setMinutes(List.of(33))
                 .buildTemplate();
@@ -48,7 +48,7 @@ class SchedulerSequenceCronTest {
     }
 
     @Test
-    public void test4() throws ParseException {
+    public void test4() {
         SchedulerTemplateCron schedulerTemplateCron = SchedulerTemplateCron.builder("description")
                 .setMinutes(List.of(33))
                 .setSeconds(List.of(47))
@@ -62,7 +62,7 @@ class SchedulerSequenceCronTest {
     }
 
     @Test
-    public void test5() throws ParseException {
+    public void test5() {
         SchedulerTemplateCron schedulerTemplateCron = SchedulerTemplateCron.builder("description")
                 .setHours(List.of(12))
                 .setMinutes(List.of(33))
@@ -88,7 +88,7 @@ class SchedulerSequenceCronTest {
     }
 
     @Test
-    public void test6() throws ParseException {
+    public void test6() {
         SchedulerTemplateCron schedulerTemplateCron = SchedulerTemplateCron.builder("description")
                 .setHours(List.of(12))
                 .setMinutes(List.of(33))
@@ -104,7 +104,7 @@ class SchedulerSequenceCronTest {
     }
 
     @Test
-    public void test7() throws ParseException {
+    public void test7() {
         SchedulerTemplateCron schedulerTemplateCron = SchedulerTemplateCron.builder("description")
                 .setHours(List.of(12))
                 .setMinutes(List.of(33))
@@ -121,7 +121,7 @@ class SchedulerSequenceCronTest {
     }
 
     @Test
-    public void test8() throws ParseException {
+    public void test8() {
         SchedulerTemplateCron schedulerTemplateCron = SchedulerTemplateCron.builder("description")
                 .setDays(List.of(1))
                 .setHours(List.of(12))
@@ -139,7 +139,7 @@ class SchedulerSequenceCronTest {
     }
 
     @Test
-    public void test9() throws ParseException {
+    public void test9() {
         SchedulerTemplateCron schedulerTemplateCron = SchedulerTemplateCron.builder("description")
                 .setDays(List.of(28))
                 .setHours(List.of(12))
@@ -156,7 +156,7 @@ class SchedulerSequenceCronTest {
     }
 
     @Test
-    public void test10() throws ParseException {
+    public void test10() {
         SchedulerTemplateCron schedulerTemplateCron = SchedulerTemplateCron.builder("description")
                 .setDaysOfWeek(List.of(1))
                 .buildTemplate();
@@ -169,7 +169,7 @@ class SchedulerSequenceCronTest {
     }
 
     @Test
-    public void test11() throws ParseException {
+    public void test11() {
         SchedulerTemplateCron schedulerTemplateCron = SchedulerTemplateCron.builder("description")
                 .setYears(List.of(2026))
                 .buildTemplate();
@@ -182,7 +182,7 @@ class SchedulerSequenceCronTest {
     }
 
     @Test
-    public void test12() throws ParseException {
+    public void test12() {
         SchedulerTemplateCron schedulerTemplateCron = SchedulerTemplateCron.builder("description")
                 .setYears(List.of(2026))
                 .setMonths(List.of(2))

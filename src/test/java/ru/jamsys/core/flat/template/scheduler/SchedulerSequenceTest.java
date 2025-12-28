@@ -10,7 +10,7 @@ import java.time.ZoneId;
 
 class SchedulerSequenceTest {
     @Test
-    public void testInterval() throws ParseException {
+    public void testInterval() {
         Assertions.assertEquals("2025-12-27T13:32:45.000",
                 UtilDate.millis(
                                 new SchedulerTemplateInterval.Builder(
