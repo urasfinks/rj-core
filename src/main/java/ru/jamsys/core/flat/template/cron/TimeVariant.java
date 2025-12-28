@@ -2,7 +2,7 @@ package ru.jamsys.core.flat.template.cron;
 
 import lombok.Getter;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilDateOld;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.extension.statistic.AvgMetric;
 
@@ -53,17 +53,17 @@ public class TimeVariant {
         }
         for (TimeUnit curEmptyTimeUnit : listEmptyTimeUnit) {
             if (debug) {
-                UtilLog.printInfo("====EmptyUnit " + curEmptyTimeUnit.getNameCache() + " for time: " + UtilDate.msFormat(curTime));
+                UtilLog.printInfo("====EmptyUnit " + curEmptyTimeUnit.getNameCache() + " for time: " + UtilDateOld.msFormat(curTime));
             }
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(curTime);
             resetDynamicUnitBefore(calendar, curEmptyTimeUnit, debug);
             if (debug) {
-                UtilLog.printInfo("reset: " + UtilDate.msFormat(calendar.getTimeInMillis()));
+                UtilLog.printInfo("reset: " + UtilDateOld.msFormat(calendar.getTimeInMillis()));
             }
             timeInsert(calendar);
             if (debug) {
-                UtilLog.printInfo("timeInsert: " + UtilDate.msFormat(calendar.getTimeInMillis()));
+                UtilLog.printInfo("timeInsert: " + UtilDateOld.msFormat(calendar.getTimeInMillis()));
             }
             int count = 0;
             //Если мы сейчас переставляем дни месяца, то надо проверить наличие присутствия дня недели
@@ -80,7 +80,7 @@ public class TimeVariant {
                 now.setTimeInMillis(curTime);
                 curEmptyTimeUnit.setValue(calendar, curEmptyTimeUnit.getValue(now));
                 if (debug) {
-                    UtilLog.printInfo("preSet: " + curEmptyTimeUnit + " = " + curEmptyTimeUnit.getValue(now) + " " + UtilDate.msFormat(calendar.getTimeInMillis()));
+                    UtilLog.printInfo("preSet: " + curEmptyTimeUnit + " = " + curEmptyTimeUnit.getValue(now) + " " + UtilDateOld.msFormat(calendar.getTimeInMillis()));
                 }
             }
 
@@ -88,7 +88,7 @@ public class TimeVariant {
                 long n = calendar.getTimeInMillis();
                 if (n > curTime) {
                     if (debug) {
-                        UtilLog.printInfo("[" + UtilDate.msFormat(n) + "] because > curTime: " + UtilDate.msFormat(curTime) + " realMs: " + n);
+                        UtilLog.printInfo("[" + UtilDateOld.msFormat(n) + "] because > curTime: " + UtilDateOld.msFormat(curTime) + " realMs: " + n);
                     }
                     avgMetric.add(n);
                     if (listEmptyTimeUnit.size() == 1 && count == 0) {

@@ -7,7 +7,7 @@ import lombok.Setter;
 import ru.jamsys.core.component.ExceptionHandler;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.line.writer.LineWriterList;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilDateOld;
 
 public class Trace<K, V> {
 
@@ -21,7 +21,7 @@ public class Trace<K, V> {
     private V value;
 
     public String getStart() {
-        return UtilDate.msFormat(timeAdd);
+        return UtilDateOld.msFormat(timeAdd);
     }
 
     @SuppressWarnings("unused")
@@ -41,10 +41,10 @@ public class Trace<K, V> {
     @JsonValue
     public Object getJsonValue() {
         if (value == null) {
-            return UtilDate.msFormat(timeAdd) + " " + index;
+            return UtilDateOld.msFormat(timeAdd) + " " + index;
         } else {
             return new HashMapBuilder<String, Object>()
-                    .append(UtilDate.msFormat(timeAdd) + " " + index, getValueWrap());
+                    .append(UtilDateOld.msFormat(timeAdd) + " " + index, getValueWrap());
         }
     }
 

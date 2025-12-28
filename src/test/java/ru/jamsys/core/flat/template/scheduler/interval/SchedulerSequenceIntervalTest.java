@@ -8,7 +8,7 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 
 import org.junit.jupiter.api.function.Executable;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilDateOld;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -288,12 +288,12 @@ class SchedulerSequenceIntervalTest {
     @Test
     public void test() throws ParseException {
         SchedulerTemplateInterval build = new SchedulerTemplateInterval.Builder(
-                UtilDate.getTime("2024-02-29T00:00:00"),
+                UtilDateOld.getTime("2024-02-29T00:00:00"),
                 ZoneId.systemDefault()
         )
                 .setYears(1)
                 .buildTemplate();
-        long next = new SchedulerSequenceInterval(build).next(UtilDate.getTime("2024-02-29T00:00:00"));
-        Assertions.assertEquals("2025-02-28T00:00:00.000", UtilDate.msFormat(next));
+        long next = new SchedulerSequenceInterval(build).next(UtilDateOld.getTime("2024-02-29T00:00:00"));
+        Assertions.assertEquals("2025-02-28T00:00:00.000", UtilDateOld.msFormat(next));
     }
 }

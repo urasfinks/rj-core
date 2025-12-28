@@ -12,7 +12,7 @@ import ru.jamsys.core.extension.property.PropertyEnvelope;
 import ru.jamsys.core.extension.property.PropertySubscription;
 import ru.jamsys.core.extension.property.repository.RepositoryPropertyAnnotationField;
 import ru.jamsys.core.extension.property.repository.RepositoryProperty;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilDateOld;
 import ru.jamsys.core.flat.util.UtilRisc;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +32,7 @@ public class TraceSetup {
 
     public TraceSetup(String value) {
         this.value = value;
-        this.time = UtilDate.get(UtilDate.format);
+        this.time = UtilDateOld.get(UtilDateOld.format);
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
         int idx = -1;

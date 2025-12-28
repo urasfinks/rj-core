@@ -1,6 +1,6 @@
 package ru.jamsys.core.extension.expiration;
 
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilDateOld;
 
 public class TimeOutException extends Exception {
 
@@ -15,9 +15,9 @@ public class TimeOutException extends Exception {
 
     @Override
     public String getMessage() {
-        return "TimeOutException lastActivity: " + UtilDate.msFormat(timeStart)
+        return "TimeOutException lastActivity: " + UtilDateOld.msFormat(timeStart)
                 + "; timeOut: " + timeOut
-                + "; now: " + UtilDate.msFormat(now);
+                + "; now: " + UtilDateOld.msFormat(now);
     }
 
 }

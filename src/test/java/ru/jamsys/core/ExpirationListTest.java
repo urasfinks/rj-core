@@ -10,7 +10,7 @@ import ru.jamsys.core.extension.log.DataHeader;
 import ru.jamsys.core.extension.expiration.ExpirationList;
 import ru.jamsys.core.extension.statistic.StatisticDataHeader;
 import ru.jamsys.core.flat.util.Util;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilDateOld;
 import ru.jamsys.core.flat.util.UtilLog;
 import ru.jamsys.core.extension.expiration.immutable.ExpirationMsImmutableEnvelope;
 
@@ -97,12 +97,12 @@ class ExpirationListTest {
 
         //Проверяем что пока 1 корзина
         Assertions.assertEquals("[1709734266000]", test.getBucketKey().toString());
-        Assertions.assertEquals("2024-03-06T17:11:06.000", UtilDate.msFormat(test.getBucketKey().getFirst()));
+        Assertions.assertEquals("2024-03-06T17:11:06.000", UtilDateOld.msFormat(test.getBucketKey().getFirst()));
 
         //2024-03-06T17:11:04.056 + 500 => 11:04.556 + 1000 => 11:05.556 => 11:05.000
 
         test.add(new ExpirationMsImmutableEnvelope<>(new XItem(), 1000, curTimeMs + 500));
-        Assertions.assertEquals("2024-03-06T17:11:06.000", UtilDate.msFormat(test.getBucketKey().getFirst()));
+        Assertions.assertEquals("2024-03-06T17:11:06.000", UtilDateOld.msFormat(test.getBucketKey().getFirst()));
         //Проверяем что корзина не добавилась
         Assertions.assertEquals("[1709734266000]", test.getBucketKey().toString());
 //
@@ -135,8 +135,8 @@ class ExpirationListTest {
         statistics = test.flushAndGetStatistic(null).getFirst();
         Assertions.assertEquals("{item=100, bucket=50, remove=0, expired=0}", statistics.getHeader().toString());
 
-        Assertions.assertEquals("2024-03-06T17:11:05.006", UtilDate.msFormat(curTimeMs + 950));
-        Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDate.msFormat(Util.resetLastNDigits(curTimeMs + 950, 3)));
+        Assertions.assertEquals("2024-03-06T17:11:05.006", UtilDateOld.msFormat(curTimeMs + 950));
+        Assertions.assertEquals("2024-03-06T17:11:05.000", UtilDateOld.msFormat(Util.resetLastNDigits(curTimeMs + 950, 3)));
 
         test.helper(threadRun, curTimeMs + 950);
 
@@ -161,7 +161,7 @@ class ExpirationListTest {
         long initialDelay = 1000 - (now % 1000);
         scheduler.scheduleAtFixedRate(
                 () -> {
-                    UtilLog.printInfo(UtilDate.msFormat(System.currentTimeMillis()));
+                    UtilLog.printInfo(UtilDateOld.msFormat(System.currentTimeMillis()));
                     test.helper(run, System.currentTimeMillis());
                 },
                 initialDelay,

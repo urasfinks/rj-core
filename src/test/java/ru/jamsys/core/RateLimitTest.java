@@ -8,7 +8,7 @@ import ru.jamsys.core.component.ServiceProperty;
 import ru.jamsys.core.component.manager.ManagerConfiguration;
 import ru.jamsys.core.extension.rate.limit.periodic.RateLimitPeriodic;
 import ru.jamsys.core.extension.rate.limit.tps.RateLimitTps;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilDateOld;
 
 
 // IO time: 6ms
@@ -91,10 +91,10 @@ class RateLimitTest {
         Assertions.assertEquals("2024-04-06T17:11:04.056", rateLimitItemPeriodic.getNextTime());
         rateLimitItemPeriodic.check();
 
-        Assertions.assertEquals("2024-03-06T17:12:04.056", UtilDate.msFormat(curTime + (aLong)));
-        Assertions.assertEquals("2024-03-06T18:11:04.056", UtilDate.msFormat(curTime + (aLong * 60)));
-        Assertions.assertEquals("2024-03-07T17:11:04.056", UtilDate.msFormat(curTime + (aLong * 60 * 24)));
-        Assertions.assertEquals("2024-04-07T17:11:04.056", UtilDate.msFormat(curTime + (aLong * 60 * 24 * 32)));
+        Assertions.assertEquals("2024-03-06T17:12:04.056", UtilDateOld.msFormat(curTime + (aLong)));
+        Assertions.assertEquals("2024-03-06T18:11:04.056", UtilDateOld.msFormat(curTime + (aLong * 60)));
+        Assertions.assertEquals("2024-03-07T17:11:04.056", UtilDateOld.msFormat(curTime + (aLong * 60 * 24)));
+        Assertions.assertEquals("2024-04-07T17:11:04.056", UtilDateOld.msFormat(curTime + (aLong * 60 * 24 * 32)));
 
         //RateLimitTest.testPeriodic:100 expected: <{period=Month, max=999999, tpp=3, flushed=false}> but was: <{period=Month, max=999999, tpp=0, flushed=false}>
         //[ERROR]

@@ -17,13 +17,20 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @SuppressWarnings("unused")
-public class UtilDate {
+public class UtilDateOld {
 
     public static String format = "yyyy-MM-dd'T'HH:mm:ss";
 
+    public static ZoneId defaultZone = ZoneId.of("Europe/Moscow");
+
     public static String get(String format) {
+        return get(format, defaultZone);
+    }
+
+    public static String get(String format, ZoneId zoneId) {
         Date now = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat(format);
+        formatter.setTimeZone(TimeZone.getTimeZone(zoneId));
         return formatter.format(now);
     }
 
@@ -34,15 +41,25 @@ public class UtilDate {
     }
 
     public static long getTimestamp(String date, String format) throws Exception {
+        return getTimestamp(date, format, defaultZone);
+    }
+
+    public static long getTimestamp(String date, String format, ZoneId zoneId) throws Exception {
         DateFormat dateFormat = new SimpleDateFormat(format);
+        dateFormat.setTimeZone(TimeZone.getTimeZone(zoneId));
         Date d1 = dateFormat.parse(date);
         return d1.getTime() / 1000;
     }
 
     public static long getTime(String date) throws ParseException {
-        DateFormat dateFormat = new SimpleDateFormat(format);
-        Date d1 = dateFormat.parse(date);
-        return d1.getTime();
+        return getTime(date, format, defaultZone);
+    }
+
+    public static long getTime(String date, String format, ZoneId zoneId) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        sdf.setTimeZone(TimeZone.getTimeZone(zoneId));
+        Date parsed = sdf.parse(date);
+        return parsed.getTime();
     }
 
     public static long getTime() {
@@ -62,8 +79,7 @@ public class UtilDate {
     }
 
     public static long getTimestampOffsetUTC() {
-        ZoneId systemZone = ZoneId.systemDefault();
-        ZonedDateTime now = ZonedDateTime.now(systemZone);
+        ZonedDateTime now = ZonedDateTime.now(defaultZone);
         ZoneOffset offset = now.getOffset();
         return offset.getTotalSeconds();
     }
@@ -114,14 +130,14 @@ public class UtilDate {
     }
 
     public static String msFormat(Long ms) {
-        return msFormat(ms, "yyyy-MM-dd'T'HH:mm:ss.SSS");
+        return msFormat(ms, "yyyy-MM-dd'T'HH:mm:ss.SSS", defaultZone);
     }
 
-    public static String msFormat(Long ms, String format) {
+    public static String msFormat(Long ms, String format, ZoneId zone) {
         if (ms == null) {
             return null;
         }
-        LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), ZoneId.systemDefault());
+        LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), zone);
         return date.format(DateTimeFormatter.ofPattern(format));
     }
 

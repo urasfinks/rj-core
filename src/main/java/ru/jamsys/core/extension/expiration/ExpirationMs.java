@@ -2,7 +2,7 @@ package ru.jamsys.core.extension.expiration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
-import ru.jamsys.core.flat.util.UtilDate;
+import ru.jamsys.core.flat.util.UtilDateOld;
 
 // Интерфейс просто наделяет статическим функционал объект протухания, даёт базовый набор метрик
 
@@ -71,18 +71,18 @@ public interface ExpirationMs {
 
     // Время последней активности
     default String getLastActivityFormatted() {
-        return UtilDate.msFormat(getLastActivityMs());
+        return UtilDateOld.msFormat(getLastActivityMs());
     }
 
     // Возвратит время, когда объект будет просрочен
     default String getExpirationFormatted() {
-        return UtilDate.msFormat(getExpirationTimeMs());
+        return UtilDateOld.msFormat(getExpirationTimeMs());
     }
 
     // Возвратит время, когда объект будет просрочен
     default String getStopTimeFormatted() {
         Long stop = getStopTimeMs();
-        return stop != null ? UtilDate.msFormat(stop) : "-";
+        return stop != null ? UtilDateOld.msFormat(stop) : "-";
     }
 
     // Зафиксировать конец активности
