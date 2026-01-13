@@ -7,7 +7,7 @@ import ru.jamsys.core.flat.util.UtilJson;
 
 import java.util.ArrayList;
 import java.util.List;
-
+//TODO: переименовать в ContextException
 @Getter
 public class ForwardException extends RuntimeException {
 

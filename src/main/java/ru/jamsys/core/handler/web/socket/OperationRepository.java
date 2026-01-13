@@ -60,7 +60,8 @@ public class OperationRepository {
                 operation.getOperationClient().getUuidOperationObject(),
                 uuid -> new OperationObject(uuid, uuid)
         );
-        operationObject.accept(operation);
+        //TODO: дописать
+        //operationObject.accept(operation);
         serialSet.add(operation.getOperationClient().getUuidOperationObject());
         if (operation.getOperationClient().getOperationType().equals(OperationType.REMOVE)) {
             serialSet.remove(operation.getOperationClient().getUuidOperationObject());

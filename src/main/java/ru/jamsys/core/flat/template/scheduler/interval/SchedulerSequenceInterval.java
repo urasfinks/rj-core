@@ -1,5 +1,6 @@
 package ru.jamsys.core.flat.template.scheduler.interval;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import ru.jamsys.core.extension.builder.HashMapBuilder;
 import ru.jamsys.core.extension.exception.ForwardException;
 import ru.jamsys.core.flat.template.scheduler.SchedulerSequence;
@@ -14,10 +15,14 @@ public class SchedulerSequenceInterval implements SchedulerSequence {
 
     private int guardMaxIterations = 1_000_000;
 
-    /** Cursor (state) in schedule timeline. Always moves forward. */
+    /**
+     * Cursor (state) in schedule timeline. Always moves forward.
+     */
     private OffsetDateTime currentOffset;
 
-    /** Enforces monotonic afterEpochMillis contract (forward-only usage). */
+    /**
+     * Enforces monotonic afterEpochMillis contract (forward-only usage).
+     */
     private long lastAfterEpochMillis = Long.MIN_VALUE;
 
     public SchedulerSequenceInterval(SchedulerTemplateInterval template) {
@@ -34,12 +39,7 @@ public class SchedulerSequenceInterval implements SchedulerSequence {
     @SuppressWarnings("unused")
     public void setGuardMaxIterations(int guardMaxIterations) {
         if (guardMaxIterations <= 0) {
-            throw new ForwardException(
-                    "guardMaxIterations must be > 0",
-                    new HashMapBuilder<String, Object>()
-                            .append("guardMaxIterations", guardMaxIterations)
-                            .append("template", template)
-            );
+            throw new ForwardException("guardMaxIterations must be > 0", this);
         }
         this.guardMaxIterations = guardMaxIterations;
     }
@@ -99,29 +99,13 @@ public class SchedulerSequenceInterval implements SchedulerSequence {
         final Duration d = template.getDuration();
 
         if (p.isNegative()) {
-            throw new ForwardException(
-                    "Period step must be non-negative for forward-only iteration",
-                    new HashMapBuilder<String, Object>()
-                            .append("period", p)
-                            .append("template", template)
-            );
+            throw new ForwardException("Period step must be non-negative for forward-only iteration", this);
         }
         if (d.isNegative()) {
-            throw new ForwardException(
-                    "Duration step must be non-negative for forward-only iteration",
-                    new HashMapBuilder<String, Object>()
-                            .append("duration", d)
-                            .append("template", template)
-            );
+            throw new ForwardException("Duration step must be non-negative for forward-only iteration", this);
         }
         if (p.isZero() && d.isZero()) {
-            throw new ForwardException(
-                    "Schedule step must not be zero (period and duration are both zero)",
-                    new HashMapBuilder<String, Object>()
-                            .append("period", p)
-                            .append("duration", d)
-                            .append("template", template)
-            );
+            throw new ForwardException("Schedule step must not be zero (period and duration are both zero)", this);
         }
     }
 
@@ -140,20 +124,12 @@ public class SchedulerSequenceInterval implements SchedulerSequence {
 
     private long nextDurationOnlyEpoch(Duration step, long startEpochMillis, long afterEpochMillis) {
         if (step.isZero() || step.isNegative()) {
-            throw new ForwardException(
-                    "Duration step must be positive and non-zero",
-                    new HashMapBuilder<String, Object>()
-                            .append("template", template)
-            );
+            throw new ForwardException("Duration step must be positive and non-zero", this);
         }
 
         final long stepMillis = step.toMillis();
         if (stepMillis <= 0) {
-            throw new ForwardException(
-                    "Duration resolution below 1ms is not supported with epochMillis API",
-                    new HashMapBuilder<String, Object>()
-                            .append("template", template)
-            );
+            throw new ForwardException("Duration resolution below 1ms is not supported with epochMillis API", this);
         }
 
         final long delta = afterEpochMillis - startEpochMillis;
@@ -175,7 +151,7 @@ public class SchedulerSequenceInterval implements SchedulerSequence {
                         new HashMapBuilder<String, Object>()
                                 .append("guardMaxIterations", guardMaxIterations)
                                 .append("template", template)
-                                .append("currentOffset",Objects.toString(currentOffset, null))
+                                .append("currentOffset", Objects.toString(currentOffset, null))
                                 .append("after", Objects.toString(after, null))
                 );
             }
@@ -206,12 +182,7 @@ public class SchedulerSequenceInterval implements SchedulerSequence {
             return start; // already validated as "should not happen", but safe
         }
         if (stepMonths < 0 || stepDays < 0) {
-            throw new ForwardException(
-                    "Period step must be positive for forward-only iteration",
-                    new HashMapBuilder<String, Object>()
-                            .append("period", period)
-                            .append("template", template)
-            );
+            throw new ForwardException("Period step must be positive for forward-only iteration", this);
         }
 
         // Mixed months+days: conservative
@@ -251,6 +222,17 @@ public class SchedulerSequenceInterval implements SchedulerSequence {
             start = start.plusDays(stepDays);
         }
         return start;
+    }
+
+    @JsonValue
+    public Object getJsonValue() {
+        return new HashMapBuilder<String, Object>()
+                .append("hashCode", Integer.toHexString(hashCode()))
+                .append("class", getClass())
+                .append("schedulerTemplateInterval", template)
+                .append("guardMaxIterations", guardMaxIterations)
+                .append("currentOffset", Objects.toString(currentOffset, null))
+                ;
     }
 
 }
